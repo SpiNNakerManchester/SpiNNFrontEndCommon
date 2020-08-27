@@ -16,13 +16,12 @@
  */
 
 //! \file
-//!
 //! \brief The implementation of the Live Packet Gatherer.
-//!
-//! The purpose of this application is to allow recorded information to be
-//! streamed out of SpiNNaker in real time. It does not scale very well, as
-//! SpiNNaker's aggregate internal state can change with a much higher
-//! bandwidth than its external networking can handle.
+//! \details
+//!     The purpose of this application is to allow recorded information to be
+//!     streamed out of SpiNNaker in real time. It does not scale very well, as
+//!     SpiNNaker's aggregate internal state can change with a much higher
+//!     bandwidth than its external networking can handle.
 
 #include <common-typedefs.h>
 #include <circular_buffer.h>
@@ -41,8 +40,7 @@ struct provenance_data_struct {
 };
 
 //! \brief Definitions of each element in the configuration.
-//!
-//! This is copied from SDRAM into DTCM for speed.
+//! \details This is copied from SDRAM into DTCM for speed.
 struct lpg_config {
     //! P bit
     uint32_t apply_prefix;
@@ -70,7 +68,7 @@ struct lpg_config {
     uint32_t packets_per_timestamp;
 };
 
-//! values for the priority for each callback
+//! Values for the priority for each callback
 enum {
     MC_PACKET = -1, //!< Multicast packet interrupt uses FIQ (super high prio)
     SDP = 0,        //!< SDP interrupt is highest priority
@@ -79,7 +77,7 @@ enum {
     TIMER = 3       //!< Timer interrupt is lowest priority
 };
 
-//! human readable definitions of each region in SDRAM
+//! Human readable definitions of each region in SDRAM
 enum {
     SYSTEM_REGION,
     CONFIGURATION_REGION,
@@ -166,7 +164,7 @@ static struct lpg_config config;
 #define BUFFER_CAPACITY 256
 
 //! \brief Because _WHY OH WHY_ would you use aligned memory? At least with this
-//! we don't get data aborts.
+//!     we don't get data aborts.
 //! \param[out] base: Buffer to write in.
 //!     _Only guaranteed to be half-word aligned._
 //! \param[in] index: Offset in count of _words_ into the buffer.
@@ -243,16 +241,12 @@ static void record_provenance_data(address_t provenance_region_address) {
 
 // Callbacks
 //! \brief Periodic timer callback
-//!
-//! Forces all events to be sent at least on the timer tick (calling
-//! flush_events()) and handles pausing as required.
-//!
+//! \details
+//!     Forces all events to be sent at least on the timer tick (calling
+//!     flush_events()) and handles pausing as required.
 //! \param unused0: unused
 //! \param unused1: unused
-static void timer_callback(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
-
+static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
     // flush the spike message and sent it over the Ethernet
     flush_events();
 
@@ -277,15 +271,14 @@ static void timer_callback(uint unused0, uint unused1) {
 
 //! \brief Flush events to the outside world if our internal buffers are now
 //!     full.
-//!
-//! Calls flush_events() to do the flush.
+//! \details Calls flush_events() to do the flush.
 static inline void flush_events_if_full(void) {
     if ((get_event_count() + 1) * event_size > BUFFER_CAPACITY) {
         flush_events();
     }
 }
 
-//! \brief Processes an incoming multicast packet without payload.
+//! \brief Process an incoming multicast packet without payload.
 //! \param[in] key: The key of the packet.
 static void process_incoming_event(uint key) {
     log_debug("Processing key %x", key);
@@ -315,7 +308,7 @@ static void process_incoming_event(uint key) {
     }
 }
 
-//! \brief Processes an incoming multicast packet with payload.
+//! \brief Process an incoming multicast packet with payload.
 //! \param[in] key: The key of the packet.
 //! \param[in] payload: The payload word of the packet.
 static void process_incoming_event_payload(uint key, uint payload) {
@@ -348,24 +341,21 @@ static void process_incoming_event_payload(uint key, uint payload) {
 }
 
 //! \brief Handler for processing incoming packets that have been locally queued
+//! \details
+//!     Triggered by calling spin1_trigger_user_event() in
+//!     incoming_event_callback() and incoming_event_payload_callback(), which
+//!     (being attached to the FIQ) just enqueue messages for later handling.
+//!     Delegates to process_incoming_event() and
+//!     process_incoming_event_payload() for actual processing.
 //!
-//! Triggered by calling spin1_trigger_user_event() in incoming_event_callback()
-//! and incoming_event_payload_callback(), which (being attached to the FIQ)
-//! just enqueue messages for later handling. Delegates to
-//! process_incoming_event() and process_incoming_event_payload() for actual
-//! processing.
+//!     Packets without payload are slightly higher priority than packets with
+//!     payload.
 //!
-//! Packets without payload are slightly higher priority than packets with
-//! payload.
-//!
-//! Sends multiple SDP packets if required.
-//!
+//!     Sends multiple SDP packets if required.
 //! \param unused0: Ignored
 //! \param unused1: Ignored
-static void incoming_event_process_callback(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
-
+static void incoming_event_process_callback(
+        UNUSED uint unused0, UNUSED uint unused1) {
     do {
         uint32_t key, payload;
 
@@ -385,14 +375,13 @@ static void incoming_event_process_callback(uint unused0, uint unused1) {
 }
 
 //! \brief FIQ handler for incoming packets without payload.
-//!
-//! Just enqueues them for later handling by incoming_event_process_callback(),
-//! which will hand off to process_incoming_event().
-//!
+//! \details
+//!     Just enqueues them for later handling by
+//!     incoming_event_process_callback(), which will hand off to
+//!     process_incoming_event().
 //! \param[in] key: The key of the incoming packet.
 //! \param unused: unused
-static void incoming_event_callback(uint key, uint unused) {
-    use(unused);
+static void incoming_event_callback(uint key, UNUSED uint unused) {
     log_debug("Received key %x", key);
 
     if (circular_buffer_add(without_payload_buffer, key)) {
@@ -406,10 +395,10 @@ static void incoming_event_callback(uint key, uint unused) {
 }
 
 //! \brief FIQ handler for incoming packets with payload.
-//!
-//! Just enqueues them for later handling by incoming_event_process_callback(),
-//! which will hand off to process_incoming_event_payload().
-//!
+//! \details
+//!     Just enqueues them for later handling by
+//!     incoming_event_process_callback(), which will hand off to
+//!     process_incoming_event_payload().
 //! \param[in] key: The key of the incoming packet.
 //! \param[in] payload: The payload word of the incoming packet.
 static void incoming_event_payload_callback(uint key, uint payload) {
@@ -427,9 +416,7 @@ static void incoming_event_payload_callback(uint key, uint payload) {
 }
 
 //! \brief Copies the application configuration from DSG SDRAM to DTCM.
-//!
-//! Note that it's faster to copy by field than to use spin1_memcpy()!
-//!
+//! \note It's faster to copy by field than to use spin1_memcpy()!
 //! \param[in] sdram_config: Where to copy from
 static void read_parameters(struct lpg_config *sdram_config) {
     // P bit
@@ -471,7 +458,7 @@ static void read_parameters(struct lpg_config *sdram_config) {
 //! \brief Initialise the application.
 //! \param[out] timer_period: Value for programming the timer ticks.
 //!     _A pointer to this variable is retained by the simulation framework._
-//! \result True if initialisation succeeds.
+//! \result Whether initialisation succeeds.
 static bool initialize(uint32_t *timer_period) {
     // Get the address this core's DTCM data starts at from SRAM
     data_specification_metadata_t *ds_regions =
@@ -504,8 +491,8 @@ static bool initialize(uint32_t *timer_period) {
     return true;
 }
 
-//! \brief Sets up the AER EIEIO data message.
-//! \return bool where True was successful init and  false otherwise.
+//! \brief Set up the AER EIEIO data message.
+//! \return Whether the data message was successfully initialised.
 static bool configure_sdp_msg(void) {
     log_info("configure_sdp_msg");
 

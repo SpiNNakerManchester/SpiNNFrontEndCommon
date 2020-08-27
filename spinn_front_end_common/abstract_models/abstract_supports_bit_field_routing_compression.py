@@ -19,7 +19,7 @@ from six import add_metaclass
 
 @add_metaclass(AbstractBase)
 class AbstractSupportsBitFieldRoutingCompression(object):
-    """ Marks a vertex that can support having the on-chip bitfield \
+    """ Marks a machine vertex that can support having the on-chip bitfield \
         compressor running on its core.
     """
 

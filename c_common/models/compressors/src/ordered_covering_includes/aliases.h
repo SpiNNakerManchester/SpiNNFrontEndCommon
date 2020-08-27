@@ -18,7 +18,7 @@
 //! \file
 //! \brief Aliases in the routing tree.
 //! \details Aliases are built using a trie structure as this avoids the need
-//! for rebalancing at the cost of more memory.
+//!     for rebalancing at the cost of more memory.
 #ifndef __ALIASES_H__
 #define __ALIASES_H__
 
@@ -74,7 +74,7 @@ static alias_list_t* alias_list_new(uint32_t max_size) {
 //! \param[in] as: the alias list to append to
 //! \param[in] val: the key mask to append to the alias
 //! \param[in] source: the source to append to the alias
-//! \return bool saying if it successfully appended or not
+//! \return Whether it successfully appended or not
 static bool alias_list_append(
         alias_list_t *as, key_mask_t val, uint32_t source) {
     if (as->n_elements < as->max_size) {
@@ -319,7 +319,7 @@ static inline void aliases_remove(aliases_t *a, key_mask_t key) {
     }
 }
 
-//! \brief clears a node from the alias tree
+//! \brief Clear a node from the alias tree
 //! \param[in] n: the note to clear from the alias tree
 static void _aliases_clear(node_t *n) { // DO NOT INLINE; RECURSIVE!
     if (n == NULL) {

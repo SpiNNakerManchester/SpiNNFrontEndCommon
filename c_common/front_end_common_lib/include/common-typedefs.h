@@ -54,7 +54,6 @@
  */
 
 //! \file
-//!
 //! \brief Data type definitions for SpiNNaker Neuron-modelling.
 
 #ifndef __COMMON_TYPEDEFS_H__
@@ -67,19 +66,23 @@
 
 // Pseudo-function Declarations
 
-//! \brief This can be used to silence gcc's "-Wall -Wextra"
-//! warnings about failure to use function arguments.
-//!
-//! Obviously you'll only be using this during debug, for unused
-//! arguments of callback functions, or where conditional compilation
-//! means that the accessor functions return a constant
-//!
+//! \brief Silence gcc's `-Wall -Wextra` warnings about failure to use function
+//!     arguments.
+//! \details
+//!     Obviously you'll only be using this during debug, for unused
+//!     arguments of callback functions, or where conditional compilation
+//!     means that the accessor functions return a constant
+//! \note Consider using `(void) x;` instead.
 //! \param[in] x: The variable that is "used". Not safe with floating point!
 
 #ifndef use
-#define use(x) do {} while ((x)!=(x))
+#define use(x)      ((void) (x))
 #endif
 
+// Used to mark a parameter as unused
+#ifndef UNUSED
+#define UNUSED      __attribute__((__unused__))
+#endif
 
 // Define int/uint helper macros to create the correct
 // type names for int/uint of a particular size.

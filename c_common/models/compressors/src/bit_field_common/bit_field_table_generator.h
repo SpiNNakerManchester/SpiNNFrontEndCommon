@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \dir
+//! \brief Support code for working with bitfields (synaptic matrices, etc.)
 //! \file
 //! \brief The table generator support code
 #ifndef __BIT_FIELD_TABLE_GENERATOR_H__
@@ -138,8 +140,7 @@ static inline uint32_t bit_field_table_generator_max_size(
 }
 
 //! \brief Take a midpoint and read the sorted bitfields up to that point,
-//!     generating bitfield routing tables and loading them into SDRAM for
-//!     transfer to a compressor processor
+//!     generating bitfield routing tables and loading them into SDRAM
 //! \param[in] mid_point: where in the sorted bitfields to go to
 //! \param[in] uncompressed_table: the uncompressed router table
 //! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
@@ -185,7 +186,7 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
     }
 }
 
-//! \brief debugging print for a pointer to a table.
+//! \brief Debugging print for a pointer to a table.
 //! \param[in] table: the table pointer to print
 void print_table(const table_t *table) {
     for (uint32_t i = 0, size = table->size; i < size; i++) {
@@ -203,7 +204,7 @@ static inline bool cmp_by_key(const entry_t *a, const entry_t *b) {
     return a->key_mask.key > b->key_mask.key;
 }
 
-//! \brief Insertion sorts a given table so that the entries in the table are
+//! \brief Insertion sort a given table so that the entries in the table are
 //!     by key value.
 //! \param[in] table: the table to sort.
 void sort_table_by_key(table_t *table) {

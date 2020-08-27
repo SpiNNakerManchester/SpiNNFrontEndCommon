@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \dir
+//! \brief Compression by ordered covering manipulation
 //! \file
 //! \brief An ordered covering of routing table entries
 #ifndef __ORDERED_COVERING_H__
@@ -193,7 +195,6 @@ static inline __sets_t _get_removables(
     // contain only one entry.
     for (uint32_t bit = (1 << 31); bit > 0 && sets.best->count != 1;
             bit >>= 1) {
-
         // If this bit cannot be set we ignore it
         if (!(bit & settable)) {
             continue;
@@ -215,7 +216,6 @@ static inline __sets_t _get_removables(
             // check entry has x or 1 or 0 in this position.
             if ((bit & ~km.mask) || (!to_one && (bit & km.key)) ||
                     (to_one && (bit & ~km.key))) {
-
                 // NOTE: Indexing by position in merge!
                 bit_set_add(sets.working, entry);
             }
@@ -239,7 +239,6 @@ static inline __sets_t _get_removables(
 
     return sets;
 }
-
 
 //! \brief Remove entries from a merge such that the merge would not cover
 //!     existing entries positioned below the merge.
@@ -310,7 +309,6 @@ static bool oc_down_check(
                         }
                         for (uint32_t j = 0; j < the_alias_list->n_elements;
                                 j++) {
-
                             // safety check for timing limits
                             if (*stop_compressing) {
                                 log_error("failed due to timing");
@@ -711,7 +709,6 @@ static inline bool oc_merge_apply(
             insert_entry->route = current->route;
             insert_entry->source = current->source;
             insert++;
-
         } else {
             log_debug("merge contains at index %d and insert %d at "
                     "insert point", remove, insert);

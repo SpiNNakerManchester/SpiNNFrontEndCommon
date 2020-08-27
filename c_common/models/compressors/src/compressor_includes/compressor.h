@@ -16,8 +16,9 @@
  */
 
 /**
+ * \dir
+ * \brief Support code for compression
  * \file
- *
  * \brief SpiNNaker routing table minimisation.
  *
  * Minimises a routing table loaded into SDRAM and load the minimised table into
@@ -38,11 +39,12 @@
 #include "../common/routing_table.h"
 
 //! \brief The callback for setting off the router compressor
-//! \param[in] compress_as_much_as_possible: Only compress to normal routing
-//!       table length
+//! \param[in] compress_as_much_as_possible:
+//!     Only compress to normal routing table length
 //! \param[out] failed_by_malloc: Flag stating that it failed due to malloc
 //! \param[in] stop_compressing: Variable saying if the compressor should stop
-//!    and return false; _set by interrupt_ DURING the run of this method!
+//!     and return false; _set by interrupt_ DURING the run of this method!
+//! \return Whether the compression succeeded
 bool run_compressor(int compress_as_much_as_possible, bool *failed_by_malloc,
         volatile bool *stop_compressing) {
     // Get the target length of the routing table
@@ -63,9 +65,8 @@ bool run_compressor(int compress_as_much_as_possible, bool *failed_by_malloc,
     // Perform the minimisation
     log_debug("minimise");
     if (minimise_run(target_length, failed_by_malloc, stop_compressing)) {
-        return routing_table_get_n_entries() <= rtr_alloc_max();
+        return routing_table_get_n_entries() <= (int) rtr_alloc_max();
     } else {
         return false;
     }
-
 }

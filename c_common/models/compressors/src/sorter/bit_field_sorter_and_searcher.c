@@ -17,10 +17,9 @@
 
 //! \file
 //! \brief SpiNNaker routing table minimisation with bitfield integration
-//! control processor.
-//!
-//! Controls the attempt to minimise the router entries with bitfield
-//! components.
+//!     control processor.
+//! \details Controls the attempt to minimise the router entries with bitfield
+//!     components.
 
 #include <spin1_api.h>
 #include <debug.h>
@@ -177,7 +176,7 @@ static inline void send_prepare_message(uint32_t processor_id) {
 }
 
 //! \brief Set up the search bitfields.
-//! \return True if the setup succeeded
+//! \return Whether the setup succeeded
 static inline bool set_up_tested_mid_points(void) {
     log_info("set_up_tested_mid_point n bf addresses is %u",
             sorted_bit_fields->n_bit_fields);
@@ -203,7 +202,7 @@ static inline bool set_up_tested_mid_points(void) {
 //! \param[in] mid_point: The point in the bitfields to work from.
 //! \param[in] table_size: Number of entries that the uncompressed routing
 //!    tables need to hold.
-//! \return True if stored
+//! \return Whether the addresses were stored
 static inline bool pass_instructions_to_compressor(
         uint32_t processor_id, uint32_t mid_point, uint32_t table_size) {
     // Get reference to communications block
@@ -466,7 +465,7 @@ static inline void handle_best_cleanup(void) {
 //! \brief Prepare a processor for the first time.
 //! \details This includes mallocing the comp_instruction_t user
 //! \param[in] processor_id: The ID of the processor to prepare
-//! \return True if the preparation succeeded.
+//! \return Whether the preparation succeeded.
 bool prepare_processor_first_time(uint32_t processor_id) {
     // Get reference to communications block
     comms_sdram_t *comms = &comms_sdram[processor_id];
@@ -603,7 +602,7 @@ static bool all_compressor_processors_busy(void) {
 }
 
 //! \brief Check to see if all compressor processor are done and not ready
-//! \return true if all processors are done and not set ready
+//! \return Whether all processors are done and not set ready
 bool all_compressor_processors_done(void) {
     for (uint32_t p = 0; p < MAX_PROCESSORS; p++) {
         if (comms_sdram[p].sorter_instruction >= PREPARE) {
@@ -615,7 +614,8 @@ bool all_compressor_processors_done(void) {
 
 //! \brief Check if all processors are done; if yes, run best and exit
 //! \return False if at least one compressors is not done.
-//!     True if termination fails (which shouldn't happen...)
+//!     True if termination fails (which shouldn't happen, as the application
+//!     should terminate on success...)
 bool exit_carry_on_if_all_compressor_processors_done(void) {
     for (uint32_t p = 0; p < MAX_PROCESSORS; p++) {
         if (comms_sdram[p].sorter_instruction >= PREPARE) {
@@ -711,9 +711,7 @@ void carry_on_binary_search(void) {
 //! \brief Timer interrupt for controlling time taken to try to compress table
 //! \param[in] unused0: unused
 //! \param[in] unused1: unused
-void timer_callback(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
+void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
     time_steps++;
     // Debug stuff please keep
 #if 0
@@ -868,12 +866,12 @@ void process_compressor_response(
 
     case FORCED_BY_COMPRESSOR_CONTROL:
         // compressor stopped at the request of the sorter.
-        log_info("ack from forced from processor %d doing mid point %d",
+        log_debug("ack from forced from processor %d doing mid point %d",
                 processor_id, mid_point);
         routing_tables_utils_free_all(comms_sdram[processor_id].routing_tables);
         break;
 
-    case UNUSED:
+    case UNUSED_CORE:
     case PREPARED:
     case COMPRESSING:
         // states that shouldn't occur
@@ -886,10 +884,7 @@ void process_compressor_response(
 //! \brief Check compressors' state till they're finished.
 //! \param[in] unused0: unused
 //! \param[in] unused1: unused
-void check_compressors(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
-
+void check_compressors(UNUSED uint unused0, UNUSED uint unused1) {
     log_info("Entering the check_compressors loop");
     // iterate over the compressors buffer until we have the finished state
     while (!terminated) {
@@ -916,7 +911,7 @@ void check_compressors(uint unused0, uint unused1) {
     log_info("exiting the interrupt, to allow the binary to finish");
 }
 
-//! \brief Start binary search on all compressors dividing the bitfields as
+//! \brief Start binary search on all compressors, dividing the bitfields as
 //!     evenly as possible.
 void start_binary_search(void) {
     // Find the number of available processors
@@ -960,11 +955,7 @@ void start_binary_search(void) {
 //! \brief Start the work for the compression search
 //! \param[in] unused0: unused
 //! \param[in] unused1: unused
-void start_compression_process(uint unused0, uint unused1) {
-    //api requirements
-    use(unused0);
-    use(unused1);
-
+void start_compression_process(UNUSED uint unused0, UNUSED uint unused1) {
     // malloc the struct and populate n bit-fields. DOES NOT populate the rest.
     sorted_bit_fields = bit_field_reader_initialise(region_addresses);
     // check state to fail if not read in
@@ -1048,7 +1039,7 @@ static void initialise_user_register_tracker(void) {
         // Get reference to communications block
         comms_sdram_t *comms = &comms_sdram[p];
 
-        comms->compressor_state = UNUSED;
+        comms->compressor_state = UNUSED_CORE;
         comms->sorter_instruction = NOT_COMPRESSOR;
         comms->mid_point = FAILED_TO_FIND;
         comms->routing_tables = NULL;

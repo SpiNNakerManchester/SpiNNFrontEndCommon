@@ -16,9 +16,7 @@
  */
 
 /*! \file
- *
  *  \brief implementation of recording.h
- *
  */
 
 #include <recording.h>
@@ -37,8 +35,7 @@ extern void spin1_wfi(void);
 // Structures
 //---------------------------------------
 //! \brief Structure that defines a channel in memory.
-//!
-//! Channels are implemented using a circular buffer.
+//! \details Channels are implemented using a circular buffer.
 typedef struct recording_channel_t {
     uint8_t *start;             //!< The first byte of the buffer
     uint8_t *current_write;     //!< Where the next write to the buffer will go
@@ -49,9 +46,8 @@ typedef struct recording_channel_t {
     //! Flag to say if recordings were lost due to buffer overflow
     uint8_t missing_info;
     //! \brief Whether the most recent operation on the buffer was a read or a
-    //! write.
-    //!
-    //! This allows the read and write pointer to overlap sensibly.
+    //!     write.
+    //! \details This allows the read and write pointer to overlap sensibly.
     buffered_operations last_buffer_operation;
 } recording_channel_t;
 
@@ -108,9 +104,8 @@ static uint32_t last_time_buffering_trigger = 0;
 //! Threshold on space remaining when a host offload is triggered.
 static uint32_t buffer_size_before_trigger = 0;
 
-//! Threshold on time when a host offload is triggered.
-//!
-//! Independent of ::buffer_size_before_trigger
+//! \brief Threshold on time when a host offload is triggered.
+//! \details Independent of ::buffer_size_before_trigger
 static uint32_t time_between_triggers = 0;
 
 //! A pointer to the last sequence number to write once recording is complete
@@ -135,24 +130,24 @@ static read_request_packet_data *read_request_data;
 #define WORD_TO_BYTE_CONVERSION 4
 
 //---------------------------------------
-//! \brief checks that a channel has been initialised
+//! \brief Check that a channel has been initialised
 //! \param[in] channel the channel to check
-//! \return True if the channel has been initialised or false otherwise
+//! \return Whether the channel has been initialised
 static inline bool has_been_initialised(uint8_t channel) {
     return g_recording_channels[channel].start != NULL;
 }
 
 //----------------------------------------
-//! \brief closes a channel
+//! \brief Close a channel
 //! \param[in] channel the channel to close
-//! \return True if the channel was successfully closed and False otherwise.
+//! \return Whether the channel was successfully closed.
 static inline bool close_channel(uint8_t channel) {
     g_recording_channels[channel].start = NULL;
     g_recording_channels[channel].end = NULL;
     return true;
 }
 
-//! \brief Handles a ::HOST_DATA_READ EIEIO message.
+//! \brief Handle a ::HOST_DATA_READ EIEIO message.
 //! \param[in] msg: The message to handle.
 static inline void recording_host_data_read(const eieio_msg_t msg) {
     const host_data_read_packet_header *ptr_hdr =
@@ -193,7 +188,7 @@ static inline void recording_host_data_read(const eieio_msg_t msg) {
     }
 }
 
-//! \brief Handles a ::HOST_DATA_READ_ACK EIEIO message.
+//! \brief Handle a ::HOST_DATA_READ_ACK EIEIO message.
 //! \param[in] msg: The message to handle.
 static inline void recording_host_data_read_ack(const eieio_msg_t msg) {
     const host_data_read_ack_packet_header *ptr_hdr =
@@ -209,12 +204,10 @@ static inline void recording_host_data_read_ack(const eieio_msg_t msg) {
     sequence_ack = true;
 }
 
-//! \brief Receives an EIEIO message intended for the recording code.
-//!
-//! Delegates understood command messages to:
-//! * recording_host_data_read() for ::HOST_DATA_READ
-//! * recording_host_data_read_ack() for ::HOST_DATA_READ_ACK
-//!
+//! \brief Receive an EIEIO message intended for the recording code.
+//! \details Delegates understood command messages to:
+//!     * recording_host_data_read() for ::HOST_DATA_READ
+//!     * recording_host_data_read_ack() for ::HOST_DATA_READ_ACK
 //! \param[in] msg: Pointer to the message content
 //! \param[in] length: Length of the message content, in bytes.
 static inline void recording_eieio_packet_handler(
@@ -280,12 +273,12 @@ static uint32_t compute_available_space_in_channel(uint8_t channel) {
 //! \param[in] data: Pointer to what is being recorded.
 //! \param[in] write_pointer: Pointer to where to write to.
 //! \param[in] length: Length of data to record.
-//! \param[in] finished_write_pointer: Where we will write to next after this
-//!                                    write completes.
-//! \param[in] callback: Optional callback. If not `NULL`, the recording will be
-//!                      done asynchronously by DMA and this callback will be
-//!                      called once the write is finished. If `NULL`, the
-//!                      recording will be done synchronously.
+//! \param[in] finished_write_pointer:
+//!     Where we will write to next after this write completes.
+//! \param[in] callback:
+//!     Optional callback. If not `NULL`, the recording will be done
+//!     asynchronously by DMA and this callback will be called once the write
+//!     is finished. If `NULL`, the recording will be done synchronously.
 static void recording_write_one_chunk(
         uint8_t channel, void *data, void *write_pointer, uint32_t length,
         void *finished_write_pointer, recording_complete_callback_t callback) {
@@ -316,7 +309,7 @@ static void recording_write_one_chunk(
 //! \param[in] callback: Optional callback. If not `NULL`, the recording will
 //!     be done asynchronously by DMA and this callback will be called once the
 //!     write is finished. If `NULL`, the recording will be done synchronously.
-//! \return True if the recording was successfully written or enqueued for
+//! \return Whether the recording was successfully written or enqueued for
 //!     writing.
 static inline bool recording_write_memory(
         uint8_t channel, void *data, uint32_t length,
@@ -401,8 +394,8 @@ static inline bool recording_write_memory(
     return true;
 }
 
-//! \brief Writes a buffer message component into the sequence to be sent to
-//!        the host
+//! \brief Write a buffer message component into the sequence to be sent to
+//!     the host
 //! \param[out] datum: Where we will write the message
 //! \param[in] channel: The recording channel for which this is a message
 //! \param[in] read_pointer: Where we want the read to happen from
@@ -420,7 +413,7 @@ static void create_buffer_message(
 
 //! \brief Send a message to host ask for for our buffers to be flushed
 //! \param[in] flush_all: If true, all buffers will be flushed, otherwise only
-//!                       sufficiently full ones will be
+//!     sufficiently full ones will be
 static inline void recording_send_buffering_out_trigger_message(
         bool flush_all) {
     uint msg_size = 16 + sizeof(read_request_packet_header);
@@ -483,14 +476,11 @@ static inline void recording_send_buffering_out_trigger_message(
     }
 }
 
-//! \brief Receives an SDP message intended for the recording code.
-//!
-//! Delegates most handling to recording_eieio_packet_handler()
-//!
+//! \brief Receive an SDP message intended for the recording code.
+//! \details Delegates most handling to recording_eieio_packet_handler()
 //! \param[in,out] mailbox: Pointer to the message to receive
 //! \param[in] port: The SDP port of the message. Constant.
-static void buffering_in_handler(uint mailbox, uint port) {
-    use(port);
+static void buffering_in_handler(uint mailbox, UNUSED uint port) {
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
     eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &msg->cmd_rc;
@@ -536,7 +526,7 @@ __attribute__((noreturn)) void recording_bad_offset(
     rt_error(RTE_SWERR);
 }
 
-//! \brief this writes the state data to the regions
+//! \brief Write the state data to the regions
 static void recording_buffer_state_data_write(void) {
     for (uint32_t recording_region_id = 0;
              recording_region_id < n_recording_regions;
@@ -554,7 +544,6 @@ static void recording_buffer_state_data_write(void) {
     /* store info related to the state of the transmission to avoid possible
      * duplication of info on the host side */
     *last_sequence_number = sequence_number;
-
 }
 
 void recording_finalise(void) {
@@ -595,9 +584,9 @@ void recording_finalise(void) {
     }
 }
 
-//! \brief updates host read point as DMA has finished
-//! \param unused unused
-//! \param tag unused
+//! \brief Update host read point as DMA has finished
+//! \param unused: unused
+//! \param tag: unused
 static void recording_dma_finished(uint unused, uint tag) {
     // pop region and write pointer from circular queue
     uint32_t channel_id;

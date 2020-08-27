@@ -63,9 +63,9 @@ entry_t* routing_table_get_entry(uint32_t entry_id_to_find);
 //! \return number of appended entries.
 uint32_t routing_table_get_n_entries(void);
 
-//! \brief updates table stores accordingly.
-//!
-//! will RTE if this causes the total entries to become negative.
+//! \brief Trim entries off the multitable
+//! \details Will RTE if this causes the total entries to become negative.
+//! \note Does *not* free those entries!
 //! \param[in] size_to_remove: the amount of size to remove from the table sets
 void routing_table_remove_from_size(uint32_t size_to_remove);
 
@@ -75,7 +75,8 @@ void routing_table_remove_from_size(uint32_t size_to_remove);
 static inline void routing_table_put_entry(
         const entry_t* entry, uint32_t index) {
     entry_t* e_ptr = routing_table_get_entry(index);
-    e_ptr->key_mask = entry->key_mask;
+    e_ptr->key_mask.key = entry->key_mask.key;
+    e_ptr->key_mask.mask = entry->key_mask.mask;
     e_ptr->route = entry->route;
     e_ptr->source = entry->source;
 }
@@ -126,7 +127,7 @@ static inline uint32_t key_mask_count_xs(key_mask_t km) {
 //! \brief Determine if two key_masks would match any of the same keys
 //! \param[in] a: key mask struct a
 //! \param[in] b: key mask struct b
-//! \return bool that says if these key masks intersect
+//! \return Whether these key masks intersect
 static inline bool key_mask_intersect(key_mask_t a, key_mask_t b) {
     return (a.key & b.mask) == (b.key & a.mask);
 }

@@ -16,12 +16,10 @@
  */
 
 //! \file
-//!
 //! \brief The implementation of the Command Sender Multicast Source.
-//!
-//! The purpose of this application is to inject SpiNNaker packets into the
-//! on-chip network at specified times. It is used (among other things) to
-//! implement the SpikeSourceArray model in sPyNNaker.
+//! \details The purpose of this application is to inject SpiNNaker packets
+//!     into the on-chip network at specified times. It is used (among other
+//!     things) to implement the SpikeSourceArray model in sPyNNaker.
 
 #include <common-typedefs.h>
 #include <data_specification.h>
@@ -30,10 +28,9 @@
 #include <stdbool.h>
 
 //! \brief Command structure, describing a SpiNNaker multicast packet to be
-//! sent at some point.
-//!
-//! Note that the delay actually comes after sending each mandated packet when
-//! repeats are requested rather than just between packets.
+//!     sent at some point.
+//! \note The delay actually comes after sending each mandated packet when
+//!     repeats are requested rather than just between packets.
 typedef struct command {
     //! The key of the packet.
     uint32_t key;
@@ -42,8 +39,7 @@ typedef struct command {
     //! The payload for the packet.
     uint32_t payload;
     //! \brief The number of times to repeat the packet.
-    //!
-    //! If zero, the packet is only sent once.
+    //! \details If zero, the packet is only sent once.
     uint32_t repeats;
     //! The time (in microseconds) to delay between sending each repeat.
     uint32_t delay;
@@ -56,16 +52,14 @@ typedef struct timed_command {
 } timed_command;
 
 //! \brief A collection of commands to be sent in response to an event.
-//!
-//! This is used for SDRAM only.
+//! \details This is used for SDRAM only.
 typedef struct command_list {
     uint32_t size;      //!< The number of commands to send.
     command commands[]; //!< The commands to send.
 } command_list;
 
 //! \brief A collection of commands to be sent at particular simulation times.
-//!
-//! This is used for SDRAM only.
+//! \details This is used for SDRAM only.
 typedef struct timed_command_list {
     uint32_t size;            //!< The number of commands to send.
     timed_command commands[]; //!< The commands to send, sorted in time order.
@@ -95,14 +89,14 @@ static uint32_t next_timed_command;
 //! Whether we are in the state where the next run will be a start/resume.
 static bool resume = true;
 
-//! values for the priority for each callback
+//! Values for the priority for each callback
 typedef enum callback_priorities {
     SDP = 0,   //!< Responding to network traffic is highest priority
     DMA = 1,   //!< Handling memory transfers is next highest
     TIMER = 2  //!< Responding to timers is lowest priority, and most common
 } callback_priorities;
 
-//! region identifiers
+//! Region identifiers
 typedef enum region_identifiers {
     //! Where simulation system information is stored.
     SYSTEM_REGION = 0,
@@ -120,13 +114,13 @@ typedef enum region_identifiers {
     PROVENANCE_REGION
 } region_identifiers;
 
-//! time ID
+//! Time ID
 enum {
     FIRST_TIME = 0
 };
 
-//! \brief Immediately sends SpiNNaker multicast packets in response to a
-//! command.
+//! \brief Immediately send SpiNNaker multicast packets in response to a
+//!     command.
 //! \param[in] command_to_send: The command to send.
 static void transmit_command(command *command_to_send) {
     // check for repeats
@@ -171,8 +165,8 @@ static void transmit_command(command *command_to_send) {
     }
 }
 
-//! \brief Sends all the commands registered for sending on simulation stop or
-//! pause.
+//! \brief Send all the commands registered for sending on simulation stop or
+//!     pause.
 static void run_stop_pause_commands(void) {
     log_info("Transmit pause/stop commands");
     for (uint32_t i = 0; i < n_pause_stop_commands; i++) {
@@ -180,8 +174,8 @@ static void run_stop_pause_commands(void) {
     }
 }
 
-//! \brief Sends all the commands registered for sending on simulation start or
-//! resume.
+//! \brief Send all the commands registered for sending on simulation start or
+//!     resume.
 static void run_start_resume_commands(void) {
     log_info("Transmit start/resume commands");
     for (uint32_t i = 0; i < n_start_resume_commands; i++) {
@@ -190,9 +184,9 @@ static void run_start_resume_commands(void) {
 }
 
 //! \brief Copy the list of commands to run at particular times into DTCM.
-//! \param[in] sdram_timed_commands The memory region containing the
-//! description of what commands to send and when.
-//! \return True if we succeeded, false if we failed (due to memory problems)
+//! \param[in] sdram_timed_commands: The memory region containing the
+//!     description of what commands to send and when.
+//! \return Whether we succeeded; if not, it was due to memory problems.
 static bool read_scheduled_parameters(timed_command_list *sdram_timed_commands) {
     n_timed_commands = sdram_timed_commands->size;
     log_info("%d timed commands", n_timed_commands);
@@ -219,9 +213,9 @@ static bool read_scheduled_parameters(timed_command_list *sdram_timed_commands) 
 }
 
 //! \brief Copy the list of commands to run on start or resume into DTCM.
-//! \param[in] sdram_commands The memory region containing the
-//! description of what commands to send.
-//! \return True if we succeeded, false if we failed (due to memory problems)
+//! \param[in] sdram_commands:
+//!     The memory region containing the description of what commands to send.
+//! \return Whether we succeeded; if not, it was due to memory problems.
 static bool read_start_resume_commands(command_list *sdram_commands) {
     n_start_resume_commands = sdram_commands->size;
     log_info("%u start/resume commands", n_start_resume_commands);
@@ -244,9 +238,9 @@ static bool read_start_resume_commands(command_list *sdram_commands) {
 }
 
 //! \brief Copy the list of commands to run on stop or pause into DTCM.
-//! \param[in] sdram_commands The memory region containing the
-//! description of what commands to send.
-//! \return True if we succeeded, false if we failed (due to memory problems)
+//! \param[in] sdram_commands:
+//!     The memory region containing the description of what commands to send.
+//! \return Whether we succeeded; if not, it was due to memory problems.
 static bool read_pause_stop_commands(command_list *sdram_commands) {
     n_pause_stop_commands = sdram_commands->size;
     log_info("%u pause/stop commands", n_pause_stop_commands);
@@ -270,13 +264,10 @@ static bool read_pause_stop_commands(command_list *sdram_commands) {
 
 // Callbacks
 //! \brief The timer tick callback. Sends those commands that are due in the
-//! current simulation state and time.
-//!
-//! \param unused0 unused
-//! \param unused1 unused
-static void timer_callback(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
+//!     current simulation state and time.
+//! \param unused0: unused
+//! \param unused1: unused
+static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
     time++;
 
     if (resume) {
@@ -308,9 +299,9 @@ static void timer_callback(uint unused0, uint unused1) {
     }
 }
 
-//! \brief Initialises the core.
-//! \param[out] timer_period The timer tick period.
-//! \return True if initialisation succeeded.
+//! \brief Initialise the core.
+//! \param[out] timer_period: The timer tick period.
+//! \return Whether initialisation succeeded.
 static bool initialize(uint32_t *timer_period) {
     // Get the address this core's DTCM data starts at from SRAM
     data_specification_metadata_t *ds_regions =

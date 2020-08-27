@@ -72,4 +72,35 @@
 * vol 13, pp 231,
 * 2019.
 * DOI: [10.3389/fnins.2019.00231](https://doi.org/10.3389/fnins.2019.00231)
+*
+* @dir /front_end_common_lib
+* @brief Common library for simulation code
+* @dir /front_end_common_lib/include
+* @brief Common headers
+* @dir /front_end_common_lib/src
+* @brief Support function implementations
+* @dir /models
+* @brief Miscellaneous on-chip support programs
+* @dir /models/chip_power_monitor
+* @brief Optional detailed power monitor
+* @dir /models/chip_power_monitor/src
+* @brief Optional detailed power monitor implementation
+* @dir /models/command_sender_multicast_source
+* @brief Event-driven SpiNNaker packet injector
+* @dir /models/command_sender_multicast_source/src
+* @brief Event-driven SpiNNaker packet injector implementation
+* @dir /models/compressors
+* @brief On-chip ahead-of-time compression
+* @dir /models/live_packet_gather
+* @brief Live packet output streaming converter
+* @dir /models/live_packet_gather/src
+* @brief Live packet output streaming converter implementation
+* @dir /models/reverse_iptag_multicast_source
+* @brief Live packet input streaming converter
+* @dir /models/reverse_iptag_multicast_source/src
+* @brief Live packet input streaming converter implementation
+* @dir /models/system_models
+* @brief Support programs for extended system functions
+* @dir /models/system_models/src
+* @brief Support program implementations
 */

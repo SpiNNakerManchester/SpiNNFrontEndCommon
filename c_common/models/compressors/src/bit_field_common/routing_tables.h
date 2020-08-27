@@ -28,13 +28,12 @@
 //=============================================================================
 // location for variables
 
-//! holder in DTCM for top level pointers in SDRAM, used for performance.
+//! Holder in DTCM for top level pointers in SDRAM, used for performance.
 multi_table_t multi_table;
 
-//! \brief Gets a pointer to where this entry is stored
-//!
-//! Will not check if there is an entry with this id but will RTE if the id
-//! is too large
+//! \brief Get a pointer to where this entry is stored
+//! \details Will not check if there is an entry with this id but will RTE if
+//!     the id is too large
 //! \param[in] entry_id_to_find: Id of entry to find pointer to
 //! \param[in] marker: int that should be different in every call so we can
 //!     detect where MUNDY was reading past the end of the table
@@ -62,7 +61,7 @@ entry_t* routing_table_get_entry(uint32_t entry_id_to_find) {
     return routing_tables_get_entry_marked(entry_id_to_find, -1);
 }
 
-//! \brief Gets a pointer to where to append an entry to the routing table.
+//! \brief Get a pointer to where to append an entry to the routing table.
 //! \return pointer to the entry's location
 entry_t* routing_tables_append_get_entry(void) {
     // check that we're not hitting the max entries supported by the table
@@ -95,7 +94,7 @@ entry_t* routing_tables_append_get_entry(void) {
     return &multi_table.sub_tables[table_id]->entries[local_id];
 }
 
-//! \brief Inserts a deep copy of an entry after the last known entry in the
+//! \brief Insert a deep copy of an entry after the last known entry in the
 //!     table.
 //! \details will RTE if is this appended fails.
 //! \param[in] original_entry: The Routing Table entry to be copied in
@@ -107,8 +106,8 @@ void routing_tables_append_entry(entry_t original_entry) {
     new_entry->route = original_entry.route;
 }
 
-//! \brief Inserts an new entry after the last known entry in the table.
-//! \details Will RTE if is this appended fails.
+//! \brief Insert a new entry after the last known entry in the table.
+//! \details Will RTE if is this append fails.
 //! \param[in] key: The key for the new entry to be added
 //! \param[in] mask: The key for the new entry to be added
 //! \param[in] route: The key for the new entry to be added
@@ -122,12 +121,14 @@ void routing_tables_append_new_entry(
     new_entry->route = route;
 }
 
+//! \brief Get the number of entries in the multitable
+//! \return The number of entries
 uint32_t routing_table_get_n_entries(void) {
     return multi_table.n_entries;
 }
 
-//! \brief Prepares the Routing table based on passed in pointers and counts
-//! \note Will _not_ free the space any previous tables held
+//! \brief Prepare the routing table based on passed in pointers and counts
+//! \note Will *not* free the space any previous tables held
 //! \param[in] table: Pointer to the metadata to init
 void routing_tables_init(multi_table_t *table) {
     multi_table.sub_tables = table->sub_tables;
@@ -142,7 +143,7 @@ void routing_tables_init(multi_table_t *table) {
     }
 }
 
-//! \brief Saves the metadata to the multi_table object we are managing
+//! \brief Save the metadata to the multi_table object we are managing
 //! \param[in] tables: Pointer to the metadata to save to
 void routing_tables_save(multi_table_t *restrict tables) {
     tables->sub_tables = multi_table.sub_tables;
@@ -150,7 +151,7 @@ void routing_tables_save(multi_table_t *restrict tables) {
     tables->n_entries = multi_table.n_entries;
     tables->max_entries = multi_table.max_entries;
     log_info("saved table with %d entries over %d tables",
-            tables->n_sub_tables, tables->n_entries);
+            tables->n_entries, tables->n_sub_tables);
 }
 
 void routing_table_remove_from_size(uint32_t size_to_remove) {
@@ -162,7 +163,7 @@ void routing_table_remove_from_size(uint32_t size_to_remove) {
     multi_table.n_entries -= size_to_remove;
 }
 
-//! \brief Clones an original table into this format.
+//! \brief Clone an original table into this format.
 //! \details Will _not_ free the space any previous tables held.
 //!     Makes a Deep copy of the original.
 //! \param[in] original: the table to be cloned

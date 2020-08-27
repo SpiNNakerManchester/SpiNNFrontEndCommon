@@ -16,12 +16,12 @@
  */
 
 //! \file
-//!
 //! \brief The implementation of the Reverse IP tag Multicast Source.
-//!
-//! The purpose of this application is to inject SpiNNaker packets into the
-//! on-chip network dynamically.
+//! \details
+//!     The purpose of this application is to inject SpiNNaker packets into the
+//!     on-chip network dynamically.
 
+#include <stddef.h>
 #include <common-typedefs.h>
 #include <data_specification.h>
 #include <debug.h>
@@ -41,7 +41,7 @@ extern void spin1_wfi(void);
 #error APPLICATION_NAME_HASH must be defined
 #endif
 
-//! \brief human readable versions of the different priorities and usages.
+//! Human readable versions of the different priorities and usages.
 enum interrupt_priorities {
     DMA = 0,
     SDP_CALLBACK = 1,
@@ -75,9 +75,9 @@ struct config {
     //! The SDP port that we buffer messages in on.
     uint32_t buffered_in_sdp_port;
     //! \brief The timer offset to use for transmissions.
-    //!
-    //! Used to ensure we don't send all messages at the same time and overload
-    //! SpiNNaker routers.
+    //! \details
+    //!     Used to ensure we don't send all messages at the same time and
+    //!     overload SpiNNaker routers.
     uint32_t tx_offset;
 };
 
@@ -232,9 +232,9 @@ static uint32_t return_tag_dest;
 static uint32_t buffered_in_sdp_port;
 
 //! \brief The timer offset to use for transmissions.
-//!
-//! Used to ensure we don't send all messages at the same time and overload
-//! SpiNNaker routers.
+//! \details
+//!     Used to ensure we don't send all messages at the same time and overload
+//!     SpiNNaker routers.
 static uint32_t tx_offset;
 
 //! \brief Last value of result of get_sdram_buffer_space_available() in
@@ -258,8 +258,8 @@ static recorded_packet_t *recorded_packet;
 //! \brief Extract a field from a bitfield value.
 //! \param[in] value: the bitfield value
 //! \param[in] shift: the index of the start of the LSB of the field
-//! \param[in] mask: the mask for the value, once shifted to the bottom of the
-//!                  word
+//! \param[in] mask:
+//!     the mask for the value, once shifted to the bottom of the word
 //! \return The actual field value
 #define BITS(value, shift, mask) \
     (((value) >> (shift)) & (mask))
@@ -350,11 +350,11 @@ static inline uint16_t calculate_eieio_packet_size(eieio_msg_t eieio_msg_ptr) {
     }
 }
 
-//! \brief Dumps a message to IOBUF if debug messages are enabled
+//! \brief Dump a message to IOBUF if debug messages are enabled
 //! \param[in] eieio_msg_ptr: Pointer to the message to print
 //! \param[in] length: Length of the message
 static inline void print_packet_bytes(
-        eieio_msg_t eieio_msg_ptr, uint16_t length) {
+        const eieio_msg_t eieio_msg_ptr, uint16_t length) {
     use(eieio_msg_ptr);
     use(length);
 #if LOG_LEVEL >= LOG_DEBUG
@@ -372,11 +372,10 @@ static inline void print_packet_bytes(
 #endif
 }
 
-//! \brief Dumps a message to IOBUF if debug messages are enabled
-//!
-//! Combines calculate_eieio_packet_size() and print_packet_bytes()
-//!
-//! \param[in] eieio_msg_ptr Pointer to the message to print
+//! \brief Dump a message to IOBUF if debug messages are enabled
+//! \details
+//!     Combines calculate_eieio_packet_size() and print_packet_bytes()
+//! \param[in] eieio_msg_ptr: Pointer to the message to print
 static inline void print_packet(const eieio_msg_t eieio_msg_ptr) {
     use(eieio_msg_ptr);
 #if LOG_LEVEL >= LOG_DEBUG
@@ -385,10 +384,8 @@ static inline void print_packet(const eieio_msg_t eieio_msg_ptr) {
 #endif
 }
 
-//! \brief Flags up that bad input was received.
-//!
-//! This triggers an RTE, but only in debug mode.
-//!
+//! \brief Flag up that bad input was received.
+//! \details This triggers an RTE, but only in debug mode.
 //! \param[in] eieio_msg_ptr: The bad message
 //! \param[in] length: The length of the message
 static inline void signal_software_error(
@@ -401,17 +398,15 @@ static inline void signal_software_error(
 #endif
 }
 
-//! \brief Computes how much space is available in the buffer.
+//! \brief Compute how much space is available in the buffer.
 //! \return The number of available bytes.
 static inline uint32_t get_sdram_buffer_space_available(void) {
     if (read_pointer < write_pointer) {
-        uint32_t final_space =
-                (uint32_t) end_of_buffer_region - (uint32_t) write_pointer;
-        uint32_t initial_space =
-                (uint32_t) read_pointer - (uint32_t) buffer_region;
-        return final_space + initial_space;
+        ptrdiff_t final_space = end_of_buffer_region - write_pointer;
+        ptrdiff_t initial_space = read_pointer - buffer_region;
+        return (uint32_t) (final_space + initial_space);
     } else if (write_pointer < read_pointer) {
-        return (uint32_t) read_pointer - (uint32_t) write_pointer;
+        return (uint32_t) (read_pointer - write_pointer);
     } else if (last_buffer_operation == BUFFER_OPERATION_WRITE) {
         // If pointers are equal, buffer is full if last operation is write
         return 0;
@@ -438,7 +433,7 @@ static inline bool is_eieio_packet_in_buffer(void) {
 //! \brief Get the time from a message.
 //! \param[in] eieio_msg_ptr: The EIEIO message.
 //! \return The timestamp from the message, or the current time if the message
-//! did not have a timestamp.
+//!     did not have a timestamp.
 static inline uint32_t extract_time_from_eieio_msg(
         const eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
@@ -503,11 +498,11 @@ static inline uint32_t extract_time_from_eieio_msg(
     return time;
 }
 
-//! \brief Places a packet into the buffer.
+//! \brief Place a packet into the buffer.
 //! \param[in] eieio_msg_ptr: The EIEIO message to store.
 //! \param[in] length: The size of the message.
-//! \return True if the packet was added, false if it was dropped due to the
-//!         buffer being full.
+//! \return Whether the packet was added; if not, it was dropped due to the
+//!     buffer being full.
 static inline bool add_eieio_packet_to_sdram(
         const eieio_msg_t eieio_msg_ptr, uint32_t length) {
     uint8_t *msg_ptr = (uint8_t *) eieio_msg_ptr;
@@ -519,10 +514,9 @@ static inline bool add_eieio_packet_to_sdram(
     if ((read_pointer < write_pointer) ||
             (read_pointer == write_pointer &&
                 last_buffer_operation == BUFFER_OPERATION_READ)) {
-        uint32_t final_space =
-                (uint32_t) end_of_buffer_region - (uint32_t) write_pointer;
+        ptrdiff_t final_space = end_of_buffer_region - write_pointer;
 
-        if (final_space >= length) {
+        if ((uint32_t) final_space >= length) {
             log_debug("Packet fits in final space of %d", final_space);
 
             spin1_memcpy(write_pointer, msg_ptr, length);
@@ -533,20 +527,19 @@ static inline bool add_eieio_packet_to_sdram(
             }
             return true;
         } else {
-            uint32_t total_space = final_space +
-                    ((uint32_t) read_pointer - (uint32_t) buffer_region);
-            if (total_space < length) {
+            ptrdiff_t total_space = final_space + (read_pointer - buffer_region);
+            if ((uint32_t) total_space < length) {
                 log_debug("Not enough space (%d bytes)", total_space);
                 return false;
             }
 
             log_debug("Copying first %d bytes to final space of %d",
                     length, final_space);
-            spin1_memcpy(write_pointer, msg_ptr, final_space);
+            spin1_memcpy(write_pointer, msg_ptr, (uint32_t) final_space);
             write_pointer = buffer_region;
             msg_ptr += final_space;
 
-            uint32_t final_len = length - final_space;
+            uint32_t final_len = (uint32_t) (length - final_space);
             log_debug("Copying remaining %d bytes", final_len);
             spin1_memcpy(write_pointer, msg_ptr, final_len);
             write_pointer += final_len;
@@ -557,9 +550,8 @@ static inline bool add_eieio_packet_to_sdram(
             return true;
         }
     } else if (write_pointer < read_pointer) {
-        uint32_t middle_space =
-                (uint32_t) read_pointer - (uint32_t) write_pointer;
-        if (middle_space < length) {
+        ptrdiff_t middle_space = read_pointer - write_pointer;
+        if ((uint32_t) middle_space < length) {
             log_debug("Not enough space in middle (%d bytes)", middle_space);
             return false;
         }
@@ -579,9 +571,9 @@ static inline bool add_eieio_packet_to_sdram(
 }
 
 //! \brief Handle an SDP message containing 16 bit events. The events are
-//! converted into SpiNNaker multicast packets and sent.
+//!     converted into SpiNNaker multicast packets and sent.
 //! \param[in] event_pointer: Where the events start
-//! \param[in] pkt_prefix_upper: True if the prefix is an upper prefix.
+//! \param[in] pkt_prefix_upper: Whether the prefix is an upper prefix.
 //! \param[in] pkt_count: The number of events.
 //! \param[in] pkt_key_prefix: The prefix for keys.
 //! \param[in] pkt_payload_prefix: The prefix for payloads.
@@ -644,7 +636,7 @@ static inline void process_16_bit_packets(
 }
 
 //! \brief Handle an SDP message containing 32 bit events. The events are
-//! converted into SpiNNaker multicast packets and sent.
+//!     converted into SpiNNaker multicast packets and sent.
 //! \param[in] event_pointer: Where the events start
 //! \param[in] pkt_count: The number of events.
 //! \param[in] pkt_key_prefix: The prefix for keys.
@@ -735,14 +727,13 @@ static inline void record_packet(
     }
 }
 
-//! \brief Parses an EIEIO message.
-//!
-//! This may cause the message to be saved for later, or may cause SpiNNaker
-//! multicast messages to be sent at once.
-//!
+//! \brief Parse an EIEIO message.
+//! \details
+//!     This may cause the message to be saved for later, or may cause
+//!     SpiNNaker multicast messages to be sent at once.
 //! \param[in] eieio_msg_ptr: the message to handle
 //! \param[in] length: the length of the message
-//! \return True if the packet was successfully handled.
+//! \return Whether the packet was successfully handled.
 static inline bool eieio_data_parse_packet(
         const eieio_msg_t eieio_msg_ptr, uint32_t length) {
     log_debug("eieio_data_process_data_packet");
@@ -851,9 +842,7 @@ static inline bool eieio_data_parse_packet(
 //! \param[in] eieio_msg_ptr: The command message
 //! \param[in] length: The length of the message
 static inline void eieio_command_parse_stop_requests(
-        const eieio_msg_t eieio_msg_ptr, uint16_t length) {
-    use(eieio_msg_ptr);
-    use(length);
+        UNUSED const eieio_msg_t eieio_msg_ptr, UNUSED uint16_t length) {
     log_debug("Stopping packet requests - parse_stop_packet_reqs");
     send_packet_reqs = false;
     last_stop_notification_request = time;
@@ -863,9 +852,7 @@ static inline void eieio_command_parse_stop_requests(
 //! \param[in] eieio_msg_ptr: The command message
 //! \param[in] length: The length of the message
 static inline void eieio_command_parse_start_requests(
-        const eieio_msg_t eieio_msg_ptr, uint16_t length) {
-    use(eieio_msg_ptr);
-    use(length);
+        UNUSED const eieio_msg_t eieio_msg_ptr, UNUSED uint16_t length) {
     log_debug("Starting packet requests - parse_start_packet_reqs");
     send_packet_reqs = true;
 }
@@ -914,7 +901,7 @@ static inline void eieio_command_parse_sequenced_data(
 //! \brief Handle a command message.
 //! \param[in] eieio_msg_ptr: The command message
 //! \param[in] length: The length of the message
-//! \return True if the message was handled
+//! \return Whether the message was handled
 static inline bool eieio_commmand_parse_packet(
         const eieio_msg_t eieio_msg_ptr, uint16_t length) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
@@ -945,10 +932,10 @@ static inline bool eieio_commmand_parse_packet(
 }
 
 //! \brief Handle an EIEIO message, which can either be a command or an event
-//! description message.
+//!     description message.
 //! \param[in] eieio_msg_ptr: The message
 //! \param[in] length: The length of the message
-//! \return True if the message was handled.
+//! \return Whether the message was handled.
 static inline bool packet_handler_selector(
         const eieio_msg_t eieio_msg_ptr, uint16_t length) {
     log_debug("packet_handler_selector");
@@ -1002,7 +989,7 @@ static void fetch_and_process_packet(void) {
                         src_ptr, len);
                 rt_error(RTE_SWERR);
             }
-            uint32_t final_space = (end_of_buffer_region - read_pointer);
+            uint32_t final_space = end_of_buffer_region - read_pointer;
 
             log_debug("packet with length %d, from address: %08x", len,
                     read_pointer);
@@ -1052,7 +1039,7 @@ static void fetch_and_process_packet(void) {
     }
 }
 
-//! \brief Sends a message saying what our state is.
+//! \brief Send a message saying what our state is.
 static void send_buffer_request_pkt(void) {
     uint32_t space = get_sdram_buffer_space_available();
     if ((space >= space_before_data_request) &&
@@ -1069,9 +1056,9 @@ static void send_buffer_request_pkt(void) {
     }
 }
 
-//! \brief Reads our configuration region.
+//! \brief Read our configuration region.
 //! \param[in] config: The address of the configuration region.
-//! \return True (always) if the data validates.
+//! \return Whether the data validates.
 static bool read_parameters(struct config *config) {
     // Get the configuration data
     apply_prefix = config->apply_prefix;
@@ -1112,6 +1099,10 @@ static bool read_parameters(struct config *config) {
     // allocate a buffer size of the maximum SDP payload size
     msg_from_sdram = spin1_malloc(MAX_PACKET_SIZE);
     recorded_packet = spin1_malloc(sizeof(recorded_packet_t));
+    if (!msg_from_sdram || !recorded_packet) {
+        // should be unreachable in practice
+        return false;
+    }
 
     sdp_host_req.length = 8 + sizeof(req_packet_sdp_t);
     sdp_host_req.flags = 0x7;
@@ -1140,9 +1131,9 @@ static bool read_parameters(struct config *config) {
     return true;
 }
 
-//! \brief Initialises the buffer region.
+//! \brief Initialise the buffer region.
 //! \param[in] region_address: The location of the region.
-//! \return True if we succeed.
+//! \return Whether we succeeded.
 static bool setup_buffer_region(uint8_t *region_address) {
     buffer_region = region_address;
     read_pointer = buffer_region;
@@ -1156,8 +1147,8 @@ static bool setup_buffer_region(uint8_t *region_address) {
     return true;
 }
 
-//! \brief Initialises the recording parts of the model
-//! \return True if recording initialisation is successful, false otherwise
+//! \brief Initialise the recording parts of the model
+//! \return Whether recording initialisation is successful
 static bool initialise_recording(void) {
     data_specification_metadata_t *ds_regions =
             data_specification_get_data_address();
@@ -1171,7 +1162,7 @@ static bool initialise_recording(void) {
     return success;
 }
 
-//! \brief Writes our provenance data into the provenance region.
+//! \brief Write our provenance data into the provenance region.
 //! \param[in] address: Where to write
 static void provenance_callback(address_t address) {
     struct provenance_t *prov = (void *) address;
@@ -1183,9 +1174,9 @@ static void provenance_callback(address_t address) {
     prov->late_packets = provenance.late_packets;
 }
 
-//! \brief Initialises the application
+//! \brief Initialise the application
 //! \param[out] timer_period: What to configure the timer with.
-//! \return True if initialisation succeeded.
+//! \return Whether initialisation succeeded.
 static bool initialise(uint32_t *timer_period) {
     // Get the address this core's DTCM data starts at from SRAM
     data_specification_metadata_t *ds_regions =
@@ -1229,7 +1220,7 @@ static bool initialise(uint32_t *timer_period) {
     return true;
 }
 
-//! \brief Reinitialises the application after it was paused.
+//! \brief Reinitialise the application after it was paused.
 static void resume_callback(void) {
     data_specification_metadata_t *ds_regions =
             data_specification_get_data_address();
@@ -1250,11 +1241,9 @@ static void resume_callback(void) {
 }
 
 //! \brief The fundamental operation loop for the application.
-//! \param unused0 unused
-//! \param unused1 unused
-static void timer_callback(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
+//! \param unused0: unused
+//! \param unused1: unused
+static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
     time++;
 
     log_debug("timer_callback, final time: %d, current time: %d,"
@@ -1307,14 +1296,11 @@ static void timer_callback(uint unused0, uint unused1) {
     }
 }
 
-//! \brief Handles an incoming SDP message.
-//!
-//! Delegates to packet_handler_selector()
-//!
+//! \brief Handle an incoming SDP message.
+//! \details Delegates to packet_handler_selector()
 //! \param[in] mailbox: The address of the message.
 //! \param port: The SDP port of the message. Ignored.
-static void sdp_packet_callback(uint mailbox, uint port) {
-    use(port);
+static void sdp_packet_callback(uint mailbox, UNUSED uint port) {
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
     eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &msg->cmd_rc;

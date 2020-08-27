@@ -65,13 +65,11 @@
 #define RTR_MC_SET_FAILED 0
 
 //! \brief The table being manipulated.
-//!
-//! This is common across all the functions in this file.
+//! \details This is common across all the functions in this file.
 table_t *table;
 
 //! \brief The header of the routing table information in the input data block.
-//!
-//! This is found looking for a memory block with the right tag.
+//! \details This is found looking for a memory block with the right tag.
 typedef struct {
     //! Application ID to use to load the routing table. This can be left as `0`
     //! to load routing entries with the same application ID that was used to

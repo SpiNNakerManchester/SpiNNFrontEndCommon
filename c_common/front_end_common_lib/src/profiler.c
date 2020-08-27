@@ -16,7 +16,6 @@
  */
 
 //! \file
-//!
 //! \brief Implementation of profiler.h
 
 #include <stdint.h>

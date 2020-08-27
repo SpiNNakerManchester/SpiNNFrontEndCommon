@@ -16,12 +16,12 @@
  */
 
 //! \file
-//!
 //! \brief The implementation of the Data Speed Up Packet Gatherer.
-//!
-//! The purpose of this application is to allow data to be streamed in and out
-//! of SpiNNaker at very high speed while other applications are not running.
-//! It is designed to only run on chips with an active Ethernet port.
+//! \details
+//!     The purpose of this application is to allow data to be streamed in and
+//!     out of SpiNNaker at very high speed while other applications are not
+//!     running. It is designed to only run on chips with an active Ethernet
+//!     port.
 
 // imports
 #include <spin1_api.h>
@@ -95,12 +95,11 @@ enum {
 //! Counts of items in a packet
 enum {
     //! \brief size of data stored in packet with command and seq
-    //!
-    //! defined from calculation
+    //! \details defined by calculation
     DATA_IN_NORMAL_PACKET_WORDS =
             ITEMS_PER_DATA_PACKET - SEND_SEQ_DATA_HEADER_WORDS,
     //! \brief size of payload for a packet describing the batch of missing
-    //! inbound seqs
+    //!     inbound seqs
     ITEMS_PER_MISSING_PACKET =
             ITEMS_PER_DATA_PACKET - SEND_MISSING_SEQ_HEADER_WORDS,
     //! number of payload words in a full standard data out packet
@@ -232,11 +231,10 @@ enum {
 };
 
 //! \brief How to find which key to use to talk to which chip on this board.
-//!
-//! Note that these addresses are *board-local* chip addresses.
-//!
-//! The keys here are base keys, and indicate the first key in a group where the
-//! LSBs (see ::key_offsets) indicate the meaning of the message.
+//! \note These addresses are *board-local* chip addresses.
+//! \details
+//!     The keys here are base keys, and indicate the first key in a group
+//!     where the LSBs (see ::key_offsets) indicate the meaning of the message.
 static uint data_in_mc_key_map[MAX_CHIP_INDEX][MAX_CHIP_INDEX] = {{0}};
 
 //! Board-relative x-coordinate of current chip being written to
@@ -252,8 +250,7 @@ static bit_field_t received_seq_nums_store = NULL;
 static uint size_of_bitfield = 0;
 
 //! \brief Whether ::received_seq_nums_store was allocated in SDRAM.
-//!
-//! If false, the bitfield fitted in DTCM
+//! \details If false, the bitfield fitted in DTCM
 static bool alloc_in_sdram = false;
 
 //! Count of received sequence numbers.
@@ -266,7 +263,7 @@ static uint last_seen_seq_num = 0;
 static uint start_sdram_address = 0;
 
 //! \brief Human readable definitions of the offsets for data in multicast key
-//! elements. These act as commands sent to the target extra monitor core.
+//!     elements. These act as commands sent to the target extra monitor core.
 typedef enum {
     //! Payload contains a write address
     WRITE_ADDR_KEY_OFFSET = 0,
@@ -277,7 +274,7 @@ typedef enum {
 } key_offsets;
 
 //! \brief Associates a _board-local_ coordinate with a key for talking to the
-//! extra monitor on that chip.
+//!     extra monitor on that chip.
 struct chip_key_data_t {
     uint x_coord;   //!< Board local x coordinate of extra monitor
     uint y_coord;   //!< Board local y coordinate of extra monitor
@@ -300,7 +297,7 @@ typedef struct data_in_config_t {
 // FUNCTIONS
 //-----------------------------------------------------------------------------
 
-//! \brief Writes the updated transaction ID to the user1
+//! \brief Write the updated transaction ID to the user1
 //! \param[in] transaction_id: The transaction ID to publish
 static void publish_transaction_id_to_user_1(uint transaction_id) {
 // Get pointer to 1st virtual processor info struct in SRAM
@@ -311,7 +308,7 @@ static void publish_transaction_id_to_user_1(uint transaction_id) {
     virtual_processor_table[spin1_get_core_id()].user1 = transaction_id;
 }
 
-//! \brief sends the SDP message built in the ::my_msg global
+//! \brief Send the SDP message built in the ::my_msg global
 static inline void send_sdp_message(void) {
     log_debug("sending message of length %u", my_msg.length);
     while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, SDP_TIMEOUT)) {
@@ -320,7 +317,7 @@ static inline void send_sdp_message(void) {
     }
 }
 
-//! \brief sends a multicast (with payload) message to the current target chip
+//! \brief Send a multicast (with payload) message to the current target chip
 //! \param[in] command: the key offset, which indicates the command being sent
 //! \param[in] payload: the argument to the command
 static inline void send_mc_message(key_offsets command, uint payload) {
@@ -332,7 +329,7 @@ static inline void send_mc_message(key_offsets command, uint payload) {
 
 //! \brief Sanity checking for writes, ensuring that they're to the _buffered_
 //!     SDRAM range.
-//! \note the RTE here is good as it is better (easier to debug, easier to
+//! \note The RTE here is good as it is better (easier to debug, easier to
 //!     comprehend) than having corrupt memory actually written.
 //! \param[in] write_address: where we are going to write.
 //! \param[in] n_elements: the number of words we are going to write.
@@ -348,12 +345,12 @@ static inline void sanity_check_write(uint write_address, uint n_elements) {
     }
 }
 
-//! \brief sends multicast messages accordingly for an SDP message
+//! \brief Send multicast messages accordingly for an SDP message.
 //! \param[in] data: the actual data from the SDP message
 //! \param[in] n_elements: the number of data items in the SDP message
-//! \param[in] set_write_address: whether we should send the address where our
-//!     writes will start; this is not set every time to reduce on-chip network
-//!     overhead
+//! \param[in] set_write_address:
+//!     if we should send the address where our writes will start; this is not
+//!     set every time to reduce on-chip network overhead
 //! \param[in] write_address:
 //!     the SDRAM address where this block of data is to be written to
 static void process_sdp_message_into_mc_messages(
@@ -371,7 +368,7 @@ static void process_sdp_message_into_mc_messages(
     }
 }
 
-//! \brief creates a store for sequence numbers in a memory store.
+//! \brief Create a store for sequence numbers in a memory store.
 //! \details May allocate in either DTCM (preferred) or SDRAM.
 //! \param[in] max_seq: the max seq num expected during this stage
 static void create_sequence_number_bitfield(uint max_seq) {
@@ -403,7 +400,7 @@ static void create_sequence_number_bitfield(uint max_seq) {
     clear_bit_field(received_seq_nums_store, size_of_bitfield);
 }
 
-//! \brief Frees the allocated sequence number store.
+//! \brief Free the allocated sequence number store.
 static inline void free_sequence_number_bitfield(void) {
     if (received_seq_nums_store == NULL) {
         log_error("Freeing a non-existent seq num store");
@@ -419,15 +416,15 @@ static inline void free_sequence_number_bitfield(void) {
     max_seq_num = 0xFFFFFFFF;
 }
 
-//! \brief calculates the new sdram location for a given seq num
-//! \param[in] seq_num: the seq num to figure offset for
-//! \return the new sdram location.
+//! \brief Calculate the new SDRAM location for a given sequence number.
+//! \param[in] seq_num: the sequence number to figure offset for
+//! \return the new SDRAM location.
 static inline uint calculate_sdram_address_from_seq_num(uint seq_num) {
     return (start_sdram_address
             + (DATA_IN_NORMAL_PACKET_WORDS * seq_num * sizeof(uint)));
 }
 
-//! \brief Sets the length of the outbound SDP message in ::my_msg
+//! \brief Set the length of the outbound SDP message in ::my_msg
 //! \param[in] end: Points to the first byte after the content of the message
 static inline void set_message_length(const void *end) {
     my_msg.length = ((const uint8_t *) end) - &my_msg.flags;
@@ -436,7 +433,7 @@ static inline void set_message_length(const void *end) {
     }
 }
 
-//! \brief handles reading the address, chips and max packets from a
+//! \brief Handle reading the address, chips and max packets from a
 //!     SDP message (command: ::SDP_SEND_DATA_TO_LOCATION_CMD)
 //! \param[in] receive_data_cmd: The message to parse
 static void process_address_data(
@@ -498,7 +495,7 @@ static void process_address_data(
     last_seen_seq_num = 0;
 }
 
-//! \brief sends the finished request
+//! \brief Send the finished request
 static void send_finished_response(void) {
     // send boundary key, so that monitor knows everything in the previous
     // stream is done
@@ -511,8 +508,8 @@ static void send_finished_response(void) {
     log_debug("Sent end flag");
 }
 
-//! \brief searches through received sequence numbers and transmits missing ones
-//!     back to host for retransmission
+//! \brief Search through received sequence numbers and transmit missing ones
+//!     back to host for retransmission.
 //! \param[in] msg: The message asking for the missed seq nums
 static void process_missing_seq_nums_and_request_retransmission(
         const data_in_retransmit_message_t *msg) {
@@ -580,7 +577,7 @@ static void process_missing_seq_nums_and_request_retransmission(
     }
 }
 
-//! \brief Calculates the number of words of data in an SDP message.
+//! \brief Calculate the number of words of data in an SDP message.
 //! \param[in] msg: the SDP message, as received from SARK
 //! \param[in] data_start: where in the message the data actually starts
 //! \return the number of data words in the message
@@ -591,7 +588,7 @@ static inline uint n_elements_in_msg(
     return (msg->length - offset) / sizeof(uint);
 }
 
-//! \brief because spin1_memcpy() is stupid, especially for access to SDRAM
+//! \brief Because spin1_memcpy() is stupid, especially for access to SDRAM
 //! \param[out] target: Where to copy to
 //! \param[in] source: Where to copy from
 //! \param[in] n_words: The number of words to copy
@@ -604,7 +601,7 @@ static inline void copy_data(
     }
 }
 
-//! \brief Handles receipt and parsing of a message full of sequence numbers
+//! \brief Handle receipt and parsing of a message full of sequence numbers
 //!     that need to be retransmitted (command: ::SDP_SEND_SEQ_DATA_CMD)
 //! \param[in] msg: The message to parse
 static inline void receive_seq_data(const receive_seq_data_msg_t *msg) {
@@ -651,7 +648,7 @@ static inline void receive_seq_data(const receive_seq_data_msg_t *msg) {
     }
 }
 
-//! \brief processes SDP messages for the Data In protocol
+//! \brief Process SDP messages for the Data In protocol.
 //! \param[in] msg: the SDP message
 static void data_in_receive_sdp_data(const sdp_msg_pure_data *msg) {
     const data_in_message_payload_t *message =
@@ -677,7 +674,7 @@ static void data_in_receive_sdp_data(const sdp_msg_pure_data *msg) {
     }
 }
 
-//! \brief sends the basic timeout command via multicast to the extra monitors
+//! \brief Send the basic timeout command via multicast to the extra monitors
 //! \param[in,out] msg:
 //!     the request to send the timeout; will be updated with result
 //! \param[in] key: the multicast key to use here
@@ -692,7 +689,7 @@ static void send_timeout(sdp_msg_t* msg, uint key) {
     msg->cmd_rc = RC_OK;
 }
 
-//! \brief sends the clear message to all extra monitors on this board
+//! \brief Send the clear message to all extra monitors on this board
 //! \param[in,out] msg:
 //!     the request to send the clear; will be updated with result
 static void send_clear_message(sdp_msg_t* msg) {
@@ -703,7 +700,7 @@ static void send_clear_message(sdp_msg_t* msg) {
     msg->cmd_rc = RC_OK;
 }
 
-//! \brief handles the commands for the reinjector code.
+//! \brief Handle the commands for the reinjector code.
 //! \param[in,out] msg:
 //!     the message with the commands; will be updated with result
 static void reinjection_sdp_command(sdp_msg_t *msg) {
@@ -740,7 +737,7 @@ static void reinjection_sdp_command(sdp_msg_t *msg) {
     }
 }
 
-//! \brief processes SDP messages
+//! \brief Process incoming SDP messages
 //! \param[in,out] mailbox: the SDP message; will be _freed_ by this call!
 //! \param[in] port: the port associated with this SDP message
 static void receive_sdp_message(uint mailbox, uint port) {
@@ -758,7 +755,7 @@ static void receive_sdp_message(uint mailbox, uint port) {
     spin1_msg_free((sdp_msg_t *) mailbox);
 }
 
-//! \brief sends data to the host via SDP (using ::my_msg)
+//! \brief Send data to the host via SDP (using ::my_msg)
 static void send_data(void) {
     uint payload_size = (uint)(position_in_store + 2);
     copy_data(&my_msg.data, &data_out_msg, payload_size);
@@ -777,7 +774,7 @@ static void send_data(void) {
     position_in_store = 0;
 }
 
-//! \brief Handles receipt of a fixed route packet with payload from the
+//! \brief Handle receipt of a fixed route packet with payload from the
 //!     SpiNNaker network.
 //! \param[in] key: The key in the packet
 //! \param[in] payload: The payload in the packet
@@ -826,7 +823,7 @@ static void receive_data(uint key, uint payload) {
     }
 }
 
-//! Sets up the application
+//! Set up the application
 static void initialise(void) {
     // Get the address this core's DTCM data starts at from SRAM
     data_specification_metadata_t *ds_regions =

@@ -47,7 +47,7 @@ typedef struct _bit_set_t {
 
 //! \brief Empty a bitset entirely
 //! \param[in] b: the bit set to clear bits
-//! \return bool saying successfully cleared bit field
+//! \return Whether the bitset was successfully cleared
 bool bit_set_clear(bit_set_t *b) {
     // Clear the data
     for (uint32_t i = 0; i < b->n_words; i++) {
@@ -150,45 +150,23 @@ static inline bool bit_set_remove(bit_set_t *b, uint32_t i) {
     return true;
 }
 
-//! \brief This function prints out an individual word of a bit_field,
+//! \brief Print out an individual word of a bit_set_t
 //!     as a sequence of ones and zeros.
-//! \param[in] e The word of a bit_field to be printed.
+//! \param[in] e: The word of a bit_field to be printed.
 //! \param[in] offset: the offset in id
-static inline void print_bit_field_entry_v2(uint32_t e, uint32_t offset) {
+static inline void bit_set_print_entry(uint32_t e, uint32_t offset) {
     for (counter_t i = 32 ; i > 0; i--) {
         log_debug("%d,%c", offset + i, ((e & 0x1) == 0) ? ' ' : '1');
         e >>= 1;
     }
 }
 
-//! \brief This function prints out an entire bit_field,
-//!     as a sequence of ones and zeros.
-//! \param[in] b The sequence of words representing a bit_field.
-//! \param[in] s The size of the bit_field.
-void print_bit_field_bits_v2(bit_field_t b, size_t s) {
-    use(b);
-    use(s);
-    for (uint32_t i = s; i > 0; i--) {
-	    print_bit_field_entry_v2(b[i], ((i - 1) * 32));
-    }
-}
-
-//! \brief This function prints out an entire bit_field,
-//!     as a sequence of ones and zeros.
-//! \param[in] b The sequence of words representing a bit_field.
-//! \param[in] s The size of the bit_field.
-void print_bit_set_bits(bit_field_t b, uint32_t s) {
-    use(b);
-    use(s);
-    for (uint32_t i = s; i > 0; i--) {
-	    print_bit_field_entry_v2(b[i], ((i - 1) * BITS_IN_A_WORD));
-    }
-}
-
-//! \brief prints a bit set
+//! \brief Print a bit set
 //! \param[in] b: the bitset to print
-void print_bit_set(bit_set_t b) {
-    print_bit_set_bits(b._data, b.n_words);
+void bit_set_print(bit_set_t b) {
+    for (uint32_t i = b.n_words; i > 0; i--) {
+        bit_set_print_entry(b._data[i], (i - 1) * BITS_IN_A_WORD);
+    }
 }
 
 #endif  // __BIT_SET_H__

@@ -16,8 +16,9 @@
  */
 
 /**
+ * \dir
+ * \brief Simple routing table compressor
  * \file
- *
  * \brief SpiNNaker routing table minimisation.
  *
  * Minimises a routing table loaded into SDRAM and load the minimised table into
@@ -33,14 +34,12 @@
 #include <malloc_extras.h>
 #include "compressor_includes/compressor.h"
 #include "rt_single.h"
+#include "common-typedefs.h"
 
 //! \brief The callback for setting off the router compressor
 //! \param[in] unused0: unused
 //! \param[in] unused1: unused
-void compress_start(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
-
+void compress_start(UNUSED uint unused0, UNUSED uint unused1) {
     log_info("Starting on chip router compressor");
 
     // Prepare to minimise the routing tables
@@ -73,7 +72,6 @@ void compress_start(uint unused0, uint unused1) {
         log_info("Exiting as compressor reported failure");
         // set the failed flag and exit
         malloc_extras_terminate(EXIT_FAIL);
-
     }
     // Try to load the routing table
     log_debug("try loading tables");

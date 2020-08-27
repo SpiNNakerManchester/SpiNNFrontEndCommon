@@ -19,13 +19,10 @@ from pacman.model.resources import (
     ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
 from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
+    AbstractGeneratesDataSpecification)
 
 
-class LivePacketGather(
-        ApplicationVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary):
+class LivePacketGather(ApplicationVertex, AbstractGeneratesDataSpecification):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a SpiNNaker machine.
@@ -53,14 +50,6 @@ class LivePacketGather(
         if resources_required:
             assert (resources_required == machine_vertex.resources_required)
         return machine_vertex
-
-    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
-        return 'live_packet_gather.aplx'
-
-    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
-        return ExecutableType.USES_SIMULATION_INTERFACE
 
     @property
     @overrides(ApplicationVertex.n_atoms)

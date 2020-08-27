@@ -16,7 +16,6 @@
  */
 
 //! \file
-//!
 //! \brief EIEIO message header description
 
 #ifndef INCLUDE_FEC_EIEIO_H
@@ -24,9 +23,8 @@
 
 #include <common-typedefs.h>
 
-//! Offsets into the eieio_header_bitfields structure.
-//!
-//! These are bit offsets into a 16 bit unsigned integer.
+//! \brief Offsets into the eieio_header_bitfields structure.
+//! \details These are bit offsets into a 16 bit unsigned integer.
 enum eieio_bit_offsets {
     APPLY_PREFIX = 15,         //!< eieio_header_bitfields::apply_prefix
     PREFIX_UPPER = 14,         //!< eieio_header_bitfields::prefix_upper
@@ -38,10 +36,9 @@ enum eieio_bit_offsets {
     PACKET_COMMAND = 0         //!< eieio_header_bitfields::packet_command
 };
 
-//! Masks for the eieio_header_bitfields structure.
-//!
-//! These apply after the value has been shifted into the low bits by the
-//! offset.
+//! \brief Masks for the eieio_header_bitfields structure.
+//! \details These apply after the value has been shifted into the low bits by
+//!     the offset.
 enum eieio_bit_masks {
     APPLY_PREFIX_MASK = 0x1,         //!< eieio_header_bitfields::apply_prefix
     PREFIX_UPPER_MASK = 0x1,         //!< eieio_header_bitfields::prefix_upper

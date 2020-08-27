@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief API for routing table minimisation
+
 #ifndef __MINIMISE_H__
 #define __MINIMISE_H__
 

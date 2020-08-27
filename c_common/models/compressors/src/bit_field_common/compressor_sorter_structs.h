@@ -27,10 +27,10 @@
 //!===========================================================================
 //! enums
 
-//! \brief the acceptable finish states
+//! \brief The acceptable finish states
 typedef enum compressor_states {
    //! Flag to say this core has never been used or prepared
-   UNUSED = 30,
+   UNUSED_CORE = 30,
    //! Flag to say compressor is ready to run.  This clears previous results
    PREPARED = 31,
    //! Flag to say compressor is acticvely compressing
@@ -82,7 +82,7 @@ typedef struct multi_table_t {
     uint32_t max_entries;
 } multi_table_t;
 
-//! \brief the list of cores that can be used as compressor processor
+//! \brief The list of cores that can be used as compressor processor
 typedef struct compressor_processors_top_t {
     //! The number of processor_id(s) in the list
     uint32_t n_processors;
@@ -90,7 +90,7 @@ typedef struct compressor_processors_top_t {
     uint32_t processor_id[];
 } compressor_processors_top_t;
 
-//! \brief uncompressed routing table region
+//! \brief Uncompressed routing table region
 typedef struct uncompressed_table_region_data_t {
     //! the application ID
     uint32_t app_id;
@@ -130,7 +130,7 @@ typedef struct comms_sdram_t {
     heap_t *fake_heap_data;
 } comms_sdram_t;
 
-//! \brief a single mapping in the addresses area
+//! \brief A single mapping in the addresses area
 typedef struct triples_t {
     //! The bitfield wrapper
     filter_region_t *filter;
@@ -140,7 +140,7 @@ typedef struct triples_t {
     uint32_t processor;
 } triples_t;
 
-//! \brief top-level structure in the addresses area
+//! \brief Top-level structure in the addresses area
 typedef struct region_addresses_t {
     //! Minimum percentage of bitfields to be merge in (currently ignored)
     uint32_t threshold;
