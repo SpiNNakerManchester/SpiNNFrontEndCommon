@@ -15,6 +15,7 @@
 
 import datetime
 import os
+import re
 import sqlite3
 import sys
 from spinn_utilities.ordered_set import OrderedSet
@@ -25,6 +26,7 @@ if sys.version_info < (3,):
     memoryview = buffer  # noqa
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
+_RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
 
 
 class SqlLiteDatabase(object):
@@ -98,8 +100,10 @@ class SqlLiteDatabase(object):
         with self._db:
             self._db.executemany(
                 """
-                INSERT OR IGNORE INTO source(source_name) VALUES(?)
-                """, self.__unique_names(items, 0))
+                INSERT OR IGNORE INTO source(
+                    source_name, source_short_name, x, y, p)
+                VALUES(?, ?, ?, ?, ?)
+                """, self.__unique_sources(items, slice(None, -1), "/"))
             self._db.executemany(
                 """
                 INSERT OR IGNORE INTO description(description_name)
@@ -117,8 +121,8 @@ class SqlLiteDatabase(object):
                 ), ?)
                 """, map(self.__condition_row, items))
 
-    @staticmethod
-    def __unique_names(items, index):
+    @classmethod
+    def __unique_names(cls, items, index):
         """ Produces an iterable of 1-tuples of the *unique* names in at \
             particular index into the provenance items' names.
 
@@ -129,8 +133,44 @@ class SqlLiteDatabase(object):
         return ((name,) for name in OrderedSet(
             item.names[index] for item in items))
 
+    @classmethod
+    def __unique_sources(cls, items, index, joiner):
+        """ Produces an iterable of 1-tuples of the *unique* names in at \
+            particular index into the provenance items' names.
+
+        :param iterable(ProvenanceDataItem) items: The prov items
+        :param index: The index into the names
+        :type index: int or slice
+        :param str joiner: Used to make compound names when slices are used
+        :rtype: iterable(tuple(str,str,int or None,int or None,int or None))
+        """
+        if isinstance(index, int):
+            return (cls.__coordify(name) for name in OrderedSet(
+                item.names[index] for item in items))
+        return (cls.__coordify(name, joiner) for name in OrderedSet(
+            joiner.join(item.names[index]) for item in items))
+
     @staticmethod
-    def __condition_row(item):
+    def __coordify(name, joiner=None):
+        """ Creates the tuple of values for insertion into the source table.
+
+        :param str name: The extracted, possibly compound name
+        :rtype: tuple(str, str, int or None, int or None, int or None)
+        """
+        x = None
+        y = None
+        p = None
+        short_name = name.split(joiner, 1)[0]
+        match = _RE.search(name)
+        if match:
+            x = int(match.group(1))
+            y = int(match.group(3))
+            if match.group(4):
+                p = int(match.group(4))
+        return (name, short_name, x, y, p)
+
+    @staticmethod
+    def __condition_row(item, joiner="/"):
         """ Converts a provenance item into the form ready for insert.
 
         .. note::
@@ -144,4 +184,4 @@ class SqlLiteDatabase(object):
         value = item.value
         if isinstance(value, datetime.timedelta):
             value = value.microseconds
-        return item.names[0], item.names[-1], value
+        return joiner.join(item.names[:-1]), item.names[-1], value

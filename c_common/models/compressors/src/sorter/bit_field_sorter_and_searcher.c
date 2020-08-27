@@ -859,12 +859,12 @@ void process_compressor_response(
 
     case FORCED_BY_COMPRESSOR_CONTROL:
         // compressor stopped at the request of the sorter.
-        log_info("ack from forced from processor %d doing mid point %d",
+        log_debug("ack from forced from processor %d doing mid point %d",
                 processor_id, mid_point);
         routing_tables_utils_free_all(comms_sdram[processor_id].routing_tables);
         break;
 
-    case UNUSED:
+    case UNUSED_CORE:
     case PREPARED:
     case COMPRESSING:
         // states that shouldn't occur
@@ -1041,7 +1041,7 @@ static void initialise_user_register_tracker(void) {
 
     comms_sdram = region_addresses->comms_sdram;
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        comms_sdram[processor_id].compressor_state = UNUSED;
+        comms_sdram[processor_id].compressor_state = UNUSED_CORE;
         comms_sdram[processor_id].sorter_instruction = NOT_COMPRESSOR;
         comms_sdram[processor_id].mid_point = FAILED_TO_FIND;
         comms_sdram[processor_id].routing_tables = NULL;

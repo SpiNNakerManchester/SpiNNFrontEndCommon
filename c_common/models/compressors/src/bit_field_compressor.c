@@ -60,7 +60,7 @@ bool compress_as_much_as_possible = false;
 //! Debugging for wait_for_instructions(): old state of sorter
 instructions_to_compressor previous_sorter_state = NOT_COMPRESSOR;
 //! Debugging for wait_for_instructions(): old state of compressor
-compressor_states previous_compressor_state = UNUSED;
+compressor_states previous_compressor_state = UNUSED_CORE;
 
 //! SDRAM are used for communication between sorter and THIS compressor
 comms_sdram_t *restrict comms_sdram;
@@ -194,7 +194,7 @@ static inline bool process_run(compressor_states compressor_state) {
     case RAN_OUT_OF_TIME:
         // waiting for sorter to pick up result
         return true;
-    case UNUSED:
+    case UNUSED_CORE:
         // Should never happen
         return false;
     }
@@ -207,7 +207,7 @@ static inline bool process_run(compressor_states compressor_state) {
 //! \returns Whether the ::PREPARE made sense with the current compressor state
 static inline bool process_prepare(compressor_states compressor_state) {
     switch (compressor_state) {
-    case UNUSED:
+    case UNUSED_CORE:
         // First prepare
         log_info("Prepared for the first time");
         comms_sdram->compressor_state = PREPARED;
@@ -256,7 +256,7 @@ static inline bool process_force(compressor_states compressor_state) {
        comms_sdram->compressor_state = FORCED_BY_COMPRESSOR_CONTROL;
        return true;
    case PREPARED:
-   case UNUSED:
+   case UNUSED_CORE:
        // Should never happen
        return false;
    }
@@ -304,7 +304,7 @@ static void wait_for_instructions(uint unused0, uint unused1) {
     case NOT_COMPRESSOR:
         // For some reason compressor sees this state too
     case TO_BE_PREPARED:
-        users_match = (compressor_state == UNUSED);
+        users_match = (compressor_state == UNUSED_CORE);
         break;
     case DO_NOT_USE:
         log_info("DO_NOT_USE detected exiting wait");
