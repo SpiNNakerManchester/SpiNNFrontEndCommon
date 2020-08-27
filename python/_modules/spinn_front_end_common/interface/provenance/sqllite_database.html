@@ -79,6 +79,7 @@
 
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">sqlite3</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.ordered_set</span> <span class="kn">import</span> <span class="n">OrderedSet</span>
@@ -89,6 +90,7 @@
     <span class="nb">memoryview</span> <span class="o">=</span> <span class="n">buffer</span>  <span class="c1"># noqa</span>
 
 <span class="n">_DDL_FILE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;db.sql&quot;</span><span class="p">)</span>
+<span class="n">_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+)([_,:])(\d+)(?:\2(\d+))?&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="SqlLiteDatabase"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.SqlLiteDatabase">[docs]</a><span class="k">class</span> <span class="nc">SqlLiteDatabase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -162,8 +164,10 @@
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
                 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                INSERT OR IGNORE INTO source(source_name) VALUES(?)</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__unique_names</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="sd">                INSERT OR IGNORE INTO source(</span>
+<span class="sd">                    source_name, source_short_name, x, y, p)</span>
+<span class="sd">                VALUES(?, ?, ?, ?, ?)</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__unique_sources</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;/&quot;</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
                 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                INSERT OR IGNORE INTO description(description_name)</span>
@@ -181,8 +185,8 @@
 <span class="sd">                ), ?)</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__condition_row</span><span class="p">,</span> <span class="n">items</span><span class="p">))</span></div>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">__unique_names</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__unique_names</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Produces an iterable of 1-tuples of the *unique* names in at \</span>
 <span class="sd">            particular index into the provenance items&#39; names.</span>
 
@@ -193,8 +197,44 @@
         <span class="k">return</span> <span class="p">((</span><span class="n">name</span><span class="p">,)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">OrderedSet</span><span class="p">(</span>
             <span class="n">item</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">))</span>
 
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__unique_sources</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">joiner</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Produces an iterable of 1-tuples of the *unique* names in at \</span>
+<span class="sd">            particular index into the provenance items&#39; names.</span>
+
+<span class="sd">        :param iterable(ProvenanceDataItem) items: The prov items</span>
+<span class="sd">        :param index: The index into the names</span>
+<span class="sd">        :type index: int or slice</span>
+<span class="sd">        :param str joiner: Used to make compound names when slices are used</span>
+<span class="sd">        :rtype: iterable(tuple(str,str,int or None,int or None,int or None))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__coordify</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">OrderedSet</span><span class="p">(</span>
+                <span class="n">item</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__coordify</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">joiner</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">OrderedSet</span><span class="p">(</span>
+            <span class="n">joiner</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">index</span><span class="p">])</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">))</span>
+
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">__condition_row</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__coordify</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">joiner</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Creates the tuple of values for insertion into the source table.</span>
+
+<span class="sd">        :param str name: The extracted, possibly compound name</span>
+<span class="sd">        :rtype: tuple(str, str, int or None, int or None, int or None)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">short_name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">joiner</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">_RE</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">short_name</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__condition_row</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">joiner</span><span class="o">=</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Converts a provenance item into the form ready for insert.</span>
 
 <span class="sd">        .. note::</span>
@@ -208,7 +248,7 @@
         <span class="n">value</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">value</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">):</span>
             <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">microseconds</span>
-        <span class="k">return</span> <span class="n">item</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">item</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">value</span></div>
+        <span class="k">return</span> <span class="n">joiner</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">names</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">item</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">value</span></div>
 </pre></div>
 
           </div>
