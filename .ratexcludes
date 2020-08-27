@@ -10,3 +10,4 @@
 **/compressor_on_*.txt
 **/test_output/**
 **/.nojekyll
+**/*.tag
