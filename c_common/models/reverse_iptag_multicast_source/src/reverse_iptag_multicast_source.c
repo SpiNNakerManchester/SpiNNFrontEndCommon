@@ -562,7 +562,7 @@ static inline bool add_eieio_packet_to_sdram(
         if (final_space >= length) {
             log_debug("Packet fits in final space of %d", final_space);
 
-            spin1_memcpy(write_pointer, msg_ptr, length);
+            half_word_copy(write_pointer, msg_ptr, length);
             write_pointer += length;
             last_buffer_operation = BUFFER_OPERATION_WRITE;
             if (write_pointer >= end_of_buffer_region) {
@@ -578,13 +578,13 @@ static inline bool add_eieio_packet_to_sdram(
 
             log_debug("Copying first %d bytes to final space of %d",
                     length, final_space);
-            spin1_memcpy(write_pointer, msg_ptr, final_space);
+            half_word_copy(write_pointer, msg_ptr, final_space);
             write_pointer = buffer_region;
             msg_ptr += final_space;
 
             uint32_t final_len = length - final_space;
             log_debug("Copying remaining %d bytes", final_len);
-            spin1_memcpy(write_pointer, msg_ptr, final_len);
+            half_word_copy(write_pointer, msg_ptr, final_len);
             write_pointer += final_len;
             last_buffer_operation = BUFFER_OPERATION_WRITE;
             if (write_pointer == end_of_buffer_region) {
@@ -600,7 +600,7 @@ static inline bool add_eieio_packet_to_sdram(
         }
 
         log_debug("Packet fits in middle space of %d", middle_space);
-        spin1_memcpy(write_pointer, msg_ptr, length);
+        half_word_copy(write_pointer, msg_ptr, length);
         write_pointer += length;
         last_buffer_operation = BUFFER_OPERATION_WRITE;
         if (write_pointer == end_of_buffer_region) {
@@ -685,10 +685,8 @@ static inline void process_32_bit_packets(
         const uint16_t* event_pointer, uint32_t pkt_count,
         uint32_t pkt_key_prefix, uint32_t pkt_payload_prefix,
         bool has_payload, bool pkt_payload_is_timestamp) {
-    // Careful! event_pointer is not necessarily word aligned!
-    const uint32_t *data = __builtin_assume_aligned(event_pointer, 4, 2);
     log_debug("process_32_bit_packets");
-    log_debug("event_pointer: %08x", data);
+    log_debug("event_pointer: %08x", event_pointer);
     log_debug("count: %d", pkt_count);
     log_debug("pkt_prefix: %08x", pkt_key_prefix);
     log_debug("pkt_payload_prefix: %08x", pkt_payload_prefix);
@@ -699,10 +697,12 @@ static inline void process_32_bit_packets(
     }
 
     for (uint32_t i = 0; i < pkt_count; i++) {
-        uint32_t key = *data++;
+        uint32_t key = read_word(event_pointer);
+        event_pointer += 2;
         uint32_t payload = 0;
         if (has_payload) {
-            payload = *data++;
+            payload = read_word(event_pointer);
+            event_pointer += 2;
         }
         log_debug("Packet 32-bit: key = 0x%08x, payload = %d", key, payload);
         key |= pkt_key_prefix;
@@ -828,9 +828,7 @@ static inline bool eieio_data_parse_packet(
             pkt_payload_prefix = *event_pointer++;
         } else {
             // If there is a payload prefix and the payload is 32-bit
-            const uint32_t *data =
-                    __builtin_assume_aligned(event_pointer, 4, 2);
-            pkt_payload_prefix = *data;
+            pkt_payload_prefix = read_word(event_pointer);
             event_pointer += 2;
         }
     }
