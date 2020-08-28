@@ -69,17 +69,26 @@ union eieio_header_bitfields {
         uint16_t count : 8;
         // Padding
         uint16_t : 2;
-        //! \brief The type of the packet (see eieio_data_message_types)
+        //! \brief The type of the packet (see ::eieio_data_message_types)
         uint16_t packet_type : 2;
         //! \brief Whether the payload is a timestamp
         uint16_t payload_is_timestamp : 1;
         //! \brief Whether to apply the current prefix to the payload
         uint16_t apply_payload_prefix : 1;
-        //! \brief Whether the prefix is applied to the upper or lower half of the
-        //! payload.
+        //! \brief Whether the prefix is applied to the upper or lower half of
+        //! the payload.
         uint16_t prefix_upper : 1;
         //! \brief Whether to apply the prefix
         uint16_t apply_prefix : 1;
+    };
+    //! The bits in the packet type
+    struct {
+        uint16_t : 10;
+        //! Whether the packet has a payload.
+        uint16_t packet_has_payload : 1;
+        //! Whether the packet contains 32-bit values (or 16-bit if false).
+        uint16_t packet_is_32bit : 1;
+        uint16_t : 4;
     };
     struct {
         //! \brief What command is encoded in the packet.
@@ -99,7 +108,7 @@ typedef enum {
     //! Message is just a key, 32 bits long
     KEY_32_BIT,
     //! Message is a key and a payload, each 32 bits long
-    KEY_PAYLOAD_32_bIT
+    KEY_PAYLOAD_32_BIT
 } eieio_data_message_types;
 
 //! The EIEIO prefix types
@@ -107,5 +116,12 @@ typedef enum {
     PREFIX_TYPE_LOWER_HALF_WORD,
     PREFIX_TYPE_UPPER_HALF_WORD
 } eieio_prefix_types;
+
+//! Special packet classes
+enum {
+    //! \brief The packet is a command.
+    //! \details This is an illegal combination of bits for a data packet.
+    PACKET_CLASS_COMMAND = 1
+};
 
 #endif //INCLUDE_FEC_EIEIO_H

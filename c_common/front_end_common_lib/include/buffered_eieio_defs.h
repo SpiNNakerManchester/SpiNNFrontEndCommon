@@ -57,8 +57,11 @@ typedef enum buffered_operations {
     BUFFER_OPERATION_WRITE
 } buffered_operations;
 
-//! pointer to an EIEIO message
-typedef uint16_t* eieio_msg_t;
+//! Pointer to an EIEIO message
+typedef const uint16_t *eieio_msg_t;
+
+//! Pointer to a writable EIEIO message
+typedef uint16_t *eieio_writable_msg_t;
 
 //! The maximum sequence number
 #define MAX_SEQUENCE_NO 0xFF

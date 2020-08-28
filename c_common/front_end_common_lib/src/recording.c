@@ -154,7 +154,7 @@ static inline bool close_channel(uint8_t channel) {
 
 //! \brief Handles a ::HOST_DATA_READ EIEIO message.
 //! \param[in] msg: The message to handle.
-static inline void recording_host_data_read(const eieio_msg_t msg) {
+static inline void recording_host_data_read(eieio_msg_t msg) {
     const host_data_read_packet_header *ptr_hdr =
             (const host_data_read_packet_header *) msg;
     uint8_t n_requests = ptr_hdr->request;
@@ -195,7 +195,7 @@ static inline void recording_host_data_read(const eieio_msg_t msg) {
 
 //! \brief Handles a ::HOST_DATA_READ_ACK EIEIO message.
 //! \param[in] msg: The message to handle.
-static inline void recording_host_data_read_ack(const eieio_msg_t msg) {
+static inline void recording_host_data_read_ack(eieio_msg_t msg) {
     const host_data_read_ack_packet_header *ptr_hdr =
             (const host_data_read_ack_packet_header *) msg;
 
@@ -218,7 +218,7 @@ static inline void recording_host_data_read_ack(const eieio_msg_t msg) {
 //! \param[in] msg: Pointer to the message content
 //! \param[in] length: Length of the message content, in bytes.
 static inline void recording_eieio_packet_handler(
-        const eieio_msg_t msg, uint length) {
+        eieio_msg_t msg, uint length) {
     uint16_t data_hdr_value = msg[0];
     uint8_t pkt_type = (data_hdr_value >> 14) && 0x03;
     uint16_t pkt_command = data_hdr_value & (~0xC000);
@@ -484,9 +484,7 @@ static inline void recording_send_buffering_out_trigger_message(
 }
 
 //! \brief Receives an SDP message intended for the recording code.
-//!
-//! Delegates most handling to recording_eieio_packet_handler()
-//!
+//! \details Delegates most handling to recording_eieio_packet_handler()
 //! \param[in,out] mailbox: Pointer to the message to receive
 //! \param[in] port: The SDP port of the message. Constant.
 static void buffering_in_handler(uint mailbox, uint port) {
