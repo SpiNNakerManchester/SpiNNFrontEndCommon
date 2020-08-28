@@ -304,7 +304,8 @@ static inline void full_word_copy(
 //! \param[in] eieio_msg_ptr: Pointer to the packet
 //! \return The parsed header.
 static inline eieio_header_t eieio_header(eieio_msg_t eieio_msg_ptr) {
-    eieio_header_t hdr = { .overall_value = eieio_msg_ptr[0] };
+    eieio_header_t hdr;
+    hdr.overall_value = eieio_msg_ptr[0];
     return hdr;
 }
 
@@ -965,6 +966,14 @@ static inline bool packet_handler_selector(
     }
 }
 
+//! \brief Test whether a pointer is only half-word aligned
+//! \note Assumes that the pointer is *minimum* half-word aligned
+//! \return Whether the second bit of the address is set
+static inline bool is_half_aligned(const void *ptr) {
+    uint32_t value = (uint32_t) ptr;
+    return (value & 2) != 0;
+}
+
 //! \brief Process a stored packet.
 static void fetch_and_process_packet(void) {
     uint32_t last_len = 2;
@@ -1002,7 +1011,7 @@ static void fetch_and_process_packet(void) {
                     src_ptr, len);
             rt_error(RTE_SWERR);
         }
-        uint32_t final_space = (end_of_buffer_region - read_pointer);
+        uint32_t final_space = end_of_buffer_region - read_pointer;
 
         log_debug("packet with length %d, from address: %08x", len,
                 read_pointer);
@@ -1012,7 +1021,7 @@ static void fetch_and_process_packet(void) {
             // If the packet is split, get the bits
             log_debug("1 - reading packet to %08x from %08x length: %d",
                     dst_ptr, src_ptr, final_space);
-            if ((uint32_t) src_ptr & 0x2) {
+            if (is_half_aligned(src_ptr)) { // dst_ptr is known aligned
                 half_word_copy(dst_ptr, src_ptr, final_space);
             } else {
                 full_word_copy(dst_ptr, src_ptr, final_space);
@@ -1024,7 +1033,7 @@ static void fetch_and_process_packet(void) {
             log_debug("2 - reading packet to %08x from %08x length: %d",
                     dst_ptr, src_ptr, remaining_len);
 
-            if ((uint32_t) dst_ptr & 0x2) {
+            if (is_half_aligned(dst_ptr)) { // src_ptr is known aligned
                 half_word_copy(dst_ptr, src_ptr, remaining_len);
             } else {
                 full_word_copy(dst_ptr, src_ptr, remaining_len);
@@ -1035,7 +1044,7 @@ static void fetch_and_process_packet(void) {
             log_debug("0 - reading packet to %08x from %08x length: %d",
                     msg_from_sdram, src_ptr, len);
 
-            if ((uint32_t) src_ptr & 0x2) {
+            if (is_half_aligned(src_ptr)) { // dst_ptr is known aligned
                 half_word_copy(msg_from_sdram, src_ptr, len);
             } else {
                 full_word_copy(msg_from_sdram, src_ptr, len);
