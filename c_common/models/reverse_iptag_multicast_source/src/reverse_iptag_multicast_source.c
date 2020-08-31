@@ -30,10 +30,7 @@
 #include <eieio.h>
 #include <buffered_eieio_defs.h>
 #include "recording.h"
-
-// Declare wfi function
-//! Wait for interrupt (semi-public part of Spin1API)
-extern void spin1_wfi(void);
+#include <spin1-wfi.h>
 
 // ------------------------------------------------------------------------
 

@@ -26,13 +26,9 @@
 #include <debug.h>
 #include <spin1_api_params.h>
 #include <spin1_api.h>
+#include <spin1-wfi.h>
 
 // Import things from spin1_api that are not explicitly exposed //
-
-//! \brief Wait for interrupt.
-//! \details Will return to just after this point after an
-//!     interrupt has been raised.
-extern void spin1_wfi(void);
 
 //! \brief Indicate whether the SYNC signal has been received.
 //! \return 0 (false) if not received and 1 (true) if received.

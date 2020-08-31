@@ -28,10 +28,7 @@
 #include <circular_buffer.h>
 #include <spin1_api_params.h>
 #include <debug.h>
-
-// Declare wfi function
-//! Wait For Interrupt
-extern void spin1_wfi(void);
+#include <spin1-wfi.h>
 
 //---------------------------------------
 // Structures
