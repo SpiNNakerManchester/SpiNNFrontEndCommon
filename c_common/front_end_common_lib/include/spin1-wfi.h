@@ -21,13 +21,14 @@
 //! \file
 //! \brief Declaration that is common but not in spin1_api.h
 
-//! \brief Wait for interrupt.
-//! \details Inline version of code that appears in spin1_api so that we can
-//!     get more compact code. For a description of what this actually does,
-//!     see [the relevant ARM documentation][wfi] (it's hardware magic,
-//!     specific to the ARM968).
-//!
-//! [wfi]: https://developer.arm.com/documentation/ddi0311/d/system-control-coprocessor/cp15-register-descriptions/cp15-c7-core-control-operations
+/*! \brief Wait for interrupt.
+ *  \details Inline version of code that appears in spin1_api so that we can
+ *      get more compact code. For a description of what this actually does,
+ *      see <a href="https://developer.arm.com/
+documentation/ddi0311/d/system-control-coprocessor/cp15-register-descriptions/
+cp15-c7-core-control-operations">the relevant ARM documentation</a>
+ *      (it's hardware magic, specific to the ARM968).
+ */
 static inline void spin1_wfi(void) {
     register uint32_t value = 0;
     asm volatile("mcr p15, 0, %[value], c7, c0, 4" : : [value] "r" (value));
