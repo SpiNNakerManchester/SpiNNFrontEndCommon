@@ -2074,7 +2074,7 @@ void c_main(void) {
 
     // Run until told to exit
     while (reinject_run) {
-        spin1_wfi();
+        wait_for_interrupt();
     }
 }
 // ------------------------------------------------------------------------

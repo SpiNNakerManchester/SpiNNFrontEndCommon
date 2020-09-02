@@ -142,7 +142,7 @@ static void send_ok_response(sdp_msg_t *msg) {
 //! \param unused1: unused
 static void synchronise_start(uint unused0, uint unused1) {
     while (resume_wait()) {
-        spin1_wfi();
+        wait_for_interrupt();
     }
     sark_cpu_state(CPU_STATE_RUN);
     stored_start_function();

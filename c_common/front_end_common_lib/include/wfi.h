@@ -29,7 +29,7 @@ documentation/ddi0311/d/system-control-coprocessor/cp15-register-descriptions/
 cp15-c7-core-control-operations">the relevant ARM documentation</a>
  *      (it's hardware magic, specific to the ARM968).
  */
-static inline void spin1_wfi(void) {
+static inline void wait_for_interrupt(void) {
     register uint32_t value = 0;
     asm volatile("mcr p15, 0, %[value], c7, c0, 4" : : [value] "r" (value));
 }
