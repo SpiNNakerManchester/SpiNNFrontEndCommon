@@ -19,10 +19,11 @@
 #include <stdint.h>
 
 //! \file
-//! \brief Declaration that is common but not in spin1_api.h
+//! \brief Wait for interrupt.
 
-/*! \brief Wait for interrupt.
- *  \details Inline version of code that appears in spin1_api so that we can
+/*! \brief Wait for any interrupt to occur.
+ *  \details Code resumes after the wait once the interrupt has been serviced.
+ *      Inline version of code that appears in spin1_api so that we can
  *      get more compact code. For a description of what this actually does,
  *      see <a href="https://developer.arm.com/
 documentation/ddi0311/d/system-control-coprocessor/cp15-register-descriptions/
