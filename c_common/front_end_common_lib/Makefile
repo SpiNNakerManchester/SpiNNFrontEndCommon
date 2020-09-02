@@ -36,7 +36,7 @@ BUILD_OBJS = $(OBJS:%.o=$(SPINN_COMMON_BUILD)/%.o)
 # Headers
 HEADERS = common-typedefs.h data_specification.h simulation.h recording.h \
           profiler.h buffered_eieio_defs.h debug.h eieio.h sdp_no_scp.h \
-          filter_info.h key_atom_map.h malloc_extras.h spin1-wfi.h
+          filter_info.h key_atom_map.h malloc_extras.h wfi.h
 INSTALL_HEADERS = $(HEADERS:%.h=$(SPINN_INC_DIR)/%.h)
 
 # Makefile
