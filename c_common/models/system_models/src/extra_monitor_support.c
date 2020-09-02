@@ -29,7 +29,7 @@
 #include <stdbool.h>
 #include <common-typedefs.h>
 #include "common.h"
-#include <spin1-wfi.h>
+#include <wfi.h>
 
 // Debugging control
 //#define DEBUG_DATA_IN

@@ -26,7 +26,7 @@
 #include <debug.h>
 #include <spin1_api_params.h>
 #include <spin1_api.h>
-#include <spin1-wfi.h>
+#include <wfi.h>
 
 // Import things from spin1_api that are not explicitly exposed //
 

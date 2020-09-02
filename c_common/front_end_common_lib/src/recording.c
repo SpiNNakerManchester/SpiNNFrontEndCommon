@@ -28,7 +28,7 @@
 #include <circular_buffer.h>
 #include <spin1_api_params.h>
 #include <debug.h>
-#include <spin1-wfi.h>
+#include <wfi.h>
 
 //---------------------------------------
 // Structures
