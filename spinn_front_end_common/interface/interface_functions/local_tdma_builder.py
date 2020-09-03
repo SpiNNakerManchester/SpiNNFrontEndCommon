@@ -123,7 +123,8 @@ class LocalTDMABuilder(object):
 
                 # store in tracker
                 app_vertex.set_other_timings(
-                    time_between_cores, n_slots, time_between_phases)
+                    time_between_cores, n_slots, time_between_phases, n_phases,
+                    int(math.ceil(machine_time_step * time_scale_factor)))
 
                 # test timings
                 self._test_timings(
