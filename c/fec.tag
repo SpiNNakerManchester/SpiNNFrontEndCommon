@@ -976,6 +976,18 @@
     </member>
   </compound>
   <compound kind="file">
+    <name>wfi.h</name>
+    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <filename>wfi_8h.html</filename>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>wait_for_interrupt</name>
+      <anchorfile>wfi_8h.html</anchorfile>
+      <anchor>aad22455729e090a9623bd71ff524dd3b</anchor>
+      <arglist>(void)</arglist>
+    </member>
+  </compound>
+  <compound kind="file">
     <name>data_specification.c</name>
     <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/src/</path>
     <filename>data__specification_8c.html</filename>
@@ -1056,6 +1068,7 @@
     <includes id="simulation_8h" name="simulation.h" local="no" imported="no">simulation.h</includes>
     <includes id="buffered__eieio__defs_8h" name="buffered_eieio_defs.h" local="no" imported="no">buffered_eieio_defs.h</includes>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
+    <includes id="wfi_8h" name="wfi.h" local="no" imported="no">wfi.h</includes>
     <class kind="struct">recording_channel_t</class>
     <class kind="struct">recording_data_t</class>
     <member kind="define">
@@ -1078,13 +1091,6 @@
       <anchorfile>recording_8c.html</anchorfile>
       <anchor>a40f2b6d1be79264f430431197541e127</anchor>
       <arglist></arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>spin1_wfi</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>ae35277172e3b42f22218009fe98a2402</anchor>
-      <arglist>(void)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static bool</type>
@@ -1331,13 +1337,7 @@
     <filename>simulation_8c.html</filename>
     <includes id="simulation_8h" name="simulation.h" local="yes" imported="no">simulation.h</includes>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
-    <member kind="function">
-      <type>void</type>
-      <name>spin1_wfi</name>
-      <anchorfile>simulation_8c.html</anchorfile>
-      <anchor>ae35277172e3b42f22218009fe98a2402</anchor>
-      <arglist>(void)</arglist>
-    </member>
+    <includes id="wfi_8h" name="wfi.h" local="no" imported="no">wfi.h</includes>
     <member kind="function">
       <type>uint</type>
       <name>resume_wait</name>
@@ -4039,6 +4039,7 @@
     <includes id="eieio_8h" name="eieio.h" local="no" imported="no">eieio.h</includes>
     <includes id="buffered__eieio__defs_8h" name="buffered_eieio_defs.h" local="no" imported="no">buffered_eieio_defs.h</includes>
     <includes id="recording_8h" name="recording.h" local="yes" imported="no">recording.h</includes>
+    <includes id="wfi_8h" name="wfi.h" local="no" imported="no">wfi.h</includes>
     <class kind="struct">config</class>
     <class kind="struct">provenance_t</class>
     <class kind="struct">recorded_packet_t</class>
@@ -4098,13 +4099,6 @@
       <anchorfile>reverse__iptag__multicast__source_8c.html</anchorfile>
       <anchor>a01c99e92b5044a47c13bf8a94061ebd9</anchor>
       <arglist></arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>spin1_wfi</name>
-      <anchorfile>reverse__iptag__multicast__source_8c.html</anchorfile>
-      <anchor>ae35277172e3b42f22218009fe98a2402</anchor>
-      <arglist>(void)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static uint16_t</type>
@@ -5257,6 +5251,7 @@
     <filename>extra__monitor__support_8c.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
     <includes id="common_8h" name="common.h" local="yes" imported="no">common.h</includes>
+    <includes id="wfi_8h" name="wfi.h" local="no" imported="no">wfi.h</includes>
     <class kind="struct">dumped_packet_t</class>
     <class kind="struct">sdp_data_out_t</class>
     <class kind="struct">router_entry_t</class>
@@ -5815,13 +5810,6 @@
       <anchorfile>command__sender__multicast__source_8c.html</anchorfile>
       <anchor>a65b19dabf5283c1ea37df964ca25e964a17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
       <arglist></arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>spin1_wfi</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>ae35277172e3b42f22218009fe98a2402</anchor>
-      <arglist>(void)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
