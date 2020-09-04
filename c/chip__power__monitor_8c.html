@@ -86,7 +86,9 @@ $(function() {
 <code>#include &lt;<a class="el" href="recording_8h_source.html">recording.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="debug_8h_source.html">debug.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="data__specification_8h_source.html">data_specification.h</a>&gt;</code><br />
-</div><table class="memberdecls">
+</div>
+<p><a href="chip__power__monitor_8c_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Data Structures</h2></td></tr>
 <tr class="memitem:structsample__params"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="chip__power__monitor_8c.html#structsample__params">sample_params</a></td></tr>
@@ -136,9 +138,9 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="memitem:ac2489f1213913b87b4987a4004582513"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="chip__power__monitor_8c.html#ac2489f1213913b87b4987a4004582513">count_core_states</a> (void)</td></tr>
 <tr class="memdesc:ac2489f1213913b87b4987a4004582513"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accumulate a count of how active each core on the current chip is. The counter for the core is incremented if the core is active.  <a href="chip__power__monitor_8c.html#ac2489f1213913b87b4987a4004582513">More...</a><br /></td></tr>
 <tr class="separator:ac2489f1213913b87b4987a4004582513"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0654afe09e3f4da82ba08eded260c07d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="chip__power__monitor_8c.html#a0654afe09e3f4da82ba08eded260c07d">sample_in_slot</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused0, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused1)</td></tr>
-<tr class="memdesc:a0654afe09e3f4da82ba08eded260c07d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called to actually record a sample.  <a href="chip__power__monitor_8c.html#a0654afe09e3f4da82ba08eded260c07d">More...</a><br /></td></tr>
-<tr class="separator:a0654afe09e3f4da82ba08eded260c07d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85246b8a16b5c3293a2d05e3dfc5c7b0"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="chip__power__monitor_8c.html#a85246b8a16b5c3293a2d05e3dfc5c7b0">sample_in_slot</a> (UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused0, UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused1)</td></tr>
+<tr class="memdesc:a85246b8a16b5c3293a2d05e3dfc5c7b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called to actually record a sample.  <a href="chip__power__monitor_8c.html#a85246b8a16b5c3293a2d05e3dfc5c7b0">More...</a><br /></td></tr>
+<tr class="separator:a85246b8a16b5c3293a2d05e3dfc5c7b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36c5c4a96b95d6ac1e48c8a0af1cf253"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="chip__power__monitor_8c.html#a36c5c4a96b95d6ac1e48c8a0af1cf253">read_parameters</a> (struct <a class="el" href="chip__power__monitor_8c.html#structsample__params">sample_params</a> *<a class="el" href="chip__power__monitor_8c.html#structsample__params">sample_params</a>)</td></tr>
 <tr class="memdesc:a36c5c4a96b95d6ac1e48c8a0af1cf253"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads the configuration of the application out of the configuration region.  <a href="chip__power__monitor_8c.html#a36c5c4a96b95d6ac1e48c8a0af1cf253">More...</a><br /></td></tr>
 <tr class="separator:a36c5c4a96b95d6ac1e48c8a0af1cf253"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -194,6 +196,8 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The implementation of the Chip Power Monitor. </p>
 <p>The purpose of this application is to monitor the activity of the other CPU cores on the chip on which it runs. It does this using the SpiNNaker System Controller, enabling it to run with just the overhead due to using a core; it does <em>not</em> change the individual performance of the other cores on the chip. </p>
+
+<p class="definition">Definition in file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
 </div><hr/><h2 class="groupheader">Data Structure Documentation</h2>
 <a name="structsample__params" id="structsample__params"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#structsample__params">&#9670;&nbsp;</a></span>sample_params</h2>
@@ -207,6 +211,8 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
       </table>
 </div><div class="memdoc">
 <div class="textblock"><p>Describes the format of the configuration region. </p>
+
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00047">47</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -239,6 +245,8 @@ The fundamental sampling frequency. </td></tr>
 </div><div class="memdoc">
 <p>The number of bits of randomness used to break up sampling periodicity errors. </p>
 
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00037">37</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
+
 </div>
 </div>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
@@ -264,6 +272,8 @@ The fundamental sampling frequency. </td></tr>
 </td></tr>
 </table>
 
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00040">40</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
+
 </div>
 </div>
 <a id="a0411cd49bb5b71852cecd93bcbf0ca2d"></a>
@@ -287,6 +297,8 @@ The fundamental sampling frequency. </td></tr>
 <tr><td class="fieldname"><a id="a0411cd49bb5b71852cecd93bcbf0ca2da6537a62f6f155792bb9a320ee2ec4d68"></a>DMA&#160;</td><td class="fielddoc"><p>DMA processing is lowest priority. </p>
 </td></tr>
 </table>
+
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00060">60</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
 
 </div>
 </div>
@@ -319,6 +331,8 @@ The fundamental sampling frequency. </td></tr>
 <dl class="section return"><dt>Returns</dt><dd>A word (with 18 relevant bits in the low bits of the word) where a bit is set when a core is asleep and waiting for events, and clear when the core is active.</dd></dl>
 <p>Note that this accesses into the SpiNNaker System Controller hardware (see Data Sheet, section 14, register 25). </p>
 
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00093">93</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
+
 </div>
 </div>
 <a id="a2a1da13c908079b1273a3abca2e45b09"></a>
@@ -347,6 +361,8 @@ The fundamental sampling frequency. </td></tr>
 
 <p>Computes a random value used to break up chance periodicities in sampling. </p>
 <dl class="section return"><dt>Returns</dt><dd>The number of times a busy loop must run. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00100">100</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
 
 </div>
 </div>
@@ -377,10 +393,12 @@ The fundamental sampling frequency. </td></tr>
 <p>Accumulate a count of how active each core on the current chip is. The counter for the core is incremented if the core is active. </p>
 <p>Uses <a class="el" href="chip__power__monitor_8c.html#a766cca800c4544225b024ca3f36932aa" title="Read which cores on the chip are asleep right now.">get_sample()</a> to obtain the state of the cores. </p>
 
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00137">137</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
+
 </div>
 </div>
-<a id="a0654afe09e3f4da82ba08eded260c07d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0654afe09e3f4da82ba08eded260c07d">&#9670;&nbsp;</a></span>sample_in_slot()</h2>
+<a id="a85246b8a16b5c3293a2d05e3dfc5c7b0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85246b8a16b5c3293a2d05e3dfc5c7b0">&#9670;&nbsp;</a></span>sample_in_slot()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -391,13 +409,13 @@ The fundamental sampling frequency. </td></tr>
         <tr>
           <td class="memname">static void sample_in_slot </td>
           <td>(</td>
-          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
+          <td class="paramtype">UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused0</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
+          <td class="paramtype">UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused1</em>&#160;</td>
         </tr>
         <tr>
@@ -421,6 +439,8 @@ The fundamental sampling frequency. </td></tr>
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00150">150</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
 
 </div>
 </div>
@@ -457,6 +477,8 @@ The fundamental sampling frequency. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the read was successful. (Does not currently fail.) </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00190">190</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
+
 </div>
 </div>
 <a id="a03a8e4045b51680cc94b4359837fa796"></a>
@@ -486,6 +508,8 @@ The fundamental sampling frequency. </td></tr>
 <p>Initialises the program. </p>
 <dl class="section return"><dt>Returns</dt><dd>True if initialisation succeeded, false if it failed. </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00200">200</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
+
 </div>
 </div>
 <a id="aa14f4f1d4c84183b7bf7108bf930a23c"></a>
@@ -506,6 +530,8 @@ The fundamental sampling frequency. </td></tr>
 
 <p>The application entry point. </p>
 <p>Initialises the application state, installs all required callbacks, and runs the "simulation" loop until told to terminate. </p>
+
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00230">230</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
 
 </div>
 </div>
@@ -532,6 +558,8 @@ The fundamental sampling frequency. </td></tr>
 
 <p>The recording channel we use. </p>
 <p>Only one recording channel is used by this application. </p>
+
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00057">57</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
 
 </div>
 </div>

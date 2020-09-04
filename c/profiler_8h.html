@@ -137,6 +137,8 @@ struct <a class="el" href="profiler_8h.html#structprofiler__state">profiler_stat
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Support for code profiling. </p>
 <p>The profiler is known to have an impact on performance, and requires the use of the secondary system timer for this core. </p>
+
+<p class="definition">Definition in file <a class="el" href="profiler_8h_source.html">profiler.h</a>.</p>
 </div><hr/><h2 class="groupheader">Data Structure Documentation</h2>
 <a name="structprofiler__region" id="structprofiler__region"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#structprofiler__region">&#9670;&nbsp;</a></span>profiler_region</h2>
@@ -150,6 +152,8 @@ struct <a class="el" href="profiler_8h.html#structprofiler__state">profiler_stat
       </table>
 </div><div class="memdoc">
 <div class="textblock"><p>The layout of the profiler's DSG region. </p>
+
+<p class="definition">Definition at line <a class="el" href="profiler_8h_source.html#l00048">48</a> of file <a class="el" href="profiler_8h_source.html">profiler.h</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -181,6 +185,8 @@ The samples. <p>Each sample is the timestamp (taken from a free-running timer) a
       </table>
 </div><div class="memdoc">
 <div class="textblock"><p>The internal state of the profiler. </p>
+
+<p class="definition">Definition at line <a class="el" href="profiler_8h_source.html#l00060">60</a> of file <a class="el" href="profiler_8h_source.html">profiler.h</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -230,6 +236,8 @@ Points to where the next sample will be written. </td></tr>
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="profiler_8c_source.html#l00035">35</a> of file <a class="el" href="profiler_8c_source.html">profiler.c</a>.</p>
+
 </div>
 </div>
 <a id="a0b7e4fa366688c5ad4e3a0861023b015"></a>
@@ -250,6 +258,8 @@ Points to where the next sample will be written. </td></tr>
 
 <p>Finalises profiling. </p>
 <p>This includes the potentially slow process of writing to <a class="el" href="profiler_8h.html#a769de033492eb95961567521c47b21d6" title="The number of samples taken.">profiler_region::count</a> </p>
+
+<p class="definition">Definition at line <a class="el" href="profiler_8c_source.html#l00052">52</a> of file <a class="el" href="profiler_8c_source.html">profiler.c</a>.</p>
 
 </div>
 </div>
@@ -286,6 +296,8 @@ Points to where the next sample will be written. </td></tr>
 </dl>
 <p>Requires two words of profiler storage to record an entry, one for the high-resolution timestamp and one for the tag. </p>
 
+<p class="definition">Definition at line <a class="el" href="profiler_8h_source.html#l00100">100</a> of file <a class="el" href="profiler_8h_source.html">profiler.h</a>.</p>
+
 </div>
 </div>
 <a id="a51e79cd6f4ae86b7963424d517d8ca10"></a>
@@ -321,6 +333,8 @@ Points to where the next sample will be written. </td></tr>
 </dl>
 <p>See <a class="el" href="profiler_8h.html#a6834dc486def061533276240da3c4ba7" title="Write a profiler entry.">profiler_write_entry()</a>. </p>
 
+<p class="definition">Definition at line <a class="el" href="profiler_8h_source.html#l00112">112</a> of file <a class="el" href="profiler_8h_source.html">profiler.h</a>.</p>
+
 </div>
 </div>
 <a id="a06eaea00dd1339f79930d4504f74496a"></a>
@@ -355,6 +369,8 @@ Points to where the next sample will be written. </td></tr>
   </dd>
 </dl>
 <p>See <a class="el" href="profiler_8h.html#a6834dc486def061533276240da3c4ba7" title="Write a profiler entry.">profiler_write_entry()</a>. </p>
+
+<p class="definition">Definition at line <a class="el" href="profiler_8h_source.html#l00123">123</a> of file <a class="el" href="profiler_8h_source.html">profiler.h</a>.</p>
 
 </div>
 </div>

@@ -1166,8 +1166,8 @@
       <type>static void</type>
       <name>buffering_in_handler</name>
       <anchorfile>recording_8c.html</anchorfile>
-      <anchor>abad4c1a43ddb2eb8a503df45d5e9c9e5</anchor>
-      <arglist>(uint mailbox, uint port)</arglist>
+      <anchor>a46637df8a029dd1738c9b4d621e08d69</anchor>
+      <arglist>(uint mailbox, UNUSED uint port)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
@@ -1405,8 +1405,8 @@
       <type>static void</type>
       <name>simulation_control_scp_callback</name>
       <anchorfile>simulation_8c.html</anchorfile>
-      <anchor>a2f4389fd280128116a2efce8415ab38e</anchor>
-      <arglist>(uint mailbox, uint port)</arglist>
+      <anchor>af0de2e15197eb0b5a37d4c26ca118813</anchor>
+      <arglist>(uint mailbox, UNUSED uint port)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
@@ -1668,8 +1668,8 @@
       <type>static void</type>
       <name>sample_in_slot</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a0654afe09e3f4da82ba08eded260c07d</anchor>
-      <arglist>(uint unused0, uint unused1)</arglist>
+      <anchor>a85246b8a16b5c3293a2d05e3dfc5c7b0</anchor>
+      <arglist>(UNUSED uint unused0, UNUSED uint unused1)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static bool</type>
@@ -1883,8 +1883,8 @@
       <type>static void</type>
       <name>timer_callback</name>
       <anchorfile>command__sender__multicast__source_8c.html</anchorfile>
-      <anchor>aa51de182df34173453b5d99dcd2ffedc</anchor>
-      <arglist>(uint unused0, uint unused1)</arglist>
+      <anchor>a5988c46f25c4969721939e77003716f2</anchor>
+      <arglist>(UNUSED uint unused0, UNUSED uint unused1)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static bool</type>
@@ -2384,15 +2384,15 @@
       <type>static void</type>
       <name>wait_for_instructions</name>
       <anchorfile>bit__field__compressor_8c.html</anchorfile>
-      <anchor>a6fa4c7f6bbb089c3cda8e34ac4375884</anchor>
-      <arglist>(uint unused0, uint unused1)</arglist>
+      <anchor>a87f1185beb7868b3e57ac20aa8e217c0</anchor>
+      <arglist>(UNUSED uint unused0, UNUSED uint unused1)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
       <name>timer_callback</name>
       <anchorfile>bit__field__compressor_8c.html</anchorfile>
-      <anchor>aa51de182df34173453b5d99dcd2ffedc</anchor>
-      <arglist>(uint unused0, uint unused1)</arglist>
+      <anchor>a5988c46f25c4969721939e77003716f2</anchor>
+      <arglist>(UNUSED uint unused0, UNUSED uint unused1)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
@@ -3174,8 +3174,8 @@
       <type>void</type>
       <name>compress_start</name>
       <anchorfile>simple__compressor_8c.html</anchorfile>
-      <anchor>a19064972267b8da78c485a49d8787f13</anchor>
-      <arglist>(uint unused0, uint unused1)</arglist>
+      <anchor>a1c69814ba207120720a92d00433d33b8</anchor>
+      <arglist>(UNUSED uint unused0, UNUSED uint unused1)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -3489,8 +3489,8 @@
       <type>void</type>
       <name>timer_callback</name>
       <anchorfile>bit__field__sorter__and__searcher_8c.html</anchorfile>
-      <anchor>ac9914f4341d050b71b5e1516eb19a184</anchor>
-      <arglist>(uint unused0, uint unused1)</arglist>
+      <anchor>a69911e4c13d56a82f083ac64d91d954d</anchor>
+      <arglist>(UNUSED uint unused0, UNUSED uint unused1)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -3524,8 +3524,8 @@
       <type>void</type>
       <name>check_compressors</name>
       <anchorfile>bit__field__sorter__and__searcher_8c.html</anchorfile>
-      <anchor>a85c24f73513945a5d698d12620719e6d</anchor>
-      <arglist>(uint unused0, uint unused1)</arglist>
+      <anchor>ab949abe22a78531dea7cd85f7f102ee9</anchor>
+      <arglist>(UNUSED uint unused0, UNUSED uint unused1)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -3538,8 +3538,8 @@
       <type>void</type>
       <name>start_compression_process</name>
       <anchorfile>bit__field__sorter__and__searcher_8c.html</anchorfile>
-      <anchor>ad89dee597d14367e18c1ac915ba8fa67</anchor>
-      <arglist>(uint unused0, uint unused1)</arglist>
+      <anchor>a8d964d8adc4a0a705d11dff1fc2074ce</anchor>
+      <arglist>(UNUSED uint unused0, UNUSED uint unused1)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static vcpu_t *</type>
@@ -3835,8 +3835,8 @@
       <type>static void</type>
       <name>timer_callback</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>aa51de182df34173453b5d99dcd2ffedc</anchor>
-      <arglist>(uint unused0, uint unused1)</arglist>
+      <anchor>a5988c46f25c4969721939e77003716f2</anchor>
+      <arglist>(UNUSED uint unused0, UNUSED uint unused1)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
@@ -3863,15 +3863,15 @@
       <type>static void</type>
       <name>incoming_event_process_callback</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>aeb128103c5a51261c2c900b00b9d7e57</anchor>
-      <arglist>(uint unused0, uint unused1)</arglist>
+      <anchor>a9dae3a0797d42e452f27b45e22742688</anchor>
+      <arglist>(UNUSED uint unused0, UNUSED uint unused1)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
       <name>incoming_event_callback</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>af672f0dc4d9950e71de65e3eb28f2571</anchor>
-      <arglist>(uint key, uint unused)</arglist>
+      <anchor>ae1feab71bd2cdf813f9165d170606287</anchor>
+      <arglist>(uint key, UNUSED uint unused)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
@@ -4202,15 +4202,15 @@
       <type>static void</type>
       <name>eieio_command_parse_stop_requests</name>
       <anchorfile>reverse__iptag__multicast__source_8c.html</anchorfile>
-      <anchor>ae2f3608a5ea23f0ef5784f18f2075a29</anchor>
-      <arglist>(const eieio_msg_t eieio_msg_ptr, uint16_t length)</arglist>
+      <anchor>a5c33a58c0ac1c967b3475580bdbd99fc</anchor>
+      <arglist>(UNUSED const eieio_msg_t eieio_msg_ptr, UNUSED uint16_t length)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
       <name>eieio_command_parse_start_requests</name>
       <anchorfile>reverse__iptag__multicast__source_8c.html</anchorfile>
-      <anchor>a8ba485e9f52e0e348671d5c6aff90e3f</anchor>
-      <arglist>(const eieio_msg_t eieio_msg_ptr, uint16_t length)</arglist>
+      <anchor>af1e0ddb74ae9292e154fc4a25bc3a281</anchor>
+      <arglist>(UNUSED const eieio_msg_t eieio_msg_ptr, UNUSED uint16_t length)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
@@ -4293,15 +4293,15 @@
       <type>static void</type>
       <name>timer_callback</name>
       <anchorfile>reverse__iptag__multicast__source_8c.html</anchorfile>
-      <anchor>aa51de182df34173453b5d99dcd2ffedc</anchor>
-      <arglist>(uint unused0, uint unused1)</arglist>
+      <anchor>a5988c46f25c4969721939e77003716f2</anchor>
+      <arglist>(UNUSED uint unused0, UNUSED uint unused1)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
       <name>sdp_packet_callback</name>
       <anchorfile>reverse__iptag__multicast__source_8c.html</anchorfile>
-      <anchor>a81fbe8b3b335e2012e6101f88a29bb0f</anchor>
-      <arglist>(uint mailbox, uint port)</arglist>
+      <anchor>a43a2265c77b65106b62461e521d55e52</anchor>
+      <arglist>(uint mailbox, UNUSED uint port)</arglist>
     </member>
     <member kind="function">
       <type>void</type>

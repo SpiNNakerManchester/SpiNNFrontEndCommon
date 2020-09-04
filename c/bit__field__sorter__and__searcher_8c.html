@@ -91,7 +91,9 @@ $(function() {
 <code>#include &quot;<a class="el" href="compressor__sorter__structs_8h_source.html">bit_field_common/compressor_sorter_structs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="bit__field__table__generator_8h_source.html">bit_field_common/bit_field_table_generator.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>&quot;</code><br />
-</div><table class="memberdecls">
+</div>
+<p><a href="bit__field__sorter__and__searcher_8c_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a65fd90f232757535f02c46a885e49012"><td class="memItemLeft" align="right" valign="top"><a id="a65fd90f232757535f02c46a885e49012"></a>
@@ -186,9 +188,9 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__sorter__and__searcher_8c.html#a2f92a4e2f154f113ef10a0485e6f3e23">carry_on_binary_search</a> (void)</td></tr>
 <tr class="memdesc:a2f92a4e2f154f113ef10a0485e6f3e23"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the binary search on another compressor if one available. <br /></td></tr>
 <tr class="separator:a2f92a4e2f154f113ef10a0485e6f3e23"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac9914f4341d050b71b5e1516eb19a184"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__sorter__and__searcher_8c.html#ac9914f4341d050b71b5e1516eb19a184">timer_callback</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused0, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused1)</td></tr>
-<tr class="memdesc:ac9914f4341d050b71b5e1516eb19a184"><td class="mdescLeft">&#160;</td><td class="mdescRight">Timer interrupt for controlling time taken to try to compress table.  <a href="bit__field__sorter__and__searcher_8c.html#ac9914f4341d050b71b5e1516eb19a184">More...</a><br /></td></tr>
-<tr class="separator:ac9914f4341d050b71b5e1516eb19a184"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69911e4c13d56a82f083ac64d91d954d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__sorter__and__searcher_8c.html#a69911e4c13d56a82f083ac64d91d954d">timer_callback</a> (UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused0, UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused1)</td></tr>
+<tr class="memdesc:a69911e4c13d56a82f083ac64d91d954d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Timer interrupt for controlling time taken to try to compress table.  <a href="bit__field__sorter__and__searcher_8c.html#a69911e4c13d56a82f083ac64d91d954d">More...</a><br /></td></tr>
+<tr class="separator:a69911e4c13d56a82f083ac64d91d954d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a72e0d6c3a5bce7e5fbf2c7f586db5fa3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__sorter__and__searcher_8c.html#a72e0d6c3a5bce7e5fbf2c7f586db5fa3">process_success</a> (int mid_point, int processor_id)</td></tr>
 <tr class="memdesc:a72e0d6c3a5bce7e5fbf2c7f586db5fa3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle the fact that a midpoint was successful.  <a href="bit__field__sorter__and__searcher_8c.html#a72e0d6c3a5bce7e5fbf2c7f586db5fa3">More...</a><br /></td></tr>
 <tr class="separator:a72e0d6c3a5bce7e5fbf2c7f586db5fa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -201,16 +203,16 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 <tr class="memitem:ae79865738cd37176e6520d72154ce64a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__sorter__and__searcher_8c.html#ae79865738cd37176e6520d72154ce64a">process_compressor_response</a> (int processor_id, <a class="el" href="compressor__sorter__structs_8h.html#ac124d280cf92fb450e1e72a58b88253f">compressor_states</a> finished_state)</td></tr>
 <tr class="memdesc:ae79865738cd37176e6520d72154ce64a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process the response from a compressor's attempt to compress.  <a href="bit__field__sorter__and__searcher_8c.html#ae79865738cd37176e6520d72154ce64a">More...</a><br /></td></tr>
 <tr class="separator:ae79865738cd37176e6520d72154ce64a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a85c24f73513945a5d698d12620719e6d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__sorter__and__searcher_8c.html#a85c24f73513945a5d698d12620719e6d">check_compressors</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused0, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused1)</td></tr>
-<tr class="memdesc:a85c24f73513945a5d698d12620719e6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check compressors' state till they're finished.  <a href="bit__field__sorter__and__searcher_8c.html#a85c24f73513945a5d698d12620719e6d">More...</a><br /></td></tr>
-<tr class="separator:a85c24f73513945a5d698d12620719e6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab949abe22a78531dea7cd85f7f102ee9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__sorter__and__searcher_8c.html#ab949abe22a78531dea7cd85f7f102ee9">check_compressors</a> (UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused0, UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused1)</td></tr>
+<tr class="memdesc:ab949abe22a78531dea7cd85f7f102ee9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check compressors' state till they're finished.  <a href="bit__field__sorter__and__searcher_8c.html#ab949abe22a78531dea7cd85f7f102ee9">More...</a><br /></td></tr>
+<tr class="separator:ab949abe22a78531dea7cd85f7f102ee9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab98e0806224b412ce1199a4a1ff2f388"><td class="memItemLeft" align="right" valign="top"><a id="ab98e0806224b412ce1199a4a1ff2f388"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__sorter__and__searcher_8c.html#ab98e0806224b412ce1199a4a1ff2f388">start_binary_search</a> (void)</td></tr>
 <tr class="memdesc:ab98e0806224b412ce1199a4a1ff2f388"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start binary search on all compressors dividing the bitfields as evenly as possible. <br /></td></tr>
 <tr class="separator:ab98e0806224b412ce1199a4a1ff2f388"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad89dee597d14367e18c1ac915ba8fa67"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__sorter__and__searcher_8c.html#ad89dee597d14367e18c1ac915ba8fa67">start_compression_process</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused0, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused1)</td></tr>
-<tr class="memdesc:ad89dee597d14367e18c1ac915ba8fa67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the work for the compression search.  <a href="bit__field__sorter__and__searcher_8c.html#ad89dee597d14367e18c1ac915ba8fa67">More...</a><br /></td></tr>
-<tr class="separator:ad89dee597d14367e18c1ac915ba8fa67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d964d8adc4a0a705d11dff1fc2074ce"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__sorter__and__searcher_8c.html#a8d964d8adc4a0a705d11dff1fc2074ce">start_compression_process</a> (UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused0, UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused1)</td></tr>
+<tr class="memdesc:a8d964d8adc4a0a705d11dff1fc2074ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the work for the compression search.  <a href="bit__field__sorter__and__searcher_8c.html#a8d964d8adc4a0a705d11dff1fc2074ce">More...</a><br /></td></tr>
+<tr class="separator:a8d964d8adc4a0a705d11dff1fc2074ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab01f3414297cde2079c919d64846e836"><td class="memItemLeft" align="right" valign="top">static vcpu_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__sorter__and__searcher_8c.html#ab01f3414297cde2079c919d64846e836">get_this_vcpu_info</a> (void)</td></tr>
 <tr class="memdesc:ab01f3414297cde2079c919d64846e836"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a handle to this CPU's vcpu structure.  <a href="bit__field__sorter__and__searcher_8c.html#ab01f3414297cde2079c919d64846e836">More...</a><br /></td></tr>
 <tr class="separator:ab01f3414297cde2079c919d64846e836"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -292,6 +294,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>SpiNNaker routing table minimisation with bitfield integration control processor. </p>
 <p>Controls the attempt to minimise the router entries with bitfield components. </p>
+
+<p class="definition">Definition in file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
 </div><h2 class="groupheader">Enumeration Type Documentation</h2>
 <a id="a7fcef664d5dc54944296abea6f026276"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7fcef664d5dc54944296abea6f026276">&#9670;&nbsp;</a></span>priorities</h2>
@@ -312,6 +316,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 <tr><td class="fieldname"><a id="a7fcef664d5dc54944296abea6f026276a141de7322a9c4947e64a2da966a4b1ef"></a>TIMER_TICK_PRIORITY&#160;</td><td class="fielddoc"><p>Timer tick is high priority. </p>
 </td></tr>
 </table>
+
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00063">63</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
 
 </div>
 </div>
@@ -343,6 +349,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 <p>Load the best routing table to the router. </p>
 <dl class="section return"><dt>Returns</dt><dd>Whether the table was loaded into the router or not </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00121">121</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
 <a id="aabb7e8da822c5d0a45b1ed8032ede71c"></a>
@@ -369,6 +377,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00158">158</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
 <a id="a6cc8469cd2af4fc03d051e88bc414e87"></a>
@@ -394,6 +404,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00169">169</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
 
 </div>
 </div>
@@ -423,6 +435,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 
 <p>Set up the search bitfields. </p>
 <dl class="section return"><dt>Returns</dt><dd>True if the setup succeeded </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00178">178</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
 
 </div>
 </div>
@@ -477,6 +491,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if stored </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00204">204</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
 <a id="a2dfa6ebebc99da76f7dc8f92dfe8cbf1"></a>
@@ -522,6 +538,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00242">242</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
 <a id="af8905b57f57799ccb76d07dadb273efd"></a>
@@ -550,6 +568,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 
 <p>Locate the next valid midpoint to test. </p>
 <dl class="section return"><dt>Returns</dt><dd>The midpoint, or <a class="el" href="constants_8h.html#a01afb482fee16ed0bb6551bf1036320e">FAILED_TO_FIND</a> if no midpoints left </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00351">351</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
 
 </div>
 </div>
@@ -580,6 +600,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 <p>Clean up when we've found a good compression. </p>
 <p>Handles the freeing of memory from compressor processors, waiting for compressor processors to finish and removing merged bitfields from the bitfield regions. </p>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00438">438</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
 <a id="a158c3d6523a5b6472c894c9294cf018c"></a>
@@ -607,6 +629,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the preparation succeeded. </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00464">464</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
 <a id="ad1edafabb830bb65416e6254bd0cc74c"></a>
@@ -627,6 +651,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 
 <p>Get the next processor id which is ready to run a compression. </p>
 <p>May result in preparing a processor in the process. </p><dl class="section return"><dt>Returns</dt><dd>The processor ID of the next available processor, or <a class="el" href="constants_8h.html#a01afb482fee16ed0bb6551bf1036320e">FAILED_TO_FIND</a> if none </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00502">502</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
 
 </div>
 </div>
@@ -655,6 +681,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The processor ID of the next available processor, or <a class="el" href="constants_8h.html#a01afb482fee16ed0bb6551bf1036320e">FAILED_TO_FIND</a> if none </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00537">537</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
 <a id="adc7135678f90b4c7dbdd4d1d4b56dacb"></a>
@@ -675,6 +703,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 
 <p>Set up the compression attempt for the no bitfield version. </p>
 <dl class="section return"><dt>Returns</dt><dd>Whether setting off the compression attempt was successful. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00552">552</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
 
 </div>
 </div>
@@ -697,6 +727,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 <p>Check if a compressor processor is available. </p>
 <dl class="section return"><dt>Returns</dt><dd>Whether at least one processor is ready to compress </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00576">576</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
 <a id="a49520fa4fcbd652ababa3ed7e9e002ee"></a>
@@ -717,6 +749,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 
 <p>Check to see if all compressor processor are done and not ready. </p>
 <dl class="section return"><dt>Returns</dt><dd>true if all processors are done and not set ready </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00598">598</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
 
 </div>
 </div>
@@ -739,10 +773,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 <p>Check if all processors are done; if yes, run best and exit. </p>
 <dl class="section return"><dt>Returns</dt><dd>False if at least one compressors is not done. True if termination fails (which shouldn't happen...) </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00610">610</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
-<a id="ac9914f4341d050b71b5e1516eb19a184"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac9914f4341d050b71b5e1516eb19a184">&#9670;&nbsp;</a></span>timer_callback()</h2>
+<a id="a69911e4c13d56a82f083ac64d91d954d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a69911e4c13d56a82f083ac64d91d954d">&#9670;&nbsp;</a></span>timer_callback()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -750,13 +786,13 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
         <tr>
           <td class="memname">void timer_callback </td>
           <td>(</td>
-          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
+          <td class="paramtype">UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused0</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
+          <td class="paramtype">UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused1</em>&#160;</td>
         </tr>
         <tr>
@@ -775,6 +811,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00705">705</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
 
 </div>
 </div>
@@ -813,6 +851,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00722">722</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
 <a id="ad25e5b4067e405459a984cefacdcd02e"></a>
@@ -849,6 +889,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00755">755</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
 
 </div>
 </div>
@@ -887,6 +929,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00777">777</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
 <a id="ae79865738cd37176e6520d72154ce64a"></a>
@@ -924,10 +968,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00817">817</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
-<a id="a85c24f73513945a5d698d12620719e6d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a85c24f73513945a5d698d12620719e6d">&#9670;&nbsp;</a></span>check_compressors()</h2>
+<a id="ab949abe22a78531dea7cd85f7f102ee9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab949abe22a78531dea7cd85f7f102ee9">&#9670;&nbsp;</a></span>check_compressors()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -935,13 +981,13 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
         <tr>
           <td class="memname">void check_compressors </td>
           <td>(</td>
-          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
+          <td class="paramtype">UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused0</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
+          <td class="paramtype">UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused1</em>&#160;</td>
         </tr>
         <tr>
@@ -961,10 +1007,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00878">878</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
-<a id="ad89dee597d14367e18c1ac915ba8fa67"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad89dee597d14367e18c1ac915ba8fa67">&#9670;&nbsp;</a></span>start_compression_process()</h2>
+<a id="a8d964d8adc4a0a705d11dff1fc2074ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d964d8adc4a0a705d11dff1fc2074ce">&#9670;&nbsp;</a></span>start_compression_process()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -972,13 +1020,13 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
         <tr>
           <td class="memname">void start_compression_process </td>
           <td>(</td>
-          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
+          <td class="paramtype">UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused0</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
+          <td class="paramtype">UNUSED <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused1</em>&#160;</td>
         </tr>
         <tr>
@@ -997,6 +1045,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00950">950</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
 
 </div>
 </div>
@@ -1027,6 +1077,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 <p>Get a handle to this CPU's vcpu structure. </p>
 <dl class="section return"><dt>Returns</dt><dd>the vcpu structure </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l01013">1013</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
 <a id="aaf6505dd1f37bcd324f5744dddedc3a3"></a>
@@ -1047,6 +1099,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 
 <p>Set things up for the compressor processors so they are ready to be compressing. </p>
 <dl class="section return"><dt>Returns</dt><dd>Whether the initialisation of compressors succeeded </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l01062">1062</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
 
 </div>
 </div>
@@ -1077,6 +1131,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 <p>Callback to set off the router compressor. </p>
 <dl class="section return"><dt>Returns</dt><dd>Whether the initialisation was successful </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l01081">1081</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
@@ -1095,6 +1151,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 <p>The uncompressed router table. </p>
 <p>Address comes from <code>vcpu-&gt;user1</code> </p>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00079">79</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
 <a id="af4f616ec6ec66cfb3babbc369e942fa4"></a>
@@ -1112,6 +1170,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 <p>The locations of bitfields from application processors. </p>
 <p>Address comes from <code>vcpu-&gt;user2</code> </p>
 
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00083">83</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
+
 </div>
 </div>
 <a id="ac2f679e18140a40be26be97edb8bb1a9"></a>
@@ -1128,6 +1188,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit_
 
 <p>SDRAM blocks that the fake heap can use. </p>
 <p>Address comes from <code>vcpu-&gt;user3</code> </p>
+
+<p class="definition">Definition at line <a class="el" href="bit__field__sorter__and__searcher_8c_source.html#l00087">87</a> of file <a class="el" href="bit__field__sorter__and__searcher_8c_source.html">bit_field_sorter_and_searcher.c</a>.</p>
 
 </div>
 </div>

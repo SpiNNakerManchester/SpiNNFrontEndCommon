@@ -87,7 +87,9 @@ $(function() {
 <code>#include &lt;<a class="el" href="simulation_8h_source.html">simulation.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="debug_8h_source.html">debug.h</a>&gt;</code><br />
 <code>#include &lt;<a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/bit__field_8h.html">bit_field.h</a>&gt;</code><br />
-</div><table class="memberdecls">
+</div>
+<p><a href="data__speed__up__packet__gatherer_8c_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Data Structures</h2></td></tr>
 <tr class="memitem:structreceive__data__to__location__msg__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="data__speed__up__packet__gatherer_8c.html#structreceive__data__to__location__msg__t">receive_data_to_location_msg_t</a></td></tr>
@@ -364,6 +366,8 @@ static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_too
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The implementation of the Data Speed Up Packet Gatherer. </p>
 <p>The purpose of this application is to allow data to be streamed in and out of SpiNNaker at very high speed while other applications are not running. It is designed to only run on chips with an active Ethernet port. </p>
+
+<p class="definition">Definition in file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 </div><hr/><h2 class="groupheader">Data Structure Documentation</h2>
 <a name="structreceive__data__to__location__msg__t" id="structreceive__data__to__location__msg__t"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#structreceive__data__to__location__msg__t">&#9670;&nbsp;</a></span>receive_data_to_location_msg_t</h2>
@@ -377,6 +381,8 @@ static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_too
       </table>
 </div><div class="memdoc">
 <div class="textblock"><p>meaning of payload in first data in SDP packet </p>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00128">128</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -431,6 +437,8 @@ Maximum sequence number of data stream. </td></tr>
       </table>
 </div><div class="memdoc">
 <div class="textblock"><p>meaning of payload in subsequent data in SDP packets </p>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00138">138</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -473,6 +481,8 @@ The payload of real data. </td></tr>
       </table>
 </div><div class="memdoc">
 <div class="textblock"><p>SDP packet payload definition. </p>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00146">146</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -509,6 +519,8 @@ The payload data of the message. </td></tr>
       </table>
 </div><div class="memdoc">
 <div class="textblock"><p>The layout of the Data Out configuration region. </p>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00201">201</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -564,6 +576,8 @@ The ID of the IPtag to send the SDP packets out to host on. <p>Note that the hos
       </table>
 </div><div class="memdoc">
 <div class="textblock"><p>Associates a <em>board-local</em> coordinate with a key for talking to the extra monitor on that chip. </p>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00271">271</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -600,6 +614,8 @@ Base key to use for talking to that chip. </td></tr>
       </table>
 </div><div class="memdoc">
 <div class="textblock"><p>The layout of the Data In configuration region. </p>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00278">278</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -652,6 +668,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
 </td></tr>
 </table>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00053">53</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="a6ec726dd66cc535a8c294d17c2b49259"></a>
@@ -673,6 +691,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
 <tr><td class="fieldname"><a id="a6ec726dd66cc535a8c294d17c2b49259a7e00386fbc2123b9ace81f5ad95c9da2"></a>DATA_SPEED_UP_IN_PORT&#160;</td><td class="fielddoc"><p>Data Speed Up Inbound messages. </p>
 </td></tr>
 </table>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00069">69</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -700,6 +720,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
 </td></tr>
 </table>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00078">78</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="ac36f475ca5b446f4fde4c9b90bec77c8"></a>
@@ -726,6 +748,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
 </td></tr>
 </table>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00099">99</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="a05589fbab0657f08285ebdfe93f5ec9e"></a>
@@ -749,6 +773,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
 </td></tr>
 </table>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00111">111</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="a16af7b253440dadd46a80a4b9fddba4d"></a>
@@ -770,6 +796,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
 <tr><td class="fieldname"><a id="a16af7b253440dadd46a80a4b9fddba4da908ad08dc63e1c21f95e82d2e50700a4"></a>CHIP_TO_KEY&#160;</td><td class="fielddoc"><p>Index of chip-to-key mapping table. </p>
 </td></tr>
 </table>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00193">193</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -793,6 +821,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
 </td></tr>
 </table>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00219">219</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="a29b4f717863f7cad6b6e5329637389e1"></a>
@@ -815,6 +845,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
 <tr><td class="fieldname"><a id="a29b4f717863f7cad6b6e5329637389e1a41ed3c7c8f08e26cf95b5dac8e3028c6"></a>BOUNDARY_KEY_OFFSET&#160;</td><td class="fielddoc"><p>Write stream complete. Payload irrelevant. </p>
 </td></tr>
 </table>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00260">260</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -850,6 +882,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00296">296</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -896,6 +930,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00317">317</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="a5eab57f54acd2a693e07aebe2ac43020"></a>
@@ -941,6 +977,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00332">332</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1001,6 +1039,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00353">353</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="a6b463e47f1729ed96a1bacb33884d7e2"></a>
@@ -1035,6 +1075,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00373">373</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1071,6 +1113,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the new sdram location. </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00421">421</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="ace3a5f572a64fc78448262bb8391b15b"></a>
@@ -1104,6 +1148,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00428">428</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1139,6 +1185,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00438">438</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="a1a4b79877193ae7b37426fbdb65370c7"></a>
@@ -1172,6 +1220,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00513">513</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1218,6 +1268,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the number of data words in the message </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00586">586</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1271,6 +1323,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00597">597</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="a4c9bf4119493905c8ce71bb51864da86"></a>
@@ -1305,6 +1359,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00609">609</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="a745007f3261055592acbddd1865e333a"></a>
@@ -1338,6 +1394,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00662">662</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1384,6 +1442,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00687">687</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="ac3f45ee4c51f343b32b411e4d3dd0451"></a>
@@ -1418,6 +1478,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00701">701</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="a6d7697c8d026ef4edd58add4920a3b34"></a>
@@ -1451,6 +1513,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00712">712</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1497,6 +1561,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00749">749</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="a0ddbbd253c26b6bbc42db97a4190a3a6"></a>
@@ -1542,6 +1608,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00786">786</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="aa14f4f1d4c84183b7bf7108bf930a23c"></a>
@@ -1562,6 +1630,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
 
 <p>This function is called at application start-up. </p>
 <p>It is used to register event callbacks (delegated to <a class="el" href="data__speed__up__packet__gatherer_8c.html#ae7e730f7e25fbd20d09295fe2f6bf1d4" title="Sets up the application.">initialise()</a>) and begin the simulation. </p>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00908">908</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1586,6 +1656,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
 </table>
 </div><div class="memdoc">
 <p>data holders for the SDP packet (plus 1 to protect against memory overwrites with command messages) </p>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00184">184</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1613,6 +1685,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
 <p>Note that these addresses are <em>board-local</em> chip addresses.</p>
 <p>The keys here are base keys, and indicate the first key in a group where the LSBs (see <a class="el" href="data__speed__up__packet__gatherer_8c.html#a29b4f717863f7cad6b6e5329637389e1">key_offsets</a>) indicate the meaning of the message. </p>
 
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00230">230</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+
 </div>
 </div>
 <a id="a7756051aab3e618777307b23504d23b3"></a>
@@ -1637,6 +1711,8 @@ The configuration data for routing messages to specific extra monitors. <p>Used 
 
 <p>Whether <a class="el" href="data__speed__up__packet__gatherer_8c.html#a4abbe01e7e6f8130ee9506d355039489" title="Records what sequence numbers we have received from host during Data In.">received_seq_nums_store</a> was allocated in SDRAM. </p>
 <p>If false, the bitfield fitted in DTCM </p>
+
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00247">247</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>

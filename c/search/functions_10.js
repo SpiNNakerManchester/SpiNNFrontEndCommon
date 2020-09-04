@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['sample_5fin_5fslot_1893',['sample_in_slot',['../chip__power__monitor_8c.html#a0654afe09e3f4da82ba08eded260c07d',1,'chip_power_monitor.c']]],
+  ['sample_5fin_5fslot_1893',['sample_in_slot',['../chip__power__monitor_8c.html#a85246b8a16b5c3293a2d05e3dfc5c7b0',1,'chip_power_monitor.c']]],
   ['sanity_5fcheck_5fwrite_1894',['sanity_check_write',['../data__speed__up__packet__gatherer_8c.html#a5eab57f54acd2a693e07aebe2ac43020',1,'data_speed_up_packet_gatherer.c']]],
   ['sark_5fint_5fhan_1895',['sark_int_han',['../extra__monitor__support_8c.html#a6d542339b492b2ad62a803b09b001365',1,'extra_monitor_support.c']]],
-  ['sdp_5fpacket_5fcallback_1896',['sdp_packet_callback',['../reverse__iptag__multicast__source_8c.html#a81fbe8b3b335e2012e6101f88a29bb0f',1,'reverse_iptag_multicast_source.c']]],
+  ['sdp_5fpacket_5fcallback_1896',['sdp_packet_callback',['../reverse__iptag__multicast__source_8c.html#a43a2265c77b65106b62461e521d55e52',1,'reverse_iptag_multicast_source.c']]],
   ['sdram_5falloc_1897',['sdram_alloc',['../extra__monitor__support_8c.html#a1be01cae613050e36c4f549c87ae0a84',1,'extra_monitor_support.c']]],
   ['sdram_5ffree_1898',['sdram_free',['../extra__monitor__support_8c.html#aaf46efbdfe7f99bd30f5c16cab24594d',1,'extra_monitor_support.c']]],
   ['sdram_5fmax_5fblock_5fsize_1899',['sdram_max_block_size',['../extra__monitor__support_8c.html#adcd337d4b9965adcf2fe541a65330121',1,'extra_monitor_support.c']]],
@@ -26,7 +26,7 @@ var searchData=
   ['setup_5fno_5fbitfields_5fattempt_1916',['setup_no_bitfields_attempt',['../bit__field__sorter__and__searcher_8c.html#adc7135678f90b4c7dbdd4d1d4b56dacb',1,'bit_field_sorter_and_searcher.c']]],
   ['setup_5frouting_5ftables_1917',['setup_routing_tables',['../bit__field__compressor_8c.html#aed02adbf7548755efc4b451109eca4b3',1,'bit_field_compressor.c']]],
   ['signal_5fsoftware_5ferror_1918',['signal_software_error',['../reverse__iptag__multicast__source_8c.html#af1ec3a5d29ebe573a14fa0635638e4a9',1,'reverse_iptag_multicast_source.c']]],
-  ['simulation_5fcontrol_5fscp_5fcallback_1919',['simulation_control_scp_callback',['../simulation_8c.html#a2f4389fd280128116a2efce8415ab38e',1,'simulation.c']]],
+  ['simulation_5fcontrol_5fscp_5fcallback_1919',['simulation_control_scp_callback',['../simulation_8c.html#af0de2e15197eb0b5a37d4c26ca118813',1,'simulation.c']]],
   ['simulation_5fdma_5ftransfer_5fdone_5fcallback_1920',['simulation_dma_transfer_done_callback',['../simulation_8c.html#a84a98491fc54eab9adbb4883ab26e980',1,'simulation.c']]],
   ['simulation_5fdma_5ftransfer_5fdone_5fcallback_5foff_1921',['simulation_dma_transfer_done_callback_off',['../simulation_8h.html#adee541cc2640414b2117540149ff5ac8',1,'simulation_dma_transfer_done_callback_off(uint tag):&#160;simulation.c'],['../simulation_8c.html#adee541cc2640414b2117540149ff5ac8',1,'simulation_dma_transfer_done_callback_off(uint tag):&#160;simulation.c']]],
   ['simulation_5fdma_5ftransfer_5fdone_5fcallback_5fon_1922',['simulation_dma_transfer_done_callback_on',['../simulation_8h.html#a70e4e472b7e7a790e85005e22dc3e8c9',1,'simulation_dma_transfer_done_callback_on(uint tag, callback_t callback):&#160;simulation.c'],['../simulation_8c.html#a70e4e472b7e7a790e85005e22dc3e8c9',1,'simulation_dma_transfer_done_callback_on(uint tag, callback_t callback):&#160;simulation.c']]],
@@ -51,7 +51,7 @@ var searchData=
   ['sort_5ftable_1941',['sort_table',['../pair__minimize_8h.html#ac940b4ae90122ef0e7ec01cd4efcbc95',1,'pair_minimize.h']]],
   ['sort_5ftable_5fby_5fkey_1942',['sort_table_by_key',['../bit__field__table__generator_8h.html#a6236cf9295f7f8805153cbbdd3c8cfc3',1,'bit_field_table_generator.h']]],
   ['start_5fbinary_5fsearch_1943',['start_binary_search',['../bit__field__sorter__and__searcher_8c.html#ab98e0806224b412ce1199a4a1ff2f388',1,'bit_field_sorter_and_searcher.c']]],
-  ['start_5fcompression_5fprocess_1944',['start_compression_process',['../bit__field__compressor_8c.html#a3ae867241d002bc2ea1bf2af143724d8',1,'start_compression_process(void):&#160;bit_field_compressor.c'],['../bit__field__sorter__and__searcher_8c.html#ad89dee597d14367e18c1ac915ba8fa67',1,'start_compression_process(uint unused0, uint unused1):&#160;bit_field_sorter_and_searcher.c']]],
+  ['start_5fcompression_5fprocess_1944',['start_compression_process',['../bit__field__compressor_8c.html#a3ae867241d002bc2ea1bf2af143724d8',1,'start_compression_process(void):&#160;bit_field_compressor.c'],['../bit__field__sorter__and__searcher_8c.html#a8d964d8adc4a0a705d11dff1fc2074ce',1,'start_compression_process(UNUSED uint unused0, UNUSED uint unused1):&#160;bit_field_sorter_and_searcher.c']]],
   ['swap_5fentries_1945',['swap_entries',['../routing__table_8h.html#a5c86d1dcc3aee4a16863b224c596cfaa',1,'routing_table.h']]],
   ['swap_5froutes_1946',['swap_routes',['../pair__minimize_8h.html#aaf0cff3e9b1faf15c5988c3579d8fd94',1,'pair_minimize.h']]],
   ['synchronise_5fstart_1947',['synchronise_start',['../simulation_8c.html#ab6be610af3e9296fe2941a642e2bbc78',1,'simulation.c']]]

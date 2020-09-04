@@ -182,6 +182,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mall
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Support for adding debugging information to dynamic allocation. </p>
+
+<p class="definition">Definition in file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
 </div><hr/><h2 class="groupheader">Data Structure Documentation</h2>
 <a name="structsdram__block" id="structsdram__block"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#structsdram__block">&#9670;&nbsp;</a></span>sdram_block</h2>
@@ -195,6 +197,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mall
       </table>
 </div><div class="memdoc">
 <div class="textblock"><p>An SDRAM block outside the heap. </p>
+
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8h_source.html#l00042">42</a> of file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -225,6 +229,8 @@ Size of block in bytes. </td></tr>
       </table>
 </div><div class="memdoc">
 <div class="textblock"><p>Holds host-allocated SDRAM blocks outside the heap. </p>
+
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8h_source.html#l00050">50</a> of file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -270,6 +276,8 @@ VLA of SDRAM blocks. </td></tr>
 </td></tr>
 </table>
 
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8h_source.html#l00028">28</a> of file <a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>.</p>
+
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
@@ -292,6 +300,8 @@ VLA of SDRAM blocks. </td></tr>
 <p>Turn on printing. </p>
 <dl class="section note"><dt>Note</dt><dd>Printing of allocations can take a lot of IOBUF space. </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00068">68</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
+
 </div>
 </div>
 <a id="ac98a576116d9cd8509e0a0d02defc41c"></a>
@@ -312,6 +322,8 @@ VLA of SDRAM blocks. </td></tr>
 
 <p>Get the pointer to the stolen heap. </p>
 <dl class="section return"><dt>Returns</dt><dd>the heap pointer. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00076">76</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
 
 </div>
 </div>
@@ -338,6 +350,8 @@ VLA of SDRAM blocks. </td></tr>
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00083">83</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
 
 </div>
 </div>
@@ -366,6 +380,8 @@ VLA of SDRAM blocks. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if nothing is broken, false if there was detected overwrites. </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00096">96</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
+
 </div>
 </div>
 <a id="a695672411d7b3d27011c0a593e145e18"></a>
@@ -392,6 +408,8 @@ VLA of SDRAM blocks. </td></tr>
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00161">161</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
+
 </div>
 </div>
 <a id="abb3cda3d80001855304b4644975884fe"></a>
@@ -412,6 +430,8 @@ VLA of SDRAM blocks. </td></tr>
 
 <p>Checks all malloc's for overwrites with no marker. </p>
 <p>Calls <a class="el" href="malloc__extras_8h.html#a695672411d7b3d27011c0a593e145e18" title="Checks all malloc()s with a given marker.">malloc_extras_check_all_marked()</a>, but does not provide an easy marker to track back to the application user code. </p>
+
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00182">182</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
 
 </div>
 </div>
@@ -441,6 +461,8 @@ VLA of SDRAM blocks. </td></tr>
 <dl class="section return"><dt>Returns</dt><dd>true states the initialisation was successful (or not)</dd></dl>
 <p>sets up trackers for this core if asked. </p><dl class="section note"><dt>Note</dt><dd>DOES NOT REBUILD THE FAKE HEAP! </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00374">374</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
+
 </div>
 </div>
 <a id="a1bc937477e0ff1a0d8f6322d4388508b"></a>
@@ -468,6 +490,8 @@ VLA of SDRAM blocks. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>None </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00390">390</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
+
 </div>
 </div>
 <a id="aa532d8acede472fb18b8f625b586ee03"></a>
@@ -490,6 +514,8 @@ VLA of SDRAM blocks. </td></tr>
 <dl class="section return"><dt>Returns</dt><dd>true is a successful initialisation and false otherwise.</dd></dl>
 <p>Builds a new heap with no stolen SDRAM and sets up the malloc tracker.</p>
 <dl class="section return"><dt>Returns</dt><dd>bool where true is a successful initialisation and false otherwise. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00461">461</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
 
 </div>
 </div>
@@ -528,6 +554,8 @@ VLA of SDRAM blocks. </td></tr>
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00465">465</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
+
 </div>
 </div>
 <a id="aac64fa96c630b0fb9a282f2ba8e60c1c"></a>
@@ -553,6 +581,8 @@ VLA of SDRAM blocks. </td></tr>
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00509">509</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
 
 </div>
 </div>
@@ -581,6 +611,8 @@ VLA of SDRAM blocks. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the pointer to the location in SDRAM to use in application code. </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00604">604</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
+
 </div>
 </div>
 <a id="adf1d52b684bde5add0a5d59f05d08d62"></a>
@@ -608,6 +640,8 @@ VLA of SDRAM blocks. </td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>: the address of the block of memory to utilise. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="malloc__extras_8c_source.html#l00625">625</a> of file <a class="el" href="malloc__extras_8c_source.html">malloc_extras.c</a>.</p>
 
 </div>
 </div>
