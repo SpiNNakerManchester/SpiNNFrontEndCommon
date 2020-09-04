@@ -30,10 +30,7 @@
 #include <eieio.h>
 #include <buffered_eieio_defs.h>
 #include "recording.h"
-
-// Declare wfi function
-//! Wait for interrupt (semi-public part of Spin1API)
-extern void spin1_wfi(void);
+#include <wfi.h>
 
 // ------------------------------------------------------------------------
 
@@ -704,7 +701,7 @@ static inline void record_packet(
         const eieio_msg_t eieio_msg_ptr, uint32_t length) {
     if (recording_flags > 0) {
         while (recording_in_progress) {
-            spin1_wfi();
+            wait_for_interrupt();
         }
 
         // Ensure that the recorded data size is a multiple of 4
@@ -1256,7 +1253,7 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
 
         // Wait for recording to finish
         while (recording_in_progress) {
-            spin1_wfi();
+            wait_for_interrupt();
         }
 
         // close recording channels
