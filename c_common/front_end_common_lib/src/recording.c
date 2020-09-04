@@ -28,10 +28,7 @@
 #include <circular_buffer.h>
 #include <spin1_api_params.h>
 #include <debug.h>
-
-// Declare wfi function
-//! Wait For Interrupt
-extern void spin1_wfi(void);
+#include <wfi.h>
 
 //---------------------------------------
 // Structures
@@ -300,7 +297,7 @@ static void recording_write_one_chunk(
         while (!spin1_dma_transfer(
                 RECORDING_DMA_COMPLETE_TAG_ID, write_pointer, data, DMA_WRITE,
                 length)) {
-            spin1_wfi();
+            wait_for_interrupt();
         }
     } else {
         spin1_memcpy(write_pointer, data, length);
@@ -564,7 +561,7 @@ void recording_finalise(void) {
 
     // wait till all DMA's have been finished
     while (circular_buffer_size(dma_complete_buffer) != 0) {
-        spin1_wfi();
+        wait_for_interrupt();
     }
 
     // update buffer state data write
