@@ -28,6 +28,7 @@
 #include <stdbool.h>
 #include <common-typedefs.h>
 #include "common.h"
+#include <wfi.h>
 
 // Debugging control
 //#define DEBUG_DATA_IN
@@ -578,9 +579,6 @@ static bool data_out_stop = false;
 // ------------------------------------------------------------------------
 // support functions and variables
 // ------------------------------------------------------------------------
-
-//! Wait for interrupt. (Undisclosed import from Spin1API.)
-extern void spin1_wfi(void);
 
 //! The standard SARK CPU interrupt handler.
 extern INT_HANDLER sark_int_han(void);
@@ -2050,7 +2048,7 @@ void c_main(void) {
 
     // Run until told to exit
     while (reinject_run) {
-        spin1_wfi();
+        wait_for_interrupt();
     }
 }
 // ------------------------------------------------------------------------
