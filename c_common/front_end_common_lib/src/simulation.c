@@ -160,8 +160,7 @@ static void synchronise_start(uint unused0, uint unused1) {
 //!     needs to be stopped.
 //! \param[in] mailbox: The mailbox containing the SDP packet received
 //! \param[in] port: The port on which the packet was received
-static void simulation_control_scp_callback(uint mailbox, uint port) {
-    use(port);
+static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
 

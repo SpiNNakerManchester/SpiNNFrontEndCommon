@@ -147,9 +147,7 @@ static void count_core_states(void) {
 //! \brief Called to actually record a sample.
 //! \param unused0 unused
 //! \param unused1 unused
-static void sample_in_slot(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
+static void sample_in_slot(UNUSED uint unused0, UNUSED uint unused1) {
     time++;
 
     // handle the situation when the first time update is sent
