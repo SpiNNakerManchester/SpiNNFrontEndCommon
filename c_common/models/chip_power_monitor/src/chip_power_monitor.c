@@ -35,7 +35,7 @@
 
 //! The number of bits of randomness used to break up sampling periodicity
 //! errors.
-#define NUM_RANDOM_BITS 8
+#define NUM_RANDOM_BITS 12
 
 //! The IDs of each DSG region used.
 enum {
@@ -97,10 +97,10 @@ static inline uint32_t get_sample(void) {
 
 //! \brief Computes a random value used to break up chance periodicities in
 //! sampling.
-//! \details In range 1 to 256.
+//! \details In range 0 to 4095.
 //! \return The number of times a busy loop must run.
 static inline uint32_t get_random_busy(void) {
-    return ((spin1_rand() >> 4) & ((1 << NUM_RANDOM_BITS) - 1)) + 1;
+    return (spin1_rand() >> 4) & ((1 << NUM_RANDOM_BITS) - 1);
 }
 
 //! \brief Synchronously records the current contents of the core_counters to
@@ -171,7 +171,10 @@ static void sample_in_slot(UNUSED uint unused0, UNUSED uint unused1) {
     }
 
     uint32_t count = ++sample_count;
-    sark_delay_us(get_random_busy());
+    uint32_t offset = get_random_busy();
+    while (offset --> 0) {
+        // Do nothing
+    }
 
     count_core_states();
     if (count >= sample_count_limit) {
