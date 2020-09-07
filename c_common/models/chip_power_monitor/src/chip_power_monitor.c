@@ -97,9 +97,10 @@ static inline uint32_t get_sample(void) {
 
 //! \brief Computes a random value used to break up chance periodicities in
 //! sampling.
+//! \details In range 1 to 256.
 //! \return The number of times a busy loop must run.
 static inline uint32_t get_random_busy(void) {
-    return (spin1_rand() >> 4) & ((1 << NUM_RANDOM_BITS) - 1);
+    return ((spin1_rand() >> 4) & ((1 << NUM_RANDOM_BITS) - 1)) + 1;
 }
 
 //! \brief Synchronously records the current contents of the core_counters to
