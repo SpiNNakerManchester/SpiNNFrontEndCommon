@@ -105,7 +105,7 @@ static inline bool bit_set_add(bit_set_t* b, uint32_t i) {
 
     // Determine the word and bit
     uint32_t word = i / BITS_IN_A_WORD;
-    uint32_t bit  = 1 << (i & 31);
+    uint32_t bit = 1 << (i % BITS_IN_A_WORD);
 
     // Set the word and bit
     b->_data[word] |= bit;
@@ -126,7 +126,7 @@ static inline bool bit_set_contains(bit_set_t *b, uint32_t i) {
 
     // Determine the word and bit
     uint32_t word = i / BITS_IN_A_WORD;
-    uint32_t bit = 1 << (i & 31);
+    uint32_t bit = 1 << (i % BITS_IN_A_WORD);
     return (bool) (b->_data[word] & bit);
 }
 
@@ -139,8 +139,8 @@ static inline bool bit_set_remove(bit_set_t *b, uint32_t i) {
         return false;
     }
     // Determine the word and bit
-    uint32_t word = i >> 5;
-    uint32_t bit  = 1 << (i & 0x1f);
+    uint32_t word = i / BITS_IN_A_WORD;
+    uint32_t bit = 1 << (i % BITS_IN_A_WORD);
 
     // Decrement the count of set elements
     b->count--;
@@ -155,17 +155,16 @@ static inline bool bit_set_remove(bit_set_t *b, uint32_t i) {
 //! \param[in] e: The word of a bit_field to be printed.
 //! \param[in] offset: the offset in id
 static inline void bit_set_print_entry(uint32_t e, uint32_t offset) {
-    for (counter_t i = 32 ; i > 0; i--) {
-        log_debug("%d,%c", offset + i, ((e & 0x1) == 0) ? ' ' : '1');
-        e >>= 1;
+    for (counter_t i = BITS_IN_A_WORD ; i-- > 0; e <<= 1) {
+        log_debug("%d,%c", offset + i, (e & 0x80000000) ? '1' : ' ');
     }
 }
 
 //! \brief Print a bit set
 //! \param[in] b: the bitset to print
 void bit_set_print(bit_set_t b) {
-    for (uint32_t i = b.n_words; i > 0; i--) {
-        bit_set_print_entry(b._data[i], (i - 1) * BITS_IN_A_WORD);
+    for (uint32_t i = b.n_words; i-- > 0; ) {
+        bit_set_print_entry(b._data[i], i * BITS_IN_A_WORD);
     }
 }
 

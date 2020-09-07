@@ -79,11 +79,6 @@
 #define use(x)      ((void) (x))
 #endif
 
-// Used to mark a parameter as unused
-#ifndef UNUSED
-#define UNUSED      __attribute__((__unused__))
-#endif
-
 // Define int/uint helper macros to create the correct
 // type names for int/uint of a particular size.
 //
