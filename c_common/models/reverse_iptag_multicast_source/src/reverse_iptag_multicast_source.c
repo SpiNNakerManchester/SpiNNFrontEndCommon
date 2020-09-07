@@ -38,6 +38,10 @@
 #error APPLICATION_NAME_HASH must be defined
 #endif
 
+#ifndef __use
+#define __use(x)    do { (void) (x); } while (0)
+#endif
+
 //! \brief human readable versions of the different priorities and usages.
 enum interrupt_priorities {
     DMA = 0,
@@ -387,8 +391,8 @@ static inline uint16_t calculate_eieio_packet_size(eieio_msg_t eieio_msg_ptr) {
 //! \param[in] length: Length of the message
 static inline void print_packet_bytes(
         eieio_msg_t eieio_msg_ptr, uint16_t length) {
-    use(eieio_msg_ptr);
-    use(length);
+    __use(eieio_msg_ptr);
+    __use(length);
 #if LOG_LEVEL >= LOG_DEBUG
     const uint8_t *ptr = (const uint8_t *) eieio_msg_ptr;
 
@@ -410,7 +414,7 @@ static inline void print_packet_bytes(
 //!
 //! \param[in] eieio_msg_ptr Pointer to the message to print
 static inline void print_packet(const eieio_msg_t eieio_msg_ptr) {
-    use(eieio_msg_ptr);
+    __use(eieio_msg_ptr);
 #if LOG_LEVEL >= LOG_DEBUG
     uint32_t len = calculate_eieio_packet_size(eieio_msg_ptr);
     print_packet_bytes(eieio_msg_ptr, len);
@@ -423,8 +427,8 @@ static inline void print_packet(const eieio_msg_t eieio_msg_ptr) {
 //! \param[in] length: The length of the message
 static inline void signal_software_error(
         const eieio_msg_t eieio_msg_ptr, uint16_t length) {
-    use(eieio_msg_ptr);
-    use(length);
+    __use(eieio_msg_ptr);
+    __use(length);
 #if LOG_LEVEL >= LOG_DEBUG
     print_packet_bytes(eieio_msg_ptr, length);
     rt_error(RTE_SWERR);

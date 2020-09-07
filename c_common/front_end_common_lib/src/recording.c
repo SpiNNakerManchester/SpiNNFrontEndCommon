@@ -484,8 +484,7 @@ static inline void recording_send_buffering_out_trigger_message(
 //! \details Delegates most handling to recording_eieio_packet_handler()
 //! \param[in,out] mailbox: Pointer to the message to receive
 //! \param[in] port: The SDP port of the message. Constant.
-static void buffering_in_handler(uint mailbox, uint port) {
-    use(port);
+static void buffering_in_handler(uint mailbox, UNUSED uint port) {
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
     eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &msg->cmd_rc;

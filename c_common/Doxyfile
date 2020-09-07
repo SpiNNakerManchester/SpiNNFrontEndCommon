@@ -187,7 +187,7 @@ USE_MDFILE_AS_MAINPAGE =
 # Configuration options related to source browsing
 #---------------------------------------------------------------------------
 
-SOURCE_BROWSER         = NO
+SOURCE_BROWSER         = YES
 INLINE_SOURCES         = NO
 STRIP_CODE_COMMENTS    = YES
 REFERENCED_BY_RELATION = NO
@@ -310,7 +310,7 @@ EXPAND_ONLY_PREDEF     = YES
 SEARCH_INCLUDES        = YES
 INCLUDE_PATH           =
 INCLUDE_FILE_PATTERNS  =
-PREDEFINED             = __attribute__(x)= PROFILER_ENABLED=YES INT_HANDLER=void __PACKED_STRUCT= 
+PREDEFINED             = __attribute__(x)= PROFILER_ENABLED=YES INT_HANDLER=void UNUSED= __PACKED_STRUCT=
 EXPAND_AS_DEFINED      =
 SKIP_FUNCTION_MACROS   = YES
 
@@ -318,7 +318,7 @@ SKIP_FUNCTION_MACROS   = YES
 # Configuration options related to external references
 #---------------------------------------------------------------------------
 
-TAGFILES               = sllt.tag=http://spinnakermanchester.github.io/spinnaker_tools/ common.tag=http://spinnakermanchester.github.io/spinn_common/ 
+TAGFILES               = sllt.tag=http://spinnakermanchester.github.io/spinnaker_tools/ common.tag=http://spinnakermanchester.github.io/spinn_common/
 GENERATE_TAGFILE       = doc/html/fec.tag
 ALLEXTERNALS           = NO
 EXTERNAL_GROUPS        = YES
