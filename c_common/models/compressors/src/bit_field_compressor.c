@@ -268,11 +268,7 @@ static inline bool process_force(compressor_states compressor_state) {
 //!     (including to deliver instructions to us to work) will breeze past.
 //! \param[in] unused0: unused
 //! \param[in] unused1: unused
-static void wait_for_instructions(uint unused0, uint unused1) {
-    //api requirements
-    use(unused0);
-    use(unused1);
-
+static void wait_for_instructions(UNUSED uint unused0, UNUSED uint unused1) {
     // set if combination of user2 and user3 is expected
     bool users_match = true;
 
@@ -325,9 +321,7 @@ static void wait_for_instructions(uint unused0, uint unused1) {
 //!     Could be because sorter has cancelled run request.
 //! \param[in] unused0: not used
 //! \param[in] unused1: not used
-static void timer_callback(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
+static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
     counter++;
 
     if (counter >= max_counter) {
