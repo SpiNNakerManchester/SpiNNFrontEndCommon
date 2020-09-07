@@ -39,7 +39,7 @@
 #endif
 
 #ifndef __use
-#define __use(x)    do { (void) (x); } while (0)
+#define __use(x)    ((void) (x))
 #endif
 
 //! Human readable versions of the different priorities and usages.
