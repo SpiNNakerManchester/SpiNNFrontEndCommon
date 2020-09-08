@@ -35,8 +35,8 @@ _SDRAM_TAG = 1
 
 def mundy_on_chip_router_compression(
         routing_tables, transceiver, machine, app_id,
-        system_provenance_folder, compress_only_when_needed=True,
-        compress_as_much_as_possible=False, write_compressor_iobuf=False):
+        system_provenance_folder, write_compressor_iobuf,
+        compress_only_when_needed=True, compress_as_much_as_possible=False):
     """ Load routing tables and compress them using Mundy's algorithm.
 
     This uses an aplx built by Mundy which no longer compiles but still works
@@ -71,8 +71,8 @@ def mundy_on_chip_router_compression(
 
 def pair_compression(
         routing_tables, transceiver, executable_finder,
-        machine, app_id, provenance_file_path,
-        compress_as_much_as_possible=True, write_compressor_iobuf=False):
+        machine, app_id, provenance_file_path, write_compressor_iobuf,
+        compress_as_much_as_possible=True):
     """ Load routing tables and compress then using the Pair Algorithm.
 
     See pacman/operations/router_compressors/pair_compressor.py which is the
@@ -107,8 +107,8 @@ def pair_compression(
 
 def unordered_compression(
         routing_tables, transceiver, executable_finder,
-        machine, app_id, provenance_file_path,
-        compress_as_much_as_possible=True, write_compressor_iobuf=False):
+        machine, app_id, provenance_file_path, write_compressor_iobuf,
+        compress_as_much_as_possible=True):
     """ Load routing tables and compress then using the unordered Algorithm.
 
     To the best of our knowledge this is the same algorithm as the
@@ -184,7 +184,6 @@ class Compression(object):
         :param int app_id: the application ID used by the main application
         :param str binary_path: What
         :param bool compress_as_much_as_possible:
-        :param bool compress_only_when_needed:
         :param ~spinn_machine.Machine machine:
         :param str provenance_file_path:
         :param ~pacman.model.routing_tables.MulticastRoutingTables \
@@ -249,7 +248,7 @@ class Compression(object):
 
     def _load_routing_table(self, table):
         """
-        :param ~.MulticastRoutingTables routing_table:
+        :param ~.MulticastRoutingTables table:
             the pacman router table instance
         """
         data = self._build_data(table)
