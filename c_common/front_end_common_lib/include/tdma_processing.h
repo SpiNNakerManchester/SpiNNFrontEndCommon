@@ -38,7 +38,8 @@ typedef struct tdma_parameters {
     uint32_t time_between_sends;
 } tdma_parameters;
 
-//! \brief hands back the number of times the TDMA was behind
+//! \brief Get the number of times that the TDMA was behind
+//! \return the number of times the TDMA lagged
 uint32_t tdma_processing_times_behind(void);
 
 //! \brief init for the tdma processing
