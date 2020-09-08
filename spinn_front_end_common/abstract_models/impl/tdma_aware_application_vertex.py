@@ -82,8 +82,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         return self.TDMA_N_ELEMENTS * constants.BYTES_PER_WORD
 
     def set_other_timings(
-        self, time_between_cores, n_slots, time_between_spikes, n_phases,
-        ns_per_cycle):
+            self, time_between_cores, n_slots, time_between_spikes, n_phases,
+            ns_per_cycle):
         self.__time_between_cores = time_between_cores
         self.__n_slots = n_slots
         self.__time_between_spikes = time_between_spikes
