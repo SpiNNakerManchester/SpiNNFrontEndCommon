@@ -184,11 +184,10 @@ class LocalTDMABuilder(object):
         """
 
         # Figure total T2s
-        n_phases = app_vertex.find_n_phases_for(
-            app_vertex, machine_graph, n_keys_map)
+        n_phases = app_vertex.find_n_phases_for(machine_graph, n_keys_map)
 
         # how many hops between T2's
-        n_cores = app_vertex.get_n_cores(app_vertex)
+        n_cores = app_vertex.get_n_cores()
         n_slots = int(math.ceil(n_cores / app_machine_quantity))
 
         # figure T2
