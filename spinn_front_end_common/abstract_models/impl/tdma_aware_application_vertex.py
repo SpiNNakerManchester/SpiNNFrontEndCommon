@@ -27,6 +27,14 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
     vertex that contains the code for handling the containing of TDMA code.
     """
 
+    __slots__ = (
+        "__initial_offset",
+        "__n_phases",
+        "__n_slots",
+        "__ns_per_cycle",
+        "__time_between_cores",
+        "__time_between_spikes")
+
     # 1. initial expected time, 2. min expected time, 3. time between cores
     TDMA_N_ELEMENTS = 4
 
@@ -46,9 +54,21 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         self.__ns_per_cycle = None
 
     def set_initial_offset(self, new_value):
+        """ sets the initial offset
+
+        :param new_value: the new initial offset
+        :rtype: None
+        """
         self.__initial_offset = new_value
 
     def find_n_phases_for(self, app_vertex, machine_graph, n_keys_map):
+        """
+        :param app_vertex:
+        :param machine_graph:
+        :param n_keys_map:
+        :return:
+        :rtype: int
+        """
         max_keys_seen_so_far = 0
         for machine_vertex in app_vertex.machine_vertices:
             max_keys_needed = 0
@@ -64,12 +84,18 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         return max_keys_seen_so_far
 
     def generate_tdma_data_specification_data(self, vertex_index):
+        """ generates data needed for the data spec
+
+        :param int vertex_index: the machine vertex index in the pop
+        :return: array of data to write.
+        :rtype: list(int)
+        """
         core_slot = vertex_index & self.__n_slots
-        offset_clocks = (self.__initial_offset +
-                         (self.__time_between_cores * core_slot) *
-                         _CLOCKS_PER_NS)
-        tdma_clocks = (self.__n_phases * self.__time_between_spikes *
-                       _CLOCKS_PER_NS)
+        offset_clocks = (
+            self.__initial_offset +
+            (self.__time_between_cores * core_slot * _CLOCKS_PER_NS))
+        tdma_clocks = (
+            self.__n_phases * self.__time_between_spikes * _CLOCKS_PER_NS)
         total_clocks = _CLOCKS_PER_NS * self.__ns_per_cycle
         initial_expected_time = total_clocks - offset_clocks
         min_expected_time = initial_expected_time - tdma_clocks
@@ -79,11 +105,23 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
 
     @property
     def tdma_sdram_size_in_bytes(self):
+        """ the number of bytes needed by this interface's region
+
+        :rtype: int
+        """
         return self.TDMA_N_ELEMENTS * constants.BYTES_PER_WORD
 
     def set_other_timings(
             self, time_between_cores, n_slots, time_between_spikes, n_phases,
             ns_per_cycle):
+        """ sets the other timings needed for the TDMA
+
+        :param time_between_cores: time between cores
+        :param n_slots: the number of slots
+        :param time_between_spikes: the time to wait between spikes
+        :param n_phases: the number of phases
+        :param ns_per_cycle: the number of nano-seconds per TDMA cycle
+        """
         self.__time_between_cores = time_between_cores
         self.__n_slots = n_slots
         self.__time_between_spikes = time_between_spikes
@@ -91,9 +129,25 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         self.__ns_per_cycle = ns_per_cycle
 
     def get_n_cores(self, app_vertex):
+        """ returns the number of cores this app vertex is using in the TDMA
+
+        :param app_vertex: the app vertex in question
+        :return: the number of cores to use in the TDMA
+        :rtype: int
+        """
         return len(app_vertex.vertex_slices)
 
     def get_tdma_provenance_item(self, names, x, y, p, tdma_slots_missed):
+        """ returns the provenance items used for the tdma provenance
+
+        :param list(str) names: the names for the provenance data item
+        :param int x: chip x
+        :param int y: chip y
+        :param int p: processor id
+        :param int tdma_slots_missed: the number of TDMA slots missed
+        :return: the provenance data item
+        :rtype: ProvenanceDataItem
+        """
         return ProvenanceDataItem(
             add_name(names, self.TDMA_MISSED_SLOTS_NAME),
             tdma_slots_missed, report=tdma_slots_missed > 0,
