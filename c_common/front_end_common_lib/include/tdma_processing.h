@@ -42,7 +42,7 @@ typedef struct tdma_parameters {
 uint32_t tdma_processing_times_behind(void);
 
 //! \brief init for the tdma processing
-//! \param[in/out] address: pointer to the SDRAM address where this data is
+//! \param[in,out] address: pointer to the SDRAM address where this data is
 //!                         stored, updated after being read
 //! \return: bool saying success or fail
 bool tdma_processing_initialise(void **address);
