@@ -166,8 +166,10 @@ FILE_PATTERNS          =
 RECURSIVE              = YES
 EXCLUDE                =
 EXCLUDE_SYMLINKS       = NO
-EXCLUDE_PATTERNS       = */modified_src/* */eieio_interface.c \
-						 */models/*/build/* */front_end_common_lib/build/*
+EXCLUDE_PATTERNS       = */modified_src/* \
+                         */eieio_interface.c \
+                         */models/*/build/* \
+                         */front_end_common_lib/build/*
 EXCLUDE_SYMBOLS        = _*
 
 EXAMPLE_PATH           =
@@ -185,7 +187,7 @@ USE_MDFILE_AS_MAINPAGE =
 # Configuration options related to source browsing
 #---------------------------------------------------------------------------
 
-SOURCE_BROWSER         = NO
+SOURCE_BROWSER         = YES
 INLINE_SOURCES         = NO
 STRIP_CODE_COMMENTS    = YES
 REFERENCED_BY_RELATION = NO
@@ -308,7 +310,7 @@ EXPAND_ONLY_PREDEF     = YES
 SEARCH_INCLUDES        = YES
 INCLUDE_PATH           =
 INCLUDE_FILE_PATTERNS  =
-PREDEFINED             = __attribute__(x)= PROFILER_ENABLED=YES INT_HANDLER=void
+PREDEFINED             = __attribute__(x)= PROFILER_ENABLED=YES INT_HANDLER=void UNUSED=
 EXPAND_AS_DEFINED      =
 SKIP_FUNCTION_MACROS   = YES
 
@@ -316,8 +318,8 @@ SKIP_FUNCTION_MACROS   = YES
 # Configuration options related to external references
 #---------------------------------------------------------------------------
 
-TAGFILES               =
-GENERATE_TAGFILE       =
+TAGFILES               = sllt.tag=http://spinnakermanchester.github.io/spinnaker_tools/ common.tag=http://spinnakermanchester.github.io/spinn_common/
+GENERATE_TAGFILE       = doc/html/fec.tag
 ALLEXTERNALS           = NO
 EXTERNAL_GROUPS        = YES
 EXTERNAL_PAGES         = YES

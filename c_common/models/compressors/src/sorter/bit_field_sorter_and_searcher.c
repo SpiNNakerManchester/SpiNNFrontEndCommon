@@ -702,9 +702,7 @@ void carry_on_binary_search(void) {
 //! \brief Timer interrupt for controlling time taken to try to compress table
 //! \param[in] unused0: unused
 //! \param[in] unused1: unused
-void timer_callback(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
+void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
     time_steps++;
     // Debug stuff please keep
 #if 0
@@ -859,12 +857,12 @@ void process_compressor_response(
 
     case FORCED_BY_COMPRESSOR_CONTROL:
         // compressor stopped at the request of the sorter.
-        log_info("ack from forced from processor %d doing mid point %d",
+        log_debug("ack from forced from processor %d doing mid point %d",
                 processor_id, mid_point);
         routing_tables_utils_free_all(comms_sdram[processor_id].routing_tables);
         break;
 
-    case UNUSED:
+    case UNUSED_CORE:
     case PREPARED:
     case COMPRESSING:
         // states that shouldn't occur
@@ -877,10 +875,7 @@ void process_compressor_response(
 //! \brief Check compressors' state till they're finished.
 //! \param[in] unused0: unused
 //! \param[in] unused1: unused
-void check_compressors(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
-
+void check_compressors(UNUSED uint unused0, UNUSED uint unused1) {
     log_info("Entering the check_compressors loop");
     // iterate over the compressors buffer until we have the finished state
     while (!terminated) {
@@ -952,11 +947,7 @@ void start_binary_search(void) {
 //! \brief Start the work for the compression search
 //! \param[in] unused0: unused
 //! \param[in] unused1: unused
-void start_compression_process(uint unused0, uint unused1) {
-    //api requirements
-    use(unused0);
-    use(unused1);
-
+void start_compression_process(UNUSED uint unused0, UNUSED uint unused1) {
     // malloc the struct and populate n bit-fields. DOES NOT populate the rest.
     sorted_bit_fields = bit_field_reader_initialise(region_addresses);
     // check state to fail if not read in
@@ -1041,7 +1032,7 @@ static void initialise_user_register_tracker(void) {
 
     comms_sdram = region_addresses->comms_sdram;
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        comms_sdram[processor_id].compressor_state = UNUSED;
+        comms_sdram[processor_id].compressor_state = UNUSED_CORE;
         comms_sdram[processor_id].sorter_instruction = NOT_COMPRESSOR;
         comms_sdram[processor_id].mid_point = FAILED_TO_FIND;
         comms_sdram[processor_id].routing_tables = NULL;

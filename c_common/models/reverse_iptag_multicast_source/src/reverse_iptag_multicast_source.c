@@ -30,15 +30,16 @@
 #include <eieio.h>
 #include <buffered_eieio_defs.h>
 #include "recording.h"
-
-// Declare wfi function
-//! Wait for interrupt (semi-public part of Spin1API)
-extern void spin1_wfi(void);
+#include <wfi.h>
 
 // ------------------------------------------------------------------------
 
 #ifndef APPLICATION_NAME_HASH
 #error APPLICATION_NAME_HASH must be defined
+#endif
+
+#ifndef __use
+#define __use(x)    do { (void) (x); } while (0)
 #endif
 
 //! \brief human readable versions of the different priorities and usages.
@@ -355,8 +356,8 @@ static inline uint16_t calculate_eieio_packet_size(eieio_msg_t eieio_msg_ptr) {
 //! \param[in] length: Length of the message
 static inline void print_packet_bytes(
         eieio_msg_t eieio_msg_ptr, uint16_t length) {
-    use(eieio_msg_ptr);
-    use(length);
+    __use(eieio_msg_ptr);
+    __use(length);
 #if LOG_LEVEL >= LOG_DEBUG
     uint8_t *ptr = (uint8_t *) eieio_msg_ptr;
 
@@ -378,7 +379,7 @@ static inline void print_packet_bytes(
 //!
 //! \param[in] eieio_msg_ptr Pointer to the message to print
 static inline void print_packet(const eieio_msg_t eieio_msg_ptr) {
-    use(eieio_msg_ptr);
+    __use(eieio_msg_ptr);
 #if LOG_LEVEL >= LOG_DEBUG
     uint32_t len = calculate_eieio_packet_size(eieio_msg_ptr);
     print_packet_bytes(eieio_msg_ptr, len);
@@ -393,8 +394,8 @@ static inline void print_packet(const eieio_msg_t eieio_msg_ptr) {
 //! \param[in] length: The length of the message
 static inline void signal_software_error(
         const eieio_msg_t eieio_msg_ptr, uint16_t length) {
-    use(eieio_msg_ptr);
-    use(length);
+    __use(eieio_msg_ptr);
+    __use(length);
 #if LOG_LEVEL >= LOG_DEBUG
     print_packet_bytes(eieio_msg_ptr, length);
     rt_error(RTE_SWERR);
@@ -712,7 +713,7 @@ static inline void record_packet(
         const eieio_msg_t eieio_msg_ptr, uint32_t length) {
     if (recording_flags > 0) {
         while (recording_in_progress) {
-            spin1_wfi();
+            wait_for_interrupt();
         }
 
         // Ensure that the recorded data size is a multiple of 4
@@ -851,9 +852,7 @@ static inline bool eieio_data_parse_packet(
 //! \param[in] eieio_msg_ptr: The command message
 //! \param[in] length: The length of the message
 static inline void eieio_command_parse_stop_requests(
-        const eieio_msg_t eieio_msg_ptr, uint16_t length) {
-    use(eieio_msg_ptr);
-    use(length);
+        UNUSED const eieio_msg_t eieio_msg_ptr, UNUSED uint16_t length) {
     log_debug("Stopping packet requests - parse_stop_packet_reqs");
     send_packet_reqs = false;
     last_stop_notification_request = time;
@@ -863,9 +862,7 @@ static inline void eieio_command_parse_stop_requests(
 //! \param[in] eieio_msg_ptr: The command message
 //! \param[in] length: The length of the message
 static inline void eieio_command_parse_start_requests(
-        const eieio_msg_t eieio_msg_ptr, uint16_t length) {
-    use(eieio_msg_ptr);
-    use(length);
+        UNUSED const eieio_msg_t eieio_msg_ptr, UNUSED uint16_t length) {
     log_debug("Starting packet requests - parse_start_packet_reqs");
     send_packet_reqs = true;
 }
@@ -1252,9 +1249,7 @@ static void resume_callback(void) {
 //! \brief The fundamental operation loop for the application.
 //! \param unused0 unused
 //! \param unused1 unused
-static void timer_callback(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
+static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
     time++;
 
     log_debug("timer_callback, final time: %d, current time: %d,"
@@ -1267,7 +1262,7 @@ static void timer_callback(uint unused0, uint unused1) {
 
         // Wait for recording to finish
         while (recording_in_progress) {
-            spin1_wfi();
+            wait_for_interrupt();
         }
 
         // close recording channels
@@ -1313,8 +1308,7 @@ static void timer_callback(uint unused0, uint unused1) {
 //!
 //! \param[in] mailbox: The address of the message.
 //! \param port: The SDP port of the message. Ignored.
-static void sdp_packet_callback(uint mailbox, uint port) {
-    use(port);
+static void sdp_packet_callback(uint mailbox, UNUSED uint port) {
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
     eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &msg->cmd_rc;
