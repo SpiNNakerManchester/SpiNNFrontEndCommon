@@ -33,9 +33,9 @@ class LocalTDMABuilder(object):
     the total time required fits into the time scale factor and machine time
     step. Below are text diagrams to show how this works in principle.
 
-    # Figure bits needed to figure out time between spikes.
-        # cores 0-4 have 2 atoms, core 5 has 1 atom
-        #############################################
+    *Figure 1:* bits needed to figure out time between spikes.
+    Cores 0-4 have 2 atoms, core 5 has 1 atom::
+
         #        0     1       2      3       4      5
         # T2-[   X                    X
         #    |         X                      X
@@ -44,24 +44,27 @@ class LocalTDMABuilder(object):
         #       |------| T
         #              X                      X
         #                      X <- T3
-        # T = time_between_cores T2 = time_between_phases
-        # T3 = end of TDMA (equiv of ((n_phases + 1) * T2))
-        # cutoff = 2. n_phases = 3 max_atoms = 2
 
-        # constants etc just to get into head
-        # clock cycles = 200 Mhz = 200 = sv->cpu_clk
-        # 1ms = 200000 for timer 1. = clock cycles
-        # 200 per microsecond
-        # machine time step = microseconds already.
-        # __time_between_cores = microseconds.
+        T = time_between_cores
+        T2 = time_between_phases
+        T3 = end of TDMA (equiv of ((n_phases + 1) * T2))
+        cutoff = 2. n_phases = 3 max_atoms = 2
 
-    # figure initial offset (used to try to interleave packets from other
-        # app verts into the TDMA without extending the overall time, and
-        # trying to stop multiple packets in flight at same time).
+    Constants etc just to get into head:
 
-        # Figure bits needed to figure out time between spikes.
-        # cores 0-4 have 2 atoms, core 5 has 1 atom
-        #############################################
+    * clock cycles = 200 Mhz = 200 = sv->cpu_clk
+    * 1ms = 200000 for timer 1. = clock cycles
+    * 200 per microsecond
+    * machine time step = microseconds already.
+    * `__time_between_cores` = microseconds.
+
+    *Figure 2:* initial offset (used to try to interleave packets from other
+    app verts into the TDMA without extending the overall time, and
+    trying to stop multiple packets in flight at same time).
+
+    *Figure 3:* bits needed to figure out time between spikes.
+    Cores 0-4 have 2 atoms, core 5 has 1 atom::
+
         #        0  .5   1   .5    2   .5   3    .5   4   .5   5  .5
         # T2-[   X   Y                      X     Y
         #    |           X   Y                        X    Y
@@ -71,9 +74,10 @@ class LocalTDMABuilder(object):
         #               X    Y                        X    Y
         #               |----| T4
         #                   T3 ->  X    Y
-        # T4 is the spreader between populations. X is pop0 firing, Y is pop1
-        # firing
 
+        T4 is the spreader between populations.
+        X is pop0 firing,
+        Y is pop1 firing
     """
 
     # error message for when the vertex TDMA isnt feasible.
@@ -195,11 +199,11 @@ class LocalTDMABuilder(object):
     def _test_timings(
             self, n_phases, time_between_phases, machine_time_step,
             time_scale_factor, fraction_of_sending, label):
-        """ verifies that the timings fit into the time scale factor and
-        machine time step.
+        """ verifies that the timings fit into the time scale factor and \
+            machine time step.
 
-        :param n_phases: the max number of phases this tdma needs for a \
-        given app vertex
+        :param n_phases: the max number of phases this tdma needs for a
+            given app vertex
         :param time_between_phases: the time between phases.
         :param machine_time_step: the machine time step
         :param time_scale_factor: the time scale factor
@@ -234,8 +238,8 @@ class LocalTDMABuilder(object):
                         true_fraction))
 
     def config_values(self):
-        """ read the config for the right params. Check the 2 fractions are
-        together less than 1. else broken
+        """ read the config for the right params. Check the 2 fractions are \
+            together less than 1. else broken
 
         :return: (app_machine_quantity, time_between_cores,
                 fraction_of_sending, fraction_of_waiting)
