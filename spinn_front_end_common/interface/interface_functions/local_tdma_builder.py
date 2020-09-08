@@ -16,8 +16,8 @@
 import math
 import logging
 
-from spinn_front_end_common.abstract_models.abstract_requires_tdma import \
-    AbstractRequiresTDMA
+from spinn_front_end_common.abstract_models.impl.\
+    tdma_aware_application_vertex import TDMAAwareApplicationVertex
 from spinn_front_end_common.utilities import helpful_functions, \
     globals_variables
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -112,7 +112,7 @@ class LocalTDMABuilder(object):
         # calculate for each app vertex if the time needed fits
         app_verts = list()
         for app_vertex in application_graph.vertices:
-            if isinstance(app_vertex, AbstractRequiresTDMA):
+            if isinstance(app_vertex, TDMAAwareApplicationVertex):
                 app_verts.append(app_vertex)
 
                 # get timings
@@ -133,7 +133,7 @@ class LocalTDMABuilder(object):
 
         # get initial offset for each app vertex.
         for app_vertex in application_graph.vertices:
-            if isinstance(app_vertex, AbstractRequiresTDMA):
+            if isinstance(app_vertex, TDMAAwareApplicationVertex):
                 initial_offset = self._generate_initial_offset(
                     app_vertex, app_verts, time_between_cores,
                     machine_time_step, time_scale_factor, fraction_of_waiting)
