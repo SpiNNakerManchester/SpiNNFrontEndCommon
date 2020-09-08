@@ -37,10 +37,10 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         "__time_between_spikes")
 
     # 1. initial expected time, 2. min expected time, 3. time between cores
-    TDMA_N_ELEMENTS = 4
+    _TDMA_N_ELEMENTS = 4
 
-    TDMA_MISSED_SLOTS_NAME = "Number_of_times_the_tdma_fell_behind"
-    TDMA_MISSED_SLOTS_MESSAGE = (
+    _TDMA_MISSED_SLOTS_NAME = "Number_of_times_the_tdma_fell_behind"
+    _TDMA_MISSED_SLOTS_MESSAGE = (
         "The TDMA fell behind by {} times on core {}, {}, {}. "
         "try increasing the time_between_cores in the corresponding .cfg")
 
@@ -114,7 +114,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
 
         :rtype: int
         """
-        return self.TDMA_N_ELEMENTS * BYTES_PER_WORD
+        return self._TDMA_N_ELEMENTS * BYTES_PER_WORD
 
     def set_other_timings(
             self, time_between_cores, n_slots, time_between_spikes, n_phases,
@@ -154,7 +154,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         :rtype: ProvenanceDataItem
         """
         return ProvenanceDataItem(
-            add_name(names, self.TDMA_MISSED_SLOTS_NAME),
+            add_name(names, self._TDMA_MISSED_SLOTS_NAME),
             tdma_slots_missed, report=tdma_slots_missed > 0,
-            message=self.TDMA_MISSED_SLOTS_MESSAGE.format(
+            message=self._TDMA_MISSED_SLOTS_MESSAGE.format(
                 tdma_slots_missed, x, y, p))
