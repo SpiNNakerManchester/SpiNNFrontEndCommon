@@ -683,7 +683,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         max_offset = (
             machine_time_step * time_scale_factor) // _MAX_OFFSET_DENOMINATOR
         spec.write_value(
-            int(math.ceil(max_offset / self._n_vertices)) * self._n_data_specs)
+            (int(math.ceil(max_offset / self._n_vertices)) *
+             self._n_data_specs) + int(math.ceil(max_offset)))
         self._n_data_specs += 1
 
     @inject_items({
