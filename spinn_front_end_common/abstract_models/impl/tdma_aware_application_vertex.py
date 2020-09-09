@@ -13,29 +13,47 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from pacman.model.graphs.application import ApplicationVertex
-from spinn_front_end_common.interface.provenance.\
-    provides_provenance_data_from_machine_impl import add_name
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
-from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.interface.provenance.\
+    provides_provenance_data_from_machine_impl import (
+        add_name)
 
 # The number of clock cycles per nanosecond
 _CLOCKS_PER_NS = 200
 
 
 class TDMAAwareApplicationVertex(ApplicationVertex):
+    """ An application vertex that contains the code for using TDMA to spread\
+        packet transmission to try to avoid overloading any SpiNNaker routers.
     """
-    vertex that contains the code for handling the containing of TDMA code.
-    """
+
+    __slots__ = (
+        "__initial_offset",
+        "__n_phases",
+        "__n_slots",
+        "__ns_per_cycle",
+        "__time_between_cores",
+        "__time_between_spikes")
 
     # 1. initial expected time, 2. min expected time, 3. time between cores
-    TDMA_N_ELEMENTS = 3
+    _TDMA_N_ELEMENTS = 3
 
-    TDMA_MISSED_SLOTS_NAME = "Number_of_times_the_tdma_fell_behind"
-    TDMA_MISSED_SLOTS_MESSAGE = (
+    _TDMA_MISSED_SLOTS_NAME = "Number_of_times_the_tdma_fell_behind"
+    _TDMA_MISSED_SLOTS_MESSAGE = (
         "The TDMA fell behind by {} times on core {}, {}, {}. "
         "try increasing the time_between_cores in the corresponding .cfg")
 
     def __init__(self, label, constraints, max_atoms_per_core):
+        """
+        :param str label: The optional name of the vertex.
+        :param iterable(AbstractConstraint) constraints:
+            The optional initial constraints of the vertex.
+        :param int max_atoms_per_core: The max number of atoms that can be
+            placed on a core, used in partitioning.
+        :raise PacmanInvalidParameterException:
+            If one of the constraints is not valid
+        """
         ApplicationVertex.__init__(
             self, label, constraints, max_atoms_per_core)
         self.__time_between_cores = None
@@ -46,30 +64,43 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         self.__ns_per_cycle = None
 
     def set_initial_offset(self, new_value):
+        """ Sets the initial offset
+
+        :param int new_value: the new initial offset, in clock ticks
+        """
         self.__initial_offset = new_value
 
-    def find_n_phases_for(self, app_vertex, machine_graph, n_keys_map):
-        max_keys_seen_so_far = 0
-        for machine_vertex in app_vertex.machine_vertices:
-            max_keys_needed = 0
-            outgoing_partitions = (
+    def find_n_phases_for(self, machine_graph, n_keys_map):
+        """ Compute the number of phases needed for this application vertex. \
+            This is the maximum number of packets any machine vertex created \
+            by this application vertex can send in one simulation time step.
+
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        :param ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap \
+            n_keys_map:
+        :rtype: int
+        """
+        return max(
+            sum(
+                n_keys_map.n_keys_for_partition(outgoing_partition)
+                for outgoing_partition in
                 machine_graph.get_outgoing_edge_partitions_starting_at_vertex(
                     machine_vertex))
-            for outgoing_partition in outgoing_partitions:
-                keys_this_partition = n_keys_map.n_keys_for_partition(
-                    outgoing_partition)
-                max_keys_needed += keys_this_partition
-            if max_keys_seen_so_far < max_keys_needed:
-                max_keys_seen_so_far = max_keys_needed
-        return max_keys_seen_so_far
+            for machine_vertex in self.machine_vertices)
 
     def generate_tdma_data_specification_data(self, vertex_index):
+        """ Generates the TDMA configuration data needed for the data spec
+
+        :param int vertex_index: the machine vertex index in the pop
+        :return: array of data to write.
+        :rtype: list(int)
+        """
         core_slot = vertex_index & self.__n_slots
-        offset_clocks = (self.__initial_offset +
-                         (self.__time_between_cores * core_slot) *
-                         _CLOCKS_PER_NS)
-        tdma_clocks = (self.__n_phases * self.__time_between_spikes *
-                       _CLOCKS_PER_NS)
+        offset_clocks = (
+            self.__initial_offset +
+            (self.__time_between_cores * core_slot * _CLOCKS_PER_NS))
+        tdma_clocks = (
+            self.__n_phases * self.__time_between_spikes * _CLOCKS_PER_NS)
         total_clocks = _CLOCKS_PER_NS * self.__ns_per_cycle
         initial_expected_time = total_clocks - offset_clocks
         min_expected_time = initial_expected_time - tdma_clocks
@@ -79,23 +110,51 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
 
     @property
     def tdma_sdram_size_in_bytes(self):
-        return self.TDMA_N_ELEMENTS * constants.BYTES_PER_WORD
+        """ The number of bytes needed by the TDMA data
+
+        :rtype: int
+        """
+        return self._TDMA_N_ELEMENTS * BYTES_PER_WORD
 
     def set_other_timings(
             self, time_between_cores, n_slots, time_between_spikes, n_phases,
             ns_per_cycle):
+        """ Sets the other timings needed for the TDMA.
+
+        :param int time_between_cores: time between cores
+        :param int n_slots: the number of slots
+        :param int time_between_spikes: the time to wait between spikes
+        :param int n_phases: the number of phases
+        :param int ns_per_cycle: the number of nano-seconds per TDMA cycle
+        """
         self.__time_between_cores = time_between_cores
         self.__n_slots = n_slots
         self.__time_between_spikes = time_between_spikes
         self.__n_phases = n_phases
         self.__ns_per_cycle = ns_per_cycle
 
-    def get_n_cores(self, app_vertex):
-        return len(app_vertex.vertex_slices)
+    def get_n_cores(self):
+        """ Get the number of cores this application vertex is using in \
+            the TDMA.
+
+        :return: the number of cores to use in the TDMA
+        :rtype: int
+        """
+        return len(self.vertex_slices)
 
     def get_tdma_provenance_item(self, names, x, y, p, tdma_slots_missed):
+        """ Get the provenance item used for the TDMA provenance
+
+        :param list(str) names: the names for the provenance data item
+        :param int x: chip x
+        :param int y: chip y
+        :param int p: processor id
+        :param int tdma_slots_missed: the number of TDMA slots missed
+        :return: the provenance data item
+        :rtype: ProvenanceDataItem
+        """
         return ProvenanceDataItem(
-            add_name(names, self.TDMA_MISSED_SLOTS_NAME),
+            add_name(names, self._TDMA_MISSED_SLOTS_NAME),
             tdma_slots_missed, report=tdma_slots_missed > 0,
-            message=self.TDMA_MISSED_SLOTS_MESSAGE.format(
+            message=self._TDMA_MISSED_SLOTS_MESSAGE.format(
                 tdma_slots_missed, x, y, p))
