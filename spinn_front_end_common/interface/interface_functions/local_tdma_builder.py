@@ -13,15 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import math
 import logging
-
-from spinn_front_end_common.abstract_models.impl.\
-    tdma_aware_application_vertex import TDMAAwareApplicationVertex
-from spinn_front_end_common.utilities import helpful_functions, \
-    globals_variables
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
+import math
 from spinn_utilities.logger_utils import warn_once
+from spinn_front_end_common.abstract_models.impl.\
+    tdma_aware_application_vertex import (
+        TDMAAwareApplicationVertex)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.helpful_functions import (
+    read_config_int, read_config_float, read_config)
+from spinn_front_end_common.utilities.globals_variables import get_simulator
 
 logger = logging.getLogger(__name__)
 
@@ -102,11 +103,15 @@ class LocalTDMABuilder(object):
         """ main entrance
 
         :param application_graph: app graph.
-        :param machine_graph: machine graph.
-        :param machine_time_step: the machine time step.
-        :param time_scale_factor: the time scale factor.
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            machine graph.
+        :param int machine_time_step: the machine time step.
+        :param int time_scale_factor: the time scale factor.
         :param n_keys_map: the map of partitions to n keys.
-        :rtype: None
+        :type n_keys_map:
+            ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
         """
 
         # get config params
@@ -120,10 +125,9 @@ class LocalTDMABuilder(object):
                 app_verts.append(app_vertex)
 
                 # get timings
-                (n_phases, n_slots, time_between_phases) = (
-                    self._generate_times(
-                        machine_graph, app_vertex, app_machine_quantity,
-                        time_between_cores, n_keys_map))
+                n_phases, n_slots, time_between_phases = self._generate_times(
+                    machine_graph, app_vertex, app_machine_quantity,
+                    time_between_cores, n_keys_map)
 
                 # store in tracker
                 app_vertex.set_other_timings(
@@ -149,13 +153,17 @@ class LocalTDMABuilder(object):
             machine_time_step, time_scale_factor, fraction_of_waiting):
         """ figures from the app vertex index the initial offset.
 
-        :param app_vertex: the app vertex in question.
+        :param ~pacman.model.graphs.application.ApplicationVertex app_vertex:
+            the app vertex in question.
         :param app_verts: the list of app vertices.
-        :param time_between_cores: the time between cores.
-        :param machine_time_step: the machine time step.
-        :param time_scale_factor: the time scale factor.
-        :param fraction_of_waiting: the fraction of time for waiting.
+        :type app_verts:
+            list(~pacman.model.graphs.application.ApplicationVertex)
+        :param int time_between_cores: the time between cores.
+        :param int machine_time_step: the machine time step.
+        :param int time_scale_factor: the time scale factor.
+        :param float fraction_of_waiting: the fraction of time for waiting.
         :return: the initial offset for this app vertex.
+        :rtype: int
         """
 
         initial_offset = app_verts.index(app_vertex) * int(
@@ -170,17 +178,21 @@ class LocalTDMABuilder(object):
     def _generate_times(
             machine_graph, app_vertex, app_machine_quantity,
             time_between_cores, n_keys_map):
-        """ generates the number of phases needed for this app vertex, as well
-        as the number of slots and the time between spikes for this app vertex
-        given the number of machine verts to fire at the same time from a
-        given app vertex.
+        """ Generates the number of phases needed for this app vertex, as well\
+            as the number of slots and the time between spikes for this app\
+            vertex, given the number of machine verts to fire at the same time\
+            from a given app vertex.
 
-        :param machine_graph: machine graph
-        :param app_vertex: the app vertex
-        :param app_machine_quantity: the pop spike control level
-        :param time_between_cores: the time between cores
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            machine graph
+        :param TDMAAwareApplicationVertex app_vertex: the app vertex
+        :param int app_machine_quantity: the pop spike control level
+        :param float time_between_cores: the time between cores
         :param n_keys_map: the partition to n keys map.
-        :return: ( n_phases, n_slots, time_between_phases) for this app vertex
+        :type n_keys_map:
+            ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
+        :return: (n_phases, n_slots, time_between_phases) for this app vertex
+        :rtype: tuple(int, int, int)
         """
 
         # Figure total T2s
@@ -201,13 +213,14 @@ class LocalTDMABuilder(object):
         """ verifies that the timings fit into the time scale factor and \
             machine time step.
 
-        :param n_phases: the max number of phases this tdma needs for a
-            given app vertex
-        :param time_between_phases: the time between phases.
-        :param machine_time_step: the machine time step
-        :param time_scale_factor: the time scale factor
-        :param fraction_of_sending: fraction of time step for sending packets
-        :param label: the app vertex we're considering at this point
+        :param int n_phases:
+            the max number of phases this TDMA needs for a given app vertex
+        :param int time_between_phases: the time between phases.
+        :param int machine_time_step: the machine time step
+        :param int time_scale_factor: the time scale factor
+        :param float fraction_of_sending:
+            fraction of time step for sending packets
+        :param str label: the app vertex we're considering at this point
         :return:
         """
 
@@ -216,25 +229,22 @@ class LocalTDMABuilder(object):
 
         # figure how much time the TDMA has in transmission
         total_time_available = int(math.ceil(
-            (machine_time_step * time_scale_factor) *
-            fraction_of_sending))
+            machine_time_step * time_scale_factor * fraction_of_sending))
         if total_time_needed > total_time_available:
-            time_scale_factor_needed = (
-                math.ceil((total_time_needed / machine_time_step) /
-                          fraction_of_sending))
+            time_scale_factor_needed = math.ceil(
+                total_time_needed / machine_time_step / fraction_of_sending)
             msg = self._VERTEX_TDMA_FAILURE_MSG.format(
                 label, time_scale_factor_needed)
             logger.error(msg)
             raise ConfigurationException(msg)
-        else:  # maybe this warn could be thrown away?
-            if total_time_needed != 0:
-                true_fraction = 1 / (
-                    (machine_time_step * time_scale_factor) /
-                    total_time_needed)
-                warn_once(
-                    logger,
-                    "could reduce fraction of time for sending to {}".format(
-                        true_fraction))
+        if total_time_needed != 0:
+            # maybe this warn could be thrown away?
+            true_fraction = 1 / (
+                machine_time_step * time_scale_factor / total_time_needed)
+            warn_once(
+                logger,
+                "could reduce fraction of time for sending to {}".format(
+                    true_fraction))
 
     def config_values(self):
         """ read the config for the right params. Check the 2 fractions are \
@@ -242,25 +252,26 @@ class LocalTDMABuilder(object):
 
         :return: (app_machine_quantity, time_between_cores,
                 fraction_of_sending, fraction_of_waiting)
+        :rtype: tuple(int, float, float, float)
         """
 
         # get config
-        config = globals_variables.get_simulator().config
+        config = get_simulator().config
 
         # set the number of cores expected to fire at any given time
-        app_machine_quantity = helpful_functions.read_config_int(
+        app_machine_quantity = read_config_int(
             config, "Simulation", "app_machine_quantity")
         if app_machine_quantity is None:
             app_machine_quantity = self._DEFAULT_N_CORES_AT_SAME_TIME
 
         # set the time between cores to fire
-        time_between_cores = helpful_functions.read_config_float(
+        time_between_cores = read_config_float(
             config, "Simulation", "time_between_cores")
         if time_between_cores is None:
             time_between_cores = self._DEFAULT_TIME_BETWEEN_CORES
 
         # fraction of time spend sending
-        fraction_of_sending = helpful_functions.read_config(
+        fraction_of_sending = read_config(
             config, "Simulation", "fraction_of_time_spike_sending")
         if fraction_of_sending is None:
             fraction_of_sending = (
@@ -269,7 +280,7 @@ class LocalTDMABuilder(object):
             fraction_of_sending = float(fraction_of_sending)
 
         # fraction of time waiting before sending
-        fraction_of_waiting = helpful_functions.read_config(
+        fraction_of_waiting = read_config(
             config, "Simulation", "fraction_of_time_before_sending")
         if fraction_of_waiting is None:
             fraction_of_waiting = (
