@@ -28,7 +28,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
     """
 
     # 1. initial expected time, 2. min expected time, 3. time between cores
-    TDMA_N_ELEMENTS = 4
+    TDMA_N_ELEMENTS = 3
 
     TDMA_MISSED_SLOTS_NAME = "Number_of_times_the_tdma_fell_behind"
     TDMA_MISSED_SLOTS_MESSAGE = (
