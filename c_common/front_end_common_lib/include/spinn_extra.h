@@ -1028,9 +1028,8 @@ typedef enum {
     //! Drop packet
     ROUTER_P2P_ROUTE_DROP,
     //! Send to monitor (as determined by
+    //! ::router_control_t::monitor_processor)
     ROUTER_P2P_ROUTE_MONITOR
-                                    //! ::router_control_t::monitor_processor)
-
 } router_p2p_route;
 
 //! A packed word in the P2P routing table
@@ -1621,35 +1620,30 @@ typedef struct {
     uint adiv : 2;
     // padding
     uint : 1;
-
     //! clock selector for B CPUs (0 3 5 6 9 10 12 15 17); see ::sc_clock_source
     uint pb : 2;
     //! divide CPU clock B by Bdiv+1 (= 1-4)
     uint bdiv : 2;
     // padding
     uint : 1;
-
     //! clock selector for SDRAM; see ::sc_clock_source
     uint mem : 2;
     //! divide SDRAM clock by Mdiv+1 (= 1-4)
     uint mdiv : 2;
     // padding
     uint : 1;
-
     //! clock selector for Router; see ::sc_clock_source
     uint rtr : 2;
     //! divide Router clock by Rdiv+1 (= 1-4)
     uint rdiv : 2;
     // padding
     uint : 1;
-
     //! clock selector for System AHB components; see ::sc_clock_source
     uint sys : 2;
     //! divide System AHB clock by Sdiv+1 (= 1-4)
     uint sdiv : 2;
     // padding
     uint : 7;
-
     //! invert CPU clock B
     uint invert_b : 1;
 } sc_clock_mux_t;
@@ -1957,11 +1951,11 @@ typedef struct {
 
 //! \brief Ethernet received message descriptor.
 //! \warning Cannot find description of rest of this structure; SCAMP only
-//!     uses one field.
+//!     uses one field. Datasheet refers document that appears to be lost.
 typedef struct {
     //! Received packet length
     uint length : 11;
-    // ???
+    // unknown; might be padding or status bits?
     uint : 21;
 } ethernet_receive_descriptor_t;
 
