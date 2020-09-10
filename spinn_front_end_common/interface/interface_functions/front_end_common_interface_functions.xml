@@ -194,8 +194,8 @@
                 <param_type>ExecutableFinder</param_type>
             </parameter>
             <parameter>
-                <param_name>read_algorithm_iobuf</param_name>
-                <param_type>RouterCompressorWithBitFieldReadIOBuf</param_type>
+                <param_name>write_compressor_iobuf</param_name>
+                <param_type>WriteCompressorIobuf</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
@@ -244,7 +244,7 @@
         </input_definitions>
         <required_inputs>
             <param_name>executable_finder</param_name>
-            <param_name>read_algorithm_iobuf</param_name>
+            <param_name>write_compressor_iobuf</param_name>
             <param_name>routing_tables</param_name>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
@@ -315,8 +315,8 @@
                 <param_type>ExecutableFinder</param_type>
             </parameter>
             <parameter>
-                <param_name>read_algorithm_iobuf</param_name>
-                <param_type>RouterCompressorWithBitFieldReadIOBuf</param_type>
+                <param_name>write_compressor_iobuf</param_name>
+                <param_type>WriteCompressorIobuf</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
@@ -365,7 +365,7 @@
         </input_definitions>
         <required_inputs>
             <param_name>executable_finder</param_name>
-            <param_name>read_algorithm_iobuf</param_name>
+            <param_name>write_compressor_iobuf</param_name>
             <param_name>routing_tables</param_name>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
@@ -2441,6 +2441,10 @@
                 <param_name>compress_as_much_as_possible</param_name>
                 <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
+            <parameter>
+                <param_name>write_compressor_iobuf</param_name>
+                <param_type>WriteCompressorIobuf</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2451,6 +2455,7 @@
         </required_inputs>
         <optional_inputs>
                 <param_name>compress_as_much_as_possible</param_name>
+                <param_name>write_compressor_iobuf</param_name>
         </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
@@ -2487,6 +2492,10 @@
                 <param_name>compress_as_much_as_possible</param_name>
                 <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
+            <parameter>
+                <param_name>write_compressor_iobuf</param_name>
+                <param_type>WriteCompressorIobuf</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2498,6 +2507,7 @@
         </required_inputs>
         <optional_inputs>
                 <param_name>compress_as_much_as_possible</param_name>
+                <param_name>write_compressor_iobuf</param_name>
         </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
@@ -2535,6 +2545,10 @@
                 <param_name>compress_as_much_as_possible</param_name>
                 <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
+            <parameter>
+                <param_name>write_compressor_iobuf</param_name>
+                <param_type>WriteCompressorIobuf</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2546,6 +2560,7 @@
         </required_inputs>
         <optional_inputs>
                 <param_name>compress_as_much_as_possible</param_name>
+                <param_name>write_compressor_iobuf</param_name>
         </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
