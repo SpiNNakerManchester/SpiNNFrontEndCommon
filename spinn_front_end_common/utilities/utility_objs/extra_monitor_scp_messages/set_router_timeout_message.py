@@ -39,10 +39,12 @@ class SetRouterTimeoutMessage(AbstractSCPRequest):
             The mantissa of the timeout value, between 0 and 15
         :param int timeout_exponent:
             The exponent of the timeout value, between 0 and 15
+        :param int wait:
+            Which wait to set. Should be 1 or 2.
         """
         # pylint: disable=too-many-arguments
-        cmd = ReinjectorSCPCommands.SET_ROUTER_TIMEOUT if wait == 1 \
-            else ReinjectorSCPCommands.SET_ROUTER_EMERGENCY_TIMEOUT
+        cmd = ReinjectorSCPCommands.SET_ROUTER_WAIT1_TIMEOUT if wait == 1 \
+            else ReinjectorSCPCommands.SET_ROUTER_WAIT2_TIMEOUT
         super(SetRouterTimeoutMessage, self).__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
