@@ -70,7 +70,6 @@ $(function() {
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
-<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
@@ -84,6 +83,7 @@ $(function() {
 <div class="textblock"><code>#include &lt;<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html">sark.h</a>&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="common-typedefs_8h_source.html">common-typedefs.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="spinn__extra_8h_source.html">spinn_extra.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="common_8h_source.html">common.h</a>&quot;</code><br />
 <code>#include &lt;<a class="el" href="wfi_8h_source.html">wfi.h</a>&gt;</code><br />
 </div>
@@ -115,18 +115,15 @@ Data Structures</h2></td></tr>
 <tr class="memitem:structdata__speed__out__config__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#structdata__speed__out__config__t">data_speed_out_config_t</a></td></tr>
 <tr class="memdesc:structdata__speed__out__config__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">human readable definitions of each element in the transmission region  <a href="extra__monitor__support_8c.html#structdata__speed__out__config__t">More...</a><br /></td></tr>
 <tr class="separator:structdata__speed__out__config__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:structdsg__header__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#structdsg__header__t">dsg_header_t</a></td></tr>
-<tr class="memdesc:structdsg__header__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">DSG metadata.  <a href="extra__monitor__support_8c.html#structdsg__header__t">More...</a><br /></td></tr>
-<tr class="separator:structdsg__header__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:structdse__header__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#structdse__header__t">dse_header_t</a></td></tr>
+<tr class="memdesc:structdse__header__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">DSE metadata.  <a href="extra__monitor__support_8c.html#structdse__header__t">More...</a><br /></td></tr>
+<tr class="separator:structdse__header__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a1770d428fd0221aabcda7aad57a9b586"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a1770d428fd0221aabcda7aad57a9b586">DMA_BURST_SIZE</a>&#160;&#160;&#160;4</td></tr>
-<tr class="memdesc:a1770d428fd0221aabcda7aad57a9b586"><td class="mdescLeft">&#160;</td><td class="mdescRight">Use DMA bursts of 16 words (2<sup>16</sup>)  <a href="extra__monitor__support_8c.html#a1770d428fd0221aabcda7aad57a9b586">More...</a><br /></td></tr>
+<tr class="memdesc:a1770d428fd0221aabcda7aad57a9b586"><td class="mdescLeft">&#160;</td><td class="mdescRight">Use DMA bursts of 16 (2<sup>4</sup>) transfer units (double words)  <a href="extra__monitor__support_8c.html#a1770d428fd0221aabcda7aad57a9b586">More...</a><br /></td></tr>
 <tr class="separator:a1770d428fd0221aabcda7aad57a9b586"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad0b14f1d4cda14aea7d53c987af502b1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#ad0b14f1d4cda14aea7d53c987af502b1">DMA_WIDTH</a>&#160;&#160;&#160;1</td></tr>
-<tr class="memdesc:ad0b14f1d4cda14aea7d53c987af502b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Use a DMA width of double words.  <a href="extra__monitor__support_8c.html#ad0b14f1d4cda14aea7d53c987af502b1">More...</a><br /></td></tr>
-<tr class="separator:ad0b14f1d4cda14aea7d53c987af502b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ccc8c4e5ad5471950259354965adce9"><td class="memItemLeft" align="right" valign="top"><a id="a0ccc8c4e5ad5471950259354965adce9"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a0ccc8c4e5ad5471950259354965adce9">N_DMA_BUFFERS</a>&#160;&#160;&#160;2</td></tr>
 <tr class="memdesc:a0ccc8c4e5ad5471950259354965adce9"><td class="mdescLeft">&#160;</td><td class="mdescRight">the number of DMA buffers to build <br /></td></tr>
@@ -184,7 +181,7 @@ Macros</h2></td></tr>
 <tr class="memdesc:a4189121f14ccfca49f23c04f16d2afb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Throttle power on the MC transmissions if needed (assume not needed) <br /></td></tr>
 <tr class="separator:a4189121f14ccfca49f23c04f16d2afb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe3753f28b4474586b37f5cfb565a4f9"><td class="memItemLeft" align="right" valign="top"><a id="afe3753f28b4474586b37f5cfb565a4f9"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#afe3753f28b4474586b37f5cfb565a4f9">ROUTER_INITIAL_TIMEOUT</a>&#160;&#160;&#160;0x004f0000</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#afe3753f28b4474586b37f5cfb565a4f9">ROUTER_INITIAL_TIMEOUT</a>&#160;&#160;&#160;0x4f</td></tr>
 <tr class="memdesc:afe3753f28b4474586b37f5cfb565a4f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial timeout of the router. <br /></td></tr>
 <tr class="separator:afe3753f28b4474586b37f5cfb565a4f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a325d32c07c6a8e91c09bfc6a435c9ab9"><td class="memItemLeft" align="right" valign="top"><a id="a325d32c07c6a8e91c09bfc6a435c9ab9"></a>
@@ -195,32 +192,28 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#abbb67719a1d8919da0a8e73c9332d6f9">PKT_QUEUE_SIZE</a>&#160;&#160;&#160;4096</td></tr>
 <tr class="memdesc:abbb67719a1d8919da0a8e73c9332d6f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">dumped packet queue length <br /></td></tr>
 <tr class="separator:abbb67719a1d8919da0a8e73c9332d6f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a87088a86581a7d283e5565495bef8c3a"><td class="memItemLeft" align="right" valign="top"><a id="a87088a86581a7d283e5565495bef8c3a"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a87088a86581a7d283e5565495bef8c3a">ROUTER_TIMEOUT_MASK</a>&#160;&#160;&#160;0xFF</td></tr>
-<tr class="memdesc:a87088a86581a7d283e5565495bef8c3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum router timeout value. <br /></td></tr>
-<tr class="separator:a87088a86581a7d283e5565495bef8c3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:a6d626fdf464bc6f2160d0bc92243b027"><td class="memItemLeft" align="right" valign="top"><a id="a6d626fdf464bc6f2160d0bc92243b027"></a>
-typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a6d626fdf464bc6f2160d0bc92243b027">isr_t</a>) (void)</td></tr>
-<tr class="memdesc:a6d626fdf464bc6f2160d0bc92243b027"><td class="mdescLeft">&#160;</td><td class="mdescRight">Basic type of an interrupt handler. <br /></td></tr>
-<tr class="separator:a6d626fdf464bc6f2160d0bc92243b027"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0db95a85b8b152145278edb4c80a016"><td class="memItemLeft" align="right" valign="top"><a id="aa0db95a85b8b152145278edb4c80a016"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aa0db95a85b8b152145278edb4c80a016">ROUTER_TIMEOUT_MAX</a>&#160;&#160;&#160;0xFF</td></tr>
+<tr class="memdesc:aa0db95a85b8b152145278edb4c80a016"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum router timeout value. <br /></td></tr>
+<tr class="separator:aa0db95a85b8b152145278edb4c80a016"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65e5cfc85f6e1b3e2ada0229794cb1ca"><td class="memItemLeft" align="right" valign="top"><a id="a65e5cfc85f6e1b3e2ada0229794cb1ca"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a65e5cfc85f6e1b3e2ada0229794cb1ca">DSE_MAGIC</a>&#160;&#160;&#160;0xAD130AD6</td></tr>
+<tr class="memdesc:a65e5cfc85f6e1b3e2ada0229794cb1ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">The magic number that marks a valid DSE metadata descriptor. <br /></td></tr>
+<tr class="separator:a65e5cfc85f6e1b3e2ada0229794cb1ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6451df34fe62a074394822d80b90baa0"><td class="memItemLeft" align="right" valign="top"><a id="a6451df34fe62a074394822d80b90baa0"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a6451df34fe62a074394822d80b90baa0">DSE_VERSION</a>&#160;&#160;&#160;0x00010000</td></tr>
+<tr class="memdesc:a6451df34fe62a074394822d80b90baa0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The version of the DSE metadata descriptor. <br /></td></tr>
+<tr class="separator:a6451df34fe62a074394822d80b90baa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:aaf105ae5beaca1dee30ae54530691fce"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="extra__monitor__support_8c.html#aaf105ae5beaca1dee30ae54530691fcea2915fe5d78ee9ccf385bc90e032aaaf6">DMA_READ</a> = 0, 
-<a class="el" href="extra__monitor__support_8c.html#aaf105ae5beaca1dee30ae54530691fcea7b131f1a056b52cb5dbca2960c1130fb">DMA_WRITE</a> = 1
+<tr class="memitem:aaf105ae5beaca1dee30ae54530691fce"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="extra__monitor__support_8c.html#aaf105ae5beaca1dee30ae54530691fcead7babe063e0a6247caaffd6c8caee600">SEQUENCE_NUMBER_SIZE</a> = 1, 
+<a class="el" href="extra__monitor__support_8c.html#aaf105ae5beaca1dee30ae54530691fcea637adf75b1ab91cb42ca583a87352738">TRANSACTION_ID_SIZE</a> = 1, 
+<a class="el" href="extra__monitor__support_8c.html#aaf105ae5beaca1dee30ae54530691fcea6ad2e57f7353682e45c4acc5e5aeee96">SDP_PAYLOAD_WORDS</a>, 
+<a class="el" href="extra__monitor__support_8c.html#aaf105ae5beaca1dee30ae54530691fcead752c54a1cb6bf3d556b67c65101668e">SDP_PAYLOAD_BYTES</a> = SDP_PAYLOAD_WORDS * sizeof(uint)
  }</td></tr>
-<tr class="memdesc:aaf105ae5beaca1dee30ae54530691fce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags for the type of DMA to request.  <a href="extra__monitor__support_8c.html#aaf105ae5beaca1dee30ae54530691fce">More...</a><br /></td></tr>
+<tr class="memdesc:aaf105ae5beaca1dee30ae54530691fce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sizes of things to do with data speed up out message sizes.  <a href="extra__monitor__support_8c.html#aaf105ae5beaca1dee30ae54530691fce">More...</a><br /></td></tr>
 <tr class="separator:aaf105ae5beaca1dee30ae54530691fce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a80155586fa275b28773c9b203f52caba"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaad7babe063e0a6247caaffd6c8caee600">SEQUENCE_NUMBER_SIZE</a> = 1, 
-<a class="el" href="extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaa637adf75b1ab91cb42ca583a87352738">TRANSACTION_ID_SIZE</a> = 1, 
-<a class="el" href="extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaa6ad2e57f7353682e45c4acc5e5aeee96">SDP_PAYLOAD_WORDS</a>, 
-<a class="el" href="extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaad752c54a1cb6bf3d556b67c65101668e">SDP_PAYLOAD_BYTES</a> = SDP_PAYLOAD_WORDS * sizeof(uint)
- }</td></tr>
-<tr class="memdesc:a80155586fa275b28773c9b203f52caba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sizes of things to do with data speed up out message sizes.  <a href="extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52caba">More...</a><br /></td></tr>
-<tr class="separator:a80155586fa275b28773c9b203f52caba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa4dd979d695f33581391c9edca9012e4"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aa4dd979d695f33581391c9edca9012e4">data_out_sdp_commands</a> { <a class="el" href="extra__monitor__support_8c.html#aa4dd979d695f33581391c9edca9012e4a43e4f8b4a1fc247d9a4e24bb13c2474f">SDP_CMD_START_SENDING_DATA</a> = 100, 
 <a class="el" href="extra__monitor__support_8c.html#aa4dd979d695f33581391c9edca9012e4a217137106837d3c590bf05c73ecf3733">SDP_CMD_START_OF_MISSING_SDP_PACKETS</a> = 1000, 
 <a class="el" href="extra__monitor__support_8c.html#aa4dd979d695f33581391c9edca9012e4afa13b42137156b1a06f68f1896b7c6f7">SDP_CMD_MORE_MISSING_SDP_PACKETS</a> = 1001, 
@@ -228,73 +221,19 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:aa4dd979d695f33581391c9edca9012e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">SDP flags.  <a href="extra__monitor__support_8c.html#aa4dd979d695f33581391c9edca9012e4">More...</a><br /></td></tr>
 <tr class="separator:aa4dd979d695f33581391c9edca9012e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b7b47dd702d9e331586d485013fd1ea"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
-&#160;&#160;<a class="el" href="extra__monitor__support_8c.html#a6b7b47dd702d9e331586d485013fd1eaa31d3dd7993118a16a819118bce59b194">CPU_SLOT</a> = SLOT_0, 
-<a class="el" href="extra__monitor__support_8c.html#a6b7b47dd702d9e331586d485013fd1eaa000b6c62469245f694c3ef9d3390a7c6">CC_SLOT</a> = SLOT_1, 
-<a class="el" href="extra__monitor__support_8c.html#a6b7b47dd702d9e331586d485013fd1eaaab240da79e7c1d78a159343d146edd13">TIMER_SLOT</a> = SLOT_2, 
-<a class="el" href="extra__monitor__support_8c.html#a6b7b47dd702d9e331586d485013fd1eaaca95bbc52c7ed3e8240a88dc1a6ba2a3">DMA_SLOT</a> = SLOT_3, 
+<tr class="memitem:a80155586fa275b28773c9b203f52caba"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
+&#160;&#160;<a class="el" href="extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaa31d3dd7993118a16a819118bce59b194">CPU_SLOT</a> = SLOT_0, 
+<a class="el" href="extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaa000b6c62469245f694c3ef9d3390a7c6">CC_SLOT</a> = SLOT_1, 
+<a class="el" href="extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaaab240da79e7c1d78a159343d146edd13">TIMER_SLOT</a> = SLOT_2, 
+<a class="el" href="extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaaca95bbc52c7ed3e8240a88dc1a6ba2a3">DMA_SLOT</a> = SLOT_3, 
 <br />
-&#160;&#160;<a class="el" href="extra__monitor__support_8c.html#a6b7b47dd702d9e331586d485013fd1eaac749c67267efeb265141afc68e371cdb">DMA_ERROR_SLOT</a> = SLOT_4, 
-<a class="el" href="extra__monitor__support_8c.html#a6b7b47dd702d9e331586d485013fd1eaa1375671dff545ffd4c86fac72236812a">DMA_TIMEOUT_SLOT</a> = SLOT_5, 
-<a class="el" href="extra__monitor__support_8c.html#a6b7b47dd702d9e331586d485013fd1eaa33728a0193855bd51db0362175f7fc0f">MC_PAYLOAD_SLOT</a> = SLOT_6
-<br />
- }</td></tr>
-<tr class="memdesc:a6b7b47dd702d9e331586d485013fd1ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">VIC slot definitions.  <a href="extra__monitor__support_8c.html#a6b7b47dd702d9e331586d485013fd1ea">More...</a><br /></td></tr>
-<tr class="separator:a6b7b47dd702d9e331586d485013fd1ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af9bdc3014f3d54c426b6d2df10de4960"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
-&#160;&#160;<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a36c43f64108e390c9124240eb5cff260">RTR_DOVRFLW_BIT</a> = 30, 
-<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960ac2f306f63b63cfb74a316910f852b0a8">RTR_BLOCKED_BIT</a> = 25, 
-<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960aa4da8b17f315a8d257a097daaf784593">RTR_FPE_BITS</a> = 18, 
-<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a1464a59ce9a9851e39c837c150f1ad4a">RTR_LE_BITS</a> = 6, 
-<br />
-&#160;&#160;<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a3ca38b6f1004a5faf494e228077db401">RTR_PARITY_COUNT_BIT</a> = 5, 
-<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a23ebfa80f6fc2825379b4b6afe20254f">RTR_FRAME_COUNT_BIT</a> = 4, 
-<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960aeab06c9b2ebd573790e30e6adfa24f39">RTR_TS_COUNT_BIT</a> = 3, 
-<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a9fb9c307bcf90acfdde9b92904e38046">RTR_DENABLE_BIT</a> = 2
+&#160;&#160;<a class="el" href="extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaac749c67267efeb265141afc68e371cdb">DMA_ERROR_SLOT</a> = SLOT_4, 
+<a class="el" href="extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaa1375671dff545ffd4c86fac72236812a">DMA_TIMEOUT_SLOT</a> = SLOT_5, 
+<a class="el" href="extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaa33728a0193855bd51db0362175f7fc0f">MC_PAYLOAD_SLOT</a> = SLOT_6
 <br />
  }</td></tr>
-<tr class="memdesc:af9bdc3014f3d54c426b6d2df10de4960"><td class="mdescLeft">&#160;</td><td class="mdescRight">Positions of fields in the router status and control registers.  <a href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960">More...</a><br /></td></tr>
-<tr class="separator:af9bdc3014f3d54c426b6d2df10de4960"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adb49720dc49f7d4e4cf9adbf2948e409"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
-&#160;&#160;<a class="el" href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409a5cc2d8b1ae2457286900337f7c234333">RTR_BLOCKED_MASK</a> = 1 &lt;&lt; RTR_BLOCKED_BIT, 
-<a class="el" href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409a5b9a0adfd87cb097d1023ab04365370a">RTR_DOVRFLW_MASK</a> = 1 &lt;&lt; RTR_DOVRFLW_BIT, 
-<a class="el" href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409a6ff98d8455e221703bba43f0fbdbe431">RTR_DENABLE_MASK</a> = 1 &lt;&lt; RTR_DENABLE_BIT, 
-<a class="el" href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409a378c1cc91bb3c0dd2b62dc59cf4d2ea4">RTR_FPE_MASK</a> = (1 &lt;&lt; RTR_FPE_BITS) - 1, 
-<br />
-&#160;&#160;<a class="el" href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409afe651185ccfa887730b0e8133dbd38f1">RTR_LE_MASK</a> = (1 &lt;&lt; RTR_LE_BITS) - 1, 
-<a class="el" href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409a97ef4c8fdd1da41591e9d9e95c8c1fad">RTR_ERRCNT_MASK</a>
-<br />
- }</td></tr>
-<tr class="memdesc:adb49720dc49f7d4e4cf9adbf2948e409"><td class="mdescLeft">&#160;</td><td class="mdescRight">Masks for fields in the router status and control registers.  <a href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409">More...</a><br /></td></tr>
-<tr class="separator:adb49720dc49f7d4e4cf9adbf2948e409"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae05225933a42f81e7c4a9fb286596f9"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="extra__monitor__support_8c.html#aae05225933a42f81e7c4a9fb286596f9a69fddb3e5275eaa5ab7716ad4a631b94">PKT_CONTROL_SHFT</a> = 16, 
-<a class="el" href="extra__monitor__support_8c.html#aae05225933a42f81e7c4a9fb286596f9ad524c0ec25de2460f4ab608055ce79ad">PKT_PLD_SHFT</a> = 17, 
-<a class="el" href="extra__monitor__support_8c.html#aae05225933a42f81e7c4a9fb286596f9a595c821792045052d61aab1f4736c6c3">PKT_TYPE_SHFT</a> = 22, 
-<a class="el" href="extra__monitor__support_8c.html#aae05225933a42f81e7c4a9fb286596f9a94f8bb8a696e884969de39a1788d4dda">PKT_ROUTE_SHFT</a> = 24
- }</td></tr>
-<tr class="memdesc:aae05225933a42f81e7c4a9fb286596f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Positions of fields in communications controller registers.  <a href="extra__monitor__support_8c.html#aae05225933a42f81e7c4a9fb286596f9">More...</a><br /></td></tr>
-<tr class="separator:aae05225933a42f81e7c4a9fb286596f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a39fca1837c5ce7715cbf571669660c13"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="extra__monitor__support_8c.html#a39fca1837c5ce7715cbf571669660c13ac2e8ec17b3dd45f81664d0e863e0d9b2">PKT_CONTROL_MASK</a> = 0xff &lt;&lt; PKT_CONTROL_SHFT, 
-<a class="el" href="extra__monitor__support_8c.html#a39fca1837c5ce7715cbf571669660c13ab3f9bf5194a179d66aa35bc285abe6b2">PKT_PLD_MASK</a> = 1 &lt;&lt; PKT_PLD_SHFT, 
-<a class="el" href="extra__monitor__support_8c.html#a39fca1837c5ce7715cbf571669660c13a7e8b95592f54a3d61f377f905312914b">PKT_TYPE_MASK</a> = 3 &lt;&lt; PKT_TYPE_SHFT, 
-<a class="el" href="extra__monitor__support_8c.html#a39fca1837c5ce7715cbf571669660c13ae69b71aedea244bd9b47c282529a8f58">PKT_ROUTE_MASK</a> = 7 &lt;&lt; PKT_ROUTE_SHFT
- }</td></tr>
-<tr class="memdesc:a39fca1837c5ce7715cbf571669660c13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Masks for fields in communications controller registers.  <a href="extra__monitor__support_8c.html#a39fca1837c5ce7715cbf571669660c13">More...</a><br /></td></tr>
-<tr class="separator:a39fca1837c5ce7715cbf571669660c13"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8260104100d03dd752ed71c07e465cc1"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a8260104100d03dd752ed71c07e465cc1">packet_types</a> { <br />
-&#160;&#160;<b>NO_PAYLOAD_16</b>, 
-<b>PAYLOAD_16</b>, 
-<b>NO_PAYLOAD_32</b>, 
-<b>PAYLOAD_32</b>, 
-<br />
-&#160;&#160;<a class="el" href="extra__monitor__support_8c.html#a8260104100d03dd752ed71c07e465cc1a3e383793595e2c46cfee214e6416bce3">PKT_TYPE_MC</a> = 0 &lt;&lt; PKT_TYPE_SHFT, 
-<a class="el" href="extra__monitor__support_8c.html#a8260104100d03dd752ed71c07e465cc1ab0e8655693e4264b1648213ab2437a5c">PKT_TYPE_PP</a> = 1 &lt;&lt; PKT_TYPE_SHFT, 
-<a class="el" href="extra__monitor__support_8c.html#a8260104100d03dd752ed71c07e465cc1a58549f96c94a246031ef1843260a5e4b">PKT_TYPE_NN</a> = 2 &lt;&lt; PKT_TYPE_SHFT, 
-<a class="el" href="extra__monitor__support_8c.html#a8260104100d03dd752ed71c07e465cc1ae246a3b3ea5bda26af049f1db8cef35c">PKT_TYPE_FR</a> = 3 &lt;&lt; PKT_TYPE_SHFT
-<br />
- }</td></tr>
-<tr class="memdesc:a8260104100d03dd752ed71c07e465cc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bits representing packet types.  <a href="extra__monitor__support_8c.html#a8260104100d03dd752ed71c07e465cc1">More...</a><br /></td></tr>
-<tr class="separator:a8260104100d03dd752ed71c07e465cc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memdesc:a80155586fa275b28773c9b203f52caba"><td class="mdescLeft">&#160;</td><td class="mdescRight">VIC slot definitions.  <a href="extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52caba">More...</a><br /></td></tr>
+<tr class="separator:a80155586fa275b28773c9b203f52caba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad3f9f1daf2546fa2852c67698784045f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#ad3f9f1daf2546fa2852c67698784045f">dma_tags_for_data_speed_up</a> { <a class="el" href="extra__monitor__support_8c.html#ad3f9f1daf2546fa2852c67698784045faf02163dfe7681d77de744cfaad973703">DMA_TAG_READ_FOR_TRANSMISSION</a> = 0, 
 <a class="el" href="extra__monitor__support_8c.html#ad3f9f1daf2546fa2852c67698784045fa942e461c76acb1c5a7401c130ccdd0e8">DMA_TAG_READ_FOR_RETRANSMISSION</a> = 1, 
 <a class="el" href="extra__monitor__support_8c.html#ad3f9f1daf2546fa2852c67698784045fae3a1a5680add9bd61574b24599ac9185">DMA_TAG_RETRANSMISSION_READING</a> = 2, 
@@ -349,9 +288,13 @@ Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a6d542339b492b2ad62a803b09b001365">sark_int_han</a> (void)</td></tr>
 <tr class="memdesc:a6d542339b492b2ad62a803b09b001365"><td class="mdescLeft">&#160;</td><td class="mdescRight">The standard SARK CPU interrupt handler. <br /></td></tr>
 <tr class="separator:a6d542339b492b2ad62a803b09b001365"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa7ba56ad4e43d1f252ddb7e8b178869e"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aa7ba56ad4e43d1f252ddb7e8b178869e">dsg_block</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> index)</td></tr>
-<tr class="memdesc:aa7ba56ad4e43d1f252ddb7e8b178869e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the DSG region with the given index.  <a href="extra__monitor__support_8c.html#aa7ba56ad4e43d1f252ddb7e8b178869e">More...</a><br /></td></tr>
-<tr class="separator:aa7ba56ad4e43d1f252ddb7e8b178869e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9da1170f356db7c1f77f0097224738d6"><td class="memItemLeft" align="right" valign="top"><a id="a9da1170f356db7c1f77f0097224738d6"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a9da1170f356db7c1f77f0097224738d6">dse_validate</a> (void)</td></tr>
+<tr class="memdesc:a9da1170f356db7c1f77f0097224738d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks that our region data really is region data. <br /></td></tr>
+<tr class="separator:a9da1170f356db7c1f77f0097224738d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a625c5983a747ef4877038c46bc1691db"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a625c5983a747ef4877038c46bc1691db">dse_block</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> index)</td></tr>
+<tr class="memdesc:a625c5983a747ef4877038c46bc1691db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the DSG region with the given index.  <a href="extra__monitor__support_8c.html#a625c5983a747ef4877038c46bc1691db">More...</a><br /></td></tr>
+<tr class="separator:a625c5983a747ef4877038c46bc1691db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63d6a04c17d2ce291d74265353332f52"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a63d6a04c17d2ce291d74265353332f52">publish_transaction_id</a> (int <a class="el" href="data__speed__up__packet__gatherer_8c.html#a87f9e7ddbb607ed91afc2e1c7c9a4a52">transaction_id</a>)</td></tr>
 <tr class="memdesc:a63d6a04c17d2ce291d74265353332f52"><td class="mdescLeft">&#160;</td><td class="mdescRight">publishes the current transaction ID to the user1 register.  <a href="extra__monitor__support_8c.html#a63d6a04c17d2ce291d74265353332f52">More...</a><br /></td></tr>
 <tr class="separator:a63d6a04c17d2ce291d74265353332f52"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -371,9 +314,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extr
 static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a28cb6a39c61408fb29e5aa70c50ac72e">vic_interrupt_done</a> (void)</td></tr>
 <tr class="memdesc:a28cb6a39c61408fb29e5aa70c50ac72e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marks the end of an interrupt handler from the VIC's perspective. <br /></td></tr>
 <tr class="separator:a28cb6a39c61408fb29e5aa70c50ac72e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f8d524da3fce071fd279eca4715e81d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a9f8d524da3fce071fd279eca4715e81d">set_vic_callback</a> (uint8_t slot, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> type, <a class="el" href="extra__monitor__support_8c.html#a6d626fdf464bc6f2160d0bc92243b027">isr_t</a> <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a7f4271a2bb359cefd04d8ca74346ca05">callback</a>)</td></tr>
-<tr class="memdesc:a9f8d524da3fce071fd279eca4715e81d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install an interrupt handler.  <a href="extra__monitor__support_8c.html#a9f8d524da3fce071fd279eca4715e81d">More...</a><br /></td></tr>
-<tr class="separator:a9f8d524da3fce071fd279eca4715e81d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c976c77621f3c9d4beca94416759bfd"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a8c976c77621f3c9d4beca94416759bfd">set_vic_callback</a> (uint8_t slot, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> type, <a class="el" href="spinn__extra_8h.html#af492b0b6744f0f208d85f924885f5e64">vic_interrupt_handler_t</a> <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a7f4271a2bb359cefd04d8ca74346ca05">callback</a>)</td></tr>
+<tr class="memdesc:a8c976c77621f3c9d4beca94416759bfd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install an interrupt handler.  <a href="extra__monitor__support_8c.html#a8c976c77621f3c9d4beca94416759bfd">More...</a><br /></td></tr>
+<tr class="separator:a8c976c77621f3c9d4beca94416759bfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a53152f7717876fe6e69cbfcb4ff13c76"><td class="memItemLeft" align="right" valign="top"><a id="a53152f7717876fe6e69cbfcb4ff13c76"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a53152f7717876fe6e69cbfcb4ff13c76">reinjection_enable_comms_interrupt</a> (void)</td></tr>
 <tr class="memdesc:a53152f7717876fe6e69cbfcb4ff13c76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable the interrupt when the Communications Controller can accept another packet. <br /></td></tr>
@@ -382,6 +325,9 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a8186acf2a0850fc33bcb0e913cefc023">reinjection_disable_comms_interrupt</a> (void)</td></tr>
 <tr class="memdesc:a8186acf2a0850fc33bcb0e913cefc023"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disable the interrupt when the Communications Controller can accept another packet. <br /></td></tr>
 <tr class="separator:a8186acf2a0850fc33bcb0e913cefc023"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08eaf530415dc1297ffbe59b6076a23d"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a08eaf530415dc1297ffbe59b6076a23d">reinjection_can_send_now</a> (void)</td></tr>
+<tr class="memdesc:a08eaf530415dc1297ffbe59b6076a23d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the comms hardware can accept packet now.  <a href="extra__monitor__support_8c.html#a08eaf530415dc1297ffbe59b6076a23d">More...</a><br /></td></tr>
+<tr class="separator:a08eaf530415dc1297ffbe59b6076a23d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0c0d13de480b18622bcc1d4d8905fadd"><td class="memItemLeft" align="right" valign="top"><a id="a0c0d13de480b18622bcc1d4d8905fadd"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a0c0d13de480b18622bcc1d4d8905fadd">reinjection_timer_callback</a> (void)</td></tr>
 <tr class="memdesc:a0c0d13de480b18622bcc1d4d8905fadd"><td class="mdescLeft">&#160;</td><td class="mdescRight">the plugin callback for the timer <br /></td></tr>
@@ -742,7 +688,8 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The implementation of the Extra Monitor. </p>
-<p>The purpose of this application is to provide extra monitor functions (such as reinjection control) that do not fit in SCAMP, and to provide an endpoint on each chip for streaming data in and out at high speed (while the main user application is not running). </p>
+<p>The purpose of this application is to provide extra monitor functions (such as reinjection control) that do not fit in SCAMP, and to provide an endpoint on each chip for streaming data in and out at high speed (while the main user application is not running).</p>
+<dl class="section note"><dt>Note</dt><dd>This application does not use spin1_api as it needs low-level access to interrupts. </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><hr/><h2 class="groupheader">Data Structure Documentation</h2>
@@ -759,11 +706,11 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </div><div class="memdoc">
 <div class="textblock"><p>dumped packet type </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00248">248</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00178">178</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
-<a id="aab0565cf977329a4739ade3b3f2e844f"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
+<a id="aea863bc6cc01c2acb6fababb9a3d25e7"></a><a class="el" href="spinn__extra_8h.html#unionrouter__packet__header__t">router_packet_header_t</a></td>
 <td class="fieldname">
 hdr</td>
 <td class="fielddoc">
@@ -797,7 +744,7 @@ Payload word of packet (might be undefined) </td></tr>
 </div><div class="memdoc">
 <div class="textblock"><p>message payload for the data speed up out SDP messages </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00276">276</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00206">206</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -842,7 +789,7 @@ How much data are we moving. </td></tr>
 </div><div class="memdoc">
 <div class="textblock"><p>router entry positions in sdram </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00290">290</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00220">220</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -880,7 +827,7 @@ The SpiNNaker router route (to use when masked key matches) </td></tr>
 </div><div class="memdoc">
 <div class="textblock"><p>data positions in sdram for data in config </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00297">297</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00227">227</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -930,7 +877,7 @@ The system (non-app, non-SCAMP) router entries to use for Data In. </td></tr>
 </div><div class="memdoc">
 <div class="textblock"><p>defintion of response packet for reinjector status </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00318">318</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00248">248</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -1006,7 +953,7 @@ What packet types are we reinjecting. </td></tr>
 </div><div class="memdoc">
 <div class="textblock"><p>how the reinjection configuration is laid out in memory. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00348">348</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00278">278</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -1060,7 +1007,7 @@ reinjection_base_mc_key</td>
 </div><div class="memdoc">
 <div class="textblock"><p>human readable definitions of each element in the transmission region </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00392">392</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00322">322</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -1097,37 +1044,37 @@ The key to say that we've finished transmitting data. </td></tr>
 
 </div>
 </div>
-<a name="structdsg__header__t" id="structdsg__header__t"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#structdsg__header__t">&#9670;&nbsp;</a></span>dsg_header_t</h2>
+<a name="structdse__header__t" id="structdse__header__t"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#structdse__header__t">&#9670;&nbsp;</a></span>dse_header_t</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">struct dsg_header_t</td>
+          <td class="memname">struct dse_header_t</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<div class="textblock"><p>DSG metadata. </p>
+<div class="textblock"><p>DSE metadata. </p>
 <p>Must structurally match <a class="el" href="data__specification_8h.html#structdata__specification__metadata__t" title="The central structure that the DSE writes.">data_specification_metadata_t</a> </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00613">613</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00540">540</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
-<a id="a406db90b5e45aaebf77cb6173588e4b1"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
+<a id="a4b30f2faa1733d39bbf0f29c3de0ec1d"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
-dse_magic_number</td>
+magic_number</td>
 <td class="fielddoc">
-Magic number (== 0xAD130AD6) </td></tr>
+Magic number (== <a class="el" href="extra__monitor__support_8c.html#a65e5cfc85f6e1b3e2ada0229794cb1ca" title="The magic number that marks a valid DSE metadata descriptor.">DSE_MAGIC</a>) </td></tr>
 <tr><td class="fieldtype">
-<a id="a00f8b032c6046171aa0aba956e75579b"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
+<a id="a4015ea844b4fd30b280f7761663d7e14"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
-dse_version</td>
+version</td>
 <td class="fielddoc">
-Version (== 0x00010000) </td></tr>
+Version (== <a class="el" href="extra__monitor__support_8c.html#a6451df34fe62a074394822d80b90baa0" title="The version of the DSE metadata descriptor.">DSE_VERSION</a>) </td></tr>
 <tr><td class="fieldtype">
-<a id="a7a24fa8498541f6588f96d16431a3b68"></a>void *</td>
+<a id="a75018303bb7b01db0de23f1ea66deeb9"></a>void *</td>
 <td class="fieldname">
 regions[]</td>
 <td class="fielddoc">
@@ -1149,29 +1096,10 @@ Pointers to DSG regions. </td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Use DMA bursts of 16 words (2<sup>16</sup>) </p>
+<p>Use DMA bursts of 16 (2<sup>4</sup>) transfer units (double words) </p>
 <p>See <a href="https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf">SpiNNaker Data Sheet</a>, Section 7.4, register r3 </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00051">51</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
-
-</div>
-</div>
-<a id="ad0b14f1d4cda14aea7d53c987af502b1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad0b14f1d4cda14aea7d53c987af502b1">&#9670;&nbsp;</a></span>DMA_WIDTH</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DMA_WIDTH&#160;&#160;&#160;1</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Use a DMA width of double words. </p>
-<p>See <a href="https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf">SpiNNaker Data Sheet</a>, Section 7.4, register r3 </p>
-
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00058">58</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00055">55</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1188,43 +1116,19 @@ Pointers to DSG regions. </td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Flags for the type of DMA to request. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="aaf105ae5beaca1dee30ae54530691fcea2915fe5d78ee9ccf385bc90e032aaaf6"></a>DMA_READ&#160;</td><td class="fielddoc"><p>marker for doing a DMA read </p>
-</td></tr>
-<tr><td class="fieldname"><a id="aaf105ae5beaca1dee30ae54530691fcea7b131f1a056b52cb5dbca2960c1130fb"></a>DMA_WRITE&#160;</td><td class="fielddoc"><p>marker for doing DMA write (don't think this is used in here yet) </p>
-</td></tr>
-</table>
-
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00064">64</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
-
-</div>
-</div>
-<a id="a80155586fa275b28773c9b203f52caba"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a80155586fa275b28773c9b203f52caba">&#9670;&nbsp;</a></span>anonymous enum</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">anonymous enum</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
 <p>Sizes of things to do with data speed up out message sizes. </p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a80155586fa275b28773c9b203f52cabaad7babe063e0a6247caaffd6c8caee600"></a>SEQUENCE_NUMBER_SIZE&#160;</td><td class="fielddoc"><p>Size of the sequence number, in words. </p>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="aaf105ae5beaca1dee30ae54530691fcead7babe063e0a6247caaffd6c8caee600"></a>SEQUENCE_NUMBER_SIZE&#160;</td><td class="fielddoc"><p>Size of the sequence number, in words. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a80155586fa275b28773c9b203f52cabaa637adf75b1ab91cb42ca583a87352738"></a>TRANSACTION_ID_SIZE&#160;</td><td class="fielddoc"><p>Size of the transaction ID, in words. </p>
+<tr><td class="fieldname"><a id="aaf105ae5beaca1dee30ae54530691fcea637adf75b1ab91cb42ca583a87352738"></a>TRANSACTION_ID_SIZE&#160;</td><td class="fielddoc"><p>Size of the transaction ID, in words. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a80155586fa275b28773c9b203f52cabaa6ad2e57f7353682e45c4acc5e5aeee96"></a>SDP_PAYLOAD_WORDS&#160;</td><td class="fielddoc"><p>Effective size of the SDP packet payload, in words of actual content. </p>
+<tr><td class="fieldname"><a id="aaf105ae5beaca1dee30ae54530691fcea6ad2e57f7353682e45c4acc5e5aeee96"></a>SDP_PAYLOAD_WORDS&#160;</td><td class="fielddoc"><p>Effective size of the SDP packet payload, in words of actual content. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a80155586fa275b28773c9b203f52cabaad752c54a1cb6bf3d556b67c65101668e"></a>SDP_PAYLOAD_BYTES&#160;</td><td class="fielddoc"><p>Effective size of the SDP packet payload, in bytes of actual content. </p>
+<tr><td class="fieldname"><a id="aaf105ae5beaca1dee30ae54530691fcead752c54a1cb6bf3d556b67c65101668e"></a>SDP_PAYLOAD_BYTES&#160;</td><td class="fielddoc"><p>Effective size of the SDP packet payload, in bytes of actual content. </p>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00081">81</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00070">70</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1252,12 +1156,12 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00097">97</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00086">86</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
-<a id="a6b7b47dd702d9e331586d485013fd1ea"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6b7b47dd702d9e331586d485013fd1ea">&#9670;&nbsp;</a></span>anonymous enum</h2>
+<a id="a80155586fa275b28773c9b203f52caba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80155586fa275b28773c9b203f52caba">&#9670;&nbsp;</a></span>anonymous enum</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1270,175 +1174,23 @@ Pointers to DSG regions. </td></tr>
 
 <p>VIC slot definitions. </p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a6b7b47dd702d9e331586d485013fd1eaa31d3dd7993118a16a819118bce59b194"></a>CPU_SLOT&#160;</td><td class="fielddoc"><p>CPU VIC slot (WDOG and SDP; message from SCAMP for SARK) </p>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a80155586fa275b28773c9b203f52cabaa31d3dd7993118a16a819118bce59b194"></a>CPU_SLOT&#160;</td><td class="fielddoc"><p>CPU VIC slot (WDOG and SDP; message from SCAMP for SARK) </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a6b7b47dd702d9e331586d485013fd1eaa000b6c62469245f694c3ef9d3390a7c6"></a>CC_SLOT&#160;</td><td class="fielddoc"><p>Communications controller VIC slot. </p>
+<tr><td class="fieldname"><a id="a80155586fa275b28773c9b203f52cabaa000b6c62469245f694c3ef9d3390a7c6"></a>CC_SLOT&#160;</td><td class="fielddoc"><p>Communications controller VIC slot. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a6b7b47dd702d9e331586d485013fd1eaaab240da79e7c1d78a159343d146edd13"></a>TIMER_SLOT&#160;</td><td class="fielddoc"><p>Timer VIC slot. </p>
+<tr><td class="fieldname"><a id="a80155586fa275b28773c9b203f52cabaaab240da79e7c1d78a159343d146edd13"></a>TIMER_SLOT&#160;</td><td class="fielddoc"><p>Timer VIC slot. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a6b7b47dd702d9e331586d485013fd1eaaca95bbc52c7ed3e8240a88dc1a6ba2a3"></a>DMA_SLOT&#160;</td><td class="fielddoc"><p>DMA completed VIC slot. </p>
+<tr><td class="fieldname"><a id="a80155586fa275b28773c9b203f52cabaaca95bbc52c7ed3e8240a88dc1a6ba2a3"></a>DMA_SLOT&#160;</td><td class="fielddoc"><p>DMA completed VIC slot. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a6b7b47dd702d9e331586d485013fd1eaac749c67267efeb265141afc68e371cdb"></a>DMA_ERROR_SLOT&#160;</td><td class="fielddoc"><p>DMA error VIC slot. </p>
+<tr><td class="fieldname"><a id="a80155586fa275b28773c9b203f52cabaac749c67267efeb265141afc68e371cdb"></a>DMA_ERROR_SLOT&#160;</td><td class="fielddoc"><p>DMA error VIC slot. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a6b7b47dd702d9e331586d485013fd1eaa1375671dff545ffd4c86fac72236812a"></a>DMA_TIMEOUT_SLOT&#160;</td><td class="fielddoc"><p>DMA timeout VIC slot. </p>
+<tr><td class="fieldname"><a id="a80155586fa275b28773c9b203f52cabaa1375671dff545ffd4c86fac72236812a"></a>DMA_TIMEOUT_SLOT&#160;</td><td class="fielddoc"><p>DMA timeout VIC slot. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a6b7b47dd702d9e331586d485013fd1eaa33728a0193855bd51db0362175f7fc0f"></a>MC_PAYLOAD_SLOT&#160;</td><td class="fielddoc"><p>Multicast-with-payload message arrived VIC slot. </p>
-</td></tr>
-</table>
-
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00164">164</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
-
-</div>
-</div>
-<a id="af9bdc3014f3d54c426b6d2df10de4960"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af9bdc3014f3d54c426b6d2df10de4960">&#9670;&nbsp;</a></span>anonymous enum</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">anonymous enum</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Positions of fields in the router status and control registers. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960a36c43f64108e390c9124240eb5cff260"></a>RTR_DOVRFLW_BIT&#160;</td><td class="fielddoc"><p>router dump overflow </p>
-</td></tr>
-<tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960ac2f306f63b63cfb74a316910f852b0a8"></a>RTR_BLOCKED_BIT&#160;</td><td class="fielddoc"><p>router blocked </p>
-</td></tr>
-<tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960aa4da8b17f315a8d257a097daaf784593"></a>RTR_FPE_BITS&#160;</td><td class="fielddoc"><p>number of bits marking if the dumped packet was due to a processor failure </p>
-</td></tr>
-<tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960a1464a59ce9a9851e39c837c150f1ad4a"></a>RTR_LE_BITS&#160;</td><td class="fielddoc"><p>number of bits marking if the dumped packet was due to a link failure </p>
-</td></tr>
-<tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960a3ca38b6f1004a5faf494e228077db401"></a>RTR_PARITY_COUNT_BIT&#160;</td><td class="fielddoc"><p>count if the packet had a parity error </p>
-</td></tr>
-<tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960a23ebfa80f6fc2825379b4b6afe20254f"></a>RTR_FRAME_COUNT_BIT&#160;</td><td class="fielddoc"><p>count if the packet had a framing error </p>
-</td></tr>
-<tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960aeab06c9b2ebd573790e30e6adfa24f39"></a>RTR_TS_COUNT_BIT&#160;</td><td class="fielddoc"><p>count if the packet had a timestamp error </p>
-</td></tr>
-<tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960a9fb9c307bcf90acfdde9b92904e38046"></a>RTR_DENABLE_BIT&#160;</td><td class="fielddoc"><p>enable dump interrupts </p>
+<tr><td class="fieldname"><a id="a80155586fa275b28773c9b203f52cabaa33728a0193855bd51db0362175f7fc0f"></a>MC_PAYLOAD_SLOT&#160;</td><td class="fielddoc"><p>Multicast-with-payload message arrived VIC slot. </p>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00182">182</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
-
-</div>
-</div>
-<a id="adb49720dc49f7d4e4cf9adbf2948e409"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adb49720dc49f7d4e4cf9adbf2948e409">&#9670;&nbsp;</a></span>anonymous enum</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">anonymous enum</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Masks for fields in the router status and control registers. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="adb49720dc49f7d4e4cf9adbf2948e409a5cc2d8b1ae2457286900337f7c234333"></a>RTR_BLOCKED_MASK&#160;</td><td class="fielddoc"><p>router blocked </p>
-</td></tr>
-<tr><td class="fieldname"><a id="adb49720dc49f7d4e4cf9adbf2948e409a5b9a0adfd87cb097d1023ab04365370a"></a>RTR_DOVRFLW_MASK&#160;</td><td class="fielddoc"><p>router dump overflow </p>
-</td></tr>
-<tr><td class="fieldname"><a id="adb49720dc49f7d4e4cf9adbf2948e409a6ff98d8455e221703bba43f0fbdbe431"></a>RTR_DENABLE_MASK&#160;</td><td class="fielddoc"><p>enable dump interrupts </p>
-</td></tr>
-<tr><td class="fieldname"><a id="adb49720dc49f7d4e4cf9adbf2948e409a378c1cc91bb3c0dd2b62dc59cf4d2ea4"></a>RTR_FPE_MASK&#160;</td><td class="fielddoc"><p>if the dumped packet was a processor failure </p>
-</td></tr>
-<tr><td class="fieldname"><a id="adb49720dc49f7d4e4cf9adbf2948e409afe651185ccfa887730b0e8133dbd38f1"></a>RTR_LE_MASK&#160;</td><td class="fielddoc"><p>if the dumped packet was a link failure </p>
-</td></tr>
-<tr><td class="fieldname"><a id="adb49720dc49f7d4e4cf9adbf2948e409a97ef4c8fdd1da41591e9d9e95c8c1fad"></a>RTR_ERRCNT_MASK&#160;</td><td class="fielddoc"><p>router control mask to count the error packets </p>
-</td></tr>
-</table>
-
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00196">196</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
-
-</div>
-</div>
-<a id="aae05225933a42f81e7c4a9fb286596f9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aae05225933a42f81e7c4a9fb286596f9">&#9670;&nbsp;</a></span>anonymous enum</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">anonymous enum</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Positions of fields in communications controller registers. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="aae05225933a42f81e7c4a9fb286596f9a69fddb3e5275eaa5ab7716ad4a631b94"></a>PKT_CONTROL_SHFT&#160;</td><td class="fielddoc"><p>control field of packet control word </p>
-</td></tr>
-<tr><td class="fieldname"><a id="aae05225933a42f81e7c4a9fb286596f9ad524c0ec25de2460f4ab608055ce79ad"></a>PKT_PLD_SHFT&#160;</td><td class="fielddoc"><p>payload flag field of packet control word (part of control field) </p>
-</td></tr>
-<tr><td class="fieldname"><a id="aae05225933a42f81e7c4a9fb286596f9a595c821792045052d61aab1f4736c6c3"></a>PKT_TYPE_SHFT&#160;</td><td class="fielddoc"><p>packet type field of packet control word (part of control field) </p>
-</td></tr>
-<tr><td class="fieldname"><a id="aae05225933a42f81e7c4a9fb286596f9a94f8bb8a696e884969de39a1788d4dda"></a>PKT_ROUTE_SHFT&#160;</td><td class="fielddoc"><p>packet route field of packet control word </p>
-</td></tr>
-</table>
-
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00209">209</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
-
-</div>
-</div>
-<a id="a39fca1837c5ce7715cbf571669660c13"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a39fca1837c5ce7715cbf571669660c13">&#9670;&nbsp;</a></span>anonymous enum</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">anonymous enum</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Masks for fields in communications controller registers. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a39fca1837c5ce7715cbf571669660c13ac2e8ec17b3dd45f81664d0e863e0d9b2"></a>PKT_CONTROL_MASK&#160;</td><td class="fielddoc"><p>control field of packet control word </p>
-</td></tr>
-<tr><td class="fieldname"><a id="a39fca1837c5ce7715cbf571669660c13ab3f9bf5194a179d66aa35bc285abe6b2"></a>PKT_PLD_MASK&#160;</td><td class="fielddoc"><p>payload flag field of packet control word (part of control field) </p>
-</td></tr>
-<tr><td class="fieldname"><a id="a39fca1837c5ce7715cbf571669660c13a7e8b95592f54a3d61f377f905312914b"></a>PKT_TYPE_MASK&#160;</td><td class="fielddoc"><p>packet type field of packet control word (part of control field) </p>
-</td></tr>
-<tr><td class="fieldname"><a id="a39fca1837c5ce7715cbf571669660c13ae69b71aedea244bd9b47c282529a8f58"></a>PKT_ROUTE_MASK&#160;</td><td class="fielddoc"><p>packet route field of packet control word </p>
-</td></tr>
-</table>
-
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00221">221</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
-
-</div>
-</div>
-<a id="a8260104100d03dd752ed71c07e465cc1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8260104100d03dd752ed71c07e465cc1">&#9670;&nbsp;</a></span>packet_types</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="live__packet__gather_8c.html#a8260104100d03dd752ed71c07e465cc1">packet_types</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Bits representing packet types. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a8260104100d03dd752ed71c07e465cc1a3e383793595e2c46cfee214e6416bce3"></a>PKT_TYPE_MC&#160;</td><td class="fielddoc"><p>Multicast packet. </p>
-</td></tr>
-<tr><td class="fieldname"><a id="a8260104100d03dd752ed71c07e465cc1ab0e8655693e4264b1648213ab2437a5c"></a>PKT_TYPE_PP&#160;</td><td class="fielddoc"><p>Point-to-point packet. </p>
-</td></tr>
-<tr><td class="fieldname"><a id="a8260104100d03dd752ed71c07e465cc1a58549f96c94a246031ef1843260a5e4b"></a>PKT_TYPE_NN&#160;</td><td class="fielddoc"><p>Nearest neighbour packet. </p>
-</td></tr>
-<tr><td class="fieldname"><a id="a8260104100d03dd752ed71c07e465cc1ae246a3b3ea5bda26af049f1db8cef35c"></a>PKT_TYPE_FR&#160;</td><td class="fielddoc"><p>Fixed route packet. </p>
-</td></tr>
-</table>
-
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00233">233</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00156">156</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1466,7 +1218,7 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00263">263</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00193">193</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1490,7 +1242,7 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00365">365</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00295">295</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1516,7 +1268,7 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00372">372</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00302">302</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1542,7 +1294,7 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00382">382</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00312">312</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1568,13 +1320,13 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00406">406</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00336">336</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="aa7ba56ad4e43d1f252ddb7e8b178869e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa7ba56ad4e43d1f252ddb7e8b178869e">&#9670;&nbsp;</a></span>dsg_block()</h2>
+<a id="a625c5983a747ef4877038c46bc1691db"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a625c5983a747ef4877038c46bc1691db">&#9670;&nbsp;</a></span>dse_block()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1583,7 +1335,7 @@ Pointers to DSG regions. </td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void* dsg_block </td>
+          <td class="memname">static void* dse_block </td>
           <td>(</td>
           <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>index</em></td><td>)</td>
@@ -1607,7 +1359,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The address of the region </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00625">625</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00570">570</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1644,7 +1396,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00637">637</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00582">582</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1681,7 +1433,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>a pointer to the block, or <code>NULL</code> if allocation failed </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00644">644</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00589">589</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1717,7 +1469,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00651">651</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00596">596</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1748,7 +1500,7 @@ Pointers to DSG regions. </td></tr>
 <p>the maximum SDRAM block size </p>
 <dl class="section return"><dt>Returns</dt><dd>The maximum size of heap memory block that may be allocated in SDRAM </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00658">658</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00603">603</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1779,12 +1531,12 @@ Pointers to DSG regions. </td></tr>
 <p>How to get an SDP message out of the mailbox correctly. </p>
 <dl class="section return"><dt>Returns</dt><dd>The retrieved message, or <code>NULL</code> if message buffer allocation failed. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00665">665</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00610">610</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
-<a id="a9f8d524da3fce071fd279eca4715e81d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9f8d524da3fce071fd279eca4715e81d">&#9670;&nbsp;</a></span>set_vic_callback()</h2>
+<a id="a8c976c77621f3c9d4beca94416759bfd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c976c77621f3c9d4beca94416759bfd">&#9670;&nbsp;</a></span>set_vic_callback()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1807,7 +1559,7 @@ Pointers to DSG regions. </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="extra__monitor__support_8c.html#a6d626fdf464bc6f2160d0bc92243b027">isr_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="spinn__extra_8h.html#af492b0b6744f0f208d85f924885f5e64">vic_interrupt_handler_t</a>&#160;</td>
           <td class="paramname"><em>callback</em>&#160;</td>
         </tr>
         <tr>
@@ -1833,7 +1585,38 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00685">685</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00630">630</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+
+</div>
+</div>
+<a id="a08eaf530415dc1297ffbe59b6076a23d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a08eaf530415dc1297ffbe59b6076a23d">&#9670;&nbsp;</a></span>reinjection_can_send_now()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool reinjection_can_send_now </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Whether the comms hardware can accept packet now. </p>
+<dl class="section return"><dt>Returns</dt><dd>True if the router output stage is empty. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00661">661</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1869,7 +1652,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00741">741</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00694">694</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1905,7 +1688,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00872">872</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00831">831</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1941,7 +1724,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00914">914</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00873">873</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1977,7 +1760,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00921">921</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00879">879</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2015,7 +1798,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00933">933</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00890">890</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2053,7 +1836,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00952">952</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00911">911</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2090,7 +1873,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00970">970</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00929">929</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2127,7 +1910,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00991">991</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00950">950</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2164,7 +1947,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01028">1028</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00987">987</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2201,7 +1984,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01045">1045</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01004">1004</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2238,7 +2021,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01074">1074</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01038">1038</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2275,7 +2058,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the length of extra data put into the message for return </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01085">1085</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01049">1049</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2311,7 +2094,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01191">1191</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01165">1165</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2347,7 +2130,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01203">1203</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01177">1177</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2386,7 +2169,7 @@ Pointers to DSG regions. </td></tr>
 <li><a class="el" href="extra__monitor__support_8c.html#a787d1adf1616b9a7ed4d2bbc09912f38" title="Resets the state due to reaching the end of a data stream.">data_in_process_boundary()</a> </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01224">1224</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01198">1198</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2433,7 +2216,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01257">1257</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01231">1231</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2469,7 +2252,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01324">1324</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01298">1298</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2500,7 +2283,7 @@ Pointers to DSG regions. </td></tr>
 <p>Sets up application routes on router. </p>
 <p>Required by data in speed up functionality. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01347">1347</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01321">1321</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2537,7 +2320,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>complete code if successful </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01364">1364</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01338">1338</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2585,7 +2368,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <p>Whether the comms controller can accept another packet</p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01406">1406</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01380">1380</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2646,7 +2429,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01433">1433</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01413">1413</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2708,7 +2491,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01461">1461</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01441">1441</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2762,7 +2545,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01477">1477</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01460">1460</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2794,7 +2577,7 @@ Pointers to DSG regions. </td></tr>
 <p>Uses a pair of buffers in DTCM so data can be read in from SDRAM while the previous is being transferred over the network.</p>
 <p>Callback associated with <a class="el" href="extra__monitor__support_8c.html#ad3f9f1daf2546fa2852c67698784045faf02163dfe7681d77de744cfaad973703">DMA_TAG_READ_FOR_TRANSMISSION</a> </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01507">1507</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01490">1490</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2848,7 +2631,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01563">1563</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01546">1546</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2903,7 +2686,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01585">1585</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01568">1568</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2934,7 +2717,7 @@ Pointers to DSG regions. </td></tr>
 <p>reads in missing sequence numbers and sets off the reading of SDRAM for the equivalent data </p>
 <p>Callback associated with <a class="el" href="extra__monitor__support_8c.html#ad3f9f1daf2546fa2852c67698784045fa942e461c76acb1c5a7401c130ccdd0e8" title="DMA complete tag for retransmission of data sequence numbers.">DMA_TAG_READ_FOR_RETRANSMISSION</a> </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01650">1650</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01633">1633</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2965,7 +2748,7 @@ Pointers to DSG regions. </td></tr>
 <p>DMA complete callback for have read missing sequence number data. </p>
 <p>Callback associated with <a class="el" href="extra__monitor__support_8c.html#ad3f9f1daf2546fa2852c67698784045fae3a1a5680add9bd61574b24599ac9185" title="DMA complete tag for the reading from SDRAM of data to be retransmitted.">DMA_TAG_RETRANSMISSION_READING</a> </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01694">1694</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01677">1677</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3001,7 +2784,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01722">1722</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01705">1705</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3037,7 +2820,7 @@ Pointers to DSG regions. </td></tr>
 <li><a class="el" href="extra__monitor__support_8c.html#a1bd166af952da491170b5ea6772482b9" title="DMA complete callback for have read missing sequence number data.">data_out_dma_complete_writing_missing_seq_to_sdram()</a> (tag unused?) </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01854">1854</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01837">1837</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3065,7 +2848,7 @@ Pointers to DSG regions. </td></tr>
 <p>The content of the communications controller SAR register. </p>
 <p>Specifically, the P2P source identifier. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00418">418</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00348">348</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3092,7 +2875,7 @@ Pointers to DSG regions. </td></tr>
 <p>The current transaction identifier, identifying the stream of items being moved. </p>
 <p>Also written to the user1 SARK register </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00514">514</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00444">444</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3119,7 +2902,7 @@ Pointers to DSG regions. </td></tr>
 <p>DTCM buffer of sequence numbers to be retransmitted. </p>
 <p>Gets filled from <a class="el" href="extra__monitor__support_8c.html#a6295b0d23630f9f06adc22e6a6a13c58" title="Buffer in SDRAM where the sequence numbers of missing packets are stored.">data_out_missing_seq_num_sdram_address</a> by DMA </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00547">547</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00477">477</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -3146,7 +2929,7 @@ Pointers to DSG regions. </td></tr>
 <p>Where are we (as a P2P address)? </p>
 <p>Used for error reporting. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00605">605</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00526">526</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>

@@ -1,13 +1,21 @@
 var searchData=
 [
-  ['data_5fin_5fconfig_5ft_1430',['data_in_config_t',['../data__speed__up__packet__gatherer_8c.html#structdata__in__config__t',1,'']]],
-  ['data_5fin_5fdata_5fitems_1431',['data_in_data_items',['../extra__monitor__support_8c.html#structdata__in__data__items',1,'']]],
-  ['data_5fout_5fconfig_5ft_1432',['data_out_config_t',['../data__speed__up__packet__gatherer_8c.html#structdata__out__config__t',1,'']]],
-  ['data_5fspecification_5fmetadata_5ft_1433',['data_specification_metadata_t',['../data__specification_8h.html#structdata__specification__metadata__t',1,'']]],
-  ['data_5fspeed_5fout_5fconfig_5ft_1434',['data_speed_out_config_t',['../extra__monitor__support_8c.html#structdata__speed__out__config__t',1,'']]],
-  ['diagnostics_5ft_1435',['diagnostics_t',['http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html',1,'']]],
-  ['divmod_1436',['divmod',['http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html',1,'']]],
-  ['dma_5fqueue_5ft_1437',['dma_queue_t',['http://spinnakermanchester.github.io/spinnaker_tools/spin1__api__params_8h.html',1,'']]],
-  ['dsg_5fheader_5ft_1438',['dsg_header_t',['../extra__monitor__support_8c.html#structdsg__header__t',1,'']]],
-  ['dumped_5fpacket_5ft_1439',['dumped_packet_t',['../extra__monitor__support_8c.html#structdumped__packet__t',1,'']]]
+  ['data_5fin_5fconfig_5ft_1962',['data_in_config_t',['../data__speed__up__packet__gatherer_8c.html#structdata__in__config__t',1,'']]],
+  ['data_5fin_5fdata_5fitems_1963',['data_in_data_items',['../extra__monitor__support_8c.html#structdata__in__data__items',1,'']]],
+  ['data_5fout_5fconfig_5ft_1964',['data_out_config_t',['../data__speed__up__packet__gatherer_8c.html#structdata__out__config__t',1,'']]],
+  ['data_5fspecification_5fmetadata_5ft_1965',['data_specification_metadata_t',['../data__specification_8h.html#structdata__specification__metadata__t',1,'']]],
+  ['data_5fspeed_5fout_5fconfig_5ft_1966',['data_speed_out_config_t',['../extra__monitor__support_8c.html#structdata__speed__out__config__t',1,'']]],
+  ['diagnostics_5ft_1967',['diagnostics_t',['http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html',1,'']]],
+  ['divmod_1968',['divmod',['http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html',1,'']]],
+  ['dma_5fcontrol_5ft_1969',['dma_control_t',['../spinn__extra_8h.html#structdma__control__t',1,'']]],
+  ['dma_5fdescription_5ft_1970',['dma_description_t',['../spinn__extra_8h.html#structdma__description__t',1,'']]],
+  ['dma_5fglobal_5fcontrol_5ft_1971',['dma_global_control_t',['../spinn__extra_8h.html#structdma__global__control__t',1,'']]],
+  ['dma_5fqueue_5ft_1972',['dma_queue_t',['http://spinnakermanchester.github.io/spinnaker_tools/spin1__api__params_8h.html',1,'']]],
+  ['dma_5fstats_5fcontrol_5ft_1973',['dma_stats_control_t',['../spinn__extra_8h.html#structdma__stats__control__t',1,'']]],
+  ['dma_5fstatus_5ft_1974',['dma_status_t',['../spinn__extra_8h.html#structdma__status__t',1,'']]],
+  ['dma_5ft_1975',['dma_t',['../spinn__extra_8h.html#structdma__t',1,'']]],
+  ['dma_5ftimeout_5ft_1976',['dma_timeout_t',['../spinn__extra_8h.html#structdma__timeout__t',1,'']]],
+  ['dse_5fheader_5ft_1977',['dse_header_t',['../extra__monitor__support_8c.html#structdse__header__t',1,'']]],
+  ['dump_1978',['dump',['../spinn__extra_8h.html#structrouter__t_1_1dump',1,'router_t']]],
+  ['dumped_5fpacket_5ft_1979',['dumped_packet_t',['../extra__monitor__support_8c.html#structdumped__packet__t',1,'']]]
 ];

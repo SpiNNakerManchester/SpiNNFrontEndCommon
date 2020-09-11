@@ -976,6 +976,728 @@
     </member>
   </compound>
   <compound kind="file">
+    <name>spinn_extra.h</name>
+    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <filename>spinn__extra_8h.html</filename>
+    <class kind="union">vic_mask_t</class>
+    <class kind="struct">vic_mask_t::interrupt_bits</class>
+    <class kind="struct">vic_control_t</class>
+    <class kind="struct">vic_vector_control_t</class>
+    <class kind="struct">timer_control_t</class>
+    <class kind="struct">timer_interrupt_status_t</class>
+    <class kind="struct">timer_controller_t</class>
+    <class kind="struct">dma_description_t</class>
+    <class kind="struct">dma_control_t</class>
+    <class kind="struct">dma_status_t</class>
+    <class kind="struct">dma_global_control_t</class>
+    <class kind="struct">dma_timeout_t</class>
+    <class kind="struct">dma_stats_control_t</class>
+    <class kind="struct">dma_t</class>
+    <class kind="union">spinnaker_packet_control_byte_t</class>
+    <class kind="struct">spinnaker_packet_control_byte_t::common</class>
+    <class kind="struct">spinnaker_packet_control_byte_t::mc</class>
+    <class kind="struct">spinnaker_packet_control_byte_t::p2p</class>
+    <class kind="struct">spinnaker_packet_control_byte_t::nn</class>
+    <class kind="struct">spinnaker_packet_control_byte_t::fr</class>
+    <class kind="struct">comms_tx_control_t</class>
+    <class kind="struct">comms_rx_status_t</class>
+    <class kind="struct">comms_source_addr_t</class>
+    <class kind="struct">comms_ctl_t</class>
+    <class kind="struct">router_control_t</class>
+    <class kind="struct">router_status_t</class>
+    <class kind="union">router_packet_header_t</class>
+    <class kind="struct">router_packet_header_t::flags</class>
+    <class kind="struct">router_packet_header_t::control_field_bits</class>
+    <class kind="struct">router_error_status_t</class>
+    <class kind="struct">router_dump_outputs_t</class>
+    <class kind="struct">router_dump_status_t</class>
+    <class kind="struct">router_diagnostic_counter_ctrl_t</class>
+    <class kind="struct">router_timing_counter_ctrl_t</class>
+    <class kind="struct">router_diversion_t</class>
+    <class kind="struct">router_fixed_route_routing_t</class>
+    <class kind="struct">router_t</class>
+    <class kind="struct">router_t::error</class>
+    <class kind="struct">router_t::dump</class>
+    <class kind="struct">router_diagnostic_filter_t</class>
+    <class kind="union">router_multicast_route_t</class>
+    <class kind="struct">router_multicast_route_t::routes</class>
+    <class kind="union">router_p2p_table_entry_t</class>
+    <class kind="struct">router_p2p_table_entry_t::routes</class>
+    <class kind="struct">sdram_status_t</class>
+    <class kind="struct">sdram_command_t</class>
+    <class kind="struct">sdram_direct_command_t</class>
+    <class kind="struct">sdram_ram_config_t</class>
+    <class kind="struct">sdram_refresh_t</class>
+    <class kind="struct">sdram_cas_latency_t</class>
+    <class kind="struct">sdram_timing_config_t</class>
+    <class kind="struct">sdram_controller_t</class>
+    <class kind="struct">sdram_qos_t</class>
+    <class kind="struct">sdram_chip_t</class>
+    <class kind="struct">sdram_dll_status_t</class>
+    <class kind="struct">sdram_dll_user_config0_t</class>
+    <class kind="union">sdram_dll_user_config1_t</class>
+    <class kind="struct">sdram_dll_user_config1_t::tuning</class>
+    <class kind="struct">sdram_dll_t</class>
+    <class kind="struct">sc_magic_proc_map_t</class>
+    <class kind="struct">sc_magic_subsystem_map_t</class>
+    <class kind="struct">sc_reset_code_t</class>
+    <class kind="struct">sc_monitor_id_t</class>
+    <class kind="struct">sc_misc_control_t</class>
+    <class kind="union">sc_io_t</class>
+    <class kind="struct">sc_io_t::io_bits</class>
+    <class kind="struct">sc_pll_control_t</class>
+    <class kind="struct">sc_clock_mux_t</class>
+    <class kind="struct">sc_sleep_status_t</class>
+    <class kind="struct">sc_temperature_t</class>
+    <class kind="struct">sc_mutex_bit_t</class>
+    <class kind="struct">sc_link_disable_t</class>
+    <class kind="struct">system_controller_t</class>
+    <class kind="struct">ethernet_general_command_t</class>
+    <class kind="struct">ethernet_general_status_t</class>
+    <class kind="struct">ethernet_tx_length_t</class>
+    <class kind="struct">ethernet_phy_control_t</class>
+    <class kind="struct">ethernet_interrupt_clear_t</class>
+    <class kind="struct">ethernet_receive_pointer_t</class>
+    <class kind="struct">ethernet_receive_descriptor_pointer_t</class>
+    <class kind="struct">ethernet_controller_t</class>
+    <class kind="struct">ethernet_receive_descriptor_t</class>
+    <class kind="struct">watchdog_control_t</class>
+    <class kind="struct">watchdog_status_t</class>
+    <class kind="union">watchdog_lock_t</class>
+    <class kind="struct">watchdog_lock_t::fields</class>
+    <class kind="struct">watchdog_controller_t</class>
+    <member kind="define">
+      <type>#define</type>
+      <name>ASSERT_WORD_SIZED</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7e98e95deced3f1288c653a9f6675487</anchor>
+      <arglist>(type_ident)</arglist>
+    </member>
+    <member kind="typedef">
+      <type>void(*</type>
+      <name>vic_interrupt_handler_t</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af492b0b6744f0f208d85f924885f5e64</anchor>
+      <arglist>)(void)</arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile vic_control_t *const</type>
+      <name>vic_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5586e6e765351329e87ab72fd0b090af</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile vic_interrupt_handler_t *const</type>
+      <name>vic_interrupt_vector</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a44406c66f00c3ab37b1c2273f0e3d012</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile vic_vector_control_t *const</type>
+      <name>vic_interrupt_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aaa9ca9cb32bf72e5a627acd4991d3ef5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>timer_pre_divide</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af31e27a938243a8b99ac8277087d3e6a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TIMER_PRE_DIVIDE_1</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af31e27a938243a8b99ac8277087d3e6aac921e2d8b4d429217f41c001bb0e9696</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TIMER_PRE_DIVIDE_16</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af31e27a938243a8b99ac8277087d3e6aa1ef766bc66ec63fc0db8df9163d616e4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TIMER_PRE_DIVIDE_256</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af31e27a938243a8b99ac8277087d3e6aa4bf5b4b58cf6066405fa699d639c5d3a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile timer_controller_t *const</type>
+      <name>timer1_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>acc3f3aa11c952a5d398f6127e10879c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile timer_controller_t *const</type>
+      <name>timer2_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1b20b088b9a960caffa482eace36ae96</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>dma_direction_t</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae74016a7b3bcbf0e673abd66366adc9d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA_DIRECTION_READ</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae74016a7b3bcbf0e673abd66366adc9da3e6cc2acae7f00ee1b516caf152b95d9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA_DIRECTION_WRITE</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae74016a7b3bcbf0e673abd66366adc9da13964a4cdc4c19c01c75f57ee7adf6f1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>dma_transfer_unit_t</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5c2ddad85d487e726be08ddb773817d9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA_TRANSFER_WORD</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5c2ddad85d487e726be08ddb773817d9afd212504b1038a06af1ad365df427e07</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA_TRANSFER_DOUBLE_WORD</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5c2ddad85d487e726be08ddb773817d9ad720a7515c482145ad04cadb31eb1f5b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile dma_t *const</type>
+      <name>dma_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>acd50aef62e17c08631a755c04e88d305</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>spinnaker_packet_type_t</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a77bf843d39709f31137045b9900ff0b6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SPINNAKER_PACKET_TYPE_MC</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a77bf843d39709f31137045b9900ff0b6aecc422aaf523987fbf0bf64995f71cb8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SPINNAKER_PACKET_TYPE_P2P</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a77bf843d39709f31137045b9900ff0b6abb73823f3ac9fe94918452b3464523a3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SPINNAKER_PACKET_TYPE_NN</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a77bf843d39709f31137045b9900ff0b6a4dcc559e11d5ee9f3bc5f24432127226</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SPINNAKER_PACKET_TYPE_FR</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a77bf843d39709f31137045b9900ff0b6aae5afa44ec14f5fbe78f7a58522d7e68</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile comms_ctl_t *const</type>
+      <name>comms_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5569609ec4beca2eb521cd8270e7caa1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>router_output_stage</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab48dc706d4fd3f3f5516823737223e92</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_OUTPUT_STAGE_EMPTY</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab48dc706d4fd3f3f5516823737223e92ab2ede68e3257f7c72d3c6a910e9565e3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_OUTPUT_STAGE_FULL</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab48dc706d4fd3f3f5516823737223e92abb5e52e2a7e1bdc17d85a65306e4b04e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_OUTPUT_STAGE_WAIT1</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab48dc706d4fd3f3f5516823737223e92a8a7219dae1f8cc018f1b7bd5f89cbec1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_OUTPUT_STAGE_WAIT2</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab48dc706d4fd3f3f5516823737223e92acd6436bc84fb2c31c1cff8b525be51b9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>router_diversion_rule_t</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aabe4c41b8de58fe8ce845dd345b1bd10</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_DIVERSION_NORMAL</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aabe4c41b8de58fe8ce845dd345b1bd10a55b5a4d712c97a9d5a468ed58f0faaaf</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_DIVERSION_MONITOR</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aabe4c41b8de58fe8ce845dd345b1bd10a9c688b61b9cf6f80ee41d949df265e71</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_DIVERSION_DESTROY</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aabe4c41b8de58fe8ce845dd345b1bd10a81c8e164bf102ddce4c6d96c1f5951bd</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>router_p2p_route</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4722e13f982cdcd245d8bd6924f822de</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_P2P_ROUTE_E</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4722e13f982cdcd245d8bd6924f822dea81f163b832d69fa152da85b405d45c44</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_P2P_ROUTE_NE</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4722e13f982cdcd245d8bd6924f822dea0a3afb62b9e51a74594e813acfc0a745</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_P2P_ROUTE_N</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4722e13f982cdcd245d8bd6924f822dea529cb3b9edb83580c91af4f1a230ab92</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_P2P_ROUTE_W</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4722e13f982cdcd245d8bd6924f822dea2aec2c9a11f59d13187e3b1a1f5f1798</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_P2P_ROUTE_SW</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4722e13f982cdcd245d8bd6924f822dea8a30ddd9e799f992e53226efa58e37ba</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_P2P_ROUTE_S</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4722e13f982cdcd245d8bd6924f822dea76a6d61c36b550ea5499fa34badc7300</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_P2P_ROUTE_DROP</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4722e13f982cdcd245d8bd6924f822deac291c74a86d778f8d15f4287edbb611e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ROUTER_P2P_ROUTE_MONITOR</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4722e13f982cdcd245d8bd6924f822dea6dc297b330d88fb723c5c9b20c5b8c8f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile router_t *const</type>
+      <name>router_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a28901bc69afe9a395ac4233ab143cb5b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile router_diagnostic_filter_t *const</type>
+      <name>router_diagnostic_filter</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>adc842e8cb54b2eba0541bdd13a62cdb5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile uint *const</type>
+      <name>router_diagnostic_counter</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abf1d692f059636a3fe6a4486fb0ab2c1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile router_multicast_route_t *const</type>
+      <name>router_multicast_table</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a00bac8e8d0eed822135ec6a1c65e1361</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile uint *const</type>
+      <name>router_key_table</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a878d9d0783a4134408d3d063e70c2582</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile uint *const</type>
+      <name>router_mask_table</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a9753c34e4c8d43dd0bc45c14f873d375</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile router_p2p_table_entry_t *const</type>
+      <name>router_p2p_route_table</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a59b68be7391ab9903e7b0adc61e0f948</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>sdram_command</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2bf8b8f1dee44d95645845b286d8d9b2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDRAM_CTL_GO</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2bf8b8f1dee44d95645845b286d8d9b2aa82c4801e7cfb86247318534ff3fa58c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDRAM_CTL_SLEEP</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2bf8b8f1dee44d95645845b286d8d9b2a668ceb4aeef3596627b190be93d2678d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDRAM_CTL_WAKE</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2bf8b8f1dee44d95645845b286d8d9b2a11cf7e090c8170e468f991c426c6757f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDRAM_CTL_PAUSE</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2bf8b8f1dee44d95645845b286d8d9b2acf1a0f5bf06cc9374fb65644876ecd36</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDRAM_CTL_CONFIG</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2bf8b8f1dee44d95645845b286d8d9b2a1cd097ad19cedc5c95144beaeda532c7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDRAM_CTL_ACTIVE_PAUSE</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2bf8b8f1dee44d95645845b286d8d9b2ac18b04f1e6cf786a977e2eba1994780e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>sdram_direct_command</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad085ae8d09cd5dfac377689b7fb10399</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDRAM_DIRECT_PRECHARGE</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad085ae8d09cd5dfac377689b7fb10399aa595e17405cc54d4dfcf3e1cc571930b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDRAM_DIRECT_AUTOREFRESH</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad085ae8d09cd5dfac377689b7fb10399a83d1dfb0a0c582da1f997d51b585a560</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDRAM_DIRECT_MODEREG</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad085ae8d09cd5dfac377689b7fb10399a0b9583e630292543c24dbbee2fb54c92</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDRAM_DIRECT_NOP</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad085ae8d09cd5dfac377689b7fb10399ae562887261f107e44264c0cd38655a7f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>sdram_register_maxima</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8a46848c2db177cba18ed7122a441365</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDRAM_QOS_MAX</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8a46848c2db177cba18ed7122a441365a23ee0e84a52a2fd7e2507aa2330cd7f5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDRAM_CHIP_MAX</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8a46848c2db177cba18ed7122a441365ab3890331dbb3028e5fde2b5053b150d0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile sdram_controller_t *const</type>
+      <name>sdram_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a856125074de296c1ba3c31ef52f211bc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile sdram_qos_t *const</type>
+      <name>sdram_qos_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2ecaba06ee2102828fdcf6975a8e1e56</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile sdram_chip_t *const</type>
+      <name>sdram_chip_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abffffff512b0b1c0a19f9d603932fcab</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile sdram_dll_t *const</type>
+      <name>sdram_dll_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a537ffb0dfda1c93660f43f2b8e0e9bf8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>sc_reset_codes</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab084a2087a69d055025476309fb381ea</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SC_RESET_CODE_POR</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab084a2087a69d055025476309fb381eaa186db279ccc2e486445850e80fbe0096</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SC_RESET_CODE_WDR</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab084a2087a69d055025476309fb381eaaa03515e88a04b5a9db0884467d234bb6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SC_RESET_CODE_UR</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab084a2087a69d055025476309fb381eaabc72d1b50d86aeecf18b68434d25a18d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SC_RESET_CODE_REC</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab084a2087a69d055025476309fb381eaa5d5554a5b210413f548a967703d9bb78</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SC_RESET_CODE_WDI</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab084a2087a69d055025476309fb381eaaa033a0cbbae323e223accf3da72b9541</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>sc_frequency_range</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5302aa242ca5e1daea89932c3ad49080</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>FREQ_25_50</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5302aa242ca5e1daea89932c3ad49080a913995e7649f794f69ea6c02ed330287</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>FREQ_50_100</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5302aa242ca5e1daea89932c3ad49080a3e9a13343523705e6421e54692bc608e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>FREQ_100_200</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5302aa242ca5e1daea89932c3ad49080a55b846b73065bbc31761837eb2419f5b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>FREQ_200_400</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5302aa242ca5e1daea89932c3ad49080ad5d6b58301a04da40602f202c40b06dd</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>sc_clock_source</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7faaa76e3f51c584310d12883a42e8be</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLOCK_SRC_EXT</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7faaa76e3f51c584310d12883a42e8beaa71a58d26d424b2eec621f4777b8857b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLOCK_SRC_PLL1</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7faaa76e3f51c584310d12883a42e8bead78329883976097fd13eca24897d4061</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLOCK_SRC_PLL2</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7faaa76e3f51c584310d12883a42e8bea2d12dfba2d055a7e88fa97d23584ea73</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLOCK_SRC_EXT4</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7faaa76e3f51c584310d12883a42e8beaaade2389cebae9644b67063a621a5ef4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>sc_magic</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5cfbc938acaa74c8510059dea3c9eda2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SYSTEM_CONTROLLER_MAGIC_NUMBER</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5cfbc938acaa74c8510059dea3c9eda2a215f8b3060425bbecc9db891369db54d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile system_controller_t *const</type>
+      <name>system_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a0dde5a4145fa849852c11406f2421813</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>ethernet_tx_length_limits</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a10e62c98cbb83cde3a74e355529d1589</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ETHERNET_TX_LENGTH_MIN</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a10e62c98cbb83cde3a74e355529d1589aa062872178f44f5f6950f3afa2cbd3db</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ETHERNET_TX_LENGTH_MAX</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a10e62c98cbb83cde3a74e355529d1589acefc534cded890a7b69057741ed5b66e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile uchar *const</type>
+      <name>ethernet_tx_buffer</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a274116143a95bda0ed3de7d941726668</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile uchar *const</type>
+      <name>ethernet_rx_buffer</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac466eb5fe9a90f3f36b0cbe55da3f3cb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile ethernet_receive_descriptor_t *const</type>
+      <name>ethernet_desc_buffer</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a45367d4fcab6266594cfc32ecb606844</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile ethernet_controller_t *const</type>
+      <name>ethernet_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8f2cd288e4d20a4ec11e8d12bab8fe65</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>watchdog_lock_codes</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a313f25e11b4bfad5da76e5b87fd261e8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>WATCHDOG_LOCK_RESET</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a313f25e11b4bfad5da76e5b87fd261e8a9dbbe66ba3a999923a579ded72738bc9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>WATCHDOG_LOCK_MAGIC</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a313f25e11b4bfad5da76e5b87fd261e8a775fafe2e4dc6a756901c277ddac2f53</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile watchdog_controller_t *const</type>
+      <name>watchdog_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2efce1e311d03be8c0cb4047ecdc017d</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="file">
     <name>wfi.h</name>
     <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
     <filename>wfi_8h.html</filename>
@@ -1574,6 +2296,7 @@
     <name>chip_power_monitor.c</name>
     <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/chip_power_monitor/src/</path>
     <filename>chip__power__monitor_8c.html</filename>
+    <includes id="spinn__extra_8h" name="spinn_extra.h" local="no" imported="no">spinn_extra.h</includes>
     <includes id="simulation_8h" name="simulation.h" local="no" imported="no">simulation.h</includes>
     <includes id="recording_8h" name="recording.h" local="no" imported="no">recording.h</includes>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
@@ -3772,30 +4495,6 @@
       <anchor>a8260104100d03dd752ed71c07e465cc1</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
-      <name>PKT_TYPE_MC</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a8260104100d03dd752ed71c07e465cc1a3e383793595e2c46cfee214e6416bce3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_TYPE_PP</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a8260104100d03dd752ed71c07e465cc1ab0e8655693e4264b1648213ab2437a5c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_TYPE_NN</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a8260104100d03dd752ed71c07e465cc1a58549f96c94a246031ef1843260a5e4b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_TYPE_FR</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a8260104100d03dd752ed71c07e465cc1ae246a3b3ea5bda26af049f1db8cef35c</anchor>
-      <arglist></arglist>
-    </member>
     <member kind="function" static="yes">
       <type>static void</type>
       <name>write_word</name>
@@ -5250,6 +5949,7 @@
     <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/system_models/src/</path>
     <filename>extra__monitor__support_8c.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
+    <includes id="spinn__extra_8h" name="spinn_extra.h" local="no" imported="no">spinn_extra.h</includes>
     <includes id="common_8h" name="common.h" local="yes" imported="no">common.h</includes>
     <includes id="wfi_8h" name="wfi.h" local="no" imported="no">wfi.h</includes>
     <class kind="struct">dumped_packet_t</class>
@@ -5259,19 +5959,12 @@
     <class kind="struct">reinjector_status_response_packet_t</class>
     <class kind="struct">reinject_config_t</class>
     <class kind="struct">data_speed_out_config_t</class>
-    <class kind="struct">dsg_header_t</class>
+    <class kind="struct">dse_header_t</class>
     <member kind="define">
       <type>#define</type>
       <name>DMA_BURST_SIZE</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
       <anchor>a1770d428fd0221aabcda7aad57a9b586</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>DMA_WIDTH</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>ad0b14f1d4cda14aea7d53c987af502b1</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -5395,52 +6088,47 @@
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>ROUTER_TIMEOUT_MASK</name>
+      <name>ROUTER_TIMEOUT_MAX</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a87088a86581a7d283e5565495bef8c3a</anchor>
+      <anchor>aa0db95a85b8b152145278edb4c80a016</anchor>
       <arglist></arglist>
     </member>
-    <member kind="typedef">
-      <type>void(*</type>
-      <name>isr_t</name>
+    <member kind="define">
+      <type>#define</type>
+      <name>DSE_MAGIC</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a6d626fdf464bc6f2160d0bc92243b027</anchor>
-      <arglist>)(void)</arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA_READ</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>aaf105ae5beaca1dee30ae54530691fcea2915fe5d78ee9ccf385bc90e032aaaf6</anchor>
+      <anchor>a65e5cfc85f6e1b3e2ada0229794cb1ca</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
-      <name>DMA_WRITE</name>
+    <member kind="define">
+      <type>#define</type>
+      <name>DSE_VERSION</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>aaf105ae5beaca1dee30ae54530691fcea7b131f1a056b52cb5dbca2960c1130fb</anchor>
+      <anchor>a6451df34fe62a074394822d80b90baa0</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SEQUENCE_NUMBER_SIZE</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a80155586fa275b28773c9b203f52cabaad7babe063e0a6247caaffd6c8caee600</anchor>
+      <anchor>aaf105ae5beaca1dee30ae54530691fcead7babe063e0a6247caaffd6c8caee600</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>TRANSACTION_ID_SIZE</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a80155586fa275b28773c9b203f52cabaa637adf75b1ab91cb42ca583a87352738</anchor>
+      <anchor>aaf105ae5beaca1dee30ae54530691fcea637adf75b1ab91cb42ca583a87352738</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SDP_PAYLOAD_WORDS</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a80155586fa275b28773c9b203f52cabaa6ad2e57f7353682e45c4acc5e5aeee96</anchor>
+      <anchor>aaf105ae5beaca1dee30ae54530691fcea6ad2e57f7353682e45c4acc5e5aeee96</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SDP_PAYLOAD_BYTES</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a80155586fa275b28773c9b203f52cabaad752c54a1cb6bf3d556b67c65101668e</anchor>
+      <anchor>aaf105ae5beaca1dee30ae54530691fcead752c54a1cb6bf3d556b67c65101668e</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumeration">
@@ -5477,206 +6165,43 @@
     <member kind="enumvalue">
       <name>CPU_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a6b7b47dd702d9e331586d485013fd1eaa31d3dd7993118a16a819118bce59b194</anchor>
+      <anchor>a80155586fa275b28773c9b203f52cabaa31d3dd7993118a16a819118bce59b194</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>CC_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a6b7b47dd702d9e331586d485013fd1eaa000b6c62469245f694c3ef9d3390a7c6</anchor>
+      <anchor>a80155586fa275b28773c9b203f52cabaa000b6c62469245f694c3ef9d3390a7c6</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>TIMER_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a6b7b47dd702d9e331586d485013fd1eaaab240da79e7c1d78a159343d146edd13</anchor>
+      <anchor>a80155586fa275b28773c9b203f52cabaaab240da79e7c1d78a159343d146edd13</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DMA_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a6b7b47dd702d9e331586d485013fd1eaaca95bbc52c7ed3e8240a88dc1a6ba2a3</anchor>
+      <anchor>a80155586fa275b28773c9b203f52cabaaca95bbc52c7ed3e8240a88dc1a6ba2a3</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DMA_ERROR_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a6b7b47dd702d9e331586d485013fd1eaac749c67267efeb265141afc68e371cdb</anchor>
+      <anchor>a80155586fa275b28773c9b203f52cabaac749c67267efeb265141afc68e371cdb</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DMA_TIMEOUT_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a6b7b47dd702d9e331586d485013fd1eaa1375671dff545ffd4c86fac72236812a</anchor>
+      <anchor>a80155586fa275b28773c9b203f52cabaa1375671dff545ffd4c86fac72236812a</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>MC_PAYLOAD_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a6b7b47dd702d9e331586d485013fd1eaa33728a0193855bd51db0362175f7fc0f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RTR_DOVRFLW_BIT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>af9bdc3014f3d54c426b6d2df10de4960a36c43f64108e390c9124240eb5cff260</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RTR_BLOCKED_BIT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>af9bdc3014f3d54c426b6d2df10de4960ac2f306f63b63cfb74a316910f852b0a8</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RTR_FPE_BITS</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>af9bdc3014f3d54c426b6d2df10de4960aa4da8b17f315a8d257a097daaf784593</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RTR_LE_BITS</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>af9bdc3014f3d54c426b6d2df10de4960a1464a59ce9a9851e39c837c150f1ad4a</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RTR_PARITY_COUNT_BIT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>af9bdc3014f3d54c426b6d2df10de4960a3ca38b6f1004a5faf494e228077db401</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RTR_FRAME_COUNT_BIT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>af9bdc3014f3d54c426b6d2df10de4960a23ebfa80f6fc2825379b4b6afe20254f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RTR_TS_COUNT_BIT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>af9bdc3014f3d54c426b6d2df10de4960aeab06c9b2ebd573790e30e6adfa24f39</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RTR_DENABLE_BIT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>af9bdc3014f3d54c426b6d2df10de4960a9fb9c307bcf90acfdde9b92904e38046</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RTR_BLOCKED_MASK</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adb49720dc49f7d4e4cf9adbf2948e409a5cc2d8b1ae2457286900337f7c234333</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RTR_DOVRFLW_MASK</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adb49720dc49f7d4e4cf9adbf2948e409a5b9a0adfd87cb097d1023ab04365370a</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RTR_DENABLE_MASK</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adb49720dc49f7d4e4cf9adbf2948e409a6ff98d8455e221703bba43f0fbdbe431</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RTR_FPE_MASK</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adb49720dc49f7d4e4cf9adbf2948e409a378c1cc91bb3c0dd2b62dc59cf4d2ea4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RTR_LE_MASK</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adb49720dc49f7d4e4cf9adbf2948e409afe651185ccfa887730b0e8133dbd38f1</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RTR_ERRCNT_MASK</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adb49720dc49f7d4e4cf9adbf2948e409a97ef4c8fdd1da41591e9d9e95c8c1fad</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_CONTROL_SHFT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>aae05225933a42f81e7c4a9fb286596f9a69fddb3e5275eaa5ab7716ad4a631b94</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_PLD_SHFT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>aae05225933a42f81e7c4a9fb286596f9ad524c0ec25de2460f4ab608055ce79ad</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_TYPE_SHFT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>aae05225933a42f81e7c4a9fb286596f9a595c821792045052d61aab1f4736c6c3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_ROUTE_SHFT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>aae05225933a42f81e7c4a9fb286596f9a94f8bb8a696e884969de39a1788d4dda</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_CONTROL_MASK</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a39fca1837c5ce7715cbf571669660c13ac2e8ec17b3dd45f81664d0e863e0d9b2</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_PLD_MASK</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a39fca1837c5ce7715cbf571669660c13ab3f9bf5194a179d66aa35bc285abe6b2</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_TYPE_MASK</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a39fca1837c5ce7715cbf571669660c13a7e8b95592f54a3d61f377f905312914b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_ROUTE_MASK</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a39fca1837c5ce7715cbf571669660c13ae69b71aedea244bd9b47c282529a8f58</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumeration">
-      <type></type>
-      <name>packet_types</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a8260104100d03dd752ed71c07e465cc1</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_TYPE_MC</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a8260104100d03dd752ed71c07e465cc1a3e383793595e2c46cfee214e6416bce3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_TYPE_PP</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a8260104100d03dd752ed71c07e465cc1ab0e8655693e4264b1648213ab2437a5c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_TYPE_NN</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a8260104100d03dd752ed71c07e465cc1a58549f96c94a246031ef1843260a5e4b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>PKT_TYPE_FR</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a8260104100d03dd752ed71c07e465cc1ae246a3b3ea5bda26af049f1db8cef35c</anchor>
+      <anchor>a80155586fa275b28773c9b203f52cabaa33728a0193855bd51db0362175f7fc0f</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumeration">
@@ -5819,10 +6344,17 @@
       <arglist>(void)</arglist>
     </member>
     <member kind="function" static="yes">
-      <type>static void *</type>
-      <name>dsg_block</name>
+      <type>static void</type>
+      <name>dse_validate</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>aa7ba56ad4e43d1f252ddb7e8b178869e</anchor>
+      <anchor>a9da1170f356db7c1f77f0097224738d6</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void *</type>
+      <name>dse_block</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a625c5983a747ef4877038c46bc1691db</anchor>
       <arglist>(uint index)</arglist>
     </member>
     <member kind="function" static="yes">
@@ -5871,8 +6403,8 @@
       <type>static void</type>
       <name>set_vic_callback</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a9f8d524da3fce071fd279eca4715e81d</anchor>
-      <arglist>(uint8_t slot, uint type, isr_t callback)</arglist>
+      <anchor>a8c976c77621f3c9d4beca94416759bfd</anchor>
+      <arglist>(uint8_t slot, uint type, vic_interrupt_handler_t callback)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
@@ -5886,6 +6418,13 @@
       <name>reinjection_disable_comms_interrupt</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
       <anchor>a8186acf2a0850fc33bcb0e913cefc023</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static bool</type>
+      <name>reinjection_can_send_now</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a08eaf530415dc1297ffbe59b6076a23d</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function" static="yes">
@@ -6704,6 +7243,168 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>spinnaker_packet_control_byte_t::common</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structspinnaker__packet__control__byte__t_1_1common</anchor>
+    <member kind="variable">
+      <type>uchar</type>
+      <name>parity</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a840df697155530f70521f636e280b438</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uchar</type>
+      <name>payload</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7f37b38880d4b520591a5677d4c204d6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uchar</type>
+      <name>timestamp</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a444768f891c413bf689d6013e12ace6c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uchar</type>
+      <name>type</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a23fe98f5f9502aab8dc5a3601e11a713</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>comms_ctl_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structcomms__ctl__t</anchor>
+    <member kind="variable">
+      <type>comms_tx_control_t</type>
+      <name>tx_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a298a1824e0e5da1fe4498b7d22054277</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>tx_data</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae1f2f0b0eeba29c1b699cb3aaaed9d38</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>tx_key</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a984ccd2bbd5b56f63060eef6f676a9a1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>comms_rx_status_t</type>
+      <name>rx_status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae8377499b733c52fc6491093c452649e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>rx_data</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad15df2b9361cc2e74fa4c2788da07840</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>rx_key</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad24f64e2a5dfe3a5387b74bbfb554e67</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>comms_source_addr_t</type>
+      <name>source_addr</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab17179437eb211eb7607c2433c763450</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>comms_rx_status_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structcomms__rx__status__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>multicast</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8587a01ebd04ef19f132e1d397f85fdd</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>point_to_point</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a886b061c826bd59f2ece8ee2fcaff665</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>nearest_neighbour</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a020dc4bcefb492d1a26936a93d6f97d5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>fixed_route</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a9111bb4f00cfc972498170a12f3a0572</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>control_byte</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a3f5071430a9ba4e71ba6c15dcb774a94</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>route</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8dddedbf7e59fc038b5606b878608854</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>error_free</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4deb315d175faea6f03db41b129a3155</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>framing_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a79bab7484c367996aa0b8f7a771cc654</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>parity_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a51206481f516af9059038e838514074a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>received</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>adb70c53e2ca80a6966ad971fe6159f55</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
     <name>comms_sdram_t</name>
     <filename>compressor__sorter__structs_8h.html</filename>
     <anchor>structcomms__sdram__t</anchor>
@@ -6754,6 +7455,65 @@
       <name>fake_heap_data</name>
       <anchorfile>compressor__sorter__structs_8h.html</anchorfile>
       <anchor>a1098c00b19e53a646354531429069840</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>comms_source_addr_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structcomms__source__addr__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>p2p_source_id</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a29f6339e5f98ff3671353e59fd0c9bc0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>route</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ace6574d927f775375444263ae177fcd3</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>comms_tx_control_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structcomms__tx__control__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>control_byte</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a558519f395ad36f8265326e80b80d73a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>not_full</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae1ccfcf49ecebdcd71bfe433f32959e5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>overrun</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a46124955e51ec120323c87dc3e3c6976</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>full</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a24c3e55b598f0d19baefd91156fd4572</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>empty</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a570588cb019f881ae78224c27a85c273</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -6869,6 +7629,25 @@
       <name>tx_offset</name>
       <anchorfile>reverse__iptag__multicast__source_8c.html</anchorfile>
       <anchor>ae3ab2d0119303784bae6d9f0ffb50f63</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>router_packet_header_t::control_field_bits</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__packet__header__t_1_1control__field__bits</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>payload</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>acb850e42b677fb8d92e900367d1aa5d6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>type</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a171bff0a62c497e076218d19bc7814c7</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -7052,29 +7831,503 @@
     </member>
   </compound>
   <compound kind="struct">
-    <name>dsg_header_t</name>
-    <filename>extra__monitor__support_8c.html</filename>
-    <anchor>structdsg__header__t</anchor>
+    <name>dma_control_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structdma__control__t</anchor>
     <member kind="variable">
       <type>uint</type>
-      <name>dse_magic_number</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a406db90b5e45aaebf77cb6173588e4b1</anchor>
+      <name>uncommit</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7e5ab8dced86b2e0dfa98ff0c5516459</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>uint</type>
-      <name>dse_version</name>
+      <name>abort</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a95fae1f31bdcb873ddbf8ae21bd0fe81</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>restart</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac7f0b1409cded668803efe8bc22bb018</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>clear_done_int</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abccc4ac3ab42f181d7c62cc7bde691b7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>clear_timeout_int</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a3489340d8771ae163b89fabe5b871d17</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>clear_write_buffer_int</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a07ec19705dfa6c6ce522e243d9005d5c</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>dma_description_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structdma__description__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>length_words</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>afd07a1e28aca87fc3b58e5d9fe084032</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>direction</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a3224e5f49f0f719d9d2496c0dd1283d8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>crc</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>addc367fc97e7bfcec84e15d549200913</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>burst</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>afcbea77a791817bde1ef612eead3700c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>width</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a35bb194cc117ecd1b93505eb4a4c4707</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>privilege</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af59ac0e1126fc90f9b20b325d3d4f5fb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>transfer_id</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aef15fe0328e607caead9351f45ff616e</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>dma_global_control_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structdma__global__control__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>bridge_buffer_enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a6b47d4835571b4934a72e7c084034d1f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>transfer_done_interrupt</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a9a7effafcea890df42ab1660c381b9dc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>transfer2_done_interrupt</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7d4434b03b6537fb86196b1185e48534</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>timeout_interrupt</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab30befbb05bf0d0bd4d27aa86bd01cd0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>crc_error_interrupt</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>adb1732b90fd6f6f2bb6de8d4d7e5eef4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>tcm_error_interrupt</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4d925ef321bc9f3a6a383892cc395ec9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>axi_error_interrupt</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aba19be27a88608684b6efa7339f0ec61</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>user_abort_interrupt</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a901eb0fb697a9acd96cafc149455f57f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>soft_reset_interrupt</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2ddf4e23d433b531c41f3c295436274d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>write_buffer_error_interrupt</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>afeb4b4244eeabe9fa43ccdcdca8aa720</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>timer</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a93b724825b7c1db804442085f65614a5</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>dma_stats_control_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structdma__stats__control__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>adaa37560d3a70b74993d739c66760825</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>clear</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a3a1d3d27dbbb0c102e336c9b559c891a</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>dma_status_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structdma__status__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>transferring</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8104c2e82b7240fc3ac9497e1265a596</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>paused</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ade600c18cf027fddaf0e3b2fbf209d1b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>queued</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a341e0afd32b12afcec56cce837085109</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>write_buffer_full</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>afc363fd9780365a14f26707c0a63330e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>write_buffer_active</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a3ad823d2455bcf01e4cef3b0396c88fc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>transfer_done</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a29c241d8fa91ec5e56d5a52401f710d5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>transfer2_done</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a92ba70b2ba6ba8a04a32290811119935</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>timeout</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a93a5f2983e4e1d3820810538d176d36a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>crc_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a79a418f64e32068ad49fce89bcad1a22</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>tcm_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab3982c895b633e8aa9ce88bb950dddfa</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>axi_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac26cfc488dcfc3667da7a53ee4408179</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>user_abort</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac9c527dc4d4663e9f5d9c80946521984</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>soft_reset</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8907521f7ba70bed020cb590367878e2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>write_buffer_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a70e1cfd92509c5641289333a5da80fea</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>processor_id</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aec5fb0c019bf13cb31c3355cb39a1b7b</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>dma_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structdma__t</anchor>
+    <member kind="variable">
+      <type>void *</type>
+      <name>sdram_address</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5bfb3e5e7596b3e05a9cdcd0c45a9786</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>void *</type>
+      <name>tcm_address</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a65fc5ca68b6422027f4700f82ddf2777</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>dma_description_t</type>
+      <name>description</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a647826a52fef8a7e6194d6b16c0d1b62</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>dma_control_t</type>
+      <name>control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aaf2cc71e8a2580fe8933c910defc9c84</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const dma_status_t</type>
+      <name>status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5394408db262fea6996645fe115b3fa5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>dma_global_control_t</type>
+      <name>global_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a51a63768e00c5f8fbf88c62dc3ebf7d7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>crcc</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a32a37d426649d6b616b0b894ef6f0469</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>crcr</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8852cbc105aa0edaf18b7614fb78d951</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>dma_timeout_t</type>
+      <name>timeout</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8aa5790710ddd92d1cdcd150d95b93b1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>dma_stats_control_t</type>
+      <name>statistics_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a03a9a2f71853dcb652be288918f30cd7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>statistics</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae81f150edf05ba184530a0e87c7fe756</anchor>
+      <arglist>[8]</arglist>
+    </member>
+    <member kind="variable">
+      <type>const void *</type>
+      <name>current_sdram_address</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a75aaf646f249de5714a526289a36ceda</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const void *</type>
+      <name>current_tcm_address</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af4e4edcbf069f2d909501ab14c00d9b6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const dma_description_t</type>
+      <name>current_description</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abffb01e3498311e903cb95165fccf7f5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>crc_polynomial</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1f0ce5b392060023b5a3b20085675699</anchor>
+      <arglist>[32]</arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>dma_timeout_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structdma__timeout__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>value</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a0b9c17074840e43ecf84141d59624a3f</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>dse_header_t</name>
+    <filename>extra__monitor__support_8c.html</filename>
+    <anchor>structdse__header__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>magic_number</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a00f8b032c6046171aa0aba956e75579b</anchor>
+      <anchor>a4b30f2faa1733d39bbf0f29c3de0ec1d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>version</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a4015ea844b4fd30b280f7761663d7e14</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>void *</type>
       <name>regions</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a7a24fa8498541f6588f96d16431a3b68</anchor>
+      <anchor>a75018303bb7b01db0de23f1ea66deeb9</anchor>
       <arglist>[]</arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>router_t::dump</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__t_1_1dump</anchor>
+    <member kind="variable">
+      <type>const router_packet_header_t</type>
+      <name>header</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa0ab9060d3c2872d978e527cfae1bdfe</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>key</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a6b6b35a4e836a0b6ad3041a4b87748e3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>payload</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ada490e85d6422c91f9e285e003b69134</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const router_dump_outputs_t</type>
+      <name>outputs</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a6ae58ccffece3fdf37d899e30f30dcb6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const router_dump_status_t</type>
+      <name>status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a112487efd675346584a12db2aa390025</anchor>
+      <arglist></arglist>
     </member>
   </compound>
   <compound kind="struct">
@@ -7082,10 +8335,10 @@
     <filename>extra__monitor__support_8c.html</filename>
     <anchor>structdumped__packet__t</anchor>
     <member kind="variable">
-      <type>uint</type>
+      <type>router_packet_header_t</type>
       <name>hdr</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>aab0565cf977329a4739ade3b3f2e844f</anchor>
+      <anchor>aea863bc6cc01c2acb6fababb9a3d25e7</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -7201,6 +8454,383 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>router_t::error</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__t_1_1error</anchor>
+    <member kind="variable">
+      <type>const router_packet_header_t</type>
+      <name>header</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abc90fb34049acfbd867c0c623694a978</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>key</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad4f9a1f8d56803285d13bd47447d186b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>payload</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac0ed946d9d1d9372f3580191ffb92ac2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const router_error_status_t</type>
+      <name>status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a6212b68f1899c842a2cd448b51e872ba</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>ethernet_controller_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structethernet__controller__t</anchor>
+    <member kind="variable">
+      <type>ethernet_general_command_t</type>
+      <name>command</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aade75c0e32f9dfa101059166c3242a05</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const ethernet_general_status_t</type>
+      <name>status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae869f8e587edae146979441c8cf84b98</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>ethernet_tx_length_t</type>
+      <name>transmit_length</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>acf2bb51360af88a06feeb09e61498b08</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>transmit_command</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a0a0ba330fc85963db0a1e3c8f4f60168</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>receive_command</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a44eb17caab897bbbb7af5cb08bb4a1ce</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint64</type>
+      <name>mac_address</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa0355ccca8117aad2dd738f70add6f04</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>ethernet_phy_control_t</type>
+      <name>phy_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a866720ddcb907be48f8115d9e6da470b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>ethernet_interrupt_clear_t</type>
+      <name>interrupt_clear</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af3e83592b294243152f1db0c70db5527</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const ethernet_receive_pointer_t</type>
+      <name>receive_read</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a6c172ec97856d96db5c4bfe961a57054</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const ethernet_receive_pointer_t</type>
+      <name>receive_write</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aef1033a62324cd9ac7b71977a7e454c8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const ethernet_receive_descriptor_pointer_t</type>
+      <name>receive_desc_read</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7bc88ab744d3b96cb1c1ec36010d0ba4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const ethernet_receive_descriptor_pointer_t</type>
+      <name>receive_desc_write</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a41c9fdaeb6a6e874a71fce74dffac44b</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>ethernet_general_command_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structethernet__general__command__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>transmit</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a9c62077a1efeb7c2f2ca0b69e043e657</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>receive</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abcf881c87fbf0821a1745ea3802f5472</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>loopback</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a0815d86494fa45a008859eed7bd04dab</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>receive_error_filter</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a3e25946485ba764aa8c451ac4541be0f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>receive_unicast</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac666c85ea902c5f8c1095ba2f2c85da9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>receive_multicast</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a690eda97b84c62b7e20648d0d8df6800</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>receive_broadcast</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa77717ab1deea6198c6b5079e82b1f1e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>receive_promiscuous</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aea264d0be0d1c54a7756a17c34a52eb2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>receive_vlan</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a02193efda6e1ca305110ff058366244b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>reset_drop_counter</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a00720549e728912ac4776c181775e00f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>hardware_byte_reorder_disable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7bef832ba63c4d2c19706067a964ebce</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>ethernet_general_status_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structethernet__general__status__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>transmit_active</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af442df753ff7b42b454265d183212898</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>unread_counter</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a3a847828442fd3dccf79cff3ccd2ab97</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>drop_counter</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa1a4947a252193eace6a9c2040330f82</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>ethernet_interrupt_clear_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structethernet__interrupt__clear__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>transmit</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a418ec598dfeb11f22bbb102167d10b75</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>receive</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad045ed863e61ef8a75d75ab1667431eb</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>ethernet_phy_control_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structethernet__phy__control__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>reset</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1f5e797856dbdd4b9f08f9cd2a9a24da</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>smi_input</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af71b4e7780baf1f0ef42f63869a02a05</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>smi_output</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a82a9fc20bfc9f8d93aadd897b26b1a2f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>smi_out_enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a598b266287ef05553631485f74301087</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>smi_clock</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa5e7347a35fd9c39a66a01833078ac0f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>irq_invert_disable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a424cacaccd921ecdc8f3305257c32a6b</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>ethernet_receive_descriptor_pointer_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structethernet__receive__descriptor__pointer__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>ptr</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>afd52f7b46cb567c8d4327073acdba389</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>rollover</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a9fe6d8f41bc524917e16df81110c37a7</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>ethernet_receive_descriptor_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structethernet__receive__descriptor__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>length</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5ae9a94d286cda6f2edc017184b33c6f</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>ethernet_receive_pointer_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structethernet__receive__pointer__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>ptr</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a63c64ced6c49fca0092f80e94d5633bc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>rollover</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af5c949d0ad373c34d74be37bbc3ccfac</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>ethernet_tx_length_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structethernet__tx__length__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>tx_length</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5dc614f540f69b98322784204e2a87f4</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>watchdog_lock_t::fields</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structwatchdog__lock__t_1_1fields</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>lock</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a12ca15f2bb504155efd5868ee4e5a7e5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>magic</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a0a847b5214d8ac8df2de9273191be2d1</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
     <name>filter_info_t</name>
     <filename>filter__info_8h.html</filename>
     <anchor>structfilter__info__t</anchor>
@@ -7260,6 +8890,65 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>router_packet_header_t::flags</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__packet__header__t_1_1flags</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>time_phase</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abdbb5b27876f99beb948624476b3af26</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a606f389a473086bee8c0b2fabf2e9fd1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>route</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a84f26b8a6fb26cee5f656085895b0d84</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>time_phase_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a34c91944de383212c467d53c38f0c501</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>framing_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7a398592b25d7d1a283c05ba66fe35a5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>parity_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2b99597b78fb2f6c33f61639df6360cd</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>spinnaker_packet_control_byte_t::fr</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structspinnaker__packet__control__byte__t_1_1fr</anchor>
+    <member kind="variable">
+      <type>uchar</type>
+      <name>emergency_routing</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a607507674e6c98f4dc60be5baa44c551</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
     <name>header_t</name>
     <filename>rt__single_8h.html</filename>
     <anchor>structheader__t</anchor>
@@ -7306,6 +8995,268 @@
     <name>host_data_read_packet_header</name>
     <filename>recording_8h.html</filename>
     <anchor>structhost__data__read__packet__header</anchor>
+  </compound>
+  <compound kind="struct">
+    <name>vic_mask_t::interrupt_bits</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structvic__mask__t_1_1interrupt__bits</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>watchdog</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>afde454fd9d8c7bd23cccd290dd6fc3ec</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>software</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>acbc5191ee57acd996ee4d36b54e1b5cb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>comm_rx</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a26f38c853373b0571278e6a9a285b1bc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>comm_tx</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5012d4714a2b6027a37407fe73d6837d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>timer1</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a6debb94c39e1b4e43415f7bbcb818ca1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>timer2</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8a2e3e7edde216e5a95896c862fa1350</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>cc_rx_ready</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae5a7e4fe80ce1a8811ffb32df14139b9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>cc_rx_parity_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4550191ad012f15cc960bb996ec2b1ce</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>cc_rx_framing_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a31e7fb507f14658104fe18891ec8b0f4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>cc_tx_full</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2e00527c13614205f2495a5248bd746f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>cc_tx_overflow</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aea0d73788bf489816ef23f57197fd28d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>cc_tx_empty</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad1145033943778d22e9c0a45e26560ca</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>dma_done</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae6401549295ca9bab3d1f9e801df97f2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>dma_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab24de8fb7c8a4ccb37c878802fcaef12</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>dma_timeout</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a640766dd6a3dc3c58db6d4c2fb420007</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>router_diagnostic</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aecef3e423b036c51983d585c32c9d34a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>router_dump</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aac04e1ba8f007e054d8f8669c41a20c8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>router_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae430dd3f127d127001b56047640c731e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>cpu</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2d6e4957e4060b67b533329e3e692e0b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>ethernet_tx</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aea44b0efee1688f83b8ad291806cedd9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>ethernet_rx</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a51805344ebfe74414f97f6df5b5bc365</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>ethernet_phy</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>afbf5a776dd416b437eb3a2581544f651</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>slow_clock</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abdff847d6d1c9310939c8f127df20157</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>cc_tx_not_full</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1af94b042ecfeddbed9a053928a74059</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>cc_rx_mc</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aab53f63521b39e3adc75b73050d4938a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>cc_rx_p2p</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa230cfff0066bee476eccf08e9c08d3e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>cc_rx_nn</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab438c41734381b1bebfc0c941e51b4d1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>cc_rx_fr</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a07b11c155194535ad7af3c10ff2ebd0f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>int0</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a901c55b1563c57b7d2951ebabd9b5d75</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>int1</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a848b473a625960dc5ac87086494e5d07</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>gpio8</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a0f4b096aa3a09aa79dbae771e4b5fc5a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>gpio9</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af759bf9fe3da7fb265a831e46c6e2f3b</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sc_io_t::io_bits</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsc__io__t_1_1io__bits</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>ethernet_receive</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a0e4f96fda3339857071e6d17fd3f28a7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>ethernet_transmit</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab32287bf1ce51d78d31d54e2b47bf84f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>jtag</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac1248e354c01076f62f3c1c7b91a5435</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>sdram</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2a1de931ee39740fe1500911c051cb53</anchor>
+      <arglist></arglist>
+    </member>
   </compound>
   <compound kind="struct">
     <name>key_atom_data_t</name>
@@ -7454,6 +9405,18 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>spinnaker_packet_control_byte_t::mc</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structspinnaker__packet__control__byte__t_1_1mc</anchor>
+    <member kind="variable">
+      <type>uchar</type>
+      <name>emergency_routing</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a6afbbd6bc49b40932965181bdb0d645f</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
     <name>merge_t</name>
     <filename>merge_8h.html</filename>
     <anchor>structmerge__t</anchor>
@@ -7520,6 +9483,25 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>spinnaker_packet_control_byte_t::nn</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structspinnaker__packet__control__byte__t_1_1nn</anchor>
+    <member kind="variable">
+      <type>uchar</type>
+      <name>route</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aff0d612c2c64d2a6a6c1be2f61792445</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uchar</type>
+      <name>mem_or_normal</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8c5f6ac857b7c060558ad895daa3c3d2</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
     <name>node_t</name>
     <filename>aliases_8h.html</filename>
     <anchor>structnode__t</anchor>
@@ -7556,6 +9538,18 @@
       <name>right</name>
       <anchorfile>aliases_8h.html</anchorfile>
       <anchor>ad966fa756fa1d26aca1d092126d9c9c7</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>spinnaker_packet_control_byte_t::p2p</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structspinnaker__packet__control__byte__t_1_1p2p</anchor>
+    <member kind="variable">
+      <type>uchar</type>
+      <name>seq_code</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a92369060817d1c037b916e6658cb9172</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -8076,6 +10070,281 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>router_control_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__control__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>route_packets_enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a757f4c4c4568bcf57f4a0819846206ff</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>error_interrupt_enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a694c5d57e954b39d4c750af2d16348b3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>dump_interrupt_enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a11848c1cdf730ee718c96b54722b7f62</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>count_timestamp_errors</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aade0a9284feff7c02fb973dab6d2e7c2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>count_framing_errors</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aac6e15a8e590775ddfd7d3cf54132bbe</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>count_parity_errors</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7a4d3370232126ada064ce94c5ca0999</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>time_phase</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aaab0777687bef4306ffe1153d23923f6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>monitor_processor</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af80c2cfe9717e071bf50dae12299e6c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>reinit_wait_counters</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aea81ebc18fe5162d7b0c496a6442f256</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>begin_emergency_wait_time</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af93ca478c6f2ef48eac1376108971631</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>drop_wait_time</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a73f3c531fe322334a94bf6619cbeb154</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>router_diagnostic_counter_ctrl_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__diagnostic__counter__ctrl__t</anchor>
+    <member kind="variable">
+      <type>ushort</type>
+      <name>enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af07615e10d04ecfbcae23d21834833a0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>ushort</type>
+      <name>reset</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae973bfa34defdcd34bc6edc4231f1827</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>router_diagnostic_filter_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__diagnostic__filter__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>type</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a924776b33bfda31468de1cc2e9a37c4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>emergency_routing</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad956e9ac5c4631f060cd7fc4d8859a5a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>emergency_routing_mode</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aee13e4b2f4dd6d8f82852bd04fa128cb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>pattern_default</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a9d3f279af4b1be5165fc6c7e728f2cd3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>pattern_payload</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4dd10fe27c3f924c968afe4242c9f064</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>pattern_local</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a61970cc0db88fe49c3c4375eaad792cf</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>pattern_destination</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad48e34b95f2e2ce3e593ba7ca00e810a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>counter_event_occurred</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>afa80e429999681a39fb4702c917fa378</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>enable_counter_event_interrupt</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae5876d9bc54505c6aebedb2743b8ff5e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>counter_event_interrupt_active</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa3463e28e8cc23ad6a8e6d69170a10e7</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>router_diversion_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__diversion__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>L0</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a9a2e3d88e29bf626df25273353a81f0c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>L1</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad4c7fc90c7259ba559c51829f0de4ee0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>L2</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a02873ecf6aeba0d04936a33f48bd08d6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>L3</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a76190373ba04fb7092be516406aab8bd</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>L4</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a0e4bda66c3cb5e28d19ecf5e023d5fcc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>L5</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a90f5d67c909dbfbde9e63628ba0c56a3</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>router_dump_outputs_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__dump__outputs__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>link</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aaa958ffd5f17604eb0d1c4d455b9ab97</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>processor</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae6243e0ac56164e6279777ef7746b1b2</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>router_dump_status_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__dump__status__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>link</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abf67b5b462cd9fc3bcd8d3ddaabf5a20</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>processor</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abf3ac45510f19d86d825fbe29e013fa6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>overflow</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a416d1bca32d313026c8d04d62920907b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>dumped</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a0d52683b0d3735d90394ef4e6c245bb1</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
     <name>router_entry_t</name>
     <filename>extra__monitor__support_8c.html</filename>
     <anchor>structrouter__entry__t</anchor>
@@ -8102,6 +10371,364 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>router_error_status_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__error__status__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>error_count</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>addd69080600afb42e8bf3f266b6d861d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>time_phase_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1894f265170f7a9fc2d69002ff17d969</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>framing_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aada9dd9e0ab6aa03baf04d4e42148800</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>parity_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1abd980887c0bb7646ef8a03e15a9715</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>overflow</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a3f0b7c297016f3df1b82912bed9e768e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abc1d959e68ca08fa29131628c0d31137</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>router_fixed_route_routing_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__fixed__route__routing__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>fr_links</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa775c73a82b0ba4a7f75583f9405343e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>fr_processors</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a665bbe2ca1a39cf0b1f0233ec28bf29c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>nn_broadcast_links</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a34756fa696ca9e0f319f4da580b9314a</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="union">
+    <name>router_multicast_route_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>unionrouter__multicast__route__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>value</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aaca79f6deeac2e8dbcfb7154c420b7b0</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="union">
+    <name>router_p2p_table_entry_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>unionrouter__p2p__table__entry__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>value</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a123d85d0a5eefbf886b3c0ab6feaab37</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="union">
+    <name>router_packet_header_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>unionrouter__packet__header__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>word</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abd44bd7b57cf4adf241fa26709d1ff24</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>router_status_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__status__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>interrupt_active_for_diagnostic_counter</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a144f157399eb3ea0cb3121d8498e52b3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>busy</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a32196b6892711def2e5a1a74913c127b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>output_stage</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1b9d8e529d1705b114c60f3e2e745698</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>interrupt_active_dump</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1f4a8232552198ea1bc339273c151bb7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>interrupt_active_error</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5bcdfb7051357e4d8d5e26d31530bb80</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>interrupt_active</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aff4b2906131034cb9861187dbc695c98</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>router_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__t</anchor>
+    <member kind="variable">
+      <type>router_control_t</type>
+      <name>control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a019811057cf4cecc6a3504b4aa523ffb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const router_status_t</type>
+      <name>status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5482dcdfcf6167e748a0f095bb913145</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>router_diagnostic_counter_ctrl_t</type>
+      <name>diagnostic_counter_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4ebff0dfb33475428ad5d79bb1e90bc8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>router_timing_counter_ctrl_t</type>
+      <name>timing_counter_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a67912d839658f327c7be14b8cbe9ceef</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>cycle_count</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac1a6b342762fc902d9fac16b3414a8bf</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>emergency_active_cycle_count</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8c9e053104790ef46996ff5764d99534</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>unblocked_count</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab16e3da4f0c2c0042282e72295c89a47</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>delay_histogram</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a54b2a44da8d4c68a25abe91dd109de38</anchor>
+      <arglist>[16]</arglist>
+    </member>
+    <member kind="variable">
+      <type>router_diversion_t</type>
+      <name>diversion</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a3df4635f3c94324fc74ddcc77d5cde6e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>router_fixed_route_routing_t</type>
+      <name>fixed_route</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1242825aa14c650dd9e78d90bedb5ea9</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>router_timing_counter_ctrl_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__timing__counter__ctrl__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>enable_cycle_count</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa30a717dc9d69c7aa19e59df208b7550</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>enable_emergency_active_count</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a60f895d2c5c59f7886d0e9e3686161a4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>enable_histogram</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a19c9d3ca047a56a32c20285ea958e762</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>reset_cycle_count</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a22bb3221d24e63fd879ab114460d444e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>reset_emergency_active_count</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a66629824c99cdf4f44a1bc909a4e591f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>reset_histogram</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2f69e12158ac32c86723ea064c4dee2f</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>router_multicast_route_t::routes</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__multicast__route__t_1_1routes</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>links</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a3d02f60a6e000cd5aa2f72b2b3668686</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>processors</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad8d7b07edc894cbc11940c9075ef8423</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>router_p2p_table_entry_t::routes</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structrouter__p2p__table__entry__t_1_1routes</anchor>
+    <member kind="variable">
+      <type>router_p2p_route</type>
+      <name>route1</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a87cb43ffa6512bfd963eb591196f5959</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>router_p2p_route</type>
+      <name>route2</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7a0d69eb9028fdf4981845bbe2bf4c5d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>router_p2p_route</type>
+      <name>route3</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aeeb2d4ced1b62ce6aa8afc844f23be27</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>router_p2p_route</type>
+      <name>route4</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa7c1f15595f39c104d8ae450fab322f2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>router_p2p_route</type>
+      <name>route5</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a86cbf22397c98dcccc4e32cdba99ebdb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>router_p2p_route</type>
+      <name>route6</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac02f0a104fee45248619af0c8abbb79a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>router_p2p_route</type>
+      <name>route7</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a15ad441e5160fa2c9bf1260b2b9bd439</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>router_p2p_route</type>
+      <name>route8</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa304efcb2dd786b3e501cb9d6346f280</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
     <name>sample_params</name>
     <filename>chip__power__monitor_8c.html</filename>
     <anchor>structsample__params</anchor>
@@ -8117,6 +10744,402 @@
       <name>frequency</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
       <anchor>ab058bda1443a66747f357cda4c8e7bce</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sc_clock_mux_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsc__clock__mux__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>pa</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a37cb3672aefdf330fbdeda6740a33b30</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>adiv</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4fcc1c3d4d0631ece1a95fcb69973d40</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>pb</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a09af1a77bda879ca8fb5bee20a40da83</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>bdiv</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2362884d761f91da9ed72f408dc29a3d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>mem</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad3e3a84d3e185d83bdfd46dd40d271bc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>mdiv</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a13925f4f313d4c5a76d7f2ef06faa5bc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>rtr</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2e59d3a054f28e9b1ea24da3d162376a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>rdiv</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae7606bf1449a7e3220bfd66b2e8f8425</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>sys</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a9c03d9124da039cb901232532dbc6033</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>sdiv</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a660980f7bfac87937f71cfa10062b1e1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>invert_b</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a792bffc3f09444c405d0e40b39ed5005</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="union">
+    <name>sc_io_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>unionsc__io__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>gpio</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af830b22b6430044906c6c4dad7a98d4e</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sc_link_disable_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsc__link__disable__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>rx_disable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>acd112d4463c07177f85354bb99981e9b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>tx_disable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5b2ab053f939718115386df23eebde47</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>parity_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab0ed9f9c520b9ab542e7634094d8b7cb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>security_code</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7112e1a5da25feb72b761290f21ebb4a</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sc_magic_proc_map_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsc__magic__proc__map__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>select</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a80eb91dd59a2eea584c8573b43cffdab</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>security_code</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>acb838d9addd587d7593a6c5d09f17afd</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sc_magic_subsystem_map_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsc__magic__subsystem__map__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>router</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a12a2d27db04d599b8d81e93257a8792d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>sdram</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac22721220b24733c7ef0f629f3858946</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>system_noc</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae38454780bcc0f2784da0a6649b647db</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>comms_noc</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab896835ad14ebd47a0df2fb06f0ba533</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>tx_links</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a51ed9e65b3327721fa7f2d4bdaa1a1a0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>rx_links</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a44909c125d0f080d9c1f4e2cde8d4e0c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>clock_gen</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>adf5ea1ac1efef6e508ca2debc2512d04</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>entire_chip</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4918d458f6d61967ac4a9c071b569615</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>security_code</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af166ef8d25acf1efdedffd5402e62e81</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sc_misc_control_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsc__misc__control__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>boot_area_map</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1f5d47d25aa67c3583688b2ba5bb68f7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>jtag_on_chip</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a3369ed8f71240bd6b60489194f1f8610</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>test</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad3b4f41bd5fefda0b08edcfeaa29c1c6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>ethermux</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8ffea56506069afa58a1c40b668285cf</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>clk32</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a825bd8bb3b212f5d9afc2f650d787f8f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>jtag_tdo</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad724f01672d40adab1e9e989ed81dd0c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>jtag_rtck</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad1b73d81ca68753ab6bc27c5d3ad66bf</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sc_monitor_id_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsc__monitor__id__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>monitor_id</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abe8d04eadb73fc1f7bbfa10c2a9a432c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>arbitrate_request</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af2ebfca328b2ab8b0653304ac13d0c43</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>reset_on_watchdog</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abadf34fd630e3020ce21362c768261cd</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>security_code</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1a3d2a2de3476116474dfa8d59cf0d6e</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sc_mutex_bit_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsc__mutex__bit__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>bit</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a247803f1ce6a354336bf1c775e474bc8</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sc_pll_control_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsc__pll__control__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>input_multiplier</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7cb6695dcdaeeefca45286bf4d90e5db</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>output_divider</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a51ac42d5cade309fe5cb322bd1cf8f14</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>freq_range</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aef00cd5fd497bc70ed5f2395278f3bec</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>power_up</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8b0082f31eb46e8a42ad9bed8db98649</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sc_reset_code_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsc__reset__code__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>reset_code</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af7b235b1cc4fb457c5772b36c344032e</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sc_sleep_status_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsc__sleep__status__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a9a9f1d12d2ee5f5f8d7420091af856e1</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sc_temperature_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsc__temperature__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>temperature</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7e62bda25543c74d3463f8b2f407f26d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>sample_finished</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab26c3cfa947c673a807b9a19b646275c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>start</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7205272adf102588da48c1e57bbe986d</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -8274,6 +11297,657 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>sdram_cas_latency_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsdram__cas__latency__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>half_cycle</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa19ca0c8f31ec84b9bf3eaadecd80a46</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>cas_lat</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aeda564ebf65999a626c0bc31fb1f45ff</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sdram_chip_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsdram__chip__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>mask</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a0bf41c77b6fa57edd5748e198445961e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>match</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a455a9fe655519afb8caa237d5d1498db</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>orientation</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac436078ec716ecb052aaf41a24dce747</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sdram_command_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsdram__command__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>command</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a378de8a0c04c3622fb89dc8ba466cbee</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sdram_controller_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsdram__controller__t</anchor>
+    <member kind="variable">
+      <type>const sdram_status_t</type>
+      <name>status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a90b86cf123e1b1e260cf9b6117321a00</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sdram_command_t</type>
+      <name>command</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a643a5b7e245044af2d34ce915c15b3fe</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sdram_direct_command_t</type>
+      <name>direct</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a28f8a1a03dd548f1ff30315ac81a8ee7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sdram_ram_config_t</type>
+      <name>mem_config</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a3f0422eb09e318cec4355735d808f512</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sdram_refresh_t</type>
+      <name>refresh</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a462d28b5949ef7e3cec538802941029b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sdram_cas_latency_t</type>
+      <name>cas_latency</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5141f3b14c4e1485eb5a533c9f6b9809</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sdram_timing_config_t</type>
+      <name>timing_config</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aaf6091eb2355dbff04c301aa01b3554a</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sdram_direct_command_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsdram__direct__command__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>address</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a52051a567d7eede16837b71b81b22af3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>bank</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2623bba0ef9b279cb6d4b12713a8cf4d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>cmd</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a79759edf37dbbc0d9a5de0eb61ce7713</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>chip</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a9c38ad60119b038f8ca1994e7ec9dd99</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sdram_dll_status_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsdram__dll__status__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>meter</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac62a4f756323ccb2a4e924f70c7d6701</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>s0</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>adb536109f707c1372b1b9cddddbc0d33</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>c0</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aff16f48d698a5748f4c21e0193a7d60e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>s1</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac18610a089bbe9dc27b6ea3081185514</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>c1</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a0a4a5215b070b5779d86e248fdc63c2f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>s2</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a17be8777d16b7c1eeb87988a0c44fdee</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>c2</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af0611d43cad97d7f66a1949139040474</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>s3</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aef5a5bf34b5bbe763941a83fe7eb1f7c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>c3</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a39066541c1bd86885b7cc7f3ace8d816</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>decing</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a44d74a36272c6dd35438899de82c67c7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>incing</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2de2ff440642c51a16166621f18d2270</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>locked</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a98f7d878b9a7a801cfb4605853a60855</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>R</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a0848ff4af8ebb953f8f2c735a9ff024f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>M</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1db702efb0702c80aa5ed20aed4c0741</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>L</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a16c8bade0a73188e3bf897fd8a8e2d00</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sdram_dll_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsdram__dll__t</anchor>
+    <member kind="variable">
+      <type>const sdram_dll_status_t</type>
+      <name>status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac2d892e7ea924c0aaf81a7692c2e0335</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sdram_dll_user_config0_t</type>
+      <name>config0</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a877f93445af551d3390376bb1a6722db</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sdram_dll_user_config1_t</type>
+      <name>config1</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4b0eacb34b0c9e253c80489a8aa807f7</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sdram_dll_user_config0_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsdram__dll__user__config0__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>s0</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa23af1702d3b6eb1899b51d9c124256a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>s1</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a464fbce2761908731c7eeb45f73b1500</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>s2</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>adc1a4a84980c2ef47a84fb6293b2d84e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>s3</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5ec2164cb48b91e8737a430a239f5b5e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>s4</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a0316bc6e386499f612f4a43ed5448ba1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>s5</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4fa8735b52cd7e404680ebc8a0e2cc42</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>test_decing</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac7eb134f2edbb535151fe8501f61500b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>test_incing</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a90b3d05a727ce605b0f28de32e5d4a9c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>enable_force_inc_dec</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ade187ba813abbd7b6ce14c2f87d23a6d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>test_5</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a6e29f3163002c9955f3a7a20a44f1e21</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>R</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac6c705a7c4076e680c0fe17a6918ee1e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>M</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>acc82bad436afed913707bfb39358572f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>L</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a6dfff88b8226415b046e5faccdc271d5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>enable_force_lmr</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1503ebc4956fdb192daaa294fa6c584d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa2d5739e090354fe18acb2f3a41924e1</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="union">
+    <name>sdram_dll_user_config1_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>unionsdram__dll__user__config1__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>word</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae6f49933af04518d7c9099a416e0f5f3</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sdram_qos_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsdram__qos__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad57f789fcdbb3cb1c5838c2a2b97c5ec</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>minimum</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a811ce5e9de9f6647477f6f3f7803a874</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>maximum</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5d403449a977403bd0995fcbfab608b6</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sdram_ram_config_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsdram__ram__config__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>column</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ade5a279756ecc7cf62a7b18d3b6dd314</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>row</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a803d9da33915f912b42583add750d72d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>auto_precharge_position</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac0f64671d9f5bc5e8816eb218b20e581</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>power_down_delay</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5abb1d03d8d25e40ae494f722c738adb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>auto_power_down</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a79399afdae622d3cbcefd5873209fc2e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>stop_clock</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7c6ca56f423aa59f0a2db23b232eb442</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>burst</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a25ab63b9ff8678c0c60d87153cabd9d1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>qos</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa37d84167d739a1653c11f85fbc4e802</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>active</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a56b194c1feb0de77b9573e37b793af67</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sdram_refresh_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsdram__refresh__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>period</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab03e8240ca8e051e7464abf874e6312e</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sdram_status_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsdram__status__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>affc420b5b69772f0db94885911b26ae8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>width</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a9c182990ee4b8139bdebee255528e887</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>ddr</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1caf3598bea92e00952e9e6a4f6e2181</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>chips</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af91282e51128d2cf3de7fab663b11f2a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>banks</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab369986ad6a0eb8e3cbf911b1237a425</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>monitors</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac829468c6497f5b7abd67ba785ea5715</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>sdram_timing_config_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsdram__timing__config__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>t_dqss</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad5a59c0f51db03f1dbaf62028f0c35de</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>t_mrd</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae1ed2978f69725b98a0df6d6f74dd1ac</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>t_ras</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a58931731824c28f6e54e9ca7fb7710d7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>t_rc</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a6440b99eb3a7ec5914a9c26c03877c09</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>t_rcd</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a9fd9166de2c21d95b57201dcdec788d7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>t_rfc</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a68a988ab82b4f52551cf98d0b52869d4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>t_rp</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>afd82b80fd727b64f11c9d2abb34edde7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>t_rrd</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8315044cc79f82c8e713449d37c52d67</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>t_wr</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5ee2f479a03578f9f7fd45829bd0ca3d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>t_wtr</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a8880e90825fa2a94ec5e1309eff30207</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>t_xp</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1ab04c54c2dc3f5c07c3363461ccab05</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>t_xsr</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a92786b496ea89b7a4c532053c28e476d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>t_esr</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab4c4538df641011e6f829f1967957b70</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
     <name>simulation_config</name>
     <filename>simulation_8h.html</filename>
     <anchor>structsimulation__config</anchor>
@@ -8313,6 +11987,233 @@
       <name>sort_order</name>
       <anchorfile>compressor__sorter__structs_8h.html</anchorfile>
       <anchor>afa13939be549fe271504e4d2c411b070</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="union">
+    <name>spinnaker_packet_control_byte_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>unionspinnaker__packet__control__byte__t</anchor>
+  </compound>
+  <compound kind="struct">
+    <name>system_controller_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsystem__controller__t</anchor>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>chip_id</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a16aea5259023be8f8294367ad6a2b057</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_magic_proc_map_t</type>
+      <name>processor_disable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a60086af40c3e6bb85f4ef3634b1ad88a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_magic_proc_map_t</type>
+      <name>set_cpu_irq</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad973dcde6ea2112e7903cc3054fa9b72</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_magic_proc_map_t</type>
+      <name>clear_cpu_irq</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a812c2a6a2cced191369641d7c50108a0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>set_cpu_ok</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5f84f6cf3790f46ad75a6978d653f43a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>clear_cpu_ok</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>abe12a06d8d2c809573ea499254c44ffb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_magic_proc_map_t</type>
+      <name>cpu_soft_reset_level</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>afd9272963ac4e45cb537a6d96adf8750</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_magic_proc_map_t</type>
+      <name>cpu_hard_reset_level</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a475e3b7216618f781d4963b47342fd12</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_magic_subsystem_map_t</type>
+      <name>subsystem_reset_level</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac943b34891887fef7eefd8ab4f146066</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_magic_proc_map_t</type>
+      <name>cpu_soft_reset_pulse</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a49e50923f0feeed754281df1c122080b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_magic_proc_map_t</type>
+      <name>cpu_hard_reset_pulse</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab6190c23c505abdfb6d4c8ba41eea69e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_magic_subsystem_map_t</type>
+      <name>subsystem_reset_pulse</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a66102933692cec87669f0bca7cba237a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const sc_reset_code_t</type>
+      <name>reset_code</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae916bfb186250f81eb8b8d50ad470a41</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_monitor_id_t</type>
+      <name>monitor_id</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a545f4c9c3c641ae85eb8b2fb0885b942</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_misc_control_t</type>
+      <name>misc_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae95c2a5305d5851805f90ce54b19d996</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_io_t</type>
+      <name>gpio_pull_up_down_enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a6f13af89eeda684e0a5b039652aa97c8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_io_t</type>
+      <name>io_port</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a97f97a03d6fbb550063b7264317bcab5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_io_t</type>
+      <name>io_direction</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a115312c7e737aed5da65077effd67291</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_io_t</type>
+      <name>io_set</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ad25164f285c46b7fa3d714765d947826</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_io_t</type>
+      <name>io_clear</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a27b9a42196dd18d47b9eb9917e0104cb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_pll_control_t</type>
+      <name>pll1_freq_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a831b778aa42aa1671cfc2a6567bfa868</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_pll_control_t</type>
+      <name>pll2_freq_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a34b869302b23a8f1d2b6c18784f8e70c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>set_flags</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a068b6e66809f8ccbc3d6b3a6166c3003</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>reset_flags</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae74c23447b4651e81beb21b878a9a999</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_clock_mux_t</type>
+      <name>clock_mux_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aada902071874e590be1309105dfd1c12</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const sc_sleep_status_t</type>
+      <name>cpu_sleep</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a36de32384c9c27da0d7a0f0d506d33a0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_temperature_t</type>
+      <name>temperature</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5e35a02c76ac11ad2ff4dc9db299d28c</anchor>
+      <arglist>[_NUM_TEMPS]</arglist>
+    </member>
+    <member kind="variable">
+      <type>const sc_mutex_bit_t</type>
+      <name>monitor_arbiter</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a50a40e356268bd7e67fff973c5be1d20</anchor>
+      <arglist>[_NUM_ARBITERS]</arglist>
+    </member>
+    <member kind="variable">
+      <type>const sc_mutex_bit_t</type>
+      <name>test_and_set</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a02821c2d4cbd1e48747b12a58f7a59c4</anchor>
+      <arglist>[_NUM_LOCK_REGISTERS]</arglist>
+    </member>
+    <member kind="variable">
+      <type>const sc_mutex_bit_t</type>
+      <name>test_and_clear</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a497f1d86f6e5d4de9de6ab140a949cae</anchor>
+      <arglist>[_NUM_LOCK_REGISTERS]</arglist>
+    </member>
+    <member kind="variable">
+      <type>sc_link_disable_t</type>
+      <name>link_disable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1cd3cf3fd48826d87c8bc8a70239068b</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -8374,6 +12275,119 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>timer_control_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structtimer__control__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>one_shot</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab4be0dcd1ba3c178e3e8d17a531f3305</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>size</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4f0b07e2b6d8dacbd8adf022a7c1d6d4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>pre_divide</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aaca033d9d2143bb0c8bc181e8f8e1d07</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>interrupt_enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a633bf93c8432de12decd90334c46ff5b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>periodic_mode</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab0a6b41a93df8a73f7a429b7cd2403e0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a1f89c68ae420b4a1dfd82750b9c44f0c</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>timer_controller_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structtimer__controller__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>load_value</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a945cb5d6d71b0ddbfaf5eae54eab51f8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>current_value</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a0c5077cd443c6f928a72b19bbd09834b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>timer_control_t</type>
+      <name>control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5fe7b4d28ed7925cbcd485e0f4345d90</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>interrupt_clear</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>afff96bc7ddb55c04921b974ada523996</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const timer_interrupt_status_t</type>
+      <name>raw_interrupt_status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a637609c469b4080fc3a41b51416efc67</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const timer_interrupt_status_t</type>
+      <name>masked_interrupt_status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a220ac8322d838242d32bc82f5b94c359</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>background_load_value</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a871f4ae0432c03fd626c3835ef6a5d9d</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>timer_interrupt_status_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structtimer__interrupt__status__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>afc92ae0a5711d27721a5c63400f6b9ab</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
     <name>triples_t</name>
     <filename>compressor__sorter__structs_8h.html</filename>
     <anchor>structtriples__t</anchor>
@@ -8400,6 +12414,53 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>sdram_dll_user_config1_t::tuning</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structsdram__dll__user__config1__t_1_1tuning</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>tune_0</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>adbdfbade25e58c6cd94aaa2df53b4cf7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>tune_1</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a2b7af0ea975346ca54d1a655b1776087</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>tune_2</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af7a13d3bd6e6b9e74b2d953c1bae2fc8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>tune_3</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>afefbfa65d54a93adcf155522091f3353</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>tune_4</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ac606797cd503d464f1b8f4d205f211ee</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>tune_5</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a4442baf31db65992163a076bf6a0506a</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
     <name>uncompressed_table_region_data_t</name>
     <filename>compressor__sorter__structs_8h.html</filename>
     <anchor>structuncompressed__table__region__data__t</anchor>
@@ -8415,6 +12476,216 @@
       <name>uncompressed_table</name>
       <anchorfile>compressor__sorter__structs_8h.html</anchorfile>
       <anchor>a8082501788d19b0833dc0d130c0bd796</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>vic_control_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structvic__control__t</anchor>
+    <member kind="variable">
+      <type>const vic_mask_t</type>
+      <name>irq_status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a72f3135527e989251baa5c193ccce707</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const vic_mask_t</type>
+      <name>fiq_status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a317ae25d8fa1683fd8c99b9a92cef6f0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const vic_mask_t</type>
+      <name>raw_status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aba444d4e275d02f941395e9e7239bfb8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>vic_mask_t</type>
+      <name>int_select</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5a5b9f0cef399a318a828b7fec0dbd2f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>vic_mask_t</type>
+      <name>int_enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a3ffbf2aab1d367fff84465873babb578</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>vic_mask_t</type>
+      <name>int_disable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab9603d932e78246fb17d4b826036040f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>vic_mask_t</type>
+      <name>soft_int_enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a3851130fbb01daf31a433d3b358666e6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>vic_mask_t</type>
+      <name>soft_int_disable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab67dc793bf972ebb96560121e27b0e9f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>protection</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ab2234e56bc10767b88f56e6a0f3965ed</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>vic_interrupt_handler_t</type>
+      <name>vector_address</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aa8ca8fcd302a6f33acc829b368e5fb5b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>vic_interrupt_handler_t</type>
+      <name>default_vector_address</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a288a3c2361ff975f49ffd3e285f1a0df</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="union">
+    <name>vic_mask_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>unionvic__mask__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>value</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a70c0e9be53a80ac665762d00b1afc8fb</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>vic_vector_control_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structvic__vector__control__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>source</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aef097b2948c857a4d7c1f650848b07d4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a86b7ab3c250ed044df137b844310f768</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>watchdog_control_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structwatchdog__control__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>interrupt_enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aca89b9f7952a17203749f792739caedc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>reset_enable</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae082381101fda97970de0be97e2a2eae</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>watchdog_controller_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structwatchdog__controller__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>load</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a081d14d66ac1f71cc4dfd274710e0197</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const uint</type>
+      <name>value</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aef55b189ab472373124c77beac14c2cb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>watchdog_control_t</type>
+      <name>control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a18779ecc8cf785401d6607864b3dd041</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>interrupt_clear</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>acb51c4b4ca8fa53190d691299a1a0899</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const watchdog_status_t</type>
+      <name>raw_status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>ae340ca2a810f9f9eb441f2674a085a09</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const watchdog_status_t</type>
+      <name>masked_status</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a44b893bb18780f77249e73d88a1de674</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>watchdog_lock_t</type>
+      <name>lock</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a131914db9b9196fd2ec6d7af110674eb</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="union">
+    <name>watchdog_lock_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>unionwatchdog__lock__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>whole_value</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a68c63d6dde47eb233b8ebe0a543264e4</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>watchdog_status_t</name>
+    <filename>spinn__extra_8h.html</filename>
+    <anchor>structwatchdog__status__t</anchor>
+    <member kind="variable">
+      <type>uint</type>
+      <name>interrupted</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a7acf3912cc86ab9937d2455d7164c780</anchor>
       <arglist></arglist>
     </member>
   </compound>

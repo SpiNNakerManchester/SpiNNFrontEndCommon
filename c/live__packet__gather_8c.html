@@ -145,19 +145,12 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:a385c44f6fb256e5716a2302a5b940388"><td class="mdescLeft">&#160;</td><td class="mdescRight">human readable definitions of each region in SDRAM <br /></td></tr>
 <tr class="separator:a385c44f6fb256e5716a2302a5b940388"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8260104100d03dd752ed71c07e465cc1"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a8260104100d03dd752ed71c07e465cc1">packet_types</a> { <br />
-&#160;&#160;<b>NO_PAYLOAD_16</b>, 
+<tr class="memitem:a8260104100d03dd752ed71c07e465cc1"><td class="memItemLeft" align="right" valign="top"><a id="a8260104100d03dd752ed71c07e465cc1"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a8260104100d03dd752ed71c07e465cc1">packet_types</a> { <b>NO_PAYLOAD_16</b>, 
 <b>PAYLOAD_16</b>, 
 <b>NO_PAYLOAD_32</b>, 
-<b>PAYLOAD_32</b>, 
-<br />
-&#160;&#160;<a class="el" href="extra__monitor__support_8c.html#a8260104100d03dd752ed71c07e465cc1a3e383793595e2c46cfee214e6416bce3">PKT_TYPE_MC</a> = 0 &lt;&lt; PKT_TYPE_SHFT, 
-<a class="el" href="extra__monitor__support_8c.html#a8260104100d03dd752ed71c07e465cc1ab0e8655693e4264b1648213ab2437a5c">PKT_TYPE_PP</a> = 1 &lt;&lt; PKT_TYPE_SHFT, 
-<a class="el" href="extra__monitor__support_8c.html#a8260104100d03dd752ed71c07e465cc1a58549f96c94a246031ef1843260a5e4b">PKT_TYPE_NN</a> = 2 &lt;&lt; PKT_TYPE_SHFT, 
-<a class="el" href="extra__monitor__support_8c.html#a8260104100d03dd752ed71c07e465cc1ae246a3b3ea5bda26af049f1db8cef35c">PKT_TYPE_FR</a> = 3 &lt;&lt; PKT_TYPE_SHFT
-<br />
+<b>PAYLOAD_32</b>
  }</td></tr>
-<tr class="memdesc:a8260104100d03dd752ed71c07e465cc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">EIEIO packet types.  <a href="live__packet__gather_8c.html#a8260104100d03dd752ed71c07e465cc1">More...</a><br /></td></tr>
+<tr class="memdesc:a8260104100d03dd752ed71c07e465cc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">EIEIO packet types. <br /></td></tr>
 <tr class="separator:a8260104100d03dd752ed71c07e465cc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
@@ -443,34 +436,6 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
 </table>
 
 <p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00074">74</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
-
-</div>
-</div>
-<a id="a8260104100d03dd752ed71c07e465cc1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8260104100d03dd752ed71c07e465cc1">&#9670;&nbsp;</a></span>packet_types</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="live__packet__gather_8c.html#a8260104100d03dd752ed71c07e465cc1">packet_types</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>EIEIO packet types. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a8260104100d03dd752ed71c07e465cc1a3e383793595e2c46cfee214e6416bce3"></a>PKT_TYPE_MC&#160;</td><td class="fielddoc"><p>Multicast packet. </p>
-</td></tr>
-<tr><td class="fieldname"><a id="a8260104100d03dd752ed71c07e465cc1ab0e8655693e4264b1648213ab2437a5c"></a>PKT_TYPE_PP&#160;</td><td class="fielddoc"><p>Point-to-point packet. </p>
-</td></tr>
-<tr><td class="fieldname"><a id="a8260104100d03dd752ed71c07e465cc1a58549f96c94a246031ef1843260a5e4b"></a>PKT_TYPE_NN&#160;</td><td class="fielddoc"><p>Nearest neighbour packet. </p>
-</td></tr>
-<tr><td class="fieldname"><a id="a8260104100d03dd752ed71c07e465cc1ae246a3b3ea5bda26af049f1db8cef35c"></a>PKT_TYPE_FR&#160;</td><td class="fielddoc"><p>Fixed route packet. </p>
-</td></tr>
-</table>
-
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00090">90</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
