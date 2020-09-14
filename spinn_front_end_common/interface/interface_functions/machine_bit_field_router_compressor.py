@@ -74,7 +74,7 @@ class MachineBitFieldRouterCompressor(object):
     :param ~pacman.model.placements.Placements placements:
         placements on machine
     :param ExecutableFinder executable_finder: where are binaries are located
-    :param bool read_algorithm_iobuf: flag saying if read iobuf
+    :param bool write_compressor_iobuf: flag saying if read iobuf
     :param bool produce_report:
     :param str default_report_folder:
     :param bool use_timer_cut_off:
@@ -152,7 +152,7 @@ class MachineBitFieldRouterCompressor(object):
     def __call__(
             self, routing_tables, transceiver, machine, app_id,
             provenance_file_path, machine_graph, placements, executable_finder,
-            read_algorithm_iobuf, produce_report, default_report_folder,
+            write_compressor_iobuf, produce_report, default_report_folder,
             target_length, routing_infos, time_to_try_for_each_iteration,
             use_timer_cut_off, machine_time_step, time_scale_factor,
             threshold_percentage, executable_targets,
@@ -167,7 +167,7 @@ class MachineBitFieldRouterCompressor(object):
         :param ~.MachineGraph machine_graph:
         :param ~.Placements placements:
         :param ~.ExecutableFinder executable_finder:
-        :param bool read_algorithm_iobuf:
+        :param bool write_compressor_iobuf:
         :param bool produce_report:
         :param str default_report_folder:
         :param bool use_timer_cut_off:
@@ -225,7 +225,7 @@ class MachineBitFieldRouterCompressor(object):
             compressor_executable_targets,
             routing_table_compressor_app_id, transceiver,
             provenance_file_path, executable_finder,
-            read_algorithm_iobuf,
+            write_compressor_iobuf,
             functools.partial(
                 self._check_bit_field_router_compressor_for_success,
                 host_chips=on_host_chips,
