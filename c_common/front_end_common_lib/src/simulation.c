@@ -26,13 +26,9 @@
 #include <debug.h>
 #include <spin1_api_params.h>
 #include <spin1_api.h>
+#include <wfi.h>
 
 // Import things from spin1_api that are not explicitly exposed //
-
-//! \brief Wait for interrupt.
-//! \details Will return to just after this point after an
-//!     interrupt has been raised.
-extern void spin1_wfi(void);
 
 //! \brief Indicate whether the SYNC signal has been received.
 //! \return 0 (false) if not received and 1 (true) if received.
@@ -146,7 +142,7 @@ static void send_ok_response(sdp_msg_t *msg) {
 //! \param unused1: unused
 static void synchronise_start(uint unused0, uint unused1) {
     while (resume_wait()) {
-        spin1_wfi();
+        wait_for_interrupt();
     }
     sark_cpu_state(CPU_STATE_RUN);
     stored_start_function();
@@ -164,8 +160,7 @@ static void synchronise_start(uint unused0, uint unused1) {
 //!     needs to be stopped.
 //! \param[in] mailbox: The mailbox containing the SDP packet received
 //! \param[in] port: The port on which the packet was received
-static void simulation_control_scp_callback(uint mailbox, uint port) {
-    use(port);
+static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
 

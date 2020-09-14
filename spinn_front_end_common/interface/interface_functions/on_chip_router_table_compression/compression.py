@@ -35,8 +35,8 @@ _SDRAM_TAG = 1
 
 def mundy_on_chip_router_compression(
         routing_tables, transceiver, machine, app_id,
-        system_provenance_folder, compress_only_when_needed=True,
-        compress_as_much_as_possible=False):
+        system_provenance_folder, write_compressor_iobuf,
+        compress_only_when_needed=True, compress_as_much_as_possible=False):
     """ Load routing tables and compress them using Mundy's algorithm.
 
     This uses an aplx built by Mundy which no longer compiles but still works
@@ -56,21 +56,22 @@ def mundy_on_chip_router_compression(
     :param bool compress_only_when_needed:
         If True, the compressor will only compress if the table doesn't fit in
         the current router space, otherwise it will just load the table
-    :return:
+    :param bool write_compressor_iobuf: Should iobuf be read and writen out
     """
     # pylint: disable=too-many-arguments
     binary_path = os.path.join(os.path.dirname(__file__), "rt_minimise.aplx")
     compression = Compression(
         app_id, binary_path, compress_as_much_as_possible,
         machine, system_provenance_folder, routing_tables, transceiver,
-        "Running Mundy routing table compression on chip")
+        "Running Mundy routing table compression on chip",
+        write_compressor_iobuf)
     compression._compress_only_when_needed = compress_only_when_needed
     compression.compress(register=0)
 
 
 def pair_compression(
         routing_tables, transceiver, executable_finder,
-        machine, app_id, provenance_file_path,
+        machine, app_id, provenance_file_path, write_compressor_iobuf,
         compress_as_much_as_possible=True):
     """ Load routing tables and compress then using the Pair Algorithm.
 
@@ -91,6 +92,7 @@ def pair_compression(
         the router space, otherwise it will try to reduce until it until it
         can't reduce it any more
     :param executable_finder: tracker of binaries.
+    :param bool write_compressor_iobuf: Should iobuf be read and writen out
      """
     # pylint: disable=too-many-arguments
     binary_path = executable_finder.get_executable_path(
@@ -98,13 +100,14 @@ def pair_compression(
     compression = Compression(
         app_id, binary_path, compress_as_much_as_possible,
         machine, provenance_file_path, routing_tables, transceiver,
-        "Running pair routing table compression on chip")
+        "Running pair routing table compression on chip",
+        write_compressor_iobuf)
     compression.compress(register=1)
 
 
 def unordered_compression(
         routing_tables, transceiver, executable_finder,
-        machine, app_id, provenance_file_path,
+        machine, app_id, provenance_file_path, write_compressor_iobuf,
         compress_as_much_as_possible=True):
     """ Load routing tables and compress then using the unordered Algorithm.
 
@@ -125,7 +128,8 @@ def unordered_compression(
         If False, the compressor will only reduce the table until it fits in
         the router space, otherwise it will try to reduce until it until it
         can't reduce it any more
-    :param executable_finder: tracker of binaries.
+    :param executable_finder: tracker of binaries
+    :param bool write_compressor_iobuf: Should iobuf be read and writen out
      """
     # pylint: disable=too-many-arguments
     binary_path = executable_finder.get_executable_path(
@@ -133,7 +137,8 @@ def unordered_compression(
     compression = Compression(
         app_id, binary_path, compress_as_much_as_possible,
         machine, provenance_file_path, routing_tables, transceiver,
-        "Running unordered routing table compression on chip")
+        "Running unordered routing table compression on chip",
+        write_compressor_iobuf)
     compression.compress(register=1)
 
 
@@ -158,32 +163,34 @@ class Compression(object):
     """
 
     __slots__ = [
-         "_app_id",
-         "_binary_path",
-         "_compress_as_much_as_possible",
-         "_compress_only_when_needed",
-         "_compressor_app_id",
-         "_machine",
-         "_progresses_text",
-         "_provenance_file_path",
-         "_transceiver",
-         "_routing_tables"]
+        "_app_id",
+        "_binary_path",
+        "_compress_as_much_as_possible",
+        "_compress_only_when_needed",
+        "_compressor_app_id",
+        "_machine",
+        "_progresses_text",
+        "_provenance_file_path",
+        "_transceiver",
+        "_routing_tables",
+        "_write_compressor_iobuf",
+        "__failures"]
 
     def __init__(
             self, app_id, binary_path, compress_as_much_as_possible,
             machine, provenance_file_path, routing_tables, transceiver,
-            progresses_text):
+            progresses_text, write_compressor_iobuf):
         """
         :param int app_id: the application ID used by the main application
         :param str binary_path: What
         :param bool compress_as_much_as_possible:
-        :param bool compress_only_when_needed:
         :param ~spinn_machine.Machine machine:
         :param str provenance_file_path:
         :param ~pacman.model.routing_tables.MulticastRoutingTables \
                 routing_tables:
         :param ~spinnman.Transceiver transceiver:
         :param str progresses_text: Text to use in progress bar
+        :param bool write_compressor_iobuf: Should iobuf be read and writen out
         """
         self._app_id = app_id
         self._binary_path = binary_path
@@ -196,6 +203,8 @@ class Compression(object):
         self._routing_tables = routing_tables
         self._progresses_text = progresses_text
         self._compressor_app_id = None
+        self._write_compressor_iobuf = write_compressor_iobuf
+        self.__failures = []
 
     def compress(self, register):
         """ Apply the on-machine compression algorithm.
@@ -209,6 +218,10 @@ class Compression(object):
             len(self._routing_tables.routing_tables) * 2,
             self._progresses_text)
 
+        if len(self._routing_tables.routing_tables) == 0:
+            progress_bar.end()
+            return
+
         self._compressor_app_id = self._transceiver.app_id_tracker.get_new_id()
 
         # figure size of SDRAM needed for each chip for storing the routing
@@ -220,20 +233,22 @@ class Compression(object):
         executable_targets = self._load_executables()
 
         executable_finder = ExecutableFinder(binary_search_paths=[])
-        read_algorithm_iobuf = True
         run_system_application(
             executable_targets, self._compressor_app_id, self._transceiver,
             self._provenance_file_path, executable_finder,
-            read_algorithm_iobuf,
+            self._write_compressor_iobuf,
             functools.partial(
                 self._check_for_success,
                 register=register),
             [CPUState.FINISHED], False, "compressor_on_{}_{}_{}.txt",
             [self._binary_path], progress_bar)
+        if self.__failures:
+            raise SpinnFrontEndException(
+                "The router compressor failed on {}".format(self.__failures))
 
     def _load_routing_table(self, table):
         """
-        :param ~.MulticastRoutingTables routing_table:
+        :param ~.MulticastRoutingTables table:
             the pacman router table instance
         """
         data = self._build_data(table)
@@ -268,9 +283,8 @@ class Compression(object):
                     raise Exception("Incorrect register")
                 # The result is 0 if success, otherwise failure
                 if result != 0:
-                    raise SpinnFrontEndException(
-                        "The router compressor on {}, {} failed to complete"
-                        .format(x, y))
+                    self.__failures.append((x, y))
+        return len(self.__failures) == 0
 
     def _load_executables(self):
         """ Loads the router compressor onto the chips.
