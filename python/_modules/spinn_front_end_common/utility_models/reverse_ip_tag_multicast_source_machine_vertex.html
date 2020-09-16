@@ -744,11 +744,14 @@
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_receive_sdp_port</span><span class="p">)</span>
 
         <span class="c1"># write timer offset in microseconds</span>
-        <span class="n">max_offset</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">machine_time_step</span> <span class="o">*</span> <span class="n">time_scale_factor</span><span class="p">)</span> <span class="o">//</span> <span class="n">_MAX_OFFSET_DENOMINATOR</span>
+        <span class="n">max_offset</span> <span class="o">=</span> <span class="p">((</span>
+            <span class="n">machine_time_step</span> <span class="o">*</span> <span class="n">time_scale_factor</span><span class="p">)</span> <span class="o">//</span> <span class="p">(</span>
+            <span class="n">_MAX_OFFSET_DENOMINATOR</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span>
-            <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">max_offset</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_vertices</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_data_specs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_n_data_specs</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">max_offset</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_vertices</span><span class="p">))</span> <span class="o">*</span>
+             <span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="o">.</span><span class="n">_n_data_specs</span><span class="p">)</span> <span class="o">+</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">max_offset</span><span class="p">)))</span>
+        <span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="o">.</span><span class="n">_n_data_specs</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="nd">@inject_items</span><span class="p">({</span>
         <span class="s2">&quot;machine_time_step&quot;</span><span class="p">:</span> <span class="s2">&quot;MachineTimeStep&quot;</span><span class="p">,</span>

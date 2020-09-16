@@ -329,12 +329,25 @@
         <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;External_Multicast_Packets&quot;</span><span class="p">),</span>
             <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_external_multicast_packets</span><span class="p">)))</span>
+
+        <span class="c1"># simplify the if by making components of it outside.</span>
+        <span class="n">has_dropped</span> <span class="o">=</span> <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">missing_stuff</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">has_reinjection</span> <span class="o">=</span> <span class="n">reinjection_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">has_reinjection</span><span class="p">:</span>
+            <span class="n">missing_stuff</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span><span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_dropped_packets</span> <span class="o">+</span>
+                 <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_missed_dropped_packets</span> <span class="o">+</span>
+                 <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_dropped_packet_overflows</span> <span class="o">+</span>
+                 <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_reinjected_packets</span> <span class="o">+</span>
+                 <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_link_dumps</span> <span class="o">+</span>
+                 <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_processor_dumps</span><span class="p">)</span> <span class="o">&lt;</span>
+                <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span><span class="p">)</span>
         <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Dropped_Multicast_Packets&quot;</span><span class="p">),</span>
             <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span><span class="p">),</span>
-            <span class="n">report</span><span class="o">=</span><span class="p">(</span>
-                <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span>
-                <span class="n">reinjection_status</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">report</span><span class="o">=</span><span class="p">((</span><span class="n">has_dropped</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">has_reinjection</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+                <span class="n">has_dropped</span> <span class="ow">and</span> <span class="n">has_reinjection</span> <span class="ow">and</span> <span class="n">missing_stuff</span><span class="p">)),</span>
             <span class="n">message</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;The router on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> has dropped </span><span class="si">{}</span><span class="s2"> multicast route packets. &quot;</span>
                 <span class="s2">&quot;Try increasing the machine_time_step and/or the time scale &quot;</span>

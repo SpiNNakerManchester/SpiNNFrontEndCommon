@@ -1618,6 +1618,9 @@
 
         <span class="n">algorithms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
+        <span class="c1"># process for TDMA required cores</span>
+        <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;LocalTDMABuilder&quot;</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_params</span><span class="p">:</span>
             <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="s2">&quot;InsertLivePacketGatherersToGraphs&quot;</span><span class="p">)</span>

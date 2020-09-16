@@ -1196,6 +1196,109 @@ vertex_to_chip_map</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="spinn_front_end_common.interface.interface_functions.LoadFixedRoutes">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.interface_functions.</code><code class="descname">LoadFixedRoutes</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/load_fixed_routes.html#LoadFixedRoutes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.LoadFixedRoutes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Load a set of fixed routes onto a SpiNNaker machine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fixed_routes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em><em>,</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.FixedRouteEntry" title="(in SpiNNMachine v)"><em>FixedRouteEntry</em></a><em>)</em><em></em>) &#8211; </li>
+<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; </li>
+<li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="spinn_front_end_common.interface.interface_functions.LocalTDMABuilder">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.interface_functions.</code><code class="descname">LocalTDMABuilder</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/local_tdma_builder.html#LocalTDMABuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.LocalTDMABuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Builds a localised TDMA which allows a number of machine vertices
+of the same application vertex to fire at the same time. Ensures that
+other application vertices are not firing at the same time. Verifies if
+the total time required fits into the time scale factor and machine time
+step. Below are text diagrams to show how this works in principle.</p>
+<p><em>Figure 1:</em> bits needed to figure out time between spikes.
+Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#        0     1       2      3       4      5</span>
+<span class="c1"># T2-[   X                    X</span>
+<span class="c1">#    |         X                      X</span>
+<span class="c1">#    |                 X                     X</span>
+<span class="c1">#    [  X                     X</span>
+<span class="c1">#       |------| T</span>
+<span class="c1">#              X                      X</span>
+<span class="c1">#                      X &lt;- T3</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">time_between_cores</span>
+<span class="n">T2</span> <span class="o">=</span> <span class="n">time_between_phases</span>
+<span class="n">T3</span> <span class="o">=</span> <span class="n">end</span> <span class="n">of</span> <span class="n">TDMA</span> <span class="p">(</span><span class="n">equiv</span> <span class="n">of</span> <span class="p">((</span><span class="n">n_phases</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">T2</span><span class="p">))</span>
+<span class="n">cutoff</span> <span class="o">=</span> <span class="mf">2.</span> <span class="n">n_phases</span> <span class="o">=</span> <span class="mi">3</span> <span class="n">max_atoms</span> <span class="o">=</span> <span class="mi">2</span>
+</pre></div>
+</div>
+<p>Constants etc just to get into head:</p>
+<ul class="simple">
+<li>clock cycles = 200 Mhz = 200 = sv-&gt;cpu_clk</li>
+<li>1ms = 200000 for timer 1. = clock cycles</li>
+<li>200 per microsecond</li>
+<li>machine time step = microseconds already.</li>
+<li><cite>__time_between_cores</cite> = microseconds.</li>
+</ul>
+<p><em>Figure 2:</em> initial offset (used to try to interleave packets from other
+app verts into the TDMA without extending the overall time, and
+trying to stop multiple packets in flight at same time).</p>
+<p><em>Figure 3:</em> bits needed to figure out time between spikes.
+Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#        0  .5   1   .5    2   .5   3    .5   4   .5   5  .5</span>
+<span class="c1"># T2-[   X   Y                      X     Y</span>
+<span class="c1">#    |           X   Y                        X    Y</span>
+<span class="c1">#    |                     X    Y                      X   Y</span>
+<span class="c1">#    [  X    Y                      X     Y</span>
+<span class="c1">#       |-------| T</span>
+<span class="c1">#               X    Y                        X    Y</span>
+<span class="c1">#               |----| T4</span>
+<span class="c1">#                   T3 -&gt;  X    Y</span>
+
+<span class="n">T4</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">spreader</span> <span class="n">between</span> <span class="n">populations</span><span class="o">.</span>
+<span class="n">X</span> <span class="ow">is</span> <span class="n">pop0</span> <span class="n">firing</span><span class="p">,</span>
+<span class="n">Y</span> <span class="ow">is</span> <span class="n">pop1</span> <span class="n">firing</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="spinn_front_end_common.interface.interface_functions.LocalTDMABuilder.FRACTION_OF_TIME_FOR_SPIKE_SENDING">
+<code class="descname">FRACTION_OF_TIME_FOR_SPIKE_SENDING</code><em class="property"> = 0.8</em><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.LocalTDMABuilder.FRACTION_OF_TIME_FOR_SPIKE_SENDING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.interface.interface_functions.LocalTDMABuilder.FRACTION_OF_TIME_STEP_BEFORE_SPIKE_SENDING">
+<code class="descname">FRACTION_OF_TIME_STEP_BEFORE_SPIKE_SENDING</code><em class="property"> = 0.1</em><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.LocalTDMABuilder.FRACTION_OF_TIME_STEP_BEFORE_SPIKE_SENDING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.interface_functions.LocalTDMABuilder.config_values">
+<code class="descname">config_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/local_tdma_builder.html#LocalTDMABuilder.config_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.LocalTDMABuilder.config_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>read the config for the right params. Check the 2 fractions are             together less than 1. else broken</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(app_machine_quantity, time_between_cores,
+fraction_of_sending, fraction_of_waiting)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="spinn_front_end_common.interface.interface_functions.LocateExecutableStartType">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.interface_functions.</code><code class="descname">LocateExecutableStartType</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/locate_executable_start_type.html#LocateExecutableStartType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.LocateExecutableStartType" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
@@ -1296,26 +1399,6 @@ or <a class="reference external" href="https://docs.python.org/3.6/library/stdty
 </table>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="class">
-<dt id="spinn_front_end_common.interface.interface_functions.LoadFixedRoutes">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.interface_functions.</code><code class="descname">LoadFixedRoutes</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/load_fixed_routes.html#LoadFixedRoutes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.LoadFixedRoutes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
-<p>Load a set of fixed routes onto a SpiNNaker machine.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fixed_routes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em><em>,</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.FixedRouteEntry" title="(in SpiNNMachine v)"><em>FixedRouteEntry</em></a><em>)</em><em></em>) &#8211; </li>
-<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; </li>
-<li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 <dl class="class">
@@ -1609,6 +1692,12 @@ available to steal/use.</li>
 </dd></dl>
 
 <dl class="class">
+<dt id="spinn_front_end_common.interface.interface_functions.ReadRoutingTablesFromMachine">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.interface_functions.</code><code class="descname">ReadRoutingTablesFromMachine</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/read_routing_tables_from_machine.html#ReadRoutingTablesFromMachine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.ReadRoutingTablesFromMachine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
 <dt id="spinn_front_end_common.interface.interface_functions.RouterProvenanceGatherer">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.interface_functions.</code><code class="descname">RouterProvenanceGatherer</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/router_provenance_gatherer.html#RouterProvenanceGatherer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.RouterProvenanceGatherer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
@@ -1859,12 +1948,6 @@ between spike transmissions</p>
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="class">
-<dt id="spinn_front_end_common.interface.interface_functions.ReadRoutingTablesFromMachine">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.interface_functions.</code><code class="descname">ReadRoutingTablesFromMachine</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/read_routing_tables_from_machine.html#ReadRoutingTablesFromMachine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.ReadRoutingTablesFromMachine" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 </dd></dl>
 
 </div>

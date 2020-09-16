@@ -91,6 +91,17 @@
 <span class="n">_ONE_WORD</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;I&quot;</span><span class="p">)</span>
 
 
+<span class="k">def</span> <span class="nf">add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            :param iterable(str) names:</span>
+<span class="sd">            :param str name:</span>
+<span class="sd">            :rtype: list(str)</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+    <span class="n">new_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+    <span class="n">new_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_names</span>
+
+
 <span class="nd">@add_metaclass</span><span class="p">(</span><span class="n">AbstractBase</span><span class="p">)</span>
 <div class="viewcode-block" id="ProvidesProvenanceDataFromMachineImpl"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl">[docs]</a><span class="k">class</span> <span class="nc">ProvidesProvenanceDataFromMachineImpl</span><span class="p">(</span>
         <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">):</span>
@@ -124,6 +135,44 @@
         <span class="s2">&quot;Times_the_transmission_of_spikes_overran&quot;</span>
     <span class="n">_TIMES_CALLBACK_QUEUE_OVERLOADED</span> <span class="o">=</span> \
         <span class="s2">&quot;Times_the_callback_queue_was_overloaded&quot;</span>
+
+    <span class="n">_TIMES_TRANSMISSION_SPIKES_OVERRAN_MESSAGE</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;The transmission buffer for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> was blocked &quot;</span>
+        <span class="s2">&quot;on </span><span class="si">{}</span><span class="s2"> occasions. This is often a sign that the system is &quot;</span>
+        <span class="s2">&quot;experiencing back pressure from the communication fabric. &quot;</span>
+        <span class="s2">&quot;Please either: &quot;</span>
+        <span class="s2">&quot;1. spread the load over more cores, &quot;</span>
+        <span class="s2">&quot;2. reduce your peak transmission load,&quot;</span>
+        <span class="s2">&quot;3. adjust your mapping algorithm.&quot;</span><span class="p">)</span>
+
+    <span class="n">_TIMES_CALLBACK_QUEUE_OVERLOADED_MESSAGE</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;The callback queue for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> overloaded on </span><span class="si">{}</span><span class="s2"> &quot;</span>
+        <span class="s2">&quot;occasions. This is often a sign that the system is running &quot;</span>
+        <span class="s2">&quot;too quickly for the number of neurons per core.  Please &quot;</span>
+        <span class="s2">&quot;increase the machine time step or time_scale_factor or &quot;</span>
+        <span class="s2">&quot;decrease the number of neurons per core.&quot;</span><span class="p">)</span>
+
+    <span class="n">_TIMES_DMA_QUEUE_OVERLOADED_MESSAGE</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;The DMA queue for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> overloaded on </span><span class="si">{}</span><span class="s2"> &quot;</span>
+        <span class="s2">&quot;occasions. This is often a sign that the system is running &quot;</span>
+        <span class="s2">&quot;too quickly for the number of neurons per core.  Please &quot;</span>
+        <span class="s2">&quot;increase the machine time step or time_scale_factor or &quot;</span>
+        <span class="s2">&quot;decrease the number of neurons per core.&quot;</span><span class="p">)</span>
+
+    <span class="n">_TIMER_TICK_OVERRUN_MESSAGE</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;A Timer tick callback was still executing when the next &quot;</span>
+        <span class="s2">&quot;timer tick callback was fired off for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> &quot;</span>
+        <span class="s2">&quot;times. This is a sign of the system being overloaded and &quot;</span>
+        <span class="s2">&quot;therefore the results are likely incorrect.  Please increase &quot;</span>
+        <span class="s2">&quot;the machine time step or time_scale_factor or decrease the &quot;</span>
+        <span class="s2">&quot;number of neurons per core&quot;</span><span class="p">)</span>
+
+    <span class="n">_MAX_TIMER_TICK_OVERRUN_MESSAGE</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;The timer for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> fell behind by up to </span><span class="si">{}</span><span class="s2"> &quot;</span>
+        <span class="s2">&quot;ticks. This is a sign of the system being overloaded and &quot;</span>
+        <span class="s2">&quot;therefore the results are likely incorrect. Please increase &quot;</span>
+        <span class="s2">&quot;the machine time step or time_scale_factor or decrease the &quot;</span>
+        <span class="s2">&quot;number of neurons per core&quot;</span><span class="p">)</span>
 
     <span class="nd">@abstractproperty</span>
     <span class="k">def</span> <span class="nf">_provenance_region_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -211,9 +260,7 @@
 <span class="sd">        :param str name:</span>
 <span class="sd">        :rtype: list(str)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">new_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
-        <span class="n">new_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">new_names</span>
+        <span class="k">return</span> <span class="n">add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_add_names</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">extra_names</span><span class="p">):</span>
@@ -250,64 +297,36 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_TRANSMISSION_SPIKES_OVERRAN</span><span class="p">),</span>
             <span class="n">transmission_event_overflow</span><span class="p">,</span>
             <span class="n">report</span><span class="o">=</span><span class="n">transmission_event_overflow</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;The transmission buffer for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> was blocked &quot;</span>
-                <span class="s2">&quot;on </span><span class="si">{}</span><span class="s2"> occasions. This is often a sign that the system is &quot;</span>
-                <span class="s2">&quot;experiencing back pressure from the communication fabric. &quot;</span>
-                <span class="s2">&quot;Please either: &quot;</span>
-                <span class="s2">&quot;1. spread the load over more cores, &quot;</span>
-                <span class="s2">&quot;2. reduce your peak transmission load,&quot;</span>
-                <span class="s2">&quot;3. adjust your mapping algorithm.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">transmission_event_overflow</span><span class="p">))))</span>
+            <span class="n">message</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_TRANSMISSION_SPIKES_OVERRAN_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">transmission_event_overflow</span><span class="p">)))</span>
 
         <span class="n">data_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_CALLBACK_QUEUE_OVERLOADED</span><span class="p">),</span>
             <span class="n">callback_queue_overloaded</span><span class="p">,</span>
             <span class="n">report</span><span class="o">=</span><span class="n">callback_queue_overloaded</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;The callback queue for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> overloaded on </span><span class="si">{}</span><span class="s2"> &quot;</span>
-                <span class="s2">&quot;occasions. This is often a sign that the system is running &quot;</span>
-                <span class="s2">&quot;too quickly for the number of neurons per core.  Please &quot;</span>
-                <span class="s2">&quot;increase the machine time step or time_scale_factor or &quot;</span>
-                <span class="s2">&quot;decrease the number of neurons per core.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">callback_queue_overloaded</span><span class="p">))))</span>
+            <span class="n">message</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_CALLBACK_QUEUE_OVERLOADED_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">callback_queue_overloaded</span><span class="p">)))</span>
 
         <span class="n">data_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_DMA_QUEUE_OVERLOADED</span><span class="p">),</span>
             <span class="n">dma_queue_overloaded</span><span class="p">,</span>
             <span class="n">report</span><span class="o">=</span><span class="n">dma_queue_overloaded</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;The DMA queue for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> overloaded on </span><span class="si">{}</span><span class="s2"> &quot;</span>
-                <span class="s2">&quot;occasions. This is often a sign that the system is running &quot;</span>
-                <span class="s2">&quot;too quickly for the number of neurons per core.  Please &quot;</span>
-                <span class="s2">&quot;increase the machine time step or time_scale_factor or &quot;</span>
-                <span class="s2">&quot;decrease the number of neurons per core.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">dma_queue_overloaded</span><span class="p">))))</span>
+            <span class="n">message</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_DMA_QUEUE_OVERLOADED_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">dma_queue_overloaded</span><span class="p">)))</span>
 
         <span class="n">data_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMER_TICK_OVERRUN</span><span class="p">),</span>
             <span class="n">number_of_times_timer_tic_over_ran</span><span class="p">,</span>
             <span class="n">report</span><span class="o">=</span><span class="n">number_of_times_timer_tic_over_ran</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;A Timer tick callback was still executing when the next &quot;</span>
-                <span class="s2">&quot;timer tick callback was fired off for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> &quot;</span>
-                <span class="s2">&quot;times. This is a sign of the system being overloaded and &quot;</span>
-                <span class="s2">&quot;therefore the results are likely incorrect.  Please increase &quot;</span>
-                <span class="s2">&quot;the machine time step or time_scale_factor or decrease the &quot;</span>
-                <span class="s2">&quot;number of neurons per core&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">number_of_times_timer_tic_over_ran</span><span class="p">))))</span>
+            <span class="n">message</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_TIMER_TICK_OVERRUN_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">number_of_times_timer_tic_over_ran</span><span class="p">)))</span>
 
         <span class="n">data_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MAX_TIMER_TICK_OVERRUN</span><span class="p">),</span>
             <span class="n">max_number_of_times_timer_tic_over_ran</span><span class="p">,</span>
-            <span class="n">report</span><span class="o">=</span><span class="n">max_number_of_times_timer_tic_over_ran</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;The timer for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> fell behind by up to </span><span class="si">{}</span><span class="s2"> &quot;</span>
-                <span class="s2">&quot;ticks. This is a sign of the system being overloaded and &quot;</span>
-                <span class="s2">&quot;therefore the results are likely incorrect. Please increase &quot;</span>
-                <span class="s2">&quot;the machine time step or time_scale_factor or decrease the &quot;</span>
-                <span class="s2">&quot;number of neurons per core&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">max_number_of_times_timer_tic_over_ran</span><span class="p">))))</span>
+            <span class="n">report</span><span class="o">=</span><span class="n">max_number_of_times_timer_tic_over_ran</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_MAX_TIMER_TICK_OVERRUN_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">max_number_of_times_timer_tic_over_ran</span><span class="p">)))</span>
 
         <span class="k">return</span> <span class="n">data_items</span>
 

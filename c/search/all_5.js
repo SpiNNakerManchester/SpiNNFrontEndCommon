@@ -80,6 +80,7 @@ var searchData=
   ['exit_5fstates_5ffor_5fuser_5fone_524',['exit_states_for_user_one',['../malloc__extras_8h.html#a4cbf58bc77fc32df9066c3139c128572',1,'malloc_extras.h']]],
   ['exit_5fswerr_525',['EXIT_SWERR',['../malloc__extras_8h.html#a4cbf58bc77fc32df9066c3139c128572adf50834e361027bbbe08aad6ebd36d19',1,'malloc_extras.h']]],
   ['exited_5fcleanly_526',['EXITED_CLEANLY',['../malloc__extras_8h.html#a4cbf58bc77fc32df9066c3139c128572a012df54a47467268a8bb9acb9d9a2473',1,'malloc_extras.h']]],
-  ['extra_5fmonitor_5fsupport_2ec_527',['extra_monitor_support.c',['../extra__monitor__support_8c.html',1,'']]],
-  ['extract_5ftime_5ffrom_5feieio_5fmsg_528',['extract_time_from_eieio_msg',['../reverse__iptag__multicast__source_8c.html#af834204da94598645c321198c665b8d1',1,'reverse_iptag_multicast_source.c']]]
+  ['expected_5ftime_527',['expected_time',['../tdma__processing_8c.html#a8a1c8ad4577d74c25e7760e6d653eed5',1,'tdma_processing.c']]],
+  ['extra_5fmonitor_5fsupport_2ec_528',['extra_monitor_support.c',['../extra__monitor__support_8c.html',1,'']]],
+  ['extract_5ftime_5ffrom_5feieio_5fmsg_529',['extract_time_from_eieio_msg',['../reverse__iptag__multicast__source_8c.html#af834204da94598645c321198c665b8d1',1,'reverse_iptag_multicast_source.c']]]
 ];
