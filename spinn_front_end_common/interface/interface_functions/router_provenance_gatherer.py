@@ -265,12 +265,25 @@ class RouterProvenanceGatherer(object):
         items.append(ProvenanceDataItem(
             self.__add_name(names, "External_Multicast_Packets"),
             str(router_diagnostic.n_external_multicast_packets)))
+
+        # simplify the if by making components of it outside.
+        has_dropped = router_diagnostic.n_dropped_multicast_packets > 0
+        missing_stuff = None
+        has_reinjection = reinjection_status is not None
+        if has_reinjection:
+            missing_stuff = (
+                (reinjection_status.n_dropped_packets +
+                 reinjection_status.n_missed_dropped_packets +
+                 reinjection_status.n_dropped_packet_overflows +
+                 reinjection_status.n_reinjected_packets +
+                 reinjection_status.n_link_dumps +
+                 reinjection_status.n_processor_dumps) <
+                router_diagnostic.n_dropped_multicast_packets)
         items.append(ProvenanceDataItem(
             self.__add_name(names, "Dropped_Multicast_Packets"),
             str(router_diagnostic.n_dropped_multicast_packets),
-            report=(
-                router_diagnostic.n_dropped_multicast_packets > 0 and
-                reinjection_status is None),
+            report=((has_dropped and not has_reinjection) or (
+                has_dropped and has_reinjection and missing_stuff)),
             message=(
                 "The router on {}, {} has dropped {} multicast route packets. "
                 "Try increasing the machine_time_step and/or the time scale "
