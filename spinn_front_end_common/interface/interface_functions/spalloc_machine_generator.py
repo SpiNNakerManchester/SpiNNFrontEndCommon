@@ -17,6 +17,7 @@ import logging
 from spinn_utilities.log import FormatAdapter
 from .machine_generator import MachineGenerator
 from .spalloc_allocator import SpallocAllocator
+from spinn_machine.exceptions import SpinnMachineCorruptionException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -34,6 +35,9 @@ class SpallocMachineGenerator(object):
         the cores that are down which SARK thinks are alive
     :param set(tuple(int,int,int)) downed_links:
         the links that are down which SARK thinks are alive
+    :param iter(str) sick_boards: A hopefully empty collection of ipaddress.
+        If a machine exception is found on one of these board a new spalloc
+        job will be requested.
     :param n_chips: The number of chips required.
         IGNORED if n_boards is not None
     :type n_chips: int or None
@@ -70,9 +74,12 @@ class SpallocMachineGenerator(object):
 
     __slots__ = []
 
+    MAX_RESTART_SIZE_IN_BOARDS = 24
+
+
     def __call__(
             self, spalloc_server, spalloc_user, downed_chips, downed_cores,
-            downed_links, n_chips=None, n_boards=None,
+            downed_links, sick_boards, n_chips=None, n_boards=None,
             spalloc_port=None, spalloc_machine=None, max_sdram_size=None,
             repair_machine=False, ignore_bad_ethernets=True,
             default_report_directory=None):
@@ -82,6 +89,7 @@ class SpallocMachineGenerator(object):
         :param set(tuple(int,int)) downed_chips:
         :param set(tuple(int,int,int)) downed_cores:
         :param set(tuple(int,int,int)) downed_links:
+        :param iter(str) sick_boards:
         :param int n_chips:
         :param int n_boards:
         :param int spalloc_port:
@@ -90,20 +98,51 @@ class SpallocMachineGenerator(object):
             MachineAllocationController)
         """
 
-        spalloc_allocator = SpallocAllocator()
-        results = spalloc_allocator(
-            spalloc_server, spalloc_user, n_chips, n_boards, spalloc_port,
-            spalloc_machine)
-        hostname, board_version, bmp_details, reset_machine_on_start_up, \
-        auto_detect_bmp, scamp_connection_data, boot_port_num, \
-        machine_allocation_controller = results
+        machine_details = None
+        previous_controller = None
 
+        spalloc_allocator = SpallocAllocator()
         machine_generator = MachineGenerator()
-        machine_details, txrx = machine_generator(
-            hostname, bmp_details, downed_chips, downed_cores,
-            downed_links, board_version, auto_detect_bmp,
-            scamp_connection_data, boot_port_num, reset_machine_on_start_up,
-            max_sdram_size, repair_machine, ignore_bad_ethernets,
-            default_report_directory)
+
+        while not machine_details:
+            results = spalloc_allocator(
+                spalloc_server, spalloc_user, n_chips, n_boards, spalloc_port,
+                spalloc_machine)
+            hostname, board_version, bmp_details, reset_machine_on_start_up, \
+            auto_detect_bmp, scamp_connection_data, boot_port_num, \
+            machine_allocation_controller = results
+
+            # Now we have a new job release the older one
+            if previous_controller:
+                previous_controller.close()
+
+            try:
+                machine_details, txrx = machine_generator(
+                    hostname, bmp_details, downed_chips, downed_cores,
+                    downed_links, board_version, auto_detect_bmp,
+                    scamp_connection_data, boot_port_num,
+                    reset_machine_on_start_up, max_sdram_size, repair_machine,
+                    ignore_bad_ethernets, default_report_directory)
+            except SpinnMachineCorruptionException as ex:
+                if n_boards and n_boards > self.MAX_RESTART_SIZE_IN_BOARDS:
+                    raise
+                if n_chips and n_chips > self.MAX_RESTART_SIZE_IN_BOARDS * 48:
+                    raise
+                machine_generator = MachineGenerator()
+                machine_details, txrx = machine_generator(
+                    hostname, bmp_details, downed_chips, downed_cores,
+                    downed_links, board_version, auto_detect_bmp,
+                    scamp_connection_data, boot_port_num,
+                    reset_machine_on_start_up,
+                    max_sdram_size, repair_machine, ignore_bad_ethernets,
+                    default_report_directory)
+                known = False
+                for  sick_ip in sick_boards:
+                    if sick_ip in ex.ipaddress:
+                        # TODO let splaooc know the exception!
+                        previous_controller = machine_allocation_controller
+                        known = True
+                if not known:
+                    raise
 
         return hostname, machine_allocation_controller, machine_details, txrx

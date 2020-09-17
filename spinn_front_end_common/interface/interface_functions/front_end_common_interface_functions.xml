@@ -2042,6 +2042,10 @@
                 <param_type>DownedLinksDetails</param_type>
             </parameter>
             <parameter>
+                <param_name>sick_boards</param_name>
+                <param_type>SickBoards</param_type>
+            </parameter>
+            <parameter>
                 <param_name>n_chips</param_name>
                 <param_type>NChipsRequired</param_type>
             </parameter>
@@ -2080,6 +2084,7 @@
             <param_name>downed_chips</param_name>
             <param_name>downed_cores</param_name>
             <param_name>downed_links</param_name>
+            <param_name>sick_boards</param_name>
             <one_of>
                 <param_name>n_chips</param_name>
                 <param_name>n_boards</param_name>
