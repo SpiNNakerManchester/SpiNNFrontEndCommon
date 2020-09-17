@@ -1291,11 +1291,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
 
         if self._spalloc_server is not None:
-            algorithms.append("SpallocAllocator")
-        elif self._remote_spinnaker_url is not None:
-            algorithms.append("HBPAllocator")
-
-        algorithms.append("MachineGenerator")
+            algorithms.append("SpallocMachineGenerator")
+        else:
+            algorithms.append("MachineGenerator")
+            if self._remote_spinnaker_url is not None:
+                algorithms.append("HBPAllocator")
 
         outputs.append("MemoryMachine")
         outputs.append("IPAddress")

@@ -75,6 +75,7 @@ from .routing_setup import RoutingSetup
 from .routing_table_loader import RoutingTableLoader
 from .spalloc_allocator import SpallocAllocator
 from .spalloc_max_machine_generator import SpallocMaxMachineGenerator
+from .spalloc_machine_generator import SpallocMachineGenerator
 from .tags_loader import TagsLoader
 from .tdma_agenda_builder import TDMAAgendaBuilder
 from .virtual_machine_generator import VirtualMachineGenerator
@@ -110,6 +111,6 @@ __all__ = [
     "ProcessPartitionConstraints", "ProfileDataGatherer",
     "ProvenanceJSONWriter", "ProvenanceSQLWriter", "ProvenanceXMLWriter",
     "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "RoutingSetup",
-    "RoutingTableLoader", "SpallocAllocator",
+    "RoutingTableLoader", "SpallocAllocator", "SpallocMachineGenerator",
     "SpallocMaxMachineGenerator", "TagsLoader",
     "TDMAAgendaBuilder", "VirtualMachineGenerator"]
