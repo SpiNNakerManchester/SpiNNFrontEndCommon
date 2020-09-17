@@ -15,12 +15,12 @@
 from six import add_metaclass
 
 from pacman.exceptions import PacmanConfigurationException
-from spinn_front_end_common.interface.partitioner_splitters.abstract_splitters.abstract_splitter_common import (
+from pacman.model.partitioner_interfaces.abstract_splitter_common import (
     AbstractSplitterCommon)
 from pacman.model.partitioner_interfaces.legacy_partitioner_api import (
     LegacyPartitionerAPI)
-from spinn_front_end_common.interface.partitioner_splitters.abstract_splitters.abstract_splitter_slice import (
-    AbstractSplitterSlice)
+from spinn_front_end_common.interface.partitioner_splitters.\
+    abstract_splitters.abstract_splitter_slice import AbstractSplitterSlice
 from spinn_utilities.abstract_base import AbstractBase
 from spinn_utilities.overrides import overrides
 

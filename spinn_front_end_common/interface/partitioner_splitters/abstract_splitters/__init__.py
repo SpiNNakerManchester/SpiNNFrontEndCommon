@@ -13,10 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .abstract_splitter_common import AbstractSplitterCommon
 from .abstract_splitter_legacy import AbstractSplitterLegacy
 from .abstract_splitter_slice import AbstractSplitterSlice
 
-__all__ = [
-    "AbstractSplitterCommon", "AbstractSplitterLegacy",
-    "AbstractSplitterSlice"]
+__all__ = ["AbstractSplitterLegacy", "AbstractSplitterSlice"]

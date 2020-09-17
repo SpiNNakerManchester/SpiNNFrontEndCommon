@@ -12,6 +12,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from pacman.model.graphs.common import Slice
+from pacman.utilities.algorithm_utilities.partition_algorithm_utilities import \
+    get_remaining_constraints
 from spinn_front_end_common.interface.partitioner_splitters.\
     abstract_splitters.abstract_splitter_legacy import AbstractSplitterLegacy
 from spinn_utilities.overrides import overrides
@@ -37,7 +40,28 @@ class SplitterSliceLegacy(AbstractSplitterLegacy):
             splitter_name = self.SPLITTER_NAME
         AbstractSplitterLegacy.__init__(self, splitter_name)
 
-    def __split(self, resource_tracker, machine_graph):
+    def __split(self, resource_tracker):
+        slice_resource_map = dict()
+        n_atoms_placed = 0
+        n_atoms = self._governed_app_vertex.n_atoms
+        while n_atoms_placed < n_atoms:
+            lo_atom = n_atoms_placed
+            hi_atom = lo_atom + self._max_atoms_per_core - 1
+            if hi_atom >= n_atoms:
+                hi_atom = n_atoms - 1
+
+            # Scale down the number of atoms to fit the available resources
+            used_placements, hi_atom = self._scale_down_resources(
+                lo_atom, hi_atom, vertices, resource_tracker,
+                fixed_n_atoms)
+
+            # Update where we are
+            n_atoms_placed = hi_atom + 1
+
+            # Create the vertices
+            for (_, used_resources) in used_placements:
+                slice_resource_map[Slice(lo_atom, hi_atom)] = used_resources
+
         """ TODO NEEDS FILLING IN. STEAL FROM PARTITION AND PLACE"""
 
     @overrides(AbstractSplitterLegacy.create_machine_vertices)
