@@ -1128,6 +1128,7 @@ static bool read_parameters(struct config *config) {
     log_info("space_before_read_request: %d", space_before_data_request);
     log_info("return_tag_id: %d", return_tag_id);
     log_info("return_tag_dest: 0x%08x", return_tag_dest);
+    log_info("tx_offset: %d", tx_offset);
 
     return true;
 }
