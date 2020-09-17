@@ -29,13 +29,13 @@
 typedef enum exit_states_for_user_one {
     //! Everything is fine
     EXITED_CLEANLY = 0,
-    //! We went wrong
+    //! We went wrong but we dont want to RTE
     EXIT_FAIL = 1,
-    //! We ran out of space
+    //! We ran out of space and we want to RTE
     EXIT_MALLOC = 2,
-    //! We hit an internal error
+    //! We hit an internal error and we want to RTE
     EXIT_SWERR = 3,
-    //! We detected a problem
+    //! We detected a problem and want to RTE
     DETECTED_MALLOC_FAILURE = 4
 } exit_states_for_user_one;
 

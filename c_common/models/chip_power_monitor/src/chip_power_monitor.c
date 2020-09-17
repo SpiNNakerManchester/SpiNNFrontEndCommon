@@ -25,14 +25,15 @@
 //! chip.
 
 #include <spin1_api.h>
+#include <spinn_extra.h>
 #include <simulation.h>
 #include <spinnaker.h>
 #include <recording.h>
 #include <debug.h>
 #include <data_specification.h>
 
-//! The number of bits of randomness used to break up sampling periodicity
-//! errors.
+//! \brief The number of bits of randomness used to break up sampling
+//!     periodicity errors.
 #define NUM_RANDOM_BITS 12
 
 //! The IDs of each DSG region used.
@@ -42,7 +43,7 @@ enum {
     RECORDING = 2//!< The recorded data region ID
 };
 
-//! Describes the format of the configuration region.
+//! The format of the configuration region.
 struct sample_params {
     //! The number of samples to aggregate per recording entry.
     uint32_t count_limit;
@@ -54,7 +55,7 @@ struct sample_params {
 //! \details Only one recording channel is used by this application.
 static const uint32_t RECORDING_CHANNEL_ID = 0;
 
-//! values for the priority for each callback
+//! The priority for each callback
 enum {
     TIMER = 0, //!< The timer callback is highest priority
     SDP = 1,   //!< Responding to communications from host is next highest
@@ -87,27 +88,28 @@ static uint32_t sample_frequency;
 //!     the core is active.
 //! \note This accesses into the SpiNNaker System Controller hardware (see
 //!     Data Sheet, section 14, register 25).
-static uint32_t get_sample(void) {
-    return sc[SC_SLEEP] & ((1 << NUM_CPUS) - 1);
+static inline uint32_t get_sample(void) {
+    return system_control->cpu_sleep.status;
 }
 
 //! \brief Compute a random value used to break up chance periodicities in
 //!     sampling.
+//! \details In range 0 to 4095.
 //! \return The number of times a busy loop must run.
-static uint32_t get_random_busy(void) {
+static inline uint32_t get_random_busy(void) {
     return (spin1_rand() >> 4) & ((1 << NUM_RANDOM_BITS) - 1);
 }
 
 //! \brief Synchronously record the current contents of the core_counters to
 //!     the recording region.
-static void record_aggregate_sample(void) {
+static inline void record_aggregate_sample(void) {
     recording_record(
             RECORDING_CHANNEL_ID, core_counters, sizeof(core_counters));
 }
 
 //! \brief Reset the state of the core_counters and the sample_count variables
 //!     to zero.
-static void reset_core_counters(void) {
+static inline void reset_core_counters(void) {
     for (uint32_t i = 0 ; i < NUM_CPUS ; i++) {
         core_counters[i] = 0;
     }
@@ -130,7 +132,7 @@ static void resume_callback(void) {
 //! \brief Accumulate a count of how active each core on the current chip is.
 //!     The counter for the core is incremented if the core is active.
 //! \details Uses get_sample() to obtain the state of the cores.
-static void count_core_states(void) {
+static inline void count_core_states(void) {
     uint32_t sample = get_sample();
 
     for (uint32_t i = 0, j = 1 ; i < NUM_CPUS ; i++, j <<= 1) {
@@ -167,7 +169,7 @@ static void sample_in_slot(UNUSED uint unused0, UNUSED uint unused1) {
     uint32_t count = ++sample_count;
     uint32_t offset = get_random_busy();
     while (offset --> 0) {
-        // Do nothing; FIXME how to be sure to delay a random amount of time
+        // Do nothing
     }
 
     count_core_states();

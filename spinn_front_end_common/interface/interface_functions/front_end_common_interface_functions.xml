@@ -18,6 +18,39 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+    <algorithm name="LocalTDMABuilder">
+        <python_module>spinn_front_end_common.interface.interface_functions.local_tdma_builder</python_module>
+        <python_class>LocalTDMABuilder</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>application_graph</param_name>
+                <param_type>MemoryApplicationGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_graph</param_name>
+                <param_type>MemoryMachineGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_time_step</param_name>
+                <param_type>MachineTimeStep</param_type>
+            </parameter>
+            <parameter>
+                <param_name>time_scale_factor</param_name>
+                <param_type>TimeScaleFactor</param_type>
+            </parameter>
+            <parameter>
+                <param_name>n_keys_map</param_name>
+                <param_type>MemoryMachinePartitionNKeysMap</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>application_graph</param_name>
+            <param_name>machine_graph</param_name>
+            <param_name>machine_time_step</param_name>
+            <param_name>time_scale_factor</param_name>
+            <param_name>n_keys_map</param_name>
+        </required_inputs>
+    </algorithm>
     <algorithm name="ReadRoutingTablesFromMachine">
         <python_module>spinn_front_end_common.interface.interface_functions.read_routing_tables_from_machine</python_module>
         <python_class>ReadRoutingTablesFromMachine</python_class>
@@ -194,8 +227,8 @@
                 <param_type>ExecutableFinder</param_type>
             </parameter>
             <parameter>
-                <param_name>read_algorithm_iobuf</param_name>
-                <param_type>RouterCompressorWithBitFieldReadIOBuf</param_type>
+                <param_name>write_compressor_iobuf</param_name>
+                <param_type>WriteCompressorIobuf</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
@@ -244,7 +277,7 @@
         </input_definitions>
         <required_inputs>
             <param_name>executable_finder</param_name>
-            <param_name>read_algorithm_iobuf</param_name>
+            <param_name>write_compressor_iobuf</param_name>
             <param_name>routing_tables</param_name>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
@@ -315,8 +348,8 @@
                 <param_type>ExecutableFinder</param_type>
             </parameter>
             <parameter>
-                <param_name>read_algorithm_iobuf</param_name>
-                <param_type>RouterCompressorWithBitFieldReadIOBuf</param_type>
+                <param_name>write_compressor_iobuf</param_name>
+                <param_type>WriteCompressorIobuf</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
@@ -365,7 +398,7 @@
         </input_definitions>
         <required_inputs>
             <param_name>executable_finder</param_name>
-            <param_name>read_algorithm_iobuf</param_name>
+            <param_name>write_compressor_iobuf</param_name>
             <param_name>routing_tables</param_name>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
@@ -2441,6 +2474,10 @@
                 <param_name>compress_as_much_as_possible</param_name>
                 <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
+            <parameter>
+                <param_name>write_compressor_iobuf</param_name>
+                <param_type>WriteCompressorIobuf</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2451,6 +2488,7 @@
         </required_inputs>
         <optional_inputs>
                 <param_name>compress_as_much_as_possible</param_name>
+                <param_name>write_compressor_iobuf</param_name>
         </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
@@ -2487,6 +2525,10 @@
                 <param_name>compress_as_much_as_possible</param_name>
                 <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
+            <parameter>
+                <param_name>write_compressor_iobuf</param_name>
+                <param_type>WriteCompressorIobuf</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2498,6 +2540,7 @@
         </required_inputs>
         <optional_inputs>
                 <param_name>compress_as_much_as_possible</param_name>
+                <param_name>write_compressor_iobuf</param_name>
         </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
@@ -2535,6 +2578,10 @@
                 <param_name>compress_as_much_as_possible</param_name>
                 <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
+            <parameter>
+                <param_name>write_compressor_iobuf</param_name>
+                <param_type>WriteCompressorIobuf</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2546,6 +2593,7 @@
         </required_inputs>
         <optional_inputs>
                 <param_name>compress_as_much_as_possible</param_name>
+                <param_name>write_compressor_iobuf</param_name>
         </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
