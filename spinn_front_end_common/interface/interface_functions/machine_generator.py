@@ -71,8 +71,8 @@ class MachineGenerator(object):
     :param str default_report_directory:
         Directory to write any reports too.
         If None the current directory will be used.
-    :return: Transceiver, and description of machine it is connected to
-    :rtype: tuple(~spinnman.transceiver.Transceiver, ~spinn_machine.Machine)
+    :return: description of machine it is connected to and Transceiver
+    :rtype: tuple(~spinn_machine.Machine, ~spinnman.transceiver.Transceiver)
     """
 
     POWER_CYCLE_WARNING = (
