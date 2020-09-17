@@ -51,7 +51,7 @@ def plot_data(db_filename, key, output_filename):
     plot.savefig(output_filename)
 
 
-if len(sys.argv) != 1:
+if len(sys.argv) != 2:
     raise Exception(
         "wrong number of arguments: needs just the prov DB filename")
 for term in (
