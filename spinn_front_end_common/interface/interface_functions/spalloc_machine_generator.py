@@ -66,7 +66,8 @@ class SpallocMachineGenerator(object):
     :param str default_report_directory:
         Directory to write any reports too.
         If None the current directory will be used.
-    :return: Host_ip_address, MachineAllocationController, Transceiver, and description of machine it is connected to
+    :return: Host_ip_address, MachineAllocationController, Transceiver, and
+        description of machine it is connected to
     :rtype: tuple(~spinnman.transceiver.Transceiver, ~spinn_machine.Machine)
     :rtype: tuple(str, int, None, bool, bool, None, None,
         MachineAllocationController)
@@ -75,7 +76,6 @@ class SpallocMachineGenerator(object):
     __slots__ = []
 
     MAX_RESTART_SIZE_IN_BOARDS = 24
-
 
     def __call__(
             self, spalloc_server, spalloc_user, downed_chips, downed_cores,
@@ -109,8 +109,8 @@ class SpallocMachineGenerator(object):
                 spalloc_server, spalloc_user, n_chips, n_boards, spalloc_port,
                 spalloc_machine)
             hostname, board_version, bmp_details, reset_machine_on_start_up, \
-            auto_detect_bmp, scamp_connection_data, boot_port_num, \
-            machine_allocation_controller = results
+                auto_detect_bmp, scamp_connection_data, boot_port_num, \
+                machine_allocation_controller = results
 
             # Now we have a new job release the older one
             if previous_controller:
@@ -137,7 +137,7 @@ class SpallocMachineGenerator(object):
                     max_sdram_size, repair_machine, ignore_bad_ethernets,
                     default_report_directory)
                 known = False
-                for  sick_ip in sick_boards:
+                for sick_ip in sick_boards:
                     if sick_ip in ex.ipaddress:
                         # TODO let splaooc know the exception!
                         previous_controller = machine_allocation_controller
