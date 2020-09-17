@@ -48,7 +48,8 @@ def plot_data(db_filename, key, output_filename):
     seaborn.heatmap(
         data, annot=labels, fmt="",
         cmap="plasma", square=True).invert_yaxis()
-    plot.savefig(output_filename)
+    plot.savefig(output_filename, bbox_inches='tight')
+    plot.close()
 
 
 if len(sys.argv) != 2:
