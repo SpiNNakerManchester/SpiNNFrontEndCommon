@@ -3518,15 +3518,8 @@
       <type>static void</type>
       <name>sort_table</name>
       <anchorfile>pair__minimize_8h.html</anchorfile>
-      <anchor>ac940b4ae90122ef0e7ec01cd4efcbc95</anchor>
-      <arglist>(int table_size)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>swap_routes</name>
-      <anchorfile>pair__minimize_8h.html</anchorfile>
-      <anchor>aaf0cff3e9b1faf15c5988c3579d8fd94</anchor>
-      <arglist>(int index_a, int index_b)</arglist>
+      <anchor>a4b2381e8a020792acd5a4b180ca2d1c2</anchor>
+      <arglist>(uint32_t table_size)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
@@ -4046,13 +4039,6 @@
       <name>order_bitfields</name>
       <anchorfile>bit__field__reader_8h.html</anchorfile>
       <anchor>aca5e3310aacf901a560d7f137a4b65fd</anchor>
-      <arglist>(sorted_bit_fields_t *restrict sorted_bit_fields)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>sort_by_order</name>
-      <anchorfile>bit__field__reader_8h.html</anchorfile>
-      <anchor>ae65158d98dd9391d83ca78a5c97225b9</anchor>
       <arglist>(sorted_bit_fields_t *restrict sorted_bit_fields)</arglist>
     </member>
     <member kind="function" static="yes">
