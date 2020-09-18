@@ -102,43 +102,6 @@ static inline void order_bitfields(
     }
 }
 
-//! \brief Sort the data bases on the sort_order array
-//! \param[in] sorted_bit_fields: Data to be ordered
-//! \internal
-//!     DEAD code but left as it shows how it could be sorted by order fast
-static inline void sort_by_order(
-        sorted_bit_fields_t *restrict sorted_bit_fields) {
-    // Every time there is a swap at least one of the rows is moved to the
-    // final place.
-    //
-    // There is one check per row in the for loop plus if the first fails
-    // up to one more for each row about to be moved to the correct place.
-
-    uint32_t *restrict processor_ids = sorted_bit_fields->processor_ids;
-    int *restrict sort_order = sorted_bit_fields->sort_order;
-    filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
-
-    // Check each row in the lists
-    for (uint32_t i = 0; i < sorted_bit_fields->n_bit_fields; i++) {
-        // check that the data is in the correct place
-        while (sort_order[i] != (int) i) {
-            int j = sort_order[i];
-            // If not swap the data there into the correct place
-            uint32_t temp_processor_id = processor_ids[i];
-            processor_ids[i] = processor_ids[j];
-            processor_ids[j] = temp_processor_id;
-
-            uint32_t temp_sort_order = sort_order[i];
-            sort_order[i] = sort_order[j];
-            sort_order[j] = temp_sort_order;
-
-            filter_info_t *bit_field_temp = bit_fields[i];
-            bit_fields[i] = bit_fields[j];
-            bit_fields[j] = bit_field_temp;
-        }
-    }
-}
-
 //! \brief Sort the data based on the bitfield key
 //! \param[in] sorted_bit_fields: Data to be ordered
 static inline void sort_by_key(
@@ -147,21 +110,23 @@ static inline void sort_by_key(
     uint32_t *restrict processor_ids = sorted_bit_fields->processor_ids;
     int *restrict sort_order = sorted_bit_fields->sort_order;
     filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
+    uint32_t i, j;
 
-    for (uint32_t i = 1, j; i < sorted_bit_fields->n_bit_fields ; i++) {
-        uint32_t temp_proc_id = processor_ids[i];
-        uint32_t temp_order = sort_order[i];
-        filter_info_t *temp_bf = bit_fields[i];
+    for (i = 1; i < sorted_bit_fields->n_bit_fields; i++) {
+        const uint32_t temp_processor_id = processor_ids[i];
+        const int temp_sort_order = sort_order[i];
+        filter_info_t *const bit_field_temp = bit_fields[i];
+        register uint32_t key = bit_field_temp->key;
 
-        for (j = i; (j > 0) && bit_fields[j - 1]->key > temp_bf->key; j--) {
+        for (j = i; j > 0 && bit_fields[j - 1]->key > key; j--) {
             processor_ids[j] = processor_ids[j - 1];
             sort_order[j] = sort_order[j - 1];
             bit_fields[j] = bit_fields[j - 1];
         }
 
-        processor_ids[j] = temp_proc_id;
-        sort_order[j] = temp_order;
-        bit_fields[j] = temp_bf;
+        processor_ids[j] = temp_processor_id;
+        sort_order[j] = temp_sort_order;
+        bit_fields[j] = bit_field_temp;
     }
 }
 

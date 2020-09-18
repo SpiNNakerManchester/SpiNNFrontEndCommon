@@ -27,6 +27,7 @@
  * The memory address with tag "1" is expected contain the following struct
  * (entry_t is defined in `routing_table.h` but is described below).
  */
+#include <stdbool.h>
 #include <debug.h>
 #include "../common/routing_table.h"
 #include <stdbool.h>
@@ -141,42 +142,40 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b) {
 }
 
 //! \brief Implementation of sort for routes based on route information
+//! \details Uses insertion sort.
 //! \param[in] table_size: the number of entries in the table
-static void sort_table(int table_size) {
-    for (int i = 0; i < table_size -1; i++) {
-        uint32_t route_i = routing_table_get_entry(i)->route;
-        for (int j = i + 1; j < table_size; j++) {
-            uint32_t route_j = routing_table_get_entry(j)->route;
-            if (compare_routes(route_i, route_j) < 0) {
-                swap_entries(i, j);
-                route_i = route_j;
-            }
+static void sort_table(uint32_t table_size) {
+    uint32_t i, j;
+
+    for (i = 1; i < table_size; i++) {
+        entry_t tmp = *routing_table_get_entry(i);
+        for (j = i; j > 0 && compare_routes(
+                routing_table_get_entry(j - 1)->route, tmp.route) > 0; j--) {
+            routing_table_put_entry(routing_table_get_entry(j - 1), j);
         }
+        routing_table_put_entry(&tmp, j);
     }
 }
 
-//! \brief Swap two routes
-//! \details Also swaps the corresponding information in routes_frequency
-//! \param[in] index_a: The index of the first route
-//! \param[in] index_b: The index of the second route
-static inline void swap_routes(uint32_t index_a, uint32_t index_b) {
-    uint32_t temp = routes_frequency[index_a];
-    routes_frequency[index_a] = routes_frequency[index_b];
-    routes_frequency[index_b] = temp;
-    temp = routes[index_a];
-    routes[index_a] = routes[index_b];
-    routes[index_b] = temp;
-}
-
-//! \brief Implementation of sort for routes based on frequency.
+//! \brief Implementation of insertion sort for routes based on frequency.
 //! \details The routes must be non-overlapping pre-minimisation routes.
 static void sort_routes(void) {
-    for (int i = 0; i < routes_count -1; i++) {
-        for (int j = i + 1; j < routes_count; j++) {
-            if (routes_frequency[i] > routes_frequency[j]) {
-                swap_routes(i, j);
-            }
+    uint32_t i, j;
+
+    for (i = 1; i < routes_count; i++) {
+        // The entry we're going to move is "taken out"
+        uint32_t r_tmp = routes[i];
+        uint32_t rf_tmp = routes_frequency[i];
+
+        // The entries below it that are larger are shuffled up
+        for (j = i; j > 0 && routes_frequency[j - 1] > rf_tmp; j--) {
+            routes[j] = routes[j - 1];
+            routes_frequency[j] = routes_frequency[j - 1];
         }
+
+        // The entry is dropped back into place
+        routes[j] = r_tmp;
+        routes_frequency[j] = rf_tmp;
     }
 }
 
@@ -246,7 +245,7 @@ bool minimise_run(UNUSED uint32_t target_length, UNUSED bool *failed_by_malloc,
         log_debug("%u", routes[i]);
     }
 
-    log_debug("do quicksort_table by route %u", table_size);
+    log_debug("do sort_table by route %u", table_size);
     sort_table(table_size);
     if (*stop_compressing) {
         log_info("Stopping before compression as asked to stop");

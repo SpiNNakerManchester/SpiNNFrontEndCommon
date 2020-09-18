@@ -196,27 +196,28 @@ void print_table(const table_t *table) {
     }
 }
 
-//! \brief Compare two entries by key
-//! \param[in] a: The first entry
-//! \param[in] b: The second entry
-//! \return True if `a` is greater than `b`
-static inline bool cmp_by_key(const entry_t *a, const entry_t *b) {
-    return a->key_mask.key > b->key_mask.key;
+//! \brief Compare two entries by their keys.
+//! \param[in] ent_1: The first entry.
+//! \param[in] ent_2: The second entry.
+//! \return Whether the first entry is greater than the second entry.
+static inline bool compare_entries(const entry_t *ent_1, const entry_t *ent_2) {
+    return ent_1->key_mask.key > ent_2->key_mask.key;
 }
 
-//! \brief Insertion sort a given table so that the entries in the table are
-//!     by key value.
+//! \brief Sort a given table so that the entries in the table are by key.
+//! \details Uses insertion sort.
 //! \param[in] table: the table to sort.
 void sort_table_by_key(table_t *table) {
     uint32_t size = table->size;
     entry_t *entries = table->entries;
 
-    for (uint32_t i = 1, j; i < size; i++) {
-        entry_t tmp = entries[i];
-        for (j = i; (j > 0) && cmp_by_key(&entries[j - 1], &tmp); j--) {
+    uint32_t i, j;
+    for (i = 1; i < size; i++) {
+        const entry_t temp = entries[i];
+        for (j = i; j > 0 && compare_entries(&entries[j - 1], &temp); j--) {
             entries[j] = entries[j - 1];
         }
-        entries[j] = tmp;
+        entries[j] = temp;
     }
 }
 
