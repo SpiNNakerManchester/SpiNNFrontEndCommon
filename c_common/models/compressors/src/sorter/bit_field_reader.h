@@ -103,43 +103,6 @@ static inline void order_bitfields(
     }
 }
 
-//! \brief Sort the data bases on the sort_order array
-//! \param[in] sorted_bit_fields: Data to be ordered
-//! \internal
-//!     DEAD code but left as it shows how it could be sorted by order fast
-static inline void sort_by_order(
-        sorted_bit_fields_t *restrict sorted_bit_fields) {
-    // Every time there is a swap at least one of the rows is moved to the
-    // final place.
-    //
-    // There is one check per row in the for loop plus if the first fails
-    // up to one more for each row about to be moved to the correct place.
-
-    int *restrict processor_ids = sorted_bit_fields->processor_ids;
-    int *restrict sort_order = sorted_bit_fields->sort_order;
-    filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
-
-    // Check each row in the lists
-    for (int i = 0; i < sorted_bit_fields->n_bit_fields; i++) {
-        // check that the data is in the correct place
-        while (sort_order[i] != i) {
-            int j = sort_order[i];
-            // If not swap the data there into the correct place
-            int temp_processor_id = processor_ids[i];
-            processor_ids[i] = processor_ids[j];
-            processor_ids[j] = temp_processor_id;
-
-            uint32_t temp_sort_order = sort_order[i];
-            sort_order[i] = sort_order[j];
-            sort_order[j] = temp_sort_order;
-
-            filter_info_t* bit_field_temp = bit_fields[i];
-            bit_fields[i] = bit_fields[j];
-            bit_fields[j] = bit_field_temp;
-        }
-    }
-}
-
 //! \brief Sort the data based on the bitfield key
 //! \param[in] sorted_bit_fields: Data to be ordered
 static inline void sort_by_key(
@@ -148,29 +111,23 @@ static inline void sort_by_key(
     int *restrict processor_ids = sorted_bit_fields->processor_ids;
     int *restrict sort_order = sorted_bit_fields->sort_order;
     filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
+    int i, j;
 
-    // Everytime there is a swap at least one of the rows is moved to the
-    //      final place.
-    //  There is one check per row in the for loop plus if the first fails
-    //      up to one more for each row about to be moved to the correct place.
-    for (int i = 0; i < sorted_bit_fields->n_bit_fields - 1; i++) {
-        for (int j = i + 1; j < sorted_bit_fields->n_bit_fields; j++) {
-           // check location
-           if (bit_fields[i]->key > bit_fields[j]->key) {
-                // If not swap the data there into the correct place
-                int temp_processor_id = processor_ids[i];
-                processor_ids[i] = processor_ids[j];
-                processor_ids[j] = temp_processor_id;
+    for (i = 1; i < sorted_bit_fields->n_bit_fields; i++) {
+        const int temp_processor_id = processor_ids[i];
+        const uint32_t temp_sort_order = sort_order[i];
+        filter_info_t *const bit_field_temp = bit_fields[i];
+        register uint32_t key = bit_field_temp->key;
 
-                uint32_t temp_sort_order = sort_order[i];
-                sort_order[i] = sort_order[j];
-                sort_order[j] = temp_sort_order;
-
-                filter_info_t* bit_field_temp = bit_fields[i];
-                bit_fields[i] = bit_fields[j];
-                bit_fields[j] = bit_field_temp;
-            }
+        for (j = i; j > 0 && bit_fields[j - 1]->key > key; j--) {
+            processor_ids[j] = processor_ids[j - 1];
+            sort_order[j] = sort_order[j - 1];
+            bit_fields[j] = bit_fields[j - 1];
         }
+
+        processor_ids[j] = temp_processor_id;
+        sort_order[j] = temp_sort_order;
+        bit_fields[j] = bit_field_temp;
     }
 }
 
