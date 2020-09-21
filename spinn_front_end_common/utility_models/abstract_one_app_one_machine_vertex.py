@@ -81,6 +81,6 @@ class AbstractOneAppOneMachineVertex(
         return self._machine_vertex.get_binary_start_type()
 
     @property
-    @overrides(ApplicationVertex.n_atoms)
+    @overrides(LegacyPartitionerAPI.n_atoms)
     def n_atoms(self):
         return 1
