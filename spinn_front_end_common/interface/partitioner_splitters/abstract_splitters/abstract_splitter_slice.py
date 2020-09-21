@@ -14,6 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from six import raise_from, add_metaclass
+
+from pacman.model.graphs.machine import MachineEdge
 from pacman.model.partitioner_interfaces.abstract_splitter_common import (
     AbstractSplitterCommon)
 from pacman.utilities.algorithm_utilities.partition_algorithm_utilities import \
@@ -54,14 +56,24 @@ class AbstractSplitterSlice(AbstractSplitterCommon):
     def __init__(self, splitter_name):
         AbstractSplitterCommon.__init__(self, splitter_name)
 
+    def __get_map(self):
+        """ builds map of machine vertex to edge type
+
+        :return: dict of vertex as key, edge types as list in value
+        """
+        result = dict()
+        for vertex in self._governed_app_vertex.machine_vertices:
+            result[vertex] = [MachineEdge]
+        return result
+
     @overrides(AbstractSplitterCommon.get_pre_vertices)
     def get_pre_vertices(self, edge, outgoing_edge_partition):
-        return self._governed_app_vertex.machine_vertices
+        return self.__get_map()
 
     @overrides(AbstractSplitterCommon.get_post_vertices)
     def get_post_vertices(
             self, edge, outgoing_edge_partition, src_machine_vertex):
-        return self._governed_app_vertex.machine_vertices
+        return self.__get_map()
 
     @overrides(AbstractSplitterCommon.get_out_going_slices)
     def get_out_going_slices(self):
@@ -73,7 +85,7 @@ class AbstractSplitterSlice(AbstractSplitterCommon):
 
     @overrides(AbstractSplitterCommon.machine_vertices_for_recording)
     def machine_vertices_for_recording(self, variable_to_record):
-        return self._governed_app_vertex.machine_vertices
+        return list(self._governed_app_vertex.machine_vertices)
 
     def __split(self, resource_tracker):
         slice_resource_map = dict()
