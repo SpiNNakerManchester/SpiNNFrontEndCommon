@@ -58,11 +58,11 @@ class SplitterSelector(object):
         """
         if isinstance(app_vertex, AbstractOneAppOneMachineVertex):
             app_vertex.splitter_object = SplitterOneToOneLegacy()
-        if isinstance(app_vertex, ReverseIpTagMultiCastSource):
+        elif isinstance(app_vertex, ReverseIpTagMultiCastSource):
             app_vertex.splitter_object = SplitterSliceLegacy()
-        if isinstance(app_vertex, LivePacketGather):
+        elif isinstance(app_vertex, LivePacketGather):
             app_vertex.splitter_object = SplitterOneToOneLegacy()
-        if isinstance(app_vertex, ChipPowerMonitor):
+        elif isinstance(app_vertex, ChipPowerMonitor):
             app_vertex.splitter_object = SplitterOneToOneLegacy()
         else:
             logger.warning(
