@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from collections import OrderedDict
 
 from six import raise_from, add_metaclass
 
@@ -61,7 +62,7 @@ class AbstractSplitterSlice(AbstractSplitterCommon):
 
         :return: dict of vertex as key, edge types as list in value
         """
-        result = dict()
+        result = OrderedDict()
         for vertex in self._governed_app_vertex.machine_vertices:
             result[vertex] = [MachineEdge]
         return result
