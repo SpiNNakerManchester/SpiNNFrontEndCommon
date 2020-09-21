@@ -16,12 +16,7 @@
  */
 
 /*! \file
- *
- *  \brief local Time Division Multi Access Functions Header File
- *
- *    provides function for spending packets within a given time frame
- *    simulations.
- *
+ *  \brief implementation of tdma_processing.h
  */
 
 #include <debug.h>
@@ -66,7 +61,6 @@ void tdma_processing_reset_phase(void) {
 void tdma_processing_send_packet(
         uint32_t transmission_key, uint32_t payload,
         uint32_t with_payload, uint32_t timer_count) {
-
     uint32_t timer_value = tc[T1_COUNT];
 
     // Find the next valid phase to send in; might run out of phases, at
@@ -88,5 +82,4 @@ void tdma_processing_send_packet(
     while (!spin1_send_mc_packet(transmission_key, payload, with_payload)) {
         spin1_delay_us(1);
     }
-
 }
