@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2019 The University of Manchester
+ * Copyright (c) 2013-2020 The University of Manchester
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,14 +47,12 @@
  *    Version          : $Revision$
  *    Last modified on : $Date$
  *    Last modified by : $Author$
- *    $Id$
- *
- *    $Log$
- *
  */
 
 //! \file
 //! \brief Data type definitions for SpiNNaker Neuron-modelling.
+//! \author Dave Lester
+//! \date 10 December, 2013
 
 #ifndef __COMMON_TYPEDEFS_H__
 #define __COMMON_TYPEDEFS_H__
@@ -71,17 +69,15 @@
 //! \details
 //!     Obviously you'll only be using this during debug, for unused
 //!     arguments of callback functions, or where conditional compilation
-//!     means that the accessor functions return a constant
-//! \note Consider using `(void) x;` instead.
-//! \param[in] x: The variable that is "used". Not safe with floating point!
+//!     means that the accessor functions return a constant. You should not
+//!     normally use this for local variables; if they're unused, just delete
+//!     them.
+//! \note Consider marking arguments as `UNUSED` instead. That is defined in
+//!     arm_acle_gcc.h, which is indirectly included.
+//! \param[in] x: The variable that is "used".
 
 #ifndef use
 #define use(x)      ((void) (x))
-#endif
-
-// Used to mark a parameter as unused
-#ifndef UNUSED
-#define UNUSED      __attribute__((__unused__))
 #endif
 
 // Define int/uint helper macros to create the correct

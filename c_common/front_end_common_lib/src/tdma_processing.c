@@ -27,6 +27,7 @@
 #include <debug.h>
 #include <stdbool.h>
 #include <tdma_processing.h>
+#include <spinnaker.h>
 
 //! Spin1 API ticks - to know when the timer wraps
 extern uint ticks;
