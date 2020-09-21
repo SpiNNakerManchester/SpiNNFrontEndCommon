@@ -33,7 +33,7 @@ static tdma_parameters params;
 //! The next expected time to send a spike
 static uint32_t expected_time;
 
-//! n times the core got behind its TDMA
+//! Number of times the core got behind its TDMA
 static uint32_t n_behind_times = 0;
 
 uint32_t tdma_processing_times_behind(void) {
