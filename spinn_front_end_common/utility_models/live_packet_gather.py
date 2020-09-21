@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.overrides import overrides
-from pacman.model.partitioner_interfaces import SplitterByAtoms
+from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
     ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
@@ -25,7 +25,7 @@ from spinn_front_end_common.abstract_models import (
 
 class LivePacketGather(
         ApplicationVertex, AbstractGeneratesDataSpecification,
-        SplitterByAtoms):
+        LegacyPartitionerAPI):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a SpiNNaker machine.
@@ -42,7 +42,7 @@ class LivePacketGather(
         super(LivePacketGather, self).__init__(label, constraints, 1)
         self._lpg_params = lpg_params
 
-    @overrides(SplitterByAtoms.create_machine_vertex)
+    @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice, resources_required,
             label=None, constraints=None):
@@ -59,7 +59,7 @@ class LivePacketGather(
     def n_atoms(self):
         return 1
 
-    @overrides(SplitterByAtoms.get_resources_used_by_atoms)
+    @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
         return ResourceContainer(
             sdram=ConstantSDRAM(

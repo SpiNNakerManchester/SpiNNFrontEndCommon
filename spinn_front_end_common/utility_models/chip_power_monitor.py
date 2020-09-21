@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.overrides import overrides
-from pacman.model.partitioner_interfaces import SplitterByAtoms
+from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.abstract_models import (
@@ -22,8 +22,9 @@ from spinn_front_end_common.abstract_models import (
 from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 
 
-class ChipPowerMonitor(ApplicationVertex,
-                       AbstractGeneratesDataSpecification, SplitterByAtoms):
+class ChipPowerMonitor(
+        ApplicationVertex, AbstractGeneratesDataSpecification,
+        LegacyPartitionerAPI):
     """ Represents idle time recording code in a application graph.
     """
     __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
@@ -49,7 +50,7 @@ class ChipPowerMonitor(ApplicationVertex,
     def n_atoms(self):
         return 1
 
-    @overrides(SplitterByAtoms.create_machine_vertex)
+    @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
             self,
             vertex_slice, resources_required,  # @UnusedVariable
@@ -91,7 +92,7 @@ class ChipPowerMonitor(ApplicationVertex,
     @inject_items({
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"})
-    @overrides(SplitterByAtoms.get_resources_used_by_atoms,
+    @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms,
                additional_arguments={"machine_time_step", "time_scale_factor"})
     def get_resources_used_by_atoms(
             self, vertex_slice,  # @UnusedVariable

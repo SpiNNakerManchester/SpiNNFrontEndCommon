@@ -15,7 +15,7 @@
 
 import sys
 
-from pacman.model.partitioner_interfaces import SplitterByAtoms
+from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
@@ -37,7 +37,7 @@ from spinn_front_end_common.utilities import globals_variables
 
 class ReverseIpTagMultiCastSource(
         ApplicationVertex, AbstractGeneratesDataSpecification,
-        SplitterByAtoms, AbstractProvidesOutgoingPartitionConstraints,
+        LegacyPartitionerAPI, AbstractProvidesOutgoingPartitionConstraints,
         ProvidesKeyToAtomMappingImpl):
     """ A model which will allow events to be injected into a SpiNNaker\
         machine and converted into multicast packets.
@@ -172,7 +172,7 @@ class ReverseIpTagMultiCastSource(
     def n_atoms(self):
         return self._n_atoms
 
-    @overrides(SplitterByAtoms.get_resources_used_by_atoms)
+    @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
         send_buffer_times = self._send_buffer_times
         if send_buffer_times is not None and len(send_buffer_times):
@@ -238,7 +238,7 @@ class ReverseIpTagMultiCastSource(
     def generate_data_specification(self, spec, placement):
         placement.vertex.generate_data_specification(spec, placement)
 
-    @overrides(SplitterByAtoms.create_machine_vertex)
+    @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice,
             resources_required,  # @UnusedVariable
