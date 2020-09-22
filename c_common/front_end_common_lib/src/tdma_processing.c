@@ -16,12 +16,7 @@
  */
 
 /*! \file
- *
- *  \brief local Time Division Multi Access Functions Header File
- *
- *    provides function for spending packets within a given time frame
- *    simulations.
- *
+ *  \brief Implementation of tdma_processing.h
  */
 
 #include <debug.h>
@@ -34,7 +29,7 @@ tdma_parameters tdma_params;
 //! The next expected time to send a spike
 uint32_t tdma_expected_time;
 
-//! n times the core got behind its TDMA
+//! Number of times the core got behind its TDMA
 uint32_t n_tdma_behind_times = 0;
 
 bool tdma_processing_initialise(void **address) {
