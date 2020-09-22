@@ -13,16 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function  # for 2.7
+import readline
 from tools.exn import BadArgs
 
 
 class CLI(object):
-    def __init__(self, channel, prompt, commands, term):
+    def __init__(self, channel, prompt, commands):
         self._channel = channel
         self.prompt = prompt
         self._commands = {}
         self.cmd(commands, True)
-        self._term = term
+        self._term = readline
         self._level = 0
         self._quiet = 0
         self._tty = channel.isatty()

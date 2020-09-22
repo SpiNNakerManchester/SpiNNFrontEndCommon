@@ -19,6 +19,7 @@ from collections import namedtuple
 from datetime import datetime
 from enum import IntEnum
 import re
+import readline
 import struct
 import sys
 import time
@@ -45,7 +46,6 @@ sv = None            # Struct object
 
 debug = False        # Enable verbosity
 expert = False       # Expert mode
-_readline = True     # Use readline
 
 spinn_target = None  # Target host name
 bmp_target = None    # BMP host name
@@ -1454,14 +1454,13 @@ def usage():
     print("usage: spybug <options> <spiNNakerBoardIPAddress>", file=sys.stderr)
     print("  -bmp  <name>[/<slots>]   - set BMP target", file=sys.stderr)
     print("  -version                 - print version number", file=sys.stderr)
-    print("  -norl                    - don't use 'ReadLine'", file=sys.stderr)
     print("  -expert                  - set 'expert' mode", file=sys.stderr)
     print("  -debug <value>           - set debug variable", file=sys.stderr)
     sys.exit(1)
 
 
 def process_args():
-    global spinn_target, bmp_target, expert, _readline, debug
+    global spinn_target, bmp_target, expert, debug
     global bmp_range
     _range = "0"
     args = list(sys.argv)
@@ -1477,8 +1476,6 @@ def process_args():
             sys.exit()
         elif arg == "-debug":
             debug = int(args.pop(0))
-        elif arg == "-norl":
-            _readline = False
         elif arg == "-expert":
             expert = True
         elif not re.match(r"^-", arg):
@@ -1509,12 +1506,11 @@ def open_targets():
 
 
 class _Completer(object):
-    def __init__(self, rl):
-        self._rl = rl
+    def __init__(self):
         self._stored = [None]
 
     def __call__(self, text, state):
-        if self._rl.get_begidx():
+        if readline.get_begidx():
             # No filename completion; that's complicated!
             return None
         if not state:
@@ -1525,15 +1521,6 @@ class _Completer(object):
         if word and len(self._stored) == 1:
             word += " "
         return word
-
-
-def init_readline():
-    if not _readline:
-        return None
-
-    import readline
-    readline.set_completer(_Completer(readline))
-    return readline
 
 
 def main():
@@ -1547,12 +1534,12 @@ def main():
     """
     global _cli
     prompt = process_args()
-    rl = init_readline()
+    readline.set_completer(_Completer())
 
     open_targets()
     cmd_version(None)
 
-    _cli = CLI(sys.stdin, prompt, spin_cmds, rl)
+    _cli = CLI(sys.stdin, prompt, spin_cmds)
     if expert:
         _cli.cmd(expert_cmds, 0)
     _cli.run()
