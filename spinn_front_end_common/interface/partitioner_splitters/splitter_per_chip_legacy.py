@@ -13,17 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from spinn_front_end_common.interface.partitioner_splitters.\
-    abstract_splitters.abstract_splitter_legacy import AbstractSplitterLegacy
+    abstract_splitters.abstract_splitter_slice import AbstractSplitterSlice
 from spinn_utilities.overrides import overrides
 
 
-class SplitterPerChipLegacy(AbstractSplitterLegacy):
+class SplitterPerChipLegacy(AbstractSplitterSlice):
 
     SPLITTER_NAME = "SplitterPerChipLegacy"
 
     def __init__(self):
-        AbstractSplitterLegacy.__init__(self, self.SPLITTER_NAME)
+        AbstractSplitterSlice.__init__(self, self.SPLITTER_NAME)
 
-    @overrides(AbstractSplitterLegacy.create_machine_vertices)
+    @overrides(AbstractSplitterSlice.create_machine_vertices)
     def create_machine_vertices(self, resource_tracker, machine_graph):
         return []

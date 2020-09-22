@@ -12,31 +12,47 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from six import raise_from
-from pacman.exceptions import PacmanPartitionException, PacmanValueError
-from pacman.model.graphs import AbstractVirtual
-from pacman.model.graphs.common import Slice
-from spinn_front_end_common.interface.partitioner_splitters.abstract_splitters import \
-    AbstractSplitterSlice
-from spinn_front_end_common.interface.partitioner_splitters.\
-    abstract_splitters.abstract_splitter_legacy import AbstractSplitterLegacy
+from pacman.exceptions import PacmanConfigurationException
+from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
+from spinn_front_end_common.interface.\
+    partitioner_splitters.abstract_splitters import AbstractSplitterSlice
 from spinn_utilities.overrides import overrides
 
 
-class SplitterSliceLegacy(AbstractSplitterLegacy, AbstractSplitterSlice):
+class SplitterSliceLegacy(AbstractSplitterSlice):
 
     __slots__ = [
         "__splitter_name"
     ]
 
+    NOT_SUITABLE_VERTEX_ERROR = (
+        "The vertex {} cannot be supported by the {} as"
+        " the vertex does not support the required API of "
+        "LegacyPartitionerAPI. Please inherit from the class in "
+        "pacman.model.partitioner_interfaces.legacy_partitioner_api and try "
+        "again.")
+
+    SPLITTER_NAME = "SplitterLegacy"
+
     def __init__(self, splitter_name=None):
         if splitter_name is None:
             splitter_name = self.SPLITTER_NAME
-        AbstractSplitterLegacy.__init__(self, splitter_name)
         AbstractSplitterSlice.__init__(self, splitter_name)
 
-    @overrides(AbstractSplitterLegacy.create_machine_vertex)
+    @overrides(AbstractSplitterSlice.set_governed_app_vertex)
+    def set_governed_app_vertex(self, app_vertex):
+        AbstractSplitterSlice.set_governed_app_vertex(self, app_vertex)
+        if not isinstance(app_vertex, LegacyPartitionerAPI):
+            raise PacmanConfigurationException(
+                self.NOT_SUITABLE_VERTEX_ERROR.format(
+                    self.__splitter_name, app_vertex.label))
+
+    @overrides(AbstractSplitterSlice.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice, resources, label, remaining_constraints):
         return self._governed_app_vertex.create_machine_vertex(
             vertex_slice, resources, label, remaining_constraints)
+
+    def get_resources_used_by_atoms(self, vertex_slice):
+        return self._governed_app_vertex.get_resources_used_by_atoms(
+            vertex_slice)

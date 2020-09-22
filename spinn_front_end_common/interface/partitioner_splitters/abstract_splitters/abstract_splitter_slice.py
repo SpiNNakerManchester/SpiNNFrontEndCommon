@@ -19,6 +19,7 @@ from six import raise_from, add_metaclass
 from pacman.model.graphs.machine import MachineEdge
 from pacman.model.partitioner_interfaces.abstract_splitter_common import (
     AbstractSplitterCommon)
+from pacman.model.resources import ResourceContainer
 from pacman.utilities.algorithm_utilities.partition_algorithm_utilities import \
     get_remaining_constraints
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
@@ -132,9 +133,7 @@ class AbstractSplitterSlice(AbstractSplitterCommon):
 
         # get resources used by vertex
         vertex_slice = Slice(lo_atom, hi_atom)
-        used_resources = (
-            self._governed_app_vertex.get_resources_used_by_atoms(
-                vertex_slice))
+        used_resources = self.get_resources_used_by_atoms(vertex_slice)
 
         x = None
         y = None
@@ -175,8 +174,8 @@ class AbstractSplitterSlice(AbstractSplitterCommon):
                 hi_atom = lo_atom + new_n_atoms - 1
                 if hi_atom >= lo_atom:
                     vertex_slice = Slice(lo_atom, hi_atom)
-                    used_resources = self._governed_app_vertex.\
-                        get_resources_used_by_atoms(vertex_slice)
+                    used_resources = (
+                        self.get_resources_used_by_atoms(vertex_slice))
                     ratio = self._find_max_ratio(
                         used_resources, resources_available,
                         resource_tracker.plan_n_time_steps)
@@ -262,9 +261,7 @@ class AbstractSplitterSlice(AbstractSplitterCommon):
             # which resulted in a ratio < 1.0
             previous_used_resources = used_resources
             vertex_slice = Slice(lo_atom, hi_atom)
-            used_resources = (
-                self._governed_app_vertex.get_resources_used_by_atoms(
-                    vertex_slice))
+            used_resources = self.get_resources_used_by_atoms(vertex_slice)
             ratio = self._find_max_ratio(
                 used_resources, resources, plan_n_time_steps)
 
@@ -307,9 +304,7 @@ class AbstractSplitterSlice(AbstractSplitterCommon):
 
             # Get the new resource usage
             vertex_slice = Slice(lo_atom, hi_atom)
-            new_resources = (
-                self._governed_app_vertex.get_resources_used_by_atoms(
-                    vertex_slice))
+            new_resources = self.get_resources_used_by_atoms(vertex_slice)
 
             if not isinstance(self._governed_app_vertex, AbstractVirtual):
                 # Re-allocate the existing resources
@@ -378,4 +373,12 @@ class AbstractSplitterSlice(AbstractSplitterCommon):
         :param label: human readable label for machine vertex.
         :param remaining_constraints: none partitioner constraints.
         :return: machine vertex
+        """
+
+    @abstractmethod
+    def get_resources_used_by_atoms(self, vertex_slice):
+        """
+
+        :param vertex_slice:
+        :return:
         """
