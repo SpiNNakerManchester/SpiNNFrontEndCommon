@@ -883,13 +883,13 @@ static void reinjection_read_packet_types(const reinject_config_t *config) {
 
 //! \brief Set the wait1 router timeout.
 //! \param[in] payload: The encoded value to set. Must be in legal range.
-static inline void reinjection_set_timeout(uint payload) {
+static inline void reinjection_set_wait1_timeout(uint payload) {
     router_control->control.begin_emergency_wait_time = payload;
 }
 
 //! \brief Set the wait2 router timeout.
 //! \param[in] payload: The encoded value to set. Must be in legal range.
-static inline void reinjection_set_emergency_timeout(uint payload) {
+static inline void reinjection_set_wait2_timeout(uint payload) {
     router_control->control.drop_wait_time = payload;
 }
 
@@ -1212,9 +1212,9 @@ static INT_HANDLER process_mc_payload_packet(void) {
 #endif
 
     if (key == reinject_timeout_mc_key) {
-        reinjection_set_timeout(data);
+        reinjection_set_wait1_timeout(data);
     } else if (key == reinject_emergency_timeout_mc_key) {
-        reinjection_set_emergency_timeout(data);
+        reinjection_set_wait2_timeout(data);
     } else if (key == reinject_clear_mc_key) {
         reinjection_clear();
     } else if (key == data_in_address_key) {
