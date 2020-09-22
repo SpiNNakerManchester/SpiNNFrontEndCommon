@@ -38,6 +38,5 @@ var searchData=
   ['event_2849',['event',['http://spinnakermanchester.github.io/spinnaker_tools/scamp-p2p_8c.html#a007e97ff8759a84a454ea8eee8199437',1,'rx_desc::event()'],['http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html#ae59c27c01d060aa7ad4194670d6a1277',1,'sark_vec::event()'],['http://spinnakermanchester.github.io/spinnaker_tools/scamp-p2p_8c.html#a12f1a37322d99adfdd701ca386d6948c',1,'tx_desc::event()']]],
   ['event_5fsize_2850',['event_size',['../live__packet__gather_8c.html#aed550e70a474537d79fe36829e4f67e2',1,'live_packet_gather.c']]],
   ['exit_5fcode_2851',['exit_code',['http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html#acd6c68c112403d79cd2696877555b9f9',1,'diagnostics_t']]],
-  ['exit_5frc_2852',['exit_rc',['http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html#a1e65a93a758b1525e446340cc29c1817',1,'event_data']]],
-  ['expected_5ftime_2853',['expected_time',['../tdma__processing_8c.html#a8a1c8ad4577d74c25e7760e6d653eed5',1,'tdma_processing.c']]]
+  ['exit_5frc_2852',['exit_rc',['http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html#a1e65a93a758b1525e446340cc29c1817',1,'event_data']]]
 ];
