@@ -29,9 +29,8 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
         ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
-        SetRouterEmergencyTimeoutProcess, SetRouterTimeoutProcess,
-        ClearQueueProcess, LoadApplicationMCRoutesProcess,
-        LoadSystemMCRoutesProcess)
+        SetRouterTimeoutProcess, ClearQueueProcess,
+        LoadApplicationMCRoutesProcess, LoadSystemMCRoutesProcess)
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE, DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES,
     BYTES_PER_WORD, BYTES_PER_KB)
@@ -381,11 +380,13 @@ class ExtraMonitorSupportMachineVertex(
         route |= Router.convert_routing_table_entry_to_spinnaker_route(entry)
         return route
 
-    def set_router_time_outs(
+    def set_router_wait1_timeout(
             self, timeout, transceiver, placements,
             extra_monitor_cores_to_set):
         """ Supports setting of the router time outs for a set of chips via\
-            their extra monitor cores.
+            their extra monitor cores. This sets the timeout for the time\
+            between when a packet arrives and when it starts to be emergency\
+            routed. (Actual emergency routing is disabled by default.)
 
         :param tuple(int,int) timeout:
             The mantissa and exponent of the timeout value, each between
@@ -405,17 +406,20 @@ class ExtraMonitorSupportMachineVertex(
         process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
         try:
-            process.set_timeout(mantissa, exponent, core_subsets)
+            process.set_wait1_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
                 placements.get_placement_of_vertex(self))
             raise
 
-    def set_router_emergency_timeout(
+    def set_router_wait2_timeout(
             self, timeout, transceiver, placements,
             extra_monitor_cores_to_set):
-        """ Sets the timeout of the routers
+        """ Supports setting of the router time outs for a set of chips via\
+            their extra monitor cores. This sets the timeout for the time\
+            between when a packet starts to be emergency routed and when it\
+            is dropped. (Actual emergency routing is disabled by default.)
 
         :param tuple(int,int) timeout:
             The mantissa and exponent of the timeout value, each between
@@ -432,10 +436,10 @@ class ExtraMonitorSupportMachineVertex(
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
-        process = SetRouterEmergencyTimeoutProcess(
+        process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
         try:
-            process.set_timeout(mantissa, exponent, core_subsets)
+            process.set_wait2_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
