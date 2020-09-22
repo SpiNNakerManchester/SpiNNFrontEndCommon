@@ -13,13 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-BUILD_DIRS = compressor_bit_field_models \
+BUILD_DIRS = compressors \
 	         live_packet_gather \
 	         command_sender_multicast_source \
 	         chip_power_monitor \
 	         reverse_iptag_multicast_source \
-	         system_models \
-	         minimise
+	         system_models
 
 all: $(BUILD_DIRS)
 	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d || exit $$?; done

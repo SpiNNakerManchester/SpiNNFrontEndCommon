@@ -19,34 +19,41 @@ from six import add_metaclass
 
 @add_metaclass(AbstractBase)
 class AbstractSupportsBitFieldRoutingCompression(object):
+    """ Marks a machine vertex that can support having the on-chip bitfield \
+        compressor running on its core.
+    """
 
     @abstractmethod
     def key_to_atom_map_region_base_address(self, transceiver, placement):
-        """ returns the sdram address for the region that contains key to \
-        atom data
+        """ Returns the SDRAM address for the region that contains \
+            key-to-atom data.
 
-        :param transceiver: txrx
-        :param placement: placement
-        :return: the sdram address for the  key to atom data
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~pacman.model.placements.Placement placement:
+        :return: the SDRAM address for the key-to-atom data
+        :rtype: int
         """
 
     @abstractmethod
     def bit_field_base_address(self, transceiver, placement):
-        """ returns the sdram address for the bit field table data
+        """ Returns the SDRAM address for the bit-field table data.
 
-        :param transceiver: txrx
-        :param placement: placement
-        :return: the sdram address for the bitfield address
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~pacman.model.placements.Placement placement:
+        :return: the SDRAM address for the bitfield address
+        :rtype: int
         """
 
     @abstractmethod
     def regeneratable_sdram_blocks_and_sizes(self, transceiver, placement):
-        """ returns the sdram address's for the core's sdram that can be used \
-        to generate bitfield tables loaded
+        """ Returns the SDRAM addresses and sizes for the cores' SDRAM that \
+            are available (borrowed) for generating bitfield tables.
 
-        :param transceiver: txrx
-        :param placement: placement
-        :return: list of tuple containing (the sdram address for the cores \
-        sdram address's for the core's sdram that can be used \
-        to generate bitfield tables loaded
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~pacman.model.placements.Placement placement:
+        :return: list of tuples containing (the SDRAM address for the cores
+            SDRAM address's for the core's SDRAM that can be used to generate
+            bitfield tables loaded, and the size of memory chunks located
+            there)
+        :rtype: list(tuple(int,int))
         """

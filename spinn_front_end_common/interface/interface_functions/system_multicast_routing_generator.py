@@ -37,16 +37,22 @@ class SystemMulticastRoutingGenerator(object):
     :type extra_monitor_cores:
         dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
     :param ~pacman.model.placements.Placements placements:
+    :return: routing tables, destination-to-key map,
+        board-locn-to-timeout-key map
+    :rtype: tuple(MulticastRoutingTables,
+        dict(tuple(int,int),int), dict(tuple(int,int),int))
     """
     __slots__ = ["_monitors", "_machine", "_key_to_destination_map",
                  "_placements", "_routing_tables", "_time_out_keys_by_board"]
 
     def __call__(self, machine, extra_monitor_cores, placements):
         """
-        :type machine: ~spinn_machine.Machine
-        :type extra_monitor_cores:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
-        :type placements: ~pacman.model.placements.Placements
+        :param ~spinn_machine.Machine machine:
+        :param dict(tuple(int,int),ExtraMonitorSupportMachineVertex) \
+                extra_monitor_cores:
+        :param ~pacman.model.placements.Placements placements:
+        :rtype: tuple(MulticastRoutingTables,
+            dict(tuple(int,int),int), dict(tuple(int,int),int))
         """
         # pylint: disable=attribute-defined-outside-init
         self._machine = machine

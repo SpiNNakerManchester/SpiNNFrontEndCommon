@@ -23,8 +23,6 @@ from .abstract_provides_incoming_partition_constraints import (
     AbstractProvidesIncomingPartitionConstraints)
 from .abstract_provides_key_to_atom_mapping import (
     AbstractProvidesKeyToAtomMapping)
-from .abstract_provides_n_keys_for_partition import (
-    AbstractProvidesNKeysForPartition)
 from .abstract_provides_outgoing_partition_constraints import (
     AbstractProvidesOutgoingPartitionConstraints)
 from .abstract_recordable import AbstractRecordable
@@ -48,7 +46,6 @@ __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractMachineAllocationController",
            "AbstractProvidesIncomingPartitionConstraints",
            "AbstractProvidesKeyToAtomMapping",
-           "AbstractProvidesNKeysForPartition",
            "AbstractProvidesOutgoingPartitionConstraints",
            "AbstractRecordable", "AbstractRewritesDataSpecification",
            "AbstractSendMeMulticastCommandsVertex",

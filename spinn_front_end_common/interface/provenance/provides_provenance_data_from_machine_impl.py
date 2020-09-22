@@ -27,6 +27,17 @@ from spinn_utilities.overrides import overrides
 _ONE_WORD = struct.Struct("<I")
 
 
+def add_name(names, name):
+    """
+            :param iterable(str) names:
+            :param str name:
+            :rtype: list(str)
+            """
+    new_names = list(names)
+    new_names.append(name)
+    return new_names
+
+
 @add_metaclass(AbstractBase)
 class ProvidesProvenanceDataFromMachineImpl(
         AbstractProvidesProvenanceDataFromMachine):
@@ -61,10 +72,49 @@ class ProvidesProvenanceDataFromMachineImpl(
     _TIMES_CALLBACK_QUEUE_OVERLOADED = \
         "Times_the_callback_queue_was_overloaded"
 
+    _TIMES_TRANSMISSION_SPIKES_OVERRAN_MESSAGE = (
+        "The transmission buffer for {} on {}, {}, {} was blocked "
+        "on {} occasions. This is often a sign that the system is "
+        "experiencing back pressure from the communication fabric. "
+        "Please either: "
+        "1. spread the load over more cores, "
+        "2. reduce your peak transmission load,"
+        "3. adjust your mapping algorithm.")
+
+    _TIMES_CALLBACK_QUEUE_OVERLOADED_MESSAGE = (
+        "The callback queue for {} on {}, {}, {} overloaded on {} "
+        "occasions. This is often a sign that the system is running "
+        "too quickly for the number of neurons per core.  Please "
+        "increase the machine time step or time_scale_factor or "
+        "decrease the number of neurons per core.")
+
+    _TIMES_DMA_QUEUE_OVERLOADED_MESSAGE = (
+        "The DMA queue for {} on {}, {}, {} overloaded on {} "
+        "occasions. This is often a sign that the system is running "
+        "too quickly for the number of neurons per core.  Please "
+        "increase the machine time step or time_scale_factor or "
+        "decrease the number of neurons per core.")
+
+    _TIMER_TICK_OVERRUN_MESSAGE = (
+        "A Timer tick callback was still executing when the next "
+        "timer tick callback was fired off for {} on {}, {}, {}, {} "
+        "times. This is a sign of the system being overloaded and "
+        "therefore the results are likely incorrect.  Please increase "
+        "the machine time step or time_scale_factor or decrease the "
+        "number of neurons per core")
+
+    _MAX_TIMER_TICK_OVERRUN_MESSAGE = (
+        "The timer for {} on {}, {}, {} fell behind by up to {} "
+        "ticks. This is a sign of the system being overloaded and "
+        "therefore the results are likely incorrect. Please increase "
+        "the machine time step or time_scale_factor or decrease the "
+        "number of neurons per core")
+
     @abstractproperty
     def _provenance_region_id(self):
         """
         :return: provenance_region_id
+        :rtype: int
         """
 
     @abstractproperty
@@ -91,8 +141,8 @@ class ProvidesProvenanceDataFromMachineImpl(
         :rtype: int
         """
         return (
-            (ProvidesProvenanceDataFromMachineImpl.NUM_PROVENANCE_DATA_ENTRIES
-             + n_additional_data_items) * BYTES_PER_WORD)
+            (cls.NUM_PROVENANCE_DATA_ENTRIES + n_additional_data_items)
+            * BYTES_PER_WORD)
 
     def _get_provenance_region_address(self, transceiver, placement):
         """
@@ -136,7 +186,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         x = placement.x
         y = placement.y
         p = placement.p
-        names = ["{}_{}_{}_{}".format(x, y, p, label)]
+        names = ["vertex_{}_{}_{}_{}".format(x, y, p, label)]
         return label, x, y, p, names
 
     @staticmethod
@@ -146,9 +196,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         :param str name:
         :rtype: list(str)
         """
-        new_names = list(names)
-        new_names.append(name)
-        return new_names
+        return add_name(names, name)
 
     @staticmethod
     def _add_names(names, extra_names):
@@ -185,64 +233,36 @@ class ProvidesProvenanceDataFromMachineImpl(
             self._add_name(names, self._TIMES_TRANSMISSION_SPIKES_OVERRAN),
             transmission_event_overflow,
             report=transmission_event_overflow != 0,
-            message=(
-                "The transmission buffer for {} on {}, {}, {} was blocked "
-                "on {} occasions. This is often a sign that the system is "
-                "experiencing back pressure from the communication fabric. "
-                "Please either: "
-                "1. spread the load over more cores, "
-                "2. reduce your peak transmission load,"
-                "3. adjust your mapping algorithm.".format(
-                    label, x, y, p, transmission_event_overflow))))
+            message=self._TIMES_TRANSMISSION_SPIKES_OVERRAN_MESSAGE.format(
+                label, x, y, p, transmission_event_overflow)))
 
         data_items.append(ProvenanceDataItem(
             self._add_name(names, self._TIMES_CALLBACK_QUEUE_OVERLOADED),
             callback_queue_overloaded,
             report=callback_queue_overloaded != 0,
-            message=(
-                "The callback queue for {} on {}, {}, {} overloaded on {} "
-                "occasions. This is often a sign that the system is running "
-                "too quickly for the number of neurons per core.  Please "
-                "increase the machine time step or time_scale_factor or "
-                "decrease the number of neurons per core.".format(
-                    label, x, y, p, callback_queue_overloaded))))
+            message=self._TIMES_CALLBACK_QUEUE_OVERLOADED_MESSAGE.format(
+                label, x, y, p, callback_queue_overloaded)))
 
         data_items.append(ProvenanceDataItem(
             self._add_name(names, self._TIMES_DMA_QUEUE_OVERLOADED),
             dma_queue_overloaded,
             report=dma_queue_overloaded != 0,
-            message=(
-                "The DMA queue for {} on {}, {}, {} overloaded on {} "
-                "occasions. This is often a sign that the system is running "
-                "too quickly for the number of neurons per core.  Please "
-                "increase the machine time step or time_scale_factor or "
-                "decrease the number of neurons per core.".format(
-                    label, x, y, p, dma_queue_overloaded))))
+            message=self._TIMES_DMA_QUEUE_OVERLOADED_MESSAGE.format(
+                label, x, y, p, dma_queue_overloaded)))
 
         data_items.append(ProvenanceDataItem(
             self._add_name(names, self._TIMER_TICK_OVERRUN),
             number_of_times_timer_tic_over_ran,
             report=number_of_times_timer_tic_over_ran != 0,
-            message=(
-                "A Timer tick callback was still executing when the next "
-                "timer tick callback was fired off for {} on {}, {}, {}, {} "
-                "times. This is a sign of the system being overloaded and "
-                "therefore the results are likely incorrect.  Please increase "
-                "the machine time step or time_scale_factor or decrease the "
-                "number of neurons per core".format(
-                    label, x, y, p, number_of_times_timer_tic_over_ran))))
+            message=self._TIMER_TICK_OVERRUN_MESSAGE.format(
+                label, x, y, p, number_of_times_timer_tic_over_ran)))
 
         data_items.append(ProvenanceDataItem(
             self._add_name(names, self._MAX_TIMER_TICK_OVERRUN),
             max_number_of_times_timer_tic_over_ran,
-            report=max_number_of_times_timer_tic_over_ran != 0,
-            message=(
-                "The timer for {} on {}, {}, {} fell behind by up to {} "
-                "ticks. This is a sign of the system being overloaded and "
-                "therefore the results are likely incorrect. Please increase "
-                "the machine time step or time_scale_factor or decrease the "
-                "number of neurons per core".format(
-                    label, x, y, p, max_number_of_times_timer_tic_over_ran))))
+            report=max_number_of_times_timer_tic_over_ran > 0,
+            message=self._MAX_TIMER_TICK_OVERRUN_MESSAGE.format(
+                label, x, y, p, max_number_of_times_timer_tic_over_ran)))
 
         return data_items
 
@@ -264,7 +284,7 @@ class ProvidesProvenanceDataFromMachineImpl(
             How to talk to the machine
         :param ~pacman.model.placements.Placement placement:
             Which vertex are we retrieving from, and where was it
-        :rtype: \
+        :rtype:
             list(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
         """
         provenance_data = self._read_provenance_data(

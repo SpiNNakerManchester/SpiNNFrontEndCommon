@@ -19,7 +19,7 @@ from spinnman.model import IOBuffer
 from spinnman.utilities.appid_tracker import AppIdTracker
 from pacman.model.routing_tables import (
     MulticastRoutingTables, UnCompressedMulticastRoutingTable)
-from spinn_front_end_common.mapping_algorithms.\
+from spinn_front_end_common.interface.interface_functions.\
     on_chip_router_table_compression.compression import (
         mundy_on_chip_router_compression)
 
@@ -49,7 +49,7 @@ class MockTransceiverError(object):
             time_between_polls=0.1,
             error_states=frozenset(
                 {CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG}),
-            counts_between_full_check=100):
+            counts_between_full_check=100, progress_bar=None):
         # Return immediately
         pass
 
@@ -76,4 +76,4 @@ def test_router_compressor_on_error():
     machine = virtual_machine(width=8, height=8)
     mundy_on_chip_router_compression(
         routing_tables, transceiver, machine, app_id=17,
-        system_provenance_folder="")
+        system_provenance_folder="", write_compressor_iobuf=False)
