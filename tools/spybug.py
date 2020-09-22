@@ -1219,7 +1219,7 @@ def cmd_cmd(cli):
 def cmd_version(cli):
     if cli and cli.count:
         raise BadArgs
-    print("# pybug - version {}".format(fec_version))
+    print("# spybug - version {}".format(fec_version))
 
 
 # ------------------------------------------------------------------------------
@@ -1451,7 +1451,7 @@ expert_cmds = {
 
 
 def usage():
-    print("usage: pybug <options> <spiNNakerBoardIPAddress>", file=sys.stderr)
+    print("usage: spybug <options> <spiNNakerBoardIPAddress>", file=sys.stderr)
     print("  -bmp  <name>[/<slots>]   - set BMP target", file=sys.stderr)
     print("  -version                 - print version number", file=sys.stderr)
     print("  -norl                    - don't use 'ReadLine'", file=sys.stderr)
@@ -1537,13 +1537,13 @@ def init_readline():
 
 
 def main():
-    """ Main entry-point of pybug script.
+    """ Main entry-point of spybug script.
 
     Usage:
 
-        pybug <options> <spiNNakerBoardIPAddress>
+        spybug <options> <spiNNakerBoardIPAddress>
 
-    Try `pybug -help` for more information (which calls :py:func:`usage`).
+    Try `spybug -help` for more information (which calls :py:func:`usage`).
     """
     global _cli
     prompt = process_args()

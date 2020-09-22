@@ -85,7 +85,7 @@ setup(
                       'six'],
     entry_points={
         "console_scripts": [
-            "pybug = tools.pybug:main"
+            "spybug = tools.spybug:main"
         ],
     },
     maintainer="SpiNNakerTeam",
