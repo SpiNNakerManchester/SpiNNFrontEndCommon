@@ -28,6 +28,7 @@
 #include "bit_set.h"
 #include "merge.h"
 #include "../common/routing_table.h"
+#include "../common/minimise.h"
 
 //! \brief State of the ordered covering
 typedef struct _sets_t {
@@ -759,15 +760,6 @@ static inline bool oc_merge_apply(
     return true;
 }
 
-
-//! \brief Apply the ordered covering algorithm to a routing table
-//! \details Minimise the table until either the table is shorter than the
-//!     target length or no more merges are possible.
-//! \param[in] target_length: The length to reach
-//! \param[out] failed_by_malloc: Flag stating that it failed due to malloc
-//! \param[out] stop_compressing: Variable saying if the compressor should stop
-//!    and return false; _set by interrupt_ DURING the run of this method!
-//! \return Whether successful or not.
 bool minimise_run(
         uint32_t target_length, bool *failed_by_malloc,
         volatile bool *stop_compressing) {

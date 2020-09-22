@@ -16,17 +16,13 @@
  */
 
 /*! \file
- *
- *  \brief local Time Division Multi Access Functions Header File
- *
- *    provides function for spending packets within a given time frame
- *    simulations.
- *
+ *  \brief implementation of tdma_processing.h
  */
 
 #include <debug.h>
 #include <stdbool.h>
 #include <tdma_processing.h>
+#include <spinnaker.h>
 
 //! Spin1 API ticks - to know when the timer wraps
 extern uint ticks;
@@ -37,7 +33,7 @@ static tdma_parameters params;
 //! The next expected time to send a spike
 static uint32_t expected_time;
 
-//! n times the core got behind its TDMA
+//! Number of times the core got behind its TDMA
 static uint32_t n_behind_times = 0;
 
 uint32_t tdma_processing_times_behind(void) {
@@ -65,7 +61,6 @@ void tdma_processing_reset_phase(void) {
 void tdma_processing_send_packet(
         uint32_t transmission_key, uint32_t payload,
         uint32_t with_payload, uint32_t timer_count) {
-
     uint32_t timer_value = tc[T1_COUNT];
 
     // Find the next valid phase to send in; might run out of phases, at
@@ -87,5 +82,4 @@ void tdma_processing_send_packet(
     while (!spin1_send_mc_packet(transmission_key, payload, with_payload)) {
         spin1_delay_us(1);
     }
-
 }

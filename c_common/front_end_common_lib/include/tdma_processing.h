@@ -16,12 +16,10 @@
  */
 
 /*! \file
- *
- *  \brief local Time Division Multi Access Functions Header File
- *
- *    provides function for spending packets within a given time frame
- *    simulations.
- *
+ *  \brief Local TDMA (Time Division Multi Access) functions
+ *  \details
+ *      Provides function for spending packets within a given time frame
+ *      simulations.
  */
 
 #ifndef _TDMA_PROCESSING_H_
@@ -42,16 +40,16 @@ typedef struct tdma_parameters {
 //! \return the number of times the TDMA lagged
 uint32_t tdma_processing_times_behind(void);
 
-//! \brief init for the tdma processing
+//! \brief Initialise the TDMA processing
 //! \param[in,out] address: pointer to the SDRAM address where this data is
 //!                         stored, updated after being read
 //! \return whether we succeeded
 bool tdma_processing_initialise(void **address);
 
-//! \brief resets the phase of the TDMA
+//! \brief Reset the phase of the TDMA
 void tdma_processing_reset_phase(void);
 
-//! \brief sends a packet with the TDMA tie in
+//! \brief Send a packet according to the TDMA schedule
 //! \param[in] transmission_key: The key to send with
 //! \param[in] payload: the payload to send
 //! \param[in] with_payload: the marker about having a payload or not.

@@ -32,6 +32,7 @@
 #include "../common/routing_table.h"
 #include <stdbool.h>
 #include "common-typedefs.h"
+#include "../common/minimise.h"
 
 //! Absolute maximum number of routes that we may produce
 #define MAX_NUM_ROUTES 1023
@@ -141,9 +142,9 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b) {
     return 0;
 }
 
-//! \brief Implementation of sort for routes based on route information
+//! \brief Implementation of sort for routes based on route information.
 //! \details Uses insertion sort.
-//! \param[in] table_size: the number of entries in the table
+//! \param[in] table_size: The number of table entries to sort
 static void sort_table(uint32_t table_size) {
     uint32_t i, j;
 
@@ -181,7 +182,7 @@ static void sort_routes(void) {
 
 //! \brief Compute the route histogram
 //! \param[in] index: The index of the cell to update
-//! \return Whether the update was successful
+//! \return Whether the update yielded a valid table
 static inline bool update_frequency(uint32_t index) {
     uint32_t route = routing_table_get_entry(index)->route;
     for (uint32_t i = 0; i < routes_count; i++) {
@@ -201,12 +202,6 @@ static inline bool update_frequency(uint32_t index) {
     return true;
 }
 
-//! \brief Implementation of minimise()
-//! \param[in] target_length: ignored
-//! \param[out] failed_by_malloc: Never changed but required by API
-//! \param[in] stop_compressing: Variable saying if the compressor should stop
-//!    and return false; _set by interrupt_ DURING the run of this method!
-//! \return Whether minimisation succeeded
 bool minimise_run(UNUSED uint32_t target_length, UNUSED bool *failed_by_malloc,
         volatile bool *stop_compressing) {
     // Verify constant used to build arrays is correct
