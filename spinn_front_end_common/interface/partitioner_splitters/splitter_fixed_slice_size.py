@@ -18,15 +18,14 @@ from pacman.exceptions import PacmanPartitionException
 from pacman.model.constraints.partitioner_constraints import (
     FixedVertexAtomsConstraint, MaxVertexAtomsConstraint)
 from pacman.model.graphs.common import Slice
-from spinn_front_end_common.interface.partitioner_splitters.\
-    abstract_splitters import AbstractSplitterSlice
+from pacman.model.partitioner_interfaces import AbstractSplitterCommon
 from pacman.utilities import utility_calls
 from spinn_utilities.overrides import overrides
 from pacman.utilities.algorithm_utilities.partition_algorithm_utilities \
     import get_remaining_constraints
 
 
-class SplitterFixedSliceSized(AbstractSplitterSlice):
+class SplitterFixedSliceSized(AbstractSplitterCommon):
     """ Splitter that operates off the max atoms per core constraint and
     fixed atoms per core constraints. Will ensure its feasible to partition at
     that atoms per core.
@@ -50,14 +49,14 @@ class SplitterFixedSliceSized(AbstractSplitterSlice):
         "Not enough resources available to create vertex")
 
     def __init__(self):
-        AbstractSplitterSlice.__init__(self, self.SPLITTER_NAME)
+        AbstractSplitterCommon.__init__(self, self.SPLITTER_NAME)
         self.__been_called = False
         self.__max_atom_by_constraint = None
         self.__fixed_atom_by_constraint = None
 
-    @overrides(AbstractSplitterSlice.set_governed_app_vertex)
+    @overrides(AbstractSplitterCommon.set_governed_app_vertex)
     def set_governed_app_vertex(self, app_vertex):
-        AbstractSplitterSlice.set_governed_app_vertex(self, app_vertex)
+        AbstractSplitterCommon.set_governed_app_vertex(self, app_vertex)
         self.__max_atom_by_constraint, self.__fixed_atom_by_constraint = (
             self._compute_constraint_max_atoms())
         if (self.__fixed_atom_by_constraint is not None and
@@ -68,7 +67,7 @@ class SplitterFixedSliceSized(AbstractSplitterSlice):
                     self.__max_atom_by_constraint,
                     self.__fixed_atom_by_constraint))
 
-    @overrides(AbstractSplitterSlice.create_machine_vertices)
+    @overrides(AbstractSplitterCommon.create_machine_vertices)
     def create_machine_vertices(self, resource_tracker, machine_graph):
         atoms_per_core = self._compute_atoms_per_core(resource_tracker)
         if atoms_per_core < 1.0:
@@ -78,19 +77,32 @@ class SplitterFixedSliceSized(AbstractSplitterSlice):
         self.__been_called = True
         return True
 
-    @overrides(AbstractSplitterSlice.get_out_going_slices)
+    @overrides(AbstractSplitterCommon.get_out_going_slices)
     def get_out_going_slices(self):
         if self.__been_called:
             return self._governed_app_vertex.vertex_slices, True
         else:
             self._get_slices_estimate(), False
 
-    @overrides(AbstractSplitterSlice.get_in_coming_slices)
+    @overrides(AbstractSplitterCommon.get_in_coming_slices)
     def get_in_coming_slices(self):
         if self.__been_called:
             return self._governed_app_vertex.vertex_slices, True
         else:
             return self._get_slices_estimate(), False
+
+    @overrides(AbstractSplitterCommon.get_pre_vertices)
+    def get_pre_vertices(self, edge, outgoing_edge_partition):
+        return self._governed_app_vertex.machine_vertices
+
+    @overrides(AbstractSplitterCommon.get_post_vertices)
+    def get_post_vertices(self, edge, outgoing_edge_partition,
+                          src_machine_vertex):
+        return self._governed_app_vertex.machine_vertices
+
+    @overrides(AbstractSplitterCommon.machine_vertices_for_recording)
+    def machine_vertices_for_recording(self, variable_to_record):
+        return self._governed_app_vertex.machine_vertices
 
     def _get_slices_estimate(self):
         """ generates estimate of slices
