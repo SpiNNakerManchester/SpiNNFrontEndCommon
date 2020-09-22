@@ -98,6 +98,42 @@
 <div class="section" id="module-spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
+<dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.ClearReinjectionQueueMessage">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.</code><code class="descname">ClearReinjectionQueueMessage</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/clear_reinjection_queue_message.html#ClearReinjectionQueueMessage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.ClearReinjectionQueueMessage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.messages.scp.abstract_messages.scp_request.AbstractSCPRequest</span></code></p>
+<p>An SCP Request to set the dropped packet reinjected packet types.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The x-coordinate of a chip, between 0 and 255</li>
+<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The y-coordinate of a chip, between 0 and 255</li>
+<li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The processor running the extra monitor vertex, between 0 and 17</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.ClearReinjectionQueueMessage.get_scp_response">
+<code class="descname">get_scp_response</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/clear_reinjection_queue_message.html#ClearReinjectionQueueMessage.get_scp_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.ClearReinjectionQueueMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an SCP response message to be used to process any response            received</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An SCP response, or None if no response is required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">AbstractSCPResponse</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.GetReinjectionStatusMessage">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.</code><code class="descname">GetReinjectionStatusMessage</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/get_reinjection_status_message.html#GetReinjectionStatusMessage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.GetReinjectionStatusMessage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.messages.scp.abstract_messages.scp_request.AbstractSCPRequest</span></code></p>
@@ -160,6 +196,78 @@
 <dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.GetReinjectionStatusMessageResponse.reinjection_functionality_status">
 <code class="descname">reinjection_functionality_status</code><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.GetReinjectionStatusMessageResponse.reinjection_functionality_status" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadApplicationMCRoutesMessage">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.</code><code class="descname">LoadApplicationMCRoutesMessage</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/load_application_mc_routes_message.html#LoadApplicationMCRoutesMessage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadApplicationMCRoutesMessage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.messages.scp.abstract_messages.scp_request.AbstractSCPRequest</span></code></p>
+<p>An SCP Request to write the application multicast routes into the        router.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The x-coordinate of a chip, between 0 and 255</li>
+<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The y-coordinate of a chip, between 0 and 255</li>
+<li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The processor running the extra monitor vertex, between 0 and 17</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadApplicationMCRoutesMessage.get_scp_response">
+<code class="descname">get_scp_response</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/load_application_mc_routes_message.html#LoadApplicationMCRoutesMessage.get_scp_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadApplicationMCRoutesMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an SCP response message to be used to process any response            received</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An SCP response, or None if no response is required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">AbstractSCPResponse</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadSystemMCRoutesMessage">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.</code><code class="descname">LoadSystemMCRoutesMessage</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/load_system_mc_routes_message.html#LoadSystemMCRoutesMessage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadSystemMCRoutesMessage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.messages.scp.abstract_messages.scp_request.AbstractSCPRequest</span></code></p>
+<p>An SCP Request to write the system multicast routes into the router.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The x-coordinate of a chip, between 0 and 255</li>
+<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The y-coordinate of a chip, between 0 and 255</li>
+<li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The processor running the extra monitor vertex, between 0 and 17</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadSystemMCRoutesMessage.get_scp_response">
+<code class="descname">get_scp_response</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/load_system_mc_routes_message.html#LoadSystemMCRoutesMessage.get_scp_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadSystemMCRoutesMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an SCP response message to be used to process any response            received</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An SCP response, or None if no response is required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">AbstractSCPResponse</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -240,46 +348,8 @@
 </dd></dl>
 
 <dl class="class">
-<dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetRouterEmergencyTimeoutMessage">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.</code><code class="descname">SetRouterEmergencyTimeoutMessage</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em>, <em>timeout_mantissa</em>, <em>timeout_exponent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/set_router_emergency_timeout_message.html#SetRouterEmergencyTimeoutMessage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetRouterEmergencyTimeoutMessage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.messages.scp.abstract_messages.scp_request.AbstractSCPRequest</span></code></p>
-<p>An SCP Request to set the router emergency timeout for dropped packet        reinjection.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The x-coordinate of a chip, between 0 and 255</li>
-<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The y-coordinate of a chip, between 0 and 255</li>
-<li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The processor running the extra monitor vertex, between 0 and 17</li>
-<li><strong>timeout_mantissa</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The mantissa of the timeout value, between 0 and 15</li>
-<li><strong>timeout_exponent</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The exponent of the timeout value, between 0 and 15</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetRouterEmergencyTimeoutMessage.get_scp_response">
-<code class="descname">get_scp_response</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/set_router_emergency_timeout_message.html#SetRouterEmergencyTimeoutMessage.get_scp_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetRouterEmergencyTimeoutMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an SCP response message to be used to process any response            received</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An SCP response, or None if no response is required</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">AbstractSCPResponse</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
 <dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetRouterTimeoutMessage">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.</code><code class="descname">SetRouterTimeoutMessage</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em>, <em>timeout_mantissa</em>, <em>timeout_exponent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/set_router_timeout_message.html#SetRouterTimeoutMessage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetRouterTimeoutMessage" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.</code><code class="descname">SetRouterTimeoutMessage</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em>, <em>timeout_mantissa</em>, <em>timeout_exponent</em>, <em>wait=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/set_router_timeout_message.html#SetRouterTimeoutMessage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetRouterTimeoutMessage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.messages.scp.abstract_messages.scp_request.AbstractSCPRequest</span></code></p>
 <p>An SCP Request to the extra monitor core to set the router timeout        for dropped packet reinjection.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -292,6 +362,7 @@
 <li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The processor running the extra monitor vertex, between 0 and 17</li>
 <li><strong>timeout_mantissa</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The mantissa of the timeout value, between 0 and 15</li>
 <li><strong>timeout_exponent</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The exponent of the timeout value, between 0 and 15</li>
+<li><strong>wait</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; Which wait to set. Should be 1 or 2.</li>
 </ul>
 </td>
 </tr>
@@ -300,114 +371,6 @@
 <dl class="method">
 <dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetRouterTimeoutMessage.get_scp_response">
 <code class="descname">get_scp_response</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/set_router_timeout_message.html#SetRouterTimeoutMessage.get_scp_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetRouterTimeoutMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an SCP response message to be used to process any response            received</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An SCP response, or None if no response is required</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">AbstractSCPResponse</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.ClearReinjectionQueueMessage">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.</code><code class="descname">ClearReinjectionQueueMessage</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/clear_reinjection_queue_message.html#ClearReinjectionQueueMessage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.ClearReinjectionQueueMessage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.messages.scp.abstract_messages.scp_request.AbstractSCPRequest</span></code></p>
-<p>An SCP Request to set the dropped packet reinjected packet types.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The x-coordinate of a chip, between 0 and 255</li>
-<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The y-coordinate of a chip, between 0 and 255</li>
-<li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The processor running the extra monitor vertex, between 0 and 17</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.ClearReinjectionQueueMessage.get_scp_response">
-<code class="descname">get_scp_response</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/clear_reinjection_queue_message.html#ClearReinjectionQueueMessage.get_scp_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.ClearReinjectionQueueMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an SCP response message to be used to process any response            received</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An SCP response, or None if no response is required</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">AbstractSCPResponse</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadApplicationMCRoutesMessage">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.</code><code class="descname">LoadApplicationMCRoutesMessage</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/load_application_mc_routes_message.html#LoadApplicationMCRoutesMessage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadApplicationMCRoutesMessage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.messages.scp.abstract_messages.scp_request.AbstractSCPRequest</span></code></p>
-<p>An SCP Request to write the application multicast routes into the        router.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The x-coordinate of a chip, between 0 and 255</li>
-<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The y-coordinate of a chip, between 0 and 255</li>
-<li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The processor running the extra monitor vertex, between 0 and 17</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadApplicationMCRoutesMessage.get_scp_response">
-<code class="descname">get_scp_response</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/load_application_mc_routes_message.html#LoadApplicationMCRoutesMessage.get_scp_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadApplicationMCRoutesMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an SCP response message to be used to process any response            received</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An SCP response, or None if no response is required</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">AbstractSCPResponse</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadSystemMCRoutesMessage">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.</code><code class="descname">LoadSystemMCRoutesMessage</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/load_system_mc_routes_message.html#LoadSystemMCRoutesMessage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadSystemMCRoutesMessage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.messages.scp.abstract_messages.scp_request.AbstractSCPRequest</span></code></p>
-<p>An SCP Request to write the system multicast routes into the router.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The x-coordinate of a chip, between 0 and 255</li>
-<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The y-coordinate of a chip, between 0 and 255</li>
-<li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The processor running the extra monitor vertex, between 0 and 17</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadSystemMCRoutesMessage.get_scp_response">
-<code class="descname">get_scp_response</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/load_system_mc_routes_message.html#LoadSystemMCRoutesMessage.get_scp_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadSystemMCRoutesMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an SCP response message to be used to process any response            received</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

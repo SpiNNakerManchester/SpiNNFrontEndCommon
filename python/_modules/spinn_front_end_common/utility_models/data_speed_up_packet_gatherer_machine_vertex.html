@@ -114,8 +114,7 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">SpinnFrontEndException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs.</span>\
     <span class="n">extra_monitor_scp_processes</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">SetRouterTimeoutProcess</span><span class="p">,</span> <span class="n">SetRouterEmergencyTimeoutProcess</span><span class="p">,</span>
-        <span class="n">ClearQueueProcess</span><span class="p">)</span>
+        <span class="n">SetRouterTimeoutProcess</span><span class="p">,</span> <span class="n">ClearQueueProcess</span><span class="p">)</span>
 
 <span class="n">log</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -1112,9 +1111,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">clear_reinjection_queue</span><span class="p">(</span><span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
 
         <span class="c1"># set time outs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_emergency_timeout</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait2_timeout</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_SHORT_TIMEOUT</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_time_outs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_LONG_TIMEOUT</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait1_timeout</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_LONG_TIMEOUT</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span></div>
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.load_application_routing_tables"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.load_application_routing_tables">[docs]</a>    <span class="k">def</span> <span class="nf">load_application_routing_tables</span><span class="p">(</span>
@@ -1146,7 +1146,7 @@
         <span class="n">extra_monitor_cores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">load_system_mc_routes</span><span class="p">(</span>
             <span class="n">placements</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_router_time_outs"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_time_outs">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_time_outs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_router_wait1_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_wait1_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait1_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set the wait1 field for a set of routers.</span>
 
 <span class="sd">        :param tuple(int,int) timeout:</span>
@@ -1158,14 +1158,14 @@
         <span class="n">process</span> <span class="o">=</span> <span class="n">SetRouterTimeoutProcess</span><span class="p">(</span>
             <span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">process</span><span class="o">.</span><span class="n">set_timeout</span><span class="p">(</span><span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">)</span>
+            <span class="n">process</span><span class="o">.</span><span class="n">set_wait1_timeout</span><span class="p">(</span><span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
             <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
                 <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
                 <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
             <span class="k">raise</span></div>
 
-<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_router_emergency_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_emergency_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_emergency_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_router_wait2_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_wait2_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait2_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set the wait2 field for a set of routers.</span>
 
 <span class="sd">        :param tuple(int,int) timeout:</span>
@@ -1174,10 +1174,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span> <span class="o">=</span> <span class="n">timeout</span>
         <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">([</span><span class="bp">self</span><span class="p">],</span> <span class="n">placements</span><span class="p">)</span>
-        <span class="n">process</span> <span class="o">=</span> <span class="n">SetRouterEmergencyTimeoutProcess</span><span class="p">(</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">SetRouterTimeoutProcess</span><span class="p">(</span>
             <span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">process</span><span class="o">.</span><span class="n">set_timeout</span><span class="p">(</span><span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">)</span>
+            <span class="n">process</span><span class="o">.</span><span class="n">set_wait2_timeout</span><span class="p">(</span><span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
             <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
                 <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
@@ -1215,9 +1215,9 @@
 <span class="sd">            placements object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Set the routers to temporary values</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_time_outs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait1_timeout</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_TEMP_TIMEOUT</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_emergency_timeout</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait2_timeout</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_ZERO_TIMEOUT</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1225,11 +1225,11 @@
                 <span class="s2">&quot;Cores have not been set for data extraction, so can&#39;t be&quot;</span>
                 <span class="s2">&quot; unset&quot;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_router_time_outs</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span><span class="o">.</span><span class="n">router_timeout_parameters</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
-                <span class="n">placements</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_router_emergency_timeout</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span><span class="o">.</span><span class="n">router_emergency_timeout_parameters</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait1_timeout</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span><span class="o">.</span><span class="n">router_wait1_timeout_parameters</span><span class="p">,</span>
+                <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait2_timeout</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span><span class="o">.</span><span class="n">router_wait2_timeout_parameters</span><span class="p">,</span>
                 <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
 
             <span class="n">lead_monitor</span> <span class="o">=</span> <span class="n">extra_monitor_cores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>

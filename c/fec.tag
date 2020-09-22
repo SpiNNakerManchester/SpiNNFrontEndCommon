@@ -6547,16 +6547,16 @@
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
-      <name>reinjection_set_timeout</name>
+      <name>reinjection_set_wait1_timeout</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>ab980ed73f46a26ebaef3d348656b6f00</anchor>
+      <anchor>a8ed1db3ca0209eb0487b714f5bdf966f</anchor>
       <arglist>(uint payload)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
-      <name>reinjection_set_emergency_timeout</name>
+      <name>reinjection_set_wait2_timeout</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>ad9263b36e3b51be0dcc0404ac3266d7e</anchor>
+      <anchor>ad76e83f8fe8dbc7b44e9680125264a40</anchor>
       <arglist>(uint payload)</arglist>
     </member>
     <member kind="function" static="yes">

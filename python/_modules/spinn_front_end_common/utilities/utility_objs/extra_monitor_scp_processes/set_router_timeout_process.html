@@ -84,32 +84,59 @@
 
 
 <div class="viewcode-block" id="SetRouterTimeoutProcess"><a class="viewcode-back" href="../../../../../spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterTimeoutProcess">[docs]</a><span class="k">class</span> <span class="nc">SetRouterTimeoutProcess</span><span class="p">(</span><span class="n">AbstractMultiConnectionProcess</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; How to send messages to set the router timeouts.</span>
+    <span class="sd">&quot;&quot;&quot; How to send messages to set router timeouts. These messages need to be\</span>
+<span class="sd">        sent to cores running the extra monitor binary.</span>
 
-<span class="sd">    Note that timeouts are specified in a weird fixed point format.</span>
-<span class="sd">    See the SpiNNaker datasheet for details.</span>
+<span class="sd">    .. note::</span>
+<span class="sd">        SCAMP sets wait2 to zero by default!</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        Timeouts are specified in a weird floating point format.</span>
+<span class="sd">        See the SpiNNaker datasheet for details.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SetRouterTimeoutProcess.set_timeout"><a class="viewcode-back" href="../../../../../spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterTimeoutProcess.set_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param int mantissa:</span>
-<span class="sd">        :param int exponent:</span>
+<div class="viewcode-block" id="SetRouterTimeoutProcess.set_wait1_timeout"><a class="viewcode-back" href="../../../../../spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterTimeoutProcess.set_wait1_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_wait1_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The wait1 timeout is the time from when a packet is received to\</span>
+<span class="sd">            when emergency routing becomes enabled.</span>
+
+<span class="sd">        :param int mantissa: Timeout mantissa (0 to 15)</span>
+<span class="sd">        :param int exponent: Timeout exponent (0 to 15)</span>
 <span class="sd">        :param ~spinn_machine.CoreSubsets core_subsets:</span>
+<span class="sd">            Where the extra monitors that manage the routers are located.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">core_subset</span> <span class="ow">in</span> <span class="n">core_subsets</span><span class="o">.</span><span class="n">core_subsets</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">processor_id</span> <span class="ow">in</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">processor_ids</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_set_timeout</span><span class="p">(</span>
-                    <span class="n">core_subset</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">)</span></div>
+                    <span class="n">core_subset</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core_subset</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~spinn_machine.CoreSubset core_subset:</span>
+<div class="viewcode-block" id="SetRouterTimeoutProcess.set_wait2_timeout"><a class="viewcode-back" href="../../../../../spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterTimeoutProcess.set_wait2_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_wait2_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The wait2 timeout is the time from when a packet has emergency\</span>
+<span class="sd">            routing enabled for it to when it is dropped.</span>
+
+<span class="sd">        :param int mantissa: Timeout mantissa (0 to 15)</span>
+<span class="sd">        :param int exponent: Timeout exponent (0 to 15)</span>
+<span class="sd">        :param ~spinn_machine.CoreSubsets core_subsets:</span>
+<span class="sd">            Where the extra monitors that manage the routers are located.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">core_subset</span> <span class="ow">in</span> <span class="n">core_subsets</span><span class="o">.</span><span class="n">core_subsets</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">processor_id</span> <span class="ow">in</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">processor_ids</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_timeout</span><span class="p">(</span>
+                    <span class="n">core_subset</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">wait</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set a timeout for a router controlled by an extra monitor on a\</span>
+<span class="sd">            core. This is not a parallelised operation in order to aid\</span>
+<span class="sd">            debugging when it fails.</span>
+
+<span class="sd">        :param ~spinn_machine.CoreSubset core:</span>
 <span class="sd">        :param int processor_id:</span>
 <span class="sd">        :param int mantissa:</span>
 <span class="sd">        :param int exponent:</span>
+<span class="sd">        :param int wait:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_send_request</span><span class="p">(</span><span class="n">SetRouterTimeoutMessage</span><span class="p">(</span>
-            <span class="n">core_subset</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">))</span>
+            <span class="n">core</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">core</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">,</span>
+            <span class="n">timeout_mantissa</span><span class="o">=</span><span class="n">mantissa</span><span class="p">,</span> <span class="n">timeout_exponent</span><span class="o">=</span><span class="n">exponent</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="n">wait</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_finish</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_for_error</span><span class="p">()</span></div>
 </pre></div>

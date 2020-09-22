@@ -1069,9 +1069,9 @@ created. If None, there is no such application vertex.</li>
 </dd></dl>
 
 <dl class="method">
-<dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_emergency_timeout">
-<code class="descname">set_router_emergency_timeout</code><span class="sig-paren">(</span><em>timeout</em>, <em>transceiver</em>, <em>placements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.set_router_emergency_timeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_emergency_timeout" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the wait2 field for a set of routers.</p>
+<dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_wait1_timeout">
+<code class="descname">set_router_wait1_timeout</code><span class="sig-paren">(</span><em>timeout</em>, <em>transceiver</em>, <em>placements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.set_router_wait1_timeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_wait1_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the wait1 field for a set of routers.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1088,9 +1088,9 @@ created. If None, there is no such application vertex.</li>
 </dd></dl>
 
 <dl class="method">
-<dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_time_outs">
-<code class="descname">set_router_time_outs</code><span class="sig-paren">(</span><em>timeout</em>, <em>transceiver</em>, <em>placements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.set_router_time_outs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_time_outs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the wait1 field for a set of routers.</p>
+<dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_wait2_timeout">
+<code class="descname">set_router_wait2_timeout</code><span class="sig-paren">(</span><em>timeout</em>, <em>transceiver</em>, <em>placements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.set_router_wait2_timeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_wait2_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the wait2 field for a set of routers.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1493,9 +1493,9 @@ created. If None, there is no such application vertex.</li>
 </dd></dl>
 
 <dl class="method">
-<dt id="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_emergency_timeout">
-<code class="descname">set_router_emergency_timeout</code><span class="sig-paren">(</span><em>timeout</em>, <em>transceiver</em>, <em>placements</em>, <em>extra_monitor_cores_to_set</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/extra_monitor_support_machine_vertex.html#ExtraMonitorSupportMachineVertex.set_router_emergency_timeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_emergency_timeout" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the timeout of the routers</p>
+<dt id="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_wait1_timeout">
+<code class="descname">set_router_wait1_timeout</code><span class="sig-paren">(</span><em>timeout</em>, <em>transceiver</em>, <em>placements</em>, <em>extra_monitor_cores_to_set</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/extra_monitor_support_machine_vertex.html#ExtraMonitorSupportMachineVertex.set_router_wait1_timeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_wait1_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Supports setting of the router time outs for a set of chips via            their extra monitor cores. This sets the timeout for the time            between when a packet arrives and when it starts to be emergency            routed. (Actual emergency routing is disabled by default.)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1503,7 +1503,7 @@ created. If None, there is no such application vertex.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; The mantissa and exponent of the timeout value, each between
 0 and 15</li>
-<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the spinnMan instance</li>
+<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the spinnman interface</li>
 <li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; vertex placements</li>
 <li><strong>extra_monitor_cores_to_set</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em><em></em>) &#8211; which monitors control the routers to set the timeout of</li>
 </ul>
@@ -1514,9 +1514,9 @@ created. If None, there is no such application vertex.</li>
 </dd></dl>
 
 <dl class="method">
-<dt id="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_time_outs">
-<code class="descname">set_router_time_outs</code><span class="sig-paren">(</span><em>timeout</em>, <em>transceiver</em>, <em>placements</em>, <em>extra_monitor_cores_to_set</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/extra_monitor_support_machine_vertex.html#ExtraMonitorSupportMachineVertex.set_router_time_outs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_time_outs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Supports setting of the router time outs for a set of chips via            their extra monitor cores.</p>
+<dt id="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_wait2_timeout">
+<code class="descname">set_router_wait2_timeout</code><span class="sig-paren">(</span><em>timeout</em>, <em>transceiver</em>, <em>placements</em>, <em>extra_monitor_cores_to_set</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/extra_monitor_support_machine_vertex.html#ExtraMonitorSupportMachineVertex.set_router_wait2_timeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_wait2_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Supports setting of the router time outs for a set of chips via            their extra monitor cores. This sets the timeout for the time            between when a packet starts to be emergency routed and when it            is dropped. (Actual emergency routing is disabled by default.)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1524,7 +1524,7 @@ created. If None, there is no such application vertex.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; The mantissa and exponent of the timeout value, each between
 0 and 15</li>
-<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the spinnman interface</li>
+<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the spinnMan instance</li>
 <li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; vertex placements</li>
 <li><strong>extra_monitor_cores_to_set</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em><em></em>) &#8211; which monitors control the routers to set the timeout of</li>
 </ul>

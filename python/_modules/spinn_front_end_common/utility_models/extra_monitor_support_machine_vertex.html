@@ -93,9 +93,8 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs.</span>\
     <span class="n">extra_monitor_scp_processes</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">ReadStatusProcess</span><span class="p">,</span> <span class="n">ResetCountersProcess</span><span class="p">,</span> <span class="n">SetPacketTypesProcess</span><span class="p">,</span>
-        <span class="n">SetRouterEmergencyTimeoutProcess</span><span class="p">,</span> <span class="n">SetRouterTimeoutProcess</span><span class="p">,</span>
-        <span class="n">ClearQueueProcess</span><span class="p">,</span> <span class="n">LoadApplicationMCRoutesProcess</span><span class="p">,</span>
-        <span class="n">LoadSystemMCRoutesProcess</span><span class="p">)</span>
+        <span class="n">SetRouterTimeoutProcess</span><span class="p">,</span> <span class="n">ClearQueueProcess</span><span class="p">,</span>
+        <span class="n">LoadApplicationMCRoutesProcess</span><span class="p">,</span> <span class="n">LoadSystemMCRoutesProcess</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">SARK_PER_MALLOC_SDRAM_USAGE</span><span class="p">,</span> <span class="n">DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES</span><span class="p">,</span>
     <span class="n">BYTES_PER_WORD</span><span class="p">,</span> <span class="n">BYTES_PER_KB</span><span class="p">)</span>
@@ -445,11 +444,13 @@
         <span class="n">route</span> <span class="o">|=</span> <span class="n">Router</span><span class="o">.</span><span class="n">convert_routing_table_entry_to_spinnaker_route</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">route</span>
 
-<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.set_router_time_outs"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_time_outs">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_time_outs</span><span class="p">(</span>
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.set_router_wait1_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_wait1_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait1_timeout</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
             <span class="n">extra_monitor_cores_to_set</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Supports setting of the router time outs for a set of chips via\</span>
-<span class="sd">            their extra monitor cores.</span>
+<span class="sd">            their extra monitor cores. This sets the timeout for the time\</span>
+<span class="sd">            between when a packet arrives and when it starts to be emergency\</span>
+<span class="sd">            routed. (Actual emergency routing is disabled by default.)</span>
 
 <span class="sd">        :param tuple(int,int) timeout:</span>
 <span class="sd">            The mantissa and exponent of the timeout value, each between</span>
@@ -469,17 +470,20 @@
         <span class="n">process</span> <span class="o">=</span> <span class="n">SetRouterTimeoutProcess</span><span class="p">(</span>
             <span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">process</span><span class="o">.</span><span class="n">set_timeout</span><span class="p">(</span><span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">)</span>
+            <span class="n">process</span><span class="o">.</span><span class="n">set_wait1_timeout</span><span class="p">(</span><span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
             <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
                 <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
                 <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
             <span class="k">raise</span></div>
 
-<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.set_router_emergency_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_emergency_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_emergency_timeout</span><span class="p">(</span>
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.set_router_wait2_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_wait2_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait2_timeout</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
             <span class="n">extra_monitor_cores_to_set</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Sets the timeout of the routers</span>
+        <span class="sd">&quot;&quot;&quot; Supports setting of the router time outs for a set of chips via\</span>
+<span class="sd">            their extra monitor cores. This sets the timeout for the time\</span>
+<span class="sd">            between when a packet starts to be emergency routed and when it\</span>
+<span class="sd">            is dropped. (Actual emergency routing is disabled by default.)</span>
 
 <span class="sd">        :param tuple(int,int) timeout:</span>
 <span class="sd">            The mantissa and exponent of the timeout value, each between</span>
@@ -496,10 +500,10 @@
         <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span> <span class="o">=</span> <span class="n">timeout</span>
         <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">(</span>
             <span class="n">extra_monitor_cores_to_set</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
-        <span class="n">process</span> <span class="o">=</span> <span class="n">SetRouterEmergencyTimeoutProcess</span><span class="p">(</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">SetRouterTimeoutProcess</span><span class="p">(</span>
             <span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">process</span><span class="o">.</span><span class="n">set_timeout</span><span class="p">(</span><span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">)</span>
+            <span class="n">process</span><span class="o">.</span><span class="n">set_wait2_timeout</span><span class="p">(</span><span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
             <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
                 <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>

@@ -104,10 +104,10 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
 
         <span class="c1"># The WAIT1 timeout value of the router in cycles</span>
-        <span class="s2">&quot;_router_timeout&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_wait1_timeout&quot;</span><span class="p">,</span>
 
         <span class="c1"># The WAIT2 timeout value of the router in cycles</span>
-        <span class="s2">&quot;_router_emergency_timeout&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_wait2_timeout&quot;</span><span class="p">,</span>
 
         <span class="c1"># The number of packets dropped by the router and received by\</span>
         <span class="c1"># the re injection functionality (may not fit in the queue though)</span>
@@ -143,46 +143,46 @@
 <span class="sd">        :param bytes data: The data containing the information</span>
 <span class="sd">        :param int offset: The offset in the data where the information starts</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_timeout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router_emergency_timeout</span><span class="p">,</span>
+        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wait1_timeout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wait2_timeout</span><span class="p">,</span>
          <span class="bp">self</span><span class="o">.</span><span class="n">_n_dropped_packets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_missed_dropped_packets</span><span class="p">,</span>
          <span class="bp">self</span><span class="o">.</span><span class="n">_n_dropped_packet_overflows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_reinjected_packets</span><span class="p">,</span>
          <span class="bp">self</span><span class="o">.</span><span class="n">_n_link_dumps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_processor_dumps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flags</span><span class="p">)</span> <span class="o">=</span> \
             <span class="n">_PATTERN</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">router_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">router_wait1_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; The WAIT1 timeout value of the router, in cycles.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">_decode_router_timeout_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_timeout</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_decode_router_timeout_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wait1_timeout</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">router_timeout_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">router_wait1_timeout_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; The WAIT1 timeout value of the router as mantissa and exponent.</span>
 
 <span class="sd">        :rtype: tuple(int,int)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">mantissa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router_timeout</span> <span class="o">&amp;</span> <span class="mh">0xF</span>
-        <span class="n">exponent</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_timeout</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xF</span>
+        <span class="n">mantissa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wait1_timeout</span> <span class="o">&amp;</span> <span class="mh">0xF</span>
+        <span class="n">exponent</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wait1_timeout</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xF</span>
         <span class="k">return</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">router_emergency_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">router_wait2_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; The WAIT2 timeout value of the router, in cycles.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">_decode_router_timeout_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_emergency_timeout</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_decode_router_timeout_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wait2_timeout</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">router_emergency_timeout_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">router_wait2_timeout_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; The WAIT2 timeout value of the router as mantissa and exponent.</span>
 
 <span class="sd">        :rtype: tuple(int,int)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">mantissa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router_emergency_timeout</span> <span class="o">&amp;</span> <span class="mh">0xF</span>
-        <span class="n">exponent</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_emergency_timeout</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xF</span>
+        <span class="n">mantissa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wait2_timeout</span> <span class="o">&amp;</span> <span class="mh">0xF</span>
+        <span class="n">exponent</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wait2_timeout</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xF</span>
         <span class="k">return</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span>
 
     <span class="nd">@property</span>
