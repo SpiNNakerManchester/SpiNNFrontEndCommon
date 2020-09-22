@@ -1233,7 +1233,7 @@ def cmd_expert(cli):
     if expert:
         return
     expert = True
-    _cli.cmd(expert_cmds, 0)
+    _cli.cmd(expert_cmds, False)
 
     print("# You are now an expert!")
 
@@ -1497,14 +1497,6 @@ def process_args():
     return prompt
 
 
-def open_targets():
-    global spin, sv, bmp
-    spin = SCAMPCmd(target=spinn_target, port=spin_port, debug=debug)
-    sv = Struct(scp=spin)
-    if bmp_target is not None:
-        bmp = BMPCmd(target=bmp_target, port=bmp_port, debug=debug)
-
-
 class _Completer(object):
     def __init__(self):
         self._stored = [None]
@@ -1532,14 +1524,17 @@ def main():
 
     Try `spybug -help` for more information (which calls :py:func:`usage`).
     """
-    global _cli
+    global _cli, spin, sv, bmp
     prompt = process_args()
     readline.set_completer(_Completer())
 
-    open_targets()
+    spin = SCAMPCmd(target=spinn_target, port=spin_port, debug=debug)
+    sv = Struct(scp=spin)
+    if bmp_target is not None:
+        bmp = BMPCmd(target=bmp_target, port=bmp_port, debug=debug)
     cmd_version(None)
 
     _cli = CLI(sys.stdin, prompt, spin_cmds)
     if expert:
-        _cli.cmd(expert_cmds, 0)
+        _cli.cmd(expert_cmds, False)
     _cli.run()
