@@ -33,7 +33,7 @@ dist: focal
 addons:
   apt:
     packages:
-      - libc6:i386
+      - libc6
       - vera++
       - libxml2-utils
       - gcc-arm-none-eabi
