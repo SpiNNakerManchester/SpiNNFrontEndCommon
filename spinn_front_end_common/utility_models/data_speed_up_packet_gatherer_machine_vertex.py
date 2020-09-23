@@ -50,8 +50,7 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
-        SetRouterTimeoutProcess, SetRouterEmergencyTimeoutProcess,
-        ClearQueueProcess)
+        SetRouterTimeoutProcess, ClearQueueProcess)
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -1048,9 +1047,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         self.clear_reinjection_queue(transceiver, placements)
 
         # set time outs
-        self.set_router_emergency_timeout(
+        self.set_router_wait2_timeout(
             self._SHORT_TIMEOUT, transceiver, placements)
-        self.set_router_time_outs(self._LONG_TIMEOUT, transceiver, placements)
+        self.set_router_wait1_timeout(
+            self._LONG_TIMEOUT, transceiver, placements)
 
     @staticmethod
     def load_application_routing_tables(
@@ -1082,7 +1082,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         extra_monitor_cores[0].load_system_mc_routes(
             placements, extra_monitor_cores, transceiver)
 
-    def set_router_time_outs(self, timeout, transceiver, placements):
+    def set_router_wait1_timeout(self, timeout, transceiver, placements):
         """ Set the wait1 field for a set of routers.
 
         :param tuple(int,int) timeout:
@@ -1094,14 +1094,14 @@ class DataSpeedUpPacketGatherMachineVertex(
         process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
         try:
-            process.set_timeout(mantissa, exponent, core_subsets)
+            process.set_wait1_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
                 placements.get_placement_of_vertex(self))
             raise
 
-    def set_router_emergency_timeout(self, timeout, transceiver, placements):
+    def set_router_wait2_timeout(self, timeout, transceiver, placements):
         """ Set the wait2 field for a set of routers.
 
         :param tuple(int,int) timeout:
@@ -1110,10 +1110,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset([self], placements)
-        process = SetRouterEmergencyTimeoutProcess(
+        process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
         try:
-            process.set_timeout(mantissa, exponent, core_subsets)
+            process.set_wait2_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
@@ -1151,9 +1151,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             placements object
         """
         # Set the routers to temporary values
-        self.set_router_time_outs(
+        self.set_router_wait1_timeout(
             self._TEMP_TIMEOUT, transceiver, placements)
-        self.set_router_emergency_timeout(
+        self.set_router_wait2_timeout(
             self._ZERO_TIMEOUT, transceiver, placements)
 
         if self._last_status is None:
@@ -1161,11 +1161,11 @@ class DataSpeedUpPacketGatherMachineVertex(
                 "Cores have not been set for data extraction, so can't be"
                 " unset")
         try:
-            self.set_router_time_outs(
-                self._last_status.router_timeout_parameters, transceiver,
-                placements)
-            self.set_router_emergency_timeout(
-                self._last_status.router_emergency_timeout_parameters,
+            self.set_router_wait1_timeout(
+                self._last_status.router_wait1_timeout_parameters,
+                transceiver, placements)
+            self.set_router_wait2_timeout(
+                self._last_status.router_wait2_timeout_parameters,
                 transceiver, placements)
 
             lead_monitor = extra_monitor_cores[0]
