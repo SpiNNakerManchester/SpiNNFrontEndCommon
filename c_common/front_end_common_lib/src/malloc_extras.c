@@ -88,7 +88,7 @@ void malloc_extras_terminate(uint result_code) {
     // hopefully one of these functions will kill the binary
     spin1_pause();
     spin1_exit(0);
-    if (result_code != EXITED_CLEANLY) {
+    if (result_code != EXITED_CLEANLY && result_code != EXIT_FAIL) {
         rt_error(RTE_SWERR);
     }
 }

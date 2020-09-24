@@ -14,9 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 try:
-    from collections import MutableMapping
+    from collections.abc import MutableMapping
 except ImportError:
-    from UserDict import DictMixin as MutableMapping
+    # For 2.7 only
+    from collections import MutableMapping
 from .data_row_writer import DataRowWriter
 from .data_row_reader import DataRowReader
 from .ds_sqllite_database import DsSqlliteDatabase

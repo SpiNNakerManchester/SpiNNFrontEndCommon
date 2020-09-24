@@ -166,8 +166,6 @@ static inline void print_bit_field_entry_v2(uint32_t e, int offset) {
 //! \param[in] b The sequence of words representing a bit_field.
 //! \param[in] s The size of the bit_field.
 void print_bit_field_bits_v2(bit_field_t b, size_t s) {
-    use(b);
-    use(s);
     for (int i = s; i > 0; i--) {
 	    print_bit_field_entry_v2(b[i], ((i - 1) * 32));
     }
@@ -178,8 +176,6 @@ void print_bit_field_bits_v2(bit_field_t b, size_t s) {
 //! \param[in] b The sequence of words representing a bit_field.
 //! \param[in] s The size of the bit_field.
 void print_bit_set_bits(bit_field_t b, int s) {
-    use(b);
-    use(s);
     for (int i = s; i > 0; i--) {
 	    print_bit_field_entry_v2(b[i], ((i - 1) * BITS_IN_A_WORD));
     }

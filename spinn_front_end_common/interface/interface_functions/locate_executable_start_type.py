@@ -15,8 +15,6 @@
 
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets
-from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
@@ -45,27 +43,14 @@ class LocateExecutableStartType(object):
             graph.n_vertices, "Finding executable start types")
         for vertex in progress.over(graph.vertices):
             # try to locate binary type, but possible it doesn't have one
-            bin_type = None
             if isinstance(vertex, AbstractHasAssociatedBinary):
                 bin_type = vertex.get_binary_start_type()
-            elif isinstance(vertex.app_vertex, AbstractHasAssociatedBinary):
-                bin_type = vertex.app_vertex.get_binary_start_type()
-            if bin_type is None:
-                # no associated binary in reality, ignore
-                continue
+                # update core subset with location of the vertex on the machine
+                if bin_type not in binary_start_types:
+                    binary_start_types[bin_type] = CoreSubsets()
 
-            # update core subset with location of the vertex on the machine
-            if bin_type not in binary_start_types:
-                binary_start_types[bin_type] = CoreSubsets()
-
-            if isinstance(vertex, MachineVertex):
                 self._add_vertex_to_subset(
                     vertex, placements, binary_start_types[bin_type])
-            elif isinstance(vertex, ApplicationVertex):
-                for machine_vertex in vertex.machine_vertices:
-                    self._add_vertex_to_subset(
-                        machine_vertex, placements,
-                        binary_start_types[bin_type])
 
         # only got apps with no binary, such as external devices.
         # return no app

@@ -274,9 +274,7 @@ static bool read_pause_stop_commands(command_list *sdram_commands) {
 //!
 //! \param unused0 unused
 //! \param unused1 unused
-static void timer_callback(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
+static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
     time++;
 
     if (resume) {

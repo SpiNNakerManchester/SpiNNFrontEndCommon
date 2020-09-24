@@ -50,6 +50,7 @@ from .insert_live_packet_gatherers_to_graphs import (
     InsertLivePacketGatherersToGraphs)
 from .load_executable_images import LoadExecutableImages
 from .load_fixed_routes import LoadFixedRoutes
+from .local_tdma_builder import LocalTDMABuilder
 from .locate_executable_start_type import LocateExecutableStartType
 from .machine_bit_field_router_compressor import (
     MachineBitFieldRouterCompressor)
@@ -99,8 +100,8 @@ __all__ = [
     "InsertEdgesToLivePacketGatherers",
     "InsertExtraMonitorVerticesToGraphs",
     "InsertLivePacketGatherersToGraphs", "LoadExecutableImages",
-    "LocateExecutableStartType", "MachineBitFieldRouterCompressor",
-    "LoadFixedRoutes", "MachineGenerator",
+    "LoadFixedRoutes", "LocalTDMABuilder", "LocateExecutableStartType",
+    "MachineBitFieldRouterCompressor", "MachineGenerator",
     "PlacementsProvenanceGatherer",
     "PreAllocateForBitFieldRouterCompressor",
     "PreAllocateResourcesForChipPowerMonitor",
@@ -108,8 +109,7 @@ __all__ = [
     "PreAllocateResourcesForLivePacketGatherers",
     "ProcessPartitionConstraints", "ProfileDataGatherer",
     "ProvenanceJSONWriter", "ProvenanceSQLWriter", "ProvenanceXMLWriter",
-    "RouterProvenanceGatherer", "RoutingSetup",
+    "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SpallocAllocator",
     "SpallocMaxMachineGenerator", "TagsLoader",
-    "TDMAAgendaBuilder", "VirtualMachineGenerator",
-    "ReadRoutingTablesFromMachine"]
+    "TDMAAgendaBuilder", "VirtualMachineGenerator"]

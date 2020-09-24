@@ -74,7 +74,8 @@ void routing_table_remove_from_size(int size_to_remove);
 //! \param[in] index: Where to write it.
 static inline void routing_table_put_entry(const entry_t* entry, int index) {
     entry_t* e_ptr = routing_table_get_entry(index);
-    e_ptr->key_mask = entry->key_mask;
+    e_ptr->key_mask.key = entry->key_mask.key;
+    e_ptr->key_mask.mask = entry->key_mask.mask;
     e_ptr->route = entry->route;
     e_ptr->source = entry->source;
 }

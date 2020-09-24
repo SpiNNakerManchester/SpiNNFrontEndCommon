@@ -26,6 +26,7 @@
 //! chip.
 
 #include <spin1_api.h>
+#include <spinn_extra.h>
 #include <simulation.h>
 #include <spinnaker.h>
 #include <recording.h>
@@ -90,27 +91,28 @@ static uint32_t sample_frequency;
 //!
 //! Note that this accesses into the SpiNNaker System Controller hardware (see
 //! Data Sheet, section 14, register 25).
-static uint32_t get_sample(void) {
-    return sc[SC_SLEEP] & ((1 << NUM_CPUS) - 1);
+static inline uint32_t get_sample(void) {
+    return system_control->cpu_sleep.status;
 }
 
 //! \brief Computes a random value used to break up chance periodicities in
 //! sampling.
+//! \details In range 0 to 4095.
 //! \return The number of times a busy loop must run.
-static uint32_t get_random_busy(void) {
+static inline uint32_t get_random_busy(void) {
     return (spin1_rand() >> 4) & ((1 << NUM_RANDOM_BITS) - 1);
 }
 
 //! \brief Synchronously records the current contents of the core_counters to
 //! the recording region.
-static void record_aggregate_sample(void) {
+static inline void record_aggregate_sample(void) {
     recording_record(
             RECORDING_CHANNEL_ID, core_counters, sizeof(core_counters));
 }
 
 //! \brief Resets the state of the core_counters and the sample_count variables
 //! to zero.
-static void reset_core_counters(void) {
+static inline void reset_core_counters(void) {
     for (uint32_t i = 0 ; i < NUM_CPUS ; i++) {
         core_counters[i] = 0;
     }
@@ -134,7 +136,7 @@ static void resume_callback(void) {
 //! The counter for the core is incremented if the core is active.
 //!
 //! Uses get_sample() to obtain the state of the cores.
-static void count_core_states(void) {
+static inline void count_core_states(void) {
     uint32_t sample = get_sample();
 
     for (uint32_t i = 0, j = 1 ; i < NUM_CPUS ; i++, j <<= 1) {
@@ -147,9 +149,7 @@ static void count_core_states(void) {
 //! \brief Called to actually record a sample.
 //! \param unused0 unused
 //! \param unused1 unused
-static void sample_in_slot(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
+static void sample_in_slot(UNUSED uint unused0, UNUSED uint unused1) {
     time++;
 
     // handle the situation when the first time update is sent
@@ -173,7 +173,7 @@ static void sample_in_slot(uint unused0, uint unused1) {
     uint32_t count = ++sample_count;
     uint32_t offset = get_random_busy();
     while (offset --> 0) {
-        // Do nothing; FIXME how to be sure to delay a random amount of time
+        // Do nothing
     }
 
     count_core_states();

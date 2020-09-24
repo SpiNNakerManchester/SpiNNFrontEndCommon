@@ -151,7 +151,7 @@ void routing_tables_save(multi_table_t *restrict tables) {
     tables->n_entries = multi_table.n_entries;
     tables->max_entries = multi_table.max_entries;
     log_info("saved table with %d entries over %d tables",
-            tables->n_sub_tables, tables->n_entries);
+            tables->n_entries, tables->n_sub_tables);
 }
 
 void routing_table_remove_from_size(int size_to_remove) {

@@ -1549,8 +1549,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Mapping", "router_table_compress_as_needed")
         inputs["CompressionAsFarAsPos"] = self._config.getboolean(
             "Mapping", "router_table_compress_as_far_as_possible")
+        inputs["WriteCompressorIobuf"] = self._config.getboolean(
+            "Reports", "write_compressor_iobuf")
 
         algorithms = list()
+
+        # process for TDMA required cores
+        algorithms.append("LocalTDMABuilder")
 
         if self._live_packet_recorder_params:
             algorithms.append(

@@ -171,6 +171,22 @@ def read_config_int(config, section, item):
     return int(value)
 
 
+def read_config_float(config, section, item):
+    """ Get the float value of a config item, returning None if the value\
+        is "None"
+
+    :param ~configparser.ConfigParser config:
+        The configuration to look things up in.
+    :param str section: The section name
+    :param str item: The item name.
+    :rtype: float or None
+    """
+    value = read_config(config, section, item)
+    if value is None:
+        return value
+    return float(value)
+
+
 _BOOLEAN_STATES = {
     'true': True, '1': True, 'on': True, 'yes': True,
     'false': False, '0': False, 'off': False, 'no': False}
@@ -306,12 +322,10 @@ def find_executable_start_type(machine_vertex):
     :param ~pacman.model.graphs.machine.MachineVertex machine_vertex:
     :rtype: ~spinn_front_end_common.utilities.utility_objs.ExecutableType
     """
-    if not isinstance(machine_vertex, AbstractHasAssociatedBinary):
+    if isinstance(machine_vertex, AbstractHasAssociatedBinary):
+        return machine_vertex.get_binary_start_type()
+    else:
         return None
-    app_vertex = machine_vertex.app_vertex
-    if isinstance(app_vertex, AbstractHasAssociatedBinary):
-        return app_vertex.get_binary_start_type()
-    return machine_vertex.get_binary_start_type()
 
 
 def _emergency_state_check(txrx, app_id):

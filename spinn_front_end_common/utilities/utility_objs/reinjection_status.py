@@ -40,10 +40,10 @@ class ReInjectionStatus(object):
     __slots__ = (
 
         # The WAIT1 timeout value of the router in cycles
-        "_router_timeout",
+        "_wait1_timeout",
 
         # The WAIT2 timeout value of the router in cycles
-        "_router_emergency_timeout",
+        "_wait2_timeout",
 
         # The number of packets dropped by the router and received by\
         # the re injection functionality (may not fit in the queue though)
@@ -79,46 +79,46 @@ class ReInjectionStatus(object):
         :param bytes data: The data containing the information
         :param int offset: The offset in the data where the information starts
         """
-        (self._router_timeout, self._router_emergency_timeout,
+        (self._wait1_timeout, self._wait2_timeout,
          self._n_dropped_packets, self._n_missed_dropped_packets,
          self._n_dropped_packet_overflows, self._n_reinjected_packets,
          self._n_link_dumps, self._n_processor_dumps, self._flags) = \
             _PATTERN.unpack_from(data, offset)
 
     @property
-    def router_timeout(self):
+    def router_wait1_timeout(self):
         """ The WAIT1 timeout value of the router, in cycles.
 
         :rtype: int
         """
-        return _decode_router_timeout_value(self._router_timeout)
+        return _decode_router_timeout_value(self._wait1_timeout)
 
     @property
-    def router_timeout_parameters(self):
+    def router_wait1_timeout_parameters(self):
         """ The WAIT1 timeout value of the router as mantissa and exponent.
 
         :rtype: tuple(int,int)
         """
-        mantissa = self._router_timeout & 0xF
-        exponent = (self._router_timeout >> 4) & 0xF
+        mantissa = self._wait1_timeout & 0xF
+        exponent = (self._wait1_timeout >> 4) & 0xF
         return mantissa, exponent
 
     @property
-    def router_emergency_timeout(self):
+    def router_wait2_timeout(self):
         """ The WAIT2 timeout value of the router, in cycles.
 
         :rtype: int
         """
-        return _decode_router_timeout_value(self._router_emergency_timeout)
+        return _decode_router_timeout_value(self._wait2_timeout)
 
     @property
-    def router_emergency_timeout_parameters(self):
+    def router_wait2_timeout_parameters(self):
         """ The WAIT2 timeout value of the router as mantissa and exponent.
 
         :rtype: tuple(int,int)
         """
-        mantissa = self._router_emergency_timeout & 0xF
-        exponent = (self._router_emergency_timeout >> 4) & 0xF
+        mantissa = self._wait2_timeout & 0xF
+        exponent = (self._wait2_timeout >> 4) & 0xF
         return mantissa, exponent
 
     @property

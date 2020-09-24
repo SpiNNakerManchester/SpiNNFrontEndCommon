@@ -28,10 +28,7 @@
 #include <circular_buffer.h>
 #include <spin1_api_params.h>
 #include <debug.h>
-
-// Declare wfi function
-//! Wait For Interrupt
-extern void spin1_wfi(void);
+#include <wfi.h>
 
 //---------------------------------------
 // Structures
@@ -300,7 +297,7 @@ static void recording_write_one_chunk(
         while (!spin1_dma_transfer(
                 RECORDING_DMA_COMPLETE_TAG_ID, write_pointer, data, DMA_WRITE,
                 length)) {
-            spin1_wfi();
+            wait_for_interrupt();
         }
     } else {
         spin1_memcpy(write_pointer, data, length);
@@ -489,8 +486,7 @@ static inline void recording_send_buffering_out_trigger_message(
 //!
 //! \param[in,out] mailbox: Pointer to the message to receive
 //! \param[in] port: The SDP port of the message. Constant.
-static void buffering_in_handler(uint mailbox, uint port) {
-    use(port);
+static void buffering_in_handler(uint mailbox, UNUSED uint port) {
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
     eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &msg->cmd_rc;
@@ -564,7 +560,7 @@ void recording_finalise(void) {
 
     // wait till all DMA's have been finished
     while (circular_buffer_size(dma_complete_buffer) != 0) {
-        spin1_wfi();
+        wait_for_interrupt();
     }
 
     // update buffer state data write
