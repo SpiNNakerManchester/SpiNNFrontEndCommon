@@ -414,7 +414,7 @@ class MachineBitFieldRouterCompressor(object):
             bit_field_sorter_executable_path, threshold_percentage):
         """ load all data onto the chip
 
-        :param dict(tuple(int,int),tuple(int,int,int)) addresses:
+        :param dict(tuple(int,int),tuple(int,int)) addresses:
             the addresses for bitfields in sdram
         :param ~.Transceiver transceiver: the spinnMan instance
         :param routing_table_compressor_app_id: the app id for the system app
@@ -581,7 +581,7 @@ class MachineBitFieldRouterCompressor(object):
             threshold_percentage):
         """ loads the bitfield addresses space
 
-        :param dict(tuple(int,int),tuple(int,int,int)) addresses:
+        :param dict(tuple(int,int),tuple(int,int)) addresses:
             the addresses to load
         :param int chip_x: the chip x to consider here
         :param int chip_y: the chip y to consider here
@@ -733,7 +733,7 @@ class MachineBitFieldRouterCompressor(object):
             vertex which utilises the API
         :param ~.Placement placement: placement of vertex
         :param ~.Transceiver transceiver:  spinnman instance
-        :param dict(tuple(int,int),list(tuple(int,int,int))) region_addresses:
+        :param dict(tuple(int,int),list(tuple(int,int))) region_addresses:
             store for data regions
         :param dict(tuple(int,int),list(tuple(int,int))) \
                 sdram_block_addresses_and_sizes:
@@ -742,10 +742,8 @@ class MachineBitFieldRouterCompressor(object):
         # store the region sdram address's
         bit_field_sdram_address = vertex.bit_field_base_address(
             transceiver, placement)
-        key_to_atom_map = vertex.key_to_atom_map_region_base_address(
-            transceiver, placement)
         region_addresses[placement.x, placement.y].append(
-            (bit_field_sdram_address, key_to_atom_map, placement.p))
+            (bit_field_sdram_address, placement.p))
 
         # store the available space from the matrix to steal
         blocks = vertex.regeneratable_sdram_blocks_and_sizes(
@@ -770,7 +768,7 @@ class MachineBitFieldRouterCompressor(object):
         :return: region_addresses and the executable targets to load the
             router table compressor with bitfield. and the SDRAM blocks
             available for use on each core that we plan to use
-        :rtype: tuple(dict(tuple(int,int),tuple(int,int,int)),
+        :rtype: tuple(dict(tuple(int,int),tuple(int,int)),
             dict(tuple(int,int),list(tuple(int,int))))
         """
         # data holders
@@ -797,7 +795,7 @@ class MachineBitFieldRouterCompressor(object):
         """ Generate byte array data for a list of SDRAM addresses and \
             finally the time to run per compression iteration.
 
-        :param list(tuple(int,int,int)) address_list:
+        :param list(tuple(int,int)) address_list:
             the list of SDRAM addresses
         :param ~.CoreSubset cores: compressor cores on this chip.
         :param int comms_sdram: Address for comms block
@@ -811,9 +809,8 @@ class MachineBitFieldRouterCompressor(object):
         data += self._ONE_WORDS.pack(threshold_percentage)
         data += self._ONE_WORDS.pack(comms_sdram)
         data += self._ONE_WORDS.pack(len(address_list))
-        for (bit_field, key_to_atom, processor_id) in address_list:
-            data += self._THREE_WORDS.pack(
-                bit_field, key_to_atom, processor_id)
+        for (bit_field, processor_id) in address_list:
+            data += self._TWO_WORDS.pack(bit_field, processor_id)
         data += self._ONE_WORDS.pack(len(cores))
         compression_cores = list(cores.processor_ids)
         data += struct.pack("<{}I".format(len(cores)), *compression_cores)

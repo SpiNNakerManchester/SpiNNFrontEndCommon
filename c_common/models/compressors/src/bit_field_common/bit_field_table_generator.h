@@ -64,11 +64,16 @@ int count_unique_keys(
 void generate_table(
         entry_t original_entry, filter_info_t **restrict filters,
         uint32_t *restrict bit_field_processors, int bf_found) {
+
+  // Go through each bitfield and check that the atoms match
     uint32_t n_atoms = filters[0]->n_atoms;
 
+    // Create a copy of the route without the processors which use the
+    // bitfields we are merging into the routing table
     uint32_t stripped_route = original_entry.route;
     for (int i =0; i < bf_found; i++) {
         // Safety code to be removed
+        // This checks that the route target the processor first
         if (!bit_field_test(&stripped_route,
                 bit_field_processors[i] + MAX_LINKS_PER_ROUTER)) {
             log_error("WHAT THE F***!");
@@ -77,13 +82,13 @@ void generate_table(
                 bit_field_processors[i] + MAX_LINKS_PER_ROUTER);
     }
 
-    // iterate though each atom and set the route when needed
+    // iterate though each atom and add the processor for each bitfield that
+    // uses that atom
     for (uint32_t atom = 0; atom < n_atoms; atom++) {
-        // Assigning to a uint32 creates a copy
         uint32_t new_route = stripped_route;
 
-        // iterate through the bitfield processor's and see if they need this
-        // atom
+        // iterate through the bitfield and add the bitfield processor to the
+        // route if the bitfield is set for the atom
         for (int bf_index = 0; bf_index < bf_found; bf_index++) {
             log_debug("data address is %x", filters[bf_index]->data);
             if (bit_field_test(filters[bf_index]->data, atom)) {

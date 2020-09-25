@@ -280,12 +280,12 @@ static inline void malloc_tables_and_set_off_bit_compressor(
 static inline filter_region_t *find_processor_bit_field_region(
         int processor_id) {
     // find the right bitfield region
-    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
-        int region_proc_id = region_addresses->triples[r_id].processor;
+    for (int r_id = 0; r_id < region_addresses->n_processors; r_id++) {
+        int region_proc_id = region_addresses->processors[r_id].processor;
         log_debug("is looking for %d and found %d",
                 processor_id, region_proc_id);
         if (region_proc_id == processor_id) {
-            return region_addresses->triples[r_id].filter;
+            return region_addresses->processors[r_id].filter;
         }
     }
 
@@ -329,9 +329,9 @@ static inline void set_n_merged_filters(void) {
     }
 
     // Set n_redundancy_filters
-    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
-        int processor_id = region_addresses->triples[r_id].processor;
-        filter_region_t *filter = region_addresses->triples[r_id].filter;
+    for (int r_id = 0; r_id < region_addresses->n_processors; r_id++) {
+        int processor_id = region_addresses->processors[r_id].processor;
+        filter_region_t *filter = region_addresses->processors[r_id].filter;
         int index = filter->n_redundancy_filters - 1;
 
         // Find the index of highest one merged in
@@ -1063,7 +1063,7 @@ bool initialise_compressor_processors(void) {
     // allocate DTCM memory for the processor status trackers
     log_info("allocate and step compressor processor status");
     compressor_processors_top_t *compressor_processors_top = (void *)
-            &region_addresses->triples[region_addresses->n_triples];
+            &region_addresses->processors[region_addresses->n_processors];
 
     // Switch compressor processors to TO_BE_PREPARED
     for (uint32_t processor_index = 0;

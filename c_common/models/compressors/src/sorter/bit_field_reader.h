@@ -160,11 +160,11 @@ static inline void fills_in_sorted_bit_fields_and_tracker(
         sorted_bit_fields_t *restrict sorted_bit_fields) {
     // iterate through a processors bitfield region and add to the bf by
     // processor struct, whilst updating num of total param.
-    for (int r_id = 0, index = 0; r_id < region_addresses->n_triples; r_id++) {
+    for (int r_id = 0, index = 0; r_id < region_addresses->n_processors; r_id++) {
         // locate data for malloc memory calcs
         filter_region_t *restrict filter_region =
-                region_addresses->triples[r_id].filter;
-        int processor = region_addresses->triples[r_id].processor;
+                region_addresses->processors[r_id].filter;
+        int processor = region_addresses->processors[r_id].processor;
 
         if (filter_region->n_redundancy_filters == 0) {
             // no bitfields to point at or sort so total can stay zero
@@ -258,15 +258,15 @@ static inline sorted_bit_fields_t * bit_field_reader_initialise(
     }
 
     // figure out how many bitfields we need
-    log_debug("n triples of addresses = %d", region_addresses->n_triples);
+    log_debug("n triples of addresses = %d", region_addresses->n_processors);
     int n_bit_fields = 0;
-    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
+    for (int r_id = 0; r_id < region_addresses->n_processors; r_id++) {
         n_bit_fields +=
-                region_addresses->triples[r_id].filter->n_redundancy_filters;
+                region_addresses->processors[r_id].filter->n_redundancy_filters;
         log_info("Core %d has %u bitfields of which %u have redundancy",
-                region_addresses->triples[r_id].processor,
-                region_addresses->triples[r_id].filter->n_filters,
-                region_addresses->triples[r_id].filter->n_redundancy_filters);
+                region_addresses->processors[r_id].processor,
+                region_addresses->processors[r_id].filter->n_filters,
+                region_addresses->processors[r_id].filter->n_redundancy_filters);
     }
     sorted_bit_fields->n_bit_fields = n_bit_fields;
     log_info("Number of bitfields with redundancy found is %u",
