@@ -67,6 +67,15 @@ static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
 //! Whether the simulation uses the timer or not (default true)
 static bool uses_timer = true;
 
+//! Whether the simulation runs in synchronized steps
+static bool run_in_sync_steps = false;
+
+//! The number of steps to run before synchronization
+static uint32_t n_sync_steps;
+
+//! The number simulation timestep at the next synchronization
+static uint32_t next_sync_step;
+
 //! \brief Store basic provenance data
 //! \return the address after which new provenance data can be stored
 static void *simulation_store_provenance_data(void) {
@@ -137,21 +146,34 @@ static void send_ok_response(sdp_msg_t *msg) {
     spin1_send_sdp_msg(msg, 10);
 }
 
-//! \brief Callback when starting after synchronise
-//! \param unused0: unused
-//! \param unused1: unused
-static void synchronise_start(uint unused0, uint unused1) {
+//! \brief wait for a signal before running
+static inline void wait_before_run() {
     while (resume_wait()) {
         wait_for_interrupt();
     }
-    sark_cpu_state(CPU_STATE_RUN);
-    stored_start_function();
-
     // If we are not using the timer, no-one else resets the event, so do it now
     // (event comes from sark.h - this is how SARK knows whether to wait for a
     //  SYNC0 or SYNC1 message)
     if (!uses_timer) {
         event.wait ^= 1;
+    }
+    sark_cpu_state(CPU_STATE_RUN);
+}
+
+//! \brief Callback when starting after synchronise
+//! \param unused0: unused
+//! \param unused1: unused
+static void synchronise_start(uint unused0, uint unused1) {
+    wait_before_run();
+    stored_start_function();
+}
+
+//! \brief Set the CPU state depending on the event wait state
+static inline void set_cpu_wait_state() {
+    if (event.wait) {
+        sark_cpu_state(CPU_STATE_SYNC1);
+    } else {
+        sark_cpu_state(CPU_STATE_SYNC0);
     }
 }
 
@@ -206,11 +228,7 @@ static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
             log_info("Resuming");
             spin1_resume(SYNC_WAIT);
         } else {
-            if (event.wait) {
-                sark_cpu_state(CPU_STATE_SYNC1);
-            } else {
-                sark_cpu_state(CPU_STATE_SYNC0);
-            }
+            set_cpu_wait_state();
         }
 
 
@@ -383,4 +401,27 @@ void simulation_set_start_function(start_callback_t start_function) {
 
 void simulation_set_uses_timer(bool sim_uses_timer) {
     uses_timer = sim_uses_timer;
+}
+
+void simulation_set_sync_steps(uint32_t n_steps) {
+    run_in_sync_steps = true;
+    n_sync_steps = n_steps;
+    next_sync_step = *pointer_to_current_time + n_steps;
+}
+
+bool simulation_is_finished(void) {
+    bool finished = ((*pointer_to_infinite_run != TRUE) &&
+            (*pointer_to_current_time >= pointer_to_simulation_time));
+    // If we are finished, or not running synchronized, return finished
+    if (finished || !run_in_sync_steps) {
+        return finished;
+    }
+    // If we are synchronized, check if this is a sync step (or should have been)
+    if (*pointer_to_current_time >= next_sync_step) {
+        // If synchronized, wait for synchronization to happen
+        set_cpu_wait_state();
+        wait_before_run();
+        next_sync_step += n_sync_steps;
+    }
+    return false;
 }
