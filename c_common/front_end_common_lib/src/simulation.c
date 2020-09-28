@@ -67,9 +67,6 @@ static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
 //! Whether the simulation uses the timer or not (default true)
 static bool uses_timer = true;
 
-//! Whether the simulation runs in synchronized steps
-static bool run_in_sync_steps = false;
-
 //! The number of steps to run before synchronization
 static uint32_t n_sync_steps;
 
@@ -214,6 +211,8 @@ static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
         // We start at time - 1 because the first thing models do is
         // increment a time counter
         *pointer_to_current_time = (msg->arg3 - 1);
+        uint32_t *data = (uint32_t *) msg->data;
+        n_sync_steps = data[0];
 
         if (stored_resume_function != NULL) {
             log_info("Calling pre-resume function");
@@ -230,12 +229,7 @@ static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
         } else {
             set_cpu_wait_state();
         }
-
-
-        // If we are told to send a response, send it now
-        if (msg->data[0] == 1) {
-            send_ok_response(msg);
-        }
+        send_ok_response(msg);
 
         // free the message to stop overload
         spin1_msg_free(msg);
@@ -404,16 +398,17 @@ void simulation_set_uses_timer(bool sim_uses_timer) {
 }
 
 void simulation_set_sync_steps(uint32_t n_steps) {
-    run_in_sync_steps = true;
     n_sync_steps = n_steps;
-    next_sync_step = *pointer_to_current_time + n_steps;
+    if (n_steps > 0) {
+        next_sync_step = *pointer_to_current_time + n_steps;
+    }
 }
 
 bool simulation_is_finished(void) {
     bool finished = ((*pointer_to_infinite_run != TRUE) &&
-            (*pointer_to_current_time >= pointer_to_simulation_time));
+            (*pointer_to_current_time >= *pointer_to_simulation_time));
     // If we are finished, or not running synchronized, return finished
-    if (finished || !run_in_sync_steps) {
+    if (finished || !n_sync_steps) {
         return finished;
     }
     // If we are synchronized, check if this is a sync step (or should have been)
