@@ -29,7 +29,7 @@ class SetRouterTimeoutMessage(AbstractSCPRequest):
 
     __slots__ = []
 
-    def __init__(self, x, y, p, timeout_mantissa, timeout_exponent):
+    def __init__(self, x, y, p, timeout_mantissa, timeout_exponent, wait=1):
         """
         :param int x: The x-coordinate of a chip, between 0 and 255
         :param int y: The y-coordinate of a chip, between 0 and 255
@@ -39,8 +39,12 @@ class SetRouterTimeoutMessage(AbstractSCPRequest):
             The mantissa of the timeout value, between 0 and 15
         :param int timeout_exponent:
             The exponent of the timeout value, between 0 and 15
+        :param int wait:
+            Which wait to set. Should be 1 or 2.
         """
         # pylint: disable=too-many-arguments
+        cmd = ReinjectorSCPCommands.SET_ROUTER_WAIT1_TIMEOUT if wait == 1 \
+            else ReinjectorSCPCommands.SET_ROUTER_WAIT2_TIMEOUT
         super(SetRouterTimeoutMessage, self).__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
@@ -48,11 +52,11 @@ class SetRouterTimeoutMessage(AbstractSCPRequest):
                     SDP_PORTS.EXTRA_MONITOR_CORE_REINJECTION.value),
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
-            SCPRequestHeader(command=ReinjectorSCPCommands.SET_ROUTER_TIMEOUT),
+            SCPRequestHeader(command=cmd),
             argument_1=(timeout_mantissa & 0xF) |
                        ((timeout_exponent & 0xF) << 4))
 
     @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self):
-        return CheckOKResponse(
-            "Set router timeout", ReinjectorSCPCommands.SET_ROUTER_TIMEOUT)
+        return CheckOKResponse("Set router timeout",
+                               self.scp_request_header.command)
