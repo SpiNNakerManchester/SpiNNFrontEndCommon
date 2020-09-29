@@ -3017,10 +3017,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @overrides(SimulatorInterface.continue_simulation)
     def continue_simulation(self):
         if self._no_sync_changes % 2 == 0:
-            print("Send SYNC0")
             sync_signal = Signal.SYNC0
         else:
-            print("Send SYNC1")
             sync_signal = Signal.SYNC1
         self._txrx.send_signal(self._app_id, sync_signal)
         self._no_sync_changes += 1
