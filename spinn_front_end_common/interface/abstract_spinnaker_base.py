@@ -1518,9 +1518,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["RunTime"] = run_time
         inputs["TotalRunTime"] = total_run_time
 
-        inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
-            "Machine", "post_simulation_overrun_before_error")
-
         # handle graph additions
         if self._application_graph.n_vertices:
             inputs["MemoryApplicationGraph"] = self._application_graph
@@ -1956,6 +1953,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         run_complete = False
         executor, self._current_run_timesteps = self._create_execute_workflow(
             n_machine_time_steps, graph_changed, n_sync_steps)
+
+        # Update the number of sync changes now in case this is used in a
+        # synchronised simulation.  Note that the "correct" value will be
+        # extracted later if not
+        self._no_sync_changes += 1
+
         try:
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
@@ -2049,6 +2052,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Reports", "extract_iobuf_from_cores")
         inputs["ExtractIobufFromBinaryTypes"] = self._read_config(
             "Reports", "extract_iobuf_from_binary_types")
+
+        # Don't timeout if a stepped mode is in operation
+        if n_sync_steps:
+            inputs["PostSimulationOverrunBeforeError"] = None
+        else:
+            inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
+                "Machine", "post_simulation_overrun_before_error")
 
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
@@ -3007,8 +3017,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @overrides(SimulatorInterface.continue_simulation)
     def continue_simulation(self):
         if self._no_sync_changes % 2 == 0:
+            print("Send SYNC0")
             sync_signal = Signal.SYNC0
         else:
+            print("Send SYNC1")
             sync_signal = Signal.SYNC1
         self._txrx.send_signal(self._app_id, sync_signal)
         self._no_sync_changes += 1

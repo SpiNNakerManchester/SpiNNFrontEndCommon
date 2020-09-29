@@ -144,14 +144,13 @@ static void send_ok_response(sdp_msg_t *msg) {
 }
 
 //! \brief wait for a signal before running
-static inline void wait_before_run() {
+//! \param reset_event: If true, the event is reset after the event has been
+//!                     received
+static inline void wait_before_run(bool reset_event) {
     while (resume_wait()) {
         wait_for_interrupt();
     }
-    // If we are not using the timer, no-one else resets the event, so do it now
-    // (event comes from sark.h - this is how SARK knows whether to wait for a
-    //  SYNC0 or SYNC1 message)
-    if (!uses_timer) {
+    if (reset_event) {
         event.wait ^= 1;
     }
     sark_cpu_state(CPU_STATE_RUN);
@@ -161,7 +160,10 @@ static inline void wait_before_run() {
 //! \param unused0: unused
 //! \param unused1: unused
 static void synchronise_start(uint unused0, uint unused1) {
-    wait_before_run();
+    // If we are not using the timer, no-one else resets the event, so do it now
+    // (event comes from sark.h - this is how SARK knows whether to wait for a
+    //  SYNC0 or SYNC1 message)
+    wait_before_run(!uses_timer);
     stored_start_function();
 }
 
@@ -213,6 +215,12 @@ static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
         *pointer_to_current_time = (msg->arg3 - 1);
         uint32_t *data = (uint32_t *) msg->data;
         n_sync_steps = data[0];
+        if (n_sync_steps > 0) {
+            // Add one to make the sync happen *after* n_sync_steps
+            next_sync_step = *pointer_to_current_time + n_sync_steps + 1;
+        } else {
+            next_sync_step = 0;
+        }
 
         if (stored_resume_function != NULL) {
             log_info("Calling pre-resume function");
@@ -400,7 +408,7 @@ void simulation_set_uses_timer(bool sim_uses_timer) {
 void simulation_set_sync_steps(uint32_t n_steps) {
     n_sync_steps = n_steps;
     if (n_steps > 0) {
-        next_sync_step = *pointer_to_current_time + n_steps;
+        next_sync_step = *pointer_to_current_time + n_steps + 1;
     }
 }
 
@@ -413,10 +421,25 @@ bool simulation_is_finished(void) {
     }
     // If we are synchronized, check if this is a sync step (or should have been)
     if (*pointer_to_current_time >= next_sync_step) {
-        // If synchronized, wait for synchronization to happen
+        log_info("Sync at %d", next_sync_step);
+
+        // If using the timer, pause the timer
+        if (uses_timer) {
+            log_info("Pausing");
+            spin1_pause();
+        }
+
+        // Wait for synchronisation to happen
+        log_info("Waiting for sync");
         set_cpu_wait_state();
-        wait_before_run();
+        wait_before_run(true);
         next_sync_step += n_sync_steps;
+        log_info("Sync done, next sync at %d", next_sync_step);
+
+        // If using the timer, start it again
+        if (uses_timer) {
+            spin1_resume(SYNC_NOWAIT);
+        }
     }
     return false;
 }
