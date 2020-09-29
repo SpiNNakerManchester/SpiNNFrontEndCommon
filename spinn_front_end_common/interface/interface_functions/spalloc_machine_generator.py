@@ -13,13 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-from spinn_utilities.log import FormatAdapter
+from spinn_machine.exceptions import SpinnMachineCorruptionException
 from .machine_generator import MachineGenerator
 from .spalloc_allocator import SpallocAllocator
-from spinn_machine.exceptions import SpinnMachineCorruptionException
-
-logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class SpallocMachineGenerator(object):
@@ -66,16 +62,18 @@ class SpallocMachineGenerator(object):
     :param str default_report_directory:
         Directory to write any reports too.
         If None the current directory will be used.
-    :return: Host_ip_address, MachineAllocationController, Transceiver, and
-        description of machine it is connected to
-    :rtype: tuple(~spinnman.transceiver.Transceiver, ~spinn_machine.Machine)
-    :rtype: tuple(str, int, None, bool, bool, None, None,
-        MachineAllocationController)
+    :return: Host_ip_address, MachineAllocationController, description of the
+        allocated machine, and Transceiver for talking to the machine
+    :rtype: tuple(str, MachineAllocationController, ~spinn_machine.Machine,
+        ~spinnman.transceiver.Transceiver)
+    :raises ~spinn_machine.exceptions.SpinnMachineCorruptionException:
+        If there's a detected unfixable problem with the machine
     """
 
     __slots__ = []
 
     MAX_RESTART_SIZE_IN_BOARDS = 24
+    MAX_TRIES = 10
 
     def __call__(
             self, spalloc_server, spalloc_user, downed_chips, downed_cores,
@@ -94,23 +92,31 @@ class SpallocMachineGenerator(object):
         :param int n_boards:
         :param int spalloc_port:
         :param str spalloc_machine:
-        :rtype: tuple(str, int, None, bool, bool, None, None,
-            MachineAllocationController)
+        :rtype: tuple(str, MachineAllocationController, ~spinn_machine.Machine,
+            ~spinnman.transceiver.Transceiver)
+        :raises ~spinn_machine.exceptions.SpinnMachineCorruptionException:
         """
 
         machine_details = None
         previous_controller = None
+        txrx = None
 
         spalloc_allocator = SpallocAllocator()
         machine_generator = MachineGenerator()
+        tries = 0
 
         while not machine_details:
-            results = spalloc_allocator(
-                spalloc_server, spalloc_user, n_chips, n_boards, spalloc_port,
-                spalloc_machine)
+            tries += 1
+            # If we end up here with a non-None transceiver, close it now
+            if txrx:
+                txrx.close()
+                txrx = None
+
             hostname, board_version, bmp_details, reset_machine_on_start_up, \
                 auto_detect_bmp, scamp_connection_data, boot_port_num, \
-                machine_allocation_controller = results
+                machine_allocation_controller = spalloc_allocator(
+                    spalloc_server, spalloc_user, n_chips, n_boards,
+                    spalloc_port, spalloc_machine)
 
             # Now we have a new job release the older one
             if previous_controller:
@@ -125,32 +131,44 @@ class SpallocMachineGenerator(object):
                     reset_machine_on_start_up, max_sdram_size, repair_machine,
                     ignore_bad_ethernets, default_report_directory)
             except SpinnMachineCorruptionException as ex:
-                if n_boards and n_boards > self.MAX_RESTART_SIZE_IN_BOARDS:
-                    machine_allocation_controller.report_problems(ex.ipaddress)
-                    raise
-                if n_chips and n_chips > self.MAX_RESTART_SIZE_IN_BOARDS * 48:
-                    machine_allocation_controller.report_problems(ex.ipaddress)
-                    raise
-                machine_generator = MachineGenerator()
-                machine_details, txrx = machine_generator(
-                    hostname, bmp_details, downed_chips, downed_cores,
-                    downed_links, board_version, auto_detect_bmp,
-                    scamp_connection_data, boot_port_num,
-                    reset_machine_on_start_up,
-                    max_sdram_size, repair_machine, ignore_bad_ethernets,
-                    default_report_directory)
-                bad_boards = set()
-                for sick_ip in ex.ipaddress:
-                    if sick_ip in sick_boards:
-                        # Prepare for retry
-                        # Only actually retries if all bad boards are known bad
-                        previous_controller = machine_allocation_controller
-                    else:
-                        # We now know this one is dodgy
-                        bad_boards.add(sick_ip)
-                if bad_boards:
-                    # Report our problems to spalloc!
-                    machine_allocation_controller.report_problems(bad_boards)
+                previous_controller = self._report_bad_boards(
+                    n_boards, n_chips, sick_boards,
+                    machine_allocation_controller, ex)
+                if not previous_controller or tries > self.MAX_TRIES:
+                    machine_allocation_controller.close()
                     raise
 
         return hostname, machine_allocation_controller, machine_details, txrx
+
+    def _report_bad_boards(self, n_boards, n_chips, sick_boards, mac, ex):
+        """ Reports problems with bad boards and decides whether we could \
+            retry the allocation.
+
+        :param int n_boards:
+        :param int n_chips:
+        :param set(str) sick_boards:
+        :param MachineAllocationController mac:
+        :param SpinnMachineCorruptionException ex:
+        :return: allocation controller to close on retry if not failing, or
+            None if the exception should be rethrown
+        :rtype: MachineAllocationController or None
+        """
+        previous_mac = None
+        if n_boards and n_boards > self.MAX_RESTART_SIZE_IN_BOARDS:
+            mac.report_problems(ex.ipaddress)
+            return None
+        if n_chips and n_chips > self.MAX_RESTART_SIZE_IN_BOARDS * 48:
+            mac.report_problems(ex.ipaddress)
+            return None
+        bad_boards = set()
+        for sick_ip in ex.ipaddress:
+            if sick_ip in sick_boards:
+                # Prepare for retry, as at least one board is a known problem
+                previous_mac = mac
+            else:
+                # We now know this one is dodgy
+                bad_boards.add(sick_ip)
+        if bad_boards:
+            # Report our problems to spalloc!
+            mac.report_problems(bad_boards)
+        return previous_mac
