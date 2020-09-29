@@ -89,7 +89,7 @@ class SpallocMachineGenerator(object):
         :param set(tuple(int,int)) downed_chips:
         :param set(tuple(int,int,int)) downed_cores:
         :param set(tuple(int,int,int)) downed_links:
-        :param iter(str) sick_boards:
+        :param set(str) sick_boards: Boards known to be sick
         :param int n_chips:
         :param int n_boards:
         :param int spalloc_port:
@@ -115,6 +115,7 @@ class SpallocMachineGenerator(object):
             # Now we have a new job release the older one
             if previous_controller:
                 previous_controller.close()
+                previous_controller = None
 
             try:
                 machine_details, txrx = machine_generator(
@@ -125,8 +126,10 @@ class SpallocMachineGenerator(object):
                     ignore_bad_ethernets, default_report_directory)
             except SpinnMachineCorruptionException as ex:
                 if n_boards and n_boards > self.MAX_RESTART_SIZE_IN_BOARDS:
+                    machine_allocation_controller.report_problems(ex.ipaddress)
                     raise
                 if n_chips and n_chips > self.MAX_RESTART_SIZE_IN_BOARDS * 48:
+                    machine_allocation_controller.report_problems(ex.ipaddress)
                     raise
                 machine_generator = MachineGenerator()
                 machine_details, txrx = machine_generator(
@@ -136,13 +139,18 @@ class SpallocMachineGenerator(object):
                     reset_machine_on_start_up,
                     max_sdram_size, repair_machine, ignore_bad_ethernets,
                     default_report_directory)
-                known = False
-                for sick_ip in sick_boards:
-                    if sick_ip in ex.ipaddress:
-                        # TODO let splaooc know the exception!
+                bad_boards = set()
+                for sick_ip in ex.ipaddress:
+                    if sick_ip in sick_boards:
+                        # Prepare for retry
+                        # Only actually retries if all bad boards are known bad
                         previous_controller = machine_allocation_controller
-                        known = True
-                if not known:
+                    else:
+                        # We now know this one is dodgy
+                        bad_boards.add(sick_ip)
+                if bad_boards:
+                    # Report our problems to spalloc!
+                    machine_allocation_controller.report_problems(bad_boards)
                     raise
 
         return hostname, machine_allocation_controller, machine_details, txrx

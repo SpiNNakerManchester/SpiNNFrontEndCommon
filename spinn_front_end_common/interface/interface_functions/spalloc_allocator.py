@@ -95,6 +95,14 @@ class _SpallocJobController(MachineAllocationController):
             self._job.close()
         super(_SpallocJobController, self)._teardown()
 
+    def report_problems(self, bad_boards):
+        """ Report discovered problems with boards.
+
+        :param set(str) bad_boards:
+        """
+        for board in bad_boards:
+            self._job.report_problem_board(board)
+
 
 class SpallocAllocator(object):
     """ Request a machine from a SPALLOC server that will fit the given\

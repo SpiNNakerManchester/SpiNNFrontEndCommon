@@ -1289,9 +1289,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             sick_baords_str = self._read_config(
                 "Machine", "sick_boards")
             if sick_baords_str:
-                inputs["SickBoards"] = sick_baords_str.split(",")
+                inputs["SickBoards"] = set(sick_baords_str.split(","))
             else:
-                inputs["SickBoards"] = []
+                inputs["SickBoards"] = set()
         else:
             # must be using HBP server system
             inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
