@@ -85,14 +85,14 @@ class AbstractSplitterSlice(AbstractSplitterCommon):
         if self._called:
             return self._governed_app_vertex.vertex_slices, True
         else:
-            self._estimate_slices(), False
+            return self._estimate_slices(), False
 
     @overrides(AbstractSplitterCommon.get_in_coming_slices)
     def get_in_coming_slices(self):
         if self._called:
             return self._governed_app_vertex.vertex_slices, True
         else:
-            self._estimate_slices(), False
+            return self._estimate_slices(), False
 
     @overrides(AbstractSplitterCommon.machine_vertices_for_recording)
     def machine_vertices_for_recording(self, variable_to_record):
@@ -404,7 +404,7 @@ class AbstractSplitterSlice(AbstractSplitterCommon):
         :return: The estimated slices.
         """
         if self._governed_app_vertex.n_atoms < self._max_atoms_per_core:
-            return [self._governed_app_vertex.n_atoms]
+            return [Slice(0, self._governed_app_vertex.n_atoms)]
         else:
             slices = list()
             n_atoms_placed = 0
