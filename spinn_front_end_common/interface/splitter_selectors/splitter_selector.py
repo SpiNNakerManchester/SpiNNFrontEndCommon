@@ -14,10 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 
-from spinn_front_end_common.interface.partitioner_splitters import (
+from pacman.model.partitioner_splitters.splitter_one_to_one_legacy import (
     SplitterOneToOneLegacy)
-from spinn_front_end_common.interface.partitioner_splitters.\
-    splitter_slice_legacy import SplitterSliceLegacy
+from pacman.model.partitioner_splitters.splitter_slice_legacy import (
+    SplitterSliceLegacy)
 from spinn_front_end_common.utility_models import (
     ReverseIpTagMultiCastSource, LivePacketGather, ChipPowerMonitor)
 from spinn_front_end_common.utility_models.\
