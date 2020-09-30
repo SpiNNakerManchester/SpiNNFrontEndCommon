@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from pacman.exceptions import PacmanConfigurationException
+from pacman.model.graphs.common import Slice
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from spinn_front_end_common.interface.\
     partitioner_splitters.abstract_splitters import AbstractSplitterSlice
@@ -22,7 +23,7 @@ from spinn_utilities.overrides import overrides
 class SplitterSliceLegacy(AbstractSplitterSlice):
 
     __slots__ = [
-        "__splitter_name"
+        "__splitter_name",
     ]
 
     NOT_SUITABLE_VERTEX_ERROR = (

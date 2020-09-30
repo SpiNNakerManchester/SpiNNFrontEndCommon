@@ -32,8 +32,13 @@ class SplitterFixedSliceSized(AbstractSplitterCommon):
     """
 
     __slots__ = [
+        # bool flag for if its been called already.
         "__been_called",
+
+        # atom constraint
         "__max_atom_by_constraint",
+
+        # bool if hard or soft.
         "__fixed_atom_by_constraint"]
 
     SPLITTER_NAME = "FixedSizeSplitter"

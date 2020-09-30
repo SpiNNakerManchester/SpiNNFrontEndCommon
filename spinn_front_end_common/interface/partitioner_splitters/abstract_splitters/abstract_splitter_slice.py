@@ -20,8 +20,8 @@ from pacman.model.graphs.machine import MachineEdge
 from pacman.model.partitioner_interfaces.abstract_splitter_common import (
     AbstractSplitterCommon)
 from pacman.model.resources import ResourceContainer
-from pacman.utilities.algorithm_utilities.partition_algorithm_utilities import \
-    get_remaining_constraints
+from pacman.utilities.algorithm_utilities.\
+    partition_algorithm_utilities import get_remaining_constraints
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from pacman.exceptions import PacmanPartitionException, PacmanValueError
 from pacman.model.graphs import AbstractVirtual
@@ -34,7 +34,7 @@ class AbstractSplitterSlice(AbstractSplitterCommon):
     """ contains default logic for splitting by slice
     """
 
-    __slots__ = []
+    __slots__ = ["_called"]
 
     NOT_SUITABLE_VERTEX_ERROR = (
         "The vertex {} cannot be supported by the {} as"
@@ -57,39 +57,53 @@ class AbstractSplitterSlice(AbstractSplitterCommon):
 
     def __init__(self, splitter_name):
         AbstractSplitterCommon.__init__(self, splitter_name)
+        self._called = False
 
-    def __get_map(self):
+    def _get_map(self, edge_types):
         """ builds map of machine vertex to edge type
+
+        :param edge_types: the type of edges to add to the dict.
 
         :return: dict of vertex as key, edge types as list in value
         """
         result = OrderedDict()
         for vertex in self._governed_app_vertex.machine_vertices:
-            result[vertex] = [MachineEdge]
+            result[vertex] = edge_types
         return result
 
     @overrides(AbstractSplitterCommon.get_pre_vertices)
     def get_pre_vertices(self, edge, outgoing_edge_partition):
-        return self.__get_map()
+        return self._get_map([MachineEdge])
 
     @overrides(AbstractSplitterCommon.get_post_vertices)
     def get_post_vertices(
             self, edge, outgoing_edge_partition, src_machine_vertex):
-        return self.__get_map()
+        return self._get_map([MachineEdge])
 
     @overrides(AbstractSplitterCommon.get_out_going_slices)
     def get_out_going_slices(self):
-        return self._governed_app_vertex.vertex_slices, True
+        if self._called:
+            return self._governed_app_vertex.vertex_slices, True
+        else:
+            self._estimate_slices(), False
 
     @overrides(AbstractSplitterCommon.get_in_coming_slices)
     def get_in_coming_slices(self):
-        return self._governed_app_vertex.vertex_slices, True
+        if self._called:
+            return self._governed_app_vertex.vertex_slices, True
+        else:
+            self._estimate_slices(), False
 
     @overrides(AbstractSplitterCommon.machine_vertices_for_recording)
     def machine_vertices_for_recording(self, variable_to_record):
         return list(self._governed_app_vertex.machine_vertices)
 
     def __split(self, resource_tracker):
+        """ breaks a app vertex into its machine vertex bits.
+
+        :param ResourceTracker resource_tracker: res tracker.
+        :return: map of slices to resources. for easier usage later.
+        """
         slice_resource_map = dict()
         n_atoms_placed = 0
         n_atoms = self._governed_app_vertex.n_atoms
@@ -361,6 +375,7 @@ class AbstractSplitterSlice(AbstractSplitterCommon):
                     vertex_slice.hi_atom),
                 get_remaining_constraints(self._governed_app_vertex))
             machine_graph.add_vertex(machine_vertex)
+        self._called = True
         return True
 
     @abstractmethod
@@ -377,8 +392,31 @@ class AbstractSplitterSlice(AbstractSplitterCommon):
 
     @abstractmethod
     def get_resources_used_by_atoms(self, vertex_slice):
+        """ gets the resources of a slice of atoms from a given app vertex.
+
+        :param vertex_slice: the slice to find the resources of.
+        :return: ResourceContainer.
         """
 
-        :param vertex_slice:
-        :return:
+    def _estimate_slices(self):
+        """ estimates the slices for when not already been split.
+
+        :return: The estimated slices.
         """
+        if self._governed_app_vertex.n_atoms < self._max_atoms_per_core:
+            return [self._governed_app_vertex.n_atoms]
+        else:
+            slices = list()
+            n_atoms_placed = 0
+            n_atoms = self._governed_app_vertex.n_atoms
+            while n_atoms_placed < n_atoms:
+                if n_atoms_placed + self._max_atoms_per_core > n_atoms:
+                    slices.append(Slice(
+                        n_atoms_placed, n_atoms - n_atoms_placed))
+                    n_atoms_placed = n_atoms
+                else:
+                    slices.append(Slice(
+                        n_atoms_placed,
+                        n_atoms_placed + self._max_atoms_per_core))
+                n_atoms_placed += self._max_atoms_per_core
+            return slices
