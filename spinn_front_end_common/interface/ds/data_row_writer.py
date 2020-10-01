@@ -14,11 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import io
-from spinn_utilities.overrides import overrides
-from spinn_utilities.abstract_context_manager import AbstractContextManager
 
 
-class DataRowWriter(io.RawIOBase, AbstractContextManager):
+class DataRowWriter(io.RawIOBase):
     __slots__ = [
         "_x",
         "_y",
@@ -55,7 +53,6 @@ class DataRowWriter(io.RawIOBase, AbstractContextManager):
     def fileno(self):
         raise OSError
 
-    @overrides(AbstractContextManager.close, extend_doc=False)
     def close(self):
         """ Closes the writer if not already closed.
         """
