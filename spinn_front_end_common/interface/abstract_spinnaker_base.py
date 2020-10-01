@@ -1554,6 +1554,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         algorithms = list()
 
+        # process for TDMA required cores
+        algorithms.append("LocalTDMABuilder")
+
         if self._live_packet_recorder_params:
             algorithms.append(
                 "InsertLivePacketGatherersToGraphs")
@@ -1587,9 +1590,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.extend(self._extra_mapping_algorithms)
 
         optional_algorithms = list()
-
-        # process for TDMA required cores
-        optional_algorithms.append("LocalTDMABuilder")
 
         # Add reports
         if self._config.getboolean("Reports", "reports_enabled"):
