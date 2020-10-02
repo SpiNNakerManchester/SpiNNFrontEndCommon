@@ -162,13 +162,10 @@
     <span class="n">_DEFAULT_TIME_BETWEEN_CORES</span> <span class="o">=</span> <span class="mi">50</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span>
-            <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span>
+            <span class="n">n_keys_map</span><span class="p">,</span> <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; main entrance</span>
 
-<span class="sd">        :param application_graph: app graph.</span>
-<span class="sd">        :type application_graph:</span>
-<span class="sd">            ~pacman.model.graphs.application.ApplicationGraph</span>
 <span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
 <span class="sd">            machine graph.</span>
 <span class="sd">        :param int machine_time_step: the machine time step.</span>
@@ -176,7 +173,12 @@
 <span class="sd">        :param n_keys_map: the map of partitions to n keys.</span>
 <span class="sd">        :type n_keys_map:</span>
 <span class="sd">            ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap</span>
+<span class="sd">        :param application_graph: app graph.</span>
+<span class="sd">        :type application_graph:</span>
+<span class="sd">            ~pacman.model.graphs.application.ApplicationGraph or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
 
         <span class="c1"># get config params</span>
         <span class="p">(</span><span class="n">app_machine_quantity</span><span class="p">,</span> <span class="n">time_between_cores</span><span class="p">,</span>
