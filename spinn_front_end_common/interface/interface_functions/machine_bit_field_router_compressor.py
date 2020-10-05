@@ -25,7 +25,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets, Router
 from spinnman.exceptions import (
     SpinnmanInvalidParameterException,
-    SpinnmanUnexpectedResponseCodeException)
+    SpinnmanUnexpectedResponseCodeException, SpiNNManCoresNotInStateException)
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from pacman.model.routing_tables import MulticastRoutingTables
@@ -222,19 +222,24 @@ class MachineBitFieldRouterCompressor(object):
             bit_field_sorter_executable_path, threshold_percentage)
 
         # load and run binaries
-        system_control_logic.run_system_application(
-            compressor_executable_targets,
-            routing_table_compressor_app_id, transceiver,
-            provenance_file_path, executable_finder,
-            write_compressor_iobuf,
-            functools.partial(
-                self._check_bit_field_router_compressor_for_success,
-                host_chips=on_host_chips,
-                sorter_binary_path=bit_field_sorter_executable_path,
-                prov_data_items=prov_items),
-            [CPUState.FINISHED], True,
-            "bit_field_compressor_on_{}_{}_{}.txt",
-            [bit_field_sorter_executable_path], progress_bar)
+        try:
+            system_control_logic.run_system_application(
+                compressor_executable_targets,
+                routing_table_compressor_app_id, transceiver,
+                provenance_file_path, executable_finder,
+                write_compressor_iobuf,
+                functools.partial(
+                    self._check_bit_field_router_compressor_for_success,
+                    host_chips=on_host_chips,
+                    sorter_binary_path=bit_field_sorter_executable_path,
+                    prov_data_items=prov_items),
+                [CPUState.FINISHED], True,
+                "bit_field_compressor_on_{}_{}_{}.txt",
+                [bit_field_sorter_executable_path], progress_bar)
+        except SpiNNManCoresNotInStateException as e:
+            logger.exception(transceiver.get_core_status_string(
+                e.failed_core_states()))
+            raise e
 
         # start the host side compressions if needed
         if len(on_host_chips) != 0:
