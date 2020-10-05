@@ -22,7 +22,7 @@
 
 #include <filter_info.h>
 #include <key_atom_map.h>
-#include "../common/routing_table.h"
+#include <common/routing_table.h>
 
 //!===========================================================================
 //! enums

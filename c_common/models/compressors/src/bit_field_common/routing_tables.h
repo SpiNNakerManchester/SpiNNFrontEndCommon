@@ -22,7 +22,7 @@
 
 #include <debug.h>
 #include <malloc_extras.h>
-#include "../common/routing_table.h"
+#include <common/routing_table.h>
 #include "routing_tables_utils.h"
 
 //=============================================================================

@@ -150,6 +150,30 @@ static inline void print_structs(
     }
 }
 
+static uint32_t n_redundant(filter_info_t *filter) {
+    uint32_t n_atoms = filter->n_atoms;
+    uint32_t n_words = get_bit_field_size(n_atoms);
+    return n_atoms - count_bit_field(filter->data, n_words);
+}
+
+//! \brief Sort a subset of the bitfields by the redundancy
+static inline void sort_by_redundancy(sorted_bit_fields_t *sorted_bit_fields,
+        uint32_t start, uint32_t end) {
+    // We only need to sort the bit fields, as this assumes it is called
+    // before the index is filled in, and where start and n_items covers items
+    // with the same processor id
+    filter_info_t **bit_fields = sorted_bit_fields->bit_fields;
+    for (uint32_t i = start + 1; i < end; i++) {
+        filter_info_t *temp_bf = bit_fields[i];
+
+        uint32_t j;
+        for (j = i; j > start && n_redundant(bit_fields[j - 1]) < n_redundant(temp_bf); j--) {
+            bit_fields[j] = bit_fields[j - 1];
+        }
+        bit_fields[j] = temp_bf;
+    }
+}
+
 //! \brief Fill in the sorted bit-field struct and builds tracker of
 //!     incoming packet counts.
 //! \param[in] region_addresses: The addresses of the regions to read
@@ -166,32 +190,25 @@ static inline void fills_in_sorted_bit_fields_and_tracker(
                 region_addresses->processors[r_id].filter;
         int processor = region_addresses->processors[r_id].processor;
 
-        if (filter_region->n_redundancy_filters == 0) {
-            // no bitfields to point at or sort so total can stay zero
-            continue;
-        }
-
         // store the index in bitfields list where this processors bitfields
         // start being read in at. (not sorted)
         processor_heads[processor] = index;
 
         // read in the processors bitfields.
-        for (int bf_id = 0; bf_id < filter_region->n_redundancy_filters;
-                bf_id++, index++) {
+        filter_info_t *filters = filter_region->filters;
+        for (uint32_t bf_id = 0; bf_id < filter_region->n_filters; bf_id++) {
             // update trackers.
-            sorted_bit_fields->processor_ids[index] = processor;
-            sorted_bit_fields->bit_fields[index] =
-                    &filter_region->filters[bf_id];
-            processor_totals[processor] +=
-                    filter_region->filters[bf_id].n_atoms;
-        }
+            if (!filters[bf_id].redundant) {
+                sorted_bit_fields->processor_ids[index] = processor;
+                sorted_bit_fields->bit_fields[index] = &filters[bf_id];
+                index++;
+            }
 
-        // accum the incoming packets from bitfields which have no redundancy
-        for (int bf_id = filter_region->n_redundancy_filters;
-                bf_id < filter_region->n_filters; bf_id++) {
-            processor_totals[processor] +=
-                    filter_region->filters[bf_id].n_atoms;
+            // also accum the incoming packets from bitfields which have no
+            // redundancy
+            processor_totals[processor] += filters[bf_id].n_atoms;
         }
+        sort_by_redundancy(sorted_bit_fields, processor_heads[processor], index);
     }
 }
 
@@ -258,15 +275,20 @@ static inline sorted_bit_fields_t * bit_field_reader_initialise(
     }
 
     // figure out how many bitfields we need
-    log_debug("n triples of addresses = %d", region_addresses->n_processors);
+    log_debug("n_processors of addresses = %d", region_addresses->n_processors);
     int n_bit_fields = 0;
     for (int r_id = 0; r_id < region_addresses->n_processors; r_id++) {
-        n_bit_fields +=
-                region_addresses->processors[r_id].filter->n_redundancy_filters;
+        filter_region_t *restrict filter = region_addresses->processors[r_id].filter;
+        uint32_t n_filters = filter->n_filters;
+        filter_info_t *filters = filter->filters;
+        uint32_t n_usable = 0;
+        for (uint32_t f_id = 0; f_id < n_filters; f_id++) {
+            n_usable += !filters[f_id].redundant;
+        }
+        n_bit_fields += n_usable;
         log_info("Core %d has %u bitfields of which %u have redundancy",
                 region_addresses->processors[r_id].processor,
-                region_addresses->processors[r_id].filter->n_filters,
-                region_addresses->processors[r_id].filter->n_redundancy_filters);
+                filter->n_filters, n_usable);
     }
     sorted_bit_fields->n_bit_fields = n_bit_fields;
     log_info("Number of bitfields with redundancy found is %u",
