@@ -57,64 +57,41 @@ int count_unique_keys(
 
 //! \brief Generate a routing tables by merging an entry and a list of
 //!     bitfields by processor.
-//! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
 //! \param[in] original_entry: The Routing Table entry in the original table
-//! \param[in] start: The index of the first entry to be merged in
-//! \param[in] end: The index after the last entry to be merged in
-//! \param[in] mid_point: Where in the sorted bit_fields to go up to
-//! \return: Whether any relevant bitfields were found
-static inline bool generate_table(
-        sorted_bit_fields_t *restrict sorted_bit_fields, entry_t original_entry,
-        uint32_t start, uint32_t end, int mid_point) {
-    filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
-    int *restrict processor_ids = sorted_bit_fields->processor_ids;
-    int *restrict sort_order =  sorted_bit_fields->sort_order;
+//! \param[in] filters: List of the bitfields to me merged in
+//! \param[in] bit_field_processors: List of the processors for each bitfield
+//! \param[in] bf_found: Number of bitfields found.
+void generate_table(
+        entry_t original_entry, filter_info_t **restrict filters,
+        uint32_t *restrict bit_field_processors, int bf_found) {
+    uint32_t n_atoms = filters[0]->n_atoms;
 
-    // Create a copy of the route without the processors which use the
-    // bitfields we are merging into the routing table
-    uint32_t max_atoms = 0;
-    bool is_valid_bit_field = false;
     uint32_t stripped_route = original_entry.route;
-    log_debug("Looking at route 0x%08x", stripped_route);
-    for (uint32_t i = start; i < end; i++) {
-        if (sort_order[i] < mid_point) {
-            // Safety code to be removed
-            // This checks that the route target the processor first
-            if (!bit_field_test(&stripped_route,
-                    processor_ids[i] + MAX_LINKS_PER_ROUTER)) {
-                log_error("**** Processor %u (bitfield key 0x%08x) not in route!",
-                        processor_ids[i], bit_fields[i]->key);
-            }
-            bit_field_clear(&stripped_route,
-                    processor_ids[i] + MAX_LINKS_PER_ROUTER);
-            if (bit_fields[i]->n_atoms > max_atoms) {
-                max_atoms = bit_fields[i]->n_atoms;
-            }
-            is_valid_bit_field = true;
+    for (int i =0; i < bf_found; i++) {
+        // Safety code to be removed
+        if (!bit_field_test(&stripped_route,
+                bit_field_processors[i] + MAX_LINKS_PER_ROUTER)) {
+            log_error("WHAT THE F***!");
         }
+        bit_field_clear(&stripped_route,
+                bit_field_processors[i] + MAX_LINKS_PER_ROUTER);
     }
 
-    if (!is_valid_bit_field) {
-        return false;
-    }
-
-
-    // iterate though each atom and add the processor for each bitfield that
-    // uses that atom
-    for (uint32_t atom = 0; atom < max_atoms; atom++) {
+    // iterate though each atom and set the route when needed
+    for (uint32_t atom = 0; atom < n_atoms; atom++) {
+        // Assigning to a uint32 creates a copy
         uint32_t new_route = stripped_route;
 
-        // iterate through the bitfield and add the bitfield processor to the
-        // route if the bitfield is set for the atom
-        for (uint32_t i = start; i < end; i++) {
-            if (sort_order[i] < mid_point) {
-                log_debug("data address is %x", bit_fields[i]->data);
-                if (atom < bit_fields[i]->n_atoms &&
-                            bit_field_test(bit_fields[i]->data, atom)) {
-                    log_debug("setting for atom %d from bitfield index %d so proc %d",
-                            atom, i, processor_ids[i]);
-                    bit_field_set(&new_route, MAX_LINKS_PER_ROUTER + processor_ids[i]);
-                }
+        // iterate through the bitfield processor's and see if they need this
+        // atom
+        for (int bf_index = 0; bf_index < bf_found; bf_index++) {
+            log_debug("data address is %x", filters[bf_index]->data);
+            if (bit_field_test(filters[bf_index]->data, atom)) {
+                log_debug(
+                        "setting for atom %d from bitfield index %d so proc %d",
+                        atom, bf_index, bit_field_processors[bf_index]);
+                bit_field_set(&new_route,
+                        MAX_LINKS_PER_ROUTER + bit_field_processors[bf_index]);
             }
         }
 
@@ -122,7 +99,9 @@ static inline bool generate_table(
                 original_entry.key_mask.key + atom,
                 NEURON_LEVEL_MASK, new_route, original_entry.source);
     }
-    return true;
+    log_debug("key %d atoms %d size %d",
+            original_entry.key_mask.key, n_atoms,
+            routing_table_get_n_entries());
 }
 
 //! \brief Take a midpoint and read the sorted bitfields,
@@ -173,27 +152,35 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
         sorted_bit_fields_t *restrict sorted_bit_fields) {
     // semantic sugar to avoid referencing
     filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
+    int *restrict processor_ids = sorted_bit_fields->processor_ids;
+    int *restrict sort_order =  sorted_bit_fields->sort_order;
     entry_t *restrict original = uncompressed_table->entries;
     uint32_t original_size =  uncompressed_table->size;
     int n_bit_fields = sorted_bit_fields->n_bit_fields;
 
+    filter_info_t * filters[MAX_PROCESSORS];
+    uint32_t bit_field_processors[MAX_PROCESSORS];
     int bf_i = 0;
     log_debug("pre size %d", routing_table_get_n_entries());
 
     for (uint32_t rt_i = 0; rt_i < original_size; rt_i++) {
         uint32_t key = original[rt_i].key_mask.key;
-        uint32_t mask = original[rt_i].key_mask.mask;
-        log_debug("key 0x%08x, mask 0x%08x", key, mask);
-        int start = bf_i;
+        log_debug("key %d", key);
+        int bf_found = 0;
 
-        while ((bf_i < n_bit_fields) && ((bit_fields[bf_i]->key & mask) == key)) {
-            log_debug("Bit field key 0x%08x processor %u matches",
-                    bit_fields[bf_i]->key, sorted_bit_fields->processor_ids[bf_i]);
+        while ((bf_i < n_bit_fields) && (bit_fields[bf_i]->key == key)) {
+            if (sort_order[bf_i] < mid_point) {
+                filters[bf_found] = bit_fields[bf_i];
+                bit_field_processors[bf_found] = processor_ids[bf_i];
+                bf_found++;
+            }
             bf_i++;
         }
 
-        if (start == bf_i || !generate_table(sorted_bit_fields, original[rt_i],
-                    start, bf_i, mid_point)) {
+        if (bf_found > 0) {
+            generate_table(original[rt_i], filters, bit_field_processors,
+                    bf_found);
+        } else {
             routing_tables_append_entry(original[rt_i]);
         }
         log_debug("key %d size %d",
