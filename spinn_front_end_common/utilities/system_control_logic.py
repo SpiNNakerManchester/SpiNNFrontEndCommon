@@ -25,7 +25,7 @@ def run_system_application(
         executable_cores, app_id, transceiver, provenance_file_path,
         executable_finder, read_algorithm_iobuf, check_for_success_function,
         cpu_end_states, needs_sync_barrier, filename_template,
-        binaries_to_track=None, progress_bar=None):
+        binaries_to_track=None, progress_bar=None, logger=None):
     """ Executes the given _system_ application. \
         Used for on-chip expanders, compressors, etc.
 
@@ -49,6 +49,9 @@ def run_system_application(
         Or `None` for all binaries
     :param progress_bar: Possible progress bar to update.
            end() will be called after state checked
+    :param logger:
+        If provided and iobuf is extracted, will be used to log errors and
+        warnings
     :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None
 
     """
@@ -99,9 +102,14 @@ def run_system_application(
         iobuf_reader = ChipIOBufExtractor(
             filename_template=filename_template,
             suppress_progress=False)
-        iobuf_reader(
+        error_entries, warn_entries = iobuf_reader(
             transceiver, executable_cores, executable_finder,
             system_provenance_file_path=provenance_file_path)
+        if logger is not None:
+            for entry in warn_entries:
+                logger.warn(entry)
+            for entry in error_entries:
+                logger.error(entry)
 
     # stop anything that's associated with the compressor binary
     transceiver.stop_application(app_id)

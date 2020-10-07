@@ -235,7 +235,8 @@ class MachineBitFieldRouterCompressor(object):
                     prov_data_items=prov_items),
                 [CPUState.FINISHED], True,
                 "bit_field_compressor_on_{}_{}_{}.txt",
-                [bit_field_sorter_executable_path], progress_bar)
+                [bit_field_sorter_executable_path], progress_bar,
+                logger=logger)
         except SpiNNManCoresNotInStateException as e:
             logger.exception(transceiver.get_core_status_string(
                 e.failed_core_states()))
