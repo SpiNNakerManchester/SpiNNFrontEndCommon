@@ -913,13 +913,14 @@ static inline void check_bitfield_to_routes(
     filter_info_t **bit_fields = sorted_bit_fields->bit_fields;
     int *processor_ids = sorted_bit_fields->processor_ids;
     entry_t *entries = uncompressed_router_table->uncompressed_table.entries;
+    uint32_t n_bf = sorted_bit_fields->n_bit_fields;
     uint32_t bf_i = 0;
 
     for (uint32_t i = 0; i < uncompressed_router_table->uncompressed_table.size; i++) {
         // Bit field of seen processors (assumes less than 33 processors)
         uint32_t seen_processors = 0;
         // Go through all bitfields that match the key
-        while ((entries[i].key_mask.mask & bit_fields[bf_i]->key) ==
+        while (bf_i < n_bf && (entries[i].key_mask.mask & bit_fields[bf_i]->key) ==
                 entries[i].key_mask.key) {
 
             if (seen_processors & (1 << processor_ids[bf_i])) {
