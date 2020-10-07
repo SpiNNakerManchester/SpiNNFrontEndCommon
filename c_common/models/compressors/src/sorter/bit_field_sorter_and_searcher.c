@@ -905,6 +905,36 @@ void start_binary_search(void) {
     }
 }
 
+//! \brief Ensure that for each router table entry there is at most 1 bitfield
+//!        per processor
+//! \param[in] sorted_bit_fields The bit fields ordered by key
+static inline void check_bitfield_to_routes(
+        sorted_bit_fields_t *restrict sorted_bit_fields) {
+    filter_info_t **bit_fields = sorted_bit_fields->bit_fields;
+    int *processor_ids = sorted_bit_fields->processor_ids;
+    entry_t *entries = uncompressed_router_table->uncompressed_table.entries;
+    uint32_t bf_i = 0;
+
+    for (uint32_t i = 0; i < uncompressed_router_table->uncompressed_table.size; i++) {
+        // Bit field of seen processors (assumes less than 33 processors)
+        uint32_t seen_processors = 0;
+        // Go through all bitfields that match the key
+        while ((entries[i].key_mask.mask & bit_fields[bf_i]->key) ==
+                entries[i].key_mask.key) {
+
+            if (seen_processors & (1 << processor_ids[bf_i])) {
+                log_error("Routing key 0x%08x matches more than one bitfield key"
+                        " on processor %d (last found 0x%08x)",
+                        entries[i].key_mask.key, processor_ids[bf_i],
+                        bit_fields[bf_i]->key);
+                malloc_extras_terminate(EXIT_SWERR);
+            }
+            seen_processors |= (1 << processor_ids[bf_i]);
+            bf_i++;
+        }
+    }
+}
+
 //! \brief Start the work for the compression search
 //! \param[in] unused0: unused
 //! \param[in] unused1: unused
@@ -942,6 +972,7 @@ void start_compression_process(UNUSED uint unused0, UNUSED uint unused1) {
 
     log_debug("populating sorted bitfields at time step: %d", time_steps);
     bit_field_reader_read_in_bit_fields(region_addresses, sorted_bit_fields);
+    check_bitfield_to_routes(sorted_bit_fields);
 
     // the first possible failure is all bitfields so set there.
     lowest_failure = sorted_bit_fields->n_bit_fields;
