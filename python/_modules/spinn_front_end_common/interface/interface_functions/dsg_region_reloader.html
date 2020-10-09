@@ -81,7 +81,6 @@
 <span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">SDRAM</span>
-<span class="kn">from</span> <span class="nn">spinn_storage_handlers</span> <span class="kn">import</span> <span class="n">FileDataReader</span>
 <span class="kn">from</span> <span class="nn">data_specification</span> <span class="kn">import</span> <span class="n">DataSpecificationExecutor</span>
 <span class="kn">from</span> <span class="nn">data_specification.constants</span> <span class="kn">import</span> <span class="n">MAX_MEM_REGIONS</span>
 <span class="kn">from</span> <span class="nn">data_specification.utility_calls</span> <span class="kn">import</span> <span class="p">(</span>
@@ -196,7 +195,7 @@
         <span class="n">vertex</span><span class="o">.</span><span class="n">regenerate_data_specification</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
 
         <span class="c1"># execute the spec</span>
-        <span class="k">with</span> <span class="n">FileDataReader</span><span class="p">(</span><span class="n">spec_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">spec_reader</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">spec_file</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">spec_reader</span><span class="p">:</span>
             <span class="n">data_spec_executor</span> <span class="o">=</span> <span class="n">DataSpecificationExecutor</span><span class="p">(</span>
                 <span class="n">spec_reader</span><span class="p">,</span> <span class="n">SDRAM</span><span class="o">.</span><span class="n">max_sdram_found</span><span class="p">)</span>
             <span class="n">data_spec_executor</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>

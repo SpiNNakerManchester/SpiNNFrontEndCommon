@@ -77,42 +77,53 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
-<span class="kn">from</span> <span class="nn">spinn_storage_handlers.abstract_classes</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AbstractDataWriter</span><span class="p">,</span> <span class="n">AbstractContextManager</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">io</span>
 
 
-<div class="viewcode-block" id="DataRowWriter"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataRowWriter">[docs]</a><span class="k">class</span> <span class="nc">DataRowWriter</span><span class="p">(</span><span class="n">AbstractDataWriter</span><span class="p">,</span> <span class="n">AbstractContextManager</span><span class="p">):</span>
+<div class="viewcode-block" id="DataRowWriter"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataRowWriter">[docs]</a><span class="k">class</span> <span class="nc">DataRowWriter</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">RawIOBase</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;_x&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_y&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_p&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_targets&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_closed&quot;</span>
     <span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
+        <span class="n">io</span><span class="o">.</span><span class="n">RawIOBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="n">x</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_y</span> <span class="o">=</span> <span class="n">y</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_p</span> <span class="o">=</span> <span class="n">p</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_targets</span> <span class="o">=</span> <span class="n">targets</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractDataWriter</span><span class="o">.</span><span class="n">write</span><span class="p">)</span>
 <div class="viewcode-block" id="DataRowWriter.write"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataRowWriter.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="ow">is</span> <span class="kc">False</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="ow">is</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">+=</span> <span class="n">data</span></div>
 
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="o">.</span><span class="n">close</span><span class="p">,</span> <span class="n">extend_doc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="viewcode-block" id="DataRowWriter.readable"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataRowWriter.readable">[docs]</a>    <span class="k">def</span> <span class="nf">readable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="DataRowWriter.seekable"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataRowWriter.seekable">[docs]</a>    <span class="k">def</span> <span class="nf">seekable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="DataRowWriter.writable"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataRowWriter.writable">[docs]</a>    <span class="k">def</span> <span class="nf">writable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="DataRowWriter.truncate"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataRowWriter.truncate">[docs]</a>    <span class="k">def</span> <span class="nf">truncate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Ignore</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="DataRowWriter.fileno"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataRowWriter.fileno">[docs]</a>    <span class="k">def</span> <span class="nf">fileno</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">OSError</span></div>
+
 <div class="viewcode-block" id="DataRowWriter.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataRowWriter.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Closes the writer if not already closed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_targets</span><span class="o">.</span><span class="n">write_data_spec</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">True</span></div></div>
+        <span class="n">io</span><span class="o">.</span><span class="n">RawIOBase</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
 </pre></div>
 
           </div>

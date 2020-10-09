@@ -77,13 +77,13 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
+<span class="kn">import</span> <span class="nn">io</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">MutableMapping</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="c1"># For 2.7 only</span>
     <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">MutableMapping</span>
 <span class="kn">from</span> <span class="nn">.data_row_writer</span> <span class="kn">import</span> <span class="n">DataRowWriter</span>
-<span class="kn">from</span> <span class="nn">.data_row_reader</span> <span class="kn">import</span> <span class="n">DataRowReader</span>
 <span class="kn">from</span> <span class="nn">.ds_sqllite_database</span> <span class="kn">import</span> <span class="n">DsSqlliteDatabase</span>
 
 
@@ -113,10 +113,10 @@
 <span class="sd">        :param tuple(int,int,int) core: triple of (x, y, p)</span>
 <span class="sd">        :return: dictionary with the keys ``start_address``, ``memory_used``</span>
 <span class="sd">            and ``memory_written``</span>
-<span class="sd">        :rtype: dict(str,int)</span>
+<span class="sd">        :rtype: ~io.RawIOBase</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="o">=</span> <span class="n">core</span>
-        <span class="k">return</span> <span class="n">DataRowReader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">get_ds</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">get_ds</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
@@ -169,10 +169,10 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :return: iterator over the core locations and how to read the data</span>
 <span class="sd">            spec for them</span>
-<span class="sd">        :rtype: iterable(tuple(tuple(int,int,int),DataRowReader))</span>
+<span class="sd">        :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">ds_iteritems</span><span class="p">():</span>
-            <span class="k">yield</span> <span class="n">key</span><span class="p">,</span> <span class="n">DataRowReader</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+            <span class="k">yield</span> <span class="n">key</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
 
     <span class="c1"># Python 2 backward compatibility</span>
     <span class="n">iteritems</span> <span class="o">=</span> <span class="n">items</span>

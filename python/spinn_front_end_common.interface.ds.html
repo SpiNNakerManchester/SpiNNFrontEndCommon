@@ -97,57 +97,9 @@
 <div class="section" id="module-spinn_front_end_common.interface.ds">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.ds" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="spinn_front_end_common.interface.ds.DataRowReader">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.ds.</code><code class="descname">DataRowReader</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_reader.html#DataRowReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowReader" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinn_storage_handlers.abstract_classes.abstract_data_reader.AbstractDataReader</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_storage_handlers.abstract_classes.abstract_context_manager.AbstractContextManager</span></code></p>
-<dl class="method">
-<dt id="spinn_front_end_common.interface.ds.DataRowReader.close">
-<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_reader.html#DataRowReader.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowReader.close" title="Permalink to this definition">¶</a></dt>
-<dd><p>Does Nothing</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="spinn_front_end_common.interface.ds.DataRowReader.read">
-<code class="descname">read</code><span class="sig-paren">(</span><em>n_bytes=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_reader.html#DataRowReader.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowReader.read" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read some bytes of data from the underlying storage.  Will block            until some bytes are available, but might not return the full            <cite>n_bytes</cite>.  The size of the returned array indicates how many            bytes were read.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_bytes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The number of bytes to read; if unspecified, read all            remaining bytes</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The data that was read</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytearray" title="(in Python v3.6)">bytearray</a></td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#IOError" title="(in Python v3.6)"><strong>IOError</strong></a> &#8211; If an error occurs reading from the underlying storage</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="spinn_front_end_common.interface.ds.DataRowReader.tell">
-<code class="descname">tell</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_reader.html#DataRowReader.tell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowReader.tell" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the position of the file cursor.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Position of the file cursor</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
 <dt id="spinn_front_end_common.interface.ds.DataRowWriter">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.ds.</code><code class="descname">DataRowWriter</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em>, <em>targets</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_writer.html#DataRowWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowWriter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinn_storage_handlers.abstract_classes.abstract_data_writer.AbstractDataWriter</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_storage_handlers.abstract_classes.abstract_context_manager.AbstractContextManager</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/io.html#io.RawIOBase" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">io.RawIOBase</span></code></a></p>
 <dl class="method">
 <dt id="spinn_front_end_common.interface.ds.DataRowWriter.close">
 <code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_writer.html#DataRowWriter.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowWriter.close" title="Permalink to this definition">¶</a></dt>
@@ -155,24 +107,34 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataRowWriter.fileno">
+<code class="descname">fileno</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_writer.html#DataRowWriter.fileno"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowWriter.fileno" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataRowWriter.readable">
+<code class="descname">readable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_writer.html#DataRowWriter.readable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowWriter.readable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataRowWriter.seekable">
+<code class="descname">seekable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_writer.html#DataRowWriter.seekable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowWriter.seekable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataRowWriter.truncate">
+<code class="descname">truncate</code><span class="sig-paren">(</span><em>size=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_writer.html#DataRowWriter.truncate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowWriter.truncate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataRowWriter.writable">
+<code class="descname">writable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_writer.html#DataRowWriter.writable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowWriter.writable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="spinn_front_end_common.interface.ds.DataRowWriter.write">
 <code class="descname">write</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_writer.html#DataRowWriter.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowWriter.write" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write some bytes of data to the underlying storage.            Does not return until all the bytes have been written.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytearray" title="(in Python v3.6)"><em>bytearray</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytes" title="(in Python v3.6)"><em>bytes</em></a>) &#8211; The data to write</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Nothing is returned</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#IOError" title="(in Python v3.6)"><strong>IOError</strong></a> &#8211; If an error occurs writing to the underlying storage</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -261,7 +223,7 @@
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">iterator over the core locations and how to read the data
 spec for them</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">iterable(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),<a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowReader" title="spinn_front_end_common.interface.ds.DataRowReader">DataRowReader</a>))</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">iterable(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),<a class="reference external" href="https://docs.python.org/3.6/library/io.html#io.RawIOBase" title="(in Python v3.6)">RawIOBase</a>))</td>
 </tr>
 </tbody>
 </table>
@@ -277,7 +239,7 @@ spec for them</td>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">iterator over the core locations and how to read the data
 spec for them</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">iterable(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),<a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowReader" title="spinn_front_end_common.interface.ds.DataRowReader">DataRowReader</a>))</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">iterable(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),<a class="reference external" href="https://docs.python.org/3.6/library/io.html#io.RawIOBase" title="(in Python v3.6)">RawIOBase</a>))</td>
 </tr>
 </tbody>
 </table>

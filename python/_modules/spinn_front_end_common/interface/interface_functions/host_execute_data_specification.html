@@ -120,7 +120,7 @@
 
 <span class="sd">    :param DataSpecificationTargets dsg_tagets:</span>
 <span class="sd">    :param ExecutableTargets executable_targets:</span>
-<span class="sd">    :rtype: dict(tuple(int,int,int), DataRowReader)</span>
+<span class="sd">    :rtype: dict(tuple(int,int,int), ~io.RawIOBase)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">syscores</span> <span class="o">=</span> <span class="n">system_cores</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">(</span>
@@ -133,7 +133,7 @@
 
 <span class="sd">    :param DataSpecificationTargets dsg_tagets:</span>
 <span class="sd">    :param ExecutableTargets executable_targets:</span>
-<span class="sd">    :rtype: dict(tuple(int,int,int), DataRowReader)</span>
+<span class="sd">    :rtype: dict(tuple(int,int,int), ~io.RawIOBase)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">syscores</span> <span class="o">=</span> <span class="n">system_cores</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">(</span>
