@@ -19,8 +19,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 
 
-class AbstractOneAppOneMachineVertex(
-        ApplicationVertex, AbstractHasAssociatedBinary):
+class AbstractOneAppOneMachineVertex(ApplicationVertex):
     """ An Application Vertex that has a fixed Singleton Machine Vertex
 
     The overiding class MUST create the MachineVertex in its init
@@ -71,14 +70,6 @@ class AbstractOneAppOneMachineVertex(
             assert (machine_vertex == self._machine_vertex)
         super(AbstractOneAppOneMachineVertex, self).\
             remember_associated_machine_vertex(machine_vertex)
-
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(self, spec, placement):
-        placement.vertex.generate_data_specification(spec, placement)
-
-    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
-        return self._machine_vertex.get_binary_start_type()
 
     @property
     @overrides(ApplicationVertex.n_atoms)
