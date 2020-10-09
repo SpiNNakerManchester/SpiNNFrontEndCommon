@@ -15,8 +15,6 @@
 
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
-from spinn_front_end_common.abstract_models import (
-    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 
 
 class AbstractOneAppOneMachineVertex(ApplicationVertex):
@@ -40,10 +38,6 @@ class AbstractOneAppOneMachineVertex(ApplicationVertex):
             label, constraints, 1)
         # Will be None until after the MachineVertex is created and remembered
         self._machine_vertex = None
-
-    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
-        return self._machine_vertex.get_binary_file_name()
 
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
