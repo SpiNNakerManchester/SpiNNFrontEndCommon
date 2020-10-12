@@ -56,7 +56,6 @@ class AbstractOneAppOneMachineVertex(
         # The label may now include x, y. p so need to ignore that
         if constraints:
             assert (constraints == self._machine_vertex.constraints)
-        self.remember_associated_machine_vertex(self._machine_vertex)
         return self._machine_vertex
 
     @overrides(ApplicationVertex.remember_associated_machine_vertex)
