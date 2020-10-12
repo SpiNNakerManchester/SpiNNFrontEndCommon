@@ -33,19 +33,13 @@ static int processor_heads[MAX_PROCESSORS];
 //! Sum of packets per processor for bitfields with redundancy not yet ordered
 static uint32_t processor_totals[MAX_PROCESSORS];
 
-//! \brief Read a bitfield and deduces how many bits are not set
-//! \param[in] filter_info: The bitfield to look for redundancy in
+//! \brief Detemine how many bits are not set in a bit field
+//! \param[in] filter: The bitfield to look for redundancy in
 //! \return How many redundant packets there are
-static uint32_t detect_redundant_packet_count(
-        filter_info_t *restrict filter_info) {
-    uint32_t n_filtered_packets = 0;
-    uint32_t n_neurons = filter_info->n_atoms;
-    for (uint neuron_id = 0; neuron_id < n_neurons; neuron_id++) {
-        if (!bit_field_test(filter_info->data, neuron_id)) {
-            n_filtered_packets += 1;
-        }
-    }
-    return n_filtered_packets;
+static uint32_t n_redundant(filter_info_t *restrict filter) {
+    uint32_t n_atoms = filter->n_atoms;
+    uint32_t n_words = get_bit_field_size(n_atoms);
+    return n_atoms - count_bit_field(filter->data, n_words);
 }
 
 //! \brief Fill in the order column based on packet reduction
@@ -86,8 +80,7 @@ static inline void order_bitfields(
                     processor_totals[worst_processor]);
 
             // reduce the packet count bu redundancy
-            processor_totals[worst_processor] -=
-                    detect_redundant_packet_count(bit_fields[index]);
+            processor_totals[worst_processor] -= n_redundant(bit_fields[index]);
 
             // move the pointer
             processor_heads[worst_processor] += 1;
@@ -144,16 +137,9 @@ static inline void print_structs(
                 sorted_bit_fields->processor_ids[index],
                 sorted_bit_fields->bit_fields[index]->key,
                 sorted_bit_fields->bit_fields[index]->data,
-                detect_redundant_packet_count(
-                        sorted_bit_fields->bit_fields[index]),
+                n_redundant(sorted_bit_fields->bit_fields[index]),
                 sorted_bit_fields->sort_order[index]);
     }
-}
-
-static uint32_t n_redundant(filter_info_t *filter) {
-    uint32_t n_atoms = filter->n_atoms;
-    uint32_t n_words = get_bit_field_size(n_atoms);
-    return n_atoms - count_bit_field(filter->data, n_words);
 }
 
 //! \brief Sort a subset of the bitfields by the redundancy
