@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinnman.exceptions import SpinnmanException, SpinnmanTimeoutException
+from spinnman.exceptions import SpinnmanException
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
 from spinn_front_end_common.interface.interface_functions import (
@@ -53,7 +53,8 @@ def run_system_application(
         If provided and iobuf is extracted, will be used to log errors and
         warnings
     :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None
-
+    :raise SpiNNManException:
+        If one should arise from the underlying SpiNNMan calls
     """
 
     # load the executable
@@ -85,7 +86,7 @@ def run_system_application(
         if progress_bar is not None:
             progress_bar.end()
         succeeded = True
-    except (SpinnmanTimeoutException, SpinnmanException) as ex:
+    except SpinnmanException as ex:
         succeeded = False
         # Delay the exception until iobuff is ready
         error = ex
