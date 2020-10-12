@@ -15,12 +15,9 @@
 
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
-from spinn_front_end_common.abstract_models import (
-    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 
 
-class AbstractOneAppOneMachineVertex(
-        ApplicationVertex, AbstractHasAssociatedBinary):
+class AbstractOneAppOneMachineVertex(ApplicationVertex):
     """ An Application Vertex that has a fixed Singleton Machine Vertex
 
     The overiding class MUST create the MachineVertex in its init
@@ -42,10 +39,6 @@ class AbstractOneAppOneMachineVertex(
         # Will be None until after the MachineVertex is created and remembered
         self._machine_vertex = None
 
-    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
-        return self._machine_vertex.get_binary_file_name()
-
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
         return self._machine_vertex.resources_required
@@ -61,6 +54,7 @@ class AbstractOneAppOneMachineVertex(
         # The label may now include x, y. p so need to ignore that
         if constraints:
             assert (constraints == self._machine_vertex.constraints)
+        self.remember_associated_machine_vertex(self._machine_vertex)
         return self._machine_vertex
 
     @overrides(ApplicationVertex.remember_associated_machine_vertex)
@@ -70,14 +64,6 @@ class AbstractOneAppOneMachineVertex(
             assert (machine_vertex == self._machine_vertex)
         super(AbstractOneAppOneMachineVertex, self).\
             remember_associated_machine_vertex(machine_vertex)
-
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(self, spec, placement):
-        placement.vertex.generate_data_specification(spec, placement)
-
-    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
-        return self._machine_vertex.get_binary_start_type()
 
     @property
     @overrides(ApplicationVertex.n_atoms)
