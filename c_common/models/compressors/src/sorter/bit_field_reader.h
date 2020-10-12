@@ -184,7 +184,7 @@ static inline void fills_in_sorted_bit_fields_and_tracker(
         filter_info_t *filters = filter_region->filters;
         for (uint32_t bf_id = 0; bf_id < filter_region->n_filters; bf_id++) {
             // update trackers.
-            if (!filters[bf_id].redundant) {
+            if (!filters[bf_id].all_ones) {
                 sorted_bit_fields->processor_ids[index] = processor;
                 sorted_bit_fields->bit_fields[index] = &filters[bf_id];
                 index++;
@@ -269,7 +269,7 @@ static inline sorted_bit_fields_t * bit_field_reader_initialise(
         filter_info_t *filters = filter->filters;
         uint32_t n_usable = 0;
         for (uint32_t f_id = 0; f_id < n_filters; f_id++) {
-            n_usable += !filters[f_id].redundant;
+            n_usable += !filters[f_id].all_ones;
         }
         n_bit_fields += n_usable;
         log_info("Core %d has %u bitfields of which %u have redundancy",

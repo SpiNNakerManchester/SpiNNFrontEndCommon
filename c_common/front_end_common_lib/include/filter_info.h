@@ -30,7 +30,7 @@ typedef struct filter_info_t {
     //! Flag to indicate if the filter has been merged
     uint32_t merged: 1;
     //! Flag to indicate if the filter is redundant
-    uint32_t redundant: 1;
+    uint32_t all_ones: 1;
     //! Number of atoms (=valid bits) in the bitfield
     uint32_t n_atoms: 30;
     //! The words of the bitfield
