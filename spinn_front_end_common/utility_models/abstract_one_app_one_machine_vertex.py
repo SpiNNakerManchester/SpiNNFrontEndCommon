@@ -16,12 +16,10 @@
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
-from spinn_front_end_common.abstract_models import (
-    AbstractHasAssociatedBinary)
 
 
 class AbstractOneAppOneMachineVertex(
-        ApplicationVertex, AbstractHasAssociatedBinary, LegacyPartitionerAPI):
+        ApplicationVertex, LegacyPartitionerAPI):
     """ An Application Vertex that has a fixed Singleton Machine Vertex
 
     The overiding class MUST create the MachineVertex in its init
@@ -42,10 +40,6 @@ class AbstractOneAppOneMachineVertex(
             label, constraints, 1)
         # Will be None until after the MachineVertex is created and remembered
         self._machine_vertex = None
-
-    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
-        return self._machine_vertex.get_binary_file_name()
 
     @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
