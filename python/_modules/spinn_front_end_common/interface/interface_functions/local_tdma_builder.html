@@ -301,8 +301,7 @@
                 <span class="n">total_time_needed</span> <span class="o">/</span> <span class="n">machine_time_step</span> <span class="o">/</span> <span class="n">fraction_of_sending</span><span class="p">)</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_VERTEX_TDMA_FAILURE_MSG</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">label</span><span class="p">,</span> <span class="n">time_scale_factor_needed</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">total_time_needed</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># maybe this warn could be thrown away?</span>
             <span class="n">true_fraction</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span>
