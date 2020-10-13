@@ -26,7 +26,7 @@ class AbstractOneAppOneMachineVertex(ApplicationVertex):
         # A pointer to the machine vertex that must be set by the sub class
         "_machine_vertex"]
 
-    def __init__(self, label, constraints):
+    def __init__(self, machine_vertex, label, constraints):
         """
         :param str label: The optional name of the vertex.
         :param iterable(AbstractConstraint) constraints:
@@ -37,7 +37,7 @@ class AbstractOneAppOneMachineVertex(ApplicationVertex):
         super(AbstractOneAppOneMachineVertex, self).__init__(
             label, constraints, 1)
         # Will be None until after the MachineVertex is created and remembered
-        self._machine_vertex = None
+        self._machine_vertex = machine_vertex
 
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):

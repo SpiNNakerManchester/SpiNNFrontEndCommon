@@ -36,9 +36,9 @@ class CommandSender(
         :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
-        super(CommandSender, self).__init__(label, constraints)
-        self._machine_vertex = CommandSenderMachineVertex(
-            label, constraints, self)
+        super(CommandSender, self).__init__(
+            CommandSenderMachineVertex(label, constraints, self),
+            label, constraints)
 
     def add_commands(
             self, start_resume_commands, pause_stop_commands,
