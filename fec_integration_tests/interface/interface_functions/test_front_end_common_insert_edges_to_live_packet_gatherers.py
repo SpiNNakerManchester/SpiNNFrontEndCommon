@@ -242,6 +242,8 @@ class TestInsertLPGEdges(unittest.TestCase):
         machine = virtual_machine(width=12, height=12)
         app_graph = ApplicationGraph("Test")
         graph = MachineGraph("Test", app_graph)
+        # Normally there would be other stuff in the app graph to trigger this
+        graph._application_level_used = True
 
         default_params = {
             'use_prefix': False,
