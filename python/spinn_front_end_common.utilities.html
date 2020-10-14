@@ -912,13 +912,13 @@ or <cite>None</cite> if the variable is not found.</td>
 <span id="spinn-front-end-common-utilities-system-control-logic-module"></span><h2>spinn_front_end_common.utilities.system_control_logic module<a class="headerlink" href="#module-spinn_front_end_common.utilities.system_control_logic" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="spinn_front_end_common.utilities.system_control_logic.run_system_application">
-<code class="descclassname">spinn_front_end_common.utilities.system_control_logic.</code><code class="descname">run_system_application</code><span class="sig-paren">(</span><em>executable_cores</em>, <em>app_id</em>, <em>transceiver</em>, <em>provenance_file_path</em>, <em>executable_finder</em>, <em>read_algorithm_iobuf</em>, <em>check_for_success_function</em>, <em>cpu_end_states</em>, <em>needs_sync_barrier</em>, <em>filename_template</em>, <em>binaries_to_track=None</em>, <em>progress_bar=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/system_control_logic.html#run_system_application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.system_control_logic.run_system_application" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">spinn_front_end_common.utilities.system_control_logic.</code><code class="descname">run_system_application</code><span class="sig-paren">(</span><em>executable_cores</em>, <em>app_id</em>, <em>transceiver</em>, <em>provenance_file_path</em>, <em>executable_finder</em>, <em>read_algorithm_iobuf</em>, <em>check_for_success_function</em>, <em>cpu_end_states</em>, <em>needs_sync_barrier</em>, <em>filename_template</em>, <em>binaries_to_track=None</em>, <em>progress_bar=None</em>, <em>logger=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/system_control_logic.html#run_system_application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.system_control_logic.run_system_application" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes the given _system_ application.         Used for on-chip expanders, compressors, etc.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>executable_cores</strong> (<em>ExecutableTargets</em>) &#8211; the cores to run the executable on</li>
 <li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the app-id for the executable</li>
 <li><strong>transceiver</strong> (<em>Transceiver</em>) &#8211; the SpiNNMan instance</li>
@@ -934,7 +934,12 @@ expects <cite>executable_cores</cite>, <cite>transceiver</cite> as inputs</li>
 Or <cite>None</cite> for all binaries</li>
 <li><strong>progress_bar</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.progress_bar.ProgressBar" title="(in SpiNNUtils v)"><em>ProgressBar</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; Possible progress bar to update.
 end() will be called after state checked</li>
+<li><strong>logger</strong> &#8211; If provided and iobuf is extracted, will be used to log errors and
+warnings</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>SpiNNManException</strong> &#8211; If one should arise from the underlying SpiNNMan calls</p>
 </td>
 </tr>
 </tbody>

@@ -2862,13 +2862,13 @@
     <filename>compressor__sorter__structs_8h.html</filename>
     <includes id="filter__info_8h" name="filter_info.h" local="no" imported="no">filter_info.h</includes>
     <includes id="key__atom__map_8h" name="key_atom_map.h" local="no" imported="no">key_atom_map.h</includes>
-    <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">../common/routing_table.h</includes>
+    <includes id="routing__table_8h" name="routing_table.h" local="no" imported="no">common/routing_table.h</includes>
     <class kind="struct">multi_table_t</class>
     <class kind="struct">compressor_processors_top_t</class>
     <class kind="struct">uncompressed_table_region_data_t</class>
     <class kind="struct">sorted_bit_fields_t</class>
     <class kind="struct">comms_sdram_t</class>
-    <class kind="struct">triples_t</class>
+    <class kind="struct">bitfield_proc_t</class>
     <class kind="struct">region_addresses_t</class>
     <member kind="enumeration">
       <type></type>
@@ -2975,7 +2975,7 @@
     <filename>routing__tables_8h.html</filename>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
-    <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">../common/routing_table.h</includes>
+    <includes id="routing__table_8h" name="routing_table.h" local="no" imported="no">common/routing_table.h</includes>
     <includes id="routing__tables__utils_8h" name="routing_tables_utils.h" local="yes" imported="no">routing_tables_utils.h</includes>
     <member kind="function">
       <type>entry_t *</type>
@@ -4023,10 +4023,10 @@
     <includes id="compressor__sorter__structs_8h" name="compressor_sorter_structs.h" local="yes" imported="no">bit_field_common/compressor_sorter_structs.h</includes>
     <member kind="function" static="yes">
       <type>static uint32_t</type>
-      <name>detect_redundant_packet_count</name>
+      <name>n_redundant</name>
       <anchorfile>bit__field__reader_8h.html</anchorfile>
-      <anchor>a58f6dfbed43648f44925f10711e0eabf</anchor>
-      <arglist>(filter_info_t *restrict filter_info)</arglist>
+      <anchor>ae092e3ad5509bc33766230873c2df063</anchor>
+      <arglist>(filter_info_t *restrict filter)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
@@ -4048,6 +4048,13 @@
       <anchorfile>bit__field__reader_8h.html</anchorfile>
       <anchor>a6a775c77e9cfc8496786f71e6967333d</anchor>
       <arglist>(sorted_bit_fields_t *restrict sorted_bit_fields)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>sort_by_redundancy</name>
+      <anchorfile>bit__field__reader_8h.html</anchorfile>
+      <anchor>adb3f33e720ab377cad57710a43cd586a</anchor>
+      <arglist>(sorted_bit_fields_t *sorted_bit_fields, uint32_t start, uint32_t end)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
@@ -4092,8 +4099,9 @@
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="data__specification_8h" name="data_specification.h" local="no" imported="no">data_specification.h</includes>
     <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
-    <includes id="common-typedefs_8h" name="common-typedefs.h" local="yes" imported="no">common-typedefs.h</includes>
-    <includes id="constants_8h" name="constants.h" local="yes" imported="no">common/constants.h</includes>
+    <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
+    <includes id="constants_8h" name="constants.h" local="no" imported="no">common/constants.h</includes>
+    <includes id="routing__table_8h" name="routing_table.h" local="no" imported="no">common/routing_table.h</includes>
     <includes id="routing__tables__utils_8h" name="routing_tables_utils.h" local="yes" imported="no">bit_field_common/routing_tables_utils.h</includes>
     <includes id="compressor__sorter__structs_8h" name="compressor_sorter_structs.h" local="yes" imported="no">bit_field_common/compressor_sorter_structs.h</includes>
     <includes id="bit__field__table__generator_8h" name="bit_field_table_generator.h" local="yes" imported="no">bit_field_common/bit_field_table_generator.h</includes>
@@ -4210,9 +4218,9 @@
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
-      <name>set_n_merged_filters</name>
+      <name>set_merged_filters</name>
       <anchorfile>bit__field__sorter__and__searcher_8c.html</anchorfile>
-      <anchor>a27026609f2973847bb366f221b3c8cda</anchor>
+      <anchor>a87231bf5b93d39515d3ca6d88fdd8196</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function" static="yes">
@@ -4333,6 +4341,13 @@
       <anchorfile>bit__field__sorter__and__searcher_8c.html</anchorfile>
       <anchor>ab98e0806224b412ce1199a4a1ff2f388</anchor>
       <arglist>(void)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>check_bitfield_to_routes</name>
+      <anchorfile>bit__field__sorter__and__searcher_8c.html</anchorfile>
+      <anchor>a12fa41a263d10d14bf07a7eeb6804d86</anchor>
+      <arglist>(sorted_bit_fields_t *restrict sorted_bit_fields)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -7235,6 +7250,25 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>bitfield_proc_t</name>
+    <filename>compressor__sorter__structs_8h.html</filename>
+    <anchor>structbitfield__proc__t</anchor>
+    <member kind="variable">
+      <type>filter_region_t *</type>
+      <name>filter</name>
+      <anchorfile>compressor__sorter__structs_8h.html</anchorfile>
+      <anchor>ac140cc5f3be0d158436780d491616058</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>processor</name>
+      <anchorfile>compressor__sorter__structs_8h.html</anchorfile>
+      <anchor>a27edc56ca90e5e5fff6eee12c9ffadc2</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
     <name>chip_key_data_t</name>
     <filename>data__speed__up__packet__gatherer_8c.html</filename>
     <anchor>structchip__key__data__t</anchor>
@@ -8920,6 +8954,20 @@
     </member>
     <member kind="variable">
       <type>uint32_t</type>
+      <name>merged</name>
+      <anchorfile>filter__info_8h.html</anchorfile>
+      <anchor>a1a484e14dd6870e23e8f838d72c0b388</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>all_ones</name>
+      <anchorfile>filter__info_8h.html</anchorfile>
+      <anchor>a665e0f108a254d3816678434a1153791</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
       <name>n_atoms</name>
       <anchorfile>filter__info_8h.html</anchorfile>
       <anchor>ae7e70377463bb3ae39a4fc84342d40de</anchor>
@@ -8938,24 +8986,10 @@
     <filename>filter__info_8h.html</filename>
     <anchor>structfilter__region__t</anchor>
     <member kind="variable">
-      <type>int</type>
-      <name>n_merged_filters</name>
-      <anchorfile>filter__info_8h.html</anchorfile>
-      <anchor>afab1ddbc95703c99e57a142187e66677</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>int</type>
-      <name>n_redundancy_filters</name>
-      <anchorfile>filter__info_8h.html</anchorfile>
-      <anchor>a5f37cb5ad4f31ddf2303542d3cd6ff9d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>int</type>
+      <type>uint32_t</type>
       <name>n_filters</name>
       <anchorfile>filter__info_8h.html</anchorfile>
-      <anchor>aad96e3f3b4a99d8830524f38e2476738</anchor>
+      <anchor>aab02247f717ee9409ddcb48112460fee</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -9340,10 +9374,10 @@
     <filename>key__atom__map_8h.html</filename>
     <anchor>structkey__atom__data__t</anchor>
     <member kind="variable">
-      <type>int</type>
+      <type>uint32_t</type>
       <name>n_pairs</name>
       <anchorfile>key__atom__map_8h.html</anchorfile>
-      <anchor>ab5bbdfc61613a243b13411db9442f89a</anchor>
+      <anchor>aa6bfbf83ca7b3c6f90b673d1f6e7545e</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -9366,10 +9400,10 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>int</type>
+      <type>uint32_t</type>
       <name>n_atoms</name>
       <anchorfile>key__atom__map_8h.html</anchorfile>
-      <anchor>a20a20f25102bf6b667a3dbe79a8eb3f7</anchor>
+      <anchor>a9bb3649f029992dd5789b4d973b52453</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -9985,16 +10019,16 @@
     </member>
     <member kind="variable">
       <type>int</type>
-      <name>n_triples</name>
+      <name>n_processors</name>
       <anchorfile>compressor__sorter__structs_8h.html</anchorfile>
-      <anchor>a31b26ed84a926a1f33b59d16203541db</anchor>
+      <anchor>af7e0d710a4c4d67be7c0f2578e97ff3f</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>triples_t</type>
-      <name>triples</name>
+      <type>bitfield_proc_t</type>
+      <name>processors</name>
       <anchorfile>compressor__sorter__structs_8h.html</anchorfile>
-      <anchor>a2d992262f556fcc83f7e2705f4530f51</anchor>
+      <anchor>a83219002046c2cb82a5ed5d03d0c9901</anchor>
       <arglist>[]</arglist>
     </member>
   </compound>
@@ -12487,32 +12521,6 @@
       <name>status</name>
       <anchorfile>spinn__extra_8h.html</anchorfile>
       <anchor>afc92ae0a5711d27721a5c63400f6b9ab</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>triples_t</name>
-    <filename>compressor__sorter__structs_8h.html</filename>
-    <anchor>structtriples__t</anchor>
-    <member kind="variable">
-      <type>filter_region_t *</type>
-      <name>filter</name>
-      <anchorfile>compressor__sorter__structs_8h.html</anchorfile>
-      <anchor>ac36accb4eba3cda75eb1446cfc974977</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>key_atom_data_t *</type>
-      <name>key_atom</name>
-      <anchorfile>compressor__sorter__structs_8h.html</anchorfile>
-      <anchor>ad4d68ae649e1e18b9721a72c6b730a8e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>int</type>
-      <name>processor</name>
-      <anchorfile>compressor__sorter__structs_8h.html</anchorfile>
-      <anchor>a3ffd3750f628afae65fc551b52e04f29</anchor>
       <arglist></arglist>
     </member>
   </compound>

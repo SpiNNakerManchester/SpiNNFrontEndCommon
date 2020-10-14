@@ -79,7 +79,7 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;<a class="el" href="filter__info_8h_source.html">filter_info.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="key__atom__map_8h_source.html">key_atom_map.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="routing__table_8h_source.html">../common/routing_table.h</a>&quot;</code><br />
+<code>#include &lt;<a class="el" href="routing__table_8h_source.html">common/routing_table.h</a>&gt;</code><br />
 </div>
 <p><a href="compressor__sorter__structs_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -100,9 +100,9 @@ Data Structures</h2></td></tr>
 <tr class="memitem:structcomms__sdram__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="compressor__sorter__structs_8h.html#structcomms__sdram__t">comms_sdram_t</a></td></tr>
 <tr class="memdesc:structcomms__sdram__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">SDRAM area to communicate between sorter and compressor.  <a href="compressor__sorter__structs_8h.html#structcomms__sdram__t">More...</a><br /></td></tr>
 <tr class="separator:structcomms__sdram__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:structtriples__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="compressor__sorter__structs_8h.html#structtriples__t">triples_t</a></td></tr>
-<tr class="memdesc:structtriples__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">a single mapping in the addresses area  <a href="compressor__sorter__structs_8h.html#structtriples__t">More...</a><br /></td></tr>
-<tr class="separator:structtriples__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:structbitfield__proc__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="compressor__sorter__structs_8h.html#structbitfield__proc__t">bitfield_proc_t</a></td></tr>
+<tr class="memdesc:structbitfield__proc__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">a single mapping in the addresses area  <a href="compressor__sorter__structs_8h.html#structbitfield__proc__t">More...</a><br /></td></tr>
+<tr class="separator:structbitfield__proc__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:structregion__addresses__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="compressor__sorter__structs_8h.html#structregion__addresses__t">region_addresses_t</a></td></tr>
 <tr class="memdesc:structregion__addresses__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">top-level structure in the addresses area  <a href="compressor__sorter__structs_8h.html#structregion__addresses__t">More...</a><br /></td></tr>
 <tr class="separator:structregion__addresses__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -357,14 +357,14 @@ initialise value for malloc_extras (Same for all compressors) </td></tr>
 
 </div>
 </div>
-<a name="structtriples__t" id="structtriples__t"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#structtriples__t">&#9670;&nbsp;</a></span>triples_t</h2>
+<a name="structbitfield__proc__t" id="structbitfield__proc__t"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#structbitfield__proc__t">&#9670;&nbsp;</a></span>bitfield_proc_t</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">struct triples_t</td>
+          <td class="memname">struct bitfield_proc_t</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -374,19 +374,13 @@ initialise value for malloc_extras (Same for all compressors) </td></tr>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
-<a id="ac36accb4eba3cda75eb1446cfc974977"></a><a class="el" href="filter__info_8h.html#structfilter__region__t">filter_region_t</a> *</td>
+<a id="ac140cc5f3be0d158436780d491616058"></a><a class="el" href="filter__info_8h.html#structfilter__region__t">filter_region_t</a> *</td>
 <td class="fieldname">
 filter</td>
 <td class="fielddoc">
 The bitfield wrapper. </td></tr>
 <tr><td class="fieldtype">
-<a id="ad4d68ae649e1e18b9721a72c6b730a8e"></a><a class="el" href="key__atom__map_8h.html#structkey__atom__data__t">key_atom_data_t</a> *</td>
-<td class="fieldname">
-key_atom</td>
-<td class="fielddoc">
-Key and mask associated with the bitfield. </td></tr>
-<tr><td class="fieldtype">
-<a id="a3ffd3750f628afae65fc551b52e04f29"></a>int</td>
+<a id="a27edc56ca90e5e5fff6eee12c9ffadc2"></a>int</td>
 <td class="fieldname">
 processor</td>
 <td class="fielddoc">
@@ -408,7 +402,7 @@ The core associated with the bitfield. </td></tr>
 </div><div class="memdoc">
 <div class="textblock"><p>top-level structure in the addresses area </p>
 
-<p class="definition">Definition at line <a class="el" href="compressor__sorter__structs_8h_source.html#l00144">144</a> of file <a class="el" href="compressor__sorter__structs_8h_source.html">compressor_sorter_structs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="compressor__sorter__structs_8h_source.html#l00142">142</a> of file <a class="el" href="compressor__sorter__structs_8h_source.html">compressor_sorter_structs.h</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -424,17 +418,17 @@ comms_sdram</td>
 <td class="fielddoc">
 Pointer to the area malloced to hold the comms_sdram. </td></tr>
 <tr><td class="fieldtype">
-<a id="a31b26ed84a926a1f33b59d16203541db"></a>int</td>
+<a id="af7e0d710a4c4d67be7c0f2578e97ff3f"></a>int</td>
 <td class="fieldname">
-n_triples</td>
+n_processors</td>
 <td class="fielddoc">
-Number of triples in the list. </td></tr>
+Number of processors in the list. </td></tr>
 <tr><td class="fieldtype">
-<a id="a2d992262f556fcc83f7e2705f4530f51"></a><a class="el" href="compressor__sorter__structs_8h.html#structtriples__t">triples_t</a></td>
+<a id="a83219002046c2cb82a5ed5d03d0c9901"></a><a class="el" href="compressor__sorter__structs_8h.html#structbitfield__proc__t">bitfield_proc_t</a></td>
 <td class="fieldname">
-triples[]</td>
+processors[]</td>
 <td class="fielddoc">
-The mappings. </td></tr>
+The data for the processors. </td></tr>
 </table>
 
 </div>

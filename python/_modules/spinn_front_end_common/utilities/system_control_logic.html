@@ -77,7 +77,7 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="kn">from</span> <span class="nn">spinnman.exceptions</span> <span class="kn">import</span> <span class="n">SpinnmanException</span><span class="p">,</span> <span class="n">SpinnmanTimeoutException</span>
+<span class="kn">from</span> <span class="nn">spinnman.exceptions</span> <span class="kn">import</span> <span class="n">SpinnmanException</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.scp.enums</span> <span class="kn">import</span> <span class="n">Signal</span>
 <span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">ExecutableTargets</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
@@ -89,7 +89,7 @@
         <span class="n">executable_cores</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">,</span>
         <span class="n">executable_finder</span><span class="p">,</span> <span class="n">read_algorithm_iobuf</span><span class="p">,</span> <span class="n">check_for_success_function</span><span class="p">,</span>
         <span class="n">cpu_end_states</span><span class="p">,</span> <span class="n">needs_sync_barrier</span><span class="p">,</span> <span class="n">filename_template</span><span class="p">,</span>
-        <span class="n">binaries_to_track</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress_bar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">binaries_to_track</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress_bar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Executes the given _system_ application. \</span>
 <span class="sd">        Used for on-chip expanders, compressors, etc.</span>
 
@@ -113,8 +113,12 @@
 <span class="sd">        Or `None` for all binaries</span>
 <span class="sd">    :param progress_bar: Possible progress bar to update.</span>
 <span class="sd">           end() will be called after state checked</span>
+<span class="sd">    :param logger:</span>
+<span class="sd">        If provided and iobuf is extracted, will be used to log errors and</span>
+<span class="sd">        warnings</span>
 <span class="sd">    :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None</span>
-
+<span class="sd">    :raise SpiNNManException:</span>
+<span class="sd">        If one should arise from the underlying SpiNNMan calls</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># load the executable</span>
@@ -146,7 +150,7 @@
         <span class="k">if</span> <span class="n">progress_bar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">progress_bar</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
         <span class="n">succeeded</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="k">except</span> <span class="p">(</span><span class="n">SpinnmanTimeoutException</span><span class="p">,</span> <span class="n">SpinnmanException</span><span class="p">)</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+    <span class="k">except</span> <span class="n">SpinnmanException</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
         <span class="n">succeeded</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="c1"># Delay the exception until iobuff is ready</span>
         <span class="n">error</span> <span class="o">=</span> <span class="n">ex</span>
@@ -163,9 +167,14 @@
         <span class="n">iobuf_reader</span> <span class="o">=</span> <span class="n">ChipIOBufExtractor</span><span class="p">(</span>
             <span class="n">filename_template</span><span class="o">=</span><span class="n">filename_template</span><span class="p">,</span>
             <span class="n">suppress_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">iobuf_reader</span><span class="p">(</span>
+        <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span> <span class="o">=</span> <span class="n">iobuf_reader</span><span class="p">(</span>
             <span class="n">transceiver</span><span class="p">,</span> <span class="n">executable_cores</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span>
             <span class="n">system_provenance_file_path</span><span class="o">=</span><span class="n">provenance_file_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">warn_entries</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">error_entries</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
 
     <span class="c1"># stop anything that&#39;s associated with the compressor binary</span>
     <span class="n">transceiver</span><span class="o">.</span><span class="n">stop_application</span><span class="p">(</span><span class="n">app_id</span><span class="p">)</span>

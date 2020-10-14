@@ -86,9 +86,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a58f6dfbed43648f44925f10711e0eabf"><td class="memItemLeft" align="right" valign="top">static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__reader_8h.html#a58f6dfbed43648f44925f10711e0eabf">detect_redundant_packet_count</a> (<a class="el" href="filter__info_8h.html#structfilter__info__t">filter_info_t</a> *restrict filter_info)</td></tr>
-<tr class="memdesc:a58f6dfbed43648f44925f10711e0eabf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a bitfield and deduces how many bits are not set.  <a href="bit__field__reader_8h.html#a58f6dfbed43648f44925f10711e0eabf">More...</a><br /></td></tr>
-<tr class="separator:a58f6dfbed43648f44925f10711e0eabf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae092e3ad5509bc33766230873c2df063"><td class="memItemLeft" align="right" valign="top">static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__reader_8h.html#ae092e3ad5509bc33766230873c2df063">n_redundant</a> (<a class="el" href="filter__info_8h.html#structfilter__info__t">filter_info_t</a> *restrict filter)</td></tr>
+<tr class="memdesc:ae092e3ad5509bc33766230873c2df063"><td class="mdescLeft">&#160;</td><td class="mdescRight">Detemine how many bits are not set in a bit field.  <a href="bit__field__reader_8h.html#ae092e3ad5509bc33766230873c2df063">More...</a><br /></td></tr>
+<tr class="separator:ae092e3ad5509bc33766230873c2df063"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca5e3310aacf901a560d7f137a4b65fd"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__reader_8h.html#aca5e3310aacf901a560d7f137a4b65fd">order_bitfields</a> (<a class="el" href="compressor__sorter__structs_8h.html#structsorted__bit__fields__t">sorted_bit_fields_t</a> *restrict <a class="el" href="bit__field__sorter__and__searcher_8c.html#abe73a2259d14e3152ae6ff8192ed5afb">sorted_bit_fields</a>)</td></tr>
 <tr class="memdesc:aca5e3310aacf901a560d7f137a4b65fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill in the order column based on packet reduction.  <a href="bit__field__reader_8h.html#aca5e3310aacf901a560d7f137a4b65fd">More...</a><br /></td></tr>
 <tr class="separator:aca5e3310aacf901a560d7f137a4b65fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -98,6 +98,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a6a775c77e9cfc8496786f71e6967333d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__reader_8h.html#a6a775c77e9cfc8496786f71e6967333d">print_structs</a> (<a class="el" href="compressor__sorter__structs_8h.html#structsorted__bit__fields__t">sorted_bit_fields_t</a> *restrict <a class="el" href="bit__field__sorter__and__searcher_8c.html#abe73a2259d14e3152ae6ff8192ed5afb">sorted_bit_fields</a>)</td></tr>
 <tr class="memdesc:a6a775c77e9cfc8496786f71e6967333d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Debugging support for <a class="el" href="bit__field__reader_8h.html#af63b553947cd47b27df8eeece1ddfba1" title="Read in bitfields.">bit_field_reader_read_in_bit_fields()</a>; prints sorted bitfields and tests memory allocation.  <a href="bit__field__reader_8h.html#a6a775c77e9cfc8496786f71e6967333d">More...</a><br /></td></tr>
 <tr class="separator:a6a775c77e9cfc8496786f71e6967333d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb3f33e720ab377cad57710a43cd586a"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__reader_8h.html#adb3f33e720ab377cad57710a43cd586a">sort_by_redundancy</a> (<a class="el" href="compressor__sorter__structs_8h.html#structsorted__bit__fields__t">sorted_bit_fields_t</a> *<a class="el" href="bit__field__sorter__and__searcher_8c.html#abe73a2259d14e3152ae6ff8192ed5afb">sorted_bit_fields</a>, uint32_t <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a3c1686c281a6d3ab409c4684891399cd">start</a>, uint32_t end)</td></tr>
+<tr class="memdesc:adb3f33e720ab377cad57710a43cd586a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sort a subset of the bit fields by the redundancy.  <a href="bit__field__reader_8h.html#adb3f33e720ab377cad57710a43cd586a">More...</a><br /></td></tr>
+<tr class="separator:adb3f33e720ab377cad57710a43cd586a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad1e9e95e70b0c39ee24f849bc7341511"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__reader_8h.html#ad1e9e95e70b0c39ee24f849bc7341511">fills_in_sorted_bit_fields_and_tracker</a> (<a class="el" href="compressor__sorter__structs_8h.html#structregion__addresses__t">region_addresses_t</a> *restrict <a class="el" href="bit__field__sorter__and__searcher_8c.html#af4f616ec6ec66cfb3babbc369e942fa4">region_addresses</a>, <a class="el" href="compressor__sorter__structs_8h.html#structsorted__bit__fields__t">sorted_bit_fields_t</a> *restrict <a class="el" href="bit__field__sorter__and__searcher_8c.html#abe73a2259d14e3152ae6ff8192ed5afb">sorted_bit_fields</a>)</td></tr>
 <tr class="memdesc:ad1e9e95e70b0c39ee24f849bc7341511"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill in the sorted bit-field struct and builds tracker of incoming packet counts.  <a href="bit__field__reader_8h.html#ad1e9e95e70b0c39ee24f849bc7341511">More...</a><br /></td></tr>
 <tr class="separator:ad1e9e95e70b0c39ee24f849bc7341511"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -124,8 +127,8 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 
 <p class="definition">Definition in file <a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>.</p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a58f6dfbed43648f44925f10711e0eabf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a58f6dfbed43648f44925f10711e0eabf">&#9670;&nbsp;</a></span>detect_redundant_packet_count()</h2>
+<a id="ae092e3ad5509bc33766230873c2df063"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae092e3ad5509bc33766230873c2df063">&#9670;&nbsp;</a></span>n_redundant()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -134,10 +137,10 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static uint32_t detect_redundant_packet_count </td>
+          <td class="memname">static uint32_t n_redundant </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="filter__info_8h.html#structfilter__info__t">filter_info_t</a> *restrict&#160;</td>
-          <td class="paramname"><em>filter_info</em></td><td>)</td>
+          <td class="paramname"><em>filter</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -148,10 +151,10 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 </table>
 </div><div class="memdoc">
 
-<p>Read a bitfield and deduces how many bits are not set. </p>
+<p>Detemine how many bits are not set in a bit field. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">filter_info</td><td>The bitfield to look for redundancy in </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">filter</td><td>The bitfield to look for redundancy in </td></tr>
   </table>
   </dd>
 </dl>
@@ -193,7 +196,7 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="bit__field__reader_8h_source.html#l00053">53</a> of file <a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bit__field__reader_8h_source.html#l00047">47</a> of file <a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>.</p>
 
 </div>
 </div>
@@ -229,7 +232,7 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="bit__field__reader_8h_source.html#l00109">109</a> of file <a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bit__field__reader_8h_source.html#l00102">102</a> of file <a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>.</p>
 
 </div>
 </div>
@@ -265,7 +268,61 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="bit__field__reader_8h_source.html#l00138">138</a> of file <a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bit__field__reader_8h_source.html#l00131">131</a> of file <a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>.</p>
+
+</div>
+</div>
+<a id="adb3f33e720ab377cad57710a43cd586a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb3f33e720ab377cad57710a43cd586a">&#9670;&nbsp;</a></span>sort_by_redundancy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void sort_by_redundancy </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="compressor__sorter__structs_8h.html#structsorted__bit__fields__t">sorted_bit_fields_t</a> *&#160;</td>
+          <td class="paramname"><em>sorted_bit_fields</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>start</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>end</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sort a subset of the bit fields by the redundancy. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir"></td><td class="paramname">[in/out]</td><td>sorted_bit_fields: The bit fields to sort. The bit field order is actually changed by this function. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start</td><td>The index of the first bit field to sort </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">end</td><td>The index after the last bit field to sort </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="bit__field__reader_8h_source.html#l00150">150</a> of file <a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>.</p>
 
 </div>
 </div>
@@ -312,7 +369,7 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="bit__field__reader_8h_source.html#l00158">158</a> of file <a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bit__field__reader_8h_source.html#l00172">172</a> of file <a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>.</p>
 
 </div>
 </div>
@@ -359,7 +416,7 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="bit__field__reader_8h_source.html#l00203">203</a> of file <a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bit__field__reader_8h_source.html#l00210">210</a> of file <a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>.</p>
 
 </div>
 </div>
@@ -396,7 +453,7 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The pointer to the sorted memory tracker, or <code>NULL</code> if any of the <a class="el" href="malloc__extras_8h.html#a3e218828af7ddd3f4cd0d3772562b520" title="An easily-insertable name for the memory allocator.">MALLOC</a>'s failed for any reason. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="bit__field__reader_8h_source.html#l00251">251</a> of file <a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bit__field__reader_8h_source.html#l00258">258</a> of file <a class="el" href="bit__field__reader_8h_source.html">bit_field_reader.h</a>.</p>
 
 </div>
 </div>
