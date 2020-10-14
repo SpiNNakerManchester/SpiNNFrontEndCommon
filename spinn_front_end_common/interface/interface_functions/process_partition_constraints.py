@@ -33,7 +33,7 @@ class ProcessPartitionConstraints(object):
         :param ~.MachineGraph machine_graph:
         :param ~.ApplicationGraph application_graph:
         """
-        if application_graph is not None:
+        if application_graph is not None and application_graph.n_vertices:
             # generate progress bar
             progress = ProgressBar(
                 machine_graph.n_vertices,

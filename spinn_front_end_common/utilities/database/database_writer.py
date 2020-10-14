@@ -277,7 +277,7 @@ class DatabaseWriter(object):
                     for edge in machine_graph.get_edges_starting_at_vertex(
                         vertex)))
 
-            if application_graph is not None:
+            if application_graph is not None and application_graph.n_vertices:
                 self._connection.executemany(
                     """
                     INSERT INTO graph_mapper_vertex (

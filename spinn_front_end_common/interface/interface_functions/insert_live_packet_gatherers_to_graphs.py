@@ -71,7 +71,7 @@ class InsertLivePacketGatherersToGraphs(object):
         lpg_params_to_vertices = defaultdict(dict)
 
         # for every Ethernet connected chip, add the gatherers required
-        if application_graph is not None:
+        if application_graph is not None and application_graph.n_vertices:
             for chip in progress.over(machine.ethernet_connected_chips):
                 for params in live_packet_gatherer_parameters:
                     if (params.board_address is None or
