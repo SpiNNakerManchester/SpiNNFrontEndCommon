@@ -241,9 +241,8 @@ class TestInsertLPGEdges(unittest.TestCase):
     def test_local_verts_go_to_local_lpgs_app_graph(self):
         machine = virtual_machine(width=12, height=12)
         app_graph = ApplicationGraph("Test")
+        app_graph.add_vertex(SimpleTestVertex(1))
         graph = MachineGraph("Test", app_graph)
-        # Normally there would be other stuff in the app graph to trigger this
-        graph._application_level_used = True
 
         default_params = {
             'use_prefix': False,
