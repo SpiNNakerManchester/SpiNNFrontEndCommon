@@ -64,7 +64,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         n_app_vertices = 0
-        if application_graph is not None:
+        if application_graph is not None and application_graph.n_vertices:
             n_app_vertices = application_graph.n_vertices
         self._chip_to_gatherer_map = vertex_to_ethernet_connected_chip_mapping
         self._machine = machine
@@ -75,11 +75,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
             "Inserting edges between vertices which require FR speed up "
             "functionality.")
 
-        if application_graph is None:
-            for vertex in progress.over(machine_graph.vertices):
-                if isinstance(vertex, ExtraMonitorSupportMachineVertex):
-                    self._process_mach_graph_vertex(vertex, machine_graph)
-        else:
+        if application_graph is not None and application_graph.n_vertices:
             for vertex in progress.over(machine_graph.vertices, False):
                 if isinstance(vertex, ExtraMonitorSupportMachineVertex):
                     self._process_app_graph_vertex(
@@ -90,6 +86,10 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 for vertex in app_vertex.machine_vertices:
                     self._process_app_graph_vertex(
                         vertex, machine_graph, application_graph)
+        else:
+            for vertex in progress.over(machine_graph.vertices):
+                if isinstance(vertex, ExtraMonitorSupportMachineVertex):
+                    self._process_mach_graph_vertex(vertex, machine_graph)
 
     def _process_app_graph_vertex(
             self, vertex, machine_graph, application_graph):

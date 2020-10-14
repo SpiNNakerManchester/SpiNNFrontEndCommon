@@ -75,7 +75,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         vertex_to_chip_map = dict()
 
         # handle reinjector and chip based data extractor functionality.
-        if application_graph is not None:
+        if application_graph is not None and application_graph.n_vertices:
             extra_monitors = self._add_second_monitors_application_graph(
                 progress, machine, application_graph, machine_graph,
                 vertex_to_chip_map)
@@ -84,7 +84,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
                 progress, machine, machine_graph, vertex_to_chip_map)
 
         # progress data receiver for data extraction functionality
-        if application_graph is not None:
+        if application_graph is not None and application_graph.n_vertices:
             self._add_data_extraction_vertices_app_graph(
                 progress, machine, application_graph, machine_graph,
                 chip_to_gatherer_map, vertex_to_chip_map)
