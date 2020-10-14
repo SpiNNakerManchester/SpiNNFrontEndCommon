@@ -23,6 +23,8 @@ from spinn_front_end_common.interface.interface_functions import (
     InsertLivePacketGatherersToGraphs)
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
+from fec_integration_tests.interface.interface_functions.simple_test_vertex \
+    import (SimpleTestVertex)
 
 
 class TestInsertLPGs(unittest.TestCase):
@@ -79,9 +81,8 @@ class TestInsertLPGs(unittest.TestCase):
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
         machine = virtual_machine(width=12, height=12)
         app_graph = ApplicationGraph("Test")
+        app_graph.add_vertex(SimpleTestVertex(1))
         graph = MachineGraph("Test", app_graph)
-        # Normally there would be other stuff in the app graph to trigger this
-        graph._application_level_used = True
 
         default_params = {
             'use_prefix': False,
@@ -189,9 +190,8 @@ class TestInsertLPGs(unittest.TestCase):
     def test_that_6_lpgs_are_generated_2_on_each_eth_chip_app_graph(self):
         machine = virtual_machine(width=12, height=12)
         app_graph = ApplicationGraph("Test")
+        app_graph.add_vertex(SimpleTestVertex(1))
         graph = MachineGraph("Test", app_graph)
-        # Normally there would be other stuff in the app graph to trigger this
-        graph._application_level_used = True
 
         default_params = {
             'use_prefix': False,
