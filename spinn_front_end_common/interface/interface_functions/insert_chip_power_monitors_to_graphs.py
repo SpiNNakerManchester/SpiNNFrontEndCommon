@@ -53,7 +53,7 @@ class InsertChipPowerMonitorsToGraphs(object):
             machine.n_chips, "Adding Chip power monitors to Graph")
 
         app_vertex = None
-        if application_graph is not None:
+        if application_graph is not None and application_graph.n_vertices:
             app_vertex = ChipPowerMonitor(
                 label="ChipPowerMonitor",
                 sampling_frequency=sampling_frequency,
