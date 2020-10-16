@@ -22,7 +22,7 @@
 
 #include <debug.h>
 #include <malloc_extras.h>
-#include "../common/routing_table.h"
+#include <common/routing_table.h>
 #include "routing_tables_utils.h"
 
 //=============================================================================
@@ -66,7 +66,8 @@ entry_t* routing_tables_append_get_entry(void) {
     // check that we're not hitting the max entries supported by the table
     if (multi_table.n_entries == (int) multi_table.max_entries) {
         log_error(
-                "there is no more space in this multi-table for this entry.");
+                "There is no more space out of %d entries in this multi-table"
+                "for this entry.", multi_table.max_entries);
         malloc_extras_terminate(RTE_SWERR);
     }
 
