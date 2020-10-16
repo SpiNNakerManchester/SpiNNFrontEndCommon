@@ -1,9 +1,7 @@
 import os
 import sqlite3
 import sys
-import matplotlib.pyplot as plot
 import numpy
-import seaborn
 
 # The types of router provenance that we'll plot
 PLOTTABLES = (
@@ -65,6 +63,9 @@ def router_plot_data(db_filename, key, output_filename):
     # if the DB isn't there, the errors are otherwise *weird* if we don't check
     if not os.path.exists(db_filename):
         raise Exception("no such DB: " + db_filename)
+    # Import here because otherwise CI fails
+    import matplotlib.pyplot as plot
+    import seaborn
     print("creating " + output_filename)
     (title, width, height, data) = router_prov_details(db_filename, key)
     _fig, ax = plot.subplots(figsize=(width, height))
