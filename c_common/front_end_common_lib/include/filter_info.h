@@ -27,8 +27,12 @@
 typedef struct filter_info_t {
     //! Bit field master population key
     uint32_t key;
-    //! Number of words representing the bitfield
-    uint32_t n_atoms;
+    //! Flag to indicate if the filter has been merged
+    uint32_t merged : 1;
+    //! Flag to indicate if the filter is redundant
+    uint32_t all_ones : 1;
+    //! Number of atoms (=valid bits) in the bitfield
+    uint32_t n_atoms : 30;
     //! The words of the bitfield
     bit_field_t data;
 } filter_info_t;
@@ -41,7 +45,7 @@ typedef struct filter_region_t {
     uint32_t n_redundancy_filters;
     //! Total number of filters including with and without redundancy
     uint32_t n_filters;
-    //! The filters themselves.
+    //! The filters themselves, ordered by key
     filter_info_t filters[];
 } filter_region_t;
 

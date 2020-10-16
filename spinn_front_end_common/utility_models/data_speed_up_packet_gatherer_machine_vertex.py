@@ -35,7 +35,6 @@ from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
-from spinn_storage_handlers import FileDataReader
 from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_vertices_to_core_subset, emergency_recover_state_from_failure)
@@ -646,7 +645,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 raise Exception(
                     "when using a file, you can only have a offset of 0")
 
-            with FileDataReader(data) as reader:
+            with open(data, "rb") as reader:
                 # n_bytes=None already means 'read everything'
                 data = reader.read(n_bytes)  # pylint: disable=no-member
             # Number of bytes to write is now length of buffer we have
