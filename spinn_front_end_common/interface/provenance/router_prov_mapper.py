@@ -38,7 +38,8 @@ def router_prov_details(db_filename, info):
         db.row_factory = sqlite3.Row
         for row in db.execute("""
                 SELECT source_name AS "source", x, y, p,
-                    description_name AS "description", MAX(the_value) AS "value"
+                    description_name AS "description",
+                    MAX(the_value) AS "value"
                 FROM provenance_view
                 WHERE description LIKE ?
                 GROUP BY x, y, p
@@ -55,7 +56,7 @@ def router_prov_details(db_filename, info):
     ary = numpy.full((max(ys) + 1, max(xs) + 1), float("NaN"))
     for (x, y, _p, value) in data:
         ary[y, x] = value
-    return ((src + "/" + name).replace("_", " "), max(xs) + 1, max(ys) + 1, ary)
+    return (src + "/" + name).replace("_", " "), max(xs) + 1, max(ys) + 1, ary
 
 
 def router_plot_data(db_filename, key, output_filename):
@@ -64,6 +65,7 @@ def router_plot_data(db_filename, key, output_filename):
     if not os.path.exists(db_filename):
         raise Exception("no such DB: " + db_filename)
     # Import here because otherwise CI fails
+    # pylint: disable=import-error
     import matplotlib.pyplot as plot
     import seaborn
     print("creating " + output_filename)
@@ -73,7 +75,7 @@ def router_plot_data(db_filename, key, output_filename):
     ax.set_xticks([])
     ax.set_yticks([])
     ax.axis("off")
-    labels=data.astype(int)
+    labels = data.astype(int)
     seaborn.heatmap(
         data, annot=labels, fmt="",
         cmap="plasma", square=True).invert_yaxis()
