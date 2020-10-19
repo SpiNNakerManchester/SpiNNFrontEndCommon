@@ -21,7 +21,7 @@ import numpy
 # import seaborn
 
 # The types of router provenance that we'll plot
-PLOTTABLES = (
+ROUTER_PLOTTABLES = (
     "default_routed_external_multicast_packets",
     "Dropped_FR_Packets",
     "Dropped_Multicast_Packets",
@@ -43,14 +43,19 @@ PLOTTABLES = (
     "Received_For_Reinjection",
     "Reinjected",
     "Reinjection_Overflows")
+SINGLE_PLOTNAME = "Plot.png"
 
 
 class Plotter(object):
-    __slots__ = ("_db", "__have_insertion_order", "__verbose")
+    __slots__ = ("cmap", "_db", "__have_insertion_order", "__verbose")
+
+    _pyplot = None
+    _seaborn = None
 
     def __init__(self, db_filename, verbose=False):
         # Check the existence of the database here
-        # if the DB isn't there, the errors are otherwise *weird* if we don't check
+        # if the DB isn't there, the errors are otherwise *weird* if we don't
+        # check...
         if not os.path.exists(db_filename):
             raise Exception("no such DB: " + db_filename)
         # TODO: use magic to open a read-only connection once we're Py3 only
@@ -59,6 +64,7 @@ class Plotter(object):
         self._db.row_factory = sqlite3.Row
         self.__have_insertion_order = True
         self.__verbose = verbose
+        self.cmap = "plasma"
 
     def __enter__(self):
         return self._db.__enter__()
@@ -90,7 +96,7 @@ class Plotter(object):
             GROUP BY x, y, p
             """, (description, ))
 
-    def get_router_prov_details(self, info):
+    def get_per_chip_prov_details(self, info):
         data = []
         xs = []
         ys = []
@@ -110,14 +116,23 @@ class Plotter(object):
         return ((src + "/" + name).replace("_", " "),
                 max(xs) + 1, max(ys) + 1, ary)
 
-    def router_plot_data(self, key, output_filename):
+    @classmethod
+    def __plotter_apis(cls):
         # Import here because otherwise CI fails
         # pylint: disable=import-error
-        import matplotlib.pyplot as plot
-        import seaborn
+        if not cls._pyplot:
+            import matplotlib.pyplot as plot
+            cls._pyplot = plot
+        if not cls._seaborn:
+            import seaborn
+            cls._seaborn = seaborn
+        return cls._pyplot, cls._seaborn
+
+    def plot_per_chip_data(self, key, output_filename):
+        plot, seaborn = self.__plotter_apis()
         if self.__verbose:
             print("creating " + output_filename)
-        (title, width, height, data) = self.get_router_prov_details(key)
+        (title, width, height, data) = self.get_per_chip_prov_details(key)
         _fig, ax = plot.subplots(figsize=(width, height))
         plot.title(title)
         ax.set_xticks([])
@@ -125,8 +140,8 @@ class Plotter(object):
         ax.axis("off")
         labels = data.astype(int)
         seaborn.heatmap(
-            data, annot=labels, fmt="",
-            cmap="plasma", square=True).invert_yaxis()
+            data, annot=labels, fmt="", square=True,
+            cmap=self.cmap).invert_yaxis()
         plot.savefig(output_filename, bbox_inches='tight')
         plot.close()
 
@@ -136,20 +151,26 @@ def main():
         description="Generate heat maps from SpiNNaker provenance databases.")
     ap.add_argument("-q", "--quiet", action="store_true", default=False,
                     help="don't print progress information")
+    ap.add_argument("-c", "--colourmap", nargs="?", default="plasma",
+                    help="colour map rule for plot; default 'plasma'")
     ap.add_argument("dbfile", metavar="database_file",
                     help="the provenance database to extract data from; "
                     "usually called 'provenance.sqlite3'")
     ap.add_argument("term", metavar="metadata_name", nargs="?", default=None,
                     help="the name of the metadata to plot, or a unique "
-                    "fragment of it")
+                    "fragment of it; if omitted, maps will be produced for "
+                    "all the router provenance categories")
     args = ap.parse_args()
     plotter = Plotter(args.dbfile, not args.quiet)
+    plotter.cmap = args.colourmap
     with plotter:
         if args.term:
-            plotter.router_plot_data(args.term, os.path.abspath("Plot.png"))
+            plotter.plot_per_chip_data(
+                args.term, os.path.abspath(SINGLE_PLOTNAME))
         else:
-            for term in PLOTTABLES:
-                plotter.router_plot_data(term, os.path.abspath(term + ".png"))
+            for term in ROUTER_PLOTTABLES:
+                plotter.plot_per_chip_data(
+                    term, os.path.abspath(term + ".png"))
 
 
 if __name__ == "__main__":
