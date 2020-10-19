@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import argparse
 import os
 import sqlite3
-import sys
 import numpy
 # import matplotlib.pyplot as plot
 # import seaborn
@@ -43,13 +43,12 @@ PLOTTABLES = (
     "Received_For_Reinjection",
     "Reinjected",
     "Reinjection_Overflows")
-VERBOSE = True
 
 
 class Plotter(object):
-    __slots__ = ("_db", "_have_insertion_order")
+    __slots__ = ("_db", "__have_insertion_order", "__verbose")
 
-    def __init__(self, db_filename):
+    def __init__(self, db_filename, verbose=False):
         # Check the existence of the database here
         # if the DB isn't there, the errors are otherwise *weird* if we don't check
         if not os.path.exists(db_filename):
@@ -58,7 +57,8 @@ class Plotter(object):
         # See: https://stackoverflow.com/a/21794758/301832
         self._db = sqlite3.connect(db_filename)
         self._db.row_factory = sqlite3.Row
-        self._have_insertion_order = True
+        self.__have_insertion_order = True
+        self.__verbose = verbose
 
     def __enter__(self):
         return self._db.__enter__()
@@ -68,7 +68,7 @@ class Plotter(object):
 
     def _do_query(self, description):
         # Does the query in one of two ways, depending on schema version
-        if self._have_insertion_order:
+        if self.__have_insertion_order:
             try:
                 return self._db.execute("""
                     SELECT source_name AS "source", x, y, p,
@@ -80,7 +80,7 @@ class Plotter(object):
                     HAVING insertion_order = MAX(insertion_order)
                     """, (description, ))
             except sqlite3.Error:
-                self._have_insertion_order = 0
+                self.__have_insertion_order = 0
         return self._db.execute("""
             SELECT source_name AS "source", x, y, p,
                 description_name AS "description",
@@ -115,7 +115,7 @@ class Plotter(object):
         # pylint: disable=import-error
         import matplotlib.pyplot as plot
         import seaborn
-        if VERBOSE:
+        if self.__verbose:
             print("creating " + output_filename)
         (title, width, height, data) = self.get_router_prov_details(key)
         _fig, ax = plot.subplots(figsize=(width, height))
@@ -132,13 +132,24 @@ class Plotter(object):
 
 
 def main():
-    if len(sys.argv) != 2:
-        raise Exception(
-            "wrong number of arguments: needs just the prov DB filename")
-    plotter = Plotter(sys.argv[1])
+    ap = argparse.ArgumentParser(
+        description="Generate heat maps from SpiNNaker provenance databases.")
+    ap.add_argument("-q", "--quiet", action="store_true", default=False,
+                    help="don't print progress information")
+    ap.add_argument("dbfile", metavar="database_file",
+                    help="the provenance database to extract data from; "
+                    "usually called 'provenance.sqlite3'")
+    ap.add_argument("term", metavar="metadata_name", nargs="?", default=None,
+                    help="the name of the metadata to plot, or a unique "
+                    "fragment of it")
+    args = ap.parse_args()
+    plotter = Plotter(args.dbfile, not args.quiet)
     with plotter:
-        for term in PLOTTABLES:
-            plotter.router_plot_data(term, os.path.abspath(term + ".png"))
+        if args.term:
+            plotter.router_plot_data(args.term, os.path.abspath("Plot.png"))
+        else:
+            for term in PLOTTABLES:
+                plotter.router_plot_data(term, os.path.abspath(term + ".png"))
 
 
 if __name__ == "__main__":
