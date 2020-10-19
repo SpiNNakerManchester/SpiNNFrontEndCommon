@@ -17,112 +17,128 @@ import os
 import sqlite3
 import sys
 import numpy
+# import matplotlib.pyplot as plot
+# import seaborn
 
 # The types of router provenance that we'll plot
 PLOTTABLES = (
-    "Local_Multicast_Packets",
-    "External_Multicast_Packets",
+    "default_routed_external_multicast_packets",
+    "Dropped_FR_Packets",
     "Dropped_Multicast_Packets",
     "Dropped_Multicast_Packets_via_local_transmission",
-    "default_routed_external_multicast_packets",
-    "Local_P2P_Packets",
-    "External_P2P_Packets",
-    "Dropped_P2P_Packets",
-    "Local_NN_Packets",
-    "External_NN_Packets",
     "Dropped_NN_Packets",
-    "Local_FR_Packets",
-    "External_FR_Packets",
-    "Dropped_FR_Packets",
-    "Received_For_Reinjection",
-    "Missed_For_Reinjection",
-    "Reinjection_Overflows",
-    "Reinjected",
+    "Dropped_P2P_Packets",
     "Dumped_from_a_Link",
     "Dumped_from_a_processor",
-    "Error")
-HAVE_INSERTION_ORDER = 1  # So we don't try schema errors several times
+    "Error",
+    "External_FR_Packets",
+    "External_Multicast_Packets",
+    "External_NN_Packets",
+    "External_P2P_Packets",
+    "Local_Multicast_Packets",
+    "Local_P2P_Packets",
+    "Local_NN_Packets",
+    "Local_FR_Packets",
+    "Missed_For_Reinjection",
+    "Received_For_Reinjection",
+    "Reinjected",
+    "Reinjection_Overflows")
+VERBOSE = True
 
 
-def _do_query(db, description):
-    # Does the query in one of two ways, depending on schema version
-    global HAVE_INSERTION_ORDER
-    if HAVE_INSERTION_ORDER:
-        try:
-            return db.execute("""
-                SELECT source_name AS "source", x, y, p,
-                    description_name AS "description",
-                    the_value AS "value"
-                FROM provenance_view
-                WHERE description LIKE ?
-                GROUP BY x, y, p
-                HAVING insertion_order = MAX(insertion_order)
-                """, (description, ))
-        except sqlite3.Error:
-            HAVE_INSERTION_ORDER = 0
-    return db.execute("""
-        SELECT source_name AS "source", x, y, p,
-            description_name AS "description",
-            MAX(the_value) AS "value"
-        FROM provenance_view
-        WHERE description LIKE ?
-        GROUP BY x, y, p
-        """, (description, ))
+class Plotter(object):
+    __slots__ = ("_db", "_have_insertion_order")
 
+    def __init__(self, db_filename):
+        # Check the existence of the database here
+        # if the DB isn't there, the errors are otherwise *weird* if we don't check
+        if not os.path.exists(db_filename):
+            raise Exception("no such DB: " + db_filename)
+        # TODO: use magic to open a read-only connection once we're Py3 only
+        # See: https://stackoverflow.com/a/21794758/301832
+        self._db = sqlite3.connect(db_filename)
+        self._db.row_factory = sqlite3.Row
+        self._have_insertion_order = True
 
-def router_prov_details(db, info):
-    data = []
-    xs = []
-    ys = []
-    src = None
-    name = None
-    for row in _do_query(db, "%" + info + "%"):
-        if src is None:
-            src = row["source"]
-        if name is None:
-            name = row["description"]
-        data.append((row["x"], row["y"], row["p"], row["value"]))
-        xs.append(row["x"])
-        ys.append(row["y"])
-    ary = numpy.full((max(ys) + 1, max(xs) + 1), float("NaN"))
-    for (x, y, _p, value) in data:
-        ary[y, x] = value
-    return (src + "/" + name).replace("_", " "), max(xs) + 1, max(ys) + 1, ary
+    def __enter__(self):
+        return self._db.__enter__()
 
+    def __exit__(self, *args):
+        return self._db.__exit__(*args)
 
-def router_plot_data(db, key, output_filename):
-    # Import here because otherwise CI fails
-    # pylint: disable=import-error
-    import matplotlib.pyplot as plot
-    import seaborn
-    print("creating " + output_filename)
-    (title, width, height, data) = router_prov_details(db, key)
-    _fig, ax = plot.subplots(figsize=(width, height))
-    plot.title(title)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.axis("off")
-    labels = data.astype(int)
-    seaborn.heatmap(
-        data, annot=labels, fmt="",
-        cmap="plasma", square=True).invert_yaxis()
-    plot.savefig(output_filename, bbox_inches='tight')
-    plot.close()
+    def _do_query(self, description):
+        # Does the query in one of two ways, depending on schema version
+        if self._have_insertion_order:
+            try:
+                return self._db.execute("""
+                    SELECT source_name AS "source", x, y, p,
+                        description_name AS "description",
+                        the_value AS "value"
+                    FROM provenance_view
+                    WHERE description LIKE ?
+                    GROUP BY x, y, p
+                    HAVING insertion_order = MAX(insertion_order)
+                    """, (description, ))
+            except sqlite3.Error:
+                self._have_insertion_order = 0
+        return self._db.execute("""
+            SELECT source_name AS "source", x, y, p,
+                description_name AS "description",
+                MAX(the_value) AS "value"
+            FROM provenance_view
+            WHERE description LIKE ?
+            GROUP BY x, y, p
+            """, (description, ))
+
+    def get_router_prov_details(self, info):
+        data = []
+        xs = []
+        ys = []
+        src = None
+        name = None
+        for row in self._do_query("%" + info + "%"):
+            if src is None:
+                src = row["source"]
+            if name is None:
+                name = row["description"]
+            data.append((row["x"], row["y"], row["p"], row["value"]))
+            xs.append(row["x"])
+            ys.append(row["y"])
+        ary = numpy.full((max(ys) + 1, max(xs) + 1), float("NaN"))
+        for (x, y, _p, value) in data:
+            ary[y, x] = value
+        return ((src + "/" + name).replace("_", " "),
+                max(xs) + 1, max(ys) + 1, ary)
+
+    def router_plot_data(self, key, output_filename):
+        # Import here because otherwise CI fails
+        # pylint: disable=import-error
+        import matplotlib.pyplot as plot
+        import seaborn
+        if VERBOSE:
+            print("creating " + output_filename)
+        (title, width, height, data) = self.get_router_prov_details(key)
+        _fig, ax = plot.subplots(figsize=(width, height))
+        plot.title(title)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.axis("off")
+        labels = data.astype(int)
+        seaborn.heatmap(
+            data, annot=labels, fmt="",
+            cmap="plasma", square=True).invert_yaxis()
+        plot.savefig(output_filename, bbox_inches='tight')
+        plot.close()
 
 
 def main():
     if len(sys.argv) != 2:
         raise Exception(
             "wrong number of arguments: needs just the prov DB filename")
-    db_filename = sys.argv[1]
-    # Check the existence of the database here
-    # if the DB isn't there, the errors are otherwise *weird* if we don't check
-    if not os.path.exists(db_filename):
-        raise Exception("no such DB: " + db_filename)
-    with sqlite3.connect(db_filename) as db:
-        db.row_factory = sqlite3.Row
+    plotter = Plotter(sys.argv[1])
+    with plotter:
         for term in PLOTTABLES:
-            router_plot_data(db, term, term + ".png")
+            plotter.router_plot_data(term, os.path.abspath(term + ".png"))
 
 
 if __name__ == "__main__":
