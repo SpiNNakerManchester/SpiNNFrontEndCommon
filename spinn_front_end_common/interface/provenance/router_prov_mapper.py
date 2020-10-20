@@ -22,14 +22,14 @@ import numpy
 
 # The types of router provenance that we'll plot
 ROUTER_PLOTTABLES = (
-    "default_routed_external_multicast_packets",
+    "Default_Routed_External_Multicast_Packets",
     "Dropped_FR_Packets",
     "Dropped_Multicast_Packets",
-    "Dropped_Multicast_Packets_via_local_transmission",
+    "Dropped_Multicast_Packets_via_Local_Transmission",
     "Dropped_NN_Packets",
     "Dropped_P2P_Packets",
     "Dumped_from_a_Link",
-    "Dumped_from_a_processor",
+    "Dumped_from_a_Processor",
     "Error",
     "External_FR_Packets",
     "External_Multicast_Packets",
@@ -39,8 +39,8 @@ ROUTER_PLOTTABLES = (
     "Local_P2P_Packets",
     "Local_NN_Packets",
     "Local_FR_Packets",
-    "Missed_For_Reinjection",
-    "Received_For_Reinjection",
+    "Missed_for_Reinjection",
+    "Received_for_Reinjection",
     "Reinjected",
     "Reinjection_Overflows")
 SINGLE_PLOTNAME = "Plot.png"
@@ -49,8 +49,8 @@ SINGLE_PLOTNAME = "Plot.png"
 class Plotter(object):
     __slots__ = ("cmap", "_db", "__have_insertion_order", "__verbose")
 
-    _pyplot = None
-    _seaborn = None
+    __pyplot = None
+    __seaborn = None
 
     def __init__(self, db_filename, verbose=False):
         # Check the existence of the database here
@@ -62,6 +62,10 @@ class Plotter(object):
         # See: https://stackoverflow.com/a/21794758/301832
         self._db = sqlite3.connect(db_filename)
         self._db.row_factory = sqlite3.Row
+        # Force case-insensitive matching of provenance names
+        self._db.execute("""
+            PRAGMA case_sensitive_like=OFF;
+            """)
         self.__have_insertion_order = True
         self.__verbose = verbose
         self.cmap = "plasma"
@@ -72,12 +76,12 @@ class Plotter(object):
     def __exit__(self, *args):
         return self._db.__exit__(*args)
 
-    def _do_query(self, description):
+    def __do_chip_query(self, description):
         # Does the query in one of two ways, depending on schema version
         if self.__have_insertion_order:
             try:
                 return self._db.execute("""
-                    SELECT source_name AS "source", x, y, p,
+                    SELECT source_name AS "source", x, y,
                         description_name AS "description",
                         the_value AS "value"
                     FROM provenance_view
@@ -88,7 +92,7 @@ class Plotter(object):
             except sqlite3.Error:
                 self.__have_insertion_order = 0
         return self._db.execute("""
-            SELECT source_name AS "source", x, y, p,
+            SELECT source_name AS "source", x, y,
                 description_name AS "description",
                 MAX(the_value) AS "value"
             FROM provenance_view
@@ -102,16 +106,68 @@ class Plotter(object):
         ys = []
         src = None
         name = None
-        for row in self._do_query("%" + info + "%"):
+        for row in self.__do_chip_query("%" + info + "%"):
             if src is None:
                 src = row["source"]
             if name is None:
                 name = row["description"]
-            data.append((row["x"], row["y"], row["p"], row["value"]))
+            data.append((row["x"], row["y"], row["value"]))
             xs.append(row["x"])
             ys.append(row["y"])
         ary = numpy.full((max(ys) + 1, max(xs) + 1), float("NaN"))
-        for (x, y, _p, value) in data:
+        for (x, y, value) in data:
+            ary[y, x] = value
+        return ((src + "/" + name).replace("_", " "),
+                max(xs) + 1, max(ys) + 1, ary)
+
+    def __do_sum_query(self, description):
+        # Does the query in one of two ways, depending on schema version
+        if self.__have_insertion_order:
+            try:
+                return self._db.execute("""
+                    SELECT "source", x, y, "description",
+                        SUM("value") AS "value"
+                    FROM (
+                        SELECT source_name AS "source", x, y, p,
+                            description_name AS "description",
+                            the_value AS "value"
+                        FROM provenance_view
+                        WHERE description LIKE ? AND p IS NOT NULL
+                        GROUP BY x, y, p
+                        HAVING insertion_order = MAX(insertion_order))
+                    GROUP BY x, y
+                    """, (description, ))
+            except sqlite3.Error:
+                self.__have_insertion_order = 0
+        return self._db.execute("""
+            SELECT "source", x, y, "description",
+                SUM("value") AS "value"
+            FROM (
+                SELECT source_name AS "source", x, y,
+                    description_name AS "description",
+                    MAX(the_value) AS "value"
+                FROM provenance_view
+                WHERE description LIKE ? AND p IS NOT NULL
+                GROUP BY x, y, p)
+            GROUP BY x, y
+            """, (description, ))
+
+    def get_sum_chip_prov_details(self, info):
+        data = []
+        xs = []
+        ys = []
+        src = None
+        name = None
+        for row in self.__do_sum_query("%" + info + "%"):
+            if src is None:
+                src = row["source"]
+            if name is None:
+                name = row["description"]
+            data.append((row["x"], row["y"], row["value"]))
+            xs.append(row["x"])
+            ys.append(row["y"])
+        ary = numpy.full((max(ys) + 1, max(xs) + 1), float("NaN"))
+        for (x, y, value) in data:
             ary[y, x] = value
         return ((src + "/" + name).replace("_", " "),
                 max(xs) + 1, max(ys) + 1, ary)
@@ -120,13 +176,13 @@ class Plotter(object):
     def __plotter_apis(cls):
         # Import here because otherwise CI fails
         # pylint: disable=import-error
-        if not cls._pyplot:
+        if not cls.__pyplot:
             import matplotlib.pyplot as plot
-            cls._pyplot = plot
-        if not cls._seaborn:
+            cls.__pyplot = plot
+        if not cls.__seaborn:
             import seaborn
-            cls._seaborn = seaborn
-        return cls._pyplot, cls._seaborn
+            cls.__seaborn = seaborn
+        return cls.__pyplot, cls.__seaborn
 
     def plot_per_chip_data(self, key, output_filename):
         plot, seaborn = self.__plotter_apis()
