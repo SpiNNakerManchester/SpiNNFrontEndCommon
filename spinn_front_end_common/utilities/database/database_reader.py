@@ -15,6 +15,7 @@
 import os
 import sqlite3
 from spinn_utilities.abstract_context_manager import AbstractContextManager
+from spinn_utilities.overrides import overrides
 
 
 class DatabaseReader(AbstractContextManager):
@@ -263,5 +264,6 @@ class DatabaseReader(AbstractContextManager):
         # Should only fail if no machine is present!
         return None if row is None else row["eth_ip_address"]
 
+    @overrides(AbstractContextManager.close)
     def close(self):
         self._connection.close()
