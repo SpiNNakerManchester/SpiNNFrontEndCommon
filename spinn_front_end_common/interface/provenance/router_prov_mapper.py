@@ -89,7 +89,9 @@ class Plotter(object):
                     GROUP BY x, y, p
                     HAVING insertion_order = MAX(insertion_order)
                     """, (description, ))
-            except sqlite3.Error:
+            except sqlite3.OperationalError as e:
+                if "no such column: insertion_order" != str(e):
+                    raise
                 self.__have_insertion_order = 0
         return self._db.execute("""
             SELECT source_name AS "source", x, y,
@@ -99,6 +101,16 @@ class Plotter(object):
             WHERE description LIKE ?
             GROUP BY x, y, p
             """, (description, ))
+
+    def get_per_chip_prov_types(self):
+        names = list()
+        for row in self._db.execute("""
+                SELECT DISTINCT description_name AS "description"
+                FROM provenance_view
+                WHERE x IS NOT NULL AND p IS NULL AND "description" IS NOT NULL
+                """):
+            names.append(row["description"])
+        return frozenset(names)
 
     def get_per_chip_prov_details(self, info):
         data = []
@@ -137,7 +149,9 @@ class Plotter(object):
                         HAVING insertion_order = MAX(insertion_order))
                     GROUP BY x, y
                     """, (description, ))
-            except sqlite3.Error:
+            except sqlite3.OperationalError as e:
+                if "no such column: insertion_order" != str(e):
+                    raise
                 self.__have_insertion_order = 0
         return self._db.execute("""
             SELECT "source", x, y, "description",
@@ -151,6 +165,17 @@ class Plotter(object):
                 GROUP BY x, y, p)
             GROUP BY x, y
             """, (description, ))
+
+    def get_per_core_prov_types(self):
+        names = list()
+        for row in self._db.execute("""
+                SELECT DISTINCT description_name AS "description"
+                FROM provenance_view
+                WHERE x IS NOT NULL AND p IS NOT NULL
+                    AND "description" IS NOT NULL
+                """):
+            names.append(row["description"])
+        return frozenset(names)
 
     def get_sum_chip_prov_details(self, info):
         data = []
@@ -169,8 +194,7 @@ class Plotter(object):
         ary = numpy.full((max(ys) + 1, max(xs) + 1), float("NaN"))
         for (x, y, value) in data:
             ary[y, x] = value
-        return ((src + "/" + name).replace("_", " "),
-                max(xs) + 1, max(ys) + 1, ary)
+        return name.replace("_", " "), max(xs) + 1, max(ys) + 1, ary
 
     @classmethod
     def __plotter_apis(cls):
@@ -183,6 +207,23 @@ class Plotter(object):
             import seaborn
             cls.__seaborn = seaborn
         return cls.__pyplot, cls.__seaborn
+
+    def plot_per_core_data(self, key, output_filename):
+        plot, seaborn = self.__plotter_apis()
+        if self.__verbose:
+            print("creating " + output_filename)
+        (title, width, height, data) = self.get_sum_chip_prov_details(key)
+        _fig, ax = plot.subplots(figsize=(width, height))
+        plot.title(title)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.axis("off")
+        labels = data.astype(int)
+        seaborn.heatmap(
+            data, annot=labels, fmt="", square=True,
+            cmap=self.cmap).invert_yaxis()
+        plot.savefig(output_filename, bbox_inches='tight')
+        plot.close()
 
     def plot_per_chip_data(self, key, output_filename):
         plot, seaborn = self.__plotter_apis()
@@ -205,10 +246,16 @@ class Plotter(object):
 def main():
     ap = argparse.ArgumentParser(
         description="Generate heat maps from SpiNNaker provenance databases.")
-    ap.add_argument("-q", "--quiet", action="store_true", default=False,
-                    help="don't print progress information")
     ap.add_argument("-c", "--colourmap", nargs="?", default="plasma",
                     help="colour map rule for plot; default 'plasma'")
+    ap.add_argument("-l", "--list", action="store_true", default=False,
+                    help="list the types of metadata available")
+    ap.add_argument("-q", "--quiet", action="store_true", default=False,
+                    help="don't print progress information")
+    ap.add_argument("-s", "--sumcores", action="store_true", default=False,
+                    help="compute information by summing data from the cores "
+                    "of each chip; needs a metadata_name as well unless the "
+                    "--list option is also given")
     ap.add_argument("dbfile", metavar="database_file",
                     help="the provenance database to extract data from; "
                     "usually called 'provenance.sqlite3'")
@@ -217,13 +264,28 @@ def main():
                     "fragment of it; if omitted, maps will be produced for "
                     "all the router provenance categories")
     args = ap.parse_args()
+
     plotter = Plotter(args.dbfile, not args.quiet)
     plotter.cmap = args.colourmap
     with plotter:
-        if args.term:
-            plotter.plot_per_chip_data(
-                args.term, os.path.abspath(SINGLE_PLOTNAME))
+        if args.list:
+            if args.sumcores:
+                for term in plotter.get_per_core_prov_types():
+                    print(term)
+            else:
+                for term in plotter.get_per_chip_prov_types():
+                    print(term)
+        elif args.term:
+            if args.sumcores:
+                plotter.plot_per_core_data(
+                    args.term, os.path.abspath(SINGLE_PLOTNAME))
+            else:
+                plotter.plot_per_chip_data(
+                    args.term, os.path.abspath(SINGLE_PLOTNAME))
         else:
+            if args.sumcores:
+                raise Exception(
+                    "cannot use --sumcores with default router provenance")
             for term in ROUTER_PLOTTABLES:
                 plotter.plot_per_chip_data(
                     term, os.path.abspath(term + ".png"))
