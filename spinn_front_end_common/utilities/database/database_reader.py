@@ -12,11 +12,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import sqlite3
+from spinn_utilities.abstract_context_manager import AbstractContextManager
 
 
-class DatabaseReader(object):
+class DatabaseReader(AbstractContextManager):
     """ A reader for the database.
     """
 
@@ -32,6 +33,12 @@ class DatabaseReader(object):
         """
         :param str database_path: The path to the database
         """
+        # Ugly: must ensure database exists ourselves because Python doesn't
+        # have option to open read-only (in the real SQLite API!) exposed
+        if not os.path.exists(database_path):
+            raise FileNotFoundError(
+                "[Errno 2] No such file or directory: '{}'".format(
+                    database_path))
         self._connection = sqlite3.connect(database_path)
         self._connection.row_factory = sqlite3.Row
         self._cursor = self._connection.cursor()
@@ -258,10 +265,3 @@ class DatabaseReader(object):
 
     def close(self):
         self._connection.close()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):  # @UnusedVariable
-        self._connection.close()
-        return False
