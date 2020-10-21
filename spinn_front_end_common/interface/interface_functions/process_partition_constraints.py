@@ -12,7 +12,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from pacman.model.constraints.key_allocator_constraints import (
+    AbstractKeyAllocatorConstraint)
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.abstract_models import (
@@ -46,6 +47,7 @@ class ProcessPartitionConstraints(object):
                             vertex):
                     if partition.traffic_type == EdgeTrafficType.MULTICAST:
                         self._process_application_partition(partition)
+                        self._add_vertex_constraints(partition)
         else:
             # generate progress bar
             progress = ProgressBar(
@@ -58,6 +60,13 @@ class ProcessPartitionConstraints(object):
                             vertex):
                     if partition.traffic_type == EdgeTrafficType.MULTICAST:
                         self._process_machine_partition(partition)
+                        self._add_vertex_constraints(partition)
+
+    @staticmethod
+    def _add_vertex_constraints(partition):
+        for constraint in partition.pre_vertex.constraints:
+            if isinstance(constraint, AbstractKeyAllocatorConstraint):
+                partition.add_constraint(constraint)
 
     @staticmethod
     def _process_application_partition(partition):
