@@ -108,16 +108,14 @@
 <span class="sd">            iterable(~pacman.model.constraints.AbstractConstraint)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">DataSpeedUpPacketGather</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">DataSpeedUpPacketGatherMachineVertex</span><span class="p">(</span>
+                <span class="n">app_vertex</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">ip_address</span><span class="o">=</span><span class="n">ip_address</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
+                <span class="n">extra_monitors_by_chip</span><span class="o">=</span><span class="n">extra_monitors_by_chip</span><span class="p">,</span>
+                <span class="n">report_default_directory</span><span class="o">=</span><span class="n">report_default_directory</span><span class="p">,</span>
+                <span class="n">write_data_speed_up_reports</span><span class="o">=</span><span class="n">write_data_speed_up_reports</span><span class="p">),</span>
             <span class="s2">&quot;multicast speed up application vertex for </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">constraints</span><span class="p">)</span>
-        <span class="c1"># Create the machine vertex at the same time</span>
-        <span class="c1"># As with any MachineVertex this also triggers remember_...</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertex</span> <span class="o">=</span> <span class="n">DataSpeedUpPacketGatherMachineVertex</span><span class="p">(</span>
-            <span class="n">app_vertex</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
-            <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">ip_address</span><span class="o">=</span><span class="n">ip_address</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
-            <span class="n">extra_monitors_by_chip</span><span class="o">=</span><span class="n">extra_monitors_by_chip</span><span class="p">,</span>
-            <span class="n">report_default_directory</span><span class="o">=</span><span class="n">report_default_directory</span><span class="p">,</span>
-            <span class="n">write_data_speed_up_reports</span><span class="o">=</span><span class="n">write_data_speed_up_reports</span><span class="p">)</span></div>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">constraints</span><span class="p">)</span></div>
 </pre></div>
 
           </div>

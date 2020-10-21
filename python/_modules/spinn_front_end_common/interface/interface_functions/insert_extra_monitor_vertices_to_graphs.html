@@ -183,7 +183,7 @@
             <span class="c1"># add to both application graph and machine graph</span>
             <span class="n">app_vertex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new_app_monitor</span><span class="p">(</span><span class="n">chip</span><span class="p">)</span>
             <span class="n">application_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">)</span>
-            <span class="n">machine_vertex</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">app_vertex</span><span class="o">.</span><span class="n">machine_vertices</span><span class="p">))</span>
+            <span class="n">machine_vertex</span> <span class="o">=</span> <span class="n">app_vertex</span><span class="o">.</span><span class="n">machine_vertex</span>
             <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
             <span class="n">vertex_to_chip_map</span><span class="p">[</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="n">machine_vertex</span>
             <span class="n">extra_monitor_vertices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
@@ -236,7 +236,7 @@
             <span class="c1"># add to application graph</span>
             <span class="n">app_vertex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new_app_gatherer</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">)</span>
             <span class="n">application_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">)</span>
-            <span class="n">machine_vertex</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">app_vertex</span><span class="o">.</span><span class="n">machine_vertices</span><span class="p">))</span>
+            <span class="n">machine_vertex</span> <span class="o">=</span> <span class="n">app_vertex</span><span class="o">.</span><span class="n">machine_vertex</span>
             <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
             <span class="c1"># update mapping for edge builder</span>
             <span class="n">chip_to_gatherer_map</span><span class="p">[</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="n">machine_vertex</span>
