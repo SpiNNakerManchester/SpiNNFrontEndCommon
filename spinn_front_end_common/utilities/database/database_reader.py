@@ -14,8 +14,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sqlite3
+import six
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.overrides import overrides
+# See https://stackoverflow.com/a/21368622/301832
+if six.PY2:  # TODO: Nuke this when 2.7 support is dropped!
+    FileNotFoundError = IOError  # @ReservedAssignment
 
 
 class DatabaseReader(AbstractContextManager):
