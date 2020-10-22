@@ -17,9 +17,9 @@ import os
 import sqlite3
 import time
 import sys
-from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import AbstractDatabase
+from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.overrides import overrides
+from .abstract_database import AbstractDatabase
 
 if sys.version_info < (3,):
     # pylint: disable=redefined-builtin, undefined-variable
@@ -33,7 +33,7 @@ def _timestamp():
     return int(time.time() * _SECONDS_TO_MICRO_SECONDS_CONVERSION)
 
 
-class SqlLiteDatabase(AbstractDatabase):
+class SqlLiteDatabase(AbstractDatabase, AbstractContextManager):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::

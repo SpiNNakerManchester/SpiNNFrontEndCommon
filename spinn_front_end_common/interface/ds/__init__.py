@@ -14,12 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .data_specification_targets import DataSpecificationTargets
-from .data_row_reader import DataRowReader
 from .data_row_writer import DataRowWriter
 from .ds_write_info import DsWriteInfo
 
 __all__ = [
-    "DataRowReader",
     "DataRowWriter",
     "DataSpecificationTargets",
     "DsWriteInfo"]

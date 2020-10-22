@@ -15,6 +15,7 @@
 
 import logging
 from concurrent.futures import ThreadPoolExecutor, wait
+from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.log import FormatAdapter
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
@@ -27,7 +28,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class NotificationProtocol(object):
+class NotificationProtocol(AbstractContextManager):
     """ The protocol which hand shakes with external devices about the\
         database and starting execution
     """

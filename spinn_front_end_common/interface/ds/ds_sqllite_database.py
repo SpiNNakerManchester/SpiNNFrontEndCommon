@@ -16,6 +16,7 @@
 import logging
 import os
 import sqlite3
+from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.utility_objs import DataWritten
 
@@ -24,7 +25,7 @@ DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class DsSqlliteDatabase(object):
+class DsSqlliteDatabase(AbstractContextManager):
     __slots__ = [
         # the database holding the data to store, if used
         "_db",

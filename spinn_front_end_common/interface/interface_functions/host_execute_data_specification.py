@@ -56,7 +56,7 @@ def filter_out_system_executables(dsg_targets, executable_targets):
 
     :param DataSpecificationTargets dsg_tagets:
     :param ExecutableTargets executable_targets:
-    :rtype: dict(tuple(int,int,int), DataRowReader)
+    :rtype: dict(tuple(int,int,int), ~io.RawIOBase)
     """
     syscores = system_cores(executable_targets)
     return OrderedDict(
@@ -69,7 +69,7 @@ def filter_out_app_executables(dsg_targets, executable_targets):
 
     :param DataSpecificationTargets dsg_tagets:
     :param ExecutableTargets executable_targets:
-    :rtype: dict(tuple(int,int,int), DataRowReader)
+    :rtype: dict(tuple(int,int,int), ~io.RawIOBase)
     """
     syscores = system_cores(executable_targets)
     return OrderedDict(

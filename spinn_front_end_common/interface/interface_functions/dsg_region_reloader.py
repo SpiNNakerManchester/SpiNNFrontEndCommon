@@ -17,7 +17,6 @@ import os
 import struct
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import SDRAM
-from spinn_storage_handlers import FileDataReader
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
 from data_specification.utility_calls import (
@@ -132,7 +131,7 @@ class DSGRegionReloader(object):
         vertex.regenerate_data_specification(spec, placement)
 
         # execute the spec
-        with FileDataReader(spec_file) as spec_reader:
+        with open(spec_file, "rb") as spec_reader:
             data_spec_executor = DataSpecificationExecutor(
                 spec_reader, SDRAM.max_sdram_found)
             data_spec_executor.execute()

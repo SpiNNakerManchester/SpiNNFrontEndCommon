@@ -16,7 +16,9 @@
 import logging
 import os
 import sqlite3
+from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesKeyToAtomMapping, AbstractRecordable,
@@ -31,7 +33,7 @@ def _extract_int(x):
     return None if x is None else int(x)
 
 
-class DatabaseWriter(object):
+class DatabaseWriter(AbstractContextManager):
     """ The interface for the database system for main front ends.\
         Any special tables needed from a front end should be done\
         by sub classes of this interface.
@@ -72,15 +74,15 @@ class DatabaseWriter(object):
         # set up checks
         self._machine_id = 0
 
-    def __enter__(self):
+    @overrides(AbstractContextManager._context_entered)
+    def _context_entered(self):
         self._connection = sqlite3.connect(self._database_path)
         self.__create_schema()
-        return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):  # @UnusedVariable
+    @overrides(AbstractContextManager.close)
+    def close(self):
         self._connection.close()
         self._connection = None
-        return False
 
     @staticmethod
     def auto_detect_database(machine_graph):

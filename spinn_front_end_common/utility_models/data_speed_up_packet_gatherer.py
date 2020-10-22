@@ -44,13 +44,11 @@ class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
         super(DataSpeedUpPacketGather, self).__init__(
+            DataSpeedUpPacketGatherMachineVertex(
+                app_vertex=self,
+                x=x, y=y, ip_address=ip_address, constraints=constraints,
+                extra_monitors_by_chip=extra_monitors_by_chip,
+                report_default_directory=report_default_directory,
+                write_data_speed_up_reports=write_data_speed_up_reports),
             "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints)
-        # Create the machine vertex at the same time
-        # As with any MachineVertex this also triggers remember_...
-        self._machine_vertex = DataSpeedUpPacketGatherMachineVertex(
-            app_vertex=self,
-            x=x, y=y, ip_address=ip_address, constraints=constraints,
-            extra_monitors_by_chip=extra_monitors_by_chip,
-            report_default_directory=report_default_directory,
-            write_data_speed_up_reports=write_data_speed_up_reports)

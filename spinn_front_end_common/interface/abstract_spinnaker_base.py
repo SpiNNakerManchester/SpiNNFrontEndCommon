@@ -38,7 +38,6 @@ from spinnman.model.enums.cpu_state import CPUState
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinnman.model.cpu_infos import CPUInfos
-from spinn_storage_handlers import __version__ as spinn_storage_version
 from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
 from pacman.model.placements import Placements
@@ -1460,9 +1459,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             ["version_data", "spinn_utilities_version"], spinn_utils_version))
         version_provenance.append(ProvenanceDataItem(
             ["version_data", "spinn_machine_version"], spinn_machine_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spinn_storage_handlers_version"],
-            spinn_storage_version))
         version_provenance.append(ProvenanceDataItem(
             ["version_data", "spalloc_version"], spalloc_version))
         version_provenance.append(ProvenanceDataItem(
