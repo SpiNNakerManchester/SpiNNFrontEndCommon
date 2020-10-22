@@ -237,8 +237,7 @@ class LocalTDMABuilder(object):
                 total_time_needed / machine_time_step / fraction_of_sending)
             msg = self._VERTEX_TDMA_FAILURE_MSG.format(
                 label, time_scale_factor_needed)
-            logger.error(msg)
-            raise ConfigurationException(msg)
+            logger.warning(msg)
         if total_time_needed != 0:
             # maybe this warn could be thrown away?
             true_fraction = 1 / (

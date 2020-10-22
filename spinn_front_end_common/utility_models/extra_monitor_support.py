@@ -30,8 +30,6 @@ class ExtraMonitorSupport(AbstractOneAppOneMachineVertex):
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
         super(ExtraMonitorSupport, self).__init__(
+            ExtraMonitorSupportMachineVertex(
+                constraints=constraints, app_vertex=self),
             label="ExtraMonitorSupport", constraints=constraints)
-        # Create the machine vertex at the same time
-        # As with any MachineVertex this also triggers remember_...
-        self._machine_vertex = ExtraMonitorSupportMachineVertex(
-            constraints=constraints, app_vertex=self)
