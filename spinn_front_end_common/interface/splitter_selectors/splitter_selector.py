@@ -20,8 +20,7 @@ from pacman.model.partitioner_splitters.splitter_slice_legacy import (
     SplitterSliceLegacy)
 from spinn_front_end_common.utility_models import (
     ReverseIpTagMultiCastSource, LivePacketGather, ChipPowerMonitor)
-from spinn_front_end_common.utility_models.\
-    abstract_one_app_one_machine_vertex import AbstractOneAppOneMachineVertex
+from pacman.model.graphs.machine.abstract import AbstractOneAppOneMachineVertex
 from spinn_utilities.log import FormatAdapter
 
 logger = FormatAdapter(logging.getLogger(__name__))
