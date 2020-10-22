@@ -81,9 +81,9 @@
 <span class="kn">import</span> <span class="nn">sqlite3</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.storage_objects</span> \
-    <span class="kn">import</span> <span class="nn">AbstractDatabase</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.abstract_context_manager</span> <span class="kn">import</span> <span class="n">AbstractContextManager</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
+<span class="kn">from</span> <span class="nn">.abstract_database</span> <span class="kn">import</span> <span class="n">AbstractDatabase</span>
 
 <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
     <span class="c1"># pylint: disable=redefined-builtin, undefined-variable</span>
@@ -97,7 +97,7 @@
     <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">*</span> <span class="n">_SECONDS_TO_MICRO_SECONDS_CONVERSION</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="SqlLiteDatabase"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase">[docs]</a><span class="k">class</span> <span class="nc">SqlLiteDatabase</span><span class="p">(</span><span class="n">AbstractDatabase</span><span class="p">):</span>
+<div class="viewcode-block" id="SqlLiteDatabase"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase">[docs]</a><span class="k">class</span> <span class="nc">SqlLiteDatabase</span><span class="p">(</span><span class="n">AbstractDatabase</span><span class="p">,</span> <span class="n">AbstractContextManager</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Specific implementation of the Database for SQLite 3.</span>
 
 <span class="sd">    .. note::</span>

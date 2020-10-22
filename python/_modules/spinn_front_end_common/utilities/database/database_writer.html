@@ -80,7 +80,9 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.abstract_context_manager</span> <span class="kn">import</span> <span class="n">AbstractContextManager</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.common</span> <span class="kn">import</span> <span class="n">EdgeTrafficType</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractProvidesKeyToAtomMapping</span><span class="p">,</span> <span class="n">AbstractRecordable</span><span class="p">,</span>
@@ -95,7 +97,7 @@
     <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="DatabaseWriter"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter">[docs]</a><span class="k">class</span> <span class="nc">DatabaseWriter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="DatabaseWriter"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter">[docs]</a><span class="k">class</span> <span class="nc">DatabaseWriter</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; The interface for the database system for main front ends.\</span>
 <span class="sd">        Any special tables needed from a front end should be done\</span>
 <span class="sd">        by sub classes of this interface.</span>
@@ -136,15 +138,15 @@
         <span class="c1"># set up checks</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_id</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="o">.</span><span class="n">_context_entered</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_context_entered</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_database_path</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__create_schema</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>  <span class="c1"># @UnusedVariable</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="o">.</span><span class="n">close</span><span class="p">)</span>
+<div class="viewcode-block" id="DatabaseWriter.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="kc">None</span></div>
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="DatabaseWriter.auto_detect_database"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.auto_detect_database">[docs]</a>    <span class="k">def</span> <span class="nf">auto_detect_database</span><span class="p">(</span><span class="n">machine_graph</span><span class="p">):</span>

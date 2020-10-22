@@ -148,7 +148,7 @@ response will be sent.</td>
 <dl class="class">
 <dt id="spinn_front_end_common.utilities.database.DatabaseReader">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.database.</code><code class="descname">DatabaseReader</code><span class="sig-paren">(</span><em>database_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils v)"><code class="xref py py-class docutils literal"><span class="pre">spinn_utilities.abstract_context_manager.AbstractContextManager</span></code></a></p>
 <p>A reader for the database.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -161,7 +161,8 @@ response will be sent.</td>
 <dl class="method">
 <dt id="spinn_front_end_common.utilities.database.DatabaseReader.close">
 <code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.close" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>How to actually close the underlying resources.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="spinn_front_end_common.utilities.database.DatabaseReader.cursor">
@@ -427,7 +428,7 @@ response will be sent.</td>
 <dl class="class">
 <dt id="spinn_front_end_common.utilities.database.DatabaseWriter">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.database.</code><code class="descname">DatabaseWriter</code><span class="sig-paren">(</span><em>database_directory</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils v)"><code class="xref py py-class docutils literal"><span class="pre">spinn_utilities.abstract_context_manager.AbstractContextManager</span></code></a></p>
 <p>The interface for the database system for main front ends.        Any special tables needed from a front end should be done        by sub classes of this interface.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -582,6 +583,12 @@ response will be sent.</td>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>How to actually close the underlying resources.</p>
 </dd></dl>
 
 <dl class="method">
