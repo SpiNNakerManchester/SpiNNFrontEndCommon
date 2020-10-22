@@ -14,10 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 
-from pacman.model.partitioner_splitters.splitter_one_to_one_legacy import (
-    SplitterOneToOneLegacy)
-from pacman.model.partitioner_splitters.splitter_slice_legacy import (
-    SplitterSliceLegacy)
+from pacman.model.partitioner_splitters import (
+    SplitterOneAppOneMachine, SplitterOneToOneLegacy, SplitterSliceLegacy)
 from spinn_front_end_common.utility_models import (
     ReverseIpTagMultiCastSource, LivePacketGather, ChipPowerMonitor)
 from pacman.model.graphs.machine.abstract import AbstractOneAppOneMachineVertex
@@ -55,7 +53,7 @@ class SplitterSelector(object):
         :param app_vertex: app vertex to give a splitter object to
         :rtype: None
         """
-        if isinstance(app_vertex, AbstractOneAppOneMachineVertex):
+        if isinstance(app_vertex, SplitterOneAppOneMachine):
             app_vertex.splitter_object = SplitterOneToOneLegacy()
         elif isinstance(app_vertex, ReverseIpTagMultiCastSource):
             app_vertex.splitter_object = SplitterSliceLegacy()
