@@ -20,7 +20,7 @@ import logging
 import time
 import struct
 import sys
-from enum import Enum
+from enum import Enum, IntEnum
 from six.moves import xrange
 from six import reraise, PY2
 from spinn_utilities.overrides import overrides
@@ -41,7 +41,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesLocalProvenanceData)
+    AbstractProvidesLocalProvenanceData, ProvidesProvenanceDataFromMachineImpl)
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utilities.constants import (
@@ -133,10 +133,11 @@ BYTES_IN_FULL_PACKET_WITH_KEY = (
 SIZE_DATA_IN_CHIP_TO_KEY_SPACE = ((3 * 48) + 2) * BYTES_PER_WORD
 
 
-class _DATA_REGIONS(Enum):
+class _DATA_REGIONS(IntEnum):
     """DSG data regions"""
     CONFIG = 0
     CHIP_TO_KEY_SPACE = 1
+    PROVENANCE_REGION = 2
 
 
 class DATA_OUT_COMMANDS(Enum):
@@ -163,6 +164,7 @@ _THREE_WORDS = struct.Struct("<III")
 _FOUR_WORDS = struct.Struct("<IIII")
 _FIVE_WORDS = struct.Struct("<IIIII")
 
+
 # Set to true to check that the data is correct after it has been sent in.
 # This is expensive, and only works in Python 3.5 or later.
 VERIFY_SENT_DATA = False
@@ -184,7 +186,8 @@ SDRAM_FOR_MISSING_SDP_SEQ_NUMS = ceildiv(
 
 class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData):
+        AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData,
+        ProvidesProvenanceDataFromMachineImpl):
     """ Machine vertex for handling fast data transfer between host and \
         SpiNNaker. This machine vertex is only ever placed on chips with a \
         working Ethernet connection; it collaborates with the \
@@ -438,7 +441,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             base_key = self.BASE_KEY
             transaction_id_key = self.TRANSACTION_ID_KEY
 
-        spec.switch_write_focus(_DATA_REGIONS.CONFIG.value)
+        spec.switch_write_focus(_DATA_REGIONS.CONFIG)
         spec.write_value(new_seq_key)
         spec.write_value(first_data_key)
         spec.write_value(transaction_id_key)
@@ -453,7 +456,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._remote_tag = iptag.tag
 
         # write mc chip key map
-        spec.switch_write_focus(_DATA_REGIONS.CHIP_TO_KEY_SPACE.value)
+        spec.switch_write_focus(_DATA_REGIONS.CHIP_TO_KEY_SPACE)
         chips_on_board = list(machine.get_existing_xys_on_board(
             machine.get_chip_at(placement.x, placement.y)))
 
@@ -477,21 +480,21 @@ class DataSpeedUpPacketGatherMachineVertex(
         # End-of-Spec:
         spec.end_specification()
 
-    @staticmethod
-    def _reserve_memory_regions(spec):
+    def _reserve_memory_regions(self, spec):
         """ Writes the DSG regions memory sizes. Static so that it can be used\
             by the application vertex.
 
         :param ~.DataSpecificationGenerator spec: spec file
         """
         spec.reserve_memory_region(
-            region=_DATA_REGIONS.CONFIG.value,
+            region=_DATA_REGIONS.CONFIG,
             size=CONFIG_SIZE,
             label="config")
         spec.reserve_memory_region(
-            region=_DATA_REGIONS.CHIP_TO_KEY_SPACE.value,
+            region=_DATA_REGIONS.CHIP_TO_KEY_SPACE,
             size=SIZE_DATA_IN_CHIP_TO_KEY_SPACE,
             label="mc_key_map")
+        self.reserve_provenance_data_region(spec)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
@@ -1667,6 +1670,42 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         log.debug("send SDP packet with missing sequence numbers: {} of {}",
                   packet_count + 1, n_packets)
+
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
+    def _provenance_region_id(self):
+        return _DATA_REGIONS.PROVENANCE_REGION
+
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
+    def _n_additional_data_items(self):
+        # n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams
+        return 4
+
+    @overrides(ProvidesProvenanceDataFromMachineImpl.
+               get_provenance_data_from_machine)
+    def get_provenance_data_from_machine(self, transceiver, placement):
+        provenance_data = self._read_provenance_data(transceiver, placement)
+        provenance_items = self._read_basic_provenance_items(
+            provenance_data, placement)
+        provenance_data = self._get_remaining_provenance_data_items(
+            provenance_data)
+        _, _, _, _, names = self._get_placement_details(placement)
+        n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams = provenance_data
+
+        provenance_items.append(ProvenanceDataItem(
+            self._add_name(names, "Sent_SDP_Packets"),
+            n_sdp_sent))
+        provenance_items.append(ProvenanceDataItem(
+            self._add_name(names, "Received_SDP_Packets"),
+            n_sdp_recvd))
+        provenance_items.append(ProvenanceDataItem(
+            self._add_name(names, "Speed_Up_Input_Streams"),
+            n_in_streams))
+        provenance_items.append(ProvenanceDataItem(
+            self._add_name(names, "Speed_Up_Output_Streams"),
+            n_out_streams))
+        return provenance_items
 
 
 class _StreamingContextManager(object):

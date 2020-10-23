@@ -437,9 +437,9 @@ class ExtraMonitorSupportMachineVertex(
             ProvenanceDataItem(
                 [root_name, "Number_of_Relevant_SDP_Messages"], n_sdp_packets),
             ProvenanceDataItem(
-                [root_name, "Number_of_Input_Streams"], n_in_streams),
+                [root_name, "Number_of_Input_Streamlets"], n_in_streams),
             ProvenanceDataItem(
-                [root_name, "Number_of_Output_Streams"], n_out_streams)]
+                [root_name, "Number_of_Output_Streamlets"], n_out_streams)]
 
     def set_router_wait1_timeout(
             self, timeout, transceiver, placements,

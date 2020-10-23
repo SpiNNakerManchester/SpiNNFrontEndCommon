@@ -334,6 +334,7 @@ typedef struct data_speed_out_config_t {
     uint end_flag_key;
 } data_speed_out_config_t;
 
+//! The information in the provenance region
 typedef struct extra_monitor_provenance_t {
     //! The total number of relevant SDP packets processed
     uint n_sdp_packets;
