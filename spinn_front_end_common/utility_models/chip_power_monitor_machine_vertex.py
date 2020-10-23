@@ -45,7 +45,7 @@ from spinn_front_end_common.interface.provenance import (
 
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
-PROVENANCE_KEY = "Chip_Power_Monitor_Activity_Count"
+PROVENANCE_KEY = "Power_Monitor_Total_Activity_Count"
 
 RECORDING_SIZE_PER_ENTRY = 18 * BYTES_PER_WORD
 DEFAULT_MALLOCS_USED = 3
@@ -330,6 +330,6 @@ class ChipPowerMonitorMachineVertex(
         # No provenance if we've not generated it
         if not self._location:
             return []
+        root_name = "power monitor for {},{}".format(*self._location)
         return [ProvenanceDataItem(
-            [PROVENANCE_KEY, "chip_{},{}".format(*self._location)],
-            self._activity_count)]
+            [root_name, PROVENANCE_KEY], self._activity_count)]
