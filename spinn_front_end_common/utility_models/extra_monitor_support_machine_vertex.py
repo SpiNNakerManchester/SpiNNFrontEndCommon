@@ -13,19 +13,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from enum import Enum
+from enum import Enum, IntEnum
 import logging
+import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, Router
+from data_specification.utility_calls import get_region_base_address_offset
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
-from spinn_front_end_common.utilities import globals_variables
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.globals_variables import get_simulator
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
         ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
@@ -34,11 +37,13 @@ from spinn_front_end_common.utilities.utility_objs.\
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE, DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES,
     BYTES_PER_WORD, BYTES_PER_KB)
+from spinn_front_end_common.utilities.helpful_functions import (
+    convert_vertices_to_core_subset, emergency_recover_state_from_failure)
 from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex as
     Gatherer)
-from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset, emergency_recover_state_from_failure)
+from spinn_front_end_common.interface.provenance import (
+    AbstractProvidesProvenanceDataFromMachine)
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -51,6 +56,14 @@ _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES = 3 * BYTES_PER_WORD
 _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = ((49 * 3) + 1) * BYTES_PER_WORD
 _BIT_SHIFT_TO_MOVE_APP_ID = 24
 
+_ONE_WORD = struct.Struct("<I")
+# typedef struct extra_monitor_provenance_t {
+#     uint n_sdp_packets;
+#     uint n_in_streams;
+#     uint n_out_streams;
+# } extra_monitor_provenance_t;
+_PROVENANCE_FORMAT = struct.Struct("<III")
+
 # cap for stopping wrap arounds
 TRANSACTION_ID_CAP = 0xFFFFFFFF
 
@@ -62,10 +75,11 @@ TRANSACTION_ID_CAP = 0xFFFFFFFF
 _SDRAM_FOR_ROUTER_TABLE_ENTRIES = 1024 * 4 * BYTES_PER_WORD
 
 
-class _DSG_REGIONS(Enum):
+class _DSG_REGIONS(IntEnum):
     REINJECT_CONFIG = 0
     DATA_OUT_CONFIG = 1
     DATA_IN_CONFIG = 2
+    PROVENANCE_AREA = 3
 
 
 class _KEY_OFFSETS(Enum):
@@ -76,7 +90,8 @@ class _KEY_OFFSETS(Enum):
 
 class ExtraMonitorSupportMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
-        AbstractGeneratesDataSpecification):
+        AbstractGeneratesDataSpecification,
+        AbstractProvidesProvenanceDataFromMachine):
     """ Machine vertex for talking to extra monitor cores. \
         Supports reinjection control and the faster data transfer protocols.
 
@@ -99,7 +114,9 @@ class ExtraMonitorSupportMachineVertex(
         # machine instance
         "_machine",
         # the local transaction id
-        "_transaction_id"
+        "_transaction_id",
+        # provenance region address
+        "_prov_region"
     )
 
     def __init__(
@@ -125,7 +142,7 @@ class ExtraMonitorSupportMachineVertex(
             app_vertex=app_vertex)
 
         if reinject_multicast is None:
-            config = globals_variables.get_simulator().config
+            config = get_simulator().config
             self._reinject_multicast = config.getboolean(
                 "Machine", "enable_reinjection")
         else:
@@ -138,6 +155,7 @@ class ExtraMonitorSupportMachineVertex(
         self._app_id = None
         self._machine = None
         self._transaction_id = 0
+        self._prov_region = None
 
     @property
     def reinject_multicast(self):
@@ -281,6 +299,7 @@ class ExtraMonitorSupportMachineVertex(
             spec, data_in_routing_tables,
             machine.get_chip_at(placement.x, placement.y),
             mc_data_chips_to_keys)
+        self._generate_provenance_area(spec)
         spec.end_specification()
 
     def _generate_data_speed_up_out_config(
@@ -291,10 +310,10 @@ class ExtraMonitorSupportMachineVertex(
         :param ~.MachineGraph machine_graph: The graph containing this vertex
         """
         spec.reserve_memory_region(
-            region=_DSG_REGIONS.DATA_OUT_CONFIG.value,
+            region=_DSG_REGIONS.DATA_OUT_CONFIG,
             size=_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES,
             label="data speed-up out config region")
-        spec.switch_write_focus(_DSG_REGIONS.DATA_OUT_CONFIG.value)
+        spec.switch_write_focus(_DSG_REGIONS.DATA_OUT_CONFIG)
 
         if Gatherer.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
             base_key = routing_info.get_first_key_for_edge(
@@ -320,11 +339,11 @@ class ExtraMonitorSupportMachineVertex(
         :param ~.Machine machine:
         """
         spec.reserve_memory_region(
-            region=_DSG_REGIONS.REINJECT_CONFIG.value,
+            region=_DSG_REGIONS.REINJECT_CONFIG,
             size=_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES,
             label="re-injection config region")
 
-        spec.switch_write_focus(_DSG_REGIONS.REINJECT_CONFIG.value)
+        spec.switch_write_focus(_DSG_REGIONS.REINJECT_CONFIG)
         for value in [
                 self._reinject_multicast, self._reinject_point_to_point,
                 self._reinject_fixed_route,
@@ -350,11 +369,11 @@ class ExtraMonitorSupportMachineVertex(
             data in keys to chips map.
         """
         spec.reserve_memory_region(
-            region=_DSG_REGIONS.DATA_IN_CONFIG.value,
+            region=_DSG_REGIONS.DATA_IN_CONFIG,
             size=(_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING +
                   _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES),
             label="data speed-up in config region")
-        spec.switch_write_focus(_DSG_REGIONS.DATA_IN_CONFIG.value)
+        spec.switch_write_focus(_DSG_REGIONS.DATA_IN_CONFIG)
 
         # write address key and data key
         base_key = mc_data_chips_to_keys[chip.x, chip.y]
@@ -379,6 +398,48 @@ class ExtraMonitorSupportMachineVertex(
         route = self._app_id << _BIT_SHIFT_TO_MOVE_APP_ID
         route |= Router.convert_routing_table_entry_to_spinnaker_route(entry)
         return route
+
+    def _generate_provenance_area(self, spec):
+        """
+        :param ~.DataSpecificationGenerator spec: spec file
+        """
+        spec.reserve_memory_region(
+            region=_DSG_REGIONS.PROVENANCE_AREA, size=_PROVENANCE_FORMAT.size,
+            label="provenance collection region", empty=True)
+
+    def __get_provenance_region_address(self, txrx, place):
+        """
+        :param ~spinnman.transceiver.Transceiver txrx:
+        :param ~pacman.model.placements.Placement place:
+        :rtype: int
+        """
+        if self._prov_region is None:
+            region_table_addr = txrx.get_cpu_information_from_core(
+                place.x, place.y, place.p).user[0]
+            region_entry_addr = get_region_base_address_offset(
+                region_table_addr, _DSG_REGIONS.PROVENANCE_AREA)
+            self._prov_region, = _ONE_WORD.unpack(txrx.read_memory(
+                place.x, place.y, region_entry_addr, BYTES_PER_WORD))
+        return self._prov_region
+
+    @overrides(AbstractProvidesProvenanceDataFromMachine.
+               get_provenance_data_from_machine)
+    def get_provenance_data_from_machine(self, transceiver, placement):
+        provenance_address = self.__get_provenance_region_address(
+            transceiver, placement)
+        data = transceiver.read_memory(
+            placement.x, placement.y, provenance_address,
+            _PROVENANCE_FORMAT.size)
+        (n_sdp_packets, n_in_streams, n_out_streams) = \
+            _PROVENANCE_FORMAT.unpack_from(data)
+        root_name = "monitor for {},{}".format(placement.x, placement.y)
+        return [
+            ProvenanceDataItem(
+                [root_name, "Number_of_Relevant_SDP_Messages"], n_sdp_packets),
+            ProvenanceDataItem(
+                [root_name, "Number_of_Input_Streams"], n_in_streams),
+            ProvenanceDataItem(
+                [root_name, "Number_of_Output_Streams"], n_out_streams)]
 
     def set_router_wait1_timeout(
             self, timeout, transceiver, placements,
