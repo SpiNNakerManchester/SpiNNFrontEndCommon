@@ -371,16 +371,8 @@ class CommandSenderMachineVertex(
         return self._get_edges_and_partitions(self, MachineVertex, MachineEdge)
 
     @overrides(ProvidesProvenanceDataFromMachineImpl.
-               get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, transceiver, placement):
-        provenance_data = self._read_provenance_data(transceiver, placement)
-        provenance_items = self._read_basic_provenance_items(
-            provenance_data, placement)
-        n_commands_sent, = self._get_remaining_provenance_data_items(
-            provenance_data)
-        _, _, _, _, names = self._get_placement_details(placement)
-
-        provenance_items.append(ProvenanceDataItem(
-            self._add_name(names, "Sent_Commands"),
-            n_commands_sent))
-        return provenance_items
+               _get_extra_provenance_items)
+    def _get_extra_provenance_items(self, names, provenance_data):
+        n_commands_sent, = provenance_data
+        yield ProvenanceDataItem(
+            self._add_name(names, "Sent_Commands"), n_commands_sent)

@@ -29,10 +29,10 @@ _ONE_WORD = struct.Struct("<I")
 
 def add_name(names, name):
     """
-            :param iterable(str) names:
-            :param str name:
-            :rtype: list(str)
-            """
+    :param iterable(str) names:
+    :param str name:
+    :rtype: list(str)
+    """
     new_names = list(names)
     new_names.append(name)
     return new_names
@@ -112,15 +112,16 @@ class ProvidesProvenanceDataFromMachineImpl(
 
     @abstractproperty
     def _provenance_region_id(self):
-        """
-        :return: provenance_region_id
+        """ The index of the provenance region.
+
         :rtype: int
         """
 
     @abstractproperty
     def _n_additional_data_items(self):
-        """
-        :return: n_additional_data_items
+        """ The number of extra machine words of provenance that the model \
+            reports.
+
         :rtype: int
         """
 
@@ -268,10 +269,26 @@ class ProvidesProvenanceDataFromMachineImpl(
 
     def _get_remaining_provenance_data_items(self, provenance_data):
         """
-        :param list(ProvenanceDataItem) provenance_data:
-        :rtype: list(ProvenanceDataItem)
+        :param list(int) provenance_data:
+        :rtype: list(int)
         """
         return provenance_data[self.NUM_PROVENANCE_DATA_ENTRIES:]
+
+    def _get_extra_provenance_items(self, names, provenance_data):
+        # pylint: disable=unused-argument
+        """ Convert the remaining provenance data (not in the standard set) \
+            into provenance items.
+
+        :param list(str) names:
+            The base names describing the location of the machine vertex
+            producing the provenance.
+        :param list(int) provenance_data:
+            The list of words of raw provenance data.
+        :return: The interpreted provenance items.
+        :rtype:
+            iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
+        """
+        return []
 
     @overrides(
         AbstractProvidesProvenanceDataFromMachine.
@@ -289,4 +306,8 @@ class ProvidesProvenanceDataFromMachineImpl(
         """
         provenance_data = self._read_provenance_data(
             transceiver, placement)
-        return self._read_basic_provenance_items(provenance_data, placement)
+        items = self._read_basic_provenance_items(provenance_data, placement)
+        _, _, _, _, names = self._get_placement_details(placement)
+        items.extend(self._get_extra_provenance_items(
+            names, self._get_remaining_provenance_data_items(provenance_data)))
+        return items

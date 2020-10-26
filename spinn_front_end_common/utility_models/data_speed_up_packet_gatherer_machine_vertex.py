@@ -1683,29 +1683,18 @@ class DataSpeedUpPacketGatherMachineVertex(
         return 4
 
     @overrides(ProvidesProvenanceDataFromMachineImpl.
-               get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, transceiver, placement):
-        provenance_data = self._read_provenance_data(transceiver, placement)
-        provenance_items = self._read_basic_provenance_items(
-            provenance_data, placement)
-        provenance_data = self._get_remaining_provenance_data_items(
-            provenance_data)
-        _, _, _, _, names = self._get_placement_details(placement)
+               _get_extra_provenance_items)
+    def _get_extra_provenance_items(self, names, provenance_data):
         n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams = provenance_data
 
-        provenance_items.append(ProvenanceDataItem(
-            self._add_name(names, "Sent_SDP_Packets"),
-            n_sdp_sent))
-        provenance_items.append(ProvenanceDataItem(
-            self._add_name(names, "Received_SDP_Packets"),
-            n_sdp_recvd))
-        provenance_items.append(ProvenanceDataItem(
-            self._add_name(names, "Speed_Up_Input_Streams"),
-            n_in_streams))
-        provenance_items.append(ProvenanceDataItem(
-            self._add_name(names, "Speed_Up_Output_Streams"),
-            n_out_streams))
-        return provenance_items
+        yield ProvenanceDataItem(
+            self._add_name(names, "Sent_SDP_Packets"), n_sdp_sent)
+        yield ProvenanceDataItem(
+            self._add_name(names, "Received_SDP_Packets"), n_sdp_recvd)
+        yield ProvenanceDataItem(
+            self._add_name(names, "Speed_Up_Input_Streams"), n_in_streams)
+        yield ProvenanceDataItem(
+            self._add_name(names, "Speed_Up_Output_Streams"), n_out_streams)
 
 
 class _StreamingContextManager(object):
