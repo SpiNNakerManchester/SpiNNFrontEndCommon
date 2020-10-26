@@ -1684,7 +1684,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @overrides(ProvidesProvenanceDataFromMachineImpl.
                _get_extra_provenance_items)
-    def _get_extra_provenance_items(self, names, provenance_data):
+    def _get_extra_provenance_items(
+            self, label, location, names, provenance_data):
+        # pylint: disable=unused-argument
         n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams = provenance_data
 
         yield ProvenanceDataItem(

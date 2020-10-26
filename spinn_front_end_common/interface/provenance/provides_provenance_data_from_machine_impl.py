@@ -274,11 +274,14 @@ class ProvidesProvenanceDataFromMachineImpl(
         """
         return provenance_data[self.NUM_PROVENANCE_DATA_ENTRIES:]
 
-    def _get_extra_provenance_items(self, names, provenance_data):
+    def _get_extra_provenance_items(
+            self, label, location, names, provenance_data):
         # pylint: disable=unused-argument
         """ Convert the remaining provenance data (not in the standard set) \
             into provenance items.
 
+        :param str label: The vertex label
+        :param tuple(int,int,int) location: The x,y,p coords of the vertex
         :param list(str) names:
             The base names describing the location of the machine vertex
             producing the provenance.
@@ -307,7 +310,8 @@ class ProvidesProvenanceDataFromMachineImpl(
         provenance_data = self._read_provenance_data(
             transceiver, placement)
         items = self._read_basic_provenance_items(provenance_data, placement)
-        _, _, _, _, names = self._get_placement_details(placement)
+        label, x, y, p, names = self._get_placement_details(placement)
         items.extend(self._get_extra_provenance_items(
-            names, self._get_remaining_provenance_data_items(provenance_data)))
+            label, (x, y, p), names,
+            self._get_remaining_provenance_data_items(provenance_data)))
         return items

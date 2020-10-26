@@ -103,7 +103,9 @@ class LivePacketGatherMachineVertex(
 
     @overrides(
         ProvidesProvenanceDataFromMachineImpl._get_extra_provenance_items)
-    def _get_extra_provenance_items(self, names, provenance_data):
+    def _get_extra_provenance_items(
+            self, label, location, names, provenance_data):
+        # pylint: disable=unused-argument
         (lost, lost_payload, events, messages) = provenance_data
         yield ProvenanceDataItem(
             self._add_name(names, "lost_packets_without_payload"), lost,
