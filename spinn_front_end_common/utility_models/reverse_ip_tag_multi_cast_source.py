@@ -71,7 +71,7 @@ class ReverseIpTagMultiCastSource(
             enable_injection=False,
 
             # splitter object
-            splitter_object=None):
+            splitter=None):
         """
         :param int n_keys:
             The number of keys to be sent via this multicast source
@@ -120,14 +120,14 @@ class ReverseIpTagMultiCastSource(
             Extra flag for input without a reserved port
         :param bool enable_injection:
             Flag to indicate that data will be received to inject
-        :param splitter_object: the splitter object needed for this vertex
+        :param splitter: the splitter object needed for this vertex
         """
         # pylint: disable=too-many-arguments, too-many-locals
         super(ReverseIpTagMultiCastSource, self).__init__(
             label, constraints, max_atoms_per_core)
 
         # update splitter object
-        self.splitter_object = splitter_object
+        self.splitter = splitter
 
         # basic items
         self._n_atoms = n_keys
