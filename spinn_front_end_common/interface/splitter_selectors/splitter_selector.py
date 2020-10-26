@@ -53,8 +53,8 @@ class SplitterSelector(object):
         :param app_vertex: app vertex to give a splitter object to
         :rtype: None
         """
-        if isinstance(app_vertex, SplitterOneAppOneMachine):
-            app_vertex.splitter_object = SplitterOneToOneLegacy()
+        if isinstance(app_vertex, AbstractOneAppOneMachineVertex):
+            app_vertex.splitter_object = SplitterOneAppOneMachine()
         elif isinstance(app_vertex, ReverseIpTagMultiCastSource):
             app_vertex.splitter_object = SplitterSliceLegacy()
         elif isinstance(app_vertex, LivePacketGather):
