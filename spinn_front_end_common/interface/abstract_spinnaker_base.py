@@ -42,11 +42,15 @@ from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
 from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
+from pacman.executor.injection_decorator import (
+    clear_injectables, provide_injectables)
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
-from pacman.model.resources import (PreAllocatedResourceContainer)
+from pacman.model.graphs import AbstractSDRAMPartition
+from pacman.model.resources import (
+    PreAllocatedResourceContainer, ConstantSDRAM)
 from pacman import __version__ as pacman_version
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
@@ -763,6 +767,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._application_graph.add_vertex(vertex)
         for outgoing_partition in \
                 self._original_application_graph.outgoing_edge_partitions:
+            new_app_partition = outgoing_partition.clone_for_graph_move()
+            self._application_graph.add_outgoing_edge_partition(
+                new_app_partition)
             for edge in outgoing_partition.edges:
                 self._application_graph.add_edge(
                     edge, outgoing_partition.identifier)
@@ -775,7 +782,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._machine_graph.add_vertex(vertex)
         for outgoing_partition in \
                 self._original_machine_graph.outgoing_edge_partitions:
-            self._machine_graph.add_outgoing_edge_partition(outgoing_partition)
+            new_outgoing_partition = outgoing_partition.clone_for_graph_move()
+            self._machine_graph.add_outgoing_edge_partition(
+                new_outgoing_partition)
             for edge in outgoing_partition.edges:
                 self._machine_graph.add_edge(
                     edge, outgoing_partition.identifier)
@@ -912,6 +921,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._do_mapping(run_time, total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
+        provide_injectables(self._mapping_outputs)
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
@@ -923,7 +933,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # Work out the maximum run duration given all recordings
         if self._max_run_time_steps is None:
-            self._max_run_time_steps = self._deduce_data_n_timesteps()
+            self._max_run_time_steps = self._deduce_data_n_timesteps(
+                self._machine_graph)
+        clear_injectables()
 
         # Work out an array of timesteps to perform
         steps = None
@@ -1048,16 +1060,18 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         self._application_graph.add_edge(
                             dependant_edge, edge_identifier)
 
-    def _deduce_data_n_timesteps(self):
+    def _deduce_data_n_timesteps(self, machine_graph):
         """ Operates the auto pause and resume functionality by figuring out\
             how many timer ticks a simulation can run before SDRAM runs out,\
             and breaks simulation into chunks of that long.
 
+        :param ~.MachineGraph machine_graph:
         :return: max time a simulation can run.
         """
         # Go through the placements and find how much SDRAM is used
         # on each chip
         usage_by_chip = dict()
+        seen_partitions = set()
 
         for placement in self._placements.placements:
             sdram_required = placement.vertex.resources_required.sdram
@@ -1065,6 +1079,23 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 usage_by_chip[placement.x, placement.y] += sdram_required
             else:
                 usage_by_chip[placement.x, placement.y] = sdram_required
+
+            # add costed costs
+            costed_partitions = (
+                machine_graph.get_costed_edge_partitions_starting_at_vertex(
+                    placement.vertex))
+            for partition in costed_partitions:
+                if isinstance(partition, AbstractSDRAMPartition):
+                    if partition not in seen_partitions:
+                        usage_by_chip[placement.x, placement.y] = \
+                            ConstantSDRAM(partition.total_sdram_requirements())
+                    seen_partitions.add(partition)
+                else:
+                    # TODO: Handle non-SDRAM costed partitions...
+                    # but only once an example of them exists!
+                    logger.warning(
+                        "costed edge partition that doesn't use SDRAM is not "
+                        "consulted for data step size: {}", partition)
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
@@ -1700,6 +1731,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         self._json_folder, java_call, java_spinnaker_path,
                         java_properties)
             inputs["JavaCaller"] = self._java_caller
+
+            # add the sdram allocator to ensure the sdram is allocated before
+            #  dsg on a real machine
+            algorithms.append("SDRAMOutgoingPartitionAllocator")
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(
