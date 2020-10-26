@@ -121,13 +121,11 @@ class ReverseIpTagMultiCastSource(
         :param bool enable_injection:
             Flag to indicate that data will be received to inject
         :param splitter: the splitter object needed for this vertex
+        :type splitter None or AbstractSplitterCommon
         """
         # pylint: disable=too-many-arguments, too-many-locals
         super(ReverseIpTagMultiCastSource, self).__init__(
-            label, constraints, max_atoms_per_core)
-
-        # update splitter object
-        self.splitter = splitter
+            label, constraints, max_atoms_per_core, splitter=splitter)
 
         # basic items
         self._n_atoms = n_keys

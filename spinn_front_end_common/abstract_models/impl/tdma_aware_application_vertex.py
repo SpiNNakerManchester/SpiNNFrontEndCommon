@@ -44,18 +44,21 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         "The TDMA fell behind by {} times on core {}, {}, {}. "
         "try increasing the time_between_cores in the corresponding .cfg")
 
-    def __init__(self, label, constraints, max_atoms_per_core):
+    def __init__(self, label, constraints, max_atoms_per_core, splitter=None):
         """
         :param str label: The optional name of the vertex.
         :param iterable(AbstractConstraint) constraints:
             The optional initial constraints of the vertex.
         :param int max_atoms_per_core: The max number of atoms that can be
             placed on a core, used in partitioning.
+        :type splitter None or AbstractSplitterCommon
+        :raise PacmanInvalidParameterException:
+            If one of the constraints is not valid
         :raise PacmanInvalidParameterException:
             If one of the constraints is not valid
         """
         ApplicationVertex.__init__(
-            self, label, constraints, max_atoms_per_core)
+            self, label, constraints, max_atoms_per_core, splitter=splitter)
         self.__time_between_cores = None
         self.__n_slots = None
         self.__time_between_spikes = None
