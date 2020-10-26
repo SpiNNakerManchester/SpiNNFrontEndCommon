@@ -857,7 +857,7 @@ static void receive_data(uint key, uint payload) {
 //! \brief Write our provenance data into the provenance region.
 //! \param[in] address: Where to write
 static void provenance_callback(address_t address) {
-    struct dsupg_provenance_t *sdram_prov = (void *) address;
+    dsupg_provenance_t *sdram_prov = (void *) address;
 
     *sdram_prov = prov;
 }

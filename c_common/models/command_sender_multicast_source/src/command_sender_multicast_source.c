@@ -42,8 +42,7 @@ typedef struct command {
     //! The payload for the packet.
     uint32_t payload;
     //! \brief The number of times to repeat the packet.
-    //!
-    //! If zero, the packet is only sent once.
+    //! \details If zero, the packet is only sent once.
     uint32_t repeats;
     //! The time (in microseconds) to delay between sending each repeat.
     uint32_t delay;
@@ -94,6 +93,8 @@ static uint32_t n_pause_stop_commands;
 static uint32_t next_timed_command;
 //! Whether we are in the state where the next run will be a start/resume.
 static bool resume = true;
+//! The number of commands sent
+static uint32_t n_commands_sent;
 
 //! values for the priority for each callback
 typedef enum callback_priorities {
@@ -115,10 +116,15 @@ typedef enum region_identifiers {
     //! Where to read stop/pause commands from. The region is formatted as a
     //! command_list.
     COMMANDS_AT_STOP_PAUSE,
-    //! Where to record provenance data. (This model does not record any custom
-    //! provenance data.)
+    //! Where to record provenance data. (Format: ::cs_provenance_t)
     PROVENANCE_REGION
 } region_identifiers;
+
+//! custom provenance data
+typedef struct cs_provenance_t {
+    //! The number of commands sent
+    uint32_t n_commands_sent;
+} cs_provenance_t;
 
 //! time ID
 enum {
@@ -149,6 +155,7 @@ static void transmit_command(command *command_to_send) {
                         command_to_send->delay);
                 spin1_send_mc_packet(command_to_send->key, 0, NO_PAYLOAD);
             }
+            n_commands_sent++;
 
             // if the delay is 0, don't call delay
             if (command_to_send->delay > 0) {
@@ -168,6 +175,7 @@ static void transmit_command(command *command_to_send) {
             log_debug("Sending %08x at time %u", command_to_send->key, time);
             spin1_send_mc_packet(command_to_send->key, 0, NO_PAYLOAD);
         }
+        n_commands_sent++;
     }
 }
 
@@ -306,6 +314,13 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
     }
 }
 
+//! \brief Write our provenance data into the provenance region.
+//! \param[in] address: Where to write
+static void write_provenance(address_t address) {
+    cs_provenance_t *sdram_prov = (void *) address;
+    sdram_prov->n_commands_sent = n_commands_sent;
+}
+
 //! \brief Initialises the core.
 //! \param[out] timer_period The timer tick period.
 //! \return True if initialisation succeeded.
@@ -326,7 +341,8 @@ static bool initialize(uint32_t *timer_period) {
             &infinite_run, &time, SDP, DMA)) {
         return false;
     }
-    simulation_set_provenance_data_address(
+    simulation_set_provenance_function(
+            write_provenance,
             data_specification_get_region(PROVENANCE_REGION, ds_regions));
     simulation_set_exit_function(run_stop_pause_commands);
 
