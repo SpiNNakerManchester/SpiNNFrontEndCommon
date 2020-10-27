@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .abstract_one_app_one_machine_vertex import AbstractOneAppOneMachineVertex
+from pacman.model.graphs.machine.abstract import AbstractOneAppOneMachineVertex
 from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex)
 

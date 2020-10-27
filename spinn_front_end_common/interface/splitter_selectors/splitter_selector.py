@@ -14,14 +14,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 
-from pacman.model.partitioner_splitters.splitter_one_to_one_legacy import (
-    SplitterOneToOneLegacy)
-from pacman.model.partitioner_splitters.splitter_slice_legacy import (
-    SplitterSliceLegacy)
+from pacman.model.partitioner_splitters import (
+    SplitterOneAppOneMachine, SplitterOneToOneLegacy, SplitterSliceLegacy)
 from spinn_front_end_common.utility_models import (
     ReverseIpTagMultiCastSource, LivePacketGather, ChipPowerMonitor)
-from spinn_front_end_common.utility_models.\
-    abstract_one_app_one_machine_vertex import AbstractOneAppOneMachineVertex
+from pacman.model.graphs.machine.abstract import AbstractOneAppOneMachineVertex
 from spinn_utilities.log import FormatAdapter
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -57,7 +54,7 @@ class SplitterSelector(object):
         :rtype: None
         """
         if isinstance(app_vertex, AbstractOneAppOneMachineVertex):
-            app_vertex.splitter = SplitterOneToOneLegacy()
+            app_vertex.splitter = SplitterOneAppOneMachine()
         elif isinstance(app_vertex, ReverseIpTagMultiCastSource):
             app_vertex.splitter = SplitterSliceLegacy()
         elif isinstance(app_vertex, LivePacketGather):
