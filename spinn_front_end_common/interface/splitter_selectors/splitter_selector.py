@@ -42,7 +42,7 @@ class SplitterSelector(object):
         :rtype: None
         """
         for app_vertex in app_graph:
-            if app_vertex.splitter_object is None:
+            if app_vertex.splitter is None:
                 self.vertex_selector(app_vertex)
 
     def vertex_selector(self, app_vertex):
@@ -54,14 +54,14 @@ class SplitterSelector(object):
         :rtype: None
         """
         if isinstance(app_vertex, AbstractOneAppOneMachineVertex):
-            app_vertex.splitter_object = SplitterOneAppOneMachine()
+            app_vertex.splitter = SplitterOneAppOneMachine()
         elif isinstance(app_vertex, ReverseIpTagMultiCastSource):
-            app_vertex.splitter_object = SplitterSliceLegacy()
+            app_vertex.splitter = SplitterSliceLegacy()
         elif isinstance(app_vertex, LivePacketGather):
-            app_vertex.splitter_object = SplitterOneToOneLegacy()
+            app_vertex.splitter = SplitterOneToOneLegacy()
         elif isinstance(app_vertex, ChipPowerMonitor):
-            app_vertex.splitter_object = SplitterOneToOneLegacy()
+            app_vertex.splitter = SplitterOneToOneLegacy()
         else:
             logger.warning(
                 self.NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE.format(app_vertex))
-            app_vertex.splitter_object = SplitterSliceLegacy()
+            app_vertex.splitter = SplitterSliceLegacy()
