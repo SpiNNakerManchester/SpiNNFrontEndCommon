@@ -1087,8 +1087,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             for partition in costed_partitions:
                 if isinstance(partition, AbstractSDRAMPartition):
                     if partition not in seen_partitions:
-                        usage_by_chip[placement.x, placement.y] = \
-                            ConstantSDRAM(partition.total_sdram_requirements())
+                        usage_by_chip[placement.x, placement.y] = (
+                            ConstantSDRAM(
+                                partition.total_sdram_requirements()))
                     seen_partitions.add(partition)
                 else:
                     # TODO: Handle non-SDRAM costed partitions...
