@@ -28,12 +28,12 @@ class ProcessPartitionConstraints(object):
     :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
     """
 
-    def __call__(self, machine_graph, application_graph=None):
+    def __call__(self, machine_graph):
         """
         :param ~.MachineGraph machine_graph:
         :param ~.ApplicationGraph application_graph:
         """
-        if application_graph is not None:
+        if machine_graph.application_level_used:
             # generate progress bar
             progress = ProgressBar(
                 machine_graph.n_vertices,
@@ -62,18 +62,35 @@ class ProcessPartitionConstraints(object):
     @staticmethod
     def _process_application_partition(partition):
         """
+        Process the partition by checking the pre_vertex and post vertices
+
+        Note: The machine level is checked first and only only if that does
+            not provide the api the app vertex is check next
         :param ~.OutgoingEdgePartition partition:
         """
-        vertex = partition.pre_vertex.app_vertex
+        vertex = partition.pre_vertex
         if isinstance(vertex, AbstractProvidesOutgoingPartitionConstraints):
             partition.add_constraints(
                 vertex.get_outgoing_partition_constraints(partition))
+        else:
+            vertex = vertex.app_vertex
+            if isinstance(vertex,
+                          AbstractProvidesOutgoingPartitionConstraints):
+                partition.add_constraints(
+                    vertex.get_outgoing_partition_constraints(partition))
         for edge in partition.edges:
-            post_vertex = edge.app_edge.post_vertex
+            post_vertex = edge.post_vertex
             if isinstance(post_vertex,
                           AbstractProvidesIncomingPartitionConstraints):
                 partition.add_constraints(
                     post_vertex.get_incoming_partition_constraints(partition))
+            elif edge.app_edge:
+                post_vertex = edge.app_edge.post_vertex
+                if isinstance(post_vertex,
+                              AbstractProvidesIncomingPartitionConstraints):
+                    partition.add_constraints(
+                        post_vertex.get_incoming_partition_constraints(
+                            partition))
 
     @staticmethod
     def _process_machine_partition(partition):
