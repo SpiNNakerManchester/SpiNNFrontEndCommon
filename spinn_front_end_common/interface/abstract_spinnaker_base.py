@@ -59,7 +59,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities import (
     globals_variables, SimulatorInterface)
 from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION)
+    MICRO_TO_MILLISECOND_CONVERSION, SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.function_list import (
     get_front_end_common_pacman_xml_paths)
@@ -1089,7 +1089,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     if partition not in seen_partitions:
                         usage_by_chip[placement.x, placement.y] = (
                             ConstantSDRAM(
-                                partition.total_sdram_requirements()))
+                                partition.total_sdram_requirements() +
+                                SARK_PER_MALLOC_SDRAM_USAGE))
                     seen_partitions.add(partition)
                 else:
                     # TODO: Handle non-SDRAM costed partitions...
