@@ -44,7 +44,7 @@ class SplitterSelector(object):
         :param ApplicationGraph app_graph: app graph
         :rtype: None
         """
-        for app_vertex in app_graph:
+        for app_vertex in app_graph.vertices:
             if app_vertex.splitter is None:
                 self.vertex_selector(app_vertex)
 
