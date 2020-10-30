@@ -148,6 +148,10 @@
 <div class="viewcode-block" id="FailedState.stop"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.FailedState.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Ignoring call to stop/end as no simulator running&quot;</span><span class="p">)</span></div>
 
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">stop_run</span><span class="p">)</span>
+<div class="viewcode-block" id="FailedState.stop_run"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.FailedState.stop_run">[docs]</a>    <span class="k">def</span> <span class="nf">stop_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span><span class="n">FAILED_STATE_MSG</span><span class="p">)</span></div>
+
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">transceiver</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">transceiver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
