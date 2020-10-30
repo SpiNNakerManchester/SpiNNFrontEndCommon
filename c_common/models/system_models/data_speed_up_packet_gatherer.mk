@@ -16,4 +16,6 @@
 APP = data_speed_up_packet_gatherer
 SOURCES = data_speed_up_packet_gatherer.c
 
+FEC_DEBUG = LOG_LEVEL=LOG_DEBUG
+
 include ../fec_models.mk
