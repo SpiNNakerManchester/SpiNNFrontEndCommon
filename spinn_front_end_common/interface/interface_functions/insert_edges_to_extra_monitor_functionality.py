@@ -148,6 +148,10 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         if not self.__has_edge_already(vertex, gatherer, machine_graph):
             edge = MachineEdge(
                 vertex, gatherer, traffic_type=DataSpeedUp.TRAFFIC_TYPE)
+            machine_graph.add_outgoing_edge_partition(
+                MachineEdgePartition(
+                    PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP, vertex,
+                    traffic_type=EdgeTrafficType.FIXED_ROUTE))
             machine_graph.add_edge(
                 edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 
