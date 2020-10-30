@@ -328,8 +328,7 @@ class ChipPowerMonitorMachineVertex(
     @overrides(AbstractProvidesLocalProvenanceData.get_local_provenance_data)
     def get_local_provenance_data(self):
         # No provenance if we've not generated it
-        if not self._location:
-            return []
-        root_name = "power monitor for {},{}".format(*self._location)
-        return [ProvenanceDataItem(
-            [root_name, PROVENANCE_KEY], self._activity_count)]
+        if self._location:
+            root_name = "power monitor for {},{}".format(*self._location)
+            yield ProvenanceDataItem(
+                [root_name, PROVENANCE_KEY], self._activity_count)
