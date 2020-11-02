@@ -111,6 +111,12 @@ class SimulatorInterface(object):
         """ End running of the simulation.
         """
 
+    @abstractmethod
+    def stop_run(self):
+        """ End the running of a simulation that has been started with
+            run_forever
+        """
+
     @abstractproperty
     def transceiver(self):
         """ How to talk to the machine.
