@@ -89,72 +89,57 @@
 <span class="sd">        partition request it.</span>
 
 <span class="sd">    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
-<span class="sd">    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~.MachineGraph machine_graph:</span>
-<span class="sd">        :param ~.ApplicationGraph application_graph:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># generate progress bar</span>
-            <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
-                <span class="n">machine_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">,</span>
-                <span class="s2">&quot;Getting constraints for application graph&quot;</span><span class="p">)</span>
+        <span class="c1"># generate progress bar</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
+            <span class="n">machine_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">,</span>
+            <span class="s2">&quot;Getting constraints for machine graph&quot;</span><span class="p">)</span>
 
-            <span class="c1"># iterate over each partition in the graph</span>
-            <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> <span class="n">machine_graph</span><span class="o">.</span>\
-                        <span class="n">get_outgoing_edge_partitions_starting_at_vertex</span><span class="p">(</span>
-                            <span class="n">vertex</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">partition</span><span class="o">.</span><span class="n">traffic_type</span> <span class="o">==</span> <span class="n">EdgeTrafficType</span><span class="o">.</span><span class="n">MULTICAST</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_process_application_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># generate progress bar</span>
-            <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
-                <span class="n">machine_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">,</span>
-                <span class="s2">&quot;Getting constraints for machine graph&quot;</span><span class="p">)</span>
-
-            <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> <span class="n">machine_graph</span><span class="o">.</span>\
-                        <span class="n">get_outgoing_edge_partitions_starting_at_vertex</span><span class="p">(</span>
-                            <span class="n">vertex</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">partition</span><span class="o">.</span><span class="n">traffic_type</span> <span class="o">==</span> <span class="n">EdgeTrafficType</span><span class="o">.</span><span class="n">MULTICAST</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_process_machine_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">)</span>
+        <span class="c1"># iterate over each partition in the graph</span>
+        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> <span class="n">machine_graph</span><span class="o">.</span>\
+                    <span class="n">get_outgoing_edge_partitions_starting_at_vertex</span><span class="p">(</span>
+                        <span class="n">vertex</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">partition</span><span class="o">.</span><span class="n">traffic_type</span> <span class="o">==</span> <span class="n">EdgeTrafficType</span><span class="o">.</span><span class="n">MULTICAST</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_process_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_process_application_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_process_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process the partition by checking the pre_vertex and post vertices</span>
+
+<span class="sd">        Note: The machine level is checked first and only only if that does</span>
+<span class="sd">            not provide the api the app vertex is check next</span>
 <span class="sd">        :param ~.OutgoingEdgePartition partition:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">vertex</span> <span class="o">=</span> <span class="n">partition</span><span class="o">.</span><span class="n">pre_vertex</span><span class="o">.</span><span class="n">app_vertex</span>
+        <span class="n">vertex</span> <span class="o">=</span> <span class="n">partition</span><span class="o">.</span><span class="n">pre_vertex</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="p">):</span>
             <span class="n">partition</span><span class="o">.</span><span class="n">add_constraints</span><span class="p">(</span>
                 <span class="n">vertex</span><span class="o">.</span><span class="n">get_outgoing_partition_constraints</span><span class="p">(</span><span class="n">partition</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">partition</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
-            <span class="n">post_vertex</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">app_edge</span><span class="o">.</span><span class="n">post_vertex</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">post_vertex</span><span class="p">,</span>
-                          <span class="n">AbstractProvidesIncomingPartitionConstraints</span><span class="p">):</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">vertex</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span>
+                          <span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="p">):</span>
                 <span class="n">partition</span><span class="o">.</span><span class="n">add_constraints</span><span class="p">(</span>
-                    <span class="n">post_vertex</span><span class="o">.</span><span class="n">get_incoming_partition_constraints</span><span class="p">(</span><span class="n">partition</span><span class="p">))</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_process_machine_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~.OutgoingEdgePartition partition:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">partition</span><span class="o">.</span><span class="n">pre_vertex</span><span class="p">,</span>
-                      <span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="p">):</span>
-            <span class="n">partition</span><span class="o">.</span><span class="n">add_constraints</span><span class="p">(</span>
-                <span class="n">partition</span><span class="o">.</span><span class="n">pre_vertex</span><span class="o">.</span><span class="n">get_outgoing_partition_constraints</span><span class="p">(</span>
-                    <span class="n">partition</span><span class="p">))</span>
+                    <span class="n">vertex</span><span class="o">.</span><span class="n">get_outgoing_partition_constraints</span><span class="p">(</span><span class="n">partition</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">partition</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
             <span class="n">post_vertex</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">post_vertex</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">post_vertex</span><span class="p">,</span>
                           <span class="n">AbstractProvidesIncomingPartitionConstraints</span><span class="p">):</span>
                 <span class="n">partition</span><span class="o">.</span><span class="n">add_constraints</span><span class="p">(</span>
-                    <span class="n">post_vertex</span><span class="o">.</span><span class="n">get_incoming_partition_constraints</span><span class="p">(</span><span class="n">partition</span><span class="p">))</span></div>
+                    <span class="n">post_vertex</span><span class="o">.</span><span class="n">get_incoming_partition_constraints</span><span class="p">(</span><span class="n">partition</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">edge</span><span class="o">.</span><span class="n">app_edge</span><span class="p">:</span>
+                <span class="n">post_vertex</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">app_edge</span><span class="o">.</span><span class="n">post_vertex</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">post_vertex</span><span class="p">,</span>
+                              <span class="n">AbstractProvidesIncomingPartitionConstraints</span><span class="p">):</span>
+                    <span class="n">partition</span><span class="o">.</span><span class="n">add_constraints</span><span class="p">(</span>
+                        <span class="n">post_vertex</span><span class="o">.</span><span class="n">get_incoming_partition_constraints</span><span class="p">(</span>
+                            <span class="n">partition</span><span class="p">))</span></div>
 </pre></div>
 
           </div>
