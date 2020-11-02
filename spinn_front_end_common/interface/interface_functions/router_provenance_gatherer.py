@@ -337,13 +337,14 @@ class RouterProvenanceGatherer(object):
                 table and table.number_of_defaultable_entries)),
             message=self.__DEFAULT_MC_MSG.format(x, y, diagnostics.user_2))
 
-        yield ProvenanceDataItem(
-            self.__add_name(names, "Entries"), table.number_of_entries)
-        routes = set()
-        for ent in table.multicast_routing_entries:
-            routes.add(ent.spinnaker_route)
-        yield ProvenanceDataItem(
-            self.__add_name(names, "Unique_Routes"), len(routes))
+        if table:
+            yield ProvenanceDataItem(
+                self.__add_name(names, "Entries"), table.number_of_entries)
+            routes = set()
+            for ent in table.multicast_routing_entries:
+                routes.add(ent.spinnaker_route)
+            yield ProvenanceDataItem(
+                self.__add_name(names, "Unique_Routes"), len(routes))
 
         yield ProvenanceDataItem(
             self.__add_name(names, "Local_P2P_Packets"),
