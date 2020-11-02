@@ -108,8 +108,8 @@ class LivePacketGatherMachineVertex(
         # pylint: disable=unused-argument
         (lost, lost_payload, events, messages) = provenance_data
         yield ProvenanceDataItem(
-            self._add_name(names, "lost_packets_without_payload"), lost,
-            report=lost > 0,
+            names + ["lost_packets_without_payload"], lost,
+            report=(lost > 0),
             message=(
                 "The live packet gatherer has lost {} packets which have "
                 "payloads during its execution. Try increasing the machine "
@@ -117,8 +117,8 @@ class LivePacketGatherMachineVertex(
                 "running in real time, try reducing the number of vertices "
                 "which are feeding this live packet gatherer".format(lost)))
         yield ProvenanceDataItem(
-            self._add_name(names, "lost_packets_with_payload"), lost_payload,
-            report=lost_payload > 0,
+            names + ["lost_packets_with_payload"], lost_payload,
+            report=(lost_payload > 0),
             message=(
                 "The live packet gatherer has lost {} packets which do not "
                 "have payloads during its execution. Try increasing the "
@@ -126,10 +126,8 @@ class LivePacketGatherMachineVertex(
                 "you are running in real time, try reducing the number of "
                 "vertices which are feeding this live packet gatherer".format(
                     lost_payload)))
-        yield ProvenanceDataItem(
-            self._add_name(names, "gathered_events"), events)
-        yield ProvenanceDataItem(
-            self._add_name(names, "messages_sent_to_host"), messages)
+        yield ProvenanceDataItem(names + ["gathered_events"], events)
+        yield ProvenanceDataItem(names + ["messages_sent_to_host"], messages)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):

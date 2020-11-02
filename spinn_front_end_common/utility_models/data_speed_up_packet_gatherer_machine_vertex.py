@@ -1689,14 +1689,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         # pylint: disable=unused-argument
         n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams = provenance_data
 
+        yield ProvenanceDataItem(names + ["Sent_SDP_Packets"], n_sdp_sent)
+        yield ProvenanceDataItem(names + ["Received_SDP_Packets"], n_sdp_recvd)
         yield ProvenanceDataItem(
-            self._add_name(names, "Sent_SDP_Packets"), n_sdp_sent)
+            names + ["Speed_Up_Input_Streams"], n_in_streams)
         yield ProvenanceDataItem(
-            self._add_name(names, "Received_SDP_Packets"), n_sdp_recvd)
-        yield ProvenanceDataItem(
-            self._add_name(names, "Speed_Up_Input_Streams"), n_in_streams)
-        yield ProvenanceDataItem(
-            self._add_name(names, "Speed_Up_Output_Streams"), n_out_streams)
+            names + ["Speed_Up_Output_Streams"], n_out_streams)
 
 
 class _StreamingContextManager(object):

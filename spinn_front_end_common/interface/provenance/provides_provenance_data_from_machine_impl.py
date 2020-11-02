@@ -216,56 +216,38 @@ class ProvidesProvenanceDataFromMachineImpl(
         :param ~pacman.model.placements.Placement placement:
         :rtype: list(ProvenanceDataItem)
         """
-        transmission_event_overflow = provenance_data[
-            self.PROVENANCE_DATA_ENTRIES.TRANSMISSION_EVENT_OVERFLOW.value]
-        callback_queue_overloaded = provenance_data[
-            self.PROVENANCE_DATA_ENTRIES.CALLBACK_QUEUE_OVERLOADED.value]
-        dma_queue_overloaded = provenance_data[
-            self.PROVENANCE_DATA_ENTRIES.DMA_QUEUE_OVERLOADED.value]
-        number_of_times_timer_tic_over_ran = provenance_data[
-            self.PROVENANCE_DATA_ENTRIES.TIMER_TIC_HAS_OVERRUN.value]
-        max_number_of_times_timer_tic_over_ran = provenance_data[
-            self.PROVENANCE_DATA_ENTRIES.MAX_NUMBER_OF_TIMER_TIC_OVERRUN.value]
+        (tx_overflow, callback_overload, dma_overload, tic_overrun_count,
+         tic_overrun_max) = provenance_data[:self.NUM_PROVENANCE_DATA_ENTRIES]
 
         # create provenance data items for returning
         label, x, y, p, names = self._get_placement_details(placement)
-        data_items = list()
-        data_items.append(ProvenanceDataItem(
-            self._add_name(names, self._TIMES_TRANSMISSION_SPIKES_OVERRAN),
-            transmission_event_overflow,
-            report=transmission_event_overflow != 0,
-            message=self._TIMES_TRANSMISSION_SPIKES_OVERRAN_MESSAGE.format(
-                label, x, y, p, transmission_event_overflow)))
-
-        data_items.append(ProvenanceDataItem(
-            self._add_name(names, self._TIMES_CALLBACK_QUEUE_OVERLOADED),
-            callback_queue_overloaded,
-            report=callback_queue_overloaded != 0,
-            message=self._TIMES_CALLBACK_QUEUE_OVERLOADED_MESSAGE.format(
-                label, x, y, p, callback_queue_overloaded)))
-
-        data_items.append(ProvenanceDataItem(
-            self._add_name(names, self._TIMES_DMA_QUEUE_OVERLOADED),
-            dma_queue_overloaded,
-            report=dma_queue_overloaded != 0,
-            message=self._TIMES_DMA_QUEUE_OVERLOADED_MESSAGE.format(
-                label, x, y, p, dma_queue_overloaded)))
-
-        data_items.append(ProvenanceDataItem(
-            self._add_name(names, self._TIMER_TICK_OVERRUN),
-            number_of_times_timer_tic_over_ran,
-            report=number_of_times_timer_tic_over_ran != 0,
-            message=self._TIMER_TICK_OVERRUN_MESSAGE.format(
-                label, x, y, p, number_of_times_timer_tic_over_ran)))
-
-        data_items.append(ProvenanceDataItem(
-            self._add_name(names, self._MAX_TIMER_TICK_OVERRUN),
-            max_number_of_times_timer_tic_over_ran,
-            report=max_number_of_times_timer_tic_over_ran > 0,
-            message=self._MAX_TIMER_TICK_OVERRUN_MESSAGE.format(
-                label, x, y, p, max_number_of_times_timer_tic_over_ran)))
-
-        return data_items
+        return [
+            ProvenanceDataItem(
+                names + [self._TIMES_TRANSMISSION_SPIKES_OVERRAN], tx_overflow,
+                report=(tx_overflow != 0),
+                message=self._TIMES_TRANSMISSION_SPIKES_OVERRAN_MESSAGE.format(
+                    label, x, y, p, tx_overflow)),
+            ProvenanceDataItem(
+                names + [self._TIMES_CALLBACK_QUEUE_OVERLOADED],
+                callback_overload,
+                report=(callback_overload != 0),
+                message=self._TIMES_CALLBACK_QUEUE_OVERLOADED_MESSAGE.format(
+                    label, x, y, p, callback_overload)),
+            ProvenanceDataItem(
+                names + [self._TIMES_DMA_QUEUE_OVERLOADED], dma_overload,
+                report=(dma_overload != 0),
+                message=self._TIMES_DMA_QUEUE_OVERLOADED_MESSAGE.format(
+                    label, x, y, p, dma_overload)),
+            ProvenanceDataItem(
+                names + [self._TIMER_TICK_OVERRUN], tic_overrun_count,
+                report=(tic_overrun_count != 0),
+                message=self._TIMER_TICK_OVERRUN_MESSAGE.format(
+                    label, x, y, p, tic_overrun_count)),
+            ProvenanceDataItem(
+                names + [self._MAX_TIMER_TICK_OVERRUN], tic_overrun_max,
+                report=(tic_overrun_max > 0),
+                message=self._MAX_TIMER_TICK_OVERRUN_MESSAGE.format(
+                    label, x, y, p, tic_overrun_max))]
 
     def _get_remaining_provenance_data_items(self, provenance_data):
         """

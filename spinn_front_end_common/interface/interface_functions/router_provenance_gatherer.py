@@ -189,10 +189,12 @@ class RouterProvenanceGatherer(object):
             self._add_router_table_diagnostic(
                 router_table, seen_chips, items, reinjection_data)
 
+        # Get what info we can for chips where there are problems or no table
         for chip in progress.over(sorted(
                 self._machine.chips, key=lambda c: (c.x, c.y))):
-            self._add_router_chip_diagnostic(
-                chip, seen_chips, items, reinjection_data)
+            if not chip.virtual and (chip.x, chip.y) not in seen_chips:
+                self._add_unseen_router_chip_diagnostic(
+                    chip, items, reinjection_data)
 
     def _add_router_table_diagnostic(
             self, table, seen_chips, items, reinjection_data):
@@ -214,15 +216,13 @@ class RouterProvenanceGatherer(object):
                     x, y, exc_info=True)
                 return
             seen_chips.add((x, y))
-            status = None
-            if reinjection_data is not None:
-                status = reinjection_data[x, y]
+            status = self.__get_status(reinjection_data, x, y)
             items.extend(self.__router_diagnostics(
                 x, y, diagnostics, status, True, table))
             self.__add_totals(diagnostics, status)
 
-    def _add_router_chip_diagnostic(
-            self, chip, seen_chips, items, reinjection_data):
+    def _add_unseen_router_chip_diagnostic(
+            self, chip, items, reinjection_data):
         """
         :param ~.Chip chip:
         :param set(tuple(int,int)) seen_chips:
@@ -230,21 +230,31 @@ class RouterProvenanceGatherer(object):
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
         """
         # pylint: disable=bare-except
-        if not chip.virtual and (chip.x, chip.y) not in seen_chips:
-            try:
-                diagnostics = self._txrx.get_router_diagnostics(chip.x, chip.y)
-            except:  # noqa: E722
-                # There could be issues with unused chips - don't worry!
-                return
-            if (diagnostics.n_dropped_multicast_packets or
-                    diagnostics.n_local_multicast_packets or
-                    diagnostics.n_external_multicast_packets):
-                status = None
-                if reinjection_data is not None:
-                    status = reinjection_data[chip.x, chip.y]
-                items.extend(self.__router_diagnostics(
-                    chip.x, chip.y, diagnostics, status, False, None))
-                self.__add_totals(diagnostics, status)
+        try:
+            diagnostics = self._txrx.get_router_diagnostics(chip.x, chip.y)
+        except:  # noqa: E722
+            # There could be issues with unused chips - don't worry!
+            return
+        if (diagnostics.n_dropped_multicast_packets or
+                diagnostics.n_local_multicast_packets or
+                diagnostics.n_external_multicast_packets):
+            status = self.__get_status(reinjection_data, chip.x, chip.y)
+            items.extend(self.__router_diagnostics(
+                chip.x, chip.y, diagnostics, status, False, None))
+            self.__add_totals(diagnostics, status)
+
+    @staticmethod
+    def __get_status(reinjection_data, x, y):
+        """
+        :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
+        :param int x:
+        :param int y:
+        :rtype: ReInjectionStatus or None
+        """
+        status = None
+        if reinjection_data is not None:
+            status = reinjection_data[x, y]
+        return status
 
     def __add_totals(self, diagnostics, status):
         """
@@ -264,17 +274,6 @@ class RouterProvenanceGatherer(object):
         else:
             self._total_lost_dropped_packets += (
                 diagnostics.n_dropped_multicast_packets)
-
-    @staticmethod
-    def __add_name(names, name):
-        """
-        :param list(str) names:
-        :param str name:
-        :rtype: list(str)
-        """
-        new_names = list(names)
-        new_names.append(name)
-        return new_names
 
     def __router_diagnostics(self, x, y, diagnostics, status, expected, table):
         """ Describes the router diagnostics for one router.
@@ -298,10 +297,10 @@ class RouterProvenanceGatherer(object):
         names.append("router_at_chip_{}_{}".format(x, y))
 
         yield ProvenanceDataItem(
-            self.__add_name(names, "Local_Multicast_Packets"),
+            names + ["Local_Multicast_Packets"],
             diagnostics.n_local_multicast_packets)
         yield ProvenanceDataItem(
-            self.__add_name(names, "External_Multicast_Packets"),
+            names + ["External_Multicast_Packets"],
             diagnostics.n_external_multicast_packets)
 
         # simplify the if by making components of it outside.
@@ -316,22 +315,20 @@ class RouterProvenanceGatherer(object):
                 status.n_link_dumps) < diagnostics.n_dropped_multicast_packets)
 
         yield ProvenanceDataItem(
-            self.__add_name(names, "Dropped_Multicast_Packets"),
+            names + ["Dropped_Multicast_Packets"],
             diagnostics.n_dropped_multicast_packets,
             report=((has_dropped and not has_reinjection) or (
                 has_dropped and has_reinjection and missing_stuff)),
             message=self.__DROPPED_MC_MSG.format(
                 x, y, diagnostics.n_dropped_multicast_packets))
         yield ProvenanceDataItem(
-            self.__add_name(
-                names, "Dropped_Multicast_Packets_via_local_transmission"),
+            names + ["Dropped_Multicast_Packets_via_local_transmission"],
             diagnostics.user_3,
             report=(diagnostics.user_3 > 0),
             message=self.__DROPPED_LOCAL_MC_MSG.format(
                 x, y, diagnostics.user_3))
         yield ProvenanceDataItem(
-            self.__add_name(
-                names, "default_routed_external_multicast_packets"),
+            names + ["default_routed_external_multicast_packets"],
             diagnostics.user_2,
             report=(diagnostics.user_2 > 0 and not (
                 table and table.number_of_defaultable_entries)),
@@ -339,39 +336,39 @@ class RouterProvenanceGatherer(object):
 
         if table:
             yield ProvenanceDataItem(
-                self.__add_name(names, "Entries"), table.number_of_entries)
+                names + ["Entries"], table.number_of_entries)
             routes = set()
             for ent in table.multicast_routing_entries:
                 routes.add(ent.spinnaker_route)
             yield ProvenanceDataItem(
-                self.__add_name(names, "Unique_Routes"), len(routes))
+                names + ["Unique_Routes"], len(routes))
 
         yield ProvenanceDataItem(
-            self.__add_name(names, "Local_P2P_Packets"),
+            names + ["Local_P2P_Packets"],
             diagnostics.n_local_peer_to_peer_packets)
         yield ProvenanceDataItem(
-            self.__add_name(names, "External_P2P_Packets"),
+            names + ["External_P2P_Packets"],
             diagnostics.n_external_peer_to_peer_packets)
         yield ProvenanceDataItem(
-            self.__add_name(names, "Dropped_P2P_Packets"),
+            names + ["Dropped_P2P_Packets"],
             diagnostics.n_dropped_peer_to_peer_packets)
         yield ProvenanceDataItem(
-            self.__add_name(names, "Local_NN_Packets"),
+            names + ["Local_NN_Packets"],
             diagnostics.n_local_nearest_neighbour_packets)
         yield ProvenanceDataItem(
-            self.__add_name(names, "External_NN_Packets"),
+            names + ["External_NN_Packets"],
             diagnostics.n_external_nearest_neighbour_packets)
         yield ProvenanceDataItem(
-            self.__add_name(names, "Dropped_NN_Packets"),
+            names + ["Dropped_NN_Packets"],
             diagnostics.n_dropped_nearest_neighbour_packets)
         yield ProvenanceDataItem(
-            self.__add_name(names, "Local_FR_Packets"),
+            names + ["Local_FR_Packets"],
             diagnostics.n_local_fixed_route_packets)
         yield ProvenanceDataItem(
-            self.__add_name(names, "External_FR_Packets"),
+            names + ["External_FR_Packets"],
             diagnostics.n_external_fixed_route_packets)
         yield ProvenanceDataItem(
-            self.__add_name(names, "Dropped_FR_Packets"),
+            names + ["Dropped_FR_Packets"],
             diagnostics.n_dropped_fixed_route_packets,
             report=(diagnostics.n_dropped_fixed_route_packets > 0),
             message=self.__DROPPED_FR_MSG.format(
@@ -379,54 +376,47 @@ class RouterProvenanceGatherer(object):
 
         if status is not None:
             yield ProvenanceDataItem(
-                self.__add_name(names, "Received_For_Reinjection"),
-                status.n_dropped_packets)
+                names + ["Received_For_Reinjection"], status.n_dropped_packets)
             yield ProvenanceDataItem(
-                self.__add_name(names, "Missed_For_Reinjection"),
+                names + ["Missed_For_Reinjection"],
                 status.n_missed_dropped_packets,
                 report=(status.n_missed_dropped_packets > 0),
                 message=self.__MONITOR_MISSED_MSG.format(
                     x, y, status.n_missed_dropped_packets))
             yield ProvenanceDataItem(
-                self.__add_name(names, "Reinjection_Overflows"),
+                names + ["Reinjection_Overflows"],
                 status.n_dropped_packet_overflows,
                 report=(status.n_dropped_packet_overflows > 0),
                 message=self.__MONITOR_DROPPED_MSG.format(
                     x, y, status.n_dropped_packet_overflows))
             yield ProvenanceDataItem(
-                self.__add_name(names, "Reinjected"),
-                status.n_reinjected_packets)
+                names + ["Reinjected"], status.n_reinjected_packets)
             yield ProvenanceDataItem(
-                self.__add_name(names, "Dumped_from_a_Link"),
-                status.n_link_dumps,
-                report=(status.n_link_dumps > 0 and
-                        self._has_virtual_chip_connected(self._machine, x, y)),
+                names + ["Dumped_from_a_Link"], status.n_link_dumps,
+                report=(
+                    status.n_link_dumps > 0 and
+                    self.__has_virtual_chip_connected(x, y)),
                 message=self.__MONITOR_DUMPED_LINK_MSG.format(
                     x, y, status.n_link_dumps))
             yield ProvenanceDataItem(
-                self.__add_name(names, "Dumped_from_a_processor"),
-                status.n_processor_dumps,
+                names + ["Dumped_from_a_processor"], status.n_processor_dumps,
                 report=(status.n_processor_dumps > 0),
                 message=self.__MONITOR_DUMPED_PROC_MSG.format(
                     x, y, status.n_processor_dumps))
 
         yield ProvenanceDataItem(
-            self.__add_name(names, "Error status"),
-            diagnostics.error_status,
+            names + ["Error status"], diagnostics.error_status,
             report=(diagnostics.error_status > 0),
             message=self.__ROUTER_ERR_MSG.format(
                 x, y, diagnostics.errors_set, diagnostics.error_count))
 
-    @staticmethod
-    def _has_virtual_chip_connected(machine, x, y):
+    def __has_virtual_chip_connected(self, x, y):
         """
-        :param ~.Machine machine:
         :param int x:
         :param int y:
         :rtype: bool
         """
-        for link in machine.get_chip_at(x, y).router.links:
-            if machine.get_chip_at(
-                    link.destination_x, link.destination_y).virtual:
-                return True
-        return False
+        return any(
+            self._machine.get_chip_at(
+                link.destination_x, link.destination_y).virtual
+            for link in self._machine.get_chip_at(x, y).router.links)

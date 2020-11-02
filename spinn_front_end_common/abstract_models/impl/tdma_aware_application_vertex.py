@@ -15,9 +15,6 @@
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
-from spinn_front_end_common.interface.provenance.\
-    provides_provenance_data_from_machine_impl import (
-        add_name)
 
 # The number of clock cycles per nanosecond
 _CLOCKS_PER_NS = 200
@@ -154,7 +151,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         :rtype: ProvenanceDataItem
         """
         return ProvenanceDataItem(
-            add_name(names, self._TDMA_MISSED_SLOTS_NAME),
-            tdma_slots_missed, report=tdma_slots_missed > 0,
+            names + [self._TDMA_MISSED_SLOTS_NAME], tdma_slots_missed,
+            report=(tdma_slots_missed > 0),
             message=self._TDMA_MISSED_SLOTS_MESSAGE.format(
                 tdma_slots_missed, x, y, p))

@@ -110,9 +110,6 @@ class MachineBitFieldRouterCompressor(object):
     #: how many header elements are in the region addresses (1, n addresses)
     N_REGIONS_ELEMENT = 1
 
-    # the number of bytes needed to read the user 2 register
-    _USER_BYTES = 4
-
     #: min size a heap object needs in sdram. (limit on the size of useful
     #: sdram regions to steal)
     _MIN_SIZE_FOR_HEAP = 32
@@ -132,23 +129,25 @@ class MachineBitFieldRouterCompressor(object):
 
     _ONE_WORDS = struct.Struct("<I")
 
+    # the number of bytes needed to read a user register
+    _USER_BYTES = _ONE_WORDS.size
+
     # binary names
     _BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX = \
         "bit_field_sorter_and_searcher.aplx"
 
-    _PROGRESS_BAR_TEXT = \
-        "on chip compressing routing tables and merging in bitfields as " \
-        "appropriate"
-    _HOST_BAR_TEXT = \
-        "on host compressing routing tables and merging in bitfields as " \
-        "appropriate"
-    _ON_CHIP_ERROR_MESSAGE = \
-        "The router compressor with bit field on {}, {} failed to complete. " \
-        "Will execute host based routing compression instead"
-
-    _ON_HOST_WARNING_MESSAGE = \
-        "Will be executing compression for {} chips on the host, as they " \
-        "failed to complete when running on chip"
+    _PROGRESS_BAR_TEXT = (
+        "on chip compressing routing tables and merging in bitfields as "
+        "appropriate")
+    _HOST_BAR_TEXT = (
+        "on host compressing routing tables and merging in bitfields as "
+        "appropriate")
+    _ON_CHIP_ERROR_MESSAGE = (
+        "The router compressor with bit field on {}, {} failed to complete. "
+        "Will execute host based routing compression instead")
+    _ON_HOST_WARNING_MESSAGE = (
+        "Will be executing compression for {} chips on the host, as they "
+        "failed to complete when running on chip")
 
     def __call__(
             self, routing_tables, transceiver, machine, app_id,
@@ -383,32 +382,24 @@ class MachineBitFieldRouterCompressor(object):
             x = core_subset.x
             y = core_subset.y
 
-            # prov names
-            names = list()
-            names.append(PROV_TOP_NAME)
-            names.append(PROV_CHIP_NAME.format(x, y))
-            names.append(MERGED_NAME)
-
             for p in core_subset.processor_ids:
-
                 # Read the result from USER1/USER2 registers
                 user_1_base_address = \
                     transceiver.get_user_1_register_address_from_core(p)
                 user_2_base_address = \
                     transceiver.get_user_2_register_address_from_core(p)
-                result = struct.unpack(
-                    "<I", transceiver.read_memory(
-                        x, y, user_1_base_address, self._USER_BYTES))[0]
-                total_bit_fields_merged = struct.unpack(
-                    "<I", transceiver.read_memory(
-                        x, y, user_2_base_address, self._USER_BYTES))[0]
-
+                result, = self._ONE_WORDS.unpack(transceiver.read_memory(
+                    x, y, user_1_base_address, self._USER_BYTES))
                 if result != self.SUCCESS:
                     if (x, y) not in host_chips:
                         host_chips.append((x, y))
                     return False
+                total_merged, = self._ONE_WORDS.unpack(transceiver.read_memory(
+                    x, y, user_2_base_address, self._USER_BYTES))
                 prov_data_items.append(ProvenanceDataItem(
-                    names, str(total_bit_fields_merged)))
+                    [PROV_TOP_NAME, PROV_CHIP_NAME.format(x, y), MERGED_NAME],
+                    total_merged))
+                break
         return True
 
     def _load_data(

@@ -376,5 +376,4 @@ class CommandSenderMachineVertex(
             self, label, location, names, provenance_data):
         # pylint: disable=unused-argument
         n_commands_sent, = provenance_data
-        yield ProvenanceDataItem(
-            self._add_name(names, "Sent_Commands"), n_commands_sent)
+        yield ProvenanceDataItem(names + ["Sent_Commands"], n_commands_sent)
