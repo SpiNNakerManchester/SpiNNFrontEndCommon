@@ -121,7 +121,7 @@ class ReverseIpTagMultiCastSource(
             label, constraints, max_atoms_per_core)
 
         # basic items
-        self._n_atoms = n_keys
+        self._n_atoms = self.round_n_atoms(n_keys, "n_keys")
 
         # Store the parameters for EIEIO
         self._board_address = board_address
