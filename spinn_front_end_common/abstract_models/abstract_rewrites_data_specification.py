@@ -37,13 +37,16 @@ class AbstractRewritesDataSpecification(object):
         """
 
     @abstractmethod
-    def requires_memory_regions_to_be_reloaded(self):
+    def reload_required(self):
         """ Return true if any data region needs to be reloaded
 
         :rtype: bool
         """
 
     @abstractmethod
-    def mark_regions_reloaded(self):
+    def set_reload_required(self, new_value):
         """ Indicate that the regions have been reloaded
+
+        :param new_value:
+        :return:
         """

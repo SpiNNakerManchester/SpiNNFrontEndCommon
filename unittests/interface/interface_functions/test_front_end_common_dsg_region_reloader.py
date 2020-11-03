@@ -75,11 +75,11 @@ class _TestApplicationVertex(
             constraints=None):
         return _TestMachineVertex(label, constraints, self, vertex_slice)
 
-    def requires_memory_regions_to_be_reloaded(self):
+    def reload_required(self):
         return self._requires_regions_to_be_reloaded
 
-    def mark_regions_reloaded(self):
-        self._requires_regions_to_be_reloaded = False
+    def set_reload_required(self, new_value):
+        self._requires_regions_to_be_reloaded = new_value
 
     def regenerate_data_specification(self, spec, placement):
         for region_id, data in self._reload_region_data:

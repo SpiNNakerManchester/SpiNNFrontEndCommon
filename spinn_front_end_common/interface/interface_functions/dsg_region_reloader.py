@@ -85,7 +85,7 @@ class DSGRegionReloader(object):
                 placement, placement.vertex)
             # If the region was regenerated, mark it reloaded
             if generated:
-                placement.vertex.mark_regions_reloaded()
+                placement.vertex.set_reload_required(False)
                 continue
 
             # If the spec wasn't generated directly, but there is an
@@ -103,7 +103,7 @@ class DSGRegionReloader(object):
         # Only reset the application vertices here, otherwise only one
         # machine vertex's data per app vertex will be updated
         for app_vertex in application_vertices_to_reset:
-            app_vertex.mark_regions_reloaded()
+            app_vertex.set_reload_required(False)
 
         # App data directory can be removed as should be empty
         os.rmdir(app_data_dir)
