@@ -76,8 +76,6 @@ class DSGRegionReloader(object):
                 os.makedirs(report_dir)
         self._rpt_dir = report_dir
 
-        application_vertices_to_reset = set()
-
         progress = ProgressBar(placements.n_placements, "Reloading data")
         for placement in progress.over(placements.placements):
             # Try to generate the data spec for the placement
@@ -87,23 +85,6 @@ class DSGRegionReloader(object):
             if generated:
                 placement.vertex.set_reload_required(False)
                 continue
-
-            # If the spec wasn't generated directly, but there is an
-            # application vertex, try with that
-            app_vertex = placement.vertex.app_vertex
-            if app_vertex is not None:
-                generated = self._regenerate_data_spec_for_vertices(
-                    placement, app_vertex)
-
-                # If the region was regenerated, remember the application
-                # vertex for resetting later
-                if generated:
-                    application_vertices_to_reset.add(app_vertex)
-
-        # Only reset the application vertices here, otherwise only one
-        # machine vertex's data per app vertex will be updated
-        for app_vertex in application_vertices_to_reset:
-            app_vertex.set_reload_required(False)
 
         # App data directory can be removed as should be empty
         os.rmdir(app_data_dir)
