@@ -14,6 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from six import add_metaclass
+
+from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
@@ -24,6 +27,16 @@ class AbstractRewritesDataSpecification(object):
     """
 
     __slots__ = ()
+
+    _WRONG_VERTEX_TYPE_ERROR = (
+        "The vertex {} is not of type MachineVertex. By not being a "
+        "machine vertex, the SpiNNFrontEndCommon function DSGRegionReloader "
+        "will not check this vertex")
+
+    def __init__(self, machine_vertex):
+        if not isinstance(machine_vertex, MachineVertex):
+            raise SpinnFrontEndException(
+                self._WRONG_VERTEX_TYPE_ERROR.format(machine_vertex))
 
     @abstractmethod
     def regenerate_data_specification(self, spec, placement):
