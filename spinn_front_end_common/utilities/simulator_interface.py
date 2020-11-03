@@ -44,7 +44,7 @@ class SimulatorInterface(object):
     def config(self):
         """ Provides access to the configuration for front end interfaces.
 
-        :rtype: ~spinn_front_end_common.interface.ConfigHandler
+        :rtype: ~spinn_front_end_common.interface.config_handler.ConfigHandler
         """
 
     @abstractproperty
