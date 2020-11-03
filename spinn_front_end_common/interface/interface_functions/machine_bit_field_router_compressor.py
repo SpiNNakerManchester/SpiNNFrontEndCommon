@@ -34,7 +34,8 @@ from pacman.operations.router_compressors.mundys_router_compressor.\
         get_generality as
         ordered_covering_generality)
 from spinn_front_end_common.interface.interface_functions.\
-    on_chip_router_table_compression.compression import make_source_hack
+    on_chip_router_table_compression import (
+        make_source_hack)
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 from spinn_front_end_common.utilities.exceptions import (
