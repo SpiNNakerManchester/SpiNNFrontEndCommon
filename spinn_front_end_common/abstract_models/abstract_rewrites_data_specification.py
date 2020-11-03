@@ -47,6 +47,6 @@ class AbstractRewritesDataSpecification(object):
     def set_reload_required(self, new_value):
         """ Indicate that the regions have been reloaded
 
-        :param new_value:
-        :return:
+        :param new_value: the new value
+        :rtype: None
         """
