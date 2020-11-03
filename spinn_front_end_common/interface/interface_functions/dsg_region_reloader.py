@@ -100,7 +100,7 @@ class DSGRegionReloader(object):
             return False
 
         # If the vertex doesn't require regeneration, skip
-        if not vertex.requires_memory_regions_to_be_reloaded():
+        if not vertex.reload_required():
             return True
 
         # build the writers for the reports and data
