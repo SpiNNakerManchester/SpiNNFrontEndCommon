@@ -2906,9 +2906,10 @@
             <span class="n">app_provenance_file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_app_provenance_file_path</span><span class="p">,</span>
             <span class="n">system_provenance_file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span><span class="p">)</span>
 
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">add_socket_address</span><span class="p">)</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">add_socket_address</span><span class="p">,</span> <span class="n">extend_doc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <div class="viewcode-block" id="AbstractSpinnakerBase.add_socket_address"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_socket_address">[docs]</a>    <span class="k">def</span> <span class="nf">add_socket_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_address</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot; Add the address of a socket used in the run notification protocol.</span>
+
 <span class="sd">        :param ~spinn_utilities.socket_address.SocketAddress socket_address:</span>
 <span class="sd">            The address of the database socket</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -3085,7 +3086,7 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2014-2017.
+        &#169; Copyright 2014-2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
   </body>

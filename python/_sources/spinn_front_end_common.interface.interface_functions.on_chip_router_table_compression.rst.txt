@@ -1,0 +1,10 @@
+spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression package
+=============================================================================================
+
+Module contents
+---------------
+
+.. automodule:: spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression
+    :members:
+    :undoc-members:
+    :show-inheritance:

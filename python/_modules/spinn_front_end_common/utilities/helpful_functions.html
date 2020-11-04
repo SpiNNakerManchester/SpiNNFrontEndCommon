@@ -190,7 +190,8 @@
     <span class="sd">&quot;&quot;&quot; Flood fills a binary to spinnaker on a given `app_id` \</span>
 <span class="sd">        given the executable targets and binary.</span>
 
-<span class="sd">    :param ExecutableTargets executable_targets: the executable targets object</span>
+<span class="sd">    :param ~spinnman.model.ExecutableTargets executable_targets:</span>
+<span class="sd">        the executable targets object</span>
 <span class="sd">    :param str binary: the (name of the) binary to flood fill</span>
 <span class="sd">    :param ~spinnman.transceiver.Transceiver txrx: spinnman instance</span>
 <span class="sd">    :param int app_id: the application ID to load it as</span>
@@ -474,7 +475,8 @@
 
 <span class="sd">    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.</span>
 <span class="sd">    :param int app_id: The ID of the application.</span>
-<span class="sd">    :param ExecutableTargets executable_targets: The what/where mapping</span>
+<span class="sd">    :param ~spinnman.model.ExecutableTargets executable_targets:</span>
+<span class="sd">        The what/where mapping</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_emergency_state_check</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)</span>
     <span class="n">_emergency_iobuf_extract</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">)</span></div>
@@ -499,7 +501,7 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2014-2017.
+        &#169; Copyright 2014-2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
   </body>

@@ -111,7 +111,8 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">max_atoms_per_core</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str label: The optional name of the vertex.</span>
-<span class="sd">        :param iterable(AbstractConstraint) constraints:</span>
+<span class="sd">        :param iterable(~pacman.model.constraints.AbstractConstraint) \</span>
+<span class="sd">                constraints:</span>
 <span class="sd">            The optional initial constraints of the vertex.</span>
 <span class="sd">        :param int max_atoms_per_core: The max number of atoms that can be</span>
 <span class="sd">            placed on a core, used in partitioning.</span>
@@ -243,7 +244,7 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2014-2017.
+        &#169; Copyright 2014-2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
   </body>

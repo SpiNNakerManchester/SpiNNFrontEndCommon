@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="spinn_front_end_common.interface.profiling package" href="spinn_front_end_common.interface.profiling.html" />
+    <link rel="next" title="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression package" href="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.html" />
     <link rel="prev" title="spinn_front_end_common.interface.ds package" href="spinn_front_end_common.interface.ds.html" /> 
   </head>
   <body role="document">
@@ -40,7 +40,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="spinn_front_end_common.interface.profiling.html" title="spinn_front_end_common.interface.profiling package"
+          <a href="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.html" title="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression package"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="spinn_front_end_common.interface.ds.html" title="spinn_front_end_common.interface.ds package"
@@ -66,8 +66,8 @@
   <p class="topless"><a href="spinn_front_end_common.interface.ds.html"
                         title="previous chapter">spinn_front_end_common.interface.ds package</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="spinn_front_end_common.interface.profiling.html"
-                        title="next chapter">spinn_front_end_common.interface.profiling package</a></p>
+  <p class="topless"><a href="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.html"
+                        title="next chapter">spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression package</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -98,6 +98,12 @@
 <div class="section" id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.html">spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.html#module-spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression">Module contents</a></li>
+</ul>
+</li>
+</ul>
 </div>
 </div>
 <div class="section" id="module-spinn_front_end_common.interface.interface_functions">
@@ -144,8 +150,8 @@
 <li><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
 <li><strong>no_sync_changes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; Number of synchronisation changes</li>
 <li><strong>time_threshold</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>machine</strong> (<em>Machine</em>) &#8211; the spinn machine instance</li>
 <li><strong>run_until_complete</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; </li>
-<li><strong>Machine</strong> &#8211; the spinn machine instance</li>
 </ul>
 </td>
 </tr>
@@ -244,7 +250,7 @@ and where any java provenance can be written.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; </li>
-<li><strong>executable_targets</strong> (<em>ExecutableTargets</em>) &#8211; </li>
+<li><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v)"><em>ExecutableTargets</em></a>) &#8211; </li>
 <li><strong>executable_finder</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableFinder" title="spinn_front_end_common.utilities.utility_objs.ExecutableFinder"><em>ExecutableFinder</em></a>) &#8211; </li>
 <li><strong>app_provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; </li>
 <li><strong>system_provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; </li>
@@ -936,7 +942,7 @@ that each chip should have</li>
 <li><strong>region_sizes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; the coord for region sizes for each core</li>
 <li><strong>dsg_targets</strong> (<a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataSpecificationTargets" title="spinn_front_end_common.interface.ds.DataSpecificationTargets"><em>DataSpecificationTargets</em></a>) &#8211; map of placement to file path</li>
 <li><strong>uses_advanced_monitors</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; whether to use fast data in protocol</li>
-<li><strong>executable_targets</strong> (<em>ExecutableTargets</em>) &#8211; what core will running what binary</li>
+<li><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v)"><em>ExecutableTargets</em></a>) &#8211; what core will running what binary</li>
 <li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; where vertices are located</li>
 <li><strong>extra_monitor_cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em><em></em>) &#8211; the deployed extra monitors, if any</li>
 <li><strong>extra_monitor_cores_to_ethernet_connection_map</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em><em>, </em><a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex" title="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex"><em>DataSpeedUpPacketGatherMachineVertex</em></a><em>)</em><em></em>) &#8211; how to talk to extra monitor cores</li>
@@ -968,8 +974,8 @@ that each chip should have</li>
 <li><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)"><em>Machine</em></a>) &#8211; the python representation of the spinnaker machine</li>
 <li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the application ID of the simulation</li>
 <li><strong>dsg_targets</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em></em>) &#8211; map of placement to file path</li>
-<li><strong>region_sizes</strong> &#8211; the coord for region sizes for each core</li>
-<li><strong>executable_targets</strong> (<em>ExecutableTargets</em>) &#8211; the map between binaries and locations and executable types</li>
+<li><strong>region_sizes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; the coordinates for region sizes for each core</li>
+<li><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v)"><em>ExecutableTargets</em></a>) &#8211; the map between binaries and locations and executable types</li>
 <li><strong>report_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; </li>
 <li><strong>java_caller</strong> (<a class="reference internal" href="spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller" title="spinn_front_end_common.interface.java_caller.JavaCaller"><em>JavaCaller</em></a>) &#8211; </li>
 <li><strong>processor_to_app_data_base_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em><em>,</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.DataWritten" title="spinn_front_end_common.utilities.utility_objs.DataWritten"><em>DataWritten</em></a><em>)</em><em></em>) &#8211; </li>
@@ -1145,7 +1151,7 @@ vertex_to_chip_map</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>executable_targets</strong> (<em>ExecutableTargets</em>) &#8211; </li>
+<li><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v)"><em>ExecutableTargets</em></a>) &#8211; </li>
 <li><strong>filt</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#callable" title="(in Python v3.6)"><em>callable</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType"><em>ExecutableType</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em>)</em><em></em>) &#8211; </li>
 </ul>
 </td>
@@ -1165,7 +1171,7 @@ vertex_to_chip_map</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>executable_targets</strong> (<em>ExecutableTargets</em>) &#8211; </li>
+<li><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v)"><em>ExecutableTargets</em></a>) &#8211; </li>
 <li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; </li>
 </ul>
@@ -1183,7 +1189,7 @@ vertex_to_chip_map</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>executable_targets</strong> (<em>ExecutableTargets</em>) &#8211; </li>
+<li><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v)"><em>ExecutableTargets</em></a>) &#8211; </li>
 <li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; </li>
 </ul>
@@ -1269,6 +1275,21 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <span class="n">Y</span> <span class="ow">is</span> <span class="n">pop1</span> <span class="n">firing</span>
 </pre></div>
 </div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)"><em>MachineGraph</em></a>) &#8211; machine graph.</li>
+<li><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the machine time step.</li>
+<li><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the time scale factor.</li>
+<li><strong>n_keys_map</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.AbstractMachinePartitionNKeysMap" title="(in PACMAN v)"><em>AbstractMachinePartitionNKeysMap</em></a>) &#8211; the map of partitions to n keys.</li>
+<li><strong>application_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v)"><em>ApplicationGraph</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; app graph.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="attribute">
 <dt id="spinn_front_end_common.interface.interface_functions.LocalTDMABuilder.FRACTION_OF_TIME_FOR_SPIKE_SENDING">
 <code class="descname">FRACTION_OF_TIME_FOR_SPIKE_SENDING</code><em class="property"> = 0.8</em><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.LocalTDMABuilder.FRACTION_OF_TIME_FOR_SPIKE_SENDING" title="Permalink to this definition">¶</a></dt>
@@ -1339,15 +1360,15 @@ or <a class="reference external" href="https://docs.python.org/3.6/library/stdty
 <li><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)"><em>MachineGraph</em></a>) &#8211; machine graph</li>
 <li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; placements on machine</li>
 <li><strong>executable_finder</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableFinder" title="spinn_front_end_common.utilities.utility_objs.ExecutableFinder"><em>ExecutableFinder</em></a>) &#8211; where are binaries are located</li>
-<li><strong>write_compressor_iobuf</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; flag saying if read iobuf</li>
+<li><strong>write_compressor_iobuf</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; flag saying if read IOBUF</li>
 <li><strong>produce_report</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; </li>
 <li><strong>default_report_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; </li>
 <li><strong>use_timer_cut_off</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; </li>
 <li><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
 <li><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
-<li><strong>threshold_percentage</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the percentage of bitfields to do on chip        before its considered a success</li>
-<li><strong>executable_targets</strong> (<em>ExecutableTargets</em>) &#8211; the set of targets and executables</li>
-<li><strong>graph_mapper</strong> &#8211; mapping between graphs (could be none)</li>
+<li><strong>threshold_percentage</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the percentage of bitfields to do on chip
+before its considered a success</li>
+<li><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v)"><em>ExecutableTargets</em></a>) &#8211; the set of targets and executables</li>
 <li><strong>compress_as_much_as_possible</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; whether to compress as much as possible</li>
 <li><strong>provenance_data_objects</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem"><em>ProvenanceDataItem</em></a><em>)</em><em></em>) &#8211; </li>
 </ul>
@@ -1356,7 +1377,7 @@ or <a class="reference external" href="https://docs.python.org/3.6/library/stdty
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">where the compressors ran, and the provenance they generated</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(ExecutableTargets, <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>))</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v)">ExecutableTargets</a>, <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>))</p>
 </td>
 </tr>
 </tbody>
@@ -1577,7 +1598,7 @@ available to steal/use.</li>
 <li><strong>live_packet_gatherer_parameters</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters" title="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters"><em>LivePacketGatherParameters</em></a><em>,
 </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v)"><em>AbstractVertex</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em></em><em>)</em><em></em><em>)</em><em></em><em>)</em><em></em>) &#8211; the LPG parameters requested by the script</li>
 <li><strong>pre_allocated_resources</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.PreAllocatedResourceContainer" title="(in PACMAN v)"><em>PreAllocatedResourceContainer</em></a>) &#8211; other preallocated resources</li>
-<li><strong>machine</strong> (<em>Machine</em>) &#8211; the SpiNNaker machine as discovered</li>
+<li><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)"><em>Machine</em></a>) &#8211; the SpiNNaker machine as discovered</li>
 </ul>
 </td>
 </tr>
@@ -1965,7 +1986,7 @@ between spike transmissions</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="spinn_front_end_common.interface.profiling.html" title="spinn_front_end_common.interface.profiling package"
+          <a href="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.html" title="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression package"
              >next</a> |</li>
         <li class="right" >
           <a href="spinn_front_end_common.interface.ds.html" title="spinn_front_end_common.interface.ds package"
@@ -1977,7 +1998,7 @@ between spike transmissions</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2014-2017.
+        &#169; Copyright 2014-2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
   </body>

@@ -143,6 +143,17 @@
 <span class="sd">        T4 is the spreader between populations.</span>
 <span class="sd">        X is pop0 firing,</span>
 <span class="sd">        Y is pop1 firing</span>
+
+<span class="sd">    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">        machine graph.</span>
+<span class="sd">    :param int machine_time_step: the machine time step.</span>
+<span class="sd">    :param int time_scale_factor: the time scale factor.</span>
+<span class="sd">    :param n_keys_map: the map of partitions to n keys.</span>
+<span class="sd">    :type n_keys_map:</span>
+<span class="sd">        ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap</span>
+<span class="sd">    :param application_graph: app graph.</span>
+<span class="sd">    :type application_graph:</span>
+<span class="sd">        ~pacman.model.graphs.application.ApplicationGraph or None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># error message for when the vertex TDMA isnt feasible.</span>
@@ -381,7 +392,7 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2014-2017.
+        &#169; Copyright 2014-2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
   </body>

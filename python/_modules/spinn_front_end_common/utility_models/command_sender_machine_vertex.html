@@ -237,7 +237,8 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param int machine_time_step:</span>
 <span class="sd">        :param int time_scale_factor:</span>
-<span class="sd">        :param RoutingInfo routing_infos: the routing infos</span>
+<span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_infos:</span>
+<span class="sd">            the routing infos</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">mc_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">allocated_mc_key</span> <span class="o">=</span> <span class="n">routing_infos</span><span class="o">.</span><span class="n">get_first_key_from_pre_vertex</span><span class="p">(</span>
@@ -461,7 +462,7 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2014-2017.
+        &#169; Copyright 2014-2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
   </body>

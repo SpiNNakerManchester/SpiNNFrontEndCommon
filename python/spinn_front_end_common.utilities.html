@@ -627,7 +627,7 @@ or <cite>None</cite> if the variable is not found.</td>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>txrx</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; The transceiver.</li>
 <li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The ID of the application.</li>
-<li><strong>executable_targets</strong> (<em>ExecutableTargets</em>) &#8211; The what/where mapping</li>
+<li><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v)"><em>ExecutableTargets</em></a>) &#8211; The what/where mapping</li>
 </ul>
 </td>
 </tr>
@@ -659,7 +659,7 @@ or <cite>None</cite> if the variable is not found.</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>executable_targets</strong> (<em>ExecutableTargets</em>) &#8211; the executable targets object</li>
+<li><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v)"><em>ExecutableTargets</em></a>) &#8211; the executable targets object</li>
 <li><strong>binary</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the (name of the) binary to flood fill</li>
 <li><strong>txrx</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; spinnman instance</li>
 <li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the application ID to load it as</li>
@@ -919,22 +919,22 @@ or <cite>None</cite> if the variable is not found.</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>executable_cores</strong> (<em>ExecutableTargets</em>) &#8211; the cores to run the executable on</li>
+<li><strong>executable_cores</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v)"><em>ExecutableTargets</em></a>) &#8211; the cores to run the executable on</li>
 <li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the app-id for the executable</li>
-<li><strong>transceiver</strong> (<em>Transceiver</em>) &#8211; the SpiNNMan instance</li>
+<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the SpiNNMan instance</li>
 <li><strong>provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the path for where provenance data is stored</li>
 <li><strong>executable_finder</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableFinder" title="spinn_front_end_common.utilities.utility_objs.ExecutableFinder"><em>ExecutableFinder</em></a>) &#8211; finder for executable paths</li>
 <li><strong>read_algorithm_iobuf</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; whether to report IOBUFs</li>
 <li><strong>check_for_success_function</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#callable" title="(in Python v3.6)"><em>callable</em></a>) &#8211; function used to check success;
 expects <cite>executable_cores</cite>, <cite>transceiver</cite> as inputs</li>
-<li><strong>cpu_end_states</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#set" title="(in Python v3.6)"><em>set</em></a><em>(</em><em>CPUState</em><em>)</em><em></em>) &#8211; the states that a successful run is expected to terminate in</li>
+<li><strong>cpu_end_states</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#set" title="(in Python v3.6)"><em>set</em></a><em>(</em><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model.enums/#spinnman.model.enums.CPUState" title="(in SpiNNMan v)"><em>CPUState</em></a><em>)</em><em></em>) &#8211; the states that a successful run is expected to terminate in</li>
 <li><strong>needs_sync_barrier</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; whether a sync barrier is needed</li>
 <li><strong>filename_template</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the IOBUF filename template.</li>
 <li><strong>binaries_to_track</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em></em>) &#8211; A list of binary names to check for exit state.
 Or <cite>None</cite> for all binaries</li>
 <li><strong>progress_bar</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.progress_bar.ProgressBar" title="(in SpiNNUtils v)"><em>ProgressBar</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; Possible progress bar to update.
 end() will be called after state checked</li>
-<li><strong>logger</strong> &#8211; If provided and iobuf is extracted, will be used to log errors and
+<li><strong>logger</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/logging.html#logging.Logger" title="(in Python v3.6)"><em>Logger</em></a>) &#8211; If provided and IOBUF is extracted, will be used to log errors and
 warnings</li>
 </ul>
 </td>
@@ -996,7 +996,7 @@ warnings</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ConfigHandler</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler" title="spinn_front_end_common.interface.config_handler.ConfigHandler">ConfigHandler</a></td>
 </tr>
 </tbody>
 </table>
@@ -1202,7 +1202,7 @@ run_forever</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ConfigHandler</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler" title="spinn_front_end_common.interface.config_handler.ConfigHandler">ConfigHandler</a></td>
 </tr>
 </tbody>
 </table>
@@ -1396,7 +1396,7 @@ run_forever</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2014-2017.
+        &#169; Copyright 2014-2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
   </body>
