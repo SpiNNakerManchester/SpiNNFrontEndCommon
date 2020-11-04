@@ -173,7 +173,8 @@ class CommandSenderMachineVertex(
         """
         :param int machine_time_step:
         :param int time_scale_factor:
-        :param RoutingInfo routing_infos: the routing infos
+        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+            the routing infos
         """
         for mc_key in self._keys_to_partition_id.keys():
             allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(

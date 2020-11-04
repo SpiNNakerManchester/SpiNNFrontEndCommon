@@ -135,13 +135,14 @@ class BufferManager(object):
         :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices
         :param ~spinnman.transceiver.Transceiver transceiver:
             The transceiver to use for sending and receiving information
-        :param extra_monitor_cores:
+        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+            The monitors.
         :param packet_gather_cores_to_ethernet_connection_map:
             mapping of cores to the gatherer vertex placed on them
         :type packet_gather_cores_to_ethernet_connection_map:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
         :param extra_monitor_to_chip_mapping:
-        :type exra_monitor_to_chip_mapping:
+        :type extra_monitor_to_chip_mapping:
             dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
         :param ~spinn_machine.Machine machine:
         :param fixed_routes:
@@ -151,7 +152,7 @@ class BufferManager(object):
             The directory for reports which includes the file to use as an SQL
             database.
         :param JavaCaller java_caller:
-            Support class to call Java, or None to use python
+            Support class to call Java, or ``None`` to use Python
         """
         # pylint: disable=too-many-arguments
         self._placements = placements
