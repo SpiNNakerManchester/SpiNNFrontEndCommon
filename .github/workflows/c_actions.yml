@@ -77,7 +77,7 @@ jobs:
       # Note: run this before building to avoid linting modified_src directories
       run: |
         support/run-vera.sh c_common/front_end_common_lib
-        support/run-vera.sh c_common/models/*/src
+        support/run-vera.sh c_common/models
 
     - name: Build C code
       run: |
