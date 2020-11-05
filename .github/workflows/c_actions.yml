@@ -84,7 +84,7 @@ jobs:
       run: |
         support/run-vera.sh c_common/front_end_common_lib/include
         support/run-vera.sh c_common/front_end_common_lib/src
-        support/run-vera.sh c_common/models
+        support/run-vera.sh c_common/models/*/src
         
     - name: Build documentation using doxygen
       run: |
