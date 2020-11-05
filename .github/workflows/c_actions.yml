@@ -82,7 +82,8 @@ jobs:
         
     - name: Lint C code using Vera++
       run: |
-        support/run-vera.sh c_common/front_end_common_lib
+        support/run-vera.sh c_common/front_end_common_lib/include
+        support/run-vera.sh c_common/front_end_common_lib/src
         support/run-vera.sh c_common/models
         
     - name: Build documentation using doxygen
