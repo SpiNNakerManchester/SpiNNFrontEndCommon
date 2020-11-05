@@ -68,8 +68,8 @@ jobs:
       run: python setup.py install
       working-directory: SpiNNMan
 
-    - name: Install pacman requirements-test
-      run: pip install -r requirements-test.txt
+    - name: Install pacman requirements
+      run: pip install -r requirements.txt
       working-directory: PACMAN
 
     - name: Install PACMAN
