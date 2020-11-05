@@ -63,6 +63,7 @@ jobs:
         make -C $SPINN_DIRS
         make -C spinn_common install
         make -C c_common doxysetup
+        CFLAGS=-fdiagnostics-color make -C c_common
         
     - name: Lint C code using Vera++
       run: |
