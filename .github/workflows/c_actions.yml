@@ -73,19 +73,19 @@ jobs:
     - name: Install vera++ and doxygen
       run: sudo apt-get update && sudo apt-get install vera++ doxygen --fix-missing
     
+    - name: Lint C code using Vera++
+      # Note: run this before building to avoid linting modified_src directories
+      run: |
+        support/run-vera.sh c_common/front_end_common_lib
+        support/run-vera.sh c_common/models/*/src
+
     - name: Build C code
       run: |
         make -C $SPINN_DIRS
         make -C spinn_common install
         make -C c_common doxysetup
         CFLAGS=-fdiagnostics-color make -C c_common
-        
-    - name: Lint C code using Vera++
-      run: |
-        support/run-vera.sh c_common/front_end_common_lib/include
-        support/run-vera.sh c_common/front_end_common_lib/src
-        support/run-vera.sh c_common/models/*/src
-        
+                
     - name: Build documentation using doxygen
       run: |
         make -C c_common doxygen
