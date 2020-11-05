@@ -24,8 +24,17 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    # Note: Python is needed for spinn_utilities.make_tools when building
+    strategy:
+      matrix:
+        python-version: [3.6]
 
     steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+        
     - name: Checkout
       uses: actions/checkout@v2
 
