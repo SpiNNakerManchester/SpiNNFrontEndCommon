@@ -88,7 +88,7 @@ jobs:
     - name: Preinstall requirements (2.7 Only)
       if: matrix.python-version == 2.7
       run: |
-        pip install -r requirements-test.txt
+        pip install -r requirements.txt
 
     - name: Setup
       run: |
