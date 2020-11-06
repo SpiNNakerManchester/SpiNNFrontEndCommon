@@ -68,7 +68,8 @@ jobs:
       run: python setup.py install
       working-directory: SpiNNMan
 
-    - name: Install pacman requirements
+    - name: Preinstall pacman requirements (2.7 only)
+      if: matrix.python-version == 2.7
       run: pip install -r requirements.txt
       working-directory: PACMAN
 
@@ -84,13 +85,18 @@ jobs:
       run: python setup.py install
       working-directory: spalloc
 
-    - name: Install requirements-test
+    - name: Preinstall requirements (2.7 Only)
+      if: matrix.python-version == 2.7
       run: |
         pip install -r requirements-test.txt
 
     - name: Setup
       run: |
         python setup.py develop
+
+    - name: Install requirements-test
+      run: |
+        pip install -r requirements-test.txt
 
     - name: Test with pytest and coverage
       if: matrix.python-version == 3.6
@@ -120,8 +126,7 @@ jobs:
         support/rat.sh run
 
     - name: Build documentation with sphinx
-      # Should be == 3.6 but currently
-      if: matrix.python-version == 13.6
+      if: matrix.python-version == 3.6
       run: |
         cd doc/source
         sphinx-build -W -T -E -b html -d _build/doctrees-readthedocsdirhtml -D language=en . _build/html
