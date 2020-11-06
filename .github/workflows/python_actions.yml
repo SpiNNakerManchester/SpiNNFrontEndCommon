@@ -114,6 +114,8 @@ jobs:
         flake8 spinn_front_end_common unittests
 
     - name: Lint with pylint
+      # Broken in 2.7 as it can not find data_specification.exceptions
+      if: matrix.python-version != 2.7
       # Note that there's special conditioning of the return code of pylint
       run: |
         pylint --version
