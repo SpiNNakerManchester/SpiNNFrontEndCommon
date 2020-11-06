@@ -110,6 +110,7 @@ jobs:
     - name: Lint with pylint
       # Note that there's special conditioning of the return code of pylint
       run: |
+        pylint --version
         pylint --output-format=colorized --disable=R,C spinn_front_end_common || exit $(($? & 35))
 
     - name: Run rat copyright enforcement
@@ -119,7 +120,8 @@ jobs:
         support/rat.sh run
 
     - name: Build documentation with sphinx
-      if: matrix.python-version == 3.6
+      # Should be == 3.6 but currently
+      if: matrix.python-version == 13.6
       run: |
         cd doc/source
         sphinx-build -W -T -E -b html -d _build/doctrees-readthedocsdirhtml -D language=en . _build/html
