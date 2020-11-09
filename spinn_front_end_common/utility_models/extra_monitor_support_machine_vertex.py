@@ -415,7 +415,9 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterTimeoutProcess(
-            transceiver.scamp_connection_selector)
+            transceiver.scamp_connection_selector,
+            n_channels=self._n_channels,
+            intermediate_channel_waits=self._intermediate_channel_waits)
         try:
             process.set_wait1_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
@@ -474,7 +476,10 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
-        process = ResetCountersProcess(transceiver.scamp_connection_selector)
+        process = ResetCountersProcess(
+            transceiver.scamp_connection_selector,
+            n_channels=self._n_channels,
+            intermediate_channel_waits=self._intermediate_channel_waits)
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722
@@ -523,7 +528,10 @@ class ExtraMonitorSupportMachineVertex(
         :rtype: ReInjectionStatus
         """
         placement = placements.get_placement_of_vertex(self)
-        process = ReadStatusProcess(transceiver.scamp_connection_selector)
+        process = ReadStatusProcess(
+            transceiver.scamp_connection_selector,
+            n_channels=self._n_channels,
+            intermediate_channel_waits=self._intermediate_channel_waits)
         try:
             return process.get_reinjection_status(
                 placement.x, placement.y, placement.p)
@@ -548,7 +556,10 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
-        process = ReadStatusProcess(transceiver.scamp_connection_selector)
+        process = ReadStatusProcess(
+            transceiver.scamp_connection_selector,
+            n_channels=self._n_channels,
+            intermediate_channel_waits=self._intermediate_channel_waits)
         return process.get_reinjection_status_for_core_subsets(core_subsets)
 
     def set_reinjection_packets(
