@@ -26,9 +26,9 @@ class AbstractGeneratesDataSpecification(object):
     def generate_data_specification(self, spec, placement):
         """ Generate a data specification.
 
-        :param spec: The data specification to write to
-        :type spec: ~data_specification.DataSpecificationGenerator
-        :param placement: the placement the vertex is located at
-        :type placement: ~pacman.model.placements.Placement
+        :param ~data_specification.DataSpecificationGenerator spec:
+            The data specification to write to
+        :param ~pacman.model.placements.Placement placement:
+            The placement the vertex is located at
         :rtype: None
         """

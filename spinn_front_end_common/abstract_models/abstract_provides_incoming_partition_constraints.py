@@ -26,12 +26,11 @@ class AbstractProvidesIncomingPartitionConstraints(object):
 
     @abstractmethod
     def get_incoming_partition_constraints(self, partition):
-        """ Get constraints to be added to the given edge that goes in to\
-            a vertex of this vertex.
+        """ Get constraints to be added to the given edge partition that goes\
+            into a vertex of this vertex.
 
-        :param partition: An partition that goes in to this vertex
-        :type partition:\
-            ~pacman.model.graphs.AbstractOutgoingEdgePartition
+        :param ~pacman.model.graphs.OutgoingEdgePartition partition:
+            An partition that goes in to this vertex
         :return: A list of constraints
         :rtype: list(~pacman.model.constraints.AbstractConstraint)
         """

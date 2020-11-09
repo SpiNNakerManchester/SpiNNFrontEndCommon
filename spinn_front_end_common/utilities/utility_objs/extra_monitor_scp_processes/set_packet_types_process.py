@@ -13,13 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinnman.processes import AbstractMultiConnectionProcess
 from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
     import (
         SetReinjectionPacketTypesMessage)
-from spinnman.processes import AbstractMultiConnectionProcess
 
 
 class SetPacketTypesProcess(AbstractMultiConnectionProcess):
+    """ How to send messages to control what messages are reinjected.
+    """
+
     def __init__(
             self, connection_selector, n_channels, intermediate_channel_waits):
         super(SetPacketTypesProcess, self).__init__(
@@ -30,17 +33,12 @@ class SetPacketTypesProcess(AbstractMultiConnectionProcess):
                          nearest_neighbour, fixed_route):
         """ Set what types of packets should be reinjected.
 
-        :param core_subsets: sets of cores to send command to
-        :param point_to_point: If point-to-point should be set
-        :type point_to_point: bool
-        :param multicast: If multicast should be set
-        :type multicast: bool
-        :param nearest_neighbour: If nearest neighbour should be set
-        :type nearest_neighbour: bool
-        :param fixed_route: If fixed route should be set
-        :type fixed_route: bool
-        :param command_code: The SCP command code
-        :rtype: None
+        :param ~spinn_machine.CoreSubsets core_subsets:
+            sets of cores to send command to
+        :param bool point_to_point: If point-to-point should be set
+        :param bool multicast: If multicast should be set
+        :param bool nearest_neighbour: If nearest neighbour should be set
+        :param bool fixed_route: If fixed route should be set
         """
         # pylint: disable=too-many-arguments
         for core_subset in core_subsets.core_subsets:

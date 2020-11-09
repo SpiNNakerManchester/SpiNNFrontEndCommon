@@ -20,6 +20,7 @@ from six.moves import xrange
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.timer import Timer
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
@@ -37,6 +38,7 @@ from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, ConfigurationException, SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
+from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BuffersSentDeque, BufferedReceivingData, ChannelBufferState)
@@ -128,24 +130,29 @@ class BufferManager(object):
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
                  uses_advanced_monitors, report_folder, java_caller=None):
         """
-        :param placements: The placements of the vertices
-        :type placements: ~pacman.model.placements.Placements
-        :param tags: The tags assigned to the vertices
-        :type tags: ~pacman.model.tags.Tags
-        :param transceiver: \
+        :param ~pacman.model.placements.Placements placements:
+            The placements of the vertices
+        :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices
+        :param ~spinnman.transceiver.Transceiver transceiver:
             The transceiver to use for sending and receiving information
-        :type transceiver: ~spinnman.transceiver.Transceiver
+        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+            The monitors.
         :param packet_gather_cores_to_ethernet_connection_map:
             mapping of cores to the gatherer vertex placed on them
-        :type packet_gather_cores_to_ethernet_connection_map: \
-            dict(tuple(int,int),\
-            ~spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex)
-        :param report_folder: The directory for reports which includes the \
-            file to use as an SQL database.
-        :type report_folder: str
-        :param java_caller: Support class to call Java, or None to use python
-        :type java_caller:\
-            ~spinn_front_end_common.interface.java_caller.JavaCaller
+        :type packet_gather_cores_to_ethernet_connection_map:
+            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+        :param extra_monitor_to_chip_mapping:
+        :type extra_monitor_to_chip_mapping:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
+        :param ~spinn_machine.Machine machine:
+        :param fixed_routes:
+        :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
+        :param bool uses_advanced_monitors:
+        :param str report_folder:
+            The directory for reports which includes the file to use as an SQL
+            database.
+        :param JavaCaller java_caller:
+            Support class to call Java, or ``None`` to use Python
         """
         # pylint: disable=too-many-arguments
         self._placements = placements
@@ -192,19 +199,16 @@ class BufferManager(object):
                       length):
         """ Uses the extra monitor cores for data extraction.
 
-        :param transceiver: the spinnman interface
-        :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
-        :param placement_x: \
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnman interface
+        :param int placement_x:
             the placement x coord where data is to be extracted from
-        :type placement_x: int
-        :param placement_y: \
+        :param int placement_y:
             the placement y coord where data is to be extracted from
-        :type placement_y: int
-        :param address: the memory address to start at
-        :type address: int
-        :param length: the number of bytes to extract
-        :type length: int
+        :param int address: the memory address to start at
+        :param int length: the number of bytes to extract
         :return: data as a byte array
+        :rtype: bytearray
         """
         # pylint: disable=too-many-arguments
         if not self._uses_advanced_monitors:
@@ -249,9 +253,9 @@ class BufferManager(object):
     def _receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers.
 
-        :param packet: The EIEIO message received
-        :type packet:\
-            :py:class:`spinnman.messages.eieio.command_messages.eieio_command_message.EIEIOCommandMessage`
+        :param ~spinnman.messages.eieio.command_messages.EIEIOCommandMessage \
+                packet:
+            The EIEIO message received
         """
         # pylint: disable=broad-except
         if isinstance(packet, SpinnakerRequestBuffers):
@@ -275,6 +279,12 @@ class BufferManager(object):
 
     # Factored out of receive_buffer_command_message to keep code readable
     def __request_buffers(self, packet):
+        """
+        :param \
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestBuffers\
+                packet:
+            The EIEIO message received
+        """
         if not self._finished:
             with self._thread_lock_buffer_in:
                 vertex = self._placements.get_vertex_on_processor(
@@ -286,6 +296,12 @@ class BufferManager(object):
 
     # Factored out of receive_buffer_command_message to keep code readable
     def __request_read_data(self, packet):
+        """
+        :param \
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData\
+                packet:
+            The EIEIO message received
+        """
         if not self._finished:
             # Send an ACK message to stop the core sending more messages
             ack_message_header = SDPHeader(
@@ -302,6 +318,10 @@ class BufferManager(object):
             self._process_buffered_in_packet, packet)
 
     def _create_connection(self, tag):
+        """
+        :param ~spinn_machine.tags.IPTag tag:
+        :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
+        """
         connection = self._transceiver.register_udp_listener(
             self._receive_buffer_command_message, EIEIOConnection,
             local_port=tag.port, local_host=tag.ip_address)
@@ -315,6 +335,8 @@ class BufferManager(object):
 
     def _add_buffer_listeners(self, vertex):
         """ Add listeners for buffered data for the given vertex
+
+        :param ~pacman.model.graphs.machine.MachineVertex vertex:
         """
 
         # Find a tag for receiving buffer data
@@ -346,9 +368,7 @@ class BufferManager(object):
         """ Add a vertex into the managed list for vertices which require\
             buffers to be received from them during runtime.
 
-        :param vertex: the vertex to be managed
-        :type vertex:\
-            ~spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost
+        :param AbstractReceiveBuffersToHost vertex: the vertex to be managed
         """
         self._add_buffer_listeners(vertex)
 
@@ -356,9 +376,7 @@ class BufferManager(object):
         """ Add a vertex into the managed list for vertices which require\
             buffers to be sent to them during runtime.
 
-        :param vertex: the vertex to be managed
-        :type vertex:\
-            ~spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost
+        :param AbstractSendsBuffersFromHost vertex: the vertex to be managed
         """
         self._sender_vertices.add(vertex)
         self._add_buffer_listeners(vertex)
@@ -402,20 +420,20 @@ class BufferManager(object):
     def clear_recorded_data(self, x, y, p, recording_region_id):
         """ Removes the recorded data stored in memory.
 
-        :param x: placement x coordinate
-        :type x: int
-        :param y: placement y coordinate
-        :type y: int
-        :param p: placement p coordinate
-        :type p: int
-        :param recording_region_id: the recording region ID
-        :type recording_region_id: int
+        :param int x: placement x coordinate
+        :param int y: placement y coordinate
+        :param int p: placement p coordinate
+        :param int recording_region_id: the recording region ID
         """
         self._received_data.clear(x, y, p, recording_region_id)
 
     def _generate_end_buffering_state_from_machine(
             self, placement, state_region_base_address):
-
+        """
+        :param ~pacman.model.placements.Placement placement:
+        :param int state_region_base_address:
+        :rtype: ChannelBufferState
+        """
         # retrieve channel state memory area
         channel_state_data = self._request_data(
             transceiver=self._transceiver, placement_x=placement.x,
@@ -426,16 +444,12 @@ class BufferManager(object):
     def _create_message_to_send(self, size, vertex, region):
         """ Creates a single message to send with the given boundaries.
 
-        :param size: The number of bytes available for the whole packet
-        :type size: int
-        :param vertex: The vertex to get the keys from
-        :type vertex:\
-            :py:class:`~spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost`
-        :param region: The region of the vertex to get keys from
-        :type region: int
+        :param int size: The number of bytes available for the whole packet
+        :param AbstractSendsBuffersFromHost vertex:
+            The vertex to get the keys from
+        :param int region: The region of the vertex to get keys from
         :return: A new message, or None if no keys can be added
-        :rtype: None or\
-            :py:class:`~spinnman.messages.eieio.data_messages.EIEIODataMessage`
+        :rtype: None or ~spinnman.messages.eieio.data_messages.EIEIODataMessage
         """
 
         # If there are no more messages to send, return None
@@ -465,14 +479,11 @@ class BufferManager(object):
     def _send_initial_messages(self, vertex, region, progress):
         """ Send the initial set of messages.
 
-        :param vertex: The vertex to get the keys from
-        :type vertex:\
-            :py:class:`~spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost`
-        :param region: The region to get the keys from
-        :type region: int
+        :param AbstractSendsBuffersFromHost vertex:
+            The vertex to get the keys from
+        :param int region: The region to get the keys from
         :return: A list of messages
-        :rtype: \
-            list(:py:class:`~spinnman.messages.eieio.data_messages.EIEIODataMessage`)
+        :rtype: list(~spinnman.messages.eieio.data_messages.EIEIODataMessage)
         """
 
         # Get the vertex load details
@@ -535,16 +546,21 @@ class BufferManager(object):
 
     def _send_messages(self, size, vertex, region, sequence_no):
         """ Send a set of messages.
-        """
 
+        :param int size:
+        :param AbstractSendsBuffersFromHost vertex:
+        :param int region:
+        :param int sequence_no:
+        """
         # Get the sent messages for the vertex
         if vertex not in self._sent_messages:
             self._sent_messages[vertex] = BuffersSentDeque(region)
         sent_messages = self._sent_messages[vertex]
 
-        # If the sequence number is outside the window, return no messages
+        # If the sequence number is outside the window, return now with no
+        # messages sent
         if not sent_messages.update_last_received_sequence_number(sequence_no):
-            return list()
+            return
 
         # Remote the existing packets from the size available
         bytes_to_go = size
@@ -595,8 +611,10 @@ class BufferManager(object):
     def _send_request(self, vertex, message):
         """ Sends a request.
 
-        :param vertex: The vertex to send to
-        :param message: The message to send
+        :param AbstractSendsBuffersFromHost vertex: The vertex to send to
+        :param ~spinman.messages.eieio.command_messagesEIEIOCommandMessage \
+                message:
+            The message to send
         """
 
         placement = self._placements.get_placement_of_vertex(vertex)
@@ -617,28 +635,39 @@ class BufferManager(object):
 
     def get_data_for_placements(self, placements, progress=None):
         """
-        :param placements: Where to get the data from.
-        :type placements: ~pacman.model.placements.Placements
+        :param ~pacman.model.placements.Placements placements:
+            Where to get the data from.
         :param progress: How to measure/display the progress.
         :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
+        :rtype int: the number of bytes read back out.
         """
         if self._java_caller is not None:
             self._java_caller.set_placements(placements, self._transceiver)
 
-        with self._thread_lock_buffer_out:
-            if self._java_caller is not None:
-                self._java_caller.get_all_data()
-                if progress:
-                    progress.end()
-                return 0
-            elif self._uses_advanced_monitors:
-                return self.__old_get_data_for_placements_with_monitors(
-                    placements, progress)
-            else:
-                return self.__old_get_data_for_placements(placements, progress)
+        timer = Timer()
+        with timer:
+            with self._thread_lock_buffer_out:
+                if self._java_caller is not None:
+                    self._java_caller.get_all_data()
+                    if progress:
+                        progress.end()
+                    return 0
+                elif self._uses_advanced_monitors:
+                    return self.__old_get_data_for_placements_with_monitors(
+                        placements, progress)
+                else:
+                    return self.__old_get_data_for_placements(
+                        placements, progress)
+        get_simulator().add_extraction_timing(timer.measured_interval)
 
     def __old_get_data_for_placements_with_monitors(
             self, placements, progress):
+        """
+        :param ~pacman.model.placements.Placements placements:
+            Where to get the data from.
+        :param progress: How to measure/display the progress.
+        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
+        """
         # locate receivers
         receivers = list(OrderedSet(
             locate_extra_monitor_mc_receiver(
@@ -660,6 +689,12 @@ class BufferManager(object):
         return total
 
     def __old_get_data_for_placements(self, placements, progress):
+        """
+        :param ~pacman.model.placements.Placements placements:
+            Where to get the data from.
+        :param progress: How to measure/display the progress.
+        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
+        """
         # get data
         total = 0
         for placement in placements:
@@ -674,9 +709,11 @@ class BufferManager(object):
     def get_data_for_vertex(self, placement, recording_region_id):
         """ It is no longer possible to get access to the data pointer.
 
-        Use get_data_by_vertex instead which returns\
-            the data that pointer.read_all() used to return\
-            the missing flag as before
+        .. warning::
+
+            Use :py:meth:`get_data_by_vertex` instead which returns
+            the data that ``pointer.read_all()`` used to return
+            the missing flag as before.
         """
         raise NotImplementedError("Use get_data_by_placement instead!.")
 
@@ -684,11 +721,10 @@ class BufferManager(object):
         """ Get the data container for all the data retrieved\
             during the simulation from a specific region area of a core.
 
-        :param placement: the placement to get the data from
-        :type placement: ~pacman.model.placements.Placement
-        :param recording_region_id: desired recording data region
-        :type recording_region_id: int
-        :return: an array contained all the data received during the\
+        :param ~pacman.model.placements.Placement placement:
+            the placement to get the data from
+        :param int recording_region_id: desired recording data region
+        :return: an array contained all the data received during the
             simulation, and a flag indicating if any data was missing
         :rtype: tuple(bytearray, bool)
         """
@@ -706,10 +742,10 @@ class BufferManager(object):
     def _retreive_by_placement(self, placement, recording_region_id):
         """ Retrieve the data for a vertex; must be locked first.
 
-        :param placement: the placement to get the data from
-        :type placement: ~pacman.model.placements.Placement
-        :param recording_region_id: desired recording data region
-        :type recording_region_id: int
+        :param ~pacman.model.placements.Placement placement:
+            the placement to get the data from
+        :param int recording_region_id: desired recording data region
+        :rtype int: the number of bytes read.
         """
         recording_data_address = \
             placement.vertex.get_recording_region_base_address(
@@ -850,6 +886,12 @@ class BufferManager(object):
         return length
 
     def _process_last_ack(self, placement, region_id, end_state):
+        """
+        :param ~pacman.model.placements.Placement placement:
+        :param int region_id:
+        :param ChannelBufferState end_state:
+        :raises Exception: when something bad happens
+        """
         # if the last ACK packet has not been processed on the chip,
         # process it now
         last_sent_ack = self._received_data.last_sent_packet_to_core(
@@ -884,6 +926,12 @@ class BufferManager(object):
         end_state.set_update_completed()
 
     def _process_buffered_in_packet(self, packet):
+        """
+        :param \
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData\
+                packet:
+        :raises Exception:
+        """
         # pylint: disable=broad-except
         logger.debug(
             "received {} read request(s) with sequence: {},"
@@ -898,16 +946,15 @@ class BufferManager(object):
             logger.warning("problem when handling data", exc_info=True)
 
     def _retrieve_and_store_data(self, packet):
-        """ Following a SpinnakerRequestReadData packet, the data stored\
-            during the simulation needs to be read by the host and stored in\
-            a data structure, following the specifications of buffering out\
+        """ Following a SpinnakerRequestReadData packet, the data stored
+            during the simulation needs to be read by the host and stored in
+            a data structure, following the specifications of buffering out
             technique.
 
-        :param packet: \
+        :param \
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData\
+                packet:
             SpinnakerRequestReadData packet received from the SpiNNaker system
-        :type packet:\
-            :py:class:`~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData`
-        :rtype: None
         """
         x = packet.x
         y = packet.y
@@ -953,6 +1000,16 @@ class BufferManager(object):
         self._transceiver.send_sdp_message(return_message)
 
     def _assemble_ack_packet(self, x, y, p, packet, pkt_seq):
+        """
+        :param int x:
+        :param int y:
+        :param int p:
+        :param \
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData\
+                packet:
+        :param int pkt_seq:
+        :rtype: ~spinnman.messages.eieio.command_messages.HostDataRead
+        """
         # pylint: disable=too-many-arguments
         channels = list()
         region_ids = list()
@@ -985,5 +1042,7 @@ class BufferManager(object):
     @property
     def sender_vertices(self):
         """ The vertices which are buffered.
+
+        :rtype: iterable(AbstractSendsBuffersFromHost)
         """
         return self._sender_vertices

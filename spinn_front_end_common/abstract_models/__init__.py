@@ -23,8 +23,6 @@ from .abstract_provides_incoming_partition_constraints import (
     AbstractProvidesIncomingPartitionConstraints)
 from .abstract_provides_key_to_atom_mapping import (
     AbstractProvidesKeyToAtomMapping)
-from .abstract_provides_n_keys_for_partition import (
-    AbstractProvidesNKeysForPartition)
 from .abstract_provides_outgoing_partition_constraints import (
     AbstractProvidesOutgoingPartitionConstraints)
 from .abstract_recordable import AbstractRecordable
@@ -37,6 +35,10 @@ from .abstract_vertex_with_dependent_vertices import (
 from .abstract_supports_database_injection import (
     AbstractSupportsDatabaseInjection)
 from .abstract_uses_memory_io import AbstractUsesMemoryIO
+from .abstract_supports_bit_field_generation import (
+    AbstractSupportsBitFieldGeneration)
+from .abstract_supports_bit_field_routing_compression import (
+    AbstractSupportsBitFieldRoutingCompression)
 from .abstract_can_reset import AbstractCanReset
 
 __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
@@ -44,10 +46,11 @@ __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractMachineAllocationController",
            "AbstractProvidesIncomingPartitionConstraints",
            "AbstractProvidesKeyToAtomMapping",
-           "AbstractProvidesNKeysForPartition",
            "AbstractProvidesOutgoingPartitionConstraints",
            "AbstractRecordable", "AbstractRewritesDataSpecification",
            "AbstractSendMeMulticastCommandsVertex",
            "AbstractSupportsDatabaseInjection",
            "AbstractVertexWithEdgeToDependentVertices",
-           "AbstractUsesMemoryIO", "AbstractCanReset"]
+           "AbstractUsesMemoryIO", "AbstractCanReset",
+           "AbstractSupportsBitFieldGeneration",
+           "AbstractSupportsBitFieldRoutingCompression"]

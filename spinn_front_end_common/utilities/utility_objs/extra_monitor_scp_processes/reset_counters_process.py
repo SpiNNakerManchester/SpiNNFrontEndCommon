@@ -13,17 +13,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinnman.processes import AbstractMultiConnectionProcess
 from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
     import (
         ResetCountersMessage)
-from spinnman.processes import AbstractMultiConnectionProcess
 
 
 class ResetCountersProcess(AbstractMultiConnectionProcess):
-    def __init__(self, connection_selector):
-        super(ResetCountersProcess, self).__init__(connection_selector)
+    """ How to send messages to clear the reinjection state counters.
+    """
 
     def reset_counters(self, core_subsets):
+        """
+        :param ~spinn_machine.CoreSubsets core_subsets:
+        """
         for core_subset in core_subsets.core_subsets:
             for processor_id in core_subset.processor_ids:
                 self._send_request(ResetCountersMessage(

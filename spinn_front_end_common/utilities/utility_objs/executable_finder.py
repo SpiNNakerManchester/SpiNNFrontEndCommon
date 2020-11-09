@@ -27,10 +27,9 @@ class ExecutableFinder(BaseEF):
     def __init__(self, binary_search_paths=None,
                  include_common_binaries_folder=True):
         """
-        :param binary_search_paths: \
+        :param iterable(str) binary_search_paths:
             The initial set of folders to search for binaries.
-        :type binary_search_paths: iterable of str
-        :param include_common_binaries_folder: \
+        :param bool include_common_binaries_folder:
             If True (i.e. the default), the \
             spinn_front_end_common.common_model_binaries folder is searched\
             for binaries.  If you are not using the common models, or the\
@@ -38,7 +37,6 @@ class ExecutableFinder(BaseEF):
             used to avoid this issue. Note that the folder will be appended\
             to the value of binary_search_paths, so the common binary search\
             path will be looked in last.
-        :type include_common_binaries_folder: bool
         """
         if binary_search_paths is None:
             binary_search_paths = list()

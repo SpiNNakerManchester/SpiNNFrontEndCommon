@@ -32,12 +32,10 @@ class EndBufferingState(object):
 
     def __init__(self, buffering_out_fsm_state, list_channel_buffer_state):
         """
-        :param buffering_out_fsm_state: Final sequence number received
-        :type buffering_out_fsm_state: int
-        :param list_channel_buffer_state: a list of channel state, where each\
-            channel is stored in a ChannelBufferState object
-        :type list_channel_buffer_state: \
-            list(~spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState)
+        :param int buffering_out_fsm_state: Final sequence number received
+        :param list(ChannelBufferState) list_channel_buffer_state:
+            a list of channel state, where each channel is stored in a
+            ChannelBufferState object
         """
         self._buffering_out_fsm_state = buffering_out_fsm_state
         self._list_channel_buffer_state = list_channel_buffer_state
@@ -51,19 +49,15 @@ class EndBufferingState(object):
 
     def channel_buffer_state(self, i):
         """
-        :param i: the index into the buffer states
-        :type i: int
-        :rtype: \
-            ~spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState
+        :param int i: the index into the buffer states
+        :rtype: ChannelBufferState
         """
         return self._list_channel_buffer_state[i]
 
     def get_state_for_region(self, region_id):
         """
-        :param region_id: The region identifier
-        :type region_id: int
-        :rtype: None or \
-             ~spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState
+        :param int region_id: The region identifier
+        :rtype: None or ChannelBufferState
         """
         for state in self._list_channel_buffer_state:
             if state.region_id == region_id:
@@ -80,8 +74,7 @@ class EndBufferingState(object):
     @staticmethod
     def size_of_region(n_regions_to_record):
         """
-        :param n_regions_to_record: Number of regions to be recorded
-        :type n_regions_to_record: int
+        :param int n_regions_to_record: Number of regions to be recorded
         :return: Size of region required to hold that state, in bytes
         :rtype: int
         """

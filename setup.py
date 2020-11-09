@@ -52,7 +52,7 @@ setup(
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
 
-        "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
 
         "Natural Language :: English",
 
@@ -60,15 +60,16 @@ setup(
         "Operating System :: Microsoft :: Windows",
         "Operating System :: MacOS",
 
+        "Programming Language :: C",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
     packages=packages,
     package_data=package_data,
     install_requires=['SpiNNUtilities >= 1!5.1.1, < 1!6.0.0',
-                      'SpiNNStorageHandlers >= 1!5.1.1, < 1!6.0.0',
                       'SpiNNMachine >= 1!5.1.1, < 1!6.0.0',
                       'SpiNNMan >= 1!5.1.1, < 1!6.0.0',
                       'SpiNNaker_PACMAN >= 1!5.1.1, < 1!6.0.0',

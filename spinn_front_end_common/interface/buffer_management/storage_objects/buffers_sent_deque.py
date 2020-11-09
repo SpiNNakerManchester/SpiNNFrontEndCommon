@@ -57,15 +57,11 @@ class BuffersSentDeque(object):
     def __init__(self, region, sent_stop_message=False,
                  n_sequences_per_tranmission=64):
         """
-        :param region: The region being managed
-        :type region: int
-        :param sent_stop_message: True if the stop message has been sent
-        :type sent_stop_message: bool
-        :param n_sequences_per_tranmission: \
+        :param int region: The region being managed
+        :param bool sent_stop_message: True if the stop message has been sent
+        :param int n_sequences_per_tranmission:
             The number of sequences allowed in each transmission set
-        :type n_sequences_per_tranmission: int
         """
-
         self._region = region
         self._buffers_sent = deque(maxlen=n_sequences_per_tranmission)
         self._sequence_number = 0
@@ -102,8 +98,8 @@ class BuffersSentDeque(object):
             message.
 
         :param message: The message to be added
-        :type message:\
-            :py:class:`spinnman.messages.eieio.abstract_messages.AbstractEIEIOMessage`
+        :type message:
+            ~spinnman.messages.eieio.abstract_messages.AbstractEIEIOMessage
         """
 
         # If full, raise an exception
@@ -124,8 +120,8 @@ class BuffersSentDeque(object):
     def messages(self):
         """ The messages that have been added to the set.
 
-        :rtype: \
-            iterable(:py:class:`spinnman.messages.eieio.command_messages.HostSendSequencedData`)
+        :rtype:
+            iterable(~spinnman.messages.eieio.command_messages.HostSendSequencedData)
         """
         return self._buffers_sent
 
@@ -137,8 +133,7 @@ class BuffersSentDeque(object):
             the sequence number is not within the valid window, it is assumed\
             to be invalid and so is ignored.
 
-        :param last_received_sequence_no: The new sequence number
-        :type last_received_sequence_no: int
+        :param int last_received_sequence_no: The new sequence number
         :return: True if update went ahead, False if it was ignored
         :rtype: bool
         """

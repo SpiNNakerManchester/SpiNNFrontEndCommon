@@ -36,6 +36,9 @@ class MachineAllocationController(AbstractMachineAllocationController):
     ]
 
     def __init__(self, thread_name):
+        """
+        :param str thread_name:
+        """
         thread = Thread(name=thread_name, target=self.__manage_allocation)
         thread.daemon = True
         self._exited = False

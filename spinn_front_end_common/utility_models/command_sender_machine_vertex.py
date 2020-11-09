@@ -14,6 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum
+
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
@@ -37,6 +39,9 @@ class CommandSenderMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
         AbstractProvidesOutgoingPartitionConstraints):
+    """ Machine vertex for injecting packets at particular times or in \
+        response to particular events into a SpiNNaker application.
+    """
     # Regions for populations
     class DATA_REGIONS(Enum):
         SYSTEM_REGION = 0
@@ -66,15 +71,22 @@ class CommandSenderMachineVertex(
     # all commands will use this mask
     _DEFAULT_COMMAND_MASK = 0xFFFFFFFF
 
-    def __init__(self, label, constraints):
+    _NOT_GOT_KEY_ERROR_MESSAGE = (
+        "The command sender {} has requested key {} for outgoing "
+        "partition {}, but the keys allocated to it do not match. this will "
+        "cause errors in the external devices support and therefore needs "
+        "fixing")
+
+    def __init__(self, label, constraints, app_vertex=None):
         """
-        :param label: The label of this vertex
-        :type label: str
-        :param constraints: Any initial constraints to this vertex
-        :type constraints: \
-            iterable(~pacman.model.constraints.AbstractConstraint)
+        :param str label: The label of this vertex
+        :param iterable(~pacman.model.constraints.AbstractConstraint) \
+                constraints:
+            Any initial constraints to this vertex
+        :param CommandSender app_vertex:
         """
-        super(CommandSenderMachineVertex, self).__init__(label, constraints)
+        super(CommandSenderMachineVertex, self).__init__(
+            label, constraints, app_vertex)
 
         self._timed_commands = list()
         self._commands_at_start_resume = list()
@@ -89,21 +101,17 @@ class CommandSenderMachineVertex(
             timed_commands, vertex_to_send_to):
         """ Add commands to be sent down a given edge
 
-        :param start_resume_commands: The commands to send when the simulation\
-            starts or resumes from pause
-        :type start_resume_commands: \
-            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
-        :param pause_stop_commands: the commands to send when the simulation\
-            stops or pauses after running
-        :type pause_stop_commands: \
-            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
-        :param timed_commands: The commands to send at specific times
-        :type timed_commands: \
-            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
-        :param vertex_to_send_to: The vertex these commands are to be sent to
-        :type vertex_to_send_to: AbstractVertex
+        :param iterable(MultiCastCommand) start_resume_commands:
+            The commands to send when the simulation starts or resumes from
+            pause
+        :param iterable(MultiCastCommand) pause_stop_commands:
+            the commands to send when the simulation stops or pauses after
+            running
+        :param iterable(MultiCastCommand) timed_commands:
+            The commands to send at specific times
+        :param ~pacman.model.graphs.AbstractVertex vertex_to_send_to:
+            The vertex these commands are to be sent to
         """
-
         # container for keys for partition mapping (remove duplicates)
         command_keys = set()
         self._vertex_to_key_map[vertex_to_send_to] = set()
@@ -153,13 +161,30 @@ class CommandSenderMachineVertex(
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
-        "time_scale_factor": "TimeScaleFactor"
-        })
+        "time_scale_factor": "TimeScaleFactor",
+        "routing_infos": "MemoryRoutingInfos"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={"machine_time_step", "time_scale_factor"})
+        additional_arguments={
+            "machine_time_step", "time_scale_factor", "routing_infos"})
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor):
+            self, spec, placement, machine_time_step, time_scale_factor,
+            routing_infos):
+        """
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+            the routing infos
+        """
+        for mc_key in self._keys_to_partition_id.keys():
+            allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(
+                self, self._keys_to_partition_id[mc_key])
+            if allocated_mc_key != mc_key:
+                raise ConfigurationException(
+                    self._NOT_GOT_KEY_ERROR_MESSAGE.format(
+                        self._label, mc_key,
+                        self._keys_to_partition_id[mc_key]))
+
         # pylint: disable=too-many-arguments, arguments-differ
         timed_commands_size = self.get_timed_commands_bytes()
         start_resume_commands_size = \
@@ -170,35 +195,32 @@ class CommandSenderMachineVertex(
         # reverse memory regions
         self._reserve_memory_regions(
             spec, timed_commands_size, start_resume_commands_size,
-            pause_stop_commands_size, placement.vertex)
+            pause_stop_commands_size)
 
         # Write system region
         spec.comment("\n*** Spec for multicast source ***\n\n")
         spec.switch_write_focus(
-            CommandSenderMachineVertex.DATA_REGIONS.SYSTEM_REGION.value)
+            self.DATA_REGIONS.SYSTEM_REGION.value)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step,
             time_scale_factor))
 
         # write commands
         spec.switch_write_focus(
-            region=CommandSenderMachineVertex.DATA_REGIONS.
-            COMMANDS_WITH_ARBITRARY_TIMES.value)
+            region=self.DATA_REGIONS.COMMANDS_WITH_ARBITRARY_TIMES.value)
 
         # write commands to spec for timed commands
         self._write_timed_commands(self._timed_commands, spec)
 
         # write commands fired off during a start or resume
         spec.switch_write_focus(
-            region=CommandSenderMachineVertex.DATA_REGIONS.
-            COMMANDS_AT_START_RESUME.value)
+            region=self.DATA_REGIONS.COMMANDS_AT_START_RESUME.value)
 
         self._write_basic_commands(self._commands_at_start_resume, spec)
 
         # write commands fired off during a pause or end
         spec.switch_write_focus(
-            region=CommandSenderMachineVertex.DATA_REGIONS.
-            COMMANDS_AT_STOP_PAUSE.value)
+            region=self.DATA_REGIONS.COMMANDS_AT_STOP_PAUSE.value)
 
         self._write_basic_commands(self._commands_at_pause_stop, spec)
 
@@ -206,6 +228,10 @@ class CommandSenderMachineVertex(
         spec.end_specification()
 
     def _write_basic_commands(self, commands, spec):
+        """
+        :param list(MultiCastCommand) commands:
+        :param ~data_specification.DataSpecificationGenerator spec:
+        """
         # number of commands
         spec.write_value(len(commands))
 
@@ -214,6 +240,10 @@ class CommandSenderMachineVertex(
             self._write_command(command, spec)
 
     def _write_timed_commands(self, timed_commands, spec):
+        """
+        :param list(MultiCastCommand) timed_commands:
+        :param ~data_specification.DataSpecificationGenerator spec:
+        """
         spec.write_value(len(timed_commands))
 
         # write commands
@@ -221,67 +251,76 @@ class CommandSenderMachineVertex(
             spec.write_value(command.time)
             self._write_command(command, spec)
 
-    @staticmethod
-    def _write_command(command, spec):
+    @classmethod
+    def _write_command(cls, command, spec):
+        """
+        :param MultiCastCommand command:
+        :param ~data_specification.DataSpecificationGenerator spec:
+        """
         spec.write_value(command.key)
         if command.is_payload:
-            spec.write_value(CommandSenderMachineVertex._HAS_PAYLOAD)
+            spec.write_value(cls._HAS_PAYLOAD)
         else:
-            spec.write_value(CommandSenderMachineVertex._HAS_NO_PAYLOAD)
+            spec.write_value(cls._HAS_NO_PAYLOAD)
         spec.write_value(command.payload if command.is_payload else 0)
         spec.write_value(command.repeat)
         spec.write_value(command.delay_between_repeats)
 
-    @staticmethod
     def _reserve_memory_regions(
-            spec, time_command_size, start_command_size, end_command_size,
-            vertex):
+            self, spec, time_command_size, start_command_size,
+            end_command_size):
         """ Reserve SDRAM space for memory areas:
 
-        1. Area for information on what data to record
+        1. Area for general system information
+        2. Area for timed commands
         2. Area for start commands
         3. Area for end commands
+
+        :param ~data_specification.DataSpecificationGenerator spec:
+        :param int time_command_size:
+        :param int start_command_size:
+        :param int end_command_size:
+        :param ProvidesProvenanceDataFromMachineImpl vertex:
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=CommandSenderMachineVertex.DATA_REGIONS.SYSTEM_REGION.value,
+            region=self.DATA_REGIONS.SYSTEM_REGION.value,
             size=SIMULATION_N_BYTES, label='system')
 
         spec.reserve_memory_region(
-            region=CommandSenderMachineVertex.
-            DATA_REGIONS.COMMANDS_WITH_ARBITRARY_TIMES.value,
+            region=self.DATA_REGIONS.COMMANDS_WITH_ARBITRARY_TIMES.value,
             size=time_command_size, label='commands with arbitrary times')
 
         spec.reserve_memory_region(
-            region=CommandSenderMachineVertex.
-            DATA_REGIONS.COMMANDS_AT_START_RESUME.value,
+            region=self.DATA_REGIONS.COMMANDS_AT_START_RESUME.value,
             size=start_command_size, label='commands with start resume times')
 
         spec.reserve_memory_region(
-            region=CommandSenderMachineVertex.
-            DATA_REGIONS.COMMANDS_AT_STOP_PAUSE.value,
+            region=self.DATA_REGIONS.COMMANDS_AT_STOP_PAUSE.value,
             size=end_command_size, label='commands with stop pause times')
 
-        vertex.reserve_provenance_data_region(spec)
+        self.reserve_provenance_data_region(spec)
 
     def get_timed_commands_bytes(self):
-        n_bytes = CommandSenderMachineVertex._N_COMMANDS_SIZE
+        """
+        :rtype: int
+        """
+        n_bytes = self._N_COMMANDS_SIZE
         n_bytes += (
-            (CommandSenderMachineVertex._COMMAND_TIMESTAMP_SIZE +
-             CommandSenderMachineVertex._COMMAND_WITH_PAYLOAD_SIZE) *
-            len(self._timed_commands)
-        )
+            (self._COMMAND_TIMESTAMP_SIZE + self._COMMAND_WITH_PAYLOAD_SIZE) *
+            len(self._timed_commands))
         return n_bytes
 
-    @staticmethod
-    def get_n_command_bytes(commands):
-        n_bytes = CommandSenderMachineVertex._N_COMMANDS_SIZE
-        n_bytes += (
-            CommandSenderMachineVertex._COMMAND_WITH_PAYLOAD_SIZE *
-            len(commands)
-        )
+    @classmethod
+    def get_n_command_bytes(cls, commands):
+        """
+        :param list(MultiCastCommand) commands:
+        :rtype: int
+        """
+        n_bytes = cls._N_COMMANDS_SIZE
+        n_bytes += cls._COMMAND_WITH_PAYLOAD_SIZE * len(commands)
         return n_bytes
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
@@ -298,21 +337,43 @@ class CommandSenderMachineVertex(
         return [FixedKeyAndMaskConstraint([
             BaseKeyAndMask(
                 self._partition_id_to_keys[partition.identifier],
-                self._DEFAULT_COMMAND_MASK)
-        ])]
+                self._DEFAULT_COMMAND_MASK)])]
 
-    def get_edges_and_partitions(self, pre_vertex, edge_type):
+    def _get_edges_and_partitions(self, pre_vertex, vertex_type, edge_type):
+        """ Construct edges from this vertex to the vertices that this vertex\
+            knows how to target (and has keys allocated for).
+
+        .. note::
+            Do not call this directly from outside either a
+            :py:class:`CommandSender` or a
+            :py:class:`CommandSenderMachineVertex`.
+
+        :param pre_vertex:
+        :type pre_vertex: CommandSender or CommandSenderMachineVertex
+        :param type vertex_type: subclass of :py:class:`~.AbstractVertex`
+        :param callable edge_type: subclass of :py:class:`~.AbstractEdge`
+        :return: edges, partition IDs
+        :rtype: tuple(list(~.AbstractEdge), list(str))
+        """
         edges = list()
         partition_ids = list()
         keys_added = set()
         for vertex in self._vertex_to_key_map:
+            if not isinstance(vertex, vertex_type):
+                continue
             for key in self._vertex_to_key_map[vertex]:
                 if key not in keys_added:
                     keys_added.add(key)
-                    app_edge = edge_type(pre_vertex, vertex)
-                    edges.append(app_edge)
+                    edges.append(edge_type(pre_vertex, vertex))
                     partition_ids.append(self._keys_to_partition_id[key])
         return edges, partition_ids
 
     def edges_and_partitions(self):
-        return self.get_edges_and_partitions(self, MachineEdge)
+        """ Construct machine edges from this vertex to the machine vertices\
+            that this vertex knows how to target (and has keys allocated for).
+
+        :return: edges, partition IDs
+        :rtype:
+            tuple(list(~pacman.model.graphs.machine.MachineEdge), list(str))
+        """
+        return self._get_edges_and_partitions(self, MachineVertex, MachineEdge)

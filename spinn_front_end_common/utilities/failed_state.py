@@ -47,10 +47,6 @@ class FailedState(SimulatorInterface):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @property
-    def graph_mapper(self):
-        raise ConfigurationException(FAILED_STATE_MSG)
-
-    @property
     @overrides(SimulatorInterface.has_ran)
     def has_ran(self):
         raise ConfigurationException(FAILED_STATE_MSG)
@@ -87,6 +83,10 @@ class FailedState(SimulatorInterface):
     @overrides(SimulatorInterface.stop)
     def stop(self):
         logger.error("Ignoring call to stop/end as no simulator running")
+
+    @overrides(SimulatorInterface.stop_run)
+    def stop_run(self):
+        raise ConfigurationException(FAILED_STATE_MSG)
 
     @property
     @overrides(SimulatorInterface.transceiver)

@@ -20,6 +20,9 @@ from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
 
 
 class ClearQueueProcess(AbstractMultiConnectionProcess):
+    """ How to send messages to clear the reinjection queue.
+    """
+
     def __init__(
             self, connection_selector, n_channels, intermediate_channel_waits):
         super(ClearQueueProcess, self).__init__(
@@ -27,6 +30,9 @@ class ClearQueueProcess(AbstractMultiConnectionProcess):
             intermediate_channel_waits=intermediate_channel_waits)
 
     def reset_counters(self, core_subsets):
+        """
+        :param ~spinn_machine.CoreSubsets core_subsets:
+        """
         for core_subset in core_subsets.core_subsets:
             for processor_id in core_subset.processor_ids:
                 self._send_request(ClearReinjectionQueueMessage(
