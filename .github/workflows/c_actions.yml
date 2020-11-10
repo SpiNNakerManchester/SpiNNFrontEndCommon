@@ -22,60 +22,66 @@ on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    # Note: Python is needed for spinn_utilities.make_tools when building
-    strategy:
-      matrix:
-        python-version: [3.6]
 
     steps:
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: "Prepare: Install Ubuntu dependencies"
+      run: |
+        sudo apt-get update
+        sudo apt-get install vera++ doxygen gcc-arm-none-eabi --fix-missing
+
+    - name: "Prepare: Set up Python 3.6"
+      # Note: Python is needed for spinn_utilities.make_tools when building
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.python-version }}
-        
-    - name: Checkout
+        python-version: 3.6
+
+    - name: "Prepare: Checkout"
       uses: actions/checkout@v2
 
-    - name: Checkout SupportScripts
+    - name: "Prepare: Checkout SupportScripts"
       uses: actions/checkout@v2
       with:
         repository: SpiNNakerManchester/SupportScripts
         path: support
-        
-    - name: Set SPINN_DIRS
+
+    - name: "Prepare: Set SPINN_DIRS"
       run: |
         echo "Set SPINN_DIRS to $PWD/spinnaker_tools"
         echo "SPINN_DIRS=$PWD/spinnaker_tools" >> $GITHUB_ENV
-        
-    - name: Checkout SpiNNaker Dependencies
+
+    - name: "Prepare: Checkout SpiNNaker Dependencies"
       run: |
         support/gitclone2.sh https://github.com/SpiNNakerManchester/spinnaker_tools.git
         support/gitclone2.sh https://github.com/SpiNNakerManchester/spinn_common.git
         # Note: SpiNNUtils needed for spinn_utilities.make_tools
         support/gitclone2.sh https://github.com/SpiNNakerManchester/SpiNNUtils.git
-        
-    - name: Install SpiNNUtils
-      run: python setup.py install
-      working-directory: SpiNNUtils    
-        
-    - name: Install Ubuntu dependencies
-      run: sudo apt-get update && sudo apt-get install vera++ doxygen gcc-arm-none-eabi --fix-missing
-    
-    - name: Lint C code using Vera++
+
+    - name: "Prepare: Install SpiNNUtils"
+      run: |
+        python setup.py install
+      working-directory: SpiNNUtils
+
+    - name: "Check: Lint C code using Vera++"
       # Note: run this before building to avoid linting modified_src directories
       run: |
         support/run-vera.sh c_common/front_end_common_lib
         support/run-vera.sh c_common/models
 
-    - name: Build C code
+    - name: "Prepare: Build Supporting C libraries"
       run: |
         make -C $SPINN_DIRS
         make -C spinn_common install
-        make -C c_common doxysetup
-        CFLAGS=-fdiagnostics-color make -C c_common
-                
-    - name: Build documentation using doxygen
+
+    - name: "Check: Build C code"
       run: |
-        make -C c_common doxygen
+        make
+      working-directory: c_common
+      env:
+        CFLAGS: -fdiagnostics-color=always
+
+    - name: "Check: Build documentation"
+      run: |
+        make doxysetup
+        make doxygen
+      working-directory: c_common
