@@ -29,12 +29,6 @@ class ReadStatusProcess(AbstractMultiConnectionProcess):
     """
     __slots__ = ()
 
-    def __init__(
-            self, connection_selector, n_channels, intermediate_channel_waits):
-        super(ReadStatusProcess, self).__init__(
-            connection_selector, n_channels=n_channels,
-            intermediate_channel_waits=intermediate_channel_waits)
-
     @staticmethod
     def __handle_response(result, response):
         """

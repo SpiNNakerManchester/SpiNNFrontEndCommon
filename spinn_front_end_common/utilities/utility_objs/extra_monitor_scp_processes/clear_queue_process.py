@@ -23,12 +23,6 @@ class ClearQueueProcess(AbstractMultiConnectionProcess):
     """ How to send messages to clear the reinjection queue.
     """
 
-    def __init__(
-            self, connection_selector, n_channels, intermediate_channel_waits):
-        super(ClearQueueProcess, self).__init__(
-            connection_selector, n_channels=n_channels,
-            intermediate_channel_waits=intermediate_channel_waits)
-
     def reset_counters(self, core_subsets):
         """
         :param ~spinn_machine.CoreSubsets core_subsets:

@@ -23,12 +23,6 @@ class SetPacketTypesProcess(AbstractMultiConnectionProcess):
     """ How to send messages to control what messages are reinjected.
     """
 
-    def __init__(
-            self, connection_selector, n_channels, intermediate_channel_waits):
-        super(SetPacketTypesProcess, self).__init__(
-            connection_selector, n_channels=n_channels,
-            intermediate_channel_waits=intermediate_channel_waits)
-
     def set_packet_types(self, core_subsets, point_to_point, multicast,
                          nearest_neighbour, fixed_route):
         """ Set what types of packets should be reinjected.

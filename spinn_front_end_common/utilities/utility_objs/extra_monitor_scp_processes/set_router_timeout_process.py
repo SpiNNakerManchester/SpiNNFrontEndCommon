@@ -31,12 +31,6 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
         See the SpiNNaker datasheet for details.
     """
 
-    def __init__(
-            self, connection_selector, n_channels, intermediate_channel_waits):
-        super(SetRouterTimeoutProcess, self).__init__(
-            connection_selector, n_channels=n_channels,
-            intermediate_channel_waits=intermediate_channel_waits)
-
     def set_wait1_timeout(self, mantissa, exponent, core_subsets):
         """ The wait1 timeout is the time from when a packet is received to\
             when emergency routing becomes enabled.
