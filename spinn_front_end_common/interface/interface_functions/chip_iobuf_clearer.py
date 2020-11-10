@@ -27,7 +27,8 @@ class ChipIOBufClearer(object):
 
     __slots__ = []
 
-    def __call__(self, transceiver, executable_types, n_channels,
+    def __call__(
+            self, transceiver, executable_types, n_channels,
             intermediate_channel_waits):
         """
         :param ~.Transceiver transceiver:
