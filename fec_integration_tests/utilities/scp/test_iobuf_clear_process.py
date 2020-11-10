@@ -37,7 +37,8 @@ class TestIOBufClearProcess(unittest.TestCase):
         selector = RoundRobinConnectionSelector([connection])
 
         # Create the process and run it
-        process = ClearIOBUFProcess(selector)
+        process = ClearIOBUFProcess(
+            selector, n_channels=8, intermediate_channel_waits=4)
         process.clear_iobuf(CoreSubsets([CoreSubset(0, 0, [1])]), 1)
         receiver.stop()
 
