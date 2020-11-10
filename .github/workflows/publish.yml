@@ -70,7 +70,6 @@ jobs:
 
       - name: Build Python Documentation
         run: support/travis-sphinx.sh html -T -E -b html -d _build/doctrees-readthedocsdirhtml -D language=en . _build/html
-        working-directory: doc/source
 
       - name: Build C documentation
         uses: mattnotmitt/doxygen-action@v1.1.0
