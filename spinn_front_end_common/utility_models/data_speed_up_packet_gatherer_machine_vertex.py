@@ -1031,14 +1031,10 @@ class DataSpeedUpPacketGatherMachineVertex(
             gatherers, transceiver, extra_monitor_cores, placements)
 
     def set_cores_for_data_streaming(
-            self, transceiver, extra_monitor_cores, placements,
-            n_channels, intermediate_channel_waits):
+            self, transceiver, extra_monitor_cores, placements):
         """ Helper method for setting the router timeouts to a state usable\
             for data streaming.
 
-        :param n_channels: mpif n packets in parallel
-        :param intermediate_channel_waits: how many to be in flight before \
-            more transmission
         :param ~spinnman.transceiver.Transceiver transceiver:
             the SpiNNMan instance
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
@@ -1059,8 +1055,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             fixed_route=False)
 
         # Clear any outstanding packets from reinjection
-        self.clear_reinjection_queue(
-            transceiver, placements, n_channels, intermediate_channel_waits)
+        self.clear_reinjection_queue(transceiver, placements)
 
         # set time outs
         self.set_router_wait2_timeout(
@@ -1138,13 +1133,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 placements.get_placement_of_vertex(self))
             raise
 
-    def clear_reinjection_queue(
-            self, transceiver, placements, n_channels,
-            intermediate_channel_waits):
+    def clear_reinjection_queue(self, transceiver, placements):
         """ Clears the queues for reinjection.
-        :param n_channels: mpif n packets in parallel
-        :param intermediate_channel_waits: how many to be in flight before \
-            more transmission
         :param ~spinnman.transceiver.Transceiver transceiver:
             the spinnMan interface
         :param ~pacman.model.placements.Placements placements:
@@ -1723,8 +1713,7 @@ class _StreamingContextManager(object):
                 self._txrx, self._monitors, self._placements)
         for gatherer in self._gatherers:
             gatherer.set_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements,
-                n_channels, intermediate_channel_waits)
+                self._txrx, self._monitors, self._placements)
 
     def __exit__(self, _type, _value, _tb):
         for gatherer in self._gatherers:

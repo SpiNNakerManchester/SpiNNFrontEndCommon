@@ -35,7 +35,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
-_MEM_REGIONS = range(MAX_MEM_REGIONS)
+MEM_REGIONS = range(MAX_MEM_REGIONS)
 
 
 def system_cores(exec_targets):
@@ -523,7 +523,7 @@ class HostExecuteDataSpecification(object):
         bytes_written = len(data_to_write)
 
         # Write each region
-        for region_id in _MEM_REGIONS:
+        for region_id in MEM_REGIONS:
             region = executor.get_region(region_id)
             if region is None:
                 continue
