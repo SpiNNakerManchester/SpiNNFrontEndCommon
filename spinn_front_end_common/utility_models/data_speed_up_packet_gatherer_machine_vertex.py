@@ -1152,8 +1152,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         core_subsets = convert_vertices_to_core_subset([self], placements)
         process = ClearQueueProcess(
-            transceiver.scamp_connection_selector, n_channels,
-            intermediate_channel_waits)
+            transceiver.scamp_connection_selector, n_channels=self._n_channels,
+            intermediate_channel_waits=self._intermediate_channel_waits)
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722

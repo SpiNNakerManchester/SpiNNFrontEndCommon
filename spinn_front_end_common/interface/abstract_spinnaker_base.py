@@ -1862,7 +1862,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("LoadApplicationExecutableImages")
-        algorithms.append("HostExecuteSystemDataSpecification")
+        optional_algorithms.append("HostExecuteSystemDataSpecification")
         algorithms.append("LoadSystemExecutableImages")
 
         # Something probably a report needs the routing tables
