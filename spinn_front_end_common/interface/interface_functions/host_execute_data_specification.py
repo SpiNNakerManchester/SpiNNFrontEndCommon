@@ -13,9 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict
 
-import datetime
 import logging
 import struct
 import numpy
@@ -33,13 +32,6 @@ from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, DataWritten)
 from spinn_front_end_common.utilities.helpful_functions import (
     emergency_recover_states_from_failure)
-from spinn_front_end_common.utilities import globals_variables, \
-    helpful_functions
-from spinn_utilities.timer import Timer
-from spynnaker.pyNN.models.neuron import PopulationMachineVertex
-from spynnaker.pyNN.models.utility_models.delays import \
-    DelayExtensionMachineVertex
-from spynnaker.pyNN.utilities.constants import POPULATION_BASED_REGIONS
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -167,10 +159,9 @@ class HostExecuteDataSpecification(object):
         progress.end()
         return dw_write_info
 
-    def __python_all(self, dsg_targets, region_sizes, placements):
+    def __python_all(self, dsg_targets, region_sizes):
         """ Does the Data Specification Execution and loading using Python
 
-        :param Placements placements: placements
         :param DataSpecificationTargets dsg_targets:
             map of placement to file path
         :param dict(tuple(int,int,int),int) region_sizes:
@@ -196,13 +187,9 @@ class HostExecuteDataSpecification(object):
                 core, region_sizes[core])
 
         for core, reader in progress.over(iteritems(dsg_targets)):
-            x, y, p = core
-            data_written, _matrix, _connection, _total, _executor, _time = \
-                self.__python_execute(
-                    core, reader, self._txrx.write_memory,
-                    base_addresses[core], region_sizes[core],
-                    placements.get_vertex_on_processor(x, y, p))
-            results[core] = data_written
+            results[core] = self.__python_execute(
+                core, reader, self._txrx.write_memory,
+                base_addresses[core], region_sizes[core])
 
         return results
 
@@ -275,17 +262,11 @@ class HostExecuteDataSpecification(object):
             raise
 
     def __set_router_timeouts(self):
-        config = globals_variables.get_simulator().config
-        n_channels = helpful_functions.read_config_int(
-            config, "SpinnMan", "multi_packets_in_flight_n_channels")
-        intermediate_channel_waits = helpful_functions.read_config_int(
-            config, "SpinnMan", "multi_packets_in_flight_channel_waits")
         for receiver in itervalues(self._core_to_conn_map):
             receiver.load_system_routing_tables(
                 self._txrx, self._monitors, self._placements)
             receiver.set_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements,
-                n_channels, intermediate_channel_waits)
+                self._txrx, self._monitors, self._placements)
 
     def __reset_router_timeouts(self):
         # reset router timeouts
@@ -333,58 +314,18 @@ class HostExecuteDataSpecification(object):
             base_addresses[core] = self.__malloc_region_storage(
                 core, region_sizes[core])
 
-        total_sizes = defaultdict(int)
-        matrix_sizes = defaultdict(int)
-        connection_build_sizes = defaultdict(int)
-        total_sizes_vertex = defaultdict(int)
-
-        time = datetime.timedelta()
         for core, reader in progress.over(iteritems(dsg_targets)):
-            x, y, p = core
-            chip = self._machine.get_chip_at(x, y)
-            data_written, matrix, connection, total, executor, time_taken = \
-                self.__python_execute(
-                    core, reader,
-                    self.__select_writer(x, y)
-                    if use_monitors else self._txrx.write_memory,
-                    base_addresses[core], region_sizes[core],
-                    self._placements.get_vertex_on_processor(x, y, p))
-            self._write_info_map[core] = data_written
-            time += time_taken
-
-            vertex = self._placements.get_vertex_on_processor(x, y, p)
-
-            for region_id in _MEM_REGIONS:
-                region = executor.get_region(region_id)
-                if region is not None:
-                    total_sizes[(x, y, p, region_id)] = \
-                        region.max_write_pointer
-                    total_sizes_vertex[(vertex.label, region_id)] = \
-                        region.max_write_pointer
-
+            x, y, _p = core
             # write information for the memory map report
-            total_sizes[(x, y, p, -1)] = total
-            total_sizes[
-                (0, chip.nearest_ethernet_x, chip.nearest_ethernet_y)] += total
-            total_sizes[(-1, -1, -1, -1)] += total
-
-            matrix_sizes[(x, y, p)] = matrix
-            matrix_sizes[
-                (0, chip.nearest_ethernet_x, chip.nearest_ethernet_y)] += \
-                matrix
-            matrix_sizes[(-1, -1, -1)] += matrix
-
-            connection_build_sizes[(x, y, p)] = connection
-            connection_build_sizes[
-                (0, chip.nearest_ethernet_x, chip.nearest_ethernet_y)] += \
-                connection
-            connection_build_sizes[(-1, -1, -1)] += connection
+            self._write_info_map[core] = self.__python_execute(
+                core, reader,
+                self.__select_writer(x, y)
+                if use_monitors else self._txrx.write_memory,
+                base_addresses[core], region_sizes[core])
 
         if use_monitors:
             self.__reset_router_timeouts()
-        return (
-            self._write_info_map, total_sizes, matrix_sizes,
-            connection_build_sizes, time.total_seconds())
+        return self._write_info_map
 
     def __java_app(
             self, dsg_targets, executable_targets, use_monitors,
@@ -414,15 +355,11 @@ class HostExecuteDataSpecification(object):
         self._java.execute_app_data_specification(use_monitors)
 
         progress.end()
-        return (
-            dw_write_info,
-            {(-1, -1, -1, -1): dsg_targets.sum_over_region_sizes()},
-             {(-1, -1, -1): 0}, {(-1, -1, -1): 0},
-            dsg_targets.time_to_load_in_seconds())
+        return dw_write_info
 
     def execute_system_data_specs(
             self, transceiver, machine, app_id, dsg_targets, region_sizes,
-            executable_targets, placements, report_folder=None,
+            executable_targets, report_folder=None,
             java_caller=None, processor_to_app_data_base_address=None):
         """ Execute the data specs for all system targets.
 
@@ -455,8 +392,6 @@ class HostExecuteDataSpecification(object):
         self._app_id = app_id
         self._db_folder = report_folder
         self._java = java_caller
-        self._placements = placements
-
         impl_method = self.__java_sys if java_caller else self.__python_sys
         return impl_method(dsg_targets, executable_targets, region_sizes)
 
@@ -520,13 +455,9 @@ class HostExecuteDataSpecification(object):
                 core, region_sizes[core])
 
         for core, reader in progress.over(iteritems(sys_targets)):
-            x, y, p = core
-            data_written, _matrix, _connection, _total, _ex, _time = \
-                self.__python_execute(
-                    core, reader, self._txrx.write_memory, base_addresses[core],
-                    region_sizes[core],
-                    self._placements.get_vertex_on_processor(x, y, p))
-            self._write_info_map[core] = data_written
+            self._write_info_map[core] = self.__python_execute(
+                core, reader, self._txrx.write_memory, base_addresses[core],
+                region_sizes[core])
 
         return self._write_info_map
 
@@ -553,19 +484,16 @@ class HostExecuteDataSpecification(object):
         return start_address
 
     def __python_execute(
-            self, core, reader, writer_func, base_address, size_allocated,
-            machine_vertex):
+            self, core, reader, writer_func, base_address, size_allocated):
         """
         :param tuple(int,int,int) core:
         :param ~.AbstractDataReader reader:
         :param callable(tuple(int,int,int,bytearray),None) writer_func:
         :param int base_address:
         :param int size_allocated:
-        :param MachineVertex machine_vertex: the machine vertex
         :rtype: DataWritten
         """
         x, y, p = core
-        total_size = 0
 
         # Maximum available memory.
         # However, system updates the memory available independently, so the
@@ -594,16 +522,6 @@ class HostExecuteDataSpecification(object):
         self._txrx.write_memory(x, y, base_address, data_to_write)
         bytes_written = len(data_to_write)
 
-        matrix_size, connection_builder_size = self.__get_extra_sizes(
-            machine_vertex, executor)
-
-        for region_id in _MEM_REGIONS:
-            region = executor.get_region(region_id)
-            if region is not None:
-                total_size += region.max_write_pointer
-
-        time_total = datetime.timedelta()
-        timer = Timer()
         # Write each region
         for region_id in _MEM_REGIONS:
             region = executor.get_region(region_id)
@@ -617,40 +535,7 @@ class HostExecuteDataSpecification(object):
             data = region.region_data[:max_pointer]
 
             # Write the data to the position
-            with timer:
-                writer_func(x, y, pointer_table[region_id], data)
-            time_total += timer.measured_interval
-
+            writer_func(x, y, pointer_table[region_id], data)
             bytes_written += len(data)
 
-        return (
-            DataWritten(base_address, size_allocated, bytes_written),
-            matrix_size, connection_builder_size, total_size, executor,
-            time_total)
-
-    @staticmethod
-    def __get_extra_sizes(machine_vertex, executor):
-        """ EVIL!
-        """
-        matrix_size, connection_builder_size = 0, 0
-
-        if isinstance(machine_vertex, PopulationMachineVertex):
-            regions = POPULATION_BASED_REGIONS
-            region = executor.get_region(regions.SYNAPTIC_MATRIX.value)  # 4
-            matrix_size += region.max_write_pointer
-            region = executor.get_region(regions.DIRECT_MATRIX.value)  # 10
-            if region is not None:
-                matrix_size += region.max_write_pointer
-            region = executor.get_region(regions.CONNECTOR_BUILDER.value)  # 9
-            if region is not None:
-                connection_builder_size += region.max_write_pointer
-
-        if isinstance(machine_vertex, DelayExtensionMachineVertex):
-            regions = DelayExtensionMachineVertex._DELAY_EXTENSION_REGIONS
-            region = executor.get_region(regions.DELAY_PARAMS.value)  # 1
-            matrix_size += region.max_write_pointer
-            region = executor.get_region(regions.EXPANDER_REGION.value)  # 3
-            if region is not None:
-                connection_builder_size += region.max_write_pointer
-
-        return matrix_size, connection_builder_size
+        return DataWritten(base_address, size_allocated, bytes_written)

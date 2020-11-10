@@ -952,13 +952,13 @@
             <param_name>app_id</param_name>
             <param_name>dsg_targets</param_name>
             <param_name>uses_advanced_monitors</param_name>
-            <param_name>placements</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>report_folder</param_name>
             <param_name>java_caller</param_name>
             <param_name>processor_to_app_data_base_address</param_name>
             <param_name>executable_targets</param_name>
+            <param_name>placements</param_name>
             <param_name>extra_monitor_cores</param_name>
             <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
             <param_name>disable_advanced_monitor_usage</param_name>
@@ -967,10 +967,6 @@
         </optional_inputs>
         <outputs>
             <param_type>ProcessorToAppDataBaseAddress</param_type>
-            <param_type>TotalSDRAMTracker</param_type>
-            <param_type>MatrixTracker</param_type>
-            <param_type>ExpanderTracker</param_type>
-            <param_type>TimeToUseIO</param_type>
             <token part="DSGDataLoaded">DataLoaded</token>
             <token part="DSGAppDataLoaded">DataLoaded</token>
         </outputs>
