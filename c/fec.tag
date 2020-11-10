@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-<tagfile>
+<tagfile doxygen_version="1.8.20">
   <compound kind="file">
     <name>buffered_eieio_defs.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>buffered__eieio__defs_8h.html</filename>
     <member kind="define">
       <type>#define</type>
@@ -107,7 +107,7 @@
   </compound>
   <compound kind="file">
     <name>common-typedefs.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>common-typedefs_8h.html</filename>
     <member kind="define">
       <type>#define</type>
@@ -154,7 +154,7 @@
   </compound>
   <compound kind="file">
     <name>data_specification.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>data__specification_8h.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="yes" imported="no">common-typedefs.h</includes>
     <class kind="struct">data_specification_metadata_t</class>
@@ -182,7 +182,7 @@
   </compound>
   <compound kind="file">
     <name>debug.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>debug_8h.html</filename>
     <member kind="define">
       <type>#define</type>
@@ -264,7 +264,7 @@
   </compound>
   <compound kind="file">
     <name>eieio.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>eieio_8h.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
     <class kind="union">eieio_header_bitfields</class>
@@ -421,21 +421,21 @@
   </compound>
   <compound kind="file">
     <name>filter_info.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>filter__info_8h.html</filename>
     <class kind="struct">filter_info_t</class>
     <class kind="struct">filter_region_t</class>
   </compound>
   <compound kind="file">
     <name>key_atom_map.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>key__atom__map_8h.html</filename>
     <class kind="struct">key_atom_pair_t</class>
     <class kind="struct">key_atom_data_t</class>
   </compound>
   <compound kind="file">
     <name>malloc_extras.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>malloc__extras_8h.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
@@ -621,7 +621,7 @@
   </compound>
   <compound kind="file">
     <name>profiler.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>profiler_8h.html</filename>
     <class kind="struct">profiler_region</class>
     <class kind="struct">profiler_state</class>
@@ -684,7 +684,7 @@
   </compound>
   <compound kind="file">
     <name>recording.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>recording_8h.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
     <includes id="buffered__eieio__defs_8h" name="buffered_eieio_defs.h" local="no" imported="no">buffered_eieio_defs.h</includes>
@@ -780,25 +780,145 @@
   </compound>
   <compound kind="file">
     <name>sdp_no_scp.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>sdp__no__scp_8h.html</filename>
     <class kind="struct">sdp_msg_pure_data</class>
     <member kind="enumvalue">
       <name>ITEMS_PER_DATA_PACKET</name>
       <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>adc29c2ff13d900c2f185ee95427fb06ca83634fa5d88b9e8e880513f8e11e028c</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba83634fa5d88b9e8e880513f8e11e028c</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>LENGTH_OF_SDP_HEADER</name>
       <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>adc29c2ff13d900c2f185ee95427fb06cad92ffcc0192209f37d454a861ed5ed64</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad92ffcc0192209f37d454a861ed5ed64</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bab472899e20607fe88982a376f3dbedd3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DATA_SPECIFICATION_VERSION</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba023bd8025ffafc9954a7fd7ae61df33f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>VERSION_MASK</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba3bdd0253bec51792b83d9d6603e131af</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>VERSION_SHIFT</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba7913873b92ba0d517ed68aa06348b5de</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SYSTEM</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba57cc238145ec1361c72c327674c0d754</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CONFIG</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba702582f7f825ca83bdb076b15b4c0fc2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>RECORDING</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba875fadf1437508cebb97bb5c3445cbdc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>MC_PACKET</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad73783ea228c0f1164d4ed5274bc2fc4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad645defae8408de2415f3dc417f69773</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>USER</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bae2d30a195cee6b2961cc2c23ea4b520b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6537a62f6f155792bb9a320ee2ec4d68</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TIMER</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>COMMAND_ID</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba0ed3879bce4efefae9a9ed50c5853abe</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEQ_NUM_LOC</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba1c954815fb5b778e015418afa27d53b4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_ID</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba8b52003a52ab660d4253704c1a90db74</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>START_OF_DATA</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEQUENCE_NUMBER_SIZE</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad7babe063e0a6247caaffd6c8caee600</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_ID_SIZE</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba637adf75b1ab91cb42ca583a87352738</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP_PAYLOAD_WORDS</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6ad2e57f7353682e45c4acc5e5aeee96</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP_PAYLOAD_BYTES</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad752c54a1cb6bf3d556b67c65101668e</anchor>
       <arglist></arglist>
     </member>
   </compound>
   <compound kind="file">
     <name>simulation.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>simulation_8h.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="yes" imported="no">common-typedefs.h</includes>
     <class kind="struct">simulation_config</class>
@@ -977,7 +1097,7 @@
   </compound>
   <compound kind="file">
     <name>spinn_extra.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>spinn__extra_8h.html</filename>
     <class kind="union">vic_mask_t</class>
     <class kind="struct">vic_mask_t::interrupt_bits</class>
@@ -1699,7 +1819,7 @@
   </compound>
   <compound kind="file">
     <name>tdma_processing.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>tdma__processing_8h.html</filename>
     <includes id="spinn__extra_8h" name="spinn_extra.h" local="no" imported="no">spinn_extra.h</includes>
     <class kind="struct">tdma_parameters</class>
@@ -1755,7 +1875,7 @@
   </compound>
   <compound kind="file">
     <name>wfi.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/include/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>wfi_8h.html</filename>
     <member kind="function" static="yes">
       <type>static void</type>
@@ -1767,32 +1887,140 @@
   </compound>
   <compound kind="file">
     <name>data_specification.c</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/src/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/src/</path>
     <filename>data__specification_8c.html</filename>
     <includes id="data__specification_8h" name="data_specification.h" local="yes" imported="no">data_specification.h</includes>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <member kind="enumvalue">
+      <name>ITEMS_PER_DATA_PACKET</name>
+      <anchorfile>sdp__no__scp_8h.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba83634fa5d88b9e8e880513f8e11e028c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>LENGTH_OF_SDP_HEADER</name>
+      <anchorfile>sdp__no__scp_8h.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad92ffcc0192209f37d454a861ed5ed64</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
       <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
       <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a61dadd085c1777f559549e05962b2c9eab472899e20607fe88982a376f3dbedd3</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bab472899e20607fe88982a376f3dbedd3</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DATA_SPECIFICATION_VERSION</name>
       <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a61dadd085c1777f559549e05962b2c9ea023bd8025ffafc9954a7fd7ae61df33f</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba023bd8025ffafc9954a7fd7ae61df33f</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>VERSION_MASK</name>
       <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a61dadd085c1777f559549e05962b2c9ea3bdd0253bec51792b83d9d6603e131af</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba3bdd0253bec51792b83d9d6603e131af</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>VERSION_SHIFT</name>
       <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a61dadd085c1777f559549e05962b2c9ea7913873b92ba0d517ed68aa06348b5de</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba7913873b92ba0d517ed68aa06348b5de</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SYSTEM</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba57cc238145ec1361c72c327674c0d754</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CONFIG</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba702582f7f825ca83bdb076b15b4c0fc2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>RECORDING</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba875fadf1437508cebb97bb5c3445cbdc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>MC_PACKET</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad73783ea228c0f1164d4ed5274bc2fc4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad645defae8408de2415f3dc417f69773</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>USER</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bae2d30a195cee6b2961cc2c23ea4b520b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6537a62f6f155792bb9a320ee2ec4d68</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TIMER</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>COMMAND_ID</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba0ed3879bce4efefae9a9ed50c5853abe</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEQ_NUM_LOC</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba1c954815fb5b778e015418afa27d53b4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_ID</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba8b52003a52ab660d4253704c1a90db74</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>START_OF_DATA</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEQUENCE_NUMBER_SIZE</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad7babe063e0a6247caaffd6c8caee600</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_ID_SIZE</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba637adf75b1ab91cb42ca583a87352738</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP_PAYLOAD_WORDS</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6ad2e57f7353682e45c4acc5e5aeee96</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP_PAYLOAD_BYTES</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad752c54a1cb6bf3d556b67c65101668e</anchor>
       <arglist></arglist>
     </member>
     <member kind="function">
@@ -1812,7 +2040,7 @@
   </compound>
   <compound kind="file">
     <name>profiler.c</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/src/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/src/</path>
     <filename>profiler_8c.html</filename>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="profiler_8h" name="profiler.h" local="no" imported="no">profiler.h</includes>
@@ -1840,7 +2068,7 @@
   </compound>
   <compound kind="file">
     <name>recording.c</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/src/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/src/</path>
     <filename>recording_8c.html</filename>
     <includes id="recording_8h" name="recording.h" local="no" imported="no">recording.h</includes>
     <includes id="simulation_8h" name="simulation.h" local="no" imported="no">simulation.h</includes>
@@ -2111,7 +2339,7 @@
   </compound>
   <compound kind="file">
     <name>simulation.c</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/src/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/src/</path>
     <filename>simulation_8c.html</filename>
     <includes id="simulation_8h" name="simulation.h" local="yes" imported="no">simulation.h</includes>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
@@ -2350,7 +2578,7 @@
   </compound>
   <compound kind="file">
     <name>tdma_processing.c</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/front_end_common_lib/src/</path>
+    <path>/github/workspace/c_common/front_end_common_lib/src/</path>
     <filename>tdma__processing_8c.html</filename>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="tdma__processing_8h" name="tdma_processing.h" local="no" imported="no">tdma_processing.h</includes>
@@ -2385,7 +2613,7 @@
   </compound>
   <compound kind="file">
     <name>chip_power_monitor.c</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/chip_power_monitor/src/</path>
+    <path>/github/workspace/c_common/models/chip_power_monitor/src/</path>
     <filename>chip__power__monitor_8c.html</filename>
     <includes id="spinn__extra_8h" name="spinn_extra.h" local="no" imported="no">spinn_extra.h</includes>
     <includes id="simulation_8h" name="simulation.h" local="no" imported="no">simulation.h</includes>
@@ -2401,39 +2629,219 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
+      <name>ITEMS_PER_DATA_PACKET</name>
+      <anchorfile>sdp__no__scp_8h.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba83634fa5d88b9e8e880513f8e11e028c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>LENGTH_OF_SDP_HEADER</name>
+      <anchorfile>sdp__no__scp_8h.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad92ffcc0192209f37d454a861ed5ed64</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bab472899e20607fe88982a376f3dbedd3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DATA_SPECIFICATION_VERSION</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba023bd8025ffafc9954a7fd7ae61df33f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>VERSION_MASK</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba3bdd0253bec51792b83d9d6603e131af</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>VERSION_SHIFT</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba7913873b92ba0d517ed68aa06348b5de</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
       <name>SYSTEM</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a726ca809ffd3d67ab4b8476646f26635a57cc238145ec1361c72c327674c0d754</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba57cc238145ec1361c72c327674c0d754</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>CONFIG</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a726ca809ffd3d67ab4b8476646f26635a702582f7f825ca83bdb076b15b4c0fc2</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba702582f7f825ca83bdb076b15b4c0fc2</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>RECORDING</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a726ca809ffd3d67ab4b8476646f26635a875fadf1437508cebb97bb5c3445cbdc</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba875fadf1437508cebb97bb5c3445cbdc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>MC_PACKET</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad73783ea228c0f1164d4ed5274bc2fc4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad645defae8408de2415f3dc417f69773</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>USER</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bae2d30a195cee6b2961cc2c23ea4b520b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6537a62f6f155792bb9a320ee2ec4d68</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TIMER</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>COMMAND_ID</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba0ed3879bce4efefae9a9ed50c5853abe</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEQ_NUM_LOC</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba1c954815fb5b778e015418afa27d53b4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_ID</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba8b52003a52ab660d4253704c1a90db74</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>START_OF_DATA</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEQUENCE_NUMBER_SIZE</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad7babe063e0a6247caaffd6c8caee600</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_ID_SIZE</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba637adf75b1ab91cb42ca583a87352738</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP_PAYLOAD_WORDS</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6ad2e57f7353682e45c4acc5e5aeee96</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP_PAYLOAD_BYTES</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad752c54a1cb6bf3d556b67c65101668e</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>TIMER</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a0411cd49bb5b71852cecd93bcbf0ca2da17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SDP</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a0411cd49bb5b71852cecd93bcbf0ca2dad645defae8408de2415f3dc417f69773</anchor>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad645defae8408de2415f3dc417f69773</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DMA</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a0411cd49bb5b71852cecd93bcbf0ca2da6537a62f6f155792bb9a320ee2ec4d68</anchor>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a6537a62f6f155792bb9a320ee2ec4d68</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEND_SEQ_DATA_HEADER_WORDS</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a8c30d65ae329b6ebe1a4a0886935be43</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEND_MISSING_SEQ_HEADER_WORDS</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad76316f60dad277272a72fbe572f73e3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEND_DATA_LOCATION_HEADER_WORDS</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a89f9933ed17820997fea73283993bc7b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ABSOLUTE_MAX_SIZE_OF_SDP_IN_BYTES</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7af578d4f10ba5d4a1de370678339da240</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CPU_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a31d3dd7993118a16a819118bce59b194</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CC_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a000b6c62469245f694c3ef9d3390a7c6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TIMER_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aab240da79e7c1d78a159343d146edd13</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aca95bbc52c7ed3e8240a88dc1a6ba2a3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA_ERROR_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ac749c67267efeb265141afc68e371cdb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA_TIMEOUT_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a1375671dff545ffd4c86fac72236812a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>MC_PAYLOAD_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a33728a0193855bd51db0362175f7fc0f</anchor>
       <arglist></arglist>
     </member>
     <member kind="function" static="yes">
@@ -2579,7 +2987,7 @@
   </compound>
   <compound kind="file">
     <name>command_sender_multicast_source.c</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/command_sender_multicast_source/src/</path>
+    <path>/github/workspace/c_common/models/command_sender_multicast_source/src/</path>
     <filename>command__sender__multicast__source_8c.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
     <includes id="data__specification_8h" name="data_specification.h" local="no" imported="no">data_specification.h</includes>
@@ -2649,6 +3057,138 @@
       <name>PROVENANCE_REGION</name>
       <anchorfile>command__sender__multicast__source_8c.html</anchorfile>
       <anchor>a6e4d67a0bd74db4da98539f8d2e5ab32a43f0d58cfc0317ea06139b20c9242d1e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ITEMS_PER_DATA_PACKET</name>
+      <anchorfile>sdp__no__scp_8h.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba83634fa5d88b9e8e880513f8e11e028c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>LENGTH_OF_SDP_HEADER</name>
+      <anchorfile>sdp__no__scp_8h.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad92ffcc0192209f37d454a861ed5ed64</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bab472899e20607fe88982a376f3dbedd3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DATA_SPECIFICATION_VERSION</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba023bd8025ffafc9954a7fd7ae61df33f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>VERSION_MASK</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba3bdd0253bec51792b83d9d6603e131af</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>VERSION_SHIFT</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba7913873b92ba0d517ed68aa06348b5de</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SYSTEM</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba57cc238145ec1361c72c327674c0d754</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CONFIG</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba702582f7f825ca83bdb076b15b4c0fc2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>RECORDING</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba875fadf1437508cebb97bb5c3445cbdc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>MC_PACKET</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad73783ea228c0f1164d4ed5274bc2fc4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad645defae8408de2415f3dc417f69773</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>USER</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bae2d30a195cee6b2961cc2c23ea4b520b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6537a62f6f155792bb9a320ee2ec4d68</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TIMER</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>COMMAND_ID</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba0ed3879bce4efefae9a9ed50c5853abe</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEQ_NUM_LOC</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba1c954815fb5b778e015418afa27d53b4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_ID</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba8b52003a52ab660d4253704c1a90db74</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>START_OF_DATA</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEQUENCE_NUMBER_SIZE</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad7babe063e0a6247caaffd6c8caee600</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_ID_SIZE</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba637adf75b1ab91cb42ca583a87352738</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP_PAYLOAD_WORDS</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6ad2e57f7353682e45c4acc5e5aeee96</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP_PAYLOAD_BYTES</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad752c54a1cb6bf3d556b67c65101668e</anchor>
       <arglist></arglist>
     </member>
     <member kind="function" static="yes">
@@ -2794,7 +3334,7 @@
   </compound>
   <compound kind="file">
     <name>bit_field_table_generator.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/bit_field_common/</path>
+    <path>/github/workspace/c_common/models/compressors/src/bit_field_common/</path>
     <filename>bit__field__table__generator_8h.html</filename>
     <includes id="constants_8h" name="constants.h" local="yes" imported="no">../common/constants.h</includes>
     <includes id="routing__tables_8h" name="routing_tables.h" local="yes" imported="no">routing_tables.h</includes>
@@ -2858,7 +3398,7 @@
   </compound>
   <compound kind="file">
     <name>compressor_sorter_structs.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/bit_field_common/</path>
+    <path>/github/workspace/c_common/models/compressors/src/bit_field_common/</path>
     <filename>compressor__sorter__structs_8h.html</filename>
     <includes id="filter__info_8h" name="filter_info.h" local="no" imported="no">filter_info.h</includes>
     <includes id="key__atom__map_8h" name="key_atom_map.h" local="no" imported="no">key_atom_map.h</includes>
@@ -2971,7 +3511,7 @@
   </compound>
   <compound kind="file">
     <name>routing_tables.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/bit_field_common/</path>
+    <path>/github/workspace/c_common/models/compressors/src/bit_field_common/</path>
     <filename>routing__tables_8h.html</filename>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
@@ -3057,7 +3597,7 @@
   </compound>
   <compound kind="file">
     <name>routing_tables_utils.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/bit_field_common/</path>
+    <path>/github/workspace/c_common/models/compressors/src/bit_field_common/</path>
     <filename>routing__tables__utils_8h.html</filename>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
@@ -3114,7 +3654,7 @@
   </compound>
   <compound kind="file">
     <name>bit_field_compressor.c</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/</path>
+    <path>/github/workspace/c_common/models/compressors/src/</path>
     <filename>bit__field__compressor_8c.html</filename>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="sdp__no__scp_8h" name="sdp_no_scp.h" local="no" imported="no">sdp_no_scp.h</includes>
@@ -3281,7 +3821,7 @@
   </compound>
   <compound kind="file">
     <name>constants.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/common/</path>
+    <path>/github/workspace/c_common/models/compressors/src/common/</path>
     <filename>constants_8h.html</filename>
     <member kind="define">
       <type>#define</type>
@@ -3363,7 +3903,7 @@
   </compound>
   <compound kind="file">
     <name>minimise.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/common/</path>
+    <path>/github/workspace/c_common/models/compressors/src/common/</path>
     <filename>minimise_8h.html</filename>
     <member kind="function">
       <type>bool</type>
@@ -3375,7 +3915,7 @@
   </compound>
   <compound kind="file">
     <name>routing_table.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/common/</path>
+    <path>/github/workspace/c_common/models/compressors/src/common/</path>
     <filename>routing__table_8h.html</filename>
     <class kind="struct">key_mask_t</class>
     <class kind="struct">entry_t</class>
@@ -3453,7 +3993,7 @@
   </compound>
   <compound kind="file">
     <name>compressor.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/compressor_includes/</path>
+    <path>/github/workspace/c_common/models/compressors/src/compressor_includes/</path>
     <filename>compressor_8h.html</filename>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="ordered__covering_8h" name="ordered_covering.h" local="yes" imported="no">ordered_covering_includes/ordered_covering.h</includes>
@@ -3469,7 +4009,7 @@
   </compound>
   <compound kind="file">
     <name>pair_minimize.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/compressor_includes/</path>
+    <path>/github/workspace/c_common/models/compressors/src/compressor_includes/</path>
     <filename>pair__minimize_8h.html</filename>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">../common/routing_table.h</includes>
@@ -3574,7 +4114,7 @@
   </compound>
   <compound kind="file">
     <name>remove_default_routes.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/compressor_includes/</path>
+    <path>/github/workspace/c_common/models/compressors/src/compressor_includes/</path>
     <filename>remove__default__routes_8h.html</filename>
     <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">../common/routing_table.h</includes>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
@@ -3595,11 +4135,13 @@
   </compound>
   <compound kind="file">
     <name>aliases.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/ordered_covering_includes/</path>
+    <path>/github/workspace/c_common/models/compressors/src/ordered_covering_includes/</path>
     <filename>aliases_8h.html</filename>
     <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
     <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">../common/routing_table.h</includes>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
+    <class kind="struct">alias_element_t</class>
+    <class kind="struct">alias_list_t</class>
     <class kind="union">a_key_t</class>
     <class kind="struct">node_t</class>
     <class kind="struct">aliases_t</class>
@@ -3683,11 +4225,12 @@
   </compound>
   <compound kind="file">
     <name>bit_set.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/ordered_covering_includes/</path>
+    <path>/github/workspace/c_common/models/compressors/src/ordered_covering_includes/</path>
     <filename>bit__set_8h.html</filename>
     <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
     <includes id="constants_8h" name="constants.h" local="yes" imported="no">../common/constants.h</includes>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
+    <class kind="struct">bit_set_t</class>
     <member kind="function">
       <type>bool</type>
       <name>bit_set_clear</name>
@@ -3761,7 +4304,7 @@
   </compound>
   <compound kind="file">
     <name>merge.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/ordered_covering_includes/</path>
+    <path>/github/workspace/c_common/models/compressors/src/ordered_covering_includes/</path>
     <filename>merge_8h.html</filename>
     <includes id="bit__set_8h" name="bit_set.h" local="yes" imported="no">bit_set.h</includes>
     <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">../common/routing_table.h</includes>
@@ -3846,7 +4389,7 @@
   </compound>
   <compound kind="file">
     <name>ordered_covering.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/ordered_covering_includes/</path>
+    <path>/github/workspace/c_common/models/compressors/src/ordered_covering_includes/</path>
     <filename>ordered__covering_8h.html</filename>
     <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
@@ -3899,7 +4442,7 @@
   </compound>
   <compound kind="file">
     <name>rt_single.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/simple/</path>
+    <path>/github/workspace/c_common/models/compressors/src/simple/</path>
     <filename>rt__single_8h.html</filename>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
@@ -3971,7 +4514,7 @@
   </compound>
   <compound kind="file">
     <name>simple_compressor.c</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/simple/</path>
+    <path>/github/workspace/c_common/models/compressors/src/simple/</path>
     <filename>simple__compressor_8c.html</filename>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
@@ -3994,7 +4537,7 @@
   </compound>
   <compound kind="file">
     <name>unordered_remove_default_routes.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/simple/</path>
+    <path>/github/workspace/c_common/models/compressors/src/simple/</path>
     <filename>unordered__remove__default__routes_8h.html</filename>
     <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">routing_table.h</includes>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
@@ -4015,7 +4558,7 @@
   </compound>
   <compound kind="file">
     <name>bit_field_reader.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/sorter/</path>
+    <path>/github/workspace/c_common/models/compressors/src/sorter/</path>
     <filename>bit__field__reader_8h.html</filename>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="malloc__extras_8h" name="malloc_extras.h" local="no" imported="no">malloc_extras.h</includes>
@@ -4094,7 +4637,7 @@
   </compound>
   <compound kind="file">
     <name>bit_field_sorter_and_searcher.c</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/sorter/</path>
+    <path>/github/workspace/c_common/models/compressors/src/sorter/</path>
     <filename>bit__field__sorter__and__searcher_8c.html</filename>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="data__specification_8h" name="data_specification.h" local="no" imported="no">data_specification.h</includes>
@@ -4499,7 +5042,7 @@
   </compound>
   <compound kind="file">
     <name>live_packet_gather.c</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/live_packet_gather/src/</path>
+    <path>/github/workspace/c_common/models/live_packet_gather/src/</path>
     <filename>live__packet__gather_8c.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
     <includes id="data__specification_8h" name="data_specification.h" local="no" imported="no">data_specification.h</includes>
@@ -4551,33 +5094,219 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
+      <name>ITEMS_PER_DATA_PACKET</name>
+      <anchorfile>sdp__no__scp_8h.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba83634fa5d88b9e8e880513f8e11e028c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>LENGTH_OF_SDP_HEADER</name>
+      <anchorfile>sdp__no__scp_8h.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad92ffcc0192209f37d454a861ed5ed64</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bab472899e20607fe88982a376f3dbedd3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DATA_SPECIFICATION_VERSION</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba023bd8025ffafc9954a7fd7ae61df33f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>VERSION_MASK</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba3bdd0253bec51792b83d9d6603e131af</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>VERSION_SHIFT</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba7913873b92ba0d517ed68aa06348b5de</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SYSTEM</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba57cc238145ec1361c72c327674c0d754</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CONFIG</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba702582f7f825ca83bdb076b15b4c0fc2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>RECORDING</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba875fadf1437508cebb97bb5c3445cbdc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
       <name>MC_PACKET</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>ab04a0655cd1e3bcac5e8f48c18df1a57ad73783ea228c0f1164d4ed5274bc2fc4</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad73783ea228c0f1164d4ed5274bc2fc4</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SDP</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>ab04a0655cd1e3bcac5e8f48c18df1a57ad645defae8408de2415f3dc417f69773</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad645defae8408de2415f3dc417f69773</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>USER</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>ab04a0655cd1e3bcac5e8f48c18df1a57ae2d30a195cee6b2961cc2c23ea4b520b</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bae2d30a195cee6b2961cc2c23ea4b520b</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DMA</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>ab04a0655cd1e3bcac5e8f48c18df1a57a6537a62f6f155792bb9a320ee2ec4d68</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6537a62f6f155792bb9a320ee2ec4d68</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>TIMER</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>ab04a0655cd1e3bcac5e8f48c18df1a57a17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>COMMAND_ID</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba0ed3879bce4efefae9a9ed50c5853abe</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEQ_NUM_LOC</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba1c954815fb5b778e015418afa27d53b4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_ID</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba8b52003a52ab660d4253704c1a90db74</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>START_OF_DATA</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEQUENCE_NUMBER_SIZE</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad7babe063e0a6247caaffd6c8caee600</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_ID_SIZE</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba637adf75b1ab91cb42ca583a87352738</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP_PAYLOAD_WORDS</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6ad2e57f7353682e45c4acc5e5aeee96</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP_PAYLOAD_BYTES</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad752c54a1cb6bf3d556b67c65101668e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TIMER</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad645defae8408de2415f3dc417f69773</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a6537a62f6f155792bb9a320ee2ec4d68</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEND_SEQ_DATA_HEADER_WORDS</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a8c30d65ae329b6ebe1a4a0886935be43</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEND_MISSING_SEQ_HEADER_WORDS</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad76316f60dad277272a72fbe572f73e3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEND_DATA_LOCATION_HEADER_WORDS</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a89f9933ed17820997fea73283993bc7b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ABSOLUTE_MAX_SIZE_OF_SDP_IN_BYTES</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7af578d4f10ba5d4a1de370678339da240</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CPU_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a31d3dd7993118a16a819118bce59b194</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CC_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a000b6c62469245f694c3ef9d3390a7c6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TIMER_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aab240da79e7c1d78a159343d146edd13</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aca95bbc52c7ed3e8240a88dc1a6ba2a3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA_ERROR_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ac749c67267efeb265141afc68e371cdb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA_TIMEOUT_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a1375671dff545ffd4c86fac72236812a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>MC_PAYLOAD_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a33728a0193855bd51db0362175f7fc0f</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumeration">
@@ -4821,7 +5550,7 @@
   </compound>
   <compound kind="file">
     <name>reverse_iptag_multicast_source.c</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/reverse_iptag_multicast_source/src/</path>
+    <path>/github/workspace/c_common/models/reverse_iptag_multicast_source/src/</path>
     <filename>reverse__iptag__multicast__source_8c.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
     <includes id="data__specification_8h" name="data_specification.h" local="no" imported="no">data_specification.h</includes>
@@ -5363,7 +6092,7 @@
   </compound>
   <compound kind="file">
     <name>common.h</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/system_models/src/</path>
+    <path>/github/workspace/c_common/models/system_models/src/</path>
     <filename>common_8h.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
     <includes id="sdp__no__scp_8h" name="sdp_no_scp.h" local="no" imported="no">sdp_no_scp.h</includes>
@@ -5493,7 +6222,7 @@
   </compound>
   <compound kind="file">
     <name>data_speed_up_packet_gatherer.c</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/system_models/src/</path>
+    <path>/github/workspace/c_common/models/system_models/src/</path>
     <filename>data__speed__up__packet__gatherer_8c.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
     <includes id="common_8h" name="common.h" local="yes" imported="no">common.h</includes>
@@ -5612,87 +6341,255 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
+      <name>ITEMS_PER_DATA_PACKET</name>
+      <anchorfile>sdp__no__scp_8h.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba83634fa5d88b9e8e880513f8e11e028c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>LENGTH_OF_SDP_HEADER</name>
+      <anchorfile>sdp__no__scp_8h.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad92ffcc0192209f37d454a861ed5ed64</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bab472899e20607fe88982a376f3dbedd3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DATA_SPECIFICATION_VERSION</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba023bd8025ffafc9954a7fd7ae61df33f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>VERSION_MASK</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba3bdd0253bec51792b83d9d6603e131af</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>VERSION_SHIFT</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba7913873b92ba0d517ed68aa06348b5de</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SYSTEM</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba57cc238145ec1361c72c327674c0d754</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CONFIG</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba702582f7f825ca83bdb076b15b4c0fc2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>RECORDING</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba875fadf1437508cebb97bb5c3445cbdc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>MC_PACKET</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad73783ea228c0f1164d4ed5274bc2fc4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad645defae8408de2415f3dc417f69773</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>USER</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bae2d30a195cee6b2961cc2c23ea4b520b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6537a62f6f155792bb9a320ee2ec4d68</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TIMER</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
       <name>COMMAND_ID</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>abc5c98fcc1211af2b80116dd6e0a035da0ed3879bce4efefae9a9ed50c5853abe</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba0ed3879bce4efefae9a9ed50c5853abe</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SEQ_NUM_LOC</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>abc5c98fcc1211af2b80116dd6e0a035da1c954815fb5b778e015418afa27d53b4</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba1c954815fb5b778e015418afa27d53b4</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>TRANSACTION_ID</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>abc5c98fcc1211af2b80116dd6e0a035da8b52003a52ab660d4253704c1a90db74</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba8b52003a52ab660d4253704c1a90db74</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>START_OF_DATA</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>abc5c98fcc1211af2b80116dd6e0a035dacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEQUENCE_NUMBER_SIZE</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad7babe063e0a6247caaffd6c8caee600</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_ID_SIZE</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba637adf75b1ab91cb42ca583a87352738</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP_PAYLOAD_WORDS</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6ad2e57f7353682e45c4acc5e5aeee96</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP_PAYLOAD_BYTES</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad752c54a1cb6bf3d556b67c65101668e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TIMER</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad645defae8408de2415f3dc417f69773</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a6537a62f6f155792bb9a320ee2ec4d68</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SEND_SEQ_DATA_HEADER_WORDS</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>ac36f475ca5b446f4fde4c9b90bec77c8a8c30d65ae329b6ebe1a4a0886935be43</anchor>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a8c30d65ae329b6ebe1a4a0886935be43</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SEND_MISSING_SEQ_HEADER_WORDS</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>ac36f475ca5b446f4fde4c9b90bec77c8ad76316f60dad277272a72fbe572f73e3</anchor>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad76316f60dad277272a72fbe572f73e3</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SEND_DATA_LOCATION_HEADER_WORDS</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>ac36f475ca5b446f4fde4c9b90bec77c8a89f9933ed17820997fea73283993bc7b</anchor>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a89f9933ed17820997fea73283993bc7b</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>ABSOLUTE_MAX_SIZE_OF_SDP_IN_BYTES</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>ac36f475ca5b446f4fde4c9b90bec77c8af578d4f10ba5d4a1de370678339da240</anchor>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7af578d4f10ba5d4a1de370678339da240</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CPU_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a31d3dd7993118a16a819118bce59b194</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CC_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a000b6c62469245f694c3ef9d3390a7c6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TIMER_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aab240da79e7c1d78a159343d146edd13</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aca95bbc52c7ed3e8240a88dc1a6ba2a3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA_ERROR_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ac749c67267efeb265141afc68e371cdb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA_TIMEOUT_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a1375671dff545ffd4c86fac72236812a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>MC_PAYLOAD_SLOT</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a33728a0193855bd51db0362175f7fc0f</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DATA_IN_NORMAL_PACKET_WORDS</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a05589fbab0657f08285ebdfe93f5ec9ea0dc40ee7b70edfa59f298003c61ace4a</anchor>
+      <anchor>a99fb83031ce9923c84392b4e92f956b5a0dc40ee7b70edfa59f298003c61ace4a</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>ITEMS_PER_MISSING_PACKET</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a05589fbab0657f08285ebdfe93f5ec9ea96443832aeb718a8af969a669a2b9927</anchor>
+      <anchor>a99fb83031ce9923c84392b4e92f956b5a96443832aeb718a8af969a669a2b9927</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>CONFIG</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a16af7b253440dadd46a80a4b9fddba4da702582f7f825ca83bdb076b15b4c0fc2</anchor>
+      <anchor>abc6126af1d45847bc59afa0aa3216b04a702582f7f825ca83bdb076b15b4c0fc2</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>CHIP_TO_KEY</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a16af7b253440dadd46a80a4b9fddba4da908ad08dc63e1c21f95e82d2e50700a4</anchor>
+      <anchor>abc6126af1d45847bc59afa0aa3216b04a908ad08dc63e1c21f95e82d2e50700a4</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>MC_PACKET</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>aba01db17f4a2bfbc3db60dc172972a25ad73783ea228c0f1164d4ed5274bc2fc4</anchor>
+      <anchor>adc29c2ff13d900c2f185ee95427fb06cad73783ea228c0f1164d4ed5274bc2fc4</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SDP</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>aba01db17f4a2bfbc3db60dc172972a25ad645defae8408de2415f3dc417f69773</anchor>
+      <anchor>adc29c2ff13d900c2f185ee95427fb06cad645defae8408de2415f3dc417f69773</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumeration">
@@ -6038,7 +6935,7 @@
   </compound>
   <compound kind="file">
     <name>extra_monitor_support.c</name>
-    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/system_models/src/</path>
+    <path>/github/workspace/c_common/models/system_models/src/</path>
     <filename>extra__monitor__support_8c.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
     <includes id="spinn__extra_8h" name="spinn_extra.h" local="no" imported="no">spinn_extra.h</includes>
@@ -6047,7 +6944,7 @@
     <class kind="struct">dumped_packet_t</class>
     <class kind="struct">sdp_data_out_t</class>
     <class kind="struct">router_entry_t</class>
-    <class kind="struct">data_in_data_items</class>
+    <class kind="struct">data_in_data_items_t</class>
     <class kind="struct">reinjector_status_response_packet_t</class>
     <class kind="struct">reinject_config_t</class>
     <class kind="struct">data_speed_out_config_t</class>
@@ -6200,27 +7097,135 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
+      <name>ITEMS_PER_DATA_PACKET</name>
+      <anchorfile>sdp__no__scp_8h.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba83634fa5d88b9e8e880513f8e11e028c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>LENGTH_OF_SDP_HEADER</name>
+      <anchorfile>sdp__no__scp_8h.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad92ffcc0192209f37d454a861ed5ed64</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bab472899e20607fe88982a376f3dbedd3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DATA_SPECIFICATION_VERSION</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba023bd8025ffafc9954a7fd7ae61df33f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>VERSION_MASK</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba3bdd0253bec51792b83d9d6603e131af</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>VERSION_SHIFT</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba7913873b92ba0d517ed68aa06348b5de</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SYSTEM</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba57cc238145ec1361c72c327674c0d754</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CONFIG</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba702582f7f825ca83bdb076b15b4c0fc2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>RECORDING</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba875fadf1437508cebb97bb5c3445cbdc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>MC_PACKET</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad73783ea228c0f1164d4ed5274bc2fc4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad645defae8408de2415f3dc417f69773</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>USER</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bae2d30a195cee6b2961cc2c23ea4b520b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6537a62f6f155792bb9a320ee2ec4d68</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TIMER</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>COMMAND_ID</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba0ed3879bce4efefae9a9ed50c5853abe</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEQ_NUM_LOC</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba1c954815fb5b778e015418afa27d53b4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_ID</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba8b52003a52ab660d4253704c1a90db74</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>START_OF_DATA</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
       <name>SEQUENCE_NUMBER_SIZE</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>aaf105ae5beaca1dee30ae54530691fcead7babe063e0a6247caaffd6c8caee600</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad7babe063e0a6247caaffd6c8caee600</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>TRANSACTION_ID_SIZE</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>aaf105ae5beaca1dee30ae54530691fcea637adf75b1ab91cb42ca583a87352738</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba637adf75b1ab91cb42ca583a87352738</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SDP_PAYLOAD_WORDS</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>aaf105ae5beaca1dee30ae54530691fcea6ad2e57f7353682e45c4acc5e5aeee96</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6ad2e57f7353682e45c4acc5e5aeee96</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SDP_PAYLOAD_BYTES</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>aaf105ae5beaca1dee30ae54530691fcead752c54a1cb6bf3d556b67c65101668e</anchor>
+      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad752c54a1cb6bf3d556b67c65101668e</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumeration">
@@ -6255,45 +7260,87 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
+      <name>TIMER</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SDP</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad645defae8408de2415f3dc417f69773</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>DMA</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a6537a62f6f155792bb9a320ee2ec4d68</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEND_SEQ_DATA_HEADER_WORDS</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a8c30d65ae329b6ebe1a4a0886935be43</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEND_MISSING_SEQ_HEADER_WORDS</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad76316f60dad277272a72fbe572f73e3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>SEND_DATA_LOCATION_HEADER_WORDS</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a89f9933ed17820997fea73283993bc7b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>ABSOLUTE_MAX_SIZE_OF_SDP_IN_BYTES</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7af578d4f10ba5d4a1de370678339da240</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
       <name>CPU_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a80155586fa275b28773c9b203f52cabaa31d3dd7993118a16a819118bce59b194</anchor>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a31d3dd7993118a16a819118bce59b194</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>CC_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a80155586fa275b28773c9b203f52cabaa000b6c62469245f694c3ef9d3390a7c6</anchor>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a000b6c62469245f694c3ef9d3390a7c6</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>TIMER_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a80155586fa275b28773c9b203f52cabaaab240da79e7c1d78a159343d146edd13</anchor>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aab240da79e7c1d78a159343d146edd13</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DMA_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a80155586fa275b28773c9b203f52cabaaca95bbc52c7ed3e8240a88dc1a6ba2a3</anchor>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aca95bbc52c7ed3e8240a88dc1a6ba2a3</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DMA_ERROR_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a80155586fa275b28773c9b203f52cabaac749c67267efeb265141afc68e371cdb</anchor>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ac749c67267efeb265141afc68e371cdb</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DMA_TIMEOUT_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a80155586fa275b28773c9b203f52cabaa1375671dff545ffd4c86fac72236812a</anchor>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a1375671dff545ffd4c86fac72236812a</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>MC_PAYLOAD_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a80155586fa275b28773c9b203f52cabaa33728a0193855bd51db0362175f7fc0f</anchor>
+      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a33728a0193855bd51db0362175f7fc0f</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumeration">
@@ -7219,6 +8266,58 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>alias_element_t</name>
+    <filename>aliases_8h.html</filename>
+    <anchor>structalias__element__t</anchor>
+    <member kind="variable">
+      <type>key_mask_t</type>
+      <name>key_mask</name>
+      <anchorfile>aliases_8h.html</anchorfile>
+      <anchor>a5cffe51fefeb032b523d4efacee7cb31</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>source</name>
+      <anchorfile>aliases_8h.html</anchorfile>
+      <anchor>ad37c5da8cb7d607d9afcc24b487e201f</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>alias_list_t</name>
+    <filename>aliases_8h.html</filename>
+    <anchor>structalias__list__t</anchor>
+    <member kind="variable">
+      <type>unsigned int</type>
+      <name>n_elements</name>
+      <anchorfile>aliases_8h.html</anchorfile>
+      <anchor>a1a3474f88a52dc74a928e6c144d54edc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>unsigned int</type>
+      <name>max_size</name>
+      <anchorfile>aliases_8h.html</anchorfile>
+      <anchor>a9075cf72bed0ee3e6f759587bcef2b62</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>struct _alias_list_t *</type>
+      <name>next</name>
+      <anchorfile>aliases_8h.html</anchorfile>
+      <anchor>a28ad8f963e8f559d3272479715932943</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>alias_element_t</type>
+      <name>data</name>
+      <anchorfile>aliases_8h.html</anchorfile>
+      <anchor>a48ff285d482da94f03f0f3321f93f95e</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
     <name>aliases_t</name>
     <filename>aliases_8h.html</filename>
     <anchor>structaliases__t</anchor>
@@ -7247,6 +8346,32 @@
       <anchorfile>malloc__extras_8h.html</anchorfile>
       <anchor>a06dbb45b3adfdd060638a2156d68f74d</anchor>
       <arglist>[]</arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>bit_set_t</name>
+    <filename>bit__set_8h.html</filename>
+    <anchor>structbit__set__t</anchor>
+    <member kind="variable">
+      <type>unsigned int</type>
+      <name>count</name>
+      <anchorfile>bit__set_8h.html</anchorfile>
+      <anchor>a6dac8b49da54963e7ec05054b5026006</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>unsigned int</type>
+      <name>n_words</name>
+      <anchorfile>bit__set_8h.html</anchorfile>
+      <anchor>af9876144f20848bcfe56b74ecdd52f11</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>unsigned int</type>
+      <name>n_elements</name>
+      <anchorfile>bit__set_8h.html</anchorfile>
+      <anchor>a8a98ddddaf3fd8613fcb86713f0cac4c</anchor>
+      <arglist></arglist>
     </member>
   </compound>
   <compound kind="struct">
@@ -7789,42 +8914,42 @@
     </member>
   </compound>
   <compound kind="struct">
-    <name>data_in_data_items</name>
+    <name>data_in_data_items_t</name>
     <filename>extra__monitor__support_8c.html</filename>
-    <anchor>structdata__in__data__items</anchor>
+    <anchor>structdata__in__data__items__t</anchor>
     <member kind="variable">
       <type>uint32_t</type>
       <name>address_mc_key</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a0a9a9679c48739fc7924d2aafad1dd13</anchor>
+      <anchor>a397656a5c4d0d5609334b22958dd932d</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>uint32_t</type>
       <name>data_mc_key</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a375e32fd1fceeba4aebbd95b11006473</anchor>
+      <anchor>a7715680a00e83fb53cd386d270673aac</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>uint32_t</type>
       <name>boundary_mc_key</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a5debcb4452a5dfec91034d0f94d07e99</anchor>
+      <anchor>a8d9604b491d768f328203ae519319d90</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>uint32_t</type>
       <name>n_system_router_entries</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>ae0afbb350504ced0a6aba3f609ef0462</anchor>
+      <anchor>a7956193f99be4cfea0d65373ca92edf7</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
       <type>router_entry_t</type>
       <name>system_router_entries</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a56f4f9dcd3fb07183d5f60fd13c65808</anchor>
+      <anchor>a3ff3fea25c24f4fac067849ee3b21e7d</anchor>
       <arglist>[]</arglist>
     </member>
   </compound>
@@ -12803,12 +13928,12 @@
   <compound kind="page">
     <name>md_README</name>
     <title>Tips for writing C code for spinnaker</title>
-    <filename>md_README</filename>
+    <filename>md_README.html</filename>
   </compound>
   <compound kind="page">
     <name>index</name>
     <title>Support Library and Binaries for SpiNNaker Applications</title>
-    <filename>index</filename>
+    <filename>index.html</filename>
     <docanchor file="index.html" title="Introduction">intro</docanchor>
     <docanchor file="index.html" title="The Front End Common library">fec_lib</docanchor>
     <docanchor file="index.html" title="The Support Binaries">support_models</docanchor>

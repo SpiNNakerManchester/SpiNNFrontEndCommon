@@ -37,9 +37,6 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="spinn_front_end_common.interface.profiling.html" title="spinn_front_end_common.interface.profiling package"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -57,7 +54,7 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression package</a><ul>
-<li><a class="reference internal" href="#module-spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression">Module contents</a></li>
+<li><a class="reference internal" href="#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -95,162 +92,8 @@
             
   <div class="section" id="spinn-front-end-common-interface-interface-functions-on-chip-router-table-compression-package">
 <h1>spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression package<a class="headerlink" href="#spinn-front-end-common-interface-interface-functions-on-chip-router-table-compression-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.Compression">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.</code><code class="descname">Compression</code><span class="sig-paren">(</span><em>app_id</em>, <em>binary_path</em>, <em>compress_as_much_as_possible</em>, <em>machine</em>, <em>provenance_file_path</em>, <em>routing_tables</em>, <em>transceiver</em>, <em>progress_text</em>, <em>write_compressor_iobuf</em>, <em>result_register</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/on_chip_router_table_compression/compression.html#Compression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.Compression" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
-<p>Compression algorithm implementation that uses a on-chip router        compressor in order to parallelise.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the application ID used by the main application</li>
-<li><strong>binary_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; What binary to run</li>
-<li><strong>compress_as_much_as_possible</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; Whether to do maximal compression</li>
-<li><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)"><em>Machine</em></a>) &#8211; The machine model</li>
-<li><strong>provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Where to write provenance data (IOBUF contents)</li>
-<li><strong>routing_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v)"><em>MulticastRoutingTables</em></a>) &#8211; the memory routing tables to be compressed</li>
-<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; How to talk to the machine</li>
-<li><strong>progress_text</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Text to use in progress bar</li>
-<li><strong>write_compressor_iobuf</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; Should IOBUF be read and written out</li>
-<li><strong>result_register</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; number of the user register to check for the result code</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.Compression.compress">
-<code class="descname">compress</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/on_chip_router_table_compression/compression.html#Compression.compress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.Compression.compress" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the on-machine compression algorithm.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><strong>SpinnFrontEndException</strong></a> &#8211; If compression fails</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.make_source_hack">
-<code class="descclassname">spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.</code><code class="descname">make_source_hack</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/on_chip_router_table_compression/compression.html#make_source_hack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.make_source_hack" title="Permalink to this definition">¶</a></dt>
-<dd><p>Hack to support the source requirement for the router compressor        on chip</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.MulticastRoutingEntry" title="(in SpiNNMachine v)"><em>MulticastRoutingEntry</em></a>) &#8211; the multicast router table entry.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">return the source value</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.mundy_on_chip_router_compression">
-<code class="descclassname">spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.</code><code class="descname">mundy_on_chip_router_compression</code><span class="sig-paren">(</span><em>routing_tables</em>, <em>transceiver</em>, <em>machine</em>, <em>app_id</em>, <em>system_provenance_folder</em>, <em>write_compressor_iobuf</em>, <em>compress_only_when_needed=True</em>, <em>compress_as_much_as_possible=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/on_chip_router_table_compression/compression.html#mundy_on_chip_router_compression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.mundy_on_chip_router_compression" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load routing tables and compress them using Andrew Mundy&#8217;s algorithm.</p>
-<p>This uses an APLX built by Mundy which no longer compiles but still works
-with the current tool chain</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>routing_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v)"><em>MulticastRoutingTables</em></a>) &#8211; the memory routing tables to be compressed</li>
-<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; How to talk to the machine</li>
-<li><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)"><em>Machine</em></a>) &#8211; the SpiNNaker machine representation</li>
-<li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the application ID used by the main application</li>
-<li><strong>system_provenance_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the path to where to write the data</li>
-<li><strong>compress_as_much_as_possible</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If False, the compressor will only reduce the table until it fits in
-the router space, otherwise it will try to reduce until it until it
-can&#8217;t reduce it any more</li>
-<li><strong>compress_only_when_needed</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If True, the compressor will only compress if the table doesn&#8217;t fit in
-the current router space, otherwise it will just load the table</li>
-<li><strong>write_compressor_iobuf</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; Should IOBUF be read and written out</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><strong>SpinnFrontEndException</strong></a> &#8211; If compression fails</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.pair_compression">
-<code class="descclassname">spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.</code><code class="descname">pair_compression</code><span class="sig-paren">(</span><em>routing_tables</em>, <em>transceiver</em>, <em>executable_finder</em>, <em>machine</em>, <em>app_id</em>, <em>provenance_file_path</em>, <em>write_compressor_iobuf</em>, <em>compress_as_much_as_possible=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/on_chip_router_table_compression/compression.html#pair_compression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.pair_compression" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load routing tables and compress then using the Pair Algorithm.</p>
-<p>See <code class="docutils literal"><span class="pre">pacman/operations/router_compressors/pair_compressor.py</span></code> which is
-the exact same algorithm implemented in Python.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>routing_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v)"><em>MulticastRoutingTables</em></a>) &#8211; the memory routing tables to be compressed</li>
-<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; How to talk to the machine</li>
-<li><strong>executable_finder</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.executable_finder.ExecutableFinder" title="(in SpiNNUtils v)"><em>ExecutableFinder</em></a>) &#8211; tracker of binaries.</li>
-<li><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)"><em>Machine</em></a>) &#8211; the SpiNNaker machine representation</li>
-<li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the application ID used by the main application</li>
-<li><strong>provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the path to where to write the data</li>
-<li><strong>compress_as_much_as_possible</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If False, the compressor will only reduce the table until it fits in
-the router space, otherwise it will try to reduce until it until it
-can&#8217;t reduce it any more</li>
-<li><strong>write_compressor_iobuf</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; Should IOBUF be read and written out</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><strong>SpinnFrontEndException</strong></a> &#8211; If compression fails</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.unordered_compression">
-<code class="descclassname">spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.</code><code class="descname">unordered_compression</code><span class="sig-paren">(</span><em>routing_tables</em>, <em>transceiver</em>, <em>executable_finder</em>, <em>machine</em>, <em>app_id</em>, <em>provenance_file_path</em>, <em>write_compressor_iobuf</em>, <em>compress_as_much_as_possible=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/on_chip_router_table_compression/compression.html#unordered_compression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.unordered_compression" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load routing tables and compress then using the unordered Algorithm.</p>
-<p>To the best of our knowledge this is the same algorithm as
-<a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.mundy_on_chip_router_compression" title="spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.mundy_on_chip_router_compression"><code class="xref py py-func docutils literal"><span class="pre">mundy_on_chip_router_compression()</span></code></a>, except this one is still
-buildable and can be maintained.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>routing_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v)"><em>MulticastRoutingTables</em></a>) &#8211; the memory routing tables to be compressed</li>
-<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; How to talk to the machine</li>
-<li><strong>executable_finder</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.executable_finder.ExecutableFinder" title="(in SpiNNUtils v)"><em>ExecutableFinder</em></a>) &#8211; tracker of binaries</li>
-<li><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)"><em>Machine</em></a>) &#8211; the SpiNNaker machine representation</li>
-<li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the application ID used by the main application</li>
-<li><strong>provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the path to where to write the data</li>
-<li><strong>compress_as_much_as_possible</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If False, the compressor will only reduce the table until it fits in
-the router space, otherwise it will try to reduce until it until it
-can&#8217;t reduce it any more</li>
-<li><strong>write_compressor_iobuf</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; Should IOBUF be read and written out</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><strong>SpinnFrontEndException</strong></a> &#8211; If compression fails</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
+<div class="section" id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -266,9 +109,6 @@ can&#8217;t reduce it any more</li>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="spinn_front_end_common.interface.profiling.html" title="spinn_front_end_common.interface.profiling package"
              >next</a> |</li>
