@@ -52,7 +52,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
             The optional initial constraints of the vertex.
         :param int max_atoms_per_core: The max number of atoms that can be
             placed on a core, used in partitioning.
-        :type splitter None or AbstractSplitterCommon
+        :type splitter: None or AbstractSplitterCommon
         :raise PacmanInvalidParameterException:
             If one of the constraints is not valid
         :raise PacmanInvalidParameterException:
