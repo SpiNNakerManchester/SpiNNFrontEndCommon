@@ -1703,11 +1703,6 @@ class _StreamingContextManager(object):
         self._placements = placements
 
     def __enter__(self):
-        config = get_simulator().config
-        n_channels = read_config_int(
-            config, "SpinnMan", "multi_packets_in_flight_n_channels")
-        intermediate_channel_waits = read_config_int(
-            config, "SpinnMan", "multi_packets_in_flight_channel_waits")
         for gatherer in self._gatherers:
             gatherer.load_system_routing_tables(
                 self._txrx, self._monitors, self._placements)
