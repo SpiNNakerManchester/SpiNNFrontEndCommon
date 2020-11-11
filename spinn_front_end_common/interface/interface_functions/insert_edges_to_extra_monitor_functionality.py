@@ -13,11 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from pacman.model.graphs.common import EdgeTrafficType
-from pacman.model.graphs.machine.outgoing_edge_partitions import \
-    MachineEdgePartition
+from pacman.model.graphs.machine.outgoing_edge_partitions.\
+    single_source_machine_edge_partition import (
+    SingleSourceMachineEdgePartition)
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.graphs.application import ApplicationEdge, \
-    ApplicationEdgePartition
+from pacman.model.graphs.application import (
+    ApplicationEdge, ApplicationEdgePartition)
 from pacman.model.graphs.machine import MachineEdge
 from spinn_front_end_common.utilities.constants import (
     PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
@@ -112,13 +113,11 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 application_graph, vertex.app_vertex, gatherer.app_vertex)
             if app_edge is None:
                 app_edge = ApplicationEdge(
-                    vertex.app_vertex, gatherer.app_vertex,
-                    traffic_type=DataSpeedUp.TRAFFIC_TYPE)
+                    vertex.app_vertex, gatherer.app_vertex)
                 application_graph.add_outgoing_edge_partition(
                     ApplicationEdgePartition(
                         PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP,
-                        vertex.app_vertex,
-                        traffic_type=EdgeTrafficType.FIXED_ROUTE))
+                        vertex.app_vertex))
                 application_graph.add_edge(
                     app_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
             # Use the application edge to build the machine edge
@@ -127,8 +126,9 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 label=self.EDGE_LABEL.format(vertex, gatherer),
                 app_edge=app_edge)
             machine_graph.add_outgoing_edge_partition(
-                MachineEdgePartition(
-                    PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP, vertex,
+                SingleSourceMachineEdgePartition(
+                    identifier=PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP,
+                    pre_vertex=vertex,
                     traffic_type=EdgeTrafficType.FIXED_ROUTE))
             machine_graph.add_edge(
                 edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
@@ -149,7 +149,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
             edge = MachineEdge(
                 vertex, gatherer, traffic_type=DataSpeedUp.TRAFFIC_TYPE)
             machine_graph.add_outgoing_edge_partition(
-                MachineEdgePartition(
+                SingleSourceMachineEdgePartition(
                     PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP, vertex,
                     traffic_type=EdgeTrafficType.FIXED_ROUTE))
             machine_graph.add_edge(
