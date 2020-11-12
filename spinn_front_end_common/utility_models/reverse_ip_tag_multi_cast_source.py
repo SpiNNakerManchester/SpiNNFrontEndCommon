@@ -236,15 +236,7 @@ class ReverseIpTagMultiCastSource(
         return partition.pre_vertex.get_outgoing_partition_constraints(
             partition)
 
-<<<<<<< HEAD
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(self, spec, placement):
-        placement.vertex.generate_data_specification(spec, placement)
-
     @overrides(LegacyPartitionerAPI.create_machine_vertex)
-=======
-    @overrides(ApplicationVertex.create_machine_vertex)
->>>>>>> refs/remotes/origin/master
     def create_machine_vertex(
             self, vertex_slice,
             resources_required,  # @UnusedVariable
