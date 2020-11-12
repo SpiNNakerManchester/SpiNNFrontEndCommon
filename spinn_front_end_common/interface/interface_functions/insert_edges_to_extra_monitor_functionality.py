@@ -149,7 +149,8 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 vertex, gatherer, traffic_type=DataSpeedUp.TRAFFIC_TYPE)
             machine_graph.add_outgoing_edge_partition(
                 SingleSourceMachineEdgePartition(
-                    PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP, vertex,
+                    identifier=PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP,
+                    pre_vertex=vertex,
                     traffic_type=EdgeTrafficType.FIXED_ROUTE))
             machine_graph.add_edge(
                 edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
