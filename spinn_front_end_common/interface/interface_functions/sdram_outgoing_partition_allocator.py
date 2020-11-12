@@ -15,8 +15,7 @@
 
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs import AbstractSDRAMPartition
-from pacman.model.graphs.machine.outgoing_edge_partitions import (
-    SourceSegmentedSDRAMMachinePartition)
+from pacman.model.graphs.machine import SourceSegmentedSDRAMMachinePartition
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
