@@ -53,7 +53,7 @@ extensions = [
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3.6', None),
-    'numpy': ("https://docs.scipy.org/doc/numpy/", None),
+    'numpy': ("https://numpy.org/doc/stable/", None),
     'spinn_utilities': (
         'https://spinnutils.readthedocs.io/en/latest/', None),
     'spinn_machine': (
@@ -64,6 +64,8 @@ intersphinx_mapping = {
         'https://pacman.readthedocs.io/en/latest/', None),
     'data_specification': (
         'https://dataspecification.readthedocs.io/en/latest/', None),
+    'spalloc': (
+        'https://spalloc.readthedocs.io/en/latest/', None),
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -80,7 +82,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'SpiNNFrontEndCommon'
-copyright = u'2014-2017'
+copyright = u'2014-2020'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -378,7 +380,7 @@ apidoc.main([None, '-o', ".", "../../spinn_front_end_common",
              "../../spinn_front_end_common/interface/buffer_management/r*.py",
              "../../spinn_front_end_common/interface/buffer_management/buffer_manager.py",
              "../../spinn_front_end_common/interface/buffer_management/*/[a-z]*.py",
-             "../../spinn_front_end_common/interface/[dips]*/[a-z]*.py",
+             "../../spinn_front_end_common/interface/[dips]*/[a-np-z]*.py",
              "../../spinn_front_end_common/utilities/[a-z]*/[a-df-z]*.py",
              "../../spinn_front_end_common/utilities/fa*.py",
              "../../spinn_front_end_common/utilities/si*.py",
