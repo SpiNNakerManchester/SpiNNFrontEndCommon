@@ -116,12 +116,12 @@ class ReverseIpTagMultiCastSource(
         :param send_buffer_partition_id: The ID of the partition containing\
             the edges down which the events are to be sent
         :type send_buffer_partition_id: str or None
-        :param bool reserve_reverse_ip_tag:
+        :param bool reserve_reverse_ip_tag: \
             Extra flag for input without a reserved port
-        :param bool enable_injection:
+        :param bool enable_injection: \
             Flag to indicate that data will be received to inject
         :param splitter: the splitter object needed for this vertex
-        :type splitter None or AbstractSplitterCommon
+        :type splitter: None or AbstractSplitterCommon
         """
         # pylint: disable=too-many-arguments, too-many-locals
         super(ReverseIpTagMultiCastSource, self).__init__(
