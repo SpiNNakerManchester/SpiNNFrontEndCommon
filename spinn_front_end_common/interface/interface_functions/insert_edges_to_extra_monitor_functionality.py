@@ -13,8 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from pacman.model.graphs.common import EdgeTrafficType
-from pacman.model.graphs.machine.outgoing_edge_partitions.\
-    single_source_machine_edge_partition import (
+from pacman.model.graphs.machine.single_source_machine_edge_partition import (
         SingleSourceMachineEdgePartition)
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.application import (
