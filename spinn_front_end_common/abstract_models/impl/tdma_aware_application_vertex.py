@@ -47,7 +47,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
     def __init__(self, label, constraints, max_atoms_per_core, splitter=None):
         """
         :param str label: The optional name of the vertex.
-        :param iterable(AbstractConstraint) constraints:
+        :param iterable(~pacman.model.constraints.AbstractConstraint) \
+                constraints:
             The optional initial constraints of the vertex.
         :param int max_atoms_per_core: The max number of atoms that can be
             placed on a core, used in partitioning.

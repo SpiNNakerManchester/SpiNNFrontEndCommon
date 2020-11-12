@@ -126,7 +126,8 @@ def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
     """ Flood fills a binary to spinnaker on a given `app_id` \
         given the executable targets and binary.
 
-    :param ExecutableTargets executable_targets: the executable targets object
+    :param ~spinnman.model.ExecutableTargets executable_targets:
+        the executable targets object
     :param str binary: the (name of the) binary to flood fill
     :param ~spinnman.transceiver.Transceiver txrx: spinnman instance
     :param int app_id: the application ID to load it as
@@ -410,7 +411,8 @@ def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
 
     :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
     :param int app_id: The ID of the application.
-    :param ExecutableTargets executable_targets: The what/where mapping
+    :param ~spinnman.model.ExecutableTargets executable_targets:
+        The what/where mapping
     """
     _emergency_state_check(txrx, app_id)
     _emergency_iobuf_extract(txrx, executable_targets)

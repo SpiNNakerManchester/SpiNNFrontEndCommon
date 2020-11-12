@@ -34,7 +34,8 @@ from pacman.operations.router_compressors.mundys_router_compressor.\
         get_generality as
         ordered_covering_generality)
 from spinn_front_end_common.interface.interface_functions.\
-    on_chip_router_table_compression.compression import make_source_hack
+    on_chip_router_table_compression import (
+        make_source_hack)
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 from spinn_front_end_common.utilities.exceptions import (
@@ -74,21 +75,21 @@ class MachineBitFieldRouterCompressor(object):
     :param ~pacman.model.placements.Placements placements:
         placements on machine
     :param ExecutableFinder executable_finder: where are binaries are located
-    :param bool write_compressor_iobuf: flag saying if read iobuf
+    :param bool write_compressor_iobuf: flag saying if read IOBUF
     :param bool produce_report:
     :param str default_report_folder:
     :param bool use_timer_cut_off:
     :param int machine_time_step:
     :param int time_scale_factor:
-    :param int threshold_percentage: the percentage of bitfields to do on chip\
+    :param int threshold_percentage: the percentage of bitfields to do on chip
         before its considered a success
-    :param ExecutableTargets executable_targets:
+    :param ~spinnman.model.ExecutableTargets executable_targets:
         the set of targets and executables
     :param bool compress_as_much_as_possible:
         whether to compress as much as possible
     :param list(ProvenanceDataItem) provenance_data_objects:
     :return: where the compressors ran, and the provenance they generated
-    :rtype: tuple(ExecutableTargets, list(ProvenanceDataItem))
+    :rtype: tuple(~spinnman.model.ExecutableTargets, list(ProvenanceDataItem))
     """
 
     __slots__ = []
@@ -174,10 +175,10 @@ class MachineBitFieldRouterCompressor(object):
         :param int machine_time_step:
         :param int time_scale_factor:
         :param int threshold_percentage:
-        :param ExecutableTargets executable_targets:
+        :param ~.ExecutableTargets executable_targets:
         :param bool compress_as_much_as_possible:
         :param list(ProvenanceDataItem) provenance_data_objects:
-        :rtype: tuple(ExecutableTargets,list(ProvenanceDataItem))
+        :rtype: tuple(~.ExecutableTargets,list(ProvenanceDataItem))
         """
 
         # build provenance data objects
