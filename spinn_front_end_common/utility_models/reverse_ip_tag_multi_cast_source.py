@@ -34,8 +34,9 @@ from spinn_front_end_common.utilities import globals_variables
 
 
 class ReverseIpTagMultiCastSource(
-    ApplicationVertex, LegacyPartitionerAPI,
-    AbstractProvidesOutgoingPartitionConstraints, ProvidesKeyToAtomMappingImpl):
+        ApplicationVertex, LegacyPartitionerAPI,
+        AbstractProvidesOutgoingPartitionConstraints,
+        ProvidesKeyToAtomMappingImpl):
     """ A model which will allow events to be injected into a SpiNNaker\
         machine and converted into multicast packets.
     """
@@ -268,3 +269,4 @@ class ReverseIpTagMultiCastSource(
 
     def __repr__(self):
         return self._label
+53142
