@@ -12,3 +12,9 @@
 **/tools/boot/*.conf
 **/.nojekyll
 **/*.tag
+**/SpiNNUtils/**
+**/SpiNNMachine/**
+**/SpiNNMan/**
+**/PACMAN/**
+**/DataSpecification/**
+**/spalloc/**
