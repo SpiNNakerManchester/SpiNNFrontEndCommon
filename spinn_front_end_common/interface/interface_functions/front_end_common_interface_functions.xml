@@ -466,17 +466,10 @@
                 <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
-            <parameter>
-                <param_name>application_graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine_graph</param_name>
         </required_inputs>
-        <optional_inputs>
-            <param_name>application_graph</param_name>
-        </optional_inputs>
     </algorithm>
     <algorithm name="LoadFixedRoutes">
         <python_module>spinn_front_end_common.interface.interface_functions.load_fixed_routes</python_module>
@@ -2449,7 +2442,7 @@
     	</outputs>
 	</algorithm>
     <algorithm name="MundyOnChipRouterCompression">
-        <python_module>spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.compression</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression</python_module>
         <python_function>mundy_on_chip_router_compression</python_function>
         <input_definitions>
             <parameter>
@@ -2496,7 +2489,7 @@
             <token part="MulticastRoutesLoaded">DataLoaded</token>
         </outputs>
     </algorithm><algorithm name="PairOnChipRouterCompression">
-        <python_module>spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.compression</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression</python_module>
         <python_function>pair_compression</python_function>
         <input_definitions>
             <parameter>
@@ -2549,7 +2542,7 @@
         </outputs>
     </algorithm>
     <algorithm name="UnorderedOnChipRouterCompression">
-        <python_module>spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.compression</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression</python_module>
         <python_function>unordered_compression</python_function>
         <input_definitions>
             <parameter>

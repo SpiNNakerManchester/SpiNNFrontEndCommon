@@ -304,7 +304,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param app_vertex:
             The application vertex that caused this machine vertex to be
             created. If None, there is no such application vertex.
-        :type app_vertex: ApplicationVertex or None
+        :type app_vertex:
+            ~pacman.model.graphs.application.ApplicationVertex or None
         """
         super(DataSpeedUpPacketGatherMachineVertex, self).__init__(
             label="SYSTEM:PacketGatherer({},{})".format(x, y),

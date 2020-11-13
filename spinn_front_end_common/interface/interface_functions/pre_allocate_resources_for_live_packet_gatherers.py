@@ -35,7 +35,7 @@ class PreAllocateResourcesForLivePacketGatherers(object):
     :param ~pacman.model.resources.PreAllocatedResourceContainer \
             pre_allocated_resources:
         other preallocated resources
-    :param ~.Machine machine: the SpiNNaker machine as discovered
+    :param ~spinn_machine.Machine machine: the SpiNNaker machine as discovered
     :return: preallocated resources
     :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
     """
