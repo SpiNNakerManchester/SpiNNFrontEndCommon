@@ -41,7 +41,7 @@ _MEM_REGIONS = range(MAX_MEM_REGIONS)
 def system_cores(exec_targets):
     """ Get the subset of cores that are to be used for system operations.
 
-    :param ExecutableTargets exec_targets:
+    :param ~spinnman.model.ExecutableTargets exec_targets:
     :rtype: ~spinn_machine.CoreSubsets
     """
     cores = CoreSubsets()
@@ -55,7 +55,7 @@ def filter_out_system_executables(dsg_targets, executable_targets):
     """ Select just the application DSG loading tasks
 
     :param DataSpecificationTargets dsg_tagets:
-    :param ExecutableTargets executable_targets:
+    :param ~spinnman.model.ExecutableTargets executable_targets:
     :rtype: dict(tuple(int,int,int), ~io.RawIOBase)
     """
     syscores = system_cores(executable_targets)
@@ -68,7 +68,7 @@ def filter_out_app_executables(dsg_targets, executable_targets):
     """ Select just the system DSG loading tasks
 
     :param DataSpecificationTargets dsg_tagets:
-    :param ExecutableTargets executable_targets:
+    :param ~spinnman.model.ExecutableTargets executable_targets:
     :rtype: dict(tuple(int,int,int), ~io.RawIOBase)
     """
     syscores = system_cores(executable_targets)
@@ -116,7 +116,7 @@ class HostExecuteDataSpecification(object):
     def __java_database(self, dsg_targets, progress, region_sizes):
         """
         :param DataSpecificationTargets dsg_tagets:
-        :param progress:
+        :param ~spinn_utilities.progress_bar.ProgressBar progress:
         :param dict(tuple(int,int,int)int) region_sizes:
         :rtype: DsWriteInfo
         """
@@ -214,7 +214,7 @@ class HostExecuteDataSpecification(object):
             map of placement to file path
         :param bool uses_advanced_monitors:
             whether to use fast data in protocol
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
             what core will running what binary
         :param ~pacman.model.placements.Placements placements:
             where vertices are located
@@ -289,7 +289,7 @@ class HostExecuteDataSpecification(object):
             region_sizes):
         """
         :param DataSpecificationTargets dsg_targets:
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         :param bool use_monitors:
         :param dict(tuple(int,int,int),int) region_sizes:
         :return: dict of cores to descriptions of what was written
@@ -332,7 +332,7 @@ class HostExecuteDataSpecification(object):
             region_sizes):
         """
         :param DataSpecificationTargets dsg_targets:
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         :param bool use_monitors:
         :param dict(tuple(int,int,int),int) region_sizes:
         :return: map of cores to descriptions of what was written
@@ -370,8 +370,9 @@ class HostExecuteDataSpecification(object):
         :param int app_id: the application ID of the simulation
         :param dict(tuple(int,int,int),str) dsg_targets:
             map of placement to file path
-        :param region_sizes: the coord for region sizes for each core
-        :param ExecutableTargets executable_targets:
+        :param dict(tuple(int,int,int),int) region_sizes:
+            the coordinates for region sizes for each core
+        :param ~spinnman.model.ExecutableTargets executable_targets:
             the map between binaries and locations and executable types
         :param str report_folder:
         :param JavaCaller java_caller:
@@ -399,7 +400,7 @@ class HostExecuteDataSpecification(object):
 
         :param DataSpecificationTargets dsg_targets:
             map of placement to file path
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
             the map between binaries and locations and executable types
         :param dict(tuple(int,int,int),int) region_sizes:
             the coord for region sizes for each core
@@ -428,7 +429,7 @@ class HostExecuteDataSpecification(object):
 
         :param DataSpecificationTargets dsg_targets:
             map of placement to file path
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
             the map between binaries and locations and executable types
         :param dict(tuple(int,int,int),int) region_sizes:
             the coord for region sizes for each core

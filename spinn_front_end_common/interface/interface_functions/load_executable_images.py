@@ -34,7 +34,7 @@ class LoadExecutableImages(object):
 
     def load_app_images(self, executable_targets, app_id, transceiver):
         """
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         :param int app_id:
         :param ~spinnman.transceiver.Transceiver transceiver:
         """
@@ -44,7 +44,7 @@ class LoadExecutableImages(object):
 
     def load_sys_images(self, executable_targets, app_id, transceiver):
         """
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         :param int app_id:
         :param ~spinnman.transceiver.Transceiver transceiver:
         """
@@ -54,7 +54,7 @@ class LoadExecutableImages(object):
 
     def __load_images(self, executable_targets, app_id, txrx, filt, label):
         """
-        :param ExecutableTargets executable_targets:
+        :param ~.ExecutableTargets executable_targets:
         :param int app_id:
         :param ~.Transceiver txrx:
         :param callable(ExecutableType,bool) filt:
@@ -76,7 +76,7 @@ class LoadExecutableImages(object):
     @staticmethod
     def filter_targets(targets, filt):
         """
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         :param callable(ExecutableType,bool) filt:
         :rtype: tuple(list(str), ExecutableTargets)
         """
@@ -93,7 +93,7 @@ class LoadExecutableImages(object):
     @staticmethod
     def __start_simulation(executable_targets, txrx, app_id):
         """
-        :param ExecutableTargets executable_targets:
+        :param ~.ExecutableTargets executable_targets:
         :param ~.Transceiver txrx:
         :param int app_id:
         """

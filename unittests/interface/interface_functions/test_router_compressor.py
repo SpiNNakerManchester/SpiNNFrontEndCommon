@@ -20,7 +20,7 @@ from spinnman.utilities.appid_tracker import AppIdTracker
 from pacman.model.routing_tables import (
     MulticastRoutingTables, UnCompressedMulticastRoutingTable)
 from spinn_front_end_common.interface.interface_functions.\
-    on_chip_router_table_compression.compression import (
+    on_chip_router_table_compression import (
         mundy_on_chip_router_compression)
 
 

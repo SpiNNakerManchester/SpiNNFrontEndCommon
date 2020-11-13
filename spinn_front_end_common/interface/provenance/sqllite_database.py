@@ -34,7 +34,7 @@ class SqlLiteDatabase(AbstractContextManager):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::
-        NOT THREAD SAFE ON THE SAME DB.
+        *Not thread safe on the same database file.*
         Threads can access different DBs just fine.
 
     .. note::

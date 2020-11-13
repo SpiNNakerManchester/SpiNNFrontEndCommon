@@ -42,7 +42,7 @@ class ChipIOBufExtractor(object):
         lines based on their prefix.
 
     :param ~spinnman.transceiver.Transceiver transceiver:
-    :param ExecutableTargets executable_targets:
+    :param ~spinnman.model.ExecutableTargets executable_targets:
     :param ExecutableFinder executable_finder:
     :param app_provenance_file_path:
     :type app_provenance_file_path: str or None

@@ -61,7 +61,7 @@ class LivePacketGatherMachineVertex(
     def __init__(
             self, lpg_params, constraints=None, app_vertex=None, label=None):
         """
-        :param LivePacketGatherParams lpg_params:
+        :param LivePacketGatherParameters lpg_params:
         :param LivePacketGather app_vertex:
         :param str label:
         :param constraints:

@@ -52,7 +52,7 @@ class DatabaseReader(AbstractContextManager):
     def cursor(self):
         """ The database cursor. Allows custom SQL queries to be performed.
 
-        :rtype: sqlite3.Cursor
+        :rtype: ~sqlite3.Cursor
         """
         return self._cursor
 

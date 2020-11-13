@@ -99,7 +99,7 @@ class AbstractDatabase(object):
         """ Clears the data for a single region.
 
         .. note::
-            This method _loses information!_
+            This method *loses information!*
 
         :param int x: x coordinate of the chip
         :param int y: y coordinate of the chip

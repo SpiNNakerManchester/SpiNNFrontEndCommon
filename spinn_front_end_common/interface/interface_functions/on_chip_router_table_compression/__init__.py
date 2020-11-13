@@ -12,3 +12,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from .compression import (
+    Compression, make_source_hack, mundy_on_chip_router_compression,
+    pair_compression, unordered_compression)
+
+__all__ = (
+    "Compression", "make_source_hack", "mundy_on_chip_router_compression",
+    "pair_compression", "unordered_compression")

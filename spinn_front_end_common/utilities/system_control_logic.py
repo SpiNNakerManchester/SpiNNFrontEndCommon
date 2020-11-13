@@ -29,10 +29,10 @@ def run_system_application(
     """ Executes the given _system_ application. \
         Used for on-chip expanders, compressors, etc.
 
-    :param ~.ExecutableTargets executable_cores:
+    :param ~spinnman.model.ExecutableTargets executable_cores:
         the cores to run the executable on
     :param int app_id: the app-id for the executable
-    :param ~.Transceiver transceiver: the SpiNNMan instance
+    :param ~spinnman.transceiver.Transceiver transceiver: the SpiNNMan instance
     :param str provenance_file_path:
         the path for where provenance data is stored
     :param ExecutableFinder executable_finder: finder for executable paths
@@ -40,7 +40,7 @@ def run_system_application(
     :param callable check_for_success_function:
         function used to check success;
         expects `executable_cores`, `transceiver` as inputs
-    :param set(~.CPUState) cpu_end_states:
+    :param set(~spinnman.model.enums.CPUState) cpu_end_states:
         the states that a successful run is expected to terminate in
     :param bool needs_sync_barrier: whether a sync barrier is needed
     :param str filename_template: the IOBUF filename template.
@@ -49,8 +49,8 @@ def run_system_application(
         Or `None` for all binaries
     :param progress_bar: Possible progress bar to update.
            end() will be called after state checked
-    :param logger:
-        If provided and iobuf is extracted, will be used to log errors and
+    :param ~logging.Logger logger:
+        If provided and IOBUF is extracted, will be used to log errors and
         warnings
     :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None
     :raise SpiNNManException:

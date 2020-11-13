@@ -25,69 +25,54 @@ class ProcessPartitionConstraints(object):
         partition request it.
 
     :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
     """
 
-    def __call__(self, machine_graph, application_graph=None):
+    def __call__(self, machine_graph):
         """
         :param ~.MachineGraph machine_graph:
-        :param ~.ApplicationGraph application_graph:
         """
-        if application_graph is not None:
-            # generate progress bar
-            progress = ProgressBar(
-                machine_graph.n_vertices,
-                "Getting constraints for application graph")
+        # generate progress bar
+        progress = ProgressBar(
+            machine_graph.n_vertices,
+            "Getting constraints for machine graph")
 
-            # iterate over each partition in the graph
-            for vertex in progress.over(machine_graph.vertices):
-                for partition in machine_graph.\
-                        get_outgoing_edge_partitions_starting_at_vertex(
-                            vertex):
-                    if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                        self._process_application_partition(partition)
-        else:
-            # generate progress bar
-            progress = ProgressBar(
-                machine_graph.n_vertices,
-                "Getting constraints for machine graph")
-
-            for vertex in progress.over(machine_graph.vertices):
-                for partition in machine_graph.\
-                        get_outgoing_edge_partitions_starting_at_vertex(
-                            vertex):
-                    if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                        self._process_machine_partition(partition)
+        # iterate over each partition in the graph
+        for vertex in progress.over(machine_graph.vertices):
+            for partition in machine_graph.\
+                    get_outgoing_edge_partitions_starting_at_vertex(
+                        vertex):
+                if partition.traffic_type == EdgeTrafficType.MULTICAST:
+                    self._process_partition(partition)
 
     @staticmethod
-    def _process_application_partition(partition):
+    def _process_partition(partition):
         """
+        Process the partition by checking the pre_vertex and post vertices
+
+        Note: The machine level is checked first and only only if that does
+            not provide the api the app vertex is check next
         :param ~.OutgoingEdgePartition partition:
         """
-        vertex = partition.pre_vertex.app_vertex
+        vertex = partition.pre_vertex
         if isinstance(vertex, AbstractProvidesOutgoingPartitionConstraints):
             partition.add_constraints(
                 vertex.get_outgoing_partition_constraints(partition))
-        for edge in partition.edges:
-            post_vertex = edge.app_edge.post_vertex
-            if isinstance(post_vertex,
-                          AbstractProvidesIncomingPartitionConstraints):
+        else:
+            vertex = vertex.app_vertex
+            if isinstance(vertex,
+                          AbstractProvidesOutgoingPartitionConstraints):
                 partition.add_constraints(
-                    post_vertex.get_incoming_partition_constraints(partition))
-
-    @staticmethod
-    def _process_machine_partition(partition):
-        """
-        :param ~.OutgoingEdgePartition partition:
-        """
-        if isinstance(partition.pre_vertex,
-                      AbstractProvidesOutgoingPartitionConstraints):
-            partition.add_constraints(
-                partition.pre_vertex.get_outgoing_partition_constraints(
-                    partition))
+                    vertex.get_outgoing_partition_constraints(partition))
         for edge in partition.edges:
             post_vertex = edge.post_vertex
             if isinstance(post_vertex,
                           AbstractProvidesIncomingPartitionConstraints):
                 partition.add_constraints(
                     post_vertex.get_incoming_partition_constraints(partition))
+            elif edge.app_edge:
+                post_vertex = edge.app_edge.post_vertex
+                if isinstance(post_vertex,
+                              AbstractProvidesIncomingPartitionConstraints):
+                    partition.add_constraints(
+                        post_vertex.get_incoming_partition_constraints(
+                            partition))

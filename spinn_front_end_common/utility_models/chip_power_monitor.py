@@ -16,12 +16,10 @@
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.application import ApplicationVertex
-from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification)
 from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 
 
-class ChipPowerMonitor(ApplicationVertex, AbstractGeneratesDataSpecification):
+class ChipPowerMonitor(ApplicationVertex):
     """ Represents idle time recording code in a application graph.
     """
     __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
@@ -62,29 +60,6 @@ class ChipPowerMonitor(ApplicationVertex, AbstractGeneratesDataSpecification):
             assert (resources_required ==
                     machine_vertex.resources_required)
         return machine_vertex
-
-    @inject_items({"time_scale_factor": "TimeScaleFactor",
-                   "machine_time_step": "MachineTimeStep",
-                   "n_machine_time_steps": "PlanNTimeSteps"})
-    @overrides(
-        AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "machine_time_step", "time_scale_factor", "n_machine_time_steps"})
-    def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor,
-            n_machine_time_steps):
-        """
-        :param int machine_time_step:
-        :param int time_scale_factor:
-        :param int n_machine_time_steps:
-        """
-        # pylint: disable=too-many-arguments, arguments-differ
-        # pylint: disable=protected-access
-
-        # generate spec for the machine vertex
-        placement.vertex.generate_data_specification(
-            spec, placement, machine_time_step, time_scale_factor,
-            n_machine_time_steps)
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
