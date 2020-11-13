@@ -44,7 +44,7 @@ class SimulatorInterface(object):
     def config(self):
         """ Provides access to the configuration for front end interfaces.
 
-        :rtype: ~spinn_front_end_common.interface.ConfigHandler
+        :rtype: ~spinn_front_end_common.interface.config_handler.ConfigHandler
         """
 
     @abstractproperty
@@ -109,6 +109,12 @@ class SimulatorInterface(object):
     @abstractmethod
     def stop(self):
         """ End running of the simulation.
+        """
+
+    @abstractmethod
+    def stop_run(self):
+        """ End the running of a simulation that has been started with
+            run_forever
         """
 
     @abstractproperty
