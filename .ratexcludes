@@ -11,3 +11,9 @@
 **/test_output/**
 **/.nojekyll
 **/*.tag
+**/SpiNNUtils/**
+**/SpiNNMachine/**
+**/SpiNNMan/**
+**/PACMAN/**
+**/DataSpecification/**
+**/spalloc/**

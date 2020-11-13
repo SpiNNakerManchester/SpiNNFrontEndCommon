@@ -84,6 +84,10 @@ class FailedState(SimulatorInterface):
     def stop(self):
         logger.error("Ignoring call to stop/end as no simulator running")
 
+    @overrides(SimulatorInterface.stop_run)
+    def stop_run(self):
+        raise ConfigurationException(FAILED_STATE_MSG)
+
     @property
     @overrides(SimulatorInterface.transceiver)
     def transceiver(self):
