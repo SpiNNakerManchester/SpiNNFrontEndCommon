@@ -33,7 +33,7 @@ class AbstractRewritesDataSpecification(object):
         "machine vertex, the SpiNNFrontEndCommon function DSGRegionReloader "
         "will not check this vertex")
 
-    def __new__(cls, *more):
+    def __new__(cls, *args, **kwargs):
         if not issubclass(cls, MachineVertex):
             raise SpinnFrontEndException(
                 cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
