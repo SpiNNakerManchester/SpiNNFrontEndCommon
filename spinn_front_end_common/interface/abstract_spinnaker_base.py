@@ -2848,9 +2848,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             app_provenance_file_path=self._app_provenance_file_path,
             system_provenance_file_path=self._system_provenance_file_path)
 
-    @overrides(SimulatorInterface.add_socket_address)
+    @overrides(SimulatorInterface.add_socket_address, extend_doc=False)
     def add_socket_address(self, socket_address):
-        """
+        """ Add the address of a socket used in the run notification protocol.
+
         :param ~spinn_utilities.socket_address.SocketAddress socket_address:
             The address of the database socket
         """
