@@ -26,17 +26,18 @@ class AbstractRewritesDataSpecification(object):
         and so can rewrite the data specification
     """
 
-    __slots__ = ()
+    __slots__ = []
 
     _WRONG_VERTEX_TYPE_ERROR = (
         "The vertex {} is not of type MachineVertex. By not being a "
         "machine vertex, the SpiNNFrontEndCommon function DSGRegionReloader "
         "will not check this vertex")
 
-    def __init__(self, machine_vertex):
-        if not isinstance(machine_vertex, MachineVertex):
+    def __new__(cls):
+        if not issubclass(cls, MachineVertex):
             raise SpinnFrontEndException(
-                self._WRONG_VERTEX_TYPE_ERROR.format(machine_vertex))
+                cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
+        return super(AbstractRewritesDataSpecification, cls).__new__(cls)
 
     @abstractmethod
     def regenerate_data_specification(self, spec, placement):
