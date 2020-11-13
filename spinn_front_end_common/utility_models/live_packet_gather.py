@@ -19,13 +19,9 @@ from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
     ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
-from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification)
 
 
-class LivePacketGather(
-        ApplicationVertex, AbstractGeneratesDataSpecification,
-        LegacyPartitionerAPI):
+class LivePacketGather(ApplicationVertex, LegacyPartitionerAPI):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a SpiNNaker machine.
@@ -68,8 +64,3 @@ class LivePacketGather(
             cpu_cycles=CPUCyclesPerTickResource(
                 LivePacketGatherMachineVertex.get_cpu_usage()),
             iptags=[self._lpg_params.get_iptag_resource()])
-
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(self, spec, placement):
-        # generate spec for the machine vertex
-        placement.vertex.generate_data_specification(spec, placement)
