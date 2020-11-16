@@ -29,42 +29,36 @@ class SDRAMOutgoingPartitionAllocator(object):
                 "Allocating SDRAM for SDRAM outgoing egde partitions"))
 
         for machine_vertex in machine_graph.vertices:
-            partitions = (
-                machine_graph.get_costed_edge_partitions_starting_at_vertex(
+            sdram_partitions = (
+                machine_graph.get_sdram_edge_partitions_starting_at_vertex(
                     machine_vertex))
-            for outgoing_edge_partition in partitions:
+            for sdram_partition in sdram_partitions:
 
-                # check right type of costed partition
-                if isinstance(outgoing_edge_partition, AbstractSDRAMPartition):
+                # get placement, ones where the src is multiple,
+                # you need to ask for the first pre vertex
+                if isinstance(
+                        sdram_partition, SourceSegmentedSDRAMMachinePartition):
+                    placement = placements.get_placement_of_vertex(
+                        next(iter(sdram_partition.pre_vertices)))
+                else:
+                    placement = placements.get_placement_of_vertex(
+                        sdram_partition.pre_vertex)
 
-                    # get placement, ones where the src is multiple,
-                    # you need to ask for the first pre vertex
-                    if isinstance(
-                            outgoing_edge_partition,
-                            SourceSegmentedSDRAMMachinePartition):
-                        placement = placements.get_placement_of_vertex(
-                            next(iter(outgoing_edge_partition.pre_vertices)))
-                    else:
-                        placement = placements.get_placement_of_vertex(
-                            outgoing_edge_partition.pre_vertex)
+                # total sdram
+                total_sdram = (sdram_partition.total_sdram_requirements())
 
-                    # total sdram
-                    total_sdram = (
-                        outgoing_edge_partition.total_sdram_requirements())
+                # if bust, throw exception
+                if total_sdram == 0:
+                    raise SpinnFrontEndException(
+                        "cannot allocate sdram size of 0 for "
+                        "partition {}".format(sdram_partition))
 
-                    # if bust, throw exception
-                    if total_sdram == 0:
-                        raise SpinnFrontEndException(
-                            "cannot allocate sdram size of 0 for "
-                            "partition {}".format(outgoing_edge_partition))
+                # allocate
+                sdram_base_address = transceiver.malloc_sdram(
+                    placement.x, placement.y, total_sdram, app_id)
 
-                    # allocate
-                    sdram_base_address = transceiver.malloc_sdram(
-                        placement.x, placement.y, total_sdram, app_id)
-
-                    # update
-                    outgoing_edge_partition.sdram_base_address = (
-                        sdram_base_address)
+                # update
+                sdram_partition.sdram_base_address = (sdram_base_address)
 
             progress_bar.update()
         progress_bar.end()

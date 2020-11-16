@@ -1080,24 +1080,17 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             else:
                 usage_by_chip[placement.x, placement.y] = sdram_required
 
-            # add costed costs
-            costed_partitions = (
-                machine_graph.get_costed_edge_partitions_starting_at_vertex(
+            # add sdram partitions
+            sdram_partitions = (
+                machine_graph.get_sdram_edge_partitions_starting_at_vertex(
                     placement.vertex))
-            for partition in costed_partitions:
-                if isinstance(partition, AbstractSDRAMPartition):
-                    if partition not in seen_partitions:
-                        usage_by_chip[placement.x, placement.y] += (
-                            ConstantSDRAM(
-                                partition.total_sdram_requirements() +
-                                SARK_PER_MALLOC_SDRAM_USAGE))
+            for partition in sdram_partitions:
+                if partition not in seen_partitions:
+                    usage_by_chip[placement.x, placement.y] += (
+                        ConstantSDRAM(
+                            partition.total_sdram_requirements() +
+                            SARK_PER_MALLOC_SDRAM_USAGE))
                     seen_partitions.add(partition)
-                else:
-                    # TODO: Handle non-SDRAM costed partitions...
-                    # but only once an example of them exists!
-                    logger.warning(
-                        "costed edge partition that doesn't use SDRAM is not "
-                        "consulted for data step size: {}", partition)
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
