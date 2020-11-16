@@ -14,6 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from six import add_metaclass
+
+from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
@@ -23,7 +26,18 @@ class AbstractRewritesDataSpecification(object):
         and so can rewrite the data specification
     """
 
-    __slots__ = ()
+    __slots__ = []
+
+    _WRONG_VERTEX_TYPE_ERROR = (
+        "The vertex {} is not of type MachineVertex. By not being a "
+        "machine vertex, the SpiNNFrontEndCommon function DSGRegionReloader "
+        "will not check this vertex")
+
+    def __new__(cls, *args, **kwargs):
+        if not issubclass(cls, MachineVertex):
+            raise SpinnFrontEndException(
+                cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
+        return super(AbstractRewritesDataSpecification, cls).__new__(cls)
 
     @abstractmethod
     def regenerate_data_specification(self, spec, placement):
@@ -37,13 +51,16 @@ class AbstractRewritesDataSpecification(object):
         """
 
     @abstractmethod
-    def requires_memory_regions_to_be_reloaded(self):
+    def reload_required(self):
         """ Return true if any data region needs to be reloaded
 
         :rtype: bool
         """
 
     @abstractmethod
-    def mark_regions_reloaded(self):
+    def set_reload_required(self, new_value):
         """ Indicate that the regions have been reloaded
+
+        :param new_value: the new value
+        :rtype: None
         """

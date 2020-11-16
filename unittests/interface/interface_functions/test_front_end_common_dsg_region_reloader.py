@@ -32,16 +32,42 @@ from spinn_front_end_common.interface.interface_functions import (
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 
-class _TestMachineVertex(MachineVertex):
+class _TestMachineVertex(MachineVertex, AbstractRewritesDataSpecification):
     """ A simple machine vertex for testing
     """
+
+    def __init__(self, label, constraints, app_vertex, vertex_slice):
+        super(_TestMachineVertex, self).__init__(
+            label=label, constraints=constraints, app_vertex=app_vertex,
+            vertex_slice=vertex_slice)
+        self._requires_regions_to_be_reloaded = True
 
     def resources_required(self):
         return ResourceContainer()
 
+    def reload_required(self):
+        return self._requires_regions_to_be_reloaded
 
-class _TestApplicationVertex(
-        ApplicationVertex, AbstractRewritesDataSpecification):
+    def set_reload_required(self, new_value):
+        self._requires_regions_to_be_reloaded = new_value
+
+    def regenerate_data_specification(self, spec, placement):
+        for region_id, data in self._app_vertex.reload_region_data:
+            spec.reserve_memory_region(region_id, len(data) * BYTES_PER_WORD)
+            spec.switch_write_focus(region_id)
+            spec.write_array(data)
+        spec.end_specification()
+        self._app_vertex.add_to_count()
+
+    @property
+    def regenerate_call_count(self):
+        """ Indicates the number of times regenerate_data_specification\
+            has been called
+        """
+        return self._regenerate_call_count
+
+
+class _TestApplicationVertex(ApplicationVertex):
     """ An application vertex that can rewrite data spec
     """
 
@@ -52,13 +78,8 @@ class _TestApplicationVertex(
         """
         super(_TestApplicationVertex, self).__init__()
         self._n_atoms = n_atoms
-        self._regenerate_call_count = 0
-        self._requires_regions_to_be_reloaded = True
         self._reload_region_data = reload_region_data
-
-    @property
-    def n_atoms(self):
-        return self._n_atoms
+        self._regenerate_call_count = 0
 
     @property
     def regenerate_call_count(self):
@@ -67,6 +88,17 @@ class _TestApplicationVertex(
         """
         return self._regenerate_call_count
 
+    def add_to_count(self):
+        self._regenerate_call_count += 1
+
+    @property
+    def reload_region_data(self):
+        return self._reload_region_data
+
+    @property
+    def n_atoms(self):
+        return self._n_atoms
+
     def get_resources_used_by_atoms(self, vertex_slice):
         return ResourceContainer()
 
@@ -74,20 +106,6 @@ class _TestApplicationVertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
         return _TestMachineVertex(label, constraints, self, vertex_slice)
-
-    def requires_memory_regions_to_be_reloaded(self):
-        return self._requires_regions_to_be_reloaded
-
-    def mark_regions_reloaded(self):
-        self._requires_regions_to_be_reloaded = False
-
-    def regenerate_data_specification(self, spec, placement):
-        for region_id, data in self._reload_region_data:
-            spec.reserve_memory_region(region_id, len(data) * BYTES_PER_WORD)
-            spec.switch_write_focus(region_id)
-            spec.write_array(data)
-        spec.end_specification()
-        self._regenerate_call_count += 1
 
 
 class _MockCPUInfo(object):
