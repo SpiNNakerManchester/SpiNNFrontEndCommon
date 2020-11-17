@@ -907,8 +907,7 @@ void start_binary_search(void) {
 
 //! \brief Ensure that for each router table entry there is at most 1 bitfield
 //!        per processor
-//! \param[in] sorted_bit_fields The bit fields ordered by key
-static inline void check_bitfield_to_routes() {
+static inline void check_bitfield_to_routes(void) {
     filter_info_t **bit_fields = sorted_bit_fields->bit_fields;
     int *processor_ids = sorted_bit_fields->processor_ids;
     entry_t *entries = uncompressed_router_table->uncompressed_table.entries;
