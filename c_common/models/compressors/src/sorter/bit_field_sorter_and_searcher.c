@@ -700,9 +700,9 @@ void process_success(int mid_point, int processor_id) {
 
     // kill any search below this point, as they all redundant as
     // this is a better search.
-    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        if (comms_sdram[processor_id].mid_point < mid_point) {
-            send_force_stop_message(processor_id);
+    for (int proc_id = 0; proc_id < MAX_PROCESSORS; proc_id++) {
+        if (comms_sdram[proc_id].mid_point < mid_point) {
+            send_force_stop_message(proc_id);
         }
     }
 
@@ -762,9 +762,9 @@ void process_failed(int mid_point, int processor_id) {
 
     // tell all compression processors trying midpoints above this one
     // to stop, as its highly likely a waste of time.
-    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        if (comms_sdram[processor_id].mid_point > mid_point) {
-            send_force_stop_message(processor_id);
+    for (int proc_id = 0; proc_id < MAX_PROCESSORS; proc_id++) {
+        if (comms_sdram[proc_id].mid_point > mid_point) {
+            send_force_stop_message(proc_id);
         }
     }
 
@@ -908,8 +908,7 @@ void start_binary_search(void) {
 //! \brief Ensure that for each router table entry there is at most 1 bitfield
 //!        per processor
 //! \param[in] sorted_bit_fields The bit fields ordered by key
-static inline void check_bitfield_to_routes(
-        sorted_bit_fields_t *restrict sorted_bit_fields) {
+static inline void check_bitfield_to_routes() {
     filter_info_t **bit_fields = sorted_bit_fields->bit_fields;
     int *processor_ids = sorted_bit_fields->processor_ids;
     entry_t *entries = uncompressed_router_table->uncompressed_table.entries;
@@ -973,7 +972,7 @@ void start_compression_process(UNUSED uint unused0, UNUSED uint unused1) {
 
     log_debug("populating sorted bitfields at time step: %d", time_steps);
     bit_field_reader_read_in_bit_fields(region_addresses, sorted_bit_fields);
-    check_bitfield_to_routes(sorted_bit_fields);
+    check_bitfield_to_routes();
 
     // the first possible failure is all bitfields so set there.
     lowest_failure = sorted_bit_fields->n_bit_fields;
