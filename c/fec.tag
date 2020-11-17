@@ -4889,8 +4889,8 @@
       <type>static void</type>
       <name>check_bitfield_to_routes</name>
       <anchorfile>bit__field__sorter__and__searcher_8c.html</anchorfile>
-      <anchor>a2df3d0ad70bab6218c9e8f0bde277872</anchor>
-      <arglist>()</arglist>
+      <anchor>a674c7e8652b957842f71535f081dfc46</anchor>
+      <arglist>(void)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
