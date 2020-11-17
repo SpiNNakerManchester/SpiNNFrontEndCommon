@@ -48,7 +48,6 @@ from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
-from pacman.model.graphs import AbstractSDRAMPartition
 from pacman.model.resources import (
     PreAllocatedResourceContainer, ConstantSDRAM)
 from pacman import __version__ as pacman_version
