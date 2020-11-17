@@ -30,9 +30,9 @@ logger = FormatAdapter(logging.getLogger(__name__))
 class MachineGenerator(object):
     """ Makes a transceiver and a machine object.
     :param int multi_packets_in_flight_channel_waits: \
-            how many packets to have in flight before sending more
+        how many packets to have in flight before sending more
     :param int multi_packets_in_flight_n_channels: \
-            how many channels to have
+        how many channels to have
     :param str hostname:
         the hostname or IP address of the SpiNNaker machine
     :param str bmp_details: the details of the BMP connections
