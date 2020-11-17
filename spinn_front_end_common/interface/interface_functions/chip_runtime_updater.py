@@ -35,7 +35,7 @@ class ChipRuntimeUpdater(object):
             self, txrx, app_id, executable_types, run_until_timesteps,
             current_timesteps, n_channels, intermediate_channel_waits):
         """
-        :param ~.Transceiver transceiver:
+        :param ~.Transceiver txrx:
         :param int app_id:
         :param dict(ExecutableType,~.CoreSubsets) executable_types:
         :param run_until_timesteps:

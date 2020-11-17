@@ -507,8 +507,9 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = ClearQueueProcess(
-            transceiver.scamp_connection_selector, n_channels,
-            intermediate_channel_waits)
+            transceiver.scamp_connection_selector,
+            n_channels=n_channels,
+            intermediate_channel_waits=intermediate_channel_waits)
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722
