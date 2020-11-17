@@ -122,7 +122,7 @@ class GraphDataSpecificationWriter(object):
 
         # Ensure that the vertices know their regions have been reloaded
         for vertex in vertices_to_reset:
-            vertex.mark_regions_reloaded()
+            vertex.set_reload_required(False)
 
         return targets, self._region_sizes
 
