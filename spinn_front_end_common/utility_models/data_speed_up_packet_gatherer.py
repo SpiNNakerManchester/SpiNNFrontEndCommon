@@ -21,7 +21,7 @@ from .data_speed_up_packet_gatherer_machine_vertex import (
 
 class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
     """ The gatherer for the data speed up protocols. Gatherers are only ever\
-            deployed on chips with an ethernet connection.
+        deployed on chips with an ethernet connection.
     """
     __slots__ = []
 
