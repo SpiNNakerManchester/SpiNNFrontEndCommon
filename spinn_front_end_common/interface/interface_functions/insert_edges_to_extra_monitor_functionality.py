@@ -111,10 +111,6 @@ class InsertEdgesToExtraMonitorFunctionality(object):
             if app_edge is None:
                 app_edge = ApplicationEdge(
                     vertex.app_vertex, gatherer.app_vertex)
-                application_graph.add_outgoing_edge_partition(
-                    ApplicationEdgePartition(
-                        PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP,
-                        vertex.app_vertex))
                 application_graph.add_edge(
                     app_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
             # Use the application edge to build the machine edge
