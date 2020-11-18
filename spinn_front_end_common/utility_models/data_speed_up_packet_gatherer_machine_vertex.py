@@ -1135,9 +1135,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def clear_reinjection_queue(self, transceiver, placements):
         """ Clears the queues for reinjection.
-        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~spinnman.transceiver.Transceiver transceiver: \
             the spinnMan interface
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements placements: \
             the placements object
         """
         core_subsets = convert_vertices_to_core_subset([self], placements)
@@ -1157,11 +1157,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         """ Helper method for restoring the router timeouts to normal after\
             being in a state usable for data streaming.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~spinnman.transceiver.Transceiver transceiver: \
             the SpiNNMan instance
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores: \
             the extra monitor cores to set
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements placements: \
             placements object
         """
         # Set the routers to temporary values
@@ -1229,9 +1229,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             length_in_bytes, fixed_routes):
         """ Gets data from a given core and memory address.
 
-        :param ExtraMonitorSupportMachineVertex extra_monitor:
+        :param ExtraMonitorSupportMachineVertex extra_monitor: \
             the extra monitor used for this data
-        :param ~pacman.model.placements.Placement extra_monitor_placement:
+        :param ~pacman.model.placements.Placement extra_monitor_placement: \
             placement object for where to get data from
         :param int memory_address: the address in SDRAM to start reading from
         :param int length_in_bytes: the length of data to read in bytes
@@ -1349,7 +1349,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             destination. Used for determining which routers were used.
 
         :param ~.Placement placement: the source to start from
-        :param dict(tuple(int,int),~.MulticastRoutingEntry) fixed_routes:
+        :param dict(tuple(int,int),~.MulticastRoutingEntry) fixed_routes:\
             the fixed routes for each router
         :param ~.Machine machine: the spinnMachine instance
         :return: list of chip locations
@@ -1376,7 +1376,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """ Write the used routers into a report
 
         :param str report_path: the path to the report file
-        :param list(tuple(int,int)) routers_been_in_use:
+        :param list(tuple(int,int)) routers_been_in_use:\
             the routers been in use
         :param ~.Placement placement: the first placement used
         """
@@ -1510,13 +1510,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param bytearray data: the packet data
         :param set(int) seq_nums: the list of sequence numbers received so far
         :param bool finished: bool which states if finished or not
-        :param ~.Placement placement:
+        :param ~.Placement placement:\
             placement object for location on machine
         :param ~.Transceiver transceiver: spinnman instance
         :param int transaction_id: the transaction ID for this stream
-        :param list(int) lost_seq_nums:
+        :param list(int) lost_seq_nums:\
             the list of n sequence numbers lost per iteration
-        :return: set of data items, if its the first packet, the list of
+        :return: set of data items, if its the first packet, the list of\
             sequence numbers, the sequence number received and if its finished
         :rtype: tuple(set(int), bool)
         """
