@@ -29,6 +29,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class MachineGenerator(object):
     """ Makes a transceiver and a machine object.
+
     :param int multi_packets_in_flight_channel_waits: \
         how many packets to have in flight before sending more
     :param int multi_packets_in_flight_n_channels: \
