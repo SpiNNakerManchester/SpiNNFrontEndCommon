@@ -13,8 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from pacman.model.graphs.common import EdgeTrafficType
-from pacman.model.graphs.machine.single_source_machine_edge_partition import (
-        SingleSourceMachineEdgePartition)
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.application import (
     ApplicationEdge, ApplicationEdgePartition)
@@ -124,11 +122,6 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 vertex, gatherer, traffic_type=DataSpeedUp.TRAFFIC_TYPE,
                 label=self.EDGE_LABEL.format(vertex, gatherer),
                 app_edge=app_edge)
-            machine_graph.add_outgoing_edge_partition(
-                SingleSourceMachineEdgePartition(
-                    identifier=PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP,
-                    pre_vertex=vertex,
-                    traffic_type=EdgeTrafficType.FIXED_ROUTE))
             machine_graph.add_edge(
                 edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 
@@ -147,11 +140,6 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         if not self.__has_edge_already(vertex, gatherer, machine_graph):
             edge = MachineEdge(
                 vertex, gatherer, traffic_type=DataSpeedUp.TRAFFIC_TYPE)
-            machine_graph.add_outgoing_edge_partition(
-                SingleSourceMachineEdgePartition(
-                    identifier=PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP,
-                    pre_vertex=vertex,
-                    traffic_type=EdgeTrafficType.FIXED_ROUTE))
             machine_graph.add_edge(
                 edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 
