@@ -12,9 +12,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from ...utilities import globals_variables, helpful_functions
 
 import io
+
+from spinn_front_end_common.utilities import (
+    helpful_functions, globals_variables)
+
 try:
     from collections.abc import MutableMapping
 except ImportError:
