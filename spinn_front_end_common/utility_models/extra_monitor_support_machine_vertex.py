@@ -495,13 +495,13 @@ class ExtraMonitorSupportMachineVertex(
         :param int n_channels: mpif n packets in parallel
         :param int intermediate_channel_waits: how many to be in flight \
             before more transmission
-        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~spinnman.transceiver.Transceiver transceiver:\
             the spinnMan interface
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements placements:\
             the placements object
-        :param extra_monitor_cores_to_set:
+        :param extra_monitor_cores_to_set:\
             Which extra monitors need to clear their queues.
-        :type extra_monitor_cores_to_set:
+        :type extra_monitor_cores_to_set:\
             iterable(ExtraMonitorSupportMachineVertex)
         """
         core_subsets = convert_vertices_to_core_subset(
@@ -521,9 +521,9 @@ class ExtraMonitorSupportMachineVertex(
     def get_reinjection_status(self, placements, transceiver):
         """ Get the reinjection status from this extra monitor vertex
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~spinnman.transceiver.Transceiver transceiver:\
             the spinnMan interface
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements placements:\
             the vertex placements
         :return: the reinjection status for this vertex
         :rtype: ReInjectionStatus
@@ -545,13 +545,13 @@ class ExtraMonitorSupportMachineVertex(
             self, placements, extra_monitor_cores_for_data, transceiver):
         """ Get the reinjection status from a set of extra monitor cores
 
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements placements:\
             the placements object
-        :param extra_monitor_cores_for_data:
+        :param extra_monitor_cores_for_data:\
             the extra monitor cores to get status from
-        :type extra_monitor_cores_for_data:
+        :type extra_monitor_cores_for_data:\
             iterable(ExtraMonitorSupportMachineVertex)
-        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~spinnman.transceiver.Transceiver transceiver:\
             the spinnMan interface
         :rtype: dict(tuple(int,int), ReInjectionStatus)
         """
@@ -568,23 +568,23 @@ class ExtraMonitorSupportMachineVertex(
             point_to_point=None, multicast=None, nearest_neighbour=None,
             fixed_route=None):
         """
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements placements:\
             placements object
-        :param extra_monitor_cores_for_data:
+        :param extra_monitor_cores_for_data:\
             the extra monitor cores to set the packets of
-        :type extra_monitor_cores_for_data:
+        :type extra_monitor_cores_for_data:\
             iterable(ExtraMonitorSupportMachineVertex)
         :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
-        :param point_to_point:
+        :param point_to_point:\
             If point to point should be set, or None if left as before
         :type point_to_point: bool or None
-        :param multicast:
+        :param multicast:\
             If multicast should be set, or None if left as before
         :type multicast: bool or None
-        :param nearest_neighbour:
+        :param nearest_neighbour:\
             If nearest neighbour should be set, or None if left as before
         :type nearest_neighbour: bool or None
-        :param fixed_route:
+        :param fixed_route:\
             If fixed route should be set, or None if left as before.
         :type fixed_route: bool or None
         """
@@ -620,13 +620,13 @@ class ExtraMonitorSupportMachineVertex(
         """ Get the extra monitor cores to load up the system-based \
             multicast routes (used by data in).
 
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements placements:\
             the placements object
-        :param extra_monitor_cores_for_data:
+        :param extra_monitor_cores_for_data:\
             the extra monitor cores to get status from
-        :type extra_monitor_cores_for_data:
+        :type extra_monitor_cores_for_data:\
             iterable(ExtraMonitorSupportMachineVertex)
-        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~spinnman.transceiver.Transceiver transceiver:\
             the spinnMan interface
         """
         core_subsets = self._convert_vertices_to_core_subset(
@@ -648,13 +648,13 @@ class ExtraMonitorSupportMachineVertex(
         """ Get the extra monitor cores to load up the application-based\
             multicast routes (used by data in).
 
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements placements:\
             the placements object
-        :param extra_monitor_cores_for_data:
+        :param extra_monitor_cores_for_data:\
             the extra monitor cores to get status from
-        :type extra_monitor_cores_for_data:
+        :type extra_monitor_cores_for_data:\
             iterable(ExtraMonitorSupportMachineVertex)
-        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~spinnman.transceiver.Transceiver transceiver:\
             the spinnMan interface
         """
         core_subsets = self._convert_vertices_to_core_subset(
@@ -675,7 +675,7 @@ class ExtraMonitorSupportMachineVertex(
         """ Convert vertices into the subset of cores where they've been\
             placed.
 
-        :param iterable(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+        :param iterable(ExtraMonitorSupportMachineVertex) extra_monitor_cores:\
             the vertices to convert to core subsets
         :param ~.Placements placements: the placements object
         :return: where the vertices have been placed
