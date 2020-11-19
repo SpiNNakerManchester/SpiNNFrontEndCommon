@@ -88,7 +88,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
             sum(
                 n_keys_map.n_keys_for_partition(outgoing_partition)
                 for outgoing_partition in
-                machine_graph.get_outgoing_edge_partitions_starting_at_vertex(
+                machine_graph.get_multicast_edge_partitions_starting_at_vertex(
                     machine_vertex))
             for machine_vertex in self.machine_vertices)
 

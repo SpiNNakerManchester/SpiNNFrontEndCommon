@@ -266,7 +266,7 @@ class HostBasedBitFieldRouterCompressor(object):
         key_to_n_atoms_map = dict()
         for vertex in machine_graph.vertices:
             for partition in machine_graph.\
-                    get_outgoing_edge_partitions_starting_at_vertex(vertex):
+                    get_multicast_edge_partitions_starting_at_vertex(vertex):
                 key = routing_infos.get_first_key_from_pre_vertex(
                     vertex, partition.identifier)
 
