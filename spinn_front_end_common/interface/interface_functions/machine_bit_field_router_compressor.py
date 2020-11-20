@@ -149,6 +149,9 @@ class MachineBitFieldRouterCompressor(object):
         :param bool write_compressor_iobuf: flag saying if read IOBUF
         :param bool produce_report:
         :param str default_report_folder:
+        :param int target_length:
+        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+        :param int time_to_try_for_each_iteration:
         :param bool use_timer_cut_off:
         :param int machine_time_step:
         :param int time_scale_factor:
