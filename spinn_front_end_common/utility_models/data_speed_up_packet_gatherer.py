@@ -26,8 +26,8 @@ class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
 
     def __init__(
             self, x, y, ip_address, extra_monitors_by_chip,
-            report_default_directory,
-            write_data_speed_up_reports, constraints=None):
+            report_default_directory, write_data_speed_up_reports,
+            n_channels, intermediate_channel_waits, constraints=None):
         """
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.
@@ -49,6 +49,8 @@ class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
                 x=x, y=y, ip_address=ip_address, constraints=constraints,
                 extra_monitors_by_chip=extra_monitors_by_chip,
                 report_default_directory=report_default_directory,
-                write_data_speed_up_reports=write_data_speed_up_reports),
+                write_data_speed_up_reports=write_data_speed_up_reports,
+                n_channels=n_channels,
+                intermediate_channel_waits=intermediate_channel_waits),
             "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints)

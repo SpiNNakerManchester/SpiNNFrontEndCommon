@@ -33,6 +33,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
     :param int n_cores_to_allocate: number of cores to allocate for reception
     :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
         app graph
+    :param int n_channels: parallism in comms
+    :param int intermediate_channel_waits: how many to wait for.
     :return: vertex to Ethernet connection map,
         list of extra_monitor_vertices,
         vertex_to_chip_map
@@ -51,12 +53,15 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     def __call__(
             self, machine, machine_graph, default_report_directory,
-            write_data_speed_up_reports, application_graph=None):
+            write_data_speed_up_reports, n_channels,
+            intermediate_channel_waits, application_graph=None):
         """
         :param ~.Machine machine:
         :param ~.MachineGraph machine_graph:
         :param str default_report_directory:
         :param bool write_data_speed_up_reports:
+        :param int n_channels:
+        :param int intermediate_channel_waits:
         :param ~.ApplicationGraph application_graph:
         :rtype: tuple(
             dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),
@@ -81,17 +86,19 @@ class InsertExtraMonitorVerticesToGraphs(object):
                 vertex_to_chip_map)
         else:
             extra_monitors = self._add_second_monitors_machine_graph(
-                progress, machine, machine_graph, vertex_to_chip_map)
+                progress, machine, machine_graph, vertex_to_chip_map,
+                n_channels, intermediate_channel_waits)
 
         # progress data receiver for data extraction functionality
         if application_graph is not None:
             self._add_data_extraction_vertices_app_graph(
                 progress, machine, application_graph, machine_graph,
-                chip_to_gatherer_map, vertex_to_chip_map)
+                chip_to_gatherer_map, vertex_to_chip_map, n_channels,
+                intermediate_channel_waits)
         else:
             self._add_data_extraction_vertices_mach_graph(
                 progress, machine, machine_graph, chip_to_gatherer_map,
-                vertex_to_chip_map)
+                vertex_to_chip_map, n_channels, intermediate_channel_waits)
 
         return chip_to_gatherer_map, extra_monitors, vertex_to_chip_map
 
@@ -127,7 +134,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
         return extra_monitor_vertices
 
     def _add_second_monitors_machine_graph(
-            self, progress, machine, machine_graph, vertex_to_chip_map):
+            self, progress, machine, machine_graph, vertex_to_chip_map,
+            n_channels, intermediate_channel_waits):
         """ Handles placing the second monitor vertex with extra functionality\
             into the graph
 
@@ -146,7 +154,9 @@ class InsertExtraMonitorVerticesToGraphs(object):
             if chip.virtual:
                 continue
             # add to machine graph
-            vertex = self.__new_mach_monitor(chip)
+            vertex = self.__new_mach_monitor(
+                chip, n_channels=n_channels,
+                intermediate_channel_waits=intermediate_channel_waits)
             machine_graph.add_vertex(vertex)
             vertex_to_chip_map[chip.x, chip.y] = vertex
             extra_monitor_vertices.append(vertex)
@@ -155,9 +165,11 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     def _add_data_extraction_vertices_app_graph(
             self, progress, machine, application_graph, machine_graph,
-            chip_to_gatherer_map, vertex_to_chip_map):
+            chip_to_gatherer_map, vertex_to_chip_map, n_channels,
+            intermediate_channel_waits):
         """ Places vertices for receiving data extraction packets.
-
+        :param int n_channels: n channels in the comms
+        :param int intermediate_channel_waits: channels to wait for more.
         :param ~.ProgressBar progress: progress bar
         :param ~.Machine machine: machine instance
         :param ~.ApplicationGraph application_graph: application graph
@@ -170,7 +182,9 @@ class InsertExtraMonitorVerticesToGraphs(object):
         # insert machine vertices
         for chip in progress.over(machine.ethernet_connected_chips):
             # add to application graph
-            app_vertex = self.__new_app_gatherer(chip, vertex_to_chip_map)
+            app_vertex = self.__new_app_gatherer(
+                chip, vertex_to_chip_map, n_channels=n_channels,
+                intermediate_channel_waits=intermediate_channel_waits)
             application_graph.add_vertex(app_vertex)
             machine_vertex = app_vertex.machine_vertex
             machine_graph.add_vertex(machine_vertex)
@@ -179,20 +193,25 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     def _add_data_extraction_vertices_mach_graph(
             self, progress, machine, machine_graph,
-            chip_to_gatherer_map, vertex_to_chip_map):
+            chip_to_gatherer_map, vertex_to_chip_map, n_channels,
+            intermediate_channel_waits):
         """ Places vertices for receiving data extraction packets.
 
         :param ~.ProgressBar progress: progress bar
         :param ~.Machine machine: machine instance
         :param ~.MachineGraph machine_graph: machine graph
         :param dict chip_to_gatherer_map: vertex to chip map
+        :param int n_channels: n channels in the comms
+        :param int intermediate_channel_waits: channels to wait for more.
         :param dict vertex_to_chip_map: map between chip and extra monitor
         """
         # pylint: disable=too-many-arguments
 
         # insert machine vertices
         for chip in progress.over(machine.ethernet_connected_chips):
-            machine_vertex = self.__new_mach_gatherer(chip, vertex_to_chip_map)
+            machine_vertex = self.__new_mach_gatherer(
+                chip, vertex_to_chip_map, n_channels,
+                intermediate_channel_waits)
             machine_graph.add_vertex(machine_vertex)
             # update mapping for edge builder
             chip_to_gatherer_map[chip.x, chip.y] = machine_vertex
@@ -207,19 +226,26 @@ class InsertExtraMonitorVerticesToGraphs(object):
             ChipAndCoreConstraint(x=chip.x, y=chip.y)])
 
     @staticmethod
-    def __new_mach_monitor(chip):
+    def __new_mach_monitor(chip, n_channels, intermediate_channel_waits):
         """
         :param ~.Chip chip:
+        :param int n_channels:
+        :param int intermediate_channel_waits:
         :rtype: ExtraMonitorSupportMachineVertex
         """
         return ExtraMonitorSupportMachineVertex(
             constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)],
-            app_vertex=None)
+            app_vertex=None, n_channels=n_channels,
+            intermediate_channel_waits=intermediate_channel_waits)
 
-    def __new_app_gatherer(self, ethernet_chip, vertex_to_chip_map):
+    def __new_app_gatherer(
+            self, ethernet_chip, vertex_to_chip_map, n_channels,
+            intermediate_channel_waits):
         """
         :param ~.Chip ethernet_chip:
         :param dict vertex_to_chip_map:
+        :param int n_channels:
+        :param int intermediate_channel_waits:
         :rtype: DataSpeedUpPacketGather
         """
         return DataSpeedUpPacketGather(
@@ -229,12 +255,18 @@ class InsertExtraMonitorVerticesToGraphs(object):
                 x=ethernet_chip.x, y=ethernet_chip.y)],
             extra_monitors_by_chip=vertex_to_chip_map,
             report_default_directory=self._report_dir,
-            write_data_speed_up_reports=self._write_reports)
+            write_data_speed_up_reports=self._write_reports,
+            n_channels=n_channels,
+            intermediate_channel_waits=intermediate_channel_waits)
 
-    def __new_mach_gatherer(self, ethernet_chip, vertex_to_chip_map):
+    def __new_mach_gatherer(
+            self, ethernet_chip, vertex_to_chip_map, n_channels,
+            intermediate_channel_waits):
         """
         :param ~.Chip ethernet_chip:
         :param dict vertex_to_chip_map:
+        :param n_channels:
+        :param intermediate_channel_waits:
         :rtype: DataSpeedUpPacketGatherMachineVertex
         """
         return DataSpeedUpPacketGatherMachineVertex(
@@ -244,4 +276,6 @@ class InsertExtraMonitorVerticesToGraphs(object):
                 x=ethernet_chip.x, y=ethernet_chip.y)],
             extra_monitors_by_chip=vertex_to_chip_map,
             report_default_directory=self._report_dir,
-            write_data_speed_up_reports=self._write_reports)
+            write_data_speed_up_reports=self._write_reports,
+            n_channels=n_channels,
+            intermediate_channel_waits=intermediate_channel_waits)

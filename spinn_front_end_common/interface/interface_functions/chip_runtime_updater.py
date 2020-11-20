@@ -27,6 +27,8 @@ class ChipRuntimeUpdater(object):
     :param run_until_timesteps:
     :type run_until_timesteps: int or None
     :param int current_timesteps:
+    :param int n_channels:
+    :param int intermediate_channel_waits:
     """
 
     __slots__ = []

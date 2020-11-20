@@ -108,9 +108,10 @@ class ExtraMonitorSupportMachineVertex(
     )
 
     def __init__(
-            self, constraints, app_vertex,
-            reinject_multicast=None, reinject_point_to_point=False,
-            reinject_nearest_neighbour=False, reinject_fixed_route=False):
+            self, constraints, app_vertex, n_channels,
+            intermediate_channel_waits, reinject_multicast=None,
+            reinject_point_to_point=False, reinject_nearest_neighbour=False,
+            reinject_fixed_route=False):
         """
         :param iterable(~pacman.model.constraints.AbstractConstraint) \
                 constraints:
@@ -122,6 +123,8 @@ class ExtraMonitorSupportMachineVertex(
             if we reinject point-to-point packets
         :param bool reinject_nearest_neighbour:
             if we reinject nearest-neighbour packets
+        :param int n_channels: n channels in comms.
+        :param int intermediate_channel_waits: in parallel waits.
         :param bool reinject_fixed_route: if we reinject fixed route packets
         """
         # pylint: disable=too-many-arguments
@@ -143,12 +146,8 @@ class ExtraMonitorSupportMachineVertex(
         self._app_id = None
         self._machine = None
         self._transaction_id = 0
-        self._n_channels = helpful_functions.read_config_int(
-            globals_variables.get_simulator().config, "SpinnMan",
-            "multi_packets_in_flight_n_channels")
-        self._intermediate_channel_waits = helpful_functions.read_config_int(
-            globals_variables.get_simulator().config, "SpinnMan",
-            "multi_packets_in_flight_channel_waits")
+        self._n_channels = n_channels
+        self._intermediate_channel_waits = intermediate_channel_waits
 
     @property
     def reinject_multicast(self):

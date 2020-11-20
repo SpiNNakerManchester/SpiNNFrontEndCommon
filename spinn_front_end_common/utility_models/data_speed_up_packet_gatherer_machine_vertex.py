@@ -37,8 +37,7 @@ from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
 from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset, emergency_recover_state_from_failure,
-    read_config_int)
+    convert_vertices_to_core_subset, emergency_recover_state_from_failure)
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
@@ -291,8 +290,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def __init__(
             self, x, y, extra_monitors_by_chip, ip_address,
-            report_default_directory,
-            write_data_speed_up_reports, app_vertex=None, constraints=None):
+            report_default_directory, write_data_speed_up_reports,
+            n_channels, intermediate_channel_waits,
+            app_vertex=None, constraints=None):
         """
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.
@@ -326,11 +326,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._extra_monitors_by_chip = extra_monitors_by_chip
         self._missing_seq_nums_data_in = list()
 
-        config = get_simulator().config
-        self._n_channels = read_config_int(
-            config, "SpinnMan", "multi_packets_in_flight_n_channels")
-        self._intermediate_channel_waits = read_config_int(
-            config, "SpinnMan", "multi_packets_in_flight_channel_waits")
+        self._n_channels = n_channels
+        self._intermediate_channel_waits = intermediate_channel_waits
 
         # Create a connection to be used
         self._x = x
