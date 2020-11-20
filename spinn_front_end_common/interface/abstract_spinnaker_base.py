@@ -780,7 +780,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         for outgoing_partition in \
                 self._original_machine_graph.outgoing_edge_partitions:
             new_outgoing_partition = outgoing_partition.clone_for_graph_move()
-            self._machine_graph.add_edge_partition(
+            self._machine_graph.add_outgoing_edge_partition(
                 new_outgoing_partition)
             for edge in outgoing_partition.edges:
                 self._machine_graph.add_edge(
