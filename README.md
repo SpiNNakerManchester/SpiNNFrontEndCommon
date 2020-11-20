@@ -13,7 +13,6 @@ In addition to a standard Python installation, this package depends on:
 
     six
     enum34
-    SpiNNStorageHandlers
     DataSpecification
     PACMAN
     SpiNNMan
@@ -25,7 +24,6 @@ These dependencies, excluding `numpy`, can be installed using `pip`:
 
     pip install six
     pip install enum34
-    pip install SpiNNStorageHandlers
     pip install DataSpecification
     pip install PACMAN
     pip install SpiNNMan

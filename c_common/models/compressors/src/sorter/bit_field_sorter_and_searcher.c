@@ -28,8 +28,9 @@
 #include <circular_buffer.h>
 #include <data_specification.h>
 #include <malloc_extras.h>
-#include "common-typedefs.h"
-#include "common/constants.h"
+#include <common-typedefs.h>
+#include <common/constants.h>
+#include <common/routing_table.h>
 #include "bit_field_common/routing_tables_utils.h"
 #include "bit_field_common/compressor_sorter_structs.h"
 #include "bit_field_common/bit_field_table_generator.h"
@@ -203,7 +204,6 @@ static inline bool set_up_tested_mid_points(void) {
 //! \return True if stored
 static inline bool pass_instructions_to_compressor(
     uint32_t processor_id, uint32_t mid_point, uint32_t table_size) {
-
     bool success = routing_tables_utils_malloc(
             comms_sdram[processor_id].routing_tables, table_size);
     if (!success) {
@@ -280,12 +280,12 @@ static inline void malloc_tables_and_set_off_bit_compressor(
 static inline filter_region_t *find_processor_bit_field_region(
         int processor_id) {
     // find the right bitfield region
-    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
-        int region_proc_id = region_addresses->triples[r_id].processor;
+    for (int r_id = 0; r_id < region_addresses->n_processors; r_id++) {
+        int region_proc_id = region_addresses->processors[r_id].processor;
         log_debug("is looking for %d and found %d",
                 processor_id, region_proc_id);
         if (region_proc_id == processor_id) {
-            return region_addresses->triples[r_id].filter;
+            return region_addresses->processors[r_id].filter;
         }
     }
 
@@ -296,53 +296,14 @@ static inline filter_region_t *find_processor_bit_field_region(
 }
 #endif
 
-//! \brief Set the number of merged filters for every core with bitfield's
-//!     bitfield regions.
-static inline void set_n_merged_filters(void) {
-    uint32_t highest_key[MAX_PROCESSORS];
-    int highest_order[MAX_PROCESSORS];
+//! \brief Set the flag for the merged filters
+static inline void set_merged_filters(void) {
     log_info("best_success %d", best_success);
-
-    // Initialize highest order to -1 ie None merged in
-    for (int index = 0; index < MAX_PROCESSORS; index++) {
-        highest_order[index] = -1;
-    }
-
-    // Find the first key above the best midpoint for each processor
-    for (int sorted_index = 0; sorted_index < sorted_bit_fields->n_bit_fields;
-            sorted_index++) {
-        int test = sorted_bit_fields->sort_order[sorted_index];
-        if (test <= best_success) {
-            int processor_id = sorted_bit_fields->processor_ids[sorted_index];
-            if (test > highest_order[processor_id]) {
-                highest_order[processor_id] = test;
-                highest_key[processor_id] =
-                        sorted_bit_fields->bit_fields[sorted_index]->key;
-            }
-        }
-    }
-
-    // debug
-    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        log_debug("processor %d, first_key %d first_order %d", processor_id,
-                highest_key[processor_id], highest_order[processor_id]);
-    }
-
-    // Set n_redundancy_filters
-    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
-        int processor_id = region_addresses->triples[r_id].processor;
-        filter_region_t *filter = region_addresses->triples[r_id].filter;
-        int index = filter->n_redundancy_filters - 1;
-
-        // Find the index of highest one merged in
-        while ((index >= 0) &&
-                (filter->filters[index].key != highest_key[processor_id])) {
-            index--;
-        }
-        filter->n_merged_filters = index + 1;
-        log_info("core %d has %d bitfields of which %d have redundancy "
-                "of which %d merged in", processor_id, filter->n_filters,
-                filter->n_redundancy_filters, filter->n_merged_filters);
+    for (int i = 0; i < best_success; i++) {
+        // Find the actual index of this bitfield
+        int bf_i = sorted_bit_fields->sort_order[i];
+        // Update the flag
+        sorted_bit_fields->bit_fields[bf_i]->merged = 1;
     }
 }
 
@@ -441,7 +402,7 @@ static inline void handle_best_cleanup(void) {
     log_debug("finished loading table");
 
     log_info("setting set_n_merged_filters");
-    set_n_merged_filters();
+    set_merged_filters();
 
     // This is to allow the host report to know how many bitfields on the chip
     // merged without reading every cores bit-field region.
@@ -739,9 +700,9 @@ void process_success(int mid_point, int processor_id) {
 
     // kill any search below this point, as they all redundant as
     // this is a better search.
-    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        if (comms_sdram[processor_id].mid_point < mid_point) {
-            send_force_stop_message(processor_id);
+    for (int proc_id = 0; proc_id < MAX_PROCESSORS; proc_id++) {
+        if (comms_sdram[proc_id].mid_point < mid_point) {
+            send_force_stop_message(proc_id);
         }
     }
 
@@ -801,9 +762,9 @@ void process_failed(int mid_point, int processor_id) {
 
     // tell all compression processors trying midpoints above this one
     // to stop, as its highly likely a waste of time.
-    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        if (comms_sdram[processor_id].mid_point > mid_point) {
-            send_force_stop_message(processor_id);
+    for (int proc_id = 0; proc_id < MAX_PROCESSORS; proc_id++) {
+        if (comms_sdram[proc_id].mid_point > mid_point) {
+            send_force_stop_message(proc_id);
         }
     }
 
@@ -944,6 +905,35 @@ void start_binary_search(void) {
     }
 }
 
+//! \brief Ensure that for each router table entry there is at most 1 bitfield
+//!        per processor
+static inline void check_bitfield_to_routes(void) {
+    filter_info_t **bit_fields = sorted_bit_fields->bit_fields;
+    int *processor_ids = sorted_bit_fields->processor_ids;
+    entry_t *entries = uncompressed_router_table->uncompressed_table.entries;
+    uint32_t n_bf = sorted_bit_fields->n_bit_fields;
+    uint32_t bf_i = 0;
+
+    for (uint32_t i = 0; i < uncompressed_router_table->uncompressed_table.size; i++) {
+        // Bit field of seen processors (assumes less than 33 processors)
+        uint32_t seen_processors = 0;
+        // Go through all bitfields that match the key
+        while (bf_i < n_bf && (entries[i].key_mask.mask & bit_fields[bf_i]->key) ==
+                entries[i].key_mask.key) {
+
+            if (seen_processors & (1 << processor_ids[bf_i])) {
+                log_error("Routing key 0x%08x matches more than one bitfield key"
+                        " on processor %d (last found 0x%08x)",
+                        entries[i].key_mask.key, processor_ids[bf_i],
+                        bit_fields[bf_i]->key);
+                malloc_extras_terminate(EXIT_SWERR);
+            }
+            seen_processors |= (1 << processor_ids[bf_i]);
+            bf_i++;
+        }
+    }
+}
+
 //! \brief Start the work for the compression search
 //! \param[in] unused0: unused
 //! \param[in] unused1: unused
@@ -981,6 +971,7 @@ void start_compression_process(UNUSED uint unused0, UNUSED uint unused1) {
 
     log_debug("populating sorted bitfields at time step: %d", time_steps);
     bit_field_reader_read_in_bit_fields(region_addresses, sorted_bit_fields);
+    check_bitfield_to_routes();
 
     // the first possible failure is all bitfields so set there.
     lowest_failure = sorted_bit_fields->n_bit_fields;
@@ -1063,7 +1054,7 @@ bool initialise_compressor_processors(void) {
     // allocate DTCM memory for the processor status trackers
     log_info("allocate and step compressor processor status");
     compressor_processors_top_t *compressor_processors_top = (void *)
-            &region_addresses->triples[region_addresses->n_triples];
+            &region_addresses->processors[region_addresses->n_processors];
 
     // Switch compressor processors to TO_BE_PREPARED
     for (uint32_t processor_index = 0;

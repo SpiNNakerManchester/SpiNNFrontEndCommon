@@ -39,7 +39,6 @@ from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.messages.scp.enums.signal import Signal
-from spinn_storage_handlers import __version__ as spinn_storage_version
 from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
 from pacman.model.placements import Placements
@@ -1477,9 +1476,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         version_provenance.append(ProvenanceDataItem(
             ["version_data", "spinn_machine_version"], spinn_machine_version))
         version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spinn_storage_handlers_version"],
-            spinn_storage_version))
-        version_provenance.append(ProvenanceDataItem(
             ["version_data", "spalloc_version"], spalloc_version))
         version_provenance.append(ProvenanceDataItem(
             ["version_data", "spinnman_version"], spinnman_version))
@@ -2876,9 +2872,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             app_provenance_file_path=self._app_provenance_file_path,
             system_provenance_file_path=self._system_provenance_file_path)
 
-    @overrides(SimulatorInterface.add_socket_address)
+    @overrides(SimulatorInterface.add_socket_address, extend_doc=False)
     def add_socket_address(self, socket_address):
-        """
+        """ Add the address of a socket used in the run notification protocol.
+
         :param ~spinn_utilities.socket_address.SocketAddress socket_address:
             The address of the database socket
         """

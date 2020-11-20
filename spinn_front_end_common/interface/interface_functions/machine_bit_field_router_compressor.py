@@ -25,7 +25,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets, Router
 from spinnman.exceptions import (
     SpinnmanInvalidParameterException,
-    SpinnmanUnexpectedResponseCodeException)
+    SpinnmanUnexpectedResponseCodeException, SpiNNManCoresNotInStateException)
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from pacman.model.routing_tables import MulticastRoutingTables
@@ -34,7 +34,8 @@ from pacman.operations.router_compressors.mundys_router_compressor.\
         get_generality as
         ordered_covering_generality)
 from spinn_front_end_common.interface.interface_functions.\
-    on_chip_router_table_compression.compression import make_source_hack
+    on_chip_router_table_compression import (
+        make_source_hack)
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 from spinn_front_end_common.utilities.exceptions import (
@@ -74,22 +75,21 @@ class MachineBitFieldRouterCompressor(object):
     :param ~pacman.model.placements.Placements placements:
         placements on machine
     :param ExecutableFinder executable_finder: where are binaries are located
-    :param bool write_compressor_iobuf: flag saying if read iobuf
+    :param bool write_compressor_iobuf: flag saying if read IOBUF
     :param bool produce_report:
     :param str default_report_folder:
     :param bool use_timer_cut_off:
     :param int machine_time_step:
     :param int time_scale_factor:
-    :param int threshold_percentage: the percentage of bitfields to do on chip\
+    :param int threshold_percentage: the percentage of bitfields to do on chip
         before its considered a success
-    :param ExecutableTargets executable_targets:
+    :param ~spinnman.model.ExecutableTargets executable_targets:
         the set of targets and executables
-    :param graph_mapper: mapping between graphs (could be none)
     :param bool compress_as_much_as_possible:
         whether to compress as much as possible
     :param list(ProvenanceDataItem) provenance_data_objects:
     :return: where the compressors ran, and the provenance they generated
-    :rtype: tuple(ExecutableTargets, list(ProvenanceDataItem))
+    :rtype: tuple(~spinnman.model.ExecutableTargets, list(ProvenanceDataItem))
     """
 
     __slots__ = []
@@ -175,10 +175,10 @@ class MachineBitFieldRouterCompressor(object):
         :param int machine_time_step:
         :param int time_scale_factor:
         :param int threshold_percentage:
-        :param ExecutableTargets executable_targets:
+        :param ~.ExecutableTargets executable_targets:
         :param bool compress_as_much_as_possible:
         :param list(ProvenanceDataItem) provenance_data_objects:
-        :rtype: tuple(ExecutableTargets,list(ProvenanceDataItem))
+        :rtype: tuple(~.ExecutableTargets,list(ProvenanceDataItem))
         """
 
         # build provenance data objects
@@ -222,19 +222,25 @@ class MachineBitFieldRouterCompressor(object):
             bit_field_sorter_executable_path, threshold_percentage)
 
         # load and run binaries
-        system_control_logic.run_system_application(
-            compressor_executable_targets,
-            routing_table_compressor_app_id, transceiver,
-            provenance_file_path, executable_finder,
-            write_compressor_iobuf,
-            functools.partial(
-                self._check_bit_field_router_compressor_for_success,
-                host_chips=on_host_chips,
-                sorter_binary_path=bit_field_sorter_executable_path,
-                prov_data_items=prov_items),
-            [CPUState.FINISHED], True,
-            "bit_field_compressor_on_{}_{}_{}.txt",
-            [bit_field_sorter_executable_path], progress_bar)
+        try:
+            system_control_logic.run_system_application(
+                compressor_executable_targets,
+                routing_table_compressor_app_id, transceiver,
+                provenance_file_path, executable_finder,
+                write_compressor_iobuf,
+                functools.partial(
+                    self._check_bit_field_router_compressor_for_success,
+                    host_chips=on_host_chips,
+                    sorter_binary_path=bit_field_sorter_executable_path,
+                    prov_data_items=prov_items),
+                [CPUState.FINISHED], True,
+                "bit_field_compressor_on_{}_{}_{}.txt",
+                [bit_field_sorter_executable_path], progress_bar,
+                logger=logger)
+        except SpiNNManCoresNotInStateException as e:
+            logger.exception(transceiver.get_core_status_string(
+                e.failed_core_states()))
+            raise e
 
         # start the host side compressions if needed
         if len(on_host_chips) != 0:
@@ -414,7 +420,7 @@ class MachineBitFieldRouterCompressor(object):
             bit_field_sorter_executable_path, threshold_percentage):
         """ load all data onto the chip
 
-        :param dict(tuple(int,int),tuple(int,int,int)) addresses:
+        :param dict(tuple(int,int),tuple(int,int)) addresses:
             the addresses for bitfields in sdram
         :param ~.Transceiver transceiver: the spinnMan instance
         :param routing_table_compressor_app_id: the app id for the system app
@@ -581,7 +587,7 @@ class MachineBitFieldRouterCompressor(object):
             threshold_percentage):
         """ loads the bitfield addresses space
 
-        :param dict(tuple(int,int),tuple(int,int,int)) addresses:
+        :param dict(tuple(int,int),tuple(int,int)) addresses:
             the addresses to load
         :param int chip_x: the chip x to consider here
         :param int chip_y: the chip y to consider here
@@ -733,7 +739,7 @@ class MachineBitFieldRouterCompressor(object):
             vertex which utilises the API
         :param ~.Placement placement: placement of vertex
         :param ~.Transceiver transceiver:  spinnman instance
-        :param dict(tuple(int,int),list(tuple(int,int,int))) region_addresses:
+        :param dict(tuple(int,int),list(tuple(int,int))) region_addresses:
             store for data regions
         :param dict(tuple(int,int),list(tuple(int,int))) \
                 sdram_block_addresses_and_sizes:
@@ -742,10 +748,8 @@ class MachineBitFieldRouterCompressor(object):
         # store the region sdram address's
         bit_field_sdram_address = vertex.bit_field_base_address(
             transceiver, placement)
-        key_to_atom_map = vertex.key_to_atom_map_region_base_address(
-            transceiver, placement)
         region_addresses[placement.x, placement.y].append(
-            (bit_field_sdram_address, key_to_atom_map, placement.p))
+            (bit_field_sdram_address, placement.p))
 
         # store the available space from the matrix to steal
         blocks = vertex.regeneratable_sdram_blocks_and_sizes(
@@ -770,7 +774,7 @@ class MachineBitFieldRouterCompressor(object):
         :return: region_addresses and the executable targets to load the
             router table compressor with bitfield. and the SDRAM blocks
             available for use on each core that we plan to use
-        :rtype: tuple(dict(tuple(int,int),tuple(int,int,int)),
+        :rtype: tuple(dict(tuple(int,int),tuple(int,int)),
             dict(tuple(int,int),list(tuple(int,int))))
         """
         # data holders
@@ -797,7 +801,7 @@ class MachineBitFieldRouterCompressor(object):
         """ Generate byte array data for a list of SDRAM addresses and \
             finally the time to run per compression iteration.
 
-        :param list(tuple(int,int,int)) address_list:
+        :param list(tuple(int,int)) address_list:
             the list of SDRAM addresses
         :param ~.CoreSubset cores: compressor cores on this chip.
         :param int comms_sdram: Address for comms block
@@ -811,9 +815,8 @@ class MachineBitFieldRouterCompressor(object):
         data += self._ONE_WORDS.pack(threshold_percentage)
         data += self._ONE_WORDS.pack(comms_sdram)
         data += self._ONE_WORDS.pack(len(address_list))
-        for (bit_field, key_to_atom, processor_id) in address_list:
-            data += self._THREE_WORDS.pack(
-                bit_field, key_to_atom, processor_id)
+        for (bit_field, processor_id) in address_list:
+            data += self._TWO_WORDS.pack(bit_field, processor_id)
         data += self._ONE_WORDS.pack(len(cores))
         compression_cores = list(cores.processor_ids)
         data += struct.pack("<{}I".format(len(cores)), *compression_cores)

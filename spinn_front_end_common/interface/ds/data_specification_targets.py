@@ -13,13 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import io
 try:
     from collections.abc import MutableMapping
 except ImportError:
     # For 2.7 only
     from collections import MutableMapping
 from .data_row_writer import DataRowWriter
-from .data_row_reader import DataRowReader
 from .ds_sqllite_database import DsSqlliteDatabase
 
 
@@ -49,10 +49,10 @@ class DataSpecificationTargets(MutableMapping):
         :param tuple(int,int,int) core: triple of (x, y, p)
         :return: dictionary with the keys ``start_address``, ``memory_used``
             and ``memory_written``
-        :rtype: dict(str,int)
+        :rtype: ~io.RawIOBase
         """
         (x, y, p) = core
-        return DataRowReader(self._db.get_ds(x, y, p))
+        return io.BytesIO(self._db.get_ds(x, y, p))
 
     def __setitem__(self, core, info):
         raise NotImplementedError(
@@ -105,10 +105,10 @@ class DataSpecificationTargets(MutableMapping):
         """
         :return: iterator over the core locations and how to read the data
             spec for them
-        :rtype: iterable(tuple(tuple(int,int,int),DataRowReader))
+        :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase))
         """
         for key, value in self._db.ds_iteritems():
-            yield key, DataRowReader(value)
+            yield key, io.BytesIO(value)
 
     # Python 2 backward compatibility
     iteritems = items

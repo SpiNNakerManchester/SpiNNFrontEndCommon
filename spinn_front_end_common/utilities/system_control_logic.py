@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinnman.exceptions import SpinnmanException, SpinnmanTimeoutException
+from spinnman.exceptions import SpinnmanException
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
 from spinn_front_end_common.interface.interface_functions import (
@@ -25,14 +25,14 @@ def run_system_application(
         executable_cores, app_id, transceiver, provenance_file_path,
         executable_finder, read_algorithm_iobuf, check_for_success_function,
         cpu_end_states, needs_sync_barrier, filename_template,
-        binaries_to_track=None, progress_bar=None):
+        binaries_to_track=None, progress_bar=None, logger=None):
     """ Executes the given _system_ application. \
         Used for on-chip expanders, compressors, etc.
 
-    :param ~.ExecutableTargets executable_cores:
+    :param ~spinnman.model.ExecutableTargets executable_cores:
         the cores to run the executable on
     :param int app_id: the app-id for the executable
-    :param ~.Transceiver transceiver: the SpiNNMan instance
+    :param ~spinnman.transceiver.Transceiver transceiver: the SpiNNMan instance
     :param str provenance_file_path:
         the path for where provenance data is stored
     :param ExecutableFinder executable_finder: finder for executable paths
@@ -40,7 +40,7 @@ def run_system_application(
     :param callable check_for_success_function:
         function used to check success;
         expects `executable_cores`, `transceiver` as inputs
-    :param set(~.CPUState) cpu_end_states:
+    :param set(~spinnman.model.enums.CPUState) cpu_end_states:
         the states that a successful run is expected to terminate in
     :param bool needs_sync_barrier: whether a sync barrier is needed
     :param str filename_template: the IOBUF filename template.
@@ -49,8 +49,12 @@ def run_system_application(
         Or `None` for all binaries
     :param progress_bar: Possible progress bar to update.
            end() will be called after state checked
+    :param ~logging.Logger logger:
+        If provided and IOBUF is extracted, will be used to log errors and
+        warnings
     :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None
-
+    :raise SpiNNManException:
+        If one should arise from the underlying SpiNNMan calls
     """
 
     # load the executable
@@ -82,7 +86,7 @@ def run_system_application(
         if progress_bar is not None:
             progress_bar.end()
         succeeded = True
-    except (SpinnmanTimeoutException, SpinnmanException) as ex:
+    except SpinnmanException as ex:
         succeeded = False
         # Delay the exception until iobuff is ready
         error = ex
@@ -99,9 +103,14 @@ def run_system_application(
         iobuf_reader = ChipIOBufExtractor(
             filename_template=filename_template,
             suppress_progress=False)
-        iobuf_reader(
+        error_entries, warn_entries = iobuf_reader(
             transceiver, executable_cores, executable_finder,
             system_provenance_file_path=provenance_file_path)
+        if logger is not None:
+            for entry in warn_entries:
+                logger.warn(entry)
+            for entry in error_entries:
+                logger.error(entry)
 
     # stop anything that's associated with the compressor binary
     transceiver.stop_application(app_id)
