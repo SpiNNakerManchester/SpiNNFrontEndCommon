@@ -29,7 +29,6 @@
 
 # import sys
 import os
-from sphinx import apidoc
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -374,18 +373,38 @@ for f in os.listdir("."):
     if (os.path.isfile(f) and f.endswith(
             ".rst") and f != "index.rst" and f != "modules.rst"):
         os.remove(f)
-apidoc.main([None, '-o', ".", "../../spinn_front_end_common",
-             "../../spinn_front_end_common/abstract_models/impl/[a-z]*.py",
-             "../../spinn_front_end_common/abstract_models/a*.py",
-             "../../spinn_front_end_common/interface/buffer_management/r*.py",
-             "../../spinn_front_end_common/interface/buffer_management/buffer_manager.py",
-             "../../spinn_front_end_common/interface/buffer_management/*/[a-z]*.py",
-             "../../spinn_front_end_common/interface/[dips]*/[a-np-z]*.py",
-             "../../spinn_front_end_common/utilities/[a-z]*/[a-df-z]*.py",
-             "../../spinn_front_end_common/utilities/fa*.py",
-             "../../spinn_front_end_common/utilities/si*.py",
-             "../../spinn_front_end_common/utilities/math_constants.py",
-             "../../spinn_front_end_common/utilities/utility_objs/exe*.py",
-             "../../spinn_front_end_common/utilities/utility_objs/ext*/[a-z]*.py",
-             "../../spinn_front_end_common/utility_models/[a-z]*.py"
-             ])
+
+# We want to document __call__ when encountered
+autodoc_default_options = {
+    "members": True,
+    "special-members": "__call__"
+}
+
+# UGH!
+output_dir = os.path.abspath(".")
+os.chdir("../..")
+
+options = [
+    '-o', output_dir, "spinn_front_end_common",
+    "spinn_front_end_common/abstract_models/impl/[a-z]*.py",
+    "spinn_front_end_common/abstract_models/a*.py",
+    "spinn_front_end_common/interface/buffer_management/r*.py",
+    "spinn_front_end_common/interface/buffer_management/buffer_manager.py",
+    "spinn_front_end_common/interface/buffer_management/*/[a-z]*.py",
+    "spinn_front_end_common/interface/[dips]*/[a-np-z]*.py",
+    "spinn_front_end_common/utilities/[a-z]*/[a-df-z]*.py",
+    "spinn_front_end_common/utilities/fa*.py",
+    "spinn_front_end_common/utilities/si*.py",
+    "spinn_front_end_common/utilities/math_constants.py",
+    "spinn_front_end_common/utilities/utility_objs/exe*.py",
+    "spinn_front_end_common/utilities/utility_objs/ext*/[a-z]*.py",
+    "spinn_front_end_common/utility_models/[a-z]*.py"]
+
+try:
+    # Old style API; Python 2.7
+    from sphinx import apidoc
+    options = [None] + options
+except ImportError:
+    # New style API; Python 3.6 onwards
+    from sphinx.ext import apidoc
+apidoc.main(options)
