@@ -71,26 +71,6 @@ class HostBasedBitFieldRouterCompressor(object):
     """ Host-based fancy router compressor using the bitfield filters of the \
         cores. Compresses bitfields and router table entries together as \
         much as feasible.
-
-    :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
-        routing tables (uncompressed)
-    :param ~spinn_machine.Machine machine: SpiNNMachine instance
-    :param ~pacman.model.placements.Placements placements: placements
-    :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
-    :param str default_report_folder: report folder
-    :param bool produce_report: flag for producing report
-    :param bool use_timer_cut_off:
-        flag for whether to use timer for compressor
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        the machine graph level
-    :param ~pacman.model.routing_info.RoutingInfo routing_info:
-        routing information
-    :param int machine_time_step: time step
-    :param int time_scale_factor: time scale factor
-    :param int target_length: length of table entries to get to.
-    :param int time_to_try_for_each_iteration: time to try per iteration
-    :return: compressed routing table entries
-    :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
     """
 
     __slots__ = [
@@ -155,20 +135,26 @@ class HostBasedBitFieldRouterCompressor(object):
             machine_time_step, time_scale_factor, target_length=None,
             time_to_try_for_each_iteration=None):
         """
-        :param ~.MulticastRoutingTables router_tables:
-        :param ~.Machine machine:
-        :param ~.Placements placements:
-        :param ~.Transceiver transceiver:
-        :param str default_report_folder:
-        :param bool produce_report:
+        :param ~pacman.model.routing_tables.MulticastRoutingTables \
+                router_tables:
+            routing tables (uncompressed)
+        :param ~spinn_machine.Machine machine: SpiNNMachine instance
+        :param ~pacman.model.placements.Placements placements: placements
+        :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
+        :param str default_report_folder: report folder
+        :param bool produce_report: flag for producing report
         :param bool use_timer_cut_off:
-        :param ~.MachineGraph machine_graph:
-        :param ~.RoutingInfo routing_infos:
-        :param int machine_time_step:
-        :param int time_scale_factor:
-        :param int target_length:
-        :param int time_to_try_for_each_iteration:
-        :rtype: ~.MulticastRoutingTables
+            flag for whether to use timer for compressor
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph level
+        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+            routing information
+        :param int machine_time_step: time step
+        :param int time_scale_factor: time scale factor
+        :param int target_length: length of table entries to get to.
+        :param int time_to_try_for_each_iteration: time to try per iteration
+        :return: compressed routing table entries
+        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
 
         if target_length is None:

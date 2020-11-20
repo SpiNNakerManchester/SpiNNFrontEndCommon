@@ -13,6 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+The code in this module is intended primarily for being invoked via the
+PACMAN Executor.
+"""
+
 from .application_finisher import ApplicationFinisher
 from .application_runner import ApplicationRunner
 from .buffer_extractor import BufferExtractor
@@ -29,6 +34,7 @@ from .dsg_region_reloader import DSGRegionReloader
 from .edge_to_n_keys_mapper import EdgeToNKeysMapper
 from .energy_provenance_reporter import EnergyProvenanceReporter
 from .finalise_timing_data import FinaliseTimingData
+from .find_application_chips_used import FindApplicationChipsUsed
 from .graph_binary_gatherer import GraphBinaryGatherer
 from .graph_data_specification_writer import (
     GraphDataSpecificationWriter)
@@ -90,6 +96,7 @@ __all__ = [
     "SystemMulticastRoutingGenerator",
     "DSGRegionReloader", "EdgeToNKeysMapper",
     "EnergyProvenanceReporter", "FinaliseTimingData",
+    "FindApplicationChipsUsed",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
     "HBPAllocator", "HostBasedBitFieldRouterCompressor",

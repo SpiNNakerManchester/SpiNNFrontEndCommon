@@ -23,15 +23,6 @@ _LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
 
 class InsertChipPowerMonitorsToGraphs(object):
     """ Adds chip power monitors into a given graph.
-
-    :param ~spinn_machine.Machine machine:
-        the SpiNNaker machine as discovered
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        the machine graph
-    :param int n_samples_per_recording:
-    :param int sampling_frequency:
-    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
-        the application graph
     """
 
     def __call__(
@@ -40,11 +31,15 @@ class InsertChipPowerMonitorsToGraphs(object):
         """ Adds chip power monitor vertices on Ethernet connected chips as\
             required.
 
-        :param ~.Machine machine:
-        :param ~.MachineGraph machine_graph:
+        :param ~spinn_machine.Machine machine:
+            the SpiNNaker machine as discovered
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph
         :param int n_samples_per_recording:
         :param int sampling_frequency:
-        :param ~.ApplicationGraph application_graph:
+        :param ~pacman.model.graphs.application.ApplicationGraph \
+                application_graph:
+            the application graph
         """
         # pylint: disable=too-many-arguments
 

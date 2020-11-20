@@ -23,26 +23,22 @@ from spinn_front_end_common.interface.interface_functions. \
 
 class PreAllocateForBitFieldRouterCompressor(object):
     """ Preallocates resources required for bitfield router compression.
-
-    :param pre_allocated_resources: other preallocated resources
-    :type pre_allocated_resources:
-        ~pacman.model.resources.PreAllocatedResourceContainer
-    :param int sdram_to_pre_alloc_for_bit_fields:
-        SDRAM end user managed to help with bitfield compressions. Basically
-        ensuring some SDRAM is available in the case where there is no SDRAM
-        available to steal/use.
-    :param ~spinn_machine.Machine machine: the SpiNNaker machine as discovered
-    :return: preallocated resources
-    :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
     """
 
     def __call__(self, machine, sdram_to_pre_alloc_for_bit_fields,
                  pre_allocated_resources=None):
         """
-        :param ~.PreAllocatedResourceContainer pre_allocated_resources:
+        :param pre_allocated_resources: other preallocated resources
+        :type pre_allocated_resources:
+            ~pacman.model.resources.PreAllocatedResourceContainer
         :param int sdram_to_pre_alloc_for_bit_fields:
-        :param ~.Machine machine:
-        :rtype: ~.PreAllocatedResourceContainer
+            SDRAM end user managed to help with bitfield compressions.
+            Basically ensuring some SDRAM is available in the case where there
+            is no SDRAM available to steal/use.
+        :param ~spinn_machine.Machine machine:
+            the SpiNNaker machine as discovered
+        :return: preallocated resources
+        :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
 
         progress_bar = ProgressBar(

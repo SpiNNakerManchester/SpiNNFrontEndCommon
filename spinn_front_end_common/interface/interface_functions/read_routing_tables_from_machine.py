@@ -12,15 +12,24 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from pacman.model.routing_tables import MulticastRoutingTables
-from pacman.model.routing_tables.compressed_multicast_routing_table import \
-    CompressedMulticastRoutingTable
 from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.routing_tables import MulticastRoutingTables
+from pacman.model.routing_tables.compressed_multicast_routing_table import (
+    CompressedMulticastRoutingTable)
 
 
 class ReadRoutingTablesFromMachine(object):
+    """ Reads compressed routing tables from a SpiNNaker machine.
+    """
 
     def __call__(self, transceiver, routing_tables, app_id):
+        """
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~pacman.model.routing_tables.MulticastRoutingTables \
+                routing_tables: uncompressed routing tables
+        :param int app_id:
+        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
+        """
 
         progress = ProgressBar(
             routing_tables, "Reading Routing Tables from Machine")
@@ -35,6 +44,9 @@ class ReadRoutingTablesFromMachine(object):
 
     @staticmethod
     def _read_routing_table(transceiver, table, app_id):
+        """
+        :param ~.UnCompressedMulticastRoutingTable table:
+        """
         machine_routing_table = \
             CompressedMulticastRoutingTable(table.x, table.y)
         for routing_entry in transceiver.get_multicast_routes(

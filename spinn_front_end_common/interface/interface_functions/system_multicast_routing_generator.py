@@ -31,16 +31,6 @@ ROUTING_MASK = 0xFFFFFFF8
 class SystemMulticastRoutingGenerator(object):
     """ Generates routing table entries used by the data in processes with the\
         extra monitor cores.
-
-    :param ~spinn_machine.Machine machine:
-    :param extra_monitor_cores:
-    :type extra_monitor_cores:
-        dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
-    :param ~pacman.model.placements.Placements placements:
-    :return: routing tables, destination-to-key map,
-        board-locn-to-timeout-key map
-    :rtype: tuple(MulticastRoutingTables,
-        dict(tuple(int,int),int), dict(tuple(int,int),int))
     """
     __slots__ = ["_monitors", "_machine", "_key_to_destination_map",
                  "_placements", "_routing_tables", "_time_out_keys_by_board"]
@@ -48,9 +38,12 @@ class SystemMulticastRoutingGenerator(object):
     def __call__(self, machine, extra_monitor_cores, placements):
         """
         :param ~spinn_machine.Machine machine:
-        :param dict(tuple(int,int),ExtraMonitorSupportMachineVertex) \
-                extra_monitor_cores:
+        :param extra_monitor_cores:
+        :type extra_monitor_cores:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
         :param ~pacman.model.placements.Placements placements:
+        :return: routing tables, destination-to-key map,
+            board-locn-to-timeout-key map
         :rtype: tuple(MulticastRoutingTables,
             dict(tuple(int,int),int), dict(tuple(int,int),int))
         """

@@ -18,16 +18,13 @@ from spinn_utilities.progress_bar import ProgressBar
 
 class LoadFixedRoutes(object):
     """ Load a set of fixed routes onto a SpiNNaker machine.
-
-    :param dict(tuple(int,int),~spinn_machine.FixedRouteEntry) fixed_routes:
-    :param ~spinnman.transceiver.Transceiver transceiver:
-    :param int app_id:
     """
 
     def __call__(self, fixed_routes, transceiver, app_id):
         """
-        :param dict(tuple(int,int),~.FixedRouteEntry) fixed_routes:
-        :param ~.Transceiver transceiver:
+        :param dict(tuple(int,int),~spinn_machine.FixedRouteEntry) \
+                fixed_routes:
+        :param ~spinnman.transceiver.Transceiver transceiver:
         :param int app_id:
         """
         progress_bar = ProgressBar(

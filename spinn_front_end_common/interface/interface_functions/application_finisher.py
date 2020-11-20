@@ -30,11 +30,6 @@ _ONE_WORD = struct.Struct("<I")
 class ApplicationFinisher(object):
     """ Handles finishing the running of an application, collecting the\
         status of the cores that the application was running on.
-
-    :param int app_id:
-    :param ~spinnman.transceiver.Transceiver txrx:
-    :param dict(ExecutableType,~spinn_machine.CoreSubsets) executable_types:
-    :raises ExecutableFailedToStopException:
     """
     __slots__ = []
 

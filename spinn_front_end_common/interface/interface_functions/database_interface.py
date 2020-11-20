@@ -23,23 +23,6 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class DatabaseInterface(object):
     """ Writes a database of the graph(s) and other information.
-
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-    :param str user_create_database:
-    :param ~pacman.model.tags.Tags tags:
-    :param int runtime:
-    :param ~spinn_machine.Machine machine:
-    :param int data_n_timesteps:
-    :param int time_scale_factor:
-    :param int machine_time_step:
-    :param ~pacman.model.placements.Placements placements:
-    :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-    :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
-    :param str report_folder: Where the database will be put.
-    :param bool create_atom_to_event_id_mapping:
-    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
-    :return: Database interface, where the database is located
-    :rtype: tuple(DatabaseInterface, str)
     """
 
     __slots__ = [
@@ -65,20 +48,23 @@ class DatabaseInterface(object):
             report_folder, create_atom_to_event_id_mapping=False,
             application_graph=None):
         """
-        :param ~.MachineGraph machine_graph:
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param str user_create_database:
-        :param ~.Tags tags:
+        :param ~pacman.model.tags.Tags tags:
         :param int runtime:
-        :param ~.Machine machine:
+        :param ~spinn_machine.Machine machine:
         :param int data_n_timesteps:
         :param int time_scale_factor:
         :param int machine_time_step:
-        :param ~.Placements placements:
-        :param ~.RoutingInfo routing_infos:
-        :param ~.MulticastRoutingTables router_tables:
-        :param str report_folder:
+        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+        :param ~pacman.model.routing_tables.MulticastRoutingTables \
+                router_tables:
+        :param str report_folder: Where the database will be put.
         :param bool create_atom_to_event_id_mapping:
-        :param ~.ApplicationGraph application_graph:
+        :param ~pacman.model.graphs.application.ApplicationGraph \
+                application_graph:
+        :return: Database interface, where the database is located
         :rtype: tuple(DatabaseInterface, str)
         """
         # pylint: disable=too-many-arguments

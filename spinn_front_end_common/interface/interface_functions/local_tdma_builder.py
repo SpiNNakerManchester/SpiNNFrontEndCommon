@@ -79,17 +79,6 @@ class LocalTDMABuilder(object):
         T4 is the spreader between populations.
         X is pop0 firing,
         Y is pop1 firing
-
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        machine graph.
-    :param int machine_time_step: the machine time step.
-    :param int time_scale_factor: the time scale factor.
-    :param n_keys_map: the map of partitions to n keys.
-    :type n_keys_map:
-        ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
-    :param application_graph: app graph.
-    :type application_graph:
-        ~pacman.model.graphs.application.ApplicationGraph or None
     """
 
     # error message for when the vertex TDMA isnt feasible.

@@ -18,20 +18,16 @@ from spinn_utilities.progress_bar import ProgressBar
 
 class RoutingTableLoader(object):
     """ Loads routes into initialised routers.
-
-    :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
-    :param int app_id:
-    :param ~spinnman.transceiver.Transceiver transceiver:
-    :param ~spinn_machine.Machine machine:
     """
     __slots__ = []
 
     def __call__(self, router_tables, app_id, transceiver, machine):
         """
-        :param ~.MulticastRoutingTables router_tables:
+        :param ~pacman.model.routing_tables.MulticastRoutingTables \
+                router_tables:
         :param int app_id:
-        :param ~.Transceiver transceiver:
-        :param ~.Machine machine:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~spinn_machine.Machine machine:
         """
         progress = ProgressBar(router_tables.routing_tables,
                                "Loading routing data onto the machine")
