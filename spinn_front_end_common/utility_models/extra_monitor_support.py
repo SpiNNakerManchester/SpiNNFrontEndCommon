@@ -23,13 +23,17 @@ class ExtraMonitorSupport(AbstractOneAppOneMachineVertex):
     """
     __slots__ = []
 
-    def __init__(self, constraints):
+    def __init__(self, constraints, n_channels, intermediate_channel_waits):
         """
+        :param n_channels: n channels
+        :param intermediate_channel_waits: channels to clear before more.
         :param constraints: The constraints on the vertex
         :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
         super(ExtraMonitorSupport, self).__init__(
             ExtraMonitorSupportMachineVertex(
-                constraints=constraints, app_vertex=self),
+                constraints=constraints, app_vertex=self,
+                n_channels=n_channels,
+                intermediate_channel_waits=intermediate_channel_waits),
             label="ExtraMonitorSupport", constraints=constraints)

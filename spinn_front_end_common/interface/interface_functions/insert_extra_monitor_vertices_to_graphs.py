@@ -83,7 +83,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         if application_graph is not None:
             extra_monitors = self._add_second_monitors_application_graph(
                 progress, machine, application_graph, machine_graph,
-                vertex_to_chip_map)
+                vertex_to_chip_map, n_channels, intermediate_channel_waits)
         else:
             extra_monitors = self._add_second_monitors_machine_graph(
                 progress, machine, machine_graph, vertex_to_chip_map,
@@ -104,11 +104,13 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     def _add_second_monitors_application_graph(
             self, progress, machine, application_graph, machine_graph,
-            vertex_to_chip_map):
+            vertex_to_chip_map, n_channels, intermediate_channel_waits):
         """ Handles placing the second monitor vertex with extra functionality\
             into the graph
 
         :param ~.ProgressBar progress: progress bar
+        :param int n_channels: n channels to run in parallel.
+        :param int intermediate_channel_waits: channels to clear before more
         :param ~.Machine machine: spinnMachine instance
         :param ~.ApplicationGraph application_graph: app graph
         :param ~.MachineGraph machine_graph: machine graph
@@ -124,7 +126,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
             if chip.virtual:
                 continue
             # add to both application graph and machine graph
-            app_vertex = self.__new_app_monitor(chip)
+            app_vertex = self.__new_app_monitor(
+                chip, n_channels, intermediate_channel_waits)
             application_graph.add_vertex(app_vertex)
             machine_vertex = app_vertex.machine_vertex
             machine_graph.add_vertex(machine_vertex)
@@ -217,13 +220,17 @@ class InsertExtraMonitorVerticesToGraphs(object):
             chip_to_gatherer_map[chip.x, chip.y] = machine_vertex
 
     @staticmethod
-    def __new_app_monitor(chip):
+    def __new_app_monitor(chip, n_channels, intermediate_channel_waits):
         """
         :param ~.Chip chip:
+        :param int n_channels: n channels to run in parallel.
+        :param int intermediate_channel_waits: channels to clear before more
         :rtype: ExtraMonitorSupport
         """
-        return ExtraMonitorSupport(constraints=[
-            ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+        return ExtraMonitorSupport(
+            constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)],
+            n_channels=n_channels,
+            intermediate_channel_waits=intermediate_channel_waits)
 
     @staticmethod
     def __new_mach_monitor(chip, n_channels, intermediate_channel_waits):
