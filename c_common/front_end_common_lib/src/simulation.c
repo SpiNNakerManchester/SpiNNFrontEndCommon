@@ -67,6 +67,12 @@ static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
 //! Whether the simulation uses the timer or not (default true)
 static bool uses_timer = true;
 
+//! The number of steps to run before synchronization
+static uint32_t n_sync_steps;
+
+//! The number simulation timestep at the next synchronization
+static uint32_t next_sync_step;
+
 //! \brief Store basic provenance data
 //! \return the address after which new provenance data can be stored
 static void *simulation_store_provenance_data(void) {
@@ -137,21 +143,36 @@ static void send_ok_response(sdp_msg_t *msg) {
     spin1_send_sdp_msg(msg, 10);
 }
 
+//! \brief wait for a signal before running
+//! \param reset_event: If true, the event is reset after the event has been
+//!                     received
+static inline void wait_before_run(bool reset_event) {
+    while (resume_wait()) {
+        wait_for_interrupt();
+    }
+    if (reset_event) {
+        event.wait ^= 1;
+    }
+    sark_cpu_state(CPU_STATE_RUN);
+}
+
 //! \brief Callback when starting after synchronise
 //! \param unused0: unused
 //! \param unused1: unused
 static void synchronise_start(uint unused0, uint unused1) {
-    while (resume_wait()) {
-        wait_for_interrupt();
-    }
-    sark_cpu_state(CPU_STATE_RUN);
-    stored_start_function();
-
     // If we are not using the timer, no-one else resets the event, so do it now
     // (event comes from sark.h - this is how SARK knows whether to wait for a
     //  SYNC0 or SYNC1 message)
-    if (!uses_timer) {
-        event.wait ^= 1;
+    wait_before_run(!uses_timer);
+    stored_start_function();
+}
+
+//! \brief Set the CPU state depending on the event wait state
+static inline void set_cpu_wait_state() {
+    if (event.wait) {
+        sark_cpu_state(CPU_STATE_SYNC1);
+    } else {
+        sark_cpu_state(CPU_STATE_SYNC0);
     }
 }
 
@@ -192,6 +213,14 @@ static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
         // We start at time - 1 because the first thing models do is
         // increment a time counter
         *pointer_to_current_time = (msg->arg3 - 1);
+        uint32_t *data = (uint32_t *) msg->data;
+        n_sync_steps = data[0];
+        if (n_sync_steps > 0) {
+            // Add one to make the sync happen *after* n_sync_steps
+            next_sync_step = *pointer_to_current_time + n_sync_steps + 1;
+        } else {
+            next_sync_step = 0;
+        }
 
         if (stored_resume_function != NULL) {
             log_info("Calling pre-resume function");
@@ -206,18 +235,9 @@ static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
             log_info("Resuming");
             spin1_resume(SYNC_WAIT);
         } else {
-            if (event.wait) {
-                sark_cpu_state(CPU_STATE_SYNC1);
-            } else {
-                sark_cpu_state(CPU_STATE_SYNC0);
-            }
+            set_cpu_wait_state();
         }
-
-
-        // If we are told to send a response, send it now
-        if (msg->data[0] == 1) {
-            send_ok_response(msg);
-        }
+        send_ok_response(msg);
 
         // free the message to stop overload
         spin1_msg_free(msg);
@@ -383,4 +403,43 @@ void simulation_set_start_function(start_callback_t start_function) {
 
 void simulation_set_uses_timer(bool sim_uses_timer) {
     uses_timer = sim_uses_timer;
+}
+
+void simulation_set_sync_steps(uint32_t n_steps) {
+    n_sync_steps = n_steps;
+    if (n_steps > 0) {
+        next_sync_step = *pointer_to_current_time + n_steps + 1;
+    }
+}
+
+bool simulation_is_finished(void) {
+    bool finished = ((*pointer_to_infinite_run != TRUE) &&
+            (*pointer_to_current_time >= *pointer_to_simulation_time));
+    // If we are finished, or not running synchronized, return finished
+    if (finished || !n_sync_steps) {
+        return finished;
+    }
+    // If we are synchronized, check if this is a sync step (or should have been)
+    if (*pointer_to_current_time >= next_sync_step) {
+        log_info("Sync at %d", next_sync_step);
+
+        // If using the timer, pause the timer
+        if (uses_timer) {
+            log_info("Pausing");
+            spin1_pause();
+        }
+
+        // Wait for synchronisation to happen
+        log_info("Waiting for sync");
+        set_cpu_wait_state();
+        wait_before_run(true);
+        next_sync_step += n_sync_steps;
+        log_info("Sync done, next sync at %d", next_sync_step);
+
+        // If using the timer, start it again
+        if (uses_timer) {
+            spin1_resume(SYNC_NOWAIT);
+        }
+    }
+    return false;
 }
