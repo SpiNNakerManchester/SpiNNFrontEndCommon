@@ -24,7 +24,7 @@ class FinaliseTimingData(object):
 
     def __call__(self):
         """
-        :return: 
+        :return:
             mapping_time, dsg_time, load_time, execute_time, extraction_time
         :rtype: tuple(float, float, float, float, float)
         """
