@@ -1094,6 +1094,20 @@
       <anchor>a4140829d7636111360c56f655a673879</anchor>
       <arglist>(bool sim_uses_timer)</arglist>
     </member>
+    <member kind="function">
+      <type>void</type>
+      <name>simulation_set_sync_steps</name>
+      <anchorfile>simulation_8h.html</anchorfile>
+      <anchor>a878f1e3aad4677272f1193cba7d07186</anchor>
+      <arglist>(uint32_t n_steps)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>simulation_is_finished</name>
+      <anchorfile>simulation_8h.html</anchorfile>
+      <anchor>a4ea0a05f598d38f62dfec7cd0d5d7589</anchor>
+      <arglist>(void)</arglist>
+    </member>
   </compound>
   <compound kind="file">
     <name>spinn_extra.h</name>
@@ -2402,10 +2416,24 @@
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
+      <name>wait_before_run</name>
+      <anchorfile>simulation_8c.html</anchorfile>
+      <anchor>a157a0d82f2fc8d1c6a42cc887ef2dd2c</anchor>
+      <arglist>(bool reset_event)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
       <name>synchronise_start</name>
       <anchorfile>simulation_8c.html</anchorfile>
       <anchor>ab6be610af3e9296fe2941a642e2bbc78</anchor>
       <arglist>(uint unused0, uint unused1)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>set_cpu_wait_state</name>
+      <anchorfile>simulation_8c.html</anchorfile>
+      <anchor>a4f41ce3f0b381e16906708d4083d6c3b</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
@@ -2498,6 +2526,20 @@
       <anchor>a4140829d7636111360c56f655a673879</anchor>
       <arglist>(bool sim_uses_timer)</arglist>
     </member>
+    <member kind="function">
+      <type>void</type>
+      <name>simulation_set_sync_steps</name>
+      <anchorfile>simulation_8c.html</anchorfile>
+      <anchor>a878f1e3aad4677272f1193cba7d07186</anchor>
+      <arglist>(uint32_t n_steps)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>simulation_is_finished</name>
+      <anchorfile>simulation_8c.html</anchorfile>
+      <anchor>a4ea0a05f598d38f62dfec7cd0d5d7589</anchor>
+      <arglist>(void)</arglist>
+    </member>
     <member kind="variable" static="yes">
       <type>static uint32_t *</type>
       <name>pointer_to_simulation_time</name>
@@ -2573,6 +2615,20 @@
       <name>uses_timer</name>
       <anchorfile>simulation_8c.html</anchorfile>
       <anchor>aca76fb1ad481f24208277f1d19ef1c3a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static uint32_t</type>
+      <name>n_sync_steps</name>
+      <anchorfile>simulation_8c.html</anchorfile>
+      <anchor>a15108f6f09383e9398d6f9df7769ee41</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static uint32_t</type>
+      <name>next_sync_step</name>
+      <anchorfile>simulation_8c.html</anchorfile>
+      <anchor>a5b77e4cda1979070114549b0d5be9fdd</anchor>
       <arglist></arglist>
     </member>
   </compound>

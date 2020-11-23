@@ -115,9 +115,16 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simu
 <tr class="memitem:a6c653236c4630a8eeea114ea48897246"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a6c653236c4630a8eeea114ea48897246">send_ok_response</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html">sdp_msg_t</a> *msg)</td></tr>
 <tr class="memdesc:a6c653236c4630a8eeea114ea48897246"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send an OK response to the host when a command message is received.  <a href="simulation_8c.html#a6c653236c4630a8eeea114ea48897246">More...</a><br /></td></tr>
 <tr class="separator:a6c653236c4630a8eeea114ea48897246"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a157a0d82f2fc8d1c6a42cc887ef2dd2c"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a157a0d82f2fc8d1c6a42cc887ef2dd2c">wait_before_run</a> (bool reset_event)</td></tr>
+<tr class="memdesc:a157a0d82f2fc8d1c6a42cc887ef2dd2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">wait for a signal before running  <a href="simulation_8c.html#a157a0d82f2fc8d1c6a42cc887ef2dd2c">More...</a><br /></td></tr>
+<tr class="separator:a157a0d82f2fc8d1c6a42cc887ef2dd2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab6be610af3e9296fe2941a642e2bbc78"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#ab6be610af3e9296fe2941a642e2bbc78">synchronise_start</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused0, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused1)</td></tr>
 <tr class="memdesc:ab6be610af3e9296fe2941a642e2bbc78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback when starting after synchronise.  <a href="simulation_8c.html#ab6be610af3e9296fe2941a642e2bbc78">More...</a><br /></td></tr>
 <tr class="separator:ab6be610af3e9296fe2941a642e2bbc78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f41ce3f0b381e16906708d4083d6c3b"><td class="memItemLeft" align="right" valign="top"><a id="a4f41ce3f0b381e16906708d4083d6c3b"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a4f41ce3f0b381e16906708d4083d6c3b">set_cpu_wait_state</a> ()</td></tr>
+<tr class="memdesc:a4f41ce3f0b381e16906708d4083d6c3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the CPU state depending on the event wait state. <br /></td></tr>
+<tr class="separator:a4f41ce3f0b381e16906708d4083d6c3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f4389fd280128116a2efce8415ab38e"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a2f4389fd280128116a2efce8415ab38e">simulation_control_scp_callback</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> mailbox, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> port)</td></tr>
 <tr class="memdesc:a2f4389fd280128116a2efce8415ab38e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle the new commands needed to resume the binary with a new runtime counter, as well as switching off the binary when it truly needs to be stopped.  <a href="simulation_8c.html#a2f4389fd280128116a2efce8415ab38e">More...</a><br /></td></tr>
 <tr class="separator:a2f4389fd280128116a2efce8415ab38e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -157,6 +164,12 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simu
 <tr class="memitem:a4140829d7636111360c56f655a673879"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a4140829d7636111360c56f655a673879">simulation_set_uses_timer</a> (bool sim_uses_timer)</td></tr>
 <tr class="memdesc:a4140829d7636111360c56f655a673879"><td class="mdescLeft">&#160;</td><td class="mdescRight">set whether the simulation uses the timer. By default it will be assumed that simulations use the timer unless this function is called.  <a href="simulation_8c.html#a4140829d7636111360c56f655a673879">More...</a><br /></td></tr>
 <tr class="separator:a4140829d7636111360c56f655a673879"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a878f1e3aad4677272f1193cba7d07186"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a878f1e3aad4677272f1193cba7d07186">simulation_set_sync_steps</a> (uint32_t n_steps)</td></tr>
+<tr class="memdesc:a878f1e3aad4677272f1193cba7d07186"><td class="mdescLeft">&#160;</td><td class="mdescRight">sets the simulation to enter a synchronization barrier repeatedly during the simulation. The synchronization message must be sent from the host. Note <a class="el" href="simulation_8h.html#a4ea0a05f598d38f62dfec7cd0d5d7589" title="determine if the simulation is finished. Will also pause the simulation for resynchronisation if requ...">simulation_is_finished()</a> must be used each timestep to cause the pause to happen.  <a href="simulation_8c.html#a878f1e3aad4677272f1193cba7d07186">More...</a><br /></td></tr>
+<tr class="separator:a878f1e3aad4677272f1193cba7d07186"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ea0a05f598d38f62dfec7cd0d5d7589"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a4ea0a05f598d38f62dfec7cd0d5d7589">simulation_is_finished</a> (void)</td></tr>
+<tr class="memdesc:a4ea0a05f598d38f62dfec7cd0d5d7589"><td class="mdescLeft">&#160;</td><td class="mdescRight">determine if the simulation is finished. Will also pause the simulation for resynchronisation if requested (see simulation_set_sync_steps).  <a href="simulation_8c.html#a4ea0a05f598d38f62dfec7cd0d5d7589">More...</a><br /></td></tr>
+<tr class="separator:a4ea0a05f598d38f62dfec7cd0d5d7589"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -204,6 +217,14 @@ static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_too
 static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#aca76fb1ad481f24208277f1d19ef1c3a">uses_timer</a> = true</td></tr>
 <tr class="memdesc:aca76fb1ad481f24208277f1d19ef1c3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the simulation uses the timer or not (default true) <br /></td></tr>
 <tr class="separator:aca76fb1ad481f24208277f1d19ef1c3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15108f6f09383e9398d6f9df7769ee41"><td class="memItemLeft" align="right" valign="top"><a id="a15108f6f09383e9398d6f9df7769ee41"></a>
+static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a15108f6f09383e9398d6f9df7769ee41">n_sync_steps</a></td></tr>
+<tr class="memdesc:a15108f6f09383e9398d6f9df7769ee41"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of steps to run before synchronization. <br /></td></tr>
+<tr class="separator:a15108f6f09383e9398d6f9df7769ee41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b77e4cda1979070114549b0d5be9fdd"><td class="memItemLeft" align="right" valign="top"><a id="a5b77e4cda1979070114549b0d5be9fdd"></a>
+static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a5b77e4cda1979070114549b0d5be9fdd">next_sync_step</a></td></tr>
+<tr class="memdesc:a5b77e4cda1979070114549b0d5be9fdd"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number simulation timestep at the next synchronization. <br /></td></tr>
+<tr class="separator:a5b77e4cda1979070114549b0d5be9fdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>implementation of <a class="el" href="simulation_8h.html" title="Simulation Functions Header File.">simulation.h</a> </p>
@@ -259,7 +280,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <dl class="section return"><dt>Returns</dt><dd>the address after which new provenance data can be stored </dd></dl>
 <p>gets access to the diagnostics object from SARK</p>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00072">72</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00078">78</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -287,7 +308,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00104">104</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00110">110</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -311,7 +332,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <p>a helper method for people not using the auto pause and resume functionality</p>
 <p>Helper when not using the auto pause and resume functionality </p>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00118">118</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00124">124</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -347,7 +368,43 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00128">128</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00134">134</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+
+</div>
+</div>
+<a id="a157a0d82f2fc8d1c6a42cc887ef2dd2c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a157a0d82f2fc8d1c6a42cc887ef2dd2c">&#9670;&nbsp;</a></span>wait_before_run()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void wait_before_run </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>reset_event</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>wait for a signal before running </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">reset_event</td><td>If true, the event is reset after the event has been received </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00149">149</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -394,7 +451,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00143">143</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00162">162</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -441,7 +498,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00163">163</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00184">184</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -488,7 +545,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00265">265</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00285">285</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -528,7 +585,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if successful, false otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00276">276</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00296">296</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -556,7 +613,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00286">286</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00306">306</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -603,7 +660,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00293">293</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00313">313</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -643,7 +700,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if successful, false otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00299">299</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00319">319</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -671,7 +728,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00319">319</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00339">339</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -758,7 +815,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </li>
 </ol>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00323">323</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00343">343</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -786,7 +843,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00365">365</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00385">385</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -825,7 +882,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00369">369</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00389">389</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -853,7 +910,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00376">376</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00396">396</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -881,7 +938,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00380">380</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00400">400</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
@@ -909,7 +966,58 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00384">384</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00404">404</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+
+</div>
+</div>
+<a id="a878f1e3aad4677272f1193cba7d07186"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a878f1e3aad4677272f1193cba7d07186">&#9670;&nbsp;</a></span>simulation_set_sync_steps()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void simulation_set_sync_steps </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>n_steps</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>sets the simulation to enter a synchronization barrier repeatedly during the simulation. The synchronization message must be sent from the host. Note <a class="el" href="simulation_8h.html#a4ea0a05f598d38f62dfec7cd0d5d7589" title="determine if the simulation is finished. Will also pause the simulation for resynchronisation if requ...">simulation_is_finished()</a> must be used each timestep to cause the pause to happen. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n_steps</td><td>The number of steps of simulation between synchronisations </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00408">408</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
+
+</div>
+</div>
+<a id="a4ea0a05f598d38f62dfec7cd0d5d7589"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ea0a05f598d38f62dfec7cd0d5d7589">&#9670;&nbsp;</a></span>simulation_is_finished()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool simulation_is_finished </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>determine if the simulation is finished. Will also pause the simulation for resynchronisation if requested (see simulation_set_sync_steps). </p>
+<dl class="section return"><dt>Returns</dt><dd>true if the simulation is finished, false if not. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="simulation_8c_source.html#l00415">415</a> of file <a class="el" href="simulation_8c_source.html">simulation.c</a>.</p>
 
 </div>
 </div>
