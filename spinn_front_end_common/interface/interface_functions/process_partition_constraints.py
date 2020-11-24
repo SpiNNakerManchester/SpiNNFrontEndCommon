@@ -16,7 +16,6 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.constraints.key_allocator_constraints import (
     AbstractKeyAllocatorConstraint)
-from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints,
     AbstractProvidesIncomingPartitionConstraints)

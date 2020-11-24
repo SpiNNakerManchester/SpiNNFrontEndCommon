@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.routing_info import DictBasedMachinePartitionNKeysMap
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 

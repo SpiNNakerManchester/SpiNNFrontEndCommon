@@ -18,7 +18,6 @@ import os
 import sys
 from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
-from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.interface.interface_functions.\
     machine_bit_field_router_compressor import (
         PROV_TOP_NAME)
