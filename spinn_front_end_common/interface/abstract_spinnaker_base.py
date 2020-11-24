@@ -3013,12 +3013,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @overrides(SimulatorInterface.continue_simulation)
     def continue_simulation(self):
-        if self._no_sync_changes % 2 == 0:
-            sync_signal = Signal.SYNC0
-        else:
-            sync_signal = Signal.SYNC1
-        self._txrx.send_signal(self._app_id, sync_signal)
-        self._no_sync_changes += 1
+        try:
+            if self._no_sync_changes % 2 == 0:
+                sync_signal = Signal.SYNC0
+            else:
+                sync_signal = Signal.SYNC1
+            self._txrx.send_signal(self._app_id, sync_signal)
+            self._no_sync_changes += 1
+        except:
+            print("Warning could not send signal")
 
     @staticmethod
     def __reset_object(obj):
