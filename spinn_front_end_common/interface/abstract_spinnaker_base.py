@@ -1010,10 +1010,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # update counter for runs (used by reports and app data)
         self._n_calls_to_run += 1
-        if run_time is not None:
-            self._state = Simulator_State.FINISHED
-        else:
-            self._state = Simulator_State.RUN_FOREVER
+        self._state = Simulator_State.FINISHED
 
     def _is_per_timestep_sdram(self):
         for placement in self._placements.placements:
