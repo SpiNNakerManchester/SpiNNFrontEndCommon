@@ -36,8 +36,7 @@ from spinn_machine import __version__ as spinn_machine_version
 from spinn_machine.ignores import IgnoreChip, IgnoreCore, IgnoreLink
 from spinnman.model.enums.cpu_state import CPUState
 from spinnman import __version__ as spinnman_version
-from spinnman.exceptions import (
-    SpiNNManCoresNotInStateException, SpinnmanTimeoutException)
+from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.messages.scp.enums.signal import Signal
 from data_specification import __version__ as data_spec_version
