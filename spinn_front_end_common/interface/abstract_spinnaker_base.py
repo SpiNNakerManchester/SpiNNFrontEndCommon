@@ -36,7 +36,8 @@ from spinn_machine import __version__ as spinn_machine_version
 from spinn_machine.ignores import IgnoreChip, IgnoreCore, IgnoreLink
 from spinnman.model.enums.cpu_state import CPUState
 from spinnman import __version__ as spinnman_version
-from spinnman.exceptions import SpiNNManCoresNotInStateException
+from spinnman.exceptions import (
+    SpiNNManCoresNotInStateException, SpinnmanTimeoutException)
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.messages.scp.enums.signal import Signal
 from data_specification import __version__ as data_spec_version
@@ -3011,15 +3012,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @overrides(SimulatorInterface.continue_simulation)
     def continue_simulation(self):
-        try:
-            if self._no_sync_changes % 2 == 0:
-                sync_signal = Signal.SYNC0
-            else:
-                sync_signal = Signal.SYNC1
-            self._txrx.send_signal(self._app_id, sync_signal)
-            self._no_sync_changes += 1
-        except:
-            print("Warning could not send signal")
+        if self._no_sync_changes % 2 == 0:
+            sync_signal = Signal.SYNC0
+        else:
+            sync_signal = Signal.SYNC1
+        self._txrx.send_signal(self._app_id, sync_signal)
+        self._no_sync_changes += 1
 
     @staticmethod
     def __reset_object(obj):
