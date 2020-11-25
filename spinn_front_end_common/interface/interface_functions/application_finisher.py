@@ -23,6 +23,7 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.exceptions import (
     ExecutableFailedToStopException)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from build.lib.spinnman.messages.scp.scp_signal import SCPSignal
 
 _ONE_WORD = struct.Struct("<I")
 
@@ -86,7 +87,7 @@ class ApplicationFinisher(object):
                     if not successful_cores_finished.is_core(
                             core_subset.x, core_subset.y, processor):
                         self._update_provenance_and_exit(
-                            txrx, processor, core_subset)
+                            txrx, app_id, processor, core_subset)
             time.sleep(0.5)
 
             processors_finished = txrx.get_core_state_count(
@@ -95,7 +96,7 @@ class ApplicationFinisher(object):
         progress.end()
 
     @staticmethod
-    def _update_provenance_and_exit(txrx, processor, core_subset):
+    def _update_provenance_and_exit(txrx, app_id, processor, core_subset):
         """
         :param ~spinnman.transceiver.Transceiver txrx:
         :param int processor:
@@ -104,7 +105,9 @@ class ApplicationFinisher(object):
         byte_data = _ONE_WORD.pack(
             SDP_RUNNING_MESSAGE_CODES
             .SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
-
+        # Send these signals to make sure the application isn't stuck
+        txrx.send_signal(app_id, SCPSignal.SYNC0)
+        txrx.send_signal(app_id, SCPSignal.SYNC1)
         txrx.send_sdp_message(SDPMessage(
             sdp_header=SDPHeader(
                 flags=SDPFlag.REPLY_NOT_EXPECTED,
