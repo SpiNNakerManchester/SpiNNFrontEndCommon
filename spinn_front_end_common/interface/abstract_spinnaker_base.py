@@ -758,30 +758,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def _build_graphs_for_usage(self):
         # sort out app graph
-        self._application_graph = ApplicationGraph(
-            label=self._original_application_graph.label)
-        for vertex in self._original_application_graph.vertices:
-            self._application_graph.add_vertex(vertex)
-        for outgoing_partition in \
-                self._original_application_graph.outgoing_edge_partitions:
-            for edge in outgoing_partition.edges:
-                self._application_graph.add_edge(
-                    edge, outgoing_partition.identifier)
+        self._application_graph = self._original_application_graph.clone()
 
         # sort out machine graph
-        self._machine_graph = MachineGraph(
-            label=self._original_machine_graph.label,
-            application_graph=self._application_graph)
-        for vertex in self._original_machine_graph.vertices:
-            self._machine_graph.add_vertex(vertex)
-        for outgoing_partition in \
-                self._original_machine_graph.outgoing_edge_partitions:
-            new_outgoing_partition = outgoing_partition.clone_without_edges()
-            self._machine_graph.add_outgoing_edge_partition(
-                new_outgoing_partition)
-            for edge in outgoing_partition.edges:
-                self._machine_graph.add_edge(
-                    edge, outgoing_partition.identifier)
+        self._machine_graph = self._original_machine_graph.clone()
 
     def __timesteps(self, time_in_ms):
         """ Get a number of timesteps for a given time in milliseconds.
