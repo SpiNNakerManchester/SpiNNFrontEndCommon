@@ -17,13 +17,13 @@ import struct
 import time
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
+from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.utilities.exceptions import (
     ExecutableFailedToStopException)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from build.lib.spinnman.messages.scp.scp_signal import SCPSignal
 
 _ONE_WORD = struct.Struct("<I")
 
@@ -106,8 +106,8 @@ class ApplicationFinisher(object):
             SDP_RUNNING_MESSAGE_CODES
             .SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
         # Send these signals to make sure the application isn't stuck
-        txrx.send_signal(app_id, SCPSignal.SYNC0)
-        txrx.send_signal(app_id, SCPSignal.SYNC1)
+        txrx.send_signal(app_id, Signal.SYNC0)
+        txrx.send_signal(app_id, Signal.SYNC1)
         txrx.send_sdp_message(SDPMessage(
             sdp_header=SDPHeader(
                 flags=SDPFlag.REPLY_NOT_EXPECTED,
