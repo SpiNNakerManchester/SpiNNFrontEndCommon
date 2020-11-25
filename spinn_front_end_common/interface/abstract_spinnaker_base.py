@@ -761,7 +761,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._application_graph = self._original_application_graph.clone()
 
         # sort out machine graph
-        self._machine_graph = self._original_machine_graph.clone()
+        self._machine_graph = self._original_machine_graph.clone(
+            self._application_graph)
 
     def __timesteps(self, time_in_ms):
         """ Get a number of timesteps for a given time in milliseconds.
