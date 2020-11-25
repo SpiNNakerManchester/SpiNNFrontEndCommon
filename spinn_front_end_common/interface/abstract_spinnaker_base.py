@@ -776,7 +776,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._machine_graph.add_vertex(vertex)
         for outgoing_partition in \
                 self._original_machine_graph.outgoing_edge_partitions:
-            self._machine_graph.add_outgoing_edge_partition(outgoing_partition)
+            new_outgoing_partition = outgoing_partition.clone_without_edges()
+            self._machine_graph.add_outgoing_edge_partition(
+                new_outgoing_partition)
             for edge in outgoing_partition.edges:
                 self._machine_graph.add_edge(
                     edge, outgoing_partition.identifier)
