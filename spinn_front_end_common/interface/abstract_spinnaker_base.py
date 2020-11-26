@@ -741,6 +741,27 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             raise ConfigurationException(
                 "Illegal call after simulation is shutdown")
 
+    def _should_run(self):
+        """
+        Checks if the simulation should run.
+
+        Will warn the user if there is no need to run
+
+        :return: True if and only if one of the graphs has vertices in it
+        :raises ConfigurationException: If the current state does not
+            support a new run call
+        """
+        self.verify_not_running()
+
+        if self._original_application_graph.n_vertices:
+            return True
+        if self._original_machine_graph.n_vertices:
+            return True
+        logger.warning(
+            "Your graph has no vertices in it. "
+            "Therefor the run call will exit immediately.")
+        return False
+
     def run_until_complete(self, n_steps=None):
         """ Run a simulation until it completes
 
@@ -757,12 +778,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._run(run_time, sync_time)
 
     def _build_graphs_for_usage(self):
-        # sort out app graph
-        self._application_graph = self._original_application_graph.clone()
-
-        # sort out machine graph
-        self._machine_graph = self._original_machine_graph.clone(
-            self._application_graph)
+        if self._original_application_graph.n_vertices:
+            if self._original_machine_graph.n_vertices:
+                raise ConfigurationException(
+                    "Illegal state where both original_application and "
+                    "original machine graph have vertices in them")
+            self._application_graph = self._original_application_graph.clone()
+            self._machine_graph = MachineGraph()
+        else:
+            self._application_graph = ApplicationGraph()
+            self._machine_graph = self._original_machine_graph.clone()
 
     def __timesteps(self, time_in_ms):
         """ Get a number of timesteps for a given time in milliseconds.
@@ -830,7 +855,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :param int sync_time:
             the time in ms between synchronisations, or 0 to disable.
         """
-        self.verify_not_running()
+        if not self._should_run():
+            return
 
         # verify that we can keep doing auto pause and resume
         if self._has_ran and not self._use_virtual_board:
@@ -1336,8 +1362,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             return False
 
         # only add machine graph is it has vertices.
-        if (self._machine_graph is not None and
-                self._machine_graph.n_vertices != 0):
+        if self._machine_graph.n_vertices:
             inputs["MemoryMachineGraph"] = self._machine_graph
             algorithms.append("GraphMeasurer")
             do_partitioning = False
@@ -1345,21 +1370,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # board, we need to use the virtual board to get the number of
         # chips to be allocated either by partitioning, or by measuring
         # the graph
-        elif (self._application_graph is not None and
-                self._application_graph.n_vertices > 0):
+        else:
             inputs["MemoryApplicationGraph"] = self._application_graph
             algorithms.extend(self._config.get(
                 "Mapping",
                 "application_to_machine_graph_algorithms").split(","))
             outputs.append("MemoryMachineGraph")
             do_partitioning = True
-        else:
-            # No way to decided size so default to one board
-            logger.warning(
-                "Your graph has no vertices in it. "
-                "Will default to a machine with 1 board.")
-            inputs["NBoardsRequired"] = 1
-            return False
 
         # Ok we do need a virtual machine
         if self._spalloc_server is not None:
@@ -1440,12 +1457,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._config.getboolean("Machine", "enable_reinjection")):
             algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
 
-        # add the application and machine graphs as needed
-        if (self._application_graph is not None and
-                self._application_graph.n_vertices > 0):
+        # add the application or machine graphs as needed
+        if self._application_graph.n_vertices:
             inputs["MemoryApplicationGraph"] = self._application_graph
-        elif (self._machine_graph is not None and
-                self._machine_graph.n_vertices > 0):
+        else:
             inputs["MemoryMachineGraph"] = self._machine_graph
 
         return inputs, algorithms
@@ -1500,13 +1515,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # handle graph additions
         if self._application_graph.n_vertices:
             inputs["MemoryApplicationGraph"] = self._application_graph
-        elif self._machine_graph.n_vertices:
-            inputs['MemoryMachineGraph'] = self._machine_graph
         else:
-            self._empty_graphs = True
-            logger.warning(
-                "Your graph has no vertices in it.")
-            inputs["MemoryApplicationGraph"] = self._application_graph
             inputs['MemoryMachineGraph'] = self._machine_graph
 
         inputs['ReportFolder'] = self._report_default_directory
@@ -1603,14 +1612,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # only add partitioner report if using an application graph
             if (self._config.getboolean(
                     "Reports", "write_partitioner_reports") and
-                    self._application_graph.n_vertices != 0):
+                    self._application_graph.n_vertices):
                 algorithms.append("PartitionerReport")
 
             # only add write placer report with application graph when
             # there's application vertices
             if (self._config.getboolean(
                     "Reports", "write_application_graph_placer_report") and
-                    self._application_graph.n_vertices != 0):
+                    self._application_graph.n_vertices):
                 algorithms.append("PlacerReportWithApplicationGraph")
 
             if self._config.getboolean(
@@ -1645,8 +1654,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # only add the partitioner if there isn't already a machine graph
         algorithms.append("MallocBasedChipIDAllocator")
-        if (self._application_graph.n_vertices and
-                not self._machine_graph.n_vertices):
+        if self._application_graph.n_vertices:
             full = self._config.get(
                 "Mapping", "application_to_machine_graph_algorithms")
             algorithms.extend(full.replace(" ", "").split(","))
