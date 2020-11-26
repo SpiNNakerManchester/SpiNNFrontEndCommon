@@ -15,9 +15,9 @@
 
 name: Publish
 
-on:
-  push:
-    branches: [ master ]
+on: [push]
+#  push:
+#    branches: [ master ]
 
 env:
   ROOT_DOC_DIR: doc/global
