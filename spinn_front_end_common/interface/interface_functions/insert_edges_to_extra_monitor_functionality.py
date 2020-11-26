@@ -84,12 +84,6 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 if isinstance(vertex, ExtraMonitorSupportMachineVertex):
                     self._process_app_graph_vertex(
                         vertex, machine_graph, application_graph)
-            for app_vertex in progress.over(application_graph.vertices):
-                if not isinstance(app_vertex, ExtraMonitorSupport):
-                    continue
-                for vertex in app_vertex.machine_vertices:
-                    self._process_app_graph_vertex(
-                        vertex, machine_graph, application_graph)
 
     def _process_app_graph_vertex(
             self, vertex, machine_graph, application_graph):
