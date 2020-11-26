@@ -1455,8 +1455,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._config.getboolean("Machine", "enable_reinjection")):
             algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
 
-        # add the application or machine graphs as needed
-        if self._application_graph.n_vertices:
+        # add the application and machine graphs as needed
+        # Both could be None if call from other than self._run
+        if self._application_graph and self._application_graph.n_vertices:
             inputs["MemoryApplicationGraph"] = self._application_graph
         else:
             inputs["MemoryMachineGraph"] = self._machine_graph
