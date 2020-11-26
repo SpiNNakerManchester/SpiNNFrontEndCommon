@@ -1652,7 +1652,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # only add the partitioner if there isn't already a machine graph
         algorithms.append("MallocBasedChipIDAllocator")
-        if self._application_graph.n_vertices:
+        if not self._machine_graph.n_vertices:
             full = self._config.get(
                 "Mapping", "application_to_machine_graph_algorithms")
             algorithms.extend(full.replace(" ", "").split(","))
