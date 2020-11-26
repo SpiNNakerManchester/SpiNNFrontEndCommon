@@ -85,7 +85,7 @@ jobs:
       if: matrix.python-version == 3.6
       uses: ./support/actions/validate-xml
       with:
-        base-path: spynnaker
+        base-path: spinn_front_end_common
 
     - name: Build documentation with sphinx
       if: matrix.python-version == 3.6
