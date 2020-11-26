@@ -2432,9 +2432,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @property
     def machine_graph(self):
         """
+        Returns a frozen clone of the machine_graph
         :rtype: ~pacman.model.graphs.machine.MachineGraph
         """
-        return self._machine_graph
+        return self._machine_graph.clone(frozen=True)
 
     @property
     def original_machine_graph(self):
@@ -2452,12 +2453,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @property
     def application_graph(self):
-        """ The application graph used to derive the runtime machine
-            configuration.
+        """ The frozen clone of the application graph used to derive the
+            runtime machine configuration.
 
         :rtype: ~pacman.model.graphs.application.ApplicationGraph
         """
-        return self._application_graph
+        return self._application_graph.clone(frozen=True)
 
     @property
     def routing_infos(self):
