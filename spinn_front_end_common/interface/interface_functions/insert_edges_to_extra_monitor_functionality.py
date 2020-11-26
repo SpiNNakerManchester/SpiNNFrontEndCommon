@@ -20,7 +20,7 @@ from spinn_front_end_common.utilities.constants import (
     PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex as DataSpeedUp,
-    ExtraMonitorSupport, ExtraMonitorSupportMachineVertex)
+    ExtraMonitorSupportMachineVertex)
 
 
 class InsertEdgesToExtraMonitorFunctionality(object):
