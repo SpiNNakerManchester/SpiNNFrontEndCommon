@@ -158,7 +158,7 @@ static void sample_in_slot(UNUSED uint unused0, UNUSED uint unused1) {
         log_info("total_sim_ticks = %d", simulation_ticks);
     }
     // check if the simulation has run to completion
-    if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
+    if (simulation_is_finished()) {
         simulation_handle_pause_resume(resume_callback);
 
         recording_finalise();

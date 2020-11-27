@@ -35,7 +35,8 @@ class ChipRuntimeUpdater(object):
 
     def __call__(
             self, txrx, app_id, executable_types, run_until_timesteps,
-            current_timesteps, n_channels, intermediate_channel_waits):
+            current_timesteps, n_channels, intermediate_channel_waits,
+            n_sync_steps):
         """
         :param ~.Transceiver txrx:
         :param int app_id:
@@ -45,6 +46,8 @@ class ChipRuntimeUpdater(object):
         :param int current_timesteps:
         :param int n_channels:
         :param int intermediate_channel_waits:
+        :param n_sync_steps:
+        :type n_sync_steps: int or None
         """
         core_subsets = \
             executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
@@ -72,4 +75,4 @@ class ChipRuntimeUpdater(object):
             intermediate_channel_waits)
         process.update_runtime(
             current_timesteps, run_until_timesteps, infinite_run, core_subsets,
-            len(core_subsets))
+            len(core_subsets), n_sync_steps)
