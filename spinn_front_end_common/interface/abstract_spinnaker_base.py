@@ -1459,7 +1459,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Both could be None if call from other than self._run
         if self._application_graph and self._application_graph.n_vertices:
             inputs["MemoryApplicationGraph"] = self._application_graph
-        else:
+        elif self._machine_graph and self._machine_graph.n_vertices:
             inputs["MemoryMachineGraph"] = self._machine_graph
 
         return inputs, algorithms
