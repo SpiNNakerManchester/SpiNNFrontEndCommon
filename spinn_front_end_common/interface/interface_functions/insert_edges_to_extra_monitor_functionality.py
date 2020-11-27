@@ -19,7 +19,7 @@ from spinn_front_end_common.utilities.constants import (
     PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex as DataSpeedUp,
-    ExtraMonitorSupport, ExtraMonitorSupportMachineVertex)
+    ExtraMonitorSupportMachineVertex)
 
 
 class InsertEdgesToExtraMonitorFunctionality(object):
@@ -81,12 +81,6 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         else:
             for vertex in progress.over(machine_graph.vertices, False):
                 if isinstance(vertex, ExtraMonitorSupportMachineVertex):
-                    self._process_app_graph_vertex(
-                        vertex, machine_graph, application_graph)
-            for app_vertex in progress.over(application_graph.vertices):
-                if not isinstance(app_vertex, ExtraMonitorSupport):
-                    continue
-                for vertex in app_vertex.machine_vertices:
                     self._process_app_graph_vertex(
                         vertex, machine_graph, application_graph)
 
