@@ -380,25 +380,38 @@ autodoc_default_options = {
     "special-members": "__call__"
 }
 
+
+def filtered_files(base, excludes=None):
+    if not excludes:
+        excludes = []
+    for root, _dirs, files in os.walk(base):
+        for filename in files:
+            if filename.endswith(".py") and not filename.startswith("_"):
+                full = root + "/" + filename
+                if full not in excludes:
+                    yield full
+
+
 # UGH!
 output_dir = os.path.abspath(".")
 os.chdir("../..")
 
-options = [
-    '-o', output_dir, "spinn_front_end_common",
-    "spinn_front_end_common/abstract_models/impl/[a-z]*.py",
-    "spinn_front_end_common/abstract_models/a*.py",
-    "spinn_front_end_common/interface/buffer_management/r*.py",
-    "spinn_front_end_common/interface/buffer_management/buffer_manager.py",
-    "spinn_front_end_common/interface/buffer_management/*/[a-z]*.py",
-    "spinn_front_end_common/interface/[dips]*/[a-np-z]*.py",
-    "spinn_front_end_common/utilities/[a-z]*/[a-df-z]*.py",
-    "spinn_front_end_common/utilities/fa*.py",
-    "spinn_front_end_common/utilities/si*.py",
-    "spinn_front_end_common/utilities/math_constants.py",
-    "spinn_front_end_common/utilities/utility_objs/exe*.py",
-    "spinn_front_end_common/utilities/utility_objs/ext*/[a-z]*.py",
-    "spinn_front_end_common/utility_models/[a-z]*.py"]
+# We only document __init__.py files... except for these special cases.
+# Use the unix full pathname from the root of the checked out repo
+explicit_wanted_files = [
+    "spinn_front_end_common/interface/java_caller.py",
+    "spinn_front_end_common/interface/abstract_spinnaker_base.py",
+    "spinn_front_end_common/interface/simulator_state.py",
+    "spinn_front_end_common/interface/config_handler.py",
+    "spinn_front_end_common/utilities/constants.py",
+    "spinn_front_end_common/utilities/system_control_logic.py",
+    "spinn_front_end_common/utilities/function_list.py",
+    "spinn_front_end_common/utilities/globals_variables.py",
+    "spinn_front_end_common/utilities/helpful_functions.py",
+    "spinn_front_end_common/utilities/exceptions.py",
+    "spinn_front_end_common/utilities/report_functions/energy_report.py"]
+options = ['-o', output_dir, "spinn_front_end_common"]
+options.extend(filtered_files("spinn_front_end_common", explicit_wanted_files))
 
 try:
     # Old style API; Python 2.7
