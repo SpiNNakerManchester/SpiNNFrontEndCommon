@@ -105,7 +105,7 @@ class ReverseIpTagMultiCastSource(
         :type send_buffer_times:
             ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
             list(~numpy.ndarray(~numpy.int32)) or None
-        :param send_buffer_partition_id: The ID of the partition containing\
+        :param send_buffer_partition_id: The ID of the partition containing
             the edges down which the events are to be sent
         :type send_buffer_partition_id: str or None
         :param bool reserve_reverse_ip_tag:

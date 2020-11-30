@@ -40,13 +40,15 @@ class BufferManagerCreator(object):
             The path where the SQLite database holding the data will be placed,
             and where any java provenance can be written.
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-        :param dict(tuple(int,int),ExtraMonitorSupportMachineVertex) \
-                extra_monitor_to_chip_mapping:
-        :param dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex) \
-                packet_gather_cores_to_ethernet_connection_map:
+        :param extra_monitor_to_chip_mapping:
+        :type extra_monitor_to_chip_mapping:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
+        :param packet_gather_cores_to_ethernet_connection_map:
+        :type packet_gather_cores_to_ethernet_connection_map:
+            dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex)
         :param ~spinn_machine.Machine machine:
-        :param dict(tuple(int,int),~spinn_machine.FixedRouteEntry) \
-                fixed_routes:
+        :param fixed_routes:
+        :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
         :param JavaCaller java_caller:
         :rtype: BufferManager
         """

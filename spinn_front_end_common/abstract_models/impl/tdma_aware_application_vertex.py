@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import sys
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
@@ -44,12 +45,13 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         "The TDMA fell behind by {} times on core {}, {}, {}. "
         "try increasing the time_between_cores in the corresponding .cfg")
 
-    def __init__(self, label, constraints, max_atoms_per_core):
+    def __init__(self, label=None, constraints=None,
+                 max_atoms_per_core=sys.maxsize):
         """
         :param str label: The optional name of the vertex.
-        :param iterable(~pacman.model.constraints.AbstractConstraint) \
-                constraints:
-            The optional initial constraints of the vertex.
+        :param constraints: The optional initial constraints of the vertex.
+        :type constraints:
+            iterable(~pacman.model.constraints.AbstractConstraint)
         :param int max_atoms_per_core: The max number of atoms that can be
             placed on a core, used in partitioning.
         :raise PacmanInvalidParameterException:
@@ -77,8 +79,9 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
             by this application vertex can send in one simulation time step.
 
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        :param ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap \
-            n_keys_map:
+        :param n_keys_map:
+        :type n_keys_map:
+            ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
         :rtype: int
         """
         return max(

@@ -202,8 +202,9 @@ class MachineGenerator(object):
     def _parse_bmp_connection(self, bmp_detail):
         """ Parses one item of BMP connection data. Maximal format:\
             `cabinet;frame;host,port/boards`
-            All parts except host can be omitted. Boards can be a \
-            hyphen-separated range or a comma-separated list.
+
+        All parts except host can be omitted. Boards can be a \
+        hyphen-separated range or a comma-separated list.
 
         :param str bmp_detail:
         :rtype: ~.BMPConnectionData

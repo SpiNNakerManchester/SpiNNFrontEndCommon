@@ -356,13 +356,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             validation_cfg=None, front_end_versions=None):
         """
         :param str configfile: What the configuration file is called
-        :param ~spinn_utilities.executable_finder.ExecutableFinder \
-                executable_finder:
-            How to find APLX files to deploy to SpiNNaker
+        :param executable_finder: How to find APLX files to deploy to SpiNNaker
+        :type executable_finder:
+            ~spinn_utilities.executable_finder.ExecutableFinder
         :param str graph_label: A label for the overall application graph
-        :param iterable(~spinn_utilities.socket_address.SocketAddress) \
-                database_socket_addresses:
-            How to talk to notification databases
+        :param database_socket_addresses: How to talk to notification databases
+        :type database_socket_addresses:
+            iterable(~spinn_utilities.socket_address.SocketAddress) or None
         :param iterable(str) extra_algorithm_xml_paths:
             Where to load definitions of extra algorithms from
         :param int n_chips_required:

@@ -22,8 +22,9 @@ class LoadFixedRoutes(object):
 
     def __call__(self, fixed_routes, transceiver, app_id):
         """
-        :param dict(tuple(int,int),~spinn_machine.FixedRouteEntry) \
-                fixed_routes:
+        :param fixed_routes:
+        :type fixed_routes:
+            dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
         :param ~spinnman.transceiver.Transceiver transceiver:
         :param int app_id:
         """

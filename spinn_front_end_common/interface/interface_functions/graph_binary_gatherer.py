@@ -34,8 +34,9 @@ class GraphBinaryGatherer(object):
         """
         :param ~pacman.model.placements.Placements placements:
         :param ~pacman.model.graphs.machine.MachineGraph graph:
-        :param ~spinn_utilities.executable_finder.ExecutableFinder \
-                executable_finder:
+        :param executable_finder:
+        :type executable_finder:
+            ~spinn_utilities.executable_finder.ExecutableFinder
         :rtype: ExecutableTargets
         """
         self._exe_finder = executable_finder

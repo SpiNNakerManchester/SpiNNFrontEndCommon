@@ -42,8 +42,9 @@ class ApplicationRunner(object):
         """
         :param BufferManager buffer_manager:
         :param NotificationProtocol notification_interface:
-        :param dict(ExecutableType,~spinn_machine.CoreSubsets) \
-                executable_types:
+        :param executable_types:
+        :type executable_types:
+            dict(ExecutableType,~spinn_machine.CoreSubsets)
         :param int app_id:
         :param ~spinnman.transceiver.Transceiver txrx:
         :param int runtime:

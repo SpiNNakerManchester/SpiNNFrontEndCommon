@@ -37,9 +37,9 @@ class InsertChipPowerMonitorsToGraphs(object):
             the machine graph
         :param int n_samples_per_recording:
         :param int sampling_frequency:
-        :param ~pacman.model.graphs.application.ApplicationGraph \
-                application_graph:
-            the application graph
+        :param application_graph: the application graph
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
         """
         # pylint: disable=too-many-arguments
 
@@ -47,27 +47,40 @@ class InsertChipPowerMonitorsToGraphs(object):
         progress = ProgressBar(
             machine.n_chips, "Adding Chip power monitors to Graph")
 
-        app_vertex = None
         if application_graph is not None:
-            app_vertex = ChipPowerMonitor(
-                label="ChipPowerMonitor",
-                sampling_frequency=sampling_frequency,
-                n_samples_per_recording=n_samples_per_recording)
-            application_graph.add_vertex(app_vertex)
-            for chip in progress.over(machine.chips):
-                if not chip.virtual:
-                    machine_vertex = app_vertex.create_machine_vertex(
-                        vertex_slice=None, resources_required=None,
-                        label=_LABEL.format("machine", chip.x, chip.y),
-                        constraints=[ChipAndCoreConstraint(chip.x, chip.y)])
-                    machine_graph.add_vertex(machine_vertex)
+            self.__add_app(
+                application_graph, machine_graph, machine,
+                n_samples_per_recording, sampling_frequency, progress)
         else:
-            for chip in progress.over(machine.chips):
-                if not chip.virtual:
-                    machine_vertex = ChipPowerMonitorMachineVertex(
-                        label=_LABEL.format("machine", chip.x, chip.y),
-                        constraints=[ChipAndCoreConstraint(chip.x, chip.y)],
-                        app_vertex=app_vertex,
-                        sampling_frequency=sampling_frequency,
-                        n_samples_per_recording=n_samples_per_recording)
-                    machine_graph.add_vertex(machine_vertex)
+            self.__add_mach_only(
+                machine_graph, machine,
+                n_samples_per_recording, sampling_frequency, progress)
+
+    @staticmethod
+    def __add_app(
+            application_graph, machine_graph, machine, n_samples_per_recording,
+            sampling_frequency, progress):
+        app_vertex = ChipPowerMonitor(
+            label="ChipPowerMonitor",
+            sampling_frequency=sampling_frequency,
+            n_samples_per_recording=n_samples_per_recording)
+        application_graph.add_vertex(app_vertex)
+        for chip in progress.over(machine.chips):
+            if not chip.virtual:
+                machine_graph.add_vertex(app_vertex.create_machine_vertex(
+                    vertex_slice=None, resources_required=None,
+                    label=_LABEL.format("machine", chip.x, chip.y),
+                    constraints=[ChipAndCoreConstraint(chip.x, chip.y)]))
+
+    @staticmethod
+    def __add_mach_only(
+            machine_graph, machine, n_samples_per_recording,
+            sampling_frequency, progress):
+        for chip in progress.over(machine.chips):
+            if not chip.virtual:
+                machine_graph.add_vertex(ChipPowerMonitorMachineVertex(
+                    label=_LABEL.format("machine", chip.x, chip.y),
+                    constraints=[ChipAndCoreConstraint(chip.x, chip.y)],
+                    app_vertex=None,
+                    sampling_frequency=sampling_frequency,
+                    n_samples_per_recording=n_samples_per_recording))

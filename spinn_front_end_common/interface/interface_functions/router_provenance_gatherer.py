@@ -58,9 +58,9 @@ class RouterProvenanceGatherer(object):
             the SpiNNMan interface object
         :param ~spinn_machine.Machine machine:
             the SpiNNaker machine
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                router_tables:
-            the router tables that have been generated
+        :param router_tables: the router tables that have been generated
+        :type router_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         :param bool using_reinjection: whether we are reinjecting packets
         :param list(ProvenanceDataItem) provenance_data_objects:
             any existing provenance information to add to

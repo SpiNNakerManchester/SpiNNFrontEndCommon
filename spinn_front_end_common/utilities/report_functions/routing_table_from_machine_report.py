@@ -34,8 +34,9 @@ class RoutingTableFromMachineReport(object):
             self, report_default_directory, routing_tables):
         """
         :param str report_default_directory:
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                routing_tables:
+        :param routing_tables:
+        :type routing_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         :param ~spinnman.transceiver.Transceiver transceiver:
         :param int app_id:
         """

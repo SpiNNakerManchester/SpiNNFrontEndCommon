@@ -25,8 +25,9 @@ class ReadRoutingTablesFromMachine(object):
     def __call__(self, transceiver, routing_tables, app_id):
         """
         :param ~spinnman.transceiver.Transceiver transceiver:
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                routing_tables: uncompressed routing tables
+        :param routing_tables: uncompressed routing tables
+        :type routing_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         :param int app_id:
         :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
@@ -45,7 +46,9 @@ class ReadRoutingTablesFromMachine(object):
     @staticmethod
     def _read_routing_table(transceiver, table, app_id):
         """
+        :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~.UnCompressedMulticastRoutingTable table:
+        :param int app_id:
         """
         machine_routing_table = \
             CompressedMulticastRoutingTable(table.x, table.y)

@@ -37,8 +37,9 @@ class ApplicationFinisher(object):
         """
         :param int app_id:
         :param ~spinnman.transceiver.Transceiver txrx:
-        :param dict(ExecutableType,~spinn_machine.CoreSubsets) \
-                executable_types:
+        :param executable_types:
+        :type executable_types:
+            dict(ExecutableType,~spinn_machine.CoreSubsets)
         :raises ExecutableFailedToStopException:
         """
 

@@ -27,9 +27,9 @@ class GraphProvenanceGatherer(object):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             The machine graph to inspect
-        :param ~pacman.model.graphs.application.ApplicationGraph \
-                application_graph:
-            The optional application graph
+        :param application_graph: The optional application graph
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
         :rtype: list(ProvenanceDataItem)
         """
         prov_items = list()

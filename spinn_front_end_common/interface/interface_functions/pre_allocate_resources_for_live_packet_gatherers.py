@@ -39,9 +39,9 @@ class PreAllocateResourcesForLivePacketGatherers(object):
             list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
         :param ~spinn_machine.Machine machine:
             the SpiNNaker machine as discovered
-        :param ~pacman.model.resources.PreAllocatedResourceContainer \
-                pre_allocated_resources:
-            other preallocated resources
+        :param pre_allocated_resources: other preallocated resources
+        :type pre_allocated_resources:
+            ~pacman.model.resources.PreAllocatedResourceContainer or None
         :return: preallocated resources
         :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """

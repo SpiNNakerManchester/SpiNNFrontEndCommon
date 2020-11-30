@@ -58,12 +58,14 @@ class DatabaseInterface(object):
         :param int machine_time_step:
         :param ~pacman.model.placements.Placements placements:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                router_tables:
+        :param router_tables:
+        :type router_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         :param str report_folder: Where the database will be put.
         :param bool create_atom_to_event_id_mapping:
-        :param ~pacman.model.graphs.application.ApplicationGraph \
-                application_graph:
+        :param application_graph:
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
         :return: Database interface, where the database is located
         :rtype: tuple(DatabaseInterface, str)
         """

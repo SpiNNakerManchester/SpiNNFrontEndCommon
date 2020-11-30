@@ -133,9 +133,9 @@ class MachineBitFieldRouterCompressor(object):
             compress_as_much_as_possible=False, provenance_data_objects=None):
         """ entrance for routing table compression with bit field
 
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                routing_tables:
-            routing tables
+        :param routing_tables: routing tables
+        :type routing_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
         :param ~spinn_machine.Machine machine: spinnMachine instance
         :param int app_id: app id of the application
@@ -728,9 +728,9 @@ class MachineBitFieldRouterCompressor(object):
         :param ~.Transceiver transceiver:  spinnman instance
         :param dict(tuple(int,int),list(tuple(int,int))) region_addresses:
             store for data regions
-        :param dict(tuple(int,int),list(tuple(int,int))) \
-                sdram_block_addresses_and_sizes:
-            store for surplus sdram.
+        :param sdram_block_addresses_and_sizes: store for surplus SDRAM
+        :type sdram_block_addresses_and_sizes:
+            dict(tuple(int,int),list(tuple(int,int)))
         """
         # store the region sdram address's
         bit_field_sdram_address = vertex.bit_field_base_address(

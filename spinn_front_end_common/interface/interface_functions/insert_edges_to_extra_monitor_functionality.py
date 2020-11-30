@@ -51,9 +51,9 @@ class InsertEdgesToExtraMonitorFunctionality(object):
             mapping between ethernet connected chips and packet gatherers
         :type vertex_to_ethernet_connected_chip_mapping:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-        :param ~pacman.model.graphs.application.ApplicationGraph \
-                application_graph:
-            the application graph
+        :param application_graph: the application graph
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         n_app_vertices = 0

@@ -27,8 +27,9 @@ class ChipIOBufClearer(object):
     def __call__(self, transceiver, executable_types):
         """
         :param ~spinnman.transceiver.Transceiver transceiver:
-        :param dict(ExecutableType,~spinn_machine.CoreSubsets) \
-                executable_types:
+        :param executable_types:
+        :type executable_types:
+            dict(ExecutableType,~spinn_machine.CoreSubsets)
         """
         core_subsets = \
             executable_types[ExecutableType.USES_SIMULATION_INTERFACE]

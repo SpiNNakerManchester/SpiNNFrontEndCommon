@@ -134,9 +134,9 @@ class HostBasedBitFieldRouterCompressor(object):
             machine_time_step, time_scale_factor, target_length=None,
             time_to_try_for_each_iteration=None):
         """
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                router_tables:
-            routing tables (uncompressed)
+        :param router_tables: routing tables (uncompressed)
+        :type router_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         :param ~spinn_machine.Machine machine: SpiNNMachine instance
         :param ~pacman.model.placements.Placements placements: placements
         :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
@@ -206,8 +206,9 @@ class HostBasedBitFieldRouterCompressor(object):
         :param ~spinn_machine.Machine machine:
         :param ~pacman.model.placements.Placements placements:
         :param ~spinnman.transceiver.Transceiver transceiver:
-        :param dict(tuple(int,int),dict(int,int)) \
-                bit_field_sdram_base_addresses:
+        :param bit_field_sdram_base_addresses:
+        :type bit_field_sdram_base_addresses:
+            dict(tuple(int,int),dict(int,int))
         """
         # locate the bitfields in a chip level scope
         n_processors_on_chip = machine.get_chip_at(chip_x, chip_y).n_processors
@@ -279,9 +280,9 @@ class HostBasedBitFieldRouterCompressor(object):
         """ Entrance method for doing on host compression. Can be used as a \
             public method for other compressors.
 
-        :param ~pacman.model.routing_tables.UnCompressedMulticastRoutingTable\
-                router_table:
-            the routing table in question to compress
+        :param router_table: the routing table in question to compress
+        :type router_table:
+            ~pacman.model.routing_tables.UnCompressedMulticastRoutingTable
         :param bool produce_report: whether the report should be generated
         :param str report_folder_path: the report folder base address
         :param dict(tuple(int,int),int) bit_field_sdram_base_addresses:
@@ -297,9 +298,10 @@ class HostBasedBitFieldRouterCompressor(object):
             time in seconds to run each compression attempt for
         :param bool use_timer_cut_off:
             whether the timer cut off is to be used
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                compressed_pacman_router_tables:
+        :param compressed_pacman_router_tables:
             a data holder for compressed tables
+        :type compressed_pacman_router_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         :param dict(int,int) key_atom_map: key to atoms map
             should be allowed to handle per time step
         """
