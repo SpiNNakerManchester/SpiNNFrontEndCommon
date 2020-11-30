@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from .abstract_one_app_one_machine_vertex import AbstractOneAppOneMachineVertex
 from .command_sender_machine_vertex import CommandSenderMachineVertex
