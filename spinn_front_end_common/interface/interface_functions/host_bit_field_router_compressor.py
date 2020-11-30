@@ -32,8 +32,7 @@ from pacman.model.routing_tables import (
 from pacman.operations.algorithm_reports.reports import format_route
 from pacman.operations.router_compressors import Entry
 from pacman.operations.router_compressors.mundys_router_compressor import (
-    ordered_covering as
-    rigs_compressor)
+    minimise)
 from spinn_front_end_common.abstract_models.\
     abstract_supports_bit_field_routing_compression import (
         AbstractSupportsBitFieldRoutingCompression)
@@ -745,7 +744,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 entries.append(Entry.from_MulticastRoutingEntry(router_entry))
 
         # compress the router entries using rigs compressor
-        return rigs_compressor.minimise(
+        return minimise(
             entries, target_length, time_to_try_for_each_iteration,
             use_timer_cut_off)
 
