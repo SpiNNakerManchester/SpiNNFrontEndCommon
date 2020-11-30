@@ -38,7 +38,7 @@ class PreAllocateResourcesForChipPowerMonitor(object):
         :param int machine_time_step: the machine time step
         :param pre_allocated_resources: other preallocated resources
         :type pre_allocated_resources:
-            ~pacman.model.resources.PreAllocatedResourceContainer
+            ~pacman.model.resources.PreAllocatedResourceContainer or None
         :return: preallocated resources
         :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
