@@ -15,6 +15,8 @@
 
 from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from pacman.model.graphs.application import ApplicationVertex
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
 @add_metaclass(AbstractBase)
@@ -24,6 +26,18 @@ class AbstractVertexWithEdgeToDependentVertices(object):
     """
 
     __slots__ = ()
+
+    _WRONG_VERTEX_TYPE_ERROR = (
+        "The vertex {} is not of type ApplicationVertex. By not being an "
+        "application vertex, AbstractSpinnakerBase will not add the "
+        "dependent_vertices")
+
+    def __new__(cls, *args, **kwargs):
+        if not issubclass(cls, ApplicationVertex):
+            raise SpinnFrontEndException(
+                cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
+        return super(AbstractVertexWithEdgeToDependentVertices,
+                     cls).__new__(cls)
 
     @abstractmethod
     def dependent_vertices(self):
