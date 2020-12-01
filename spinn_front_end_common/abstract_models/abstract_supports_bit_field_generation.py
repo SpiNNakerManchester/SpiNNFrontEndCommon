@@ -13,8 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from six import add_metaclass
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
 @add_metaclass(AbstractBase)
@@ -22,6 +24,17 @@ class AbstractSupportsBitFieldGeneration(object):
     """ Marks a vertex that can provide information about bitfields it wants \
         generated on-chip.
     """
+
+    _WRONG_VERTEX_TYPE_ERROR = (
+        "The vertex {} is not of type MachineVertex. By not being a "
+        "machine vertex, the functions that generate bifields will not check "
+        "this vertex")
+
+    def __new__(cls, *args, **kwargs):
+        if not issubclass(cls, MachineVertex):
+            raise SpinnFrontEndException(
+                cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
+        return super(AbstractSupportsBitFieldGeneration, cls).__new__(cls)
 
     @abstractmethod
     def bit_field_base_address(self, transceiver, placement):
