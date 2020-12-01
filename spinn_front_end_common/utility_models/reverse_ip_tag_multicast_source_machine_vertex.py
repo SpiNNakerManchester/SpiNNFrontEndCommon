@@ -50,7 +50,7 @@ from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models import (
-    AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable,
+    AbstractProvidesOutgoingPartitionConstraints,
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
     AbstractSupportsDatabaseInjection)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
@@ -79,8 +79,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         AbstractHasAssociatedBinary, AbstractSupportsDatabaseInjection,
         ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
-        SendsBuffersFromHostPreBufferedImpl,
-        AbstractReceiveBuffersToHost, AbstractRecordable):
+        SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost):
     """ A model which allows events to be injected into SpiNNaker and\
         converted in to multicast packets.
 
@@ -782,10 +781,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(AbstractSupportsDatabaseInjection.is_in_injection_mode)
     def is_in_injection_mode(self):
         return self._in_injection_mode
-
-    @overrides(AbstractRecordable.is_recording)
-    def is_recording(self):
-        return self._is_recording > 0
 
     @inject("FirstMachineTimeStep")
     @inject_items({
