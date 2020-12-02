@@ -36,7 +36,7 @@ class SplitterSelector(object):
         "will use the SplitterSliceLegacy Splitter.")
 
     def __call__(self, app_graph):
-        """ basic selector which puts the legacy splitter object on
+        """ basic selector which puts the legacy splitter object on\
         everything without a splitter object
 
         :param ApplicationGraph app_graph: app graph
@@ -48,6 +48,7 @@ class SplitterSelector(object):
 
     def vertex_selector(self, app_vertex):
         """ main point for selecting a splitter object for a given app vertex.
+
         Will assume the SplitterSliceLegacy if no heuristic is known for the
         app vertex.
 
