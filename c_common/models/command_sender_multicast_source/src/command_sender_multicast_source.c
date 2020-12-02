@@ -283,7 +283,7 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
         resume = false;
     }
 
-    if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
+    if (simulation_is_finished()) {
         run_stop_pause_commands();
 
         simulation_handle_pause_resume(NULL);

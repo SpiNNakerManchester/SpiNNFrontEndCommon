@@ -100,10 +100,14 @@ class SimulatorInterface(object):
         """
 
     @abstractmethod
-    def run(self, run_time):
+    def run(self, run_time, sync_time=0.0):
         """ Run a simulation for a fixed amount of time
 
         :param int run_time: the run duration in milliseconds.
+        :param float sync_time:
+            If not 0, this specifies that the simulation should pause after
+            this duration.  The continue_simulation() method must then be
+            called for the simulation to continue.
         """
 
     @abstractmethod
@@ -115,6 +119,11 @@ class SimulatorInterface(object):
     def stop_run(self):
         """ End the running of a simulation that has been started with
             run_forever
+        """
+
+    @abstractmethod
+    def continue_simulation(self):
+        """ Continue a simulation that has been started in stepped mode
         """
 
     @abstractproperty
