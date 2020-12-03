@@ -134,8 +134,8 @@ class InsertEdgesToLivePacketGatherers(object):
 
             # add a edge between the closest LPG and the app_vertex
             for partition_id in p_ids:
-                machine_edge = app_edges[partition_id].create_machine_edge(
-                    vertex, lpg, None)
+                machine_edge = MachineEdge(
+                    vertex, lpg, app_edge=app_edges[partition_id])
                 m_graph.add_edge(machine_edge, partition_id)
 
                 # add to n_keys_map if needed

@@ -72,30 +72,25 @@ class DSGRegionReloader(object):
 
         progress = ProgressBar(placements.n_placements, "Reloading data")
         for placement in progress.over(placements.placements):
-            # Try to generate the data spec for the placement
-            generated = self._regenerate_data_spec_for_vertices(
-                placement, placement.vertex)
-            # If the region was regenerated, mark it reloaded
-            if generated:
-                placement.vertex.set_reload_required(False)
-                continue
+            # Generate the data spec for the placement if needed
+            self._regenerate_data_spec_for_vertices(placement)
 
         # App data directory can be removed as should be empty
         os.rmdir(app_data_dir)
 
-    def _regenerate_data_spec_for_vertices(self, placement, vertex):
+    def _regenerate_data_spec_for_vertices(self, placement):
         """
         :param ~.Placement placement:
-        :param ~.AbstractVertex vertex:
-        :rtype: bool
         """
+        vertex = placement.vertex
+
         # If the vertex doesn't regenerate, skip
         if not isinstance(vertex, AbstractRewritesDataSpecification):
-            return False
+            return
 
         # If the vertex doesn't require regeneration, skip
         if not vertex.reload_required():
-            return True
+            return
 
         # build the writers for the reports and data
         spec_file, spec = get_data_spec_and_file_writer_filename(
@@ -132,5 +127,4 @@ class DSGRegionReloader(object):
                 self._txrx.write_memory(
                     placement.x, placement.y, offsets[i],
                     region.region_data[:region.max_write_pointer])
-
-        return True
+        vertex.set_reload_required(False)

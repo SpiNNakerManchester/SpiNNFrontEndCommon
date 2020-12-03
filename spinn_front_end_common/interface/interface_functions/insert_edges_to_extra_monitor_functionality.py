@@ -20,7 +20,7 @@ from spinn_front_end_common.utilities.constants import (
     PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex as DataSpeedUp,
-    ExtraMonitorSupport, ExtraMonitorSupportMachineVertex)
+    ExtraMonitorSupportMachineVertex)
 
 
 class InsertEdgesToExtraMonitorFunctionality(object):
@@ -77,12 +77,6 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 if isinstance(vertex, ExtraMonitorSupportMachineVertex):
                     self._process_app_graph_vertex(
                         vertex, machine_graph, application_graph)
-            for app_vertex in progress.over(application_graph.vertices):
-                if not isinstance(app_vertex, ExtraMonitorSupport):
-                    continue
-                for vertex in app_vertex.machine_vertices:
-                    self._process_app_graph_vertex(
-                        vertex, machine_graph, application_graph)
 
     def _process_app_graph_vertex(
             self, vertex, machine_graph, application_graph):
@@ -107,8 +101,10 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 application_graph.add_edge(
                     app_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
             # Use the application edge to build the machine edge
-            edge = app_edge.create_machine_edge(
-                vertex, gatherer, self.EDGE_LABEL.format(vertex, gatherer))
+            edge = MachineEdge(
+                vertex, gatherer, traffic_type=DataSpeedUp.TRAFFIC_TYPE,
+                label=self.EDGE_LABEL.format(vertex, gatherer),
+                app_edge=app_edge)
             machine_graph.add_edge(
                 edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 
