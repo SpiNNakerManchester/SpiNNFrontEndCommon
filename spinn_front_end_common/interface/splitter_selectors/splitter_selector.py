@@ -14,20 +14,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 
+from spinn_utilities.log import FormatAdapter
 from pacman.model.partitioner_splitters import (
     SplitterOneAppOneMachine, SplitterOneToOneLegacy, SplitterSliceLegacy)
-from spinn_front_end_common.utility_models import (
-    ReverseIpTagMultiCastSource, LivePacketGather, ChipPowerMonitor)
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
-from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.utility_models import (
+    ReverseIpTagMultiCastSource, LivePacketGather, ChipPowerMonitor)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class SplitterSelector(object):
-    """ splitter object selector that allocates nothing but legacy
-    splitter objects where required
+    """ Splitter object selector that allocates nothing but legacy\
+        splitter objects where required
     """
 
     NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE = (
@@ -36,8 +36,8 @@ class SplitterSelector(object):
         "will use the SplitterSliceLegacy Splitter.")
 
     def __call__(self, app_graph):
-        """ basic selector which puts the legacy splitter object on
-        everything without a splitter object
+        """ basic selector which puts the legacy splitter object on\
+            everything without a splitter object
 
         :param ApplicationGraph app_graph: app graph
         :rtype: None
@@ -48,10 +48,12 @@ class SplitterSelector(object):
 
     def vertex_selector(self, app_vertex):
         """ main point for selecting a splitter object for a given app vertex.
+
         Will assume the SplitterSliceLegacy if no heuristic is known for the
         app vertex.
 
-        :param app_vertex: app vertex to give a splitter object to
+        :param ~pacman.model.graphs.application.ApplicationVertex app_vertex:
+            app vertex to give a splitter object to
         :rtype: None
         """
         if isinstance(app_vertex, AbstractOneAppOneMachineVertex):
