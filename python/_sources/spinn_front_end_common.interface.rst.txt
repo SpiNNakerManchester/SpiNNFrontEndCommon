@@ -12,6 +12,7 @@ Subpackages
     spinn_front_end_common.interface.profiling
     spinn_front_end_common.interface.provenance
     spinn_front_end_common.interface.simulation
+    spinn_front_end_common.interface.splitter_selectors
 
 Submodules
 ----------
