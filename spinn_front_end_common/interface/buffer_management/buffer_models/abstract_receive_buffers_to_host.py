@@ -15,14 +15,26 @@
 
 from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
 @add_metaclass(AbstractBase)
 class AbstractReceiveBuffersToHost(object):
-    """ Indicates that this object can receive buffers.
+    """ Indicates that this MachineVertex can receive buffers.
     """
 
     __slots__ = ()
+
+    _WRONG_VERTEX_TYPE_ERROR = (
+        "The vertex {} is not of type MachineVertex. By not being a "
+        "machine vertex, the BufferManager/Java will not receive the data")
+
+    def __new__(cls, *args, **kwargs):
+        if not issubclass(cls, MachineVertex):
+            raise SpinnFrontEndException(
+                cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
+        return super(AbstractReceiveBuffersToHost, cls).__new__(cls)
 
     @abstractmethod
     def get_recorded_region_ids(self):
