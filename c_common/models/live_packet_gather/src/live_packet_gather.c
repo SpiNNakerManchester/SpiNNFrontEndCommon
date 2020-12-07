@@ -266,7 +266,7 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
     packets_sent = 0;
 
     // check if the simulation has run to completion
-    if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
+    if (simulation_is_finished()) {
         simulation_handle_pause_resume(NULL);
 
         // Subtract 1 from the time so this tick gets done again on the next
