@@ -79,5 +79,4 @@ class MemoryMapOnHostChipReport(object):
         :param ~spinnman.transceiver.Transceiver txrx:
         """
         user_0_addr = txrx.get_user_0_register_address_from_core(p)
-        encoded_address = txrx.read_memory(x, y, user_0_addr, BYTES_PER_WORD)
-        return _ONE_WORD.unpack_from(encoded_address)[0] + REGION_HEADER_SIZE
+        return txrx.read_word(x, y, user_0_addr) + REGION_HEADER_SIZE

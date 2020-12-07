@@ -24,8 +24,6 @@ from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_utilities.overrides import overrides
 
-_ONE_WORD = struct.Struct("<I")
-
 
 def add_name(names, name):
     """
@@ -151,15 +149,14 @@ class ProvidesProvenanceDataFromMachineImpl(
         :rtype: int
         """
         # Get the App Data for the core
-        app_data_base_address = transceiver.get_cpu_information_from_core(
+        region_table_address = transceiver.get_cpu_information_from_core(
             placement.x, placement.y, placement.p).user[0]
 
         # Get the provenance region base address
-        base_address_offset = get_region_base_address_offset(
-            app_data_base_address, self._provenance_region_id)
-        base_address = transceiver.read_memory(
-            placement.x, placement.y, base_address_offset, BYTES_PER_WORD)
-        return _ONE_WORD.unpack(base_address)[0]
+        prov_region_entry_address = get_region_base_address_offset(
+            region_table_address, self._provenance_region_id)
+        return transceiver.read_word(
+            placement.x, placement.y, prov_region_entry_address)
 
     def _read_provenance_data(self, transceiver, placement):
         """

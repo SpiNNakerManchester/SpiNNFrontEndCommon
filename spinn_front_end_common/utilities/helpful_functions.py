@@ -29,7 +29,6 @@ from .globals_variables import get_simulator
 from .constants import BYTES_PER_WORD, MICRO_TO_MILLISECOND_CONVERSION
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_ONE_WORD = struct.Struct("<I")
 
 
 def locate_extra_monitor_mc_receiver(
@@ -79,7 +78,7 @@ def write_address_to_user0(txrx, x, y, p, address):
     :param int address: Value to write (32-bit integer)
     """
     user_0_address = txrx.get_user_0_register_address_from_core(p)
-    txrx.write_memory(x, y, user_0_address, _ONE_WORD.pack(address))
+    txrx.write_memory(x, y, user_0_address, address)
 
 
 def locate_memory_region_for_placement(placement, region, transceiver):
@@ -101,9 +100,8 @@ def locate_memory_region_for_placement(placement, region, transceiver):
         regions_base_address, region)
 
     # Get the actual address of the region
-    region_address = transceiver.read_memory(
+    return transceiver.read_word(
         placement.x, placement.y, region_offset, BYTES_PER_WORD)
-    return _ONE_WORD.unpack_from(region_address)[0]
 
 
 def convert_string_into_chip_and_core_subset(cores):

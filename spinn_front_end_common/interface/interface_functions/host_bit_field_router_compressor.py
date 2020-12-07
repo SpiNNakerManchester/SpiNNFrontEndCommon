@@ -124,8 +124,7 @@ class HostBasedBitFieldRouterCompressor(object):
     # mask for neuron level
     _NEURON_LEVEL_MASK = 0xFFFFFFFF
 
-    # structs for performance requirements.
-    _ONE_WORDS = struct.Struct("<I")
+    # struct for performance requirements.
     _THREE_WORDS = struct.Struct("<III")
 
     # for router report
@@ -788,8 +787,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
             # write correct number of elements.
             transceiver.write_memory(
-                chip_x, chip_y, writing_address, self._ONE_WORDS.pack(
-                    new_total), BYTES_PER_WORD)
+                chip_x, chip_y, writing_address, new_total)
             writing_address += BYTES_PER_WORD
 
             # iterate through the original bitfields and omit the ones deleted
