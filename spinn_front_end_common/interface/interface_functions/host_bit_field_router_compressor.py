@@ -228,13 +228,10 @@ class HostBasedBitFieldRouterCompressor(object):
             if placements.is_processor_occupied(chip_x, chip_y, p):
                 vertex = placements.get_vertex_on_processor(chip_x, chip_y, p)
 
-                # locate api vertex
-                api_vertex = self.locate_vertex_with_the_api(vertex)
-
-                # get data
-                if api_vertex is not None:
+                if isinstance(
+                        vertex, AbstractSupportsBitFieldRoutingCompression):
                     bit_field_sdram_base_addresses[chip_x, chip_y][p] = \
-                        api_vertex.bit_field_base_address(
+                        vertex.bit_field_base_address(
                             transceiver, placements.get_placement_of_vertex(
                                 vertex))
 
@@ -540,19 +537,6 @@ class HostBasedBitFieldRouterCompressor(object):
 
         return bit_fields_by_processor, list_of_bitfields_in_impact_order
 
-    @staticmethod
-    def locate_vertex_with_the_api(machine_vertex):
-        """
-        :param ~pacman.model.graphs.machine.MachineVertex machine_vertex:
-        :return: The vertex associated with the machine vertex that supports
-            compression, or `None` if nothing can be found.
-        :rtype: AbstractSupportsBitFieldRoutingCompression or None
-        """
-        if isinstance(
-                machine_vertex, AbstractSupportsBitFieldRoutingCompression):
-            return machine_vertex
-        return None
-
     def _order_bit_fields(
             self, bit_fields_by_coverage, machine_graph, chip_x, chip_y,
             placements, n_processors_on_chip, processor_coverage_by_bitfield):
@@ -574,8 +558,8 @@ class HostBasedBitFieldRouterCompressor(object):
                 vertex = placements.get_vertex_on_processor(
                     chip_x, chip_y, processor_id)
 
-                valid = self.locate_vertex_with_the_api(vertex)
-                if valid is not None:
+                if isinstance(
+                        vertex, AbstractSupportsBitFieldRoutingCompression):
                     most_costly_cores[processor_id] = len(
                         machine_graph.get_edges_ending_at_vertex(vertex))
 
