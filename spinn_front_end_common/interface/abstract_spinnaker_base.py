@@ -2259,9 +2259,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             placements = Placements()
             non_rte_core_subsets = CoreSubsets()
             for (x, y, p) in non_rte_cores:
-                vertex = self._placements.get_vertex_on_processor(x, y, p)
                 placements.add_placement(
-                    self._placements.get_placement_of_vertex(vertex))
+                    self._placements.get_placement_on_processor(x, y, p))
                 non_rte_core_subsets.add_processor(x, y, p)
 
             # Attempt to force the cores to write provenance and exit
