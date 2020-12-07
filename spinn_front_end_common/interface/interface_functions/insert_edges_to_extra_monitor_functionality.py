@@ -108,8 +108,10 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 application_graph.add_edge(
                     app_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
             # Use the application edge to build the machine edge
-            edge = app_edge.create_machine_edge(
-                vertex, gatherer, self.EDGE_LABEL.format(vertex, gatherer))
+            edge = MachineEdge(
+                vertex, gatherer, traffic_type=DataSpeedUp.TRAFFIC_TYPE,
+                label=self.EDGE_LABEL.format(vertex, gatherer),
+                app_edge=app_edge)
             machine_graph.add_edge(
                 edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 
