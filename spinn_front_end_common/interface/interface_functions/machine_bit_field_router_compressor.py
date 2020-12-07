@@ -33,6 +33,9 @@ from pacman.operations.router_compressors.mundys_router_compressor.\
     ordered_covering import (
         get_generality as
         ordered_covering_generality)
+from spinn_front_end_common.abstract_models.\
+    abstract_supports_bit_field_routing_compression import (
+        AbstractSupportsBitFieldRoutingCompression)
 from spinn_front_end_common.interface.interface_functions.\
     on_chip_router_table_compression import (
         make_source_hack)
@@ -781,15 +784,13 @@ class MachineBitFieldRouterCompressor(object):
         region_addresses = defaultdict(list)
         sdram_block_addresses_and_sizes = defaultdict(list)
 
-        for machine_vertex in progress_bar.over(
+        for vertex in progress_bar.over(
                 machine_graph.vertices, finish_at_end=False):
-            placement = placements.get_placement_of_vertex(machine_vertex)
+            placement = placements.get_placement_of_vertex(vertex)
 
             # locate the interface vertex (maybe app or machine)
-            vertex = \
-                HostBasedBitFieldRouterCompressor.locate_vertex_with_the_api(
-                    machine_vertex)
-            if vertex is not None:
+            if isinstance(
+                    vertex, AbstractSupportsBitFieldRoutingCompression):
                 self._add_to_addresses(
                     vertex, placement, transceiver, region_addresses,
                     sdram_block_addresses_and_sizes)

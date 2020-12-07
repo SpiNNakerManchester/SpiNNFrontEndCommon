@@ -125,7 +125,6 @@ class HostBasedBitFieldRouterCompressor(object):
     _NEURON_LEVEL_MASK = 0xFFFFFFFF
 
     # structs for performance requirements.
-    _ONE_WORDS = struct.Struct("<I")
     _THREE_WORDS = struct.Struct("<III")
 
     # for router report
@@ -229,13 +228,10 @@ class HostBasedBitFieldRouterCompressor(object):
             if placements.is_processor_occupied(chip_x, chip_y, p):
                 vertex = placements.get_vertex_on_processor(chip_x, chip_y, p)
 
-                # locate api vertex
-                api_vertex = self.locate_vertex_with_the_api(vertex)
-
-                # get data
-                if api_vertex is not None:
+                if isinstance(
+                        vertex, AbstractSupportsBitFieldRoutingCompression):
                     bit_field_sdram_base_addresses[chip_x, chip_y][p] = \
-                        api_vertex.bit_field_base_address(
+                        vertex.bit_field_base_address(
                             transceiver, placements.get_placement_of_vertex(
                                 vertex))
 
@@ -499,10 +495,8 @@ class HostBasedBitFieldRouterCompressor(object):
 
             # from filter_region_t read how many bitfields there are
             # n_filters then array of filters
-            n_filters, = struct.unpack(
-                "<I", transceiver.read_memory(
-                    chip_x, chip_y,
-                    bit_field_base_address, BYTES_PER_WORD))
+            n_filters = transceiver.read_word(
+                chip_x, chip_y, bit_field_base_address, BYTES_PER_WORD)
             reading_address = bit_field_base_address + BYTES_PER_WORD
 
             # read in each bitfield
@@ -543,19 +537,6 @@ class HostBasedBitFieldRouterCompressor(object):
 
         return bit_fields_by_processor, list_of_bitfields_in_impact_order
 
-    @staticmethod
-    def locate_vertex_with_the_api(machine_vertex):
-        """
-        :param ~pacman.model.graphs.machine.MachineVertex machine_vertex:
-        :return: The vertex associated with the machine vertex that supports
-            compression, or `None` if nothing can be found.
-        :rtype: AbstractSupportsBitFieldRoutingCompression or None
-        """
-        if isinstance(
-                machine_vertex, AbstractSupportsBitFieldRoutingCompression):
-            return machine_vertex
-        return None
-
     def _order_bit_fields(
             self, bit_fields_by_coverage, machine_graph, chip_x, chip_y,
             placements, n_processors_on_chip, processor_coverage_by_bitfield):
@@ -577,8 +558,8 @@ class HostBasedBitFieldRouterCompressor(object):
                 vertex = placements.get_vertex_on_processor(
                     chip_x, chip_y, processor_id)
 
-                valid = self.locate_vertex_with_the_api(vertex)
-                if valid is not None:
+                if isinstance(
+                        vertex, AbstractSupportsBitFieldRoutingCompression):
                     most_costly_cores[processor_id] = len(
                         machine_graph.get_edges_ending_at_vertex(vertex))
 
@@ -791,8 +772,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
             # write correct number of elements.
             transceiver.write_memory(
-                chip_x, chip_y, writing_address, self._ONE_WORDS.pack(
-                    new_total), BYTES_PER_WORD)
+                chip_x, chip_y, writing_address, BYTES_PER_WORD)
             writing_address += BYTES_PER_WORD
 
             # iterate through the original bitfields and omit the ones deleted
