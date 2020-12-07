@@ -499,10 +499,8 @@ class HostBasedBitFieldRouterCompressor(object):
 
             # from filter_region_t read how many bitfields there are
             # n_filters then array of filters
-            n_filters, = struct.unpack(
-                "<I", transceiver.read_memory(
-                    chip_x, chip_y,
-                    bit_field_base_address, BYTES_PER_WORD))
+            n_filters = transceiver.read_word(
+                chip_x, chip_y, bit_field_base_address, BYTES_PER_WORD)
             reading_address = bit_field_base_address + BYTES_PER_WORD
 
             # read in each bitfield
