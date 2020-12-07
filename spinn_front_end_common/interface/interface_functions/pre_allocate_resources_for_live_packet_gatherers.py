@@ -16,12 +16,9 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.resources import (
     ConstantSDRAM, CoreResource, PreAllocatedResourceContainer,
-    SpecificChipSDRAMResource)
-from pacman.model.resources.specific_board_iptag_resource import (
-    SpecificBoardTagResource)
+    SpecificChipSDRAMResource, SpecificBoardIPtagResource)
 from spinn_front_end_common.utility_models import (
-    LivePacketGatherMachineVertex as
-    LPG)
+    LivePacketGatherMachineVertex)
 
 
 class PreAllocateResourcesForLivePacketGatherers(object):
@@ -58,7 +55,7 @@ class PreAllocateResourcesForLivePacketGatherers(object):
             "Preallocating resources for Live Recording")
 
         # store how much SDRAM the LPG uses per core
-        sdram_requirement = LPG.get_sdram_usage()
+        sdram_requirement = LivePacketGatherMachineVertex.get_sdram_usage()
 
         # for every Ethernet connected chip, get the resources needed by the
         # live packet gatherers
@@ -94,7 +91,7 @@ class PreAllocateResourcesForLivePacketGatherers(object):
         :param int lpg_sdram:
         :param list(~.SpecificChipSDRAMResource) sdrams:
         :param list(~.CoreResource) cores:
-        :param list(~.SpecificBoardTagResource) iptags:
+        :param list(~.SpecificBoardIPtagResource) iptags:
         """
         # pylint: disable=too-many-arguments
         sdram_reqs = 0
@@ -105,11 +102,12 @@ class PreAllocateResourcesForLivePacketGatherers(object):
                     lpg_params.board_address == chip.ip_address):
                 sdram_reqs += lpg_sdram
                 core_reqs += 1
-                iptags.append(SpecificBoardTagResource(
+                iptags.append(SpecificBoardIPtagResource(
                     board=chip.ip_address,
                     ip_address=lpg_params.hostname, port=lpg_params.port,
                     strip_sdp=lpg_params.strip_sdp, tag=lpg_params.tag,
-                    traffic_identifier=LPG.TRAFFIC_IDENTIFIER))
+                    traffic_identifier=(
+                        LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER)))
 
         if sdram_reqs:
             sdrams.append(SpecificChipSDRAMResource(
