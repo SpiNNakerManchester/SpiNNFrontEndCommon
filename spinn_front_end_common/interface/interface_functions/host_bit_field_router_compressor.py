@@ -497,24 +497,27 @@ class HostBasedBitFieldRouterCompressor(object):
             bit_field_base_address = \
                 bit_field_chip_base_addresses[processor_id]
 
-            # from filter_regoin_t read how many bitfields there are
-            # n_merged_filters, n_redundancy_filters, n_filters
-            _, _, n_filters = struct.unpack(
+            # from filter_region_t read how many bitfields there are
+            # n_filters then array of filters
+            n_filters = struct.unpack(
                 "<III", transceiver.read_memory(
                     chip_x, chip_y,
-                    bit_field_base_address, BYTES_PER_WORD * 3))
-            reading_address = bit_field_base_address + BYTES_PER_WORD * 3
+                    bit_field_base_address, BYTES_PER_WORD))
+            reading_address = bit_field_base_address + BYTES_PER_WORD
 
             # read in each bitfield
             for _ in range(0, n_filters):
                 # master pop key, n words and read pointer
-                master_pop_key, n_words_to_read, read_pointer = struct.unpack(
+                master_pop_key, n_atoms_word, read_pointer = struct.unpack(
                     "<III", transceiver.read_memory(
                         chip_x, chip_y, reading_address,
                         _BitFieldData.size_in_bytes()))
                 reading_address += _BitFieldData.size_in_bytes()
 
                 # get bitfield words
+                atoms = n_atoms_word & 0x3FFFFFFF
+                n_words_to_read = math.ceil(atoms / self._BITS_PER_WORD)
+
                 bit_field = struct.unpack(
                     "<{}I".format(n_words_to_read),
                     transceiver.read_memory(
