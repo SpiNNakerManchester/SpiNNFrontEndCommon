@@ -332,10 +332,10 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # remove bitfields from cores that have been merged into the
         # router table
-        self._remove_merged_bitfields_from_cores(
-            self._best_bit_fields_by_processor, router_table.x,
-            router_table.y, transceiver,
-            bit_field_chip_base_addresses, bit_fields_by_processor)
+        #self._remove_merged_bitfields_from_cores(
+        #    self._best_bit_fields_by_processor, router_table.x,
+        #    router_table.y, transceiver,
+        #    bit_field_chip_base_addresses, bit_fields_by_processor)
 
         # create report file if required
         if produce_report:
@@ -619,7 +619,7 @@ class HostBasedBitFieldRouterCompressor(object):
             self._best_routing_table = self._run_algorithm(
                 router_table, target_length, time_to_try_for_each_iteration,
                 use_timer_cut_off)
-            self._best_bit_fields_by_processor = []
+            self._best_bit_fields_by_processor = DefaultOrderedDict(list)
         except MinimisationFailedError:
             raise PacmanAlgorithmFailedToGenerateOutputsException(
                 "host bitfield router compressor can't compress the "
@@ -664,16 +664,20 @@ class HostBasedBitFieldRouterCompressor(object):
         bit_field_router_table = self._convert_bitfields_into_router_table(
             routing_table, new_bit_field_by_processor, key_to_n_atoms_map)
 
+        print(routing_table.x, routing_table.y, mid_point, "uncompresssed size", bit_field_router_table.number_of_entries)
         # try to compress
         try:
             self._best_routing_table = self._run_algorithm(
                 bit_field_router_table, target_length,
                 time_to_try_for_each_iteration, use_timer_cut_off)
             self._best_bit_fields_by_processor = new_bit_field_by_processor
+            print ("success", len(self._best_routing_table))
             return True
         except MinimisationFailedError:
+            print("MinimisationFailedError")
             return False
         except PacmanElementAllocationException:
+            print("PacmanElementAllocationException")
             return False
 
     def _run_algorithm(
