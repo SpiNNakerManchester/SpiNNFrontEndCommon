@@ -258,19 +258,12 @@ class MachineBitFieldRouterCompressor(object):
                 machine_graph, routing_infos)
 
             for (chip_x, chip_y) in progress_bar.over(on_host_chips, False):
-                bit_field_sdram_base_addresses = defaultdict(dict)
-                host_compressor.collect_bit_field_sdram_base_addresses(
-                    chip_x, chip_y, machine, placements, transceiver,
-                    bit_field_sdram_base_addresses)
-
                 host_compressor.start_compression_selection_process(
                     router_table=routing_tables.get_routing_table_for_chip(
                         chip_x, chip_y),
                     produce_report=produce_report,
                     report_folder_path=host_compressor.generate_report_path(
                         default_report_folder),
-                    bit_field_sdram_base_addresses=(
-                        bit_field_sdram_base_addresses),
                     transceiver=transceiver, machine_graph=machine_graph,
                     placements=placements, machine=machine,
                     target_length=target_length,

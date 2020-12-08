@@ -192,27 +192,18 @@ class HostBasedBitFieldRouterCompressor(object):
         key_atom_map = self.generate_key_to_atom_map(
             machine_graph, routing_infos)
 
-        # holder for the bitfields in
-        bit_field_sdram_base_addresses = defaultdict(dict)
-        for router_table in progress.over(router_tables.routing_tables, False):
-            self.collect_bit_field_sdram_base_addresses(
-                router_table.x, router_table.y, machine, placements,
-                transceiver, bit_field_sdram_base_addresses)
-
         # start the routing table choice conversion
         for router_table in progress.over(router_tables.routing_tables):
             self.start_compression_selection_process(
                 router_table, produce_report, report_folder_path,
-                bit_field_sdram_base_addresses, transceiver, machine_graph,
-                placements, machine, target_length,
+                transceiver, machine_graph, placements, machine, target_length,
                 time_to_try_for_each_iteration, use_timer_cut_off,
                 compressed_pacman_router_tables, key_atom_map)
         # return compressed tables
         return compressed_pacman_router_tables
 
-    def collect_bit_field_sdram_base_addresses(
-            self, chip_x, chip_y, machine, placements, transceiver,
-            bit_field_sdram_base_addresses):
+    def get_bit_field_sdram_base_addresses(
+            self, chip_x, chip_y, machine, placements, transceiver):
         """
         :param int chip_x:
         :param int chip_y:
@@ -223,6 +214,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 bit_field_sdram_base_addresses:
         """
         # locate the bitfields in a chip level scope
+        base_addresses = dict()
         n_processors_on_chip = machine.get_chip_at(chip_x, chip_y).n_processors
         for p in range(0, n_processors_on_chip):
             if placements.is_processor_occupied(chip_x, chip_y, p):
@@ -230,10 +222,9 @@ class HostBasedBitFieldRouterCompressor(object):
 
                 if isinstance(
                         vertex, AbstractSupportsBitFieldRoutingCompression):
-                    bit_field_sdram_base_addresses[chip_x, chip_y][p] = \
-                        vertex.bit_field_base_address(
-                            transceiver, placements.get_placement_of_vertex(
-                                vertex))
+                    base_addresses[p] = vertex.bit_field_base_address(
+                        transceiver, placements.get_placement_of_vertex(vertex))
+        return base_addresses
 
     def calculate_threshold(self, machine_time_step, time_scale_factor):
         """
@@ -282,8 +273,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
     def start_compression_selection_process(
             self, router_table, produce_report, report_folder_path,
-            bit_field_sdram_base_addresses, transceiver, machine_graph,
-            placements, machine, target_length,
+            transceiver, machine_graph, placements, machine, target_length,
             time_to_try_for_each_iteration, use_timer_cut_off,
             compressed_pacman_router_tables, key_atom_map):
         """ Entrance method for doing on host compression. Can be used as a \
@@ -294,8 +284,6 @@ class HostBasedBitFieldRouterCompressor(object):
             the routing table in question to compress
         :param bool produce_report: whether the report should be generated
         :param str report_folder_path: the report folder base address
-        :param dict(tuple(int,int),int) bit_field_sdram_base_addresses:
-            the SDRAM addresses for bitfields used in the chip.
         :param ~spinnman.transceiver.Transceiver transceiver:
             spinnMan instance
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
@@ -316,8 +304,8 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # iterate through bitfields on this chip and convert to router
         # table
-        bit_field_chip_base_addresses = bit_field_sdram_base_addresses[
-            (router_table.x, router_table.y)]
+        bit_field_chip_base_addresses = self.get_bit_field_sdram_base_addresses(
+            router_table.x, router_table.y, machine, placements, transceiver)
 
         # read in bitfields.
         bit_fields_by_processor, sorted_bit_fields = self._read_in_bit_fields(
