@@ -13,18 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-import struct
-from .profile_data import ProfileData
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
+from .profile_data import ProfileData
 
-logger = logging.getLogger(__name__)
-
-PROFILE_HEADER_SIZE_BYTES = BYTES_PER_WORD
-SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES = 2 * BYTES_PER_WORD
-BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION = BYTES_PER_WORD
+_PROFILE_HEADER_SIZE_BYTES = BYTES_PER_WORD
+_SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES = 2 * BYTES_PER_WORD
+_BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION = BYTES_PER_WORD
 
 
 def get_profile_region_size(n_samples):
@@ -34,8 +30,8 @@ def get_profile_region_size(n_samples):
     :return: the size in bytes used by the profile region
     :rtype: int
     """
-    return PROFILE_HEADER_SIZE_BYTES + (
-        n_samples * SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES)
+    return _PROFILE_HEADER_SIZE_BYTES + (
+        n_samples * _SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES)
 
 
 def reserve_profile_region(spec, region, n_samples):
@@ -76,19 +72,16 @@ def get_profiling_data(profile_region, tag_labels, txrx, placement):
     """
     profile_data = ProfileData(tag_labels)
 
-    profiling_region_base_address = locate_memory_region_for_placement(
+    address = locate_memory_region_for_placement(
         placement=placement, region=profile_region, transceiver=txrx)
 
     # Read the profiling data size
-    words_written = txrx.read_word(
-        placement.x, placement.y, profiling_region_base_address)
+    words_written = txrx.read_word(placement.x, placement.y, address)
 
     # Read the profiling data
     if words_written != 0:
+        address += _BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION
         profile_data.add_data(txrx.read_memory(
-            placement.x, placement.y,
-            profiling_region_base_address +
-            BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION,
-            words_written * BYTES_PER_WORD))
+            placement.x, placement.y, address, words_written * BYTES_PER_WORD))
 
     return profile_data

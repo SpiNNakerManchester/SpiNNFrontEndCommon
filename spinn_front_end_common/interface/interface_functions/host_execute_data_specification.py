@@ -15,7 +15,6 @@
 
 from collections import OrderedDict
 import logging
-import struct
 import numpy
 from six import iteritems, itervalues
 from spinn_utilities.progress_bar import ProgressBar
