@@ -33,9 +33,9 @@ from pacman.operations.algorithm_reports.reports import format_route
 from pacman.operations.router_compressors import Entry
 from pacman.operations.router_compressors.mundys_router_compressor import (
     minimise)
-from spinn_front_end_common.abstract_models.\
-    abstract_supports_bit_field_routing_compression import (
-        AbstractSupportsBitFieldRoutingCompression)
+from spinn_front_end_common.abstract_models import (
+    AbstractSupportsBitFieldRoutingCompression)
+from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD)
 
@@ -498,24 +498,22 @@ class HostBasedBitFieldRouterCompressor(object):
 
             # from filter_regoin_t read how many bitfields there are
             # n_merged_filters, n_redundancy_filters, n_filters
-            _, _, n_filters = struct.unpack(
-                "<III", transceiver.read_memory(
-                    chip_x, chip_y,
-                    bit_field_base_address, BYTES_PER_WORD * 3))
+            _, _, n_filters = self._THREE_WORDS.unpack(transceiver.read_memory(
+                chip_x, chip_y,
+                bit_field_base_address, BYTES_PER_WORD * 3))
             reading_address = bit_field_base_address + BYTES_PER_WORD * 3
 
             # read in each bitfield
             for _ in range(0, n_filters):
                 # master pop key, n words and read pointer
-                master_pop_key, n_words_to_read, read_pointer = struct.unpack(
-                    "<III", transceiver.read_memory(
+                master_pop_key, n_words_to_read, read_pointer = \
+                    self._THREE_WORDS.unpack(transceiver.read_memory(
                         chip_x, chip_y, reading_address,
                         _BitFieldData.size_in_bytes()))
                 reading_address += _BitFieldData.size_in_bytes()
 
                 # get bitfield words
-                bit_field = struct.unpack(
-                    "<{}I".format(n_words_to_read),
+                bit_field = n_word_struct(n_words_to_read).unpack(
                     transceiver.read_memory(
                         chip_x, chip_y, read_pointer,
                         n_words_to_read * BYTES_PER_WORD))
@@ -805,8 +803,7 @@ class HostBasedBitFieldRouterCompressor(object):
                     writing_address += self._SIZE_OF_FILTER_INFO_IN_BYTES
 
                     # write bitfield words
-                    data = struct.pack(
-                        "<{}I".format(len(bf_by_key.bit_field)),
+                    data = n_word_struct(len(bf_by_key.bit_field)).pack(
                         *bf_by_key.bit_field)
                     transceiver.write_memory(
                         chip_x, chip_y, words_writing_address, data,

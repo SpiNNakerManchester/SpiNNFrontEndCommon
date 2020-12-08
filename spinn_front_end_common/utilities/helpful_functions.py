@@ -29,6 +29,7 @@ from .globals_variables import get_simulator
 from .constants import MICRO_TO_MILLISECOND_CONVERSION
 
 logger = FormatAdapter(logging.getLogger(__name__))
+_n_word_structs = []
 
 
 def locate_extra_monitor_mc_receiver(
@@ -413,3 +414,31 @@ def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
     """
     _emergency_state_check(txrx, app_id)
     _emergency_iobuf_extract(txrx, executable_targets)
+
+
+def n_word_struct(n_words):
+    """ Manages a precompiled cache of structs for parsing blocks of words. \
+        Thus, this::
+
+        data = n_word_struct(n_words).unpack(data_blob)
+
+    Is much like doing this::
+
+        data = struct.unpack("<{}I".format(n_words), data_blob)
+
+    except quite a bit more efficient because things are shared including the
+    cost of parsing the format.
+
+    :param int n_words: The number of *SpiNNaker words* to be handled.
+    :return: A struct for working with that many words.
+    :rtype: ~struct.Struct
+    """
+    global _n_word_structs
+    while len(_n_word_structs) < n_words + 1:
+        _n_word_structs += [None] * (n_words + 1 - len(_n_word_structs))
+    s = _n_word_structs[n_words]
+    if s is not None:
+        return s
+    new_struct = struct.Struct("<{}I".format(n_words))
+    _n_word_structs[n_words] = new_struct
+    return new_struct

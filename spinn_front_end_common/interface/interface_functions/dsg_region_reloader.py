@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import struct
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import SDRAM
 from data_specification import DataSpecificationExecutor
@@ -24,9 +23,7 @@ from data_specification.utility_calls import (
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.utilities.helpful_functions import (
-    generate_unique_folder_name)
-
-REGION_STRUCT = struct.Struct("<{}I".format(MAX_MEM_REGIONS))
+    generate_unique_folder_name, n_word_struct)
 
 
 class DSGRegionReloader(object):
@@ -123,7 +120,7 @@ class DSGRegionReloader(object):
         start_region = get_region_base_address_offset(regions_base_address, 0)
         table_size = get_region_base_address_offset(
             regions_base_address, MAX_MEM_REGIONS) - start_region
-        offsets = REGION_STRUCT.unpack_from(
+        offsets = n_word_struct(MAX_MEM_REGIONS).unpack_from(
             self._txrx.read_memory(
                 placement.x, placement.y, start_region, table_size))
 

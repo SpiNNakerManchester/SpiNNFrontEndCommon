@@ -43,6 +43,7 @@ from spinn_front_end_common.utilities.exceptions import (
 from spinn_front_end_common.utilities import system_control_logic
 from .load_executable_images import LoadExecutableImages
 from .host_bit_field_router_compressor import HostBasedBitFieldRouterCompressor
+from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -800,8 +801,7 @@ class MachineBitFieldRouterCompressor(object):
         for (bit_field, processor_id) in address_list:
             data += self._TWO_WORDS.pack(bit_field, processor_id)
         data += self._ONE_WORD.pack(len(cores))
-        compression_cores = list(cores.processor_ids)
-        data += struct.pack("<{}I".format(len(cores)), *compression_cores)
+        data += n_word_struct(len(cores)).pack(*list(cores.processor_ids))
         return data
 
 
