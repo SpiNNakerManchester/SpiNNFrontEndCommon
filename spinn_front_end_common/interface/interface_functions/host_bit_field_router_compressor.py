@@ -346,7 +346,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 self._create_table_report(
                     router_table, sorted_bit_fields, report_out)
 
-    def _convert_bitfields_into_router_tables(
+    def _convert_bitfields_into_router_table(
             self, router_table, bitfields_by_key, key_to_n_atoms_map):
         """ Converts the bitfield into router table entries for compression, \
             based off the entry located in the original router table.
@@ -357,44 +357,35 @@ class HostBasedBitFieldRouterCompressor(object):
             the bitfields of the chip.
         :param dict(int,int) key_to_n_atoms_map:
         :return: routing tables.
-        :rtype: list(~.AbsractMulticastRoutingTable)
+        :rtype: ~.AbsractMulticastRoutingTable
         """
-        bit_field_router_tables = list()
+        # keep track of the original entries unused
+        original_route_entries = set(router_table.multicast_routing_entries)
 
-        # clone the original entries
-        original_route_entries = list()
-        original_route_entries.extend(router_table.multicast_routing_entries)
+        new_table = UnCompressedMulticastRoutingTable(
+            router_table.x, router_table.y)
 
         # go through the bitfields and get the routing table for it
         for master_pop_key in bitfields_by_key.keys():
 
             bit_field_original_entry = \
                 router_table.get_entry_by_routing_entry_key(master_pop_key)
-            bit_field_entries = UnCompressedMulticastRoutingTable(
-                router_table.x, router_table.y,
-                multicast_routing_entries=(
-                    self._generate_entries_from_bitfield(
-                        bitfields_by_key[master_pop_key],
-                        bit_field_original_entry, key_to_n_atoms_map)))
-
-            # add to the list
-            bit_field_router_tables.append(bit_field_entries)
+            self._generate_entries_from_bitfield(
+                bitfields_by_key[master_pop_key],  bit_field_original_entry,
+                key_to_n_atoms_map, new_table)
 
             # remove entry
             original_route_entries.remove(bit_field_original_entry)
 
-        # create reduced
-        reduced_original_table = UnCompressedMulticastRoutingTable(
-            router_table.x, router_table.y, original_route_entries)
-
-        # add reduced to front of the tables
-        bit_field_router_tables.insert(0, reduced_original_table)
+        # add the original not used
+        for entry in original_route_entries:
+            new_table.add_multicast_routing_entry(entry)
 
         # return the bitfield tables and the reduced original table
-        return bit_field_router_tables
+        return new_table
 
     def _generate_entries_from_bitfield(
-            self, bit_fields, routing_table_entry, key_to_n_atoms_map):
+            self, bit_fields, routing_table_entry, key_to_n_atoms_map, new_table):
         """ generate neuron level entries
 
         :param list(_BitFieldData) bit_fields: the bitfields for a given key
@@ -403,8 +394,6 @@ class HostBasedBitFieldRouterCompressor(object):
         :param dict(int,int) key_to_n_atoms_map:
         :return: the set of bitfield entries
         """
-
-        entries = list()
 
         processors_filtered = list()
 
@@ -432,14 +421,11 @@ class HostBasedBitFieldRouterCompressor(object):
                         bit_field_by_processor.bit_field, neuron):
                     processors.append(bit_field_by_processor.processor_id)
 
-            # build new entry for this neuron
-            entries.append(MulticastRoutingEntry(
+            # build new entry for this neuron and add to table
+            new_table.add_multicast_routing_entry(MulticastRoutingEntry(
                 routing_entry_key=base_key + neuron,
                 mask=self._NEURON_LEVEL_MASK, link_ids=entry_links,
                 defaultable=False, processor_ids=processors))
-
-        # return the entries
-        return entries
 
     def _bit_for_neuron_id(self, bit_field, neuron_id):
         """ locate the bit for the neuron in the bitfield
@@ -631,7 +617,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # try first just uncompressed. so see if its possible
         try:
             self._best_routing_table = self._run_algorithm(
-                [router_table], target_length, time_to_try_for_each_iteration,
+                router_table, target_length, time_to_try_for_each_iteration,
                 use_timer_cut_off)
             self._best_bit_fields_by_processor = []
         except MinimisationFailedError:
@@ -675,13 +661,13 @@ class HostBasedBitFieldRouterCompressor(object):
             new_bit_field_by_processor[bf_data.master_pop_key].append(bf_data)
 
         # convert bitfields into router tables
-        bit_field_router_tables = self._convert_bitfields_into_router_tables(
+        bit_field_router_table = self._convert_bitfields_into_router_table(
             routing_table, new_bit_field_by_processor, key_to_n_atoms_map)
 
         # try to compress
         try:
             self._best_routing_table = self._run_algorithm(
-                bit_field_router_tables, target_length,
+                bit_field_router_table, target_length,
                 time_to_try_for_each_iteration, use_timer_cut_off)
             self._best_bit_fields_by_processor = new_bit_field_by_processor
             return True
@@ -691,7 +677,7 @@ class HostBasedBitFieldRouterCompressor(object):
             return False
 
     def _run_algorithm(
-            self, router_tables, target_length,
+            self, router_table, target_length,
             time_to_try_for_each_iteration, use_timer_cut_off):
         """ Attempts to covert the mega router tables into 1 router table.\
             Will raise a MinimisationFailedError exception if it fails to\
@@ -710,10 +696,9 @@ class HostBasedBitFieldRouterCompressor(object):
         """
         # convert to rig format
         entries = list()
-        for router_table in router_tables:
-            for router_entry in router_table.multicast_routing_entries:
-                # Add the new entry
-                entries.append(Entry.from_MulticastRoutingEntry(router_entry))
+        for router_entry in router_table.multicast_routing_entries:
+            # Add the new entry
+            entries.append(Entry.from_MulticastRoutingEntry(router_entry))
 
         # compress the router entries using rigs compressor
         return minimise(
