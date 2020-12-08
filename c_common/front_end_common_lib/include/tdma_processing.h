@@ -26,6 +26,7 @@
 #ifndef _TDMA_PROCESSING_H_
 #define _TDMA_PROCESSING_H_
 #include <stdbool.h>
+#include <spin1_api.h>
 #include <spinn_extra.h>
 
 //! The format of the TDMA processing state, and the config in SDRAM.
