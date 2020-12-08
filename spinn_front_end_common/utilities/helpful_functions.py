@@ -26,7 +26,7 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .globals_variables import get_simulator
-from .constants import BYTES_PER_WORD, MICRO_TO_MILLISECOND_CONVERSION
+from .constants import MICRO_TO_MILLISECOND_CONVERSION
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -100,8 +100,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
         regions_base_address, region)
 
     # Get the actual address of the region
-    return transceiver.read_word(
-        placement.x, placement.y, region_offset, BYTES_PER_WORD)
+    return transceiver.read_word(placement.x, placement.y, region_offset)
 
 
 def convert_string_into_chip_and_core_subset(cores):
