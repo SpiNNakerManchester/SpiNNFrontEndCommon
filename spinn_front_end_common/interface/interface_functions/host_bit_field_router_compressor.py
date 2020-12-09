@@ -37,12 +37,10 @@ from spinn_front_end_common.abstract_models.\
     abstract_supports_bit_field_routing_compression import (
         AbstractSupportsBitFieldRoutingCompression)
 from spinn_front_end_common.utilities.constants import (
-    BYTES_PER_WORD)
+    BYTES_PER_WORD, BYTES_PER_3_WORDS)
 
 
 class _BitFieldData(object):
-
-    N_ELEMENTS = 3
 
     def __init__(self, processor_id, bit_field, master_pop_key):
         self._processor_id = processor_id
@@ -60,10 +58,6 @@ class _BitFieldData(object):
     @property
     def master_pop_key(self):
         return self._master_pop_key
-
-    @classmethod
-    def size_in_bytes(cls):
-        return cls.N_ELEMENTS * BYTES_PER_WORD
 
 
 class HostBasedBitFieldRouterCompressor(object):
@@ -478,9 +472,8 @@ class HostBasedBitFieldRouterCompressor(object):
                 # master pop key, n words and read pointer
                 master_pop_key, n_atoms_word, read_pointer = struct.unpack(
                     "<III", transceiver.read_memory(
-                        chip_x, chip_y, reading_address,
-                        _BitFieldData.size_in_bytes()))
-                reading_address += _BitFieldData.size_in_bytes()
+                        chip_x, chip_y, reading_address, BYTES_PER_3_WORDS))
+                reading_address += BYTES_PER_3_WORDS
 
                 # get bitfield words
                 atoms = n_atoms_word & 0x3FFFFFFF
