@@ -94,7 +94,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
     __slots__ = [
         "_best_routing_table",
-        "_best_bit_fields_by_processor",
+        "_best_bit_fields_by_key",
     ]
 
     # max entries that can be used by the application code
@@ -144,7 +144,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
     def __init__(self):
         self._best_routing_table = None
-        self._best_bit_fields_by_processor = None
+        self._best_bit_fields_by_key = None
 
     def __call__(
             self, router_tables, machine, placements, transceiver,
@@ -333,7 +333,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # remove bitfields from cores that have been merged into the
         # router table
         #self._remove_merged_bitfields_from_cores(
-        #    self._best_bit_fields_by_processor, router_table.x,
+        #    router_table.x,
         #    router_table.y, transceiver,
         #    bit_field_chip_base_addresses, bit_fields_by_processor)
 
@@ -619,7 +619,7 @@ class HostBasedBitFieldRouterCompressor(object):
             self._best_routing_table = self._run_algorithm(
                 router_table, target_length, time_to_try_for_each_iteration,
                 use_timer_cut_off)
-            self._best_bit_fields_by_processor = DefaultOrderedDict(list)
+            self._best_bit_fields_by_key = DefaultOrderedDict(list)
         except MinimisationFailedError:
             raise PacmanAlgorithmFailedToGenerateOutputsException(
                 "host bitfield router compressor can't compress the "
@@ -654,15 +654,15 @@ class HostBasedBitFieldRouterCompressor(object):
         """
 
         # find new set of bitfields to try from midpoint
-        new_bit_field_by_processor = DefaultOrderedDict(list)
+        bit_field_by_key = DefaultOrderedDict(list)
 
         for element in range(0, mid_point):
             bf_data = sorted_bit_fields[element]
-            new_bit_field_by_processor[bf_data.master_pop_key].append(bf_data)
+            bit_field_by_key[bf_data.master_pop_key].append(bf_data)
 
         # convert bitfields into router tables
         bit_field_router_table = self._convert_bitfields_into_router_table(
-            routing_table, new_bit_field_by_processor, key_to_n_atoms_map)
+            routing_table, bit_field_by_key, key_to_n_atoms_map)
 
         print(routing_table.x, routing_table.y, mid_point, "uncompresssed size", bit_field_router_table.number_of_entries)
         # try to compress
@@ -670,7 +670,7 @@ class HostBasedBitFieldRouterCompressor(object):
             self._best_routing_table = self._run_algorithm(
                 bit_field_router_table, target_length,
                 time_to_try_for_each_iteration, use_timer_cut_off)
-            self._best_bit_fields_by_processor = new_bit_field_by_processor
+            self._best_bit_fields_by_key = bit_field_by_key
             print ("success", len(self._best_routing_table))
             return True
         except MinimisationFailedError:
@@ -710,7 +710,7 @@ class HostBasedBitFieldRouterCompressor(object):
             use_timer_cut_off)
 
     def _remove_merged_bitfields_from_cores(
-            self, bit_fields_merged, chip_x, chip_y, transceiver,
+            self, chip_x, chip_y, transceiver,
             bit_field_base_addresses, bit_fields_by_processor):
         """ Goes to SDRAM and removes said merged entries from the cores' \
             bitfield region
@@ -727,8 +727,8 @@ class HostBasedBitFieldRouterCompressor(object):
         """
         # get data back in a form useful for write back
         new_bit_field_by_processor = defaultdict(list)
-        for master_pop_key in bit_fields_merged:
-            for bit_field_by_processor in bit_fields_merged[master_pop_key]:
+        for master_pop_key in self._best_bit_fields_by_key:
+            for bit_field_by_processor in self.__best_bit_fields_by_key[master_pop_key]:
                 new_bit_field_by_processor[
                     bit_field_by_processor.processor_id].append(master_pop_key)
 
@@ -787,8 +787,8 @@ class HostBasedBitFieldRouterCompressor(object):
         """
         n_bit_fields_merged = 0
         n_packets_filtered = 0
-        for key in self._best_bit_fields_by_processor.keys():
-            best_bit_fields = self._best_bit_fields_by_processor[key]
+        for key in self._best_bit_fields_by_key.keys():
+            best_bit_fields = self._best_bit_fields_by_key[key]
             n_bit_fields_merged += len(best_bit_fields)
             for element in best_bit_fields:
                 n_neurons = len(element.bit_field) * self._BITS_PER_WORD
@@ -829,8 +829,8 @@ class HostBasedBitFieldRouterCompressor(object):
 
         report_out.write("The bit_fields merged are as follows:\n\n")
 
-        for key in self._best_bit_fields_by_processor.keys():
-            for bf_by_processor in self._best_bit_fields_by_processor[key]:
+        for key in self._best_bit_fields_by_key.keys():
+            for bf_by_processor in self._best_bit_fields_by_key[key]:
                 report_out.write("bitfield on core {} for key {} \n".format(
                     bf_by_processor.processor_id, key))
 
