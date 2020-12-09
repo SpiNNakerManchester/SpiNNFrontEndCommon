@@ -45,11 +45,11 @@ class _BitFieldData(object):
     __slots__ = [
         # bit_field data
         "bit_field",
-        # address of header
-        "header_address",
         # Key this applies to
         "master_pop_key",
-        # Word that holds ....
+        # address of n_atoms word
+        "n_atoms_address",
+        # Word that holds merged: 1; all_ones: 1; n_atoms: 30;
         "n_atoms_word",
         # P cooridnate of processor this applies to
         "processor_id",
@@ -58,11 +58,11 @@ class _BitFieldData(object):
     ]
 
     def __init__(self, processor_id, bit_field, master_pop_key,
-                 header_address, n_atoms_word):
+                 n_atoms_address, n_atoms_word):
         self.processor_id = processor_id
         self.bit_field = bit_field
         self.master_pop_key = master_pop_key
-        self.header_address = header_address
+        self.n_atoms_address = n_atoms_address
         self.n_atoms_word =  n_atoms_word
 
 
@@ -95,6 +95,7 @@ class HostBasedBitFieldRouterCompressor(object):
     __slots__ = [
         "_best_routing_table",
         "_best_bit_fields_by_key",
+        "_best_midpoint",
     ]
 
     # max entries that can be used by the application code
@@ -124,6 +125,10 @@ class HostBasedBitFieldRouterCompressor(object):
     # mask for neuron level
     _NEURON_LEVEL_MASK = 0xFFFFFFFF
 
+    # to remove the first   merged: 1; and all_ones: 1;
+    N_ATOMS_MASK = 0x3FFFFFFF
+    MERGED_SETTER = 0x80000000
+
     # structs for performance requirements.
     _THREE_WORDS = struct.Struct("<III")
 
@@ -145,6 +150,7 @@ class HostBasedBitFieldRouterCompressor(object):
     def __init__(self):
         self._best_routing_table = None
         self._best_bit_fields_by_key = None
+        self._best_midpoint = -1
 
     def __call__(
             self, router_tables, machine, placements, transceiver,
@@ -332,10 +338,9 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # remove bitfields from cores that have been merged into the
         # router table
-        #self._remove_merged_bitfields_from_cores(
-        #    router_table.x,
-        #    router_table.y, transceiver,
-        #    bit_field_chip_base_addresses, bit_fields_by_processor)
+        self._remove_merged_bitfields_from_cores(
+            router_table.x, router_table.y, transceiver,
+            bit_fields_by_processor)
 
         # create report file if required
         if produce_report:
@@ -471,7 +476,6 @@ class HostBasedBitFieldRouterCompressor(object):
             # n_filters then array of filters
             n_filters = transceiver.read_word(
                 chip_x, chip_y, bit_field_base_address, BYTES_PER_WORD)
-            header_address = bit_field_base_address
             reading_address = bit_field_base_address + BYTES_PER_WORD
 
             # read in each bitfield
@@ -480,18 +484,13 @@ class HostBasedBitFieldRouterCompressor(object):
                 master_pop_key, n_atoms_word, read_pointer = struct.unpack(
                     "<III", transceiver.read_memory(
                         chip_x, chip_y, reading_address, BYTES_PER_3_WORDS))
+                n_atoms_address = reading_address + BYTES_PER_WORD
                 reading_address += BYTES_PER_3_WORDS
 
 
-                # Flag to indicate if the filter has been merged
-                #int32_t merged: 1;
-                # Flag to indicate if the filter is redundant
-                # uint32_t all_ones: 1;
-                # Number of atoms (=valid bits) in the bitfield
-                # uint32_t n_atoms: 30;
-
+                # merged: 1; all_ones: 1; n_atoms: 30;
+                atoms = n_atoms_word & self.N_ATOMS_MASK
                 # get bitfield words
-                atoms = n_atoms_word & 0x3FFFFFFF
                 n_words_to_read = math.ceil(atoms / self._BITS_PER_WORD)
 
                 bit_field = struct.unpack(
@@ -505,7 +504,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
                 # sorted by best coverage of redundant packets
                 data = _BitFieldData(processor_id, bit_field, master_pop_key,
-                                     header_address, n_atoms_word)
+                                     n_atoms_address, n_atoms_word)
                 bit_fields_by_coverage[n_redundant_packets].append(data)
                 processor_coverage_by_bitfield[processor_id].append(
                     n_redundant_packets)
@@ -636,6 +635,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 router_table, target_length, time_to_try_for_each_iteration,
                 use_timer_cut_off)
             self._best_bit_fields_by_key = DefaultOrderedDict(list)
+            self._best_midpoint = 0
         except MinimisationFailedError:
             raise PacmanAlgorithmFailedToGenerateOutputsException(
                 "host bitfield router compressor can't compress the "
@@ -687,6 +687,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 bit_field_router_table, target_length,
                 time_to_try_for_each_iteration, use_timer_cut_off)
             self._best_bit_fields_by_key = bit_field_by_key
+            self._best_midpoint = mid_point
             print ("success", len(self._best_routing_table))
             return True
         except MinimisationFailedError:
@@ -726,8 +727,7 @@ class HostBasedBitFieldRouterCompressor(object):
             use_timer_cut_off)
 
     def _remove_merged_bitfields_from_cores(
-            self, chip_x, chip_y, transceiver,
-            bit_field_base_addresses, bit_fields_by_processor):
+            self, chip_x, chip_y, transceiver, bit_fields_by_processor):
         """ Goes to SDRAM and removes said merged entries from the cores' \
             bitfield region
 
@@ -741,56 +741,13 @@ class HostBasedBitFieldRouterCompressor(object):
         :param dict(int,list(_BitFieldData)) bit_fields_by_processor:
             map of processor to bitfields
         """
-        # get data back in a form useful for write back
-        new_bit_field_by_processor = defaultdict(list)
-        for master_pop_key in self._best_bit_fields_by_key:
-            for bit_field_by_processor in self.__best_bit_fields_by_key[master_pop_key]:
-                new_bit_field_by_processor[
-                    bit_field_by_processor.processor_id].append(master_pop_key)
-
-        # process the separate cores
-        for processor_id in bit_fields_by_processor.keys():
-
-            # amount of entries to remove
-            new_total = (
-                len(bit_fields_by_processor[processor_id]) -
-                len(new_bit_field_by_processor[processor_id]))
-
-            # base address for the region
-            bit_field_base_address = bit_field_base_addresses[processor_id]
-            writing_address = bit_field_base_address
-            words_writing_address = (
-                writing_address + (
-                    new_total * self._SIZE_OF_FILTER_INFO_IN_BYTES))
-
-            # write correct number of elements.
-            transceiver.write_memory(
-                chip_x, chip_y, writing_address, BYTES_PER_WORD)
-            writing_address += BYTES_PER_WORD
-
-            # iterate through the original bitfields and omit the ones deleted
-            for bf_by_key in bit_fields_by_processor[processor_id]:
-                if bf_by_key.master_pop_key not in \
-                        new_bit_field_by_processor[bf_by_key.processor_id]:
-
-                    # write key and n words
+        for entries in bit_fields_by_processor.values():
+            for entry in entries:
+                if entry.sort_index < self._best_midpoint:
+                    # set merged
+                    n_atoms_word = entry.n_atoms_word | self.MERGED_SETTER
                     transceiver.write_memory(
-                        chip_x, chip_y, writing_address,
-                        self._THREE_WORDS.pack(
-                            bf_by_key.master_pop_key,
-                            len(bf_by_key.bit_field), words_writing_address),
-                        self._SIZE_OF_FILTER_INFO_IN_BYTES)
-                    writing_address += self._SIZE_OF_FILTER_INFO_IN_BYTES
-
-                    # write bitfield words
-                    data = struct.pack(
-                        "<{}I".format(len(bf_by_key.bit_field)),
-                        *bf_by_key.bit_field)
-                    transceiver.write_memory(
-                        chip_x, chip_y, words_writing_address, data,
-                        len(bf_by_key.bit_field) * BYTES_PER_WORD)
-                    words_writing_address += len(
-                        bf_by_key.bit_field) * BYTES_PER_WORD
+                        chip_x, chip_y, entry.n_atoms_address, n_atoms_word)
 
     def _create_table_report(
             self, router_table, sorted_bit_fields, report_out):
