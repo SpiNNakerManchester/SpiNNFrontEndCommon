@@ -37,7 +37,10 @@ _TWO_SHORTS = struct.Struct("<HH")
 
 
 def get_recording_header_size(n_recorded_regions):
-    """ Get the size of the data to be written for the recording header
+    """ Get the size of the data to be written for the recording header.
+
+    This is the data that sets up how recording will be done, and indicates the
+    sizes of the regions to be stored.
 
     :param int n_recorded_regions: The number of regions to be recorded
     :rtype: int
@@ -48,7 +51,9 @@ def get_recording_header_size(n_recorded_regions):
 
 
 def get_recording_data_constant_size(n_recorded_regions):
-    """ Get the size of the recorded data to be reserved that doesn't
+    """ Get the size of the headers that are stored in the SDRAM spaces
+        allocated during recording_initialise, and so do not need to be
+        reserved with DSG (but need to be accounted for in SDRAM calculations)
 
     :param int n_recorded_regions: The number of regions to be recorded
     :rtype: int
