@@ -53,7 +53,8 @@ class _BitFieldData(object):
         "n_atoms_word",
         # P cooridnate of processor this applies to
         "processor_id",
-
+        # index of this entry in the "sorted_list"
+        "sort_index"
     ]
 
     def __init__(self, processor_id, bit_field, master_pop_key,
@@ -532,6 +533,7 @@ class HostBasedBitFieldRouterCompressor(object):
         :param dict(int,list(int)) processor_coverage_by_bitfield:
         """
         sorted_bit_fields = list()
+        sort_index = 0
 
         # get incoming bandwidth for the cores
         most_costly_cores = dict()
@@ -575,6 +577,8 @@ class HostBasedBitFieldRouterCompressor(object):
                         redundant_packet_count]:
                     if bit_field_data.processor_id in cores_to_add_for:
                         if covered < diff:
+                            bit_field_data.sort_index = sort_index
+                            sort_index += 1
                             to_delete.append(bit_field_data)
                             sorted_bit_fields.append(bit_field_data)
                             covered += 1
@@ -587,8 +591,12 @@ class HostBasedBitFieldRouterCompressor(object):
         coverage_levels.sort(reverse=True)
         for coverage_level in coverage_levels:
             for bit_field_data in bit_fields_by_coverage[coverage_level]:
+                bit_field_data.sort_index = sort_index
+                sort_index += 1
                 sorted_bit_fields.append(bit_field_data)
 
+        for i in range(len(sorted_bit_fields)):
+            assert (i == sorted_bit_fields[i].sort_index)
         return sorted_bit_fields
 
     def _detect_redundant_packet_count(self, bitfield):
