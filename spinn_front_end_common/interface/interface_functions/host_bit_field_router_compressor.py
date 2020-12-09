@@ -42,22 +42,27 @@ from spinn_front_end_common.utilities.constants import (
 
 class _BitFieldData(object):
 
-    def __init__(self, processor_id, bit_field, master_pop_key):
-        self._processor_id = processor_id
-        self._bit_field = bit_field
-        self._master_pop_key = master_pop_key
+    __slots__ = [
+        # bit_field data
+        "bit_field",
+        # address of header
+        "header_address",
+        # Key this applies to
+        "master_pop_key",
+        # Word that holds ....
+        "n_atoms_word",
+        # P cooridnate of processor this applies to
+        "processor_id",
 
-    @property
-    def processor_id(self):
-        return self._processor_id
+    ]
 
-    @property
-    def bit_field(self):
-        return self._bit_field
-
-    @property
-    def master_pop_key(self):
-        return self._master_pop_key
+    def __init__(self, processor_id, bit_field, master_pop_key,
+                 header_address, n_atoms_word):
+        self.processor_id = processor_id
+        self.bit_field = bit_field
+        self.master_pop_key = master_pop_key
+        self.header_address = header_address
+        self.n_atoms_word =  n_atoms_word
 
 
 class HostBasedBitFieldRouterCompressor(object):
@@ -465,6 +470,7 @@ class HostBasedBitFieldRouterCompressor(object):
             # n_filters then array of filters
             n_filters = transceiver.read_word(
                 chip_x, chip_y, bit_field_base_address, BYTES_PER_WORD)
+            header_address = bit_field_base_address
             reading_address = bit_field_base_address + BYTES_PER_WORD
 
             # read in each bitfield
@@ -474,6 +480,14 @@ class HostBasedBitFieldRouterCompressor(object):
                     "<III", transceiver.read_memory(
                         chip_x, chip_y, reading_address, BYTES_PER_3_WORDS))
                 reading_address += BYTES_PER_3_WORDS
+
+
+                # Flag to indicate if the filter has been merged
+                #int32_t merged: 1;
+                # Flag to indicate if the filter is redundant
+                # uint32_t all_ones: 1;
+                # Number of atoms (=valid bits) in the bitfield
+                # uint32_t n_atoms: 30;
 
                 # get bitfield words
                 atoms = n_atoms_word & 0x3FFFFFFF
@@ -489,7 +503,8 @@ class HostBasedBitFieldRouterCompressor(object):
                     bit_field)
 
                 # sorted by best coverage of redundant packets
-                data = _BitFieldData(processor_id, bit_field, master_pop_key)
+                data = _BitFieldData(processor_id, bit_field, master_pop_key,
+                                     header_address, n_atoms_word)
                 bit_fields_by_coverage[n_redundant_packets].append(data)
                 processor_coverage_by_bitfield[processor_id].append(
                     n_redundant_packets)
