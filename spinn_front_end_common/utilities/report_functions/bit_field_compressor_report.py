@@ -19,18 +19,34 @@ import sys
 from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs.common import EdgeTrafficType
-from spinn_front_end_common.interface.interface_functions.\
-    machine_bit_field_router_compressor import (
-        PROV_TOP_NAME)
 from spinn_front_end_common.utilities.helpful_functions import (
     find_executable_start_type)
-from spinn_front_end_common.utilities.report_functions.\
-    bit_field_summary import (
-        BitFieldSummary)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from .bit_field_summary import BitFieldSummary
+from spinn_front_end_common.utilities.utility_objs import (
+    ProvenanceDataItem, ExecutableType)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _FILE_NAME = "bit_field_compressed_summary.rpt"
+# provenance data item names
+PROV_TOP_NAME = "bit_field_router_provenance"
+PROV_CHIP_NAME = "router_at_chip_{}_{}"
+MERGED_NAME = "bit_fields_merged"
+
+
+def generate_provenance_item(x, y, bit_fields_merged):
+    """
+    Generates a provenance item in the format BitFieldCompressorReport expects
+    :param x:
+    :param y:
+    :param bit_fields_merged:
+    :return:
+    """
+    # prov names
+    names = list()
+    names.append(PROV_TOP_NAME)
+    names.append(PROV_CHIP_NAME.format(x, y))
+    names.append(MERGED_NAME)
+    return ProvenanceDataItem(names, str(bit_fields_merged))
 
 
 class BitFieldCompressorReport(object):

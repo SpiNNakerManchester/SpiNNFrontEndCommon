@@ -39,8 +39,9 @@ from spinn_front_end_common.abstract_models.\
 from spinn_front_end_common.interface.interface_functions.\
     on_chip_router_table_compression import (
         make_source_hack)
-from spinn_front_end_common.utilities.utility_objs import (
-    ProvenanceDataItem, ExecutableType)
+from spinn_front_end_common.utilities.report_functions.\
+    bit_field_compressor_report import generate_provenance_item
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.exceptions import (
     CantFindSDRAMToUseException)
 from spinn_front_end_common.utilities import system_control_logic
@@ -56,11 +57,6 @@ SIZE_OF_SDRAM_ADDRESS_IN_BYTES = (17 * 2 * 4) + (3 * 4)
 SIZE_OF_COMMS_SDRAM = 7 * 4 * 18
 
 SECOND_TO_MICRO_SECOND = 1000000
-
-# provenance data item names
-PROV_TOP_NAME = "bit_field_router_provenance"
-PROV_CHIP_NAME = "router_at_chip_{}_{}"
-MERGED_NAME = "bit_fields_merged"
 
 
 @add_metaclass(AbstractBase)
@@ -379,12 +375,6 @@ class MachineBitFieldRouterCompressor(object):
             x = core_subset.x
             y = core_subset.y
 
-            # prov names
-            names = list()
-            names.append(PROV_TOP_NAME)
-            names.append(PROV_CHIP_NAME.format(x, y))
-            names.append(MERGED_NAME)
-
             for p in core_subset.processor_ids:
 
                 # Read the result from USER1/USER2 registers
@@ -392,19 +382,16 @@ class MachineBitFieldRouterCompressor(object):
                     transceiver.get_user_1_register_address_from_core(p)
                 user_2_base_address = \
                     transceiver.get_user_2_register_address_from_core(p)
-                result = struct.unpack(
-                    "<I", transceiver.read_memory(
-                        x, y, user_1_base_address, self._USER_BYTES))[0]
-                total_bit_fields_merged = struct.unpack(
-                    "<I", transceiver.read_memory(
-                        x, y, user_2_base_address, self._USER_BYTES))[0]
+                result =  transceiver.read_word(x, y, user_1_base_address)
+                bit_fields_merged =  transceiver.read_word(
+                    x, y, user_2_base_address)
 
                 if result != self.SUCCESS:
                     if (x, y) not in host_chips:
                         host_chips.append((x, y))
                     return False
-                prov_data_items.append(ProvenanceDataItem(
-                    names, str(total_bit_fields_merged)))
+                prov_data_items.append(generate_provenance_item(
+                    x, y, bit_fields_merged))
         return True
 
     def _load_data(
