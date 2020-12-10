@@ -23,12 +23,6 @@ logger = logging.getLogger(__name__)
 class CreateNotificationProtocol(object):
     """ Builds the notification protocol for GUI and external device \
         interaction.
-
-    :param bool wait_for_read_confirmation:
-    :param list(~spinn_utilities.socket_address.SocketAddress) \
-            socket_addresses:
-        Where to notify.
-    :param str database_file_path:
     """
 
     __slots__ = []
@@ -38,7 +32,9 @@ class CreateNotificationProtocol(object):
             socket_addresses, database_file_path):
         """
         :param bool wait_for_read_confirmation:
-        :param list(~.SocketAddress) socket_addresses:
+        :param socket_addresses: Where to notify.
+        :type socket_addresses:
+            list(~spinn_utilities.socket_address.SocketAddress)
         :param str database_file_path:
         """
         notification_protocol = NotificationProtocol(

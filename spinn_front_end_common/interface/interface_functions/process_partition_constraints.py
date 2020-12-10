@@ -25,13 +25,11 @@ from spinn_front_end_common.abstract_models import (
 class ProcessPartitionConstraints(object):
     """ Adds constraints to partitions if the vertices at either end of the\
         partition request it.
-
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
     """
 
     def __call__(self, machine_graph):
         """
-        :param ~.MachineGraph machine_graph:
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         """
         # generate progress bar
         progress = ProgressBar(
