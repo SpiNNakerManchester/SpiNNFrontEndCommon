@@ -65,6 +65,10 @@ class _BitFieldData(object):
         self.n_atoms_address = n_atoms_address
         self.n_atoms_word =  n_atoms_word
 
+    def __str__(self):
+        return "{} {} {}".format(
+            self.processor_id, self.master_pop_key, self.bit_field)
+
 
 class HostBasedBitFieldRouterCompressor(object):
     """ Host-based fancy router compressor using the bitfield filters of the \
@@ -722,9 +726,7 @@ class HostBasedBitFieldRouterCompressor(object):
             entries.append(Entry.from_MulticastRoutingEntry(router_entry))
 
         # compress the router entries using rigs compressor
-        return minimise(
-            entries, target_length, time_to_try_for_each_iteration,
-            use_timer_cut_off)
+        return minimise(entries, target_length)
 
     def _remove_merged_bitfields_from_cores(
             self, chip_x, chip_y, transceiver, bit_fields_by_processor):
