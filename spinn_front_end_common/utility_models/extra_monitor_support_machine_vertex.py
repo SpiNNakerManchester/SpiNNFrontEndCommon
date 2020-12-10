@@ -124,9 +124,9 @@ class ExtraMonitorSupportMachineVertex(
             reinject_multicast=None, reinject_point_to_point=False,
             reinject_nearest_neighbour=False, reinject_fixed_route=False):
         """
-        :param iterable(~pacman.model.constraints.AbstractConstraint) \
-                constraints:
-            constraints on this vertex
+        :param constraints: constraints on this vertex
+        :type constraints:
+            iterable(~pacman.model.constraints.AbstractConstraint)
         :param bool reinject_multicast:
             if we reinject multicast packets; defaults to value of
             `enable_reinjection` setting in configuration file
@@ -276,9 +276,9 @@ class ExtraMonitorSupportMachineVertex(
         :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             (injected)
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                data_in_routing_tables:
-            (injected)
+        :param data_in_routing_tables: (injected)
+        :type data_in_routing_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
         :param int app_id: (injected)
         :param ~spinn_machine.Machine machine: (injected)

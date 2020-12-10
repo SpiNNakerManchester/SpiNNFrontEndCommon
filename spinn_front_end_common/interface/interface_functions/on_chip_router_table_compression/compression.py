@@ -81,8 +81,9 @@ def pair_compression(
         the memory routing tables to be compressed
     :param ~spinnman.transceiver.Transceiver transceiver:
         How to talk to the machine
-    :param ~spinn_utilities.executable_finder.ExecutableFinder \
-            executable_finder: tracker of binaries.
+    :param executable_finder: tracker of binaries.
+    :type executable_finder:
+        ~spinn_utilities.executable_finder.ExecutableFinder
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine representation
     :param int app_id: the application ID used by the main application
@@ -119,8 +120,9 @@ def unordered_compression(
         the memory routing tables to be compressed
     :param ~spinnman.transceiver.Transceiver transceiver:
         How to talk to the machine
-    :param ~spinn_utilities.executable_finder.ExecutableFinder \
-            executable_finder: tracker of binaries
+    :param executable_finder: tracker of binaries.
+    :type executable_finder:
+        ~spinn_utilities.executable_finder.ExecutableFinder
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine representation
     :param int app_id: the application ID used by the main application
@@ -191,9 +193,9 @@ class Compression(object):
         :param ~spinn_machine.Machine machine: The machine model
         :param str provenance_file_path:
             Where to write provenance data (IOBUF contents)
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                routing_tables:
-            the memory routing tables to be compressed
+        :param routing_tables: the memory routing tables to be compressed
+        :type routing_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         :param ~spinnman.transceiver.Transceiver transceiver:
             How to talk to the machine
         :param str progress_text: Text to use in progress bar

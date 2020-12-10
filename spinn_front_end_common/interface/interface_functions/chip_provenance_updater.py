@@ -31,10 +31,6 @@ _LIMIT = 10
 
 class ChipProvenanceUpdater(object):
     """ Forces all cores to generate provenance data, and then exit.
-
-    :param ~spinnman.transceiver.Transceiver txrx:
-    :param int app_id:
-    :param ~spinn_machine.CoreSubsets all_core_subsets:
     """
 
     __slots__ = ["__all_cores", "__app_id", "__txrx"]
@@ -43,7 +39,7 @@ class ChipProvenanceUpdater(object):
         """
         :param ~spinnman.transceiver.Transceiver txrx:
         :param int app_id:
-        :param ~.CoreSubsets all_core_subsets:
+        :param ~spinn_machine.CoreSubsets all_core_subsets:
         """
         self.__all_cores = all_core_subsets
         self.__app_id = app_id

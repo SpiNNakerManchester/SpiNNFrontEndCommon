@@ -20,19 +20,16 @@ from spinn_front_end_common.interface.provenance import (
 
 class GraphProvenanceGatherer(object):
     """ Gets provenance information from the graphs.
-
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        The machine graph to inspect
-    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
-        The optional application graph
-    :rtype: list(ProvenanceDataItem)
     """
     __slots__ = []
 
     def __call__(self, machine_graph, application_graph=None):
         """
-        :param ~.MachineGraph machine_graph:
-        :param ~.ApplicationGraph application_graph:
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            The machine graph to inspect
+        :param application_graph: The optional application graph
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
         :rtype: list(ProvenanceDataItem)
         """
         prov_items = list()

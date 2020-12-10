@@ -196,7 +196,7 @@ class BufferedReceivingData(object):
         :param int y: y coordinate of the chip
         :param int p: Core within the specified chip
         :param int region: Region containing the data
-        :return: an array contained all the data received during the\
+        :return: a buffer containing all the data received during the
             simulation, and a flag indicating if any data was missing
         :rtype: tuple(memoryview, bool)
         """

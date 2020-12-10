@@ -49,9 +49,10 @@ class SqlLiteDatabase(AbstractContextManager):
 
     def __init__(self, database_file=None):
         """
-        :param str database_file: The name of a file that contains (or will\
-            contain) an SQLite database holding the data. If omitted, an\
-            unshared in-memory database will be used.
+        :param str database_file:
+            The name of a file that contains (or will contain) an SQLite
+            database holding the data. If omitted, an unshared in-memory
+            database will be used (suitable only for testing).
         :type database_file: str
         """
         if database_file is None:

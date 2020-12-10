@@ -21,16 +21,6 @@ from spinn_machine.machine import Machine
 class SpallocMaxMachineGenerator(object):
     """ Generates a maximum virtual machine a given allocation server can\
         generate.
-
-    :param str spalloc_server:
-    :param int spalloc_port:
-    :param str spalloc_machine:
-    :param int max_sdram_size:
-    :param int max_machine_core_reduction: the number of cores less than
-        :py:const:`~spinn_machine.Machine.DEFAULT_MAX_CORES_PER_CHIP`
-        that each chip should have
-    :return: A virtual machine
-    :rtype: ~spinn_machine.Machine
     """
 
     __slots__ = []
@@ -43,8 +33,11 @@ class SpallocMaxMachineGenerator(object):
         :param int spalloc_port:
         :param str spalloc_machine:
         :param int max_sdram_size:
-        :param int max_machine_core_reduction:
-        :rtype: ~.Machine
+        :param int max_machine_core_reduction: the number of cores less than
+            :py:const:`~spinn_machine.Machine.DEFAULT_MAX_CORES_PER_CHIP`
+            that each chip should have
+        :return: A virtual machine
+        :rtype: ~spinn_machine.Machine
         """
         with ProtocolClient(spalloc_server, spalloc_port) as client:
             machines = client.list_machines()
