@@ -25,19 +25,15 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class PlacementsProvenanceGatherer(object):
     """ Gets provenance information from vertices on the machine.
-
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the SpiNNMan interface object
-    :param ~pacman.model.placements.Placements placements:
-        The placements of the vertices
-    :rtype: list(ProvenanceDataItem)
     """
     __slots__ = []
 
     def __call__(self, transceiver, placements):
         """
-        :param ~.Transceiver transceiver:
-        :param ~.Placements placements:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the SpiNNMan interface object
+        :param ~pacman.model.placements.Placements placements:
+            The placements of the vertices
         :rtype: list(ProvenanceDataItem)
         """
         prov_items = list()

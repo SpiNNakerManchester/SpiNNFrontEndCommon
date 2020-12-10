@@ -31,15 +31,17 @@ REGION_HEADER_SIZE = 2 * BYTES_PER_WORD
 class MemoryMapOnHostChipReport(object):
     """ Report on memory usage. Creates a report that states where in SDRAM \
         each region is (read from machine)
-
-    :param str report_default_directory: the folder where reports are written
-    :param iterable(tuple(int,int,int)) dsg_targets:
-        the map between placement and file writer
-    :param ~spinnman.transceiver.Transceiver transceiver: the spinnMan instance
-    :rtype: None
     """
 
     def __call__(self, report_default_directory, dsg_targets, transceiver):
+        """
+        :param str report_default_directory:
+            the folder where reports are written
+        :param dict(tuple(int,int,int),...) dsg_targets:
+            the map between placement and file writer
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnMan instance
+        """
         directory_name = os.path.join(
             report_default_directory, MEM_MAP_SUBDIR_NAME)
         if not os.path.exists(directory_name):

@@ -64,33 +64,6 @@ MERGED_NAME = "bit_fields_merged"
 @add_metaclass(AbstractBase)
 class MachineBitFieldRouterCompressor(object):
     """ On-machine bitfield-aware routing table compression.
-
-    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
-        routing tables
-    :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
-    :param ~spinn_machine.Machine machine: spinnMachine instance
-    :param int app_id: app id of the application
-    :param str provenance_file_path: file path for prov data
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        machine graph
-    :param ~pacman.model.placements.Placements placements:
-        placements on machine
-    :param ExecutableFinder executable_finder: where are binaries are located
-    :param bool write_compressor_iobuf: flag saying if read IOBUF
-    :param bool produce_report:
-    :param str default_report_folder:
-    :param bool use_timer_cut_off:
-    :param int machine_time_step:
-    :param int time_scale_factor:
-    :param int threshold_percentage: the percentage of bitfields to do on chip
-        before its considered a success
-    :param ~spinnman.model.ExecutableTargets executable_targets:
-        the set of targets and executables
-    :param bool compress_as_much_as_possible:
-        whether to compress as much as possible
-    :param list(ProvenanceDataItem) provenance_data_objects:
-    :return: where the compressors ran, and the provenance they generated
-    :rtype: tuple(~spinnman.model.ExecutableTargets, list(ProvenanceDataItem))
     """
 
     __slots__ = []
@@ -158,25 +131,39 @@ class MachineBitFieldRouterCompressor(object):
             compress_as_much_as_possible=False, provenance_data_objects=None):
         """ entrance for routing table compression with bit field
 
-        :param ~.MulticastRoutingTables routing_tables:
-        :param ~.Transceiver transceiver:
-        :param ~.Machine machine:
-        :param int app_id:
-        :param str provenance_file_path:
-        :param ~.MachineGraph machine_graph:
-        :param ~.Placements placements:
-        :param ~.ExecutableFinder executable_finder:
-        :param bool write_compressor_iobuf:
+        :param routing_tables: routing tables
+        :type routing_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
+        :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
+        :param ~spinn_machine.Machine machine: spinnMachine instance
+        :param int app_id: app id of the application
+        :param str provenance_file_path: file path for prov data
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            machine graph
+        :param ~pacman.model.placements.Placements placements:
+            placements on machine
+        :param ExecutableFinder executable_finder:
+            where are binaries are located
+        :param bool write_compressor_iobuf: flag saying if read IOBUF
         :param bool produce_report:
         :param str default_report_folder:
+        :param int target_length:
+        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+        :param int time_to_try_for_each_iteration:
         :param bool use_timer_cut_off:
         :param int machine_time_step:
         :param int time_scale_factor:
         :param int threshold_percentage:
-        :param ~.ExecutableTargets executable_targets:
+            the percentage of bitfields to do on chip
+            before its considered a success
+        :param ~spinnman.model.ExecutableTargets executable_targets:
+            the set of targets and executables
         :param bool compress_as_much_as_possible:
+            whether to compress as much as possible
         :param list(ProvenanceDataItem) provenance_data_objects:
-        :rtype: tuple(~.ExecutableTargets,list(ProvenanceDataItem))
+        :return: where the compressors ran, and the provenance they generated
+        :rtype: tuple(~spinnman.model.ExecutableTargets,
+            list(ProvenanceDataItem))
         """
 
         # build provenance data objects
@@ -725,9 +712,9 @@ class MachineBitFieldRouterCompressor(object):
         :param ~.Transceiver transceiver:  spinnman instance
         :param dict(tuple(int,int),list(tuple(int,int))) region_addresses:
             store for data regions
-        :param dict(tuple(int,int),list(tuple(int,int))) \
-                sdram_block_addresses_and_sizes:
-            store for surplus sdram.
+        :param sdram_block_addresses_and_sizes: store for surplus SDRAM
+        :type sdram_block_addresses_and_sizes:
+            dict(tuple(int,int),list(tuple(int,int)))
         """
         # store the region sdram address's
         bit_field_sdram_address = vertex.bit_field_base_address(

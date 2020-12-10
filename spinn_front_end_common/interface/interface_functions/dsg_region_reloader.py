@@ -28,17 +28,6 @@ from spinn_front_end_common.utilities.helpful_functions import (
 
 class DSGRegionReloader(object):
     """ Regenerates and reloads the data specifications.
-
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        SpiNNMan transceiver for communication
-    :param ~pacman.model.placements.Placements placements:
-        the list of placements of the machine graph to cores
-    :param str hostname:
-        the machine name
-    :param str report_directory:
-        the location where reports are stored
-    :param bool write_text_specs:
-        True if the textual version of the specification is to be written
     """
     __slots__ = [
         "_txrx", "_host", "_write_text", "_rpt_dir", "_data_dir"]
@@ -47,11 +36,16 @@ class DSGRegionReloader(object):
             self, transceiver, placements, hostname, report_directory,
             write_text_specs):
         """
-        :param ~.Transceiver transceiver:
-        :param ~.Placements placements:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            SpiNNMan transceiver for communication
+        :param ~pacman.model.placements.Placements placements:
+            the list of placements of the machine graph to cores
         :param str hostname:
+            the machine name
         :param str report_directory:
+            the location where reports are stored
         :param bool write_text_specs:
+            Whether the textual version of the specification is to be written
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         self._txrx = transceiver

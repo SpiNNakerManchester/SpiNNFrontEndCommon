@@ -18,6 +18,7 @@ SpiNNFrontEndCommon
 ===================
 
 .. automodule:: spinn_front_end_common
+   :noindex:
 
 Contents:
 

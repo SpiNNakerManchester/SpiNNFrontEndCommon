@@ -26,15 +26,6 @@ logger = logging.getLogger(__name__)
 class ProfileDataGatherer(object):
     """ Gets all the profiling data recorded by vertices and writes it to\
         files.
-
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the SpiNNMan interface object
-    :param ~pacman.model.placements.Placements placements:
-        The placements of the vertices
-    :param str provenance_file_path:
-        The location to store the profile data
-    :param int machine_time_step:
-        machine time step in ms
     """
 
     __slots__ = []
@@ -43,10 +34,14 @@ class ProfileDataGatherer(object):
             self, transceiver, placements, provenance_file_path,
             machine_time_step):
         """
-        :param ~.Transceiver transceiver:
-        :param ~.Placements placements:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the SpiNNMan interface object
+        :param ~pacman.model.placements.Placements placements:
+            The placements of the vertices
         :param str provenance_file_path:
+            The location to store the profile data
         :param int machine_time_step:
+            machine time step in ms
         """
         # pylint: disable=too-many-arguments
         machine_time_step_ms = (
