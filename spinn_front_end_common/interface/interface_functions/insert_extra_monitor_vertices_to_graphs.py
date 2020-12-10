@@ -23,23 +23,6 @@ from spinn_front_end_common.utility_models import (
 class InsertExtraMonitorVerticesToGraphs(object):
     """ Inserts the extra monitor vertices into the graph that correspond to\
         the extra monitor cores required.
-
-    :param ~spinn_machine.Machine machine: spinnMachine instance
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        machine graph
-    :param str default_report_directory: the directory where reports go
-    :param bool write_data_speed_up_reports:
-        determine whether to write the reports for data speed up
-    :param int n_cores_to_allocate: number of cores to allocate for reception
-    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
-        app graph
-    :return: vertex to Ethernet connection map,
-        list of extra_monitor_vertices,
-        vertex_to_chip_map
-    :rtype: tuple(
-        dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),
-        list(ExtraMonitorSupportMachineVertex),
-        dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
     """
 
     __slots__ = [
@@ -53,11 +36,20 @@ class InsertExtraMonitorVerticesToGraphs(object):
             self, machine, machine_graph, default_report_directory,
             write_data_speed_up_reports, application_graph=None):
         """
-        :param ~.Machine machine:
-        :param ~.MachineGraph machine_graph:
-        :param str default_report_directory:
+        :param ~spinn_machine.Machine machine: spinnMachine instance
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            machine graph
+        :param str default_report_directory: the directory where reports go
         :param bool write_data_speed_up_reports:
-        :param ~.ApplicationGraph application_graph:
+            determine whether to write the reports for data speed up
+        :param int n_cores_to_allocate:
+            number of cores to allocate for reception
+        :param application_graph: app graph
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
+        :return: vertex to Ethernet connection map,
+            list of extra_monitor_vertices,
+            vertex_to_chip_map
         :rtype: tuple(
             dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),
             list(ExtraMonitorSupportMachineVertex),

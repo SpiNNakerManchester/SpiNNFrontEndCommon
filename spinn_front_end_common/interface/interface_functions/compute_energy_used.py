@@ -31,33 +31,6 @@ _MS_PER_SECOND = 1000.0
 class ComputeEnergyUsed(object):
     """ This algorithm does the actual work of computing energy used by a\
         simulation (or other application) running on SpiNNaker.
-
-    :param ~pacman.model.placements.Placements placements:
-    :param ~spinn_machine.Machine machine:
-    :param int version:
-        The version of the SpiNNaker boards in use.
-    :param int time_scale_factor:
-    :param list(ProvenanceDataItem) router_provenance:
-        Provenance information from routers.
-    :param float runtime:
-    :param BufferManager buffer_manager:
-    :param float mapping_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
-    :param float load_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
-    :param float execute_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
-    :param float dsg_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
-    :param float extraction_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
-    :param str spalloc_server:
-        (optional)
-    :param str remote_spinnaker_url:
-        (optional)
-    :param MachineAllocationController machine_allocation_controller:
-        (optional)
-    :rtype: PowerUsed
     """
 
     #: given from Indar's measurements
@@ -101,23 +74,31 @@ class ComputeEnergyUsed(object):
             spalloc_server=None, remote_spinnaker_url=None,
             machine_allocation_controller=None):
         """
-        :param ~.Placements placements:
-        :param ~.Machine machine:
+        :param ~pacman.model.placements.Placements placements:
+        :param ~spinn_machine.Machine machine:
         :param int version:
+            The version of the SpiNNaker boards in use.
         :param int time_scale_factor:
         :param list(ProvenanceDataItem) router_provenance:
+            Provenance information from routers.
         :param float runtime:
         :param BufferManager buffer_manager:
         :param float mapping_time:
+            From simulator via :py:class:`~.FinaliseTimingData`.
         :param float load_time:
+            From simulator via :py:class:`~.FinaliseTimingData`.
         :param float execute_time:
+            From simulator via :py:class:`~.FinaliseTimingData`.
         :param float dsg_time:
+            From simulator via :py:class:`~.FinaliseTimingData`.
         :param float extraction_time:
-        :param spalloc_server:
+            From simulator via :py:class:`~.FinaliseTimingData`.
+        :param spalloc_server: (optional)
         :type spalloc_server: str or None
-        :param remote_spinnaker_url:
-        :type remote_spinnaker_url: str of None
+        :param remote_spinnaker_url: (optional)
+        :type remote_spinnaker_url: str or None
         :param MachineAllocationController machine_allocation_controller:
+            (optional)
         :rtype: PowerUsed
         """
         # pylint: disable=too-many-arguments

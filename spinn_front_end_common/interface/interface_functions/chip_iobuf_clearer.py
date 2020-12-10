@@ -20,17 +20,16 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 class ChipIOBufClearer(object):
     """ Clears the logging output buffer of an application running on a\
         SpiNNaker machine.
-
-    :param ~spinnman.transceiver.Transceiver transceiver:
-    :param dict(ExecutableType,~spinn_machine.CoreSubsets) executable_types:
     """
 
     __slots__ = []
 
     def __call__(self, transceiver, executable_types):
         """
-        :param ~.Transceiver transceiver:
-        :param dict(ExecutableType,~.CoreSubsets) executable_types:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param executable_types:
+        :type executable_types:
+            dict(ExecutableType,~spinn_machine.CoreSubsets)
         """
         core_subsets = \
             executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
