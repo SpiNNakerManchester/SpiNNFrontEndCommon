@@ -1,17 +1,18 @@
-spinn_front_end_common.interface.interface_functions package
-============================================================
+spinn\_front\_end\_common.interface.interface\_functions package
+================================================================
 
 Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
-    spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression
+   spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression
 
 Module contents
 ---------------
 
 .. automodule:: spinn_front_end_common.interface.interface_functions
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

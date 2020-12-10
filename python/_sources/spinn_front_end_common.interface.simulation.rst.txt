@@ -1,10 +1,10 @@
-spinn_front_end_common.interface.simulation package
-===================================================
+spinn\_front\_end\_common.interface.simulation package
+======================================================
 
 Module contents
 ---------------
 
 .. automodule:: spinn_front_end_common.interface.simulation
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

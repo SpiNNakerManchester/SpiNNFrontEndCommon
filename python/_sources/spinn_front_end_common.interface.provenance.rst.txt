@@ -1,10 +1,10 @@
-spinn_front_end_common.interface.provenance package
-===================================================
+spinn\_front\_end\_common.interface.provenance package
+======================================================
 
 Module contents
 ---------------
 
 .. automodule:: spinn_front_end_common.interface.provenance
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

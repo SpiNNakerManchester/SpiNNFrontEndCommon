@@ -1,10 +1,10 @@
-spinn_front_end_common.interface.ds package
-===========================================
+spinn\_front\_end\_common.interface.ds package
+==============================================
 
 Module contents
 ---------------
 
 .. automodule:: spinn_front_end_common.interface.ds
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

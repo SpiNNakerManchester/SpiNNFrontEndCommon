@@ -1,10 +1,10 @@
-spinn_front_end_common.interface.profiling package
-==================================================
+spinn\_front\_end\_common.interface.profiling package
+=====================================================
 
 Module contents
 ---------------
 
 .. automodule:: spinn_front_end_common.interface.profiling
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,10 +1,10 @@
-spinn_front_end_common.interface.buffer_management.buffer_models package
-========================================================================
+spinn\_front\_end\_common.interface.buffer\_management.buffer\_models package
+=============================================================================
 
 Module contents
 ---------------
 
 .. automodule:: spinn_front_end_common.interface.buffer_management.buffer_models
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

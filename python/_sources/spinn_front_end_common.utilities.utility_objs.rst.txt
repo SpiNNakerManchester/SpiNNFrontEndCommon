@@ -1,18 +1,19 @@
-spinn_front_end_common.utilities.utility_objs package
-=====================================================
+spinn\_front\_end\_common.utilities.utility\_objs package
+=========================================================
 
 Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
-    spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages
-    spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes
+   spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages
+   spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes
 
 Module contents
 ---------------
 
 .. automodule:: spinn_front_end_common.utilities.utility_objs
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

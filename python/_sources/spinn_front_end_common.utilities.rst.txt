@@ -1,74 +1,74 @@
-spinn_front_end_common.utilities package
-========================================
+spinn\_front\_end\_common.utilities package
+===========================================
 
 Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
-    spinn_front_end_common.utilities.connections
-    spinn_front_end_common.utilities.database
-    spinn_front_end_common.utilities.notification_protocol
-    spinn_front_end_common.utilities.report_functions
-    spinn_front_end_common.utilities.scp
-    spinn_front_end_common.utilities.utility_objs
+   spinn_front_end_common.utilities.connections
+   spinn_front_end_common.utilities.database
+   spinn_front_end_common.utilities.notification_protocol
+   spinn_front_end_common.utilities.report_functions
+   spinn_front_end_common.utilities.scp
+   spinn_front_end_common.utilities.utility_objs
 
 Submodules
 ----------
 
-spinn_front_end_common.utilities.constants module
--------------------------------------------------
+spinn\_front\_end\_common.utilities.constants module
+----------------------------------------------------
 
 .. automodule:: spinn_front_end_common.utilities.constants
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-spinn_front_end_common.utilities.exceptions module
---------------------------------------------------
-
-.. automodule:: spinn_front_end_common.utilities.exceptions
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-spinn_front_end_common.utilities.function_list module
+spinn\_front\_end\_common.utilities.exceptions module
 -----------------------------------------------------
 
-.. automodule:: spinn_front_end_common.utilities.function_list
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. automodule:: spinn_front_end_common.utilities.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-spinn_front_end_common.utilities.globals_variables module
+spinn\_front\_end\_common.utilities.function\_list module
 ---------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.function_list
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+spinn\_front\_end\_common.utilities.globals\_variables module
+-------------------------------------------------------------
 
 .. automodule:: spinn_front_end_common.utilities.globals_variables
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-spinn_front_end_common.utilities.helpful_functions module
----------------------------------------------------------
+spinn\_front\_end\_common.utilities.helpful\_functions module
+-------------------------------------------------------------
 
 .. automodule:: spinn_front_end_common.utilities.helpful_functions
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-spinn_front_end_common.utilities.system_control_logic module
-------------------------------------------------------------
+spinn\_front\_end\_common.utilities.system\_control\_logic module
+-----------------------------------------------------------------
 
 .. automodule:: spinn_front_end_common.utilities.system_control_logic
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: spinn_front_end_common.utilities
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

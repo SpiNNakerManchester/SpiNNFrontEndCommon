@@ -1,10 +1,10 @@
-spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages package
-================================================================================
+spinn\_front\_end\_common.utilities.utility\_objs.extra\_monitor\_scp\_messages package
+=======================================================================================
 
 Module contents
 ---------------
 
 .. automodule:: spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

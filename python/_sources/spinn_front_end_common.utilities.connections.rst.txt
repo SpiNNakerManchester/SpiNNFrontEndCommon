@@ -1,10 +1,10 @@
-spinn_front_end_common.utilities.connections package
-====================================================
+spinn\_front\_end\_common.utilities.connections package
+=======================================================
 
 Module contents
 ---------------
 
 .. automodule:: spinn_front_end_common.utilities.connections
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,10 +1,10 @@
-spinn_front_end_common.utilities.scp package
-============================================
+spinn\_front\_end\_common.utilities.scp package
+===============================================
 
 Module contents
 ---------------
 
 .. automodule:: spinn_front_end_common.utilities.scp
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

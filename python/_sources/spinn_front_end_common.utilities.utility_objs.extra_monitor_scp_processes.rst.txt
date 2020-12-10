@@ -1,10 +1,10 @@
-spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes package
-=================================================================================
+spinn\_front\_end\_common.utilities.utility\_objs.extra\_monitor\_scp\_processes package
+========================================================================================
 
 Module contents
 ---------------
 
 .. automodule:: spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

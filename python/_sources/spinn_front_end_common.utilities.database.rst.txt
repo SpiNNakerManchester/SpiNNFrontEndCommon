@@ -1,10 +1,10 @@
-spinn_front_end_common.utilities.database package
-=================================================
+spinn\_front\_end\_common.utilities.database package
+====================================================
 
 Module contents
 ---------------
 
 .. automodule:: spinn_front_end_common.utilities.database
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

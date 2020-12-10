@@ -1,10 +1,10 @@
-spinn_front_end_common.utility_models package
-=============================================
+spinn\_front\_end\_common.utility\_models package
+=================================================
 
 Module contents
 ---------------
 
 .. automodule:: spinn_front_end_common.utility_models
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
