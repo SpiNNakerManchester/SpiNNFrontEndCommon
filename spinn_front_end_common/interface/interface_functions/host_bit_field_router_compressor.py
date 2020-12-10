@@ -38,6 +38,8 @@ from spinn_front_end_common.abstract_models.\
         AbstractSupportsBitFieldRoutingCompression)
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD, BYTES_PER_3_WORDS)
+from spinn_front_end_common.utilities.report_functions.\
+    bit_field_compressor_report import generate_provenance_item
 
 
 class _BitFieldData(object):
@@ -202,15 +204,17 @@ class HostBasedBitFieldRouterCompressor(object):
         key_atom_map = self.generate_key_to_atom_map(
             machine_graph, routing_infos)
 
+        prov_items = list()
+
         # start the routing table choice conversion
         for router_table in progress.over(router_tables.routing_tables):
-            self.start_compression_selection_process(
+            prov_items.append(self.start_compression_selection_process(
                 router_table, produce_report, report_folder_path,
                 transceiver, machine_graph, placements, machine, target_length,
                 time_to_try_for_each_iteration, use_timer_cut_off,
-                compressed_pacman_router_tables, key_atom_map)
+                compressed_pacman_router_tables, key_atom_map))
         # return compressed tables
-        return compressed_pacman_router_tables
+        return compressed_pacman_router_tables, prov_items
 
     def get_bit_field_sdram_base_addresses(
             self, chip_x, chip_y, machine, placements, transceiver):
@@ -354,6 +358,9 @@ class HostBasedBitFieldRouterCompressor(object):
             with open(report_file_path, "w") as report_out:
                 self._create_table_report(
                     router_table, sorted_bit_fields, report_out)
+
+        return generate_provenance_item(
+            router_table.x, router_table.y, self._best_midpoint)
 
     def _convert_bitfields_into_router_table(
             self, router_table, bitfields_by_key, key_to_n_atoms_map):

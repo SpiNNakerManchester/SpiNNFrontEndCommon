@@ -254,21 +254,22 @@ class MachineBitFieldRouterCompressor(object):
                 machine_graph, routing_infos)
 
             for (chip_x, chip_y) in progress_bar.over(on_host_chips, False):
-                host_compressor.start_compression_selection_process(
-                    router_table=routing_tables.get_routing_table_for_chip(
-                        chip_x, chip_y),
-                    produce_report=produce_report,
-                    report_folder_path=host_compressor.generate_report_path(
-                        default_report_folder),
-                    transceiver=transceiver, machine_graph=machine_graph,
-                    placements=placements, machine=machine,
-                    target_length=target_length,
-                    time_to_try_for_each_iteration=(
-                        time_to_try_for_each_iteration),
-                    use_timer_cut_off=use_timer_cut_off,
-                    compressed_pacman_router_tables=(
-                        compressed_pacman_router_tables),
-                    key_atom_map=key_atom_map)
+                prov_items.append(
+                    host_compressor.start_compression_selection_process(
+                        router_table=routing_tables.get_routing_table_for_chip(
+                            chip_x, chip_y),
+                        produce_report=produce_report,
+                        report_folder_path=host_compressor.generate_report_path(
+                            default_report_folder),
+                        transceiver=transceiver, machine_graph=machine_graph,
+                        placements=placements, machine=machine,
+                        target_length=target_length,
+                        time_to_try_for_each_iteration=(
+                            time_to_try_for_each_iteration),
+                        use_timer_cut_off=use_timer_cut_off,
+                        compressed_pacman_router_tables=(
+                            compressed_pacman_router_tables),
+                        key_atom_map=key_atom_map))
 
             # load host compressed routing tables
             for table in compressed_pacman_router_tables.routing_tables:
