@@ -58,34 +58,7 @@ class _TranscieverDelegate(object):
 
 class WriteMemoryIOData(object):
     """ An algorithm that handles objects implementing the interface\
-        :py:class:`AbstractUsesMemoryIO`. **Callable.**
-
-    :param ~pacman.model.placements Placements placements:
-        The placements of vertices of the graph
-    :param int app_id: The ID of the application
-    :param str report_folder: The location of data files
-    :param str hostname: The host name of the machine
-    :param ~pacman.model.graphs.application.ApplicationGraph graph:
-        The application graph that generated these vertices, if known.
-        This algorithm only really cares whether it exists or not.
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        The transceiver to write data using; if None only data files
-        are written
-    :param bool uses_advanced_monitors:
-        Whether to use the Fast Data In protocol
-    :param extra_monitor_cores_to_ethernet_connection_map:
-        The mapping from chips to packet gatherer vertices.
-        Only required when `uses_advanced_monitors = True`
-    :type extra_monitor_cores_to_ethernet_connection_map:
-        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-    :param processor_to_app_data_base_address:
-        Existing dictionary of processor to base address.
-        Only required when `uses_advanced_monitors = True`
-    :type processor_to_app_data_base_address:
-        dict(tuple(int,int,int),DataWritten)
-    :param ~spinn_machine.Machine machine:
-    :return: The mapping between processor and addresses allocated
-    :rtype: dict(tuple(int,int,int),DataWritten)
+        :py:class:`AbstractUsesMemoryIO`.
     """
 
     __slots__ = [
@@ -115,20 +88,31 @@ class WriteMemoryIOData(object):
             extra_monitor_cores_to_ethernet_connection_map=None,
             processor_to_app_data_base_address=None, machine=None):
         """
-        :param ~.Placements placements:
-        :param int app_id:
-        :param str report_folder:
-        :param str hostname:
-        :param ~.Graph app_graph:
-        :param ~.Transceiver transceiver:
+        :param ~pacman.model.placements Placements placements:
+            The placements of vertices of the graph
+        :param int app_id: The ID of the application
+        :param str report_folder: The location of data files
+        :param str hostname: The host name of the machine
+        :param ~pacman.model.graphs.application.ApplicationGraph graph:
+            The application graph that generated these vertices, if known.
+            This algorithm only really cares whether it exists or not.
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            The transceiver to write data using; if None only data files
+            are written
         :param bool uses_advanced_monitors:
+            Whether to use the Fast Data In protocol
         :param extra_monitor_cores_to_ethernet_connection_map:
+            The mapping from chips to packet gatherer vertices.
+            Only required when `uses_advanced_monitors = True`
         :type extra_monitor_cores_to_ethernet_connection_map:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
         :param processor_to_app_data_base_address:
+            Existing dictionary of processor to base address.
+            Only required when `uses_advanced_monitors = True`
         :type processor_to_app_data_base_address:
             dict(tuple(int,int,int),DataWritten)
-        :param ~.Machine machine:
+        :param ~spinn_machine.Machine machine:
+        :return: The mapping between processor and addresses allocated
         :rtype: dict(tuple(int,int,int),DataWritten)
         """
         # pylint: disable=too-many-arguments

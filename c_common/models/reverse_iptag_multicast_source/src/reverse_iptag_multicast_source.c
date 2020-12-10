@@ -1257,7 +1257,7 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
             "next packet buffer time: %d",
             simulation_ticks, time, next_buffer_time);
 
-    if (stopped || ((infinite_run != TRUE) && (time >= simulation_ticks))) {
+    if (stopped || simulation_is_finished()) {
         // Enter pause and resume state to avoid another tick
         simulation_handle_pause_resume(resume_callback);
 

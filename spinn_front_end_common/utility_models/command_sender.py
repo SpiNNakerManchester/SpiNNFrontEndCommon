@@ -17,7 +17,8 @@ from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints)
-from .abstract_one_app_one_machine_vertex import AbstractOneAppOneMachineVertex
+from pacman.model.graphs.application.abstract import (
+    AbstractOneAppOneMachineVertex)
 from .command_sender_machine_vertex import CommandSenderMachineVertex
 
 
