@@ -16,6 +16,8 @@
 import logging
 from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +29,16 @@ class AbstractSendsBuffersFromHost(object):
     """
 
     __slots__ = ()
+
+    _WRONG_VERTEX_TYPE_ERROR = (
+        "The vertex {} is not of type MachineVertex. By not being a "
+        "machine vertex, the BufferManager/Java will not send the data")
+
+    def __new__(cls, *args, **kwargs):
+        if not issubclass(cls, MachineVertex):
+            raise SpinnFrontEndException(
+                cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
+        return super(AbstractSendsBuffersFromHost, cls).__new__(cls)
 
     @abstractmethod
     def buffering_input(self):

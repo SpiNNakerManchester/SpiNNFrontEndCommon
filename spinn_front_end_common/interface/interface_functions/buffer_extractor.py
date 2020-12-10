@@ -25,18 +25,14 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class BufferExtractor(object):
     """ Extracts data in between runs.
-
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-    :param ~pacman.model.placements.Placements placements:
-    :param BufferManager buffer_manager:
     """
 
     __slots__ = []
 
     def __call__(self, machine_graph, placements, buffer_manager):
         """
-        :param ~.MachineGraph machine_graph:
-        :param ~.Placements placements:
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        :param ~pacman.model.placements.Placements placements:
         :param BufferManager buffer_manager:
         """
         # Count the regions to be read

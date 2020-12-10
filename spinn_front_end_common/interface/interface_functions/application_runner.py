@@ -30,22 +30,6 @@ logger = FormatAdapter(logging.getLogger(__name__))
 class ApplicationRunner(object):
     """ Ensures all cores are initialised correctly, ran, and completed\
         successfully.
-
-    :param BufferManager buffer_manager:
-    :param NotificationProtocol notification_interface:
-    :param dict(ExecutableType,~spinn_machine.CoreSubsets) \
-            executable_types:
-    :param int app_id:
-    :param ~spinnman.transceiver.Transceiver txrx:
-    :param int runtime:
-    :param int time_scale_factor:
-    :param int no_sync_changes: Number of synchronisation changes
-    :param int time_threshold:
-    :param ~spinn_machine.machine.Machine machine: the spinn machine instance
-    :param bool run_until_complete:
-    :return: Number of synchronisation changes
-    :rtype: int
-    :raises ConfigurationException:
     """
 
     __slots__ = ["__txrx", "__app_id", "__executable_types", "__syncs"]
@@ -55,6 +39,25 @@ class ApplicationRunner(object):
             self, buffer_manager, notification_interface, executable_types,
             app_id, txrx, runtime, time_scale_factor, no_sync_changes,
             time_threshold, machine, run_until_complete=False):
+        """
+        :param BufferManager buffer_manager:
+        :param NotificationProtocol notification_interface:
+        :param executable_types:
+        :type executable_types:
+            dict(ExecutableType,~spinn_machine.CoreSubsets)
+        :param int app_id:
+        :param ~spinnman.transceiver.Transceiver txrx:
+        :param int runtime:
+        :param int time_scale_factor:
+        :param int no_sync_changes: Number of synchronisation changes
+        :param int time_threshold:
+        :param ~spinn_machine.Machine machine:
+            the spinn machine instance
+        :param bool run_until_complete:
+        :return: Number of synchronisation changes
+        :rtype: int
+        :raises ConfigurationException:
+        """
         # pylint: disable=too-many-arguments
         logger.info("*** Running simulation... *** ")
 
