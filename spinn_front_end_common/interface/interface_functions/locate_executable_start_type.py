@@ -21,18 +21,13 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 class LocateExecutableStartType(object):
     """ Discovers where applications of particular types need to be launched.
-
-    :param ~pacman.model.graphs.machine.MachineGraph graph:
-    :param ~pacman.model.placements.Placements placements:
-    :rtype: dict(ExecutableType,~spinn_machine.CoreSubsets)
-        or list(ExecutableType)
     """
 
     def __call__(self, graph, placements):
         """
-        :param ~.MachineGraph graph:
-        :param ~.Placements placements:
-        :rtype: dict(ExecutableType, ~.CoreSubsets) or list(ExecutableType)
+        :param ~pacman.model.graphs.machine.MachineGraph graph:
+        :param ~pacman.model.placements.Placements placements:
+        :rtype: dict(ExecutableType,~spinn_machine.CoreSubsets or None)
         """
         if not graph.vertices:
             return {ExecutableType.NO_APPLICATION: None}

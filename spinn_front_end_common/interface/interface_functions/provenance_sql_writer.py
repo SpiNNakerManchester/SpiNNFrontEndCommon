@@ -19,11 +19,6 @@ from spinn_front_end_common.interface.provenance import SqlLiteDatabase
 
 class ProvenanceSQLWriter(object):
     """ Writes provenance in SQL format.
-
-    :param list(ProvenanceDataItem) provenance_data_items:
-        data items for provenance
-    :param str provenance_data_path: the file path to store provenance in
-    :return: None
     """
 
     __slots__ = []

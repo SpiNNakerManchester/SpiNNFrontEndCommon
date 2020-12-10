@@ -25,18 +25,16 @@ _FOLDER_NAME = "memory_map_from_processor_to_address_space"
 
 class MemoryMapOnHostReport(object):
     """ Report on memory usage.
-
-    :param str report_default_directory:
-    :param processor_to_app_data_base_address:
-    :type processor_to_app_data_base_address:
-        dict(tuple(int,int,int),DataWritten)
-    :rtype: None
     """
 
     def __call__(
             self, report_default_directory,
             processor_to_app_data_base_address):
         """
+        :param str report_default_directory:
+        :param processor_to_app_data_base_address:
+        :type processor_to_app_data_base_address:
+            dict(tuple(int,int,int),DataWritten)
         """
 
         file_name = os.path.join(report_default_directory, _FOLDER_NAME)

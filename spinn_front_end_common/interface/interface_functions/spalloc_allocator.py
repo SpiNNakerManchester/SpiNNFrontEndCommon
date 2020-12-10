@@ -107,19 +107,6 @@ class _SpallocJobController(MachineAllocationController):
 class SpallocAllocator(object):
     """ Request a machine from a SPALLOC server that will fit the given\
         number of chips.
-
-    :param str spalloc_server:
-        The server from which the machine should be requested
-    :param str spalloc_user: The user to allocate the machine to
-    :param n_chips: The number of chips required.
-        IGNORED if n_boards is not None
-    :type n_chips: int or None
-    :param int n_boards: The number of boards required
-    :type n_boards: int or None
-    :param int spalloc_port: The optional port number to speak to spalloc
-    :param str spalloc_machine: The optional spalloc machine to use
-    :rtype: tuple(str, int, None, bool, bool, None, None,
-        MachineAllocationController)
     """
 
     # Use a worst case calculation
@@ -131,11 +118,15 @@ class SpallocAllocator(object):
             spalloc_port=None, spalloc_machine=None):
         """
         :param str spalloc_server:
-        :param str spalloc_user:
-        :param int n_chips:
-        :param int n_boards:
-        :param int spalloc_port:
-        :param str spalloc_machine:
+            The server from which the machine should be requested
+        :param str spalloc_user: The user to allocate the machine to
+        :param n_chips: The number of chips required.
+            IGNORED if n_boards is not None
+        :type n_chips: int or None
+        :param int n_boards: The number of boards required
+        :type n_boards: int or None
+        :param int spalloc_port: The optional port number to speak to spalloc
+        :param str spalloc_machine: The optional spalloc machine to use
         :rtype: tuple(str, int, None, bool, bool, None, None,
             MachineAllocationController)
         """

@@ -38,6 +38,7 @@ from spinnman.model.enums.cpu_state import CPUState
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinnman.model.cpu_infos import CPUInfos
+from spinnman.messages.scp.enums.signal import Signal
 from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
 from pacman.model.placements import Placements
@@ -355,13 +356,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             validation_cfg=None, front_end_versions=None):
         """
         :param str configfile: What the configuration file is called
-        :param ~spinn_utilities.executable_finder.ExecutableFinder \
-                executable_finder:
-            How to find APLX files to deploy to SpiNNaker
+        :param executable_finder: How to find APLX files to deploy to SpiNNaker
+        :type executable_finder:
+            ~spinn_utilities.executable_finder.ExecutableFinder
         :param str graph_label: A label for the overall application graph
-        :param iterable(~spinn_utilities.socket_address.SocketAddress) \
-                database_socket_addresses:
-            How to talk to notification databases
+        :param database_socket_addresses: How to talk to notification databases
+        :type database_socket_addresses:
+            iterable(~spinn_utilities.socket_address.SocketAddress) or None
         :param iterable(str) extra_algorithm_xml_paths:
             Where to load definitions of extra algorithms from
         :param int n_chips_required:
@@ -740,6 +741,27 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             raise ConfigurationException(
                 "Illegal call after simulation is shutdown")
 
+    def _should_run(self):
+        """
+        Checks if the simulation should run.
+
+        Will warn the user if there is no need to run
+
+        :return: True if and only if one of the graphs has vertices in it
+        :raises ConfigurationException: If the current state does not
+            support a new run call
+        """
+        self.verify_not_running()
+
+        if self._original_application_graph.n_vertices:
+            return True
+        if self._original_machine_graph.n_vertices:
+            return True
+        logger.warning(
+            "Your graph has no vertices in it. "
+            "Therefor the run call will exit immediately.")
+        return False
+
     def run_until_complete(self, n_steps=None):
         """ Run a simulation until it completes
 
@@ -749,36 +771,41 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             still wait until the simulation itself says it has completed
         """
         self._run_until_complete = True
-        self._run(n_steps)
+        self._run(n_steps, sync_time=0)
 
     @overrides(SimulatorInterface.run)
-    def run(self, run_time):
-        self._run(run_time)
+    def run(self, run_time, sync_time=0):
+        self._run(run_time, sync_time)
 
     def _build_graphs_for_usage(self):
-        # sort out app graph
-        self._application_graph = ApplicationGraph(
-            label=self._original_application_graph.label)
-        for vertex in self._original_application_graph.vertices:
-            self._application_graph.add_vertex(vertex)
-        for outgoing_partition in \
-                self._original_application_graph.outgoing_edge_partitions:
-            for edge in outgoing_partition.edges:
-                self._application_graph.add_edge(
-                    edge, outgoing_partition.identifier)
+        if self._original_application_graph.n_vertices:
+            if self._original_machine_graph.n_vertices:
+                raise ConfigurationException(
+                    "Illegal state where both original_application and "
+                    "original machine graph have vertices in them")
 
-        # sort out machine graph
-        self._machine_graph = MachineGraph(
-            label=self._original_machine_graph.label,
-            application_graph=self._application_graph)
-        for vertex in self._original_machine_graph.vertices:
-            self._machine_graph.add_vertex(vertex)
-        for outgoing_partition in \
-                self._original_machine_graph.outgoing_edge_partitions:
-            self._machine_graph.add_outgoing_edge_partition(outgoing_partition)
-            for edge in outgoing_partition.edges:
-                self._machine_graph.add_edge(
-                    edge, outgoing_partition.identifier)
+        self._application_graph = self._original_application_graph.clone()
+        self._machine_graph = self._original_machine_graph.clone()
+
+    def __timesteps(self, time_in_ms):
+        """ Get a number of timesteps for a given time in milliseconds.
+
+        :return: The number of timesteps
+        :rtype: int
+        """
+        machine_time_step_ms = (
+            self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION)
+        n_time_steps = int(math.ceil(time_in_ms / machine_time_step_ms))
+        calc_time = n_time_steps * machine_time_step_ms
+
+        # Allow for minor float errors
+        if abs(time_in_ms - calc_time) > 0.00001:
+            logger.warning(
+                "Time of {}ms "
+                "is not a multiple of the machine time step of {}ms "
+                "and has therefore been rounded up to {}ms",
+                time_in_ms, machine_time_step_ms, calc_time)
+        return n_time_steps
 
     def _calc_run_time(self, run_time):
         """
@@ -798,43 +825,36 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
         if run_time is None:
             return None, None
-        machine_time_step_ms = (
-            self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION)
-        n_machine_time_steps = math.ceil(run_time / machine_time_step_ms)
-        calc_run_time = n_machine_time_steps * machine_time_step_ms
-
-        # Allow for minor float errors
-        if abs(run_time - calc_run_time) > 0.00001:
-            logger.warning(
-                "Your requested runtime of {}ms "
-                "is not a multiple of the machine time step of {}ms "
-                "and has therefor been rounded up to {}ms",
-                run_time, machine_time_step_ms, calc_run_time)
-
+        n_machine_time_steps = self.__timesteps(run_time)
         total_run_timesteps = (
             self._current_run_timesteps + n_machine_time_steps)
+        machine_time_step_ms = (
+            self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION)
         total_run_time = (
             total_run_timesteps * machine_time_step_ms *
             self.time_scale_factor)
 
-        # Convert dt into microseconds and divide by
-        # realtime proportion to get hardware timestep
+        # Convert dt into microseconds and multiply by
+        # scale factor to get hardware timestep
         hardware_timestep_us = int(round(
-            float(self.machine_time_step) / float(self.time_scale_factor)))
+            float(self.machine_time_step) * float(self.time_scale_factor)))
 
         logger.info(
             "Simulating for {} {}ms timesteps "
             "using a hardware timestep of {}us",
-            n_machine_time_steps,  machine_time_step_ms, hardware_timestep_us)
+            n_machine_time_steps, machine_time_step_ms, hardware_timestep_us)
 
         return n_machine_time_steps, total_run_time
 
-    def _run(self, run_time):
+    def _run(self, run_time, sync_time):
         """ The main internal run function.
 
         :param int run_time: the run duration in milliseconds.
+        :param int sync_time:
+            the time in ms between synchronisations, or 0 to disable.
         """
-        self.verify_not_running()
+        if not self._should_run():
+            return
 
         # verify that we can keep doing auto pause and resume
         if self._has_ran and not self._use_virtual_board:
@@ -863,6 +883,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.extend_allocation(
                 total_run_time)
+
+        n_sync_steps = self.__timesteps(sync_time)
 
         # If we have never run before, or the graph has changed,
         # start by performing mapping
@@ -964,15 +986,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         len(steps), run_time)
             for i, step in enumerate(steps):
                 logger.info("Run {} of {}", i + 1, len(steps))
-                self._do_run(step, graph_changed)
+                self._do_run(step, graph_changed, n_sync_steps)
         elif run_time is None and self._run_until_complete:
             logger.info("Running until complete")
-            self._do_run(None, graph_changed)
+            self._do_run(None, graph_changed, n_sync_steps)
         elif (not self._config.getboolean(
                 "Buffers", "use_auto_pause_and_resume") or
                 not is_per_timestep_sdram):
             logger.info("Running forever")
-            self._do_run(None, graph_changed)
+            self._do_run(None, graph_changed, n_sync_steps)
             logger.info("Waiting for stop request")
             with self._state_condition:
                 while self._state != Simulator_State.STOP_REQUESTED:
@@ -983,7 +1005,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             i = 0
             while self._state != Simulator_State.STOP_REQUESTED:
                 logger.info("Run {}".format(i + 1))
-                self._do_run(self._max_run_time_steps, graph_changed)
+                self._do_run(
+                    self._max_run_time_steps, graph_changed, n_sync_steps)
                 i += 1
 
         # Indicate that the signal handler needs to act
@@ -1343,8 +1366,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             return False
 
         # only add machine graph is it has vertices.
-        if (self._machine_graph is not None and
-                self._machine_graph.n_vertices != 0):
+        if self._machine_graph.n_vertices:
             inputs["MemoryMachineGraph"] = self._machine_graph
             algorithms.append("GraphMeasurer")
             do_partitioning = False
@@ -1352,21 +1374,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # board, we need to use the virtual board to get the number of
         # chips to be allocated either by partitioning, or by measuring
         # the graph
-        elif (self._application_graph is not None and
-                self._application_graph.n_vertices > 0):
+        else:
             inputs["MemoryApplicationGraph"] = self._application_graph
             algorithms.extend(self._config.get(
                 "Mapping",
                 "application_to_machine_graph_algorithms").split(","))
             outputs.append("MemoryMachineGraph")
             do_partitioning = True
-        else:
-            # No way to decided size so default to one board
-            logger.warning(
-                "Your graph has no vertices in it. "
-                "Will default to a machine with 1 board.")
-            inputs["NBoardsRequired"] = 1
-            return False
 
         # Ok we do need a virtual machine
         if self._spalloc_server is not None:
@@ -1448,11 +1462,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
 
         # add the application and machine graphs as needed
-        if (self._application_graph is not None and
-                self._application_graph.n_vertices > 0):
+        # Both could be None if call from other than self._run
+        if self._application_graph and self._application_graph.n_vertices:
             inputs["MemoryApplicationGraph"] = self._application_graph
-        elif (self._machine_graph is not None and
-                self._machine_graph.n_vertices > 0):
+        elif self._machine_graph and self._machine_graph.n_vertices:
             inputs["MemoryMachineGraph"] = self._machine_graph
 
         return inputs, algorithms
@@ -1504,19 +1517,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["RunTime"] = run_time
         inputs["TotalRunTime"] = total_run_time
 
-        inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
-            "Machine", "post_simulation_overrun_before_error")
-
         # handle graph additions
         if self._application_graph.n_vertices:
             inputs["MemoryApplicationGraph"] = self._application_graph
-        elif self._machine_graph.n_vertices:
-            inputs['MemoryMachineGraph'] = self._machine_graph
         else:
-            self._empty_graphs = True
-            logger.warning(
-                "Your graph has no vertices in it.")
-            inputs["MemoryApplicationGraph"] = self._application_graph
             inputs['MemoryMachineGraph'] = self._machine_graph
 
         inputs['ReportFolder'] = self._report_default_directory
@@ -1613,14 +1617,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # only add partitioner report if using an application graph
             if (self._config.getboolean(
                     "Reports", "write_partitioner_reports") and
-                    self._application_graph.n_vertices != 0):
+                    self._application_graph.n_vertices):
                 algorithms.append("PartitionerReport")
 
             # only add write placer report with application graph when
             # there's application vertices
             if (self._config.getboolean(
                     "Reports", "write_application_graph_placer_report") and
-                    self._application_graph.n_vertices != 0):
+                    self._application_graph.n_vertices):
                 algorithms.append("PlacerReportWithApplicationGraph")
 
             if self._config.getboolean(
@@ -1655,8 +1659,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # only add the partitioner if there isn't already a machine graph
         algorithms.append("MallocBasedChipIDAllocator")
-        if (self._application_graph.n_vertices and
-                not self._machine_graph.n_vertices):
+        if not self._machine_graph.n_vertices:
             full = self._config.get(
                 "Mapping", "application_to_machine_graph_algorithms")
             algorithms.extend(full.replace(" ", "").split(","))
@@ -1928,11 +1931,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._write_provenance(prov_items)
         self._all_provenance_items.append(prov_items)
 
-    def _do_run(self, n_machine_time_steps, graph_changed):
+    def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """
-        :param n_machine_time_steps:
+        :param n_machine_time_steps: The number of steps to simulate
         :type n_machine_time_steps: int or None
-        :param bool graph_changed:
+        :param bool graph_changed: Has the graph changed between runs
+        :param int n_sync_steps: The number of steps between synchronisation
         """
         # start timer
         self._run_timer = Timer()
@@ -1940,7 +1944,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         run_complete = False
         executor, self._current_run_timesteps = self._create_execute_workflow(
-            n_machine_time_steps, graph_changed)
+            n_machine_time_steps, graph_changed, n_sync_steps)
+
+        # Update the number of sync changes now in case this is used in a
+        # synchronised simulation.  Note that the "correct" value will be
+        # extracted later if not
+        self._no_sync_changes += 1
+
         try:
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
@@ -1995,11 +2005,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # reraise exception
             reraise(*e_inf)
 
-    def _create_execute_workflow(self, n_machine_time_steps, graph_changed):
+    def _create_execute_workflow(
+            self, n_machine_time_steps, graph_changed, n_sync_steps):
         """
         :param n_machine_time_steps:
         :type n_machine_time_steps: int or None
         :param bool graph_changed:
+        :param int n_sync_steps:
         """
         # calculate number of machine time steps
         run_until_timesteps = self._calculate_number_of_machine_time_steps(
@@ -2023,6 +2035,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
         inputs["RunUntilTimeSteps"] = run_until_timesteps
         inputs["RunTime"] = run_time
+        inputs["NSyncSteps"] = n_sync_steps
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
         if self._run_until_complete:
             inputs["RunUntilCompleteFlag"] = True
@@ -2031,6 +2044,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Reports", "extract_iobuf_from_cores")
         inputs["ExtractIobufFromBinaryTypes"] = self._read_config(
             "Reports", "extract_iobuf_from_binary_types")
+
+        # Don't timeout if a stepped mode is in operation
+        if n_sync_steps:
+            inputs["PostSimulationOverrunBeforeError"] = None
+        else:
+            inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
+                "Machine", "post_simulation_overrun_before_error")
 
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
@@ -2418,9 +2438,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @property
     def machine_graph(self):
         """
+        Returns a frozen clone of the machine_graph
         :rtype: ~pacman.model.graphs.machine.MachineGraph
         """
-        return self._machine_graph
+        return self._machine_graph.clone(frozen=True)
 
     @property
     def original_machine_graph(self):
@@ -2438,12 +2459,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @property
     def application_graph(self):
-        """ The application graph used to derive the runtime machine
-            configuration.
+        """ The frozen clone of the application graph used to derive the
+            runtime machine configuration.
 
         :rtype: ~pacman.model.graphs.application.ApplicationGraph
         """
-        return self._application_graph
+        return self._application_graph.clone(frozen=True)
 
     @property
     def routing_infos(self):
@@ -2986,6 +3007,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         with self._state_condition:
             self._state = Simulator_State.STOP_REQUESTED
             self._state_condition.notify_all()
+
+    @overrides(SimulatorInterface.continue_simulation)
+    def continue_simulation(self):
+        if self._no_sync_changes % 2 == 0:
+            sync_signal = Signal.SYNC0
+        else:
+            sync_signal = Signal.SYNC1
+        self._txrx.send_signal(self._app_id, sync_signal)
+        self._no_sync_changes += 1
 
     @staticmethod
     def __reset_object(obj):
