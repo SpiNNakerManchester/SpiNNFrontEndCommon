@@ -49,7 +49,7 @@ class SDRAMOutgoingPartitionAllocator(object):
                 # if bust, throw exception
                 if total_sdram == 0:
                     raise SpinnFrontEndException(
-                        "cannot allocate sdram size of 0 for "
+                        "Cannot allocate sdram size of 0 for "
                         "partition {}".format(sdram_partition))
 
                 # allocate
