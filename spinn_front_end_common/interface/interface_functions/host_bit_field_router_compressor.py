@@ -49,7 +49,7 @@ class _BitFieldData(object):
         "bit_field",
         # Key this applies to
         "master_pop_key",
-        # address of n_atoms word
+        # address of n_atoms word to wrote back merged flags
         "n_atoms_address",
         # Word that holds merged: 1; all_ones: 1; n_atoms: 30;
         "n_atoms_word",
@@ -66,10 +66,16 @@ class _BitFieldData(object):
         self.master_pop_key = master_pop_key
         self.n_atoms_address = n_atoms_address
         self.n_atoms_word =  n_atoms_word
+        self.sort_index = None
 
     def __str__(self):
         return "{} {} {}".format(
             self.processor_id, self.master_pop_key, self.bit_field)
+
+    def bit_field_as_bit_array(self):
+        return [(word >> i) & 1
+                for word in self.bit_field
+                for i in range(32)]
 
 
 class HostBasedBitFieldRouterCompressor(object):
@@ -681,7 +687,7 @@ class HostBasedBitFieldRouterCompressor(object):
         bit_field_router_table = self._convert_bitfields_into_router_table(
             routing_table, bit_field_by_key, key_to_n_atoms_map)
 
-        print(routing_table.x, routing_table.y, mid_point, "uncompresssed size", bit_field_router_table.number_of_entries)
+        print("midpoint:", mid_point, "entries:", bit_field_router_table.number_of_entries)
         # try to compress
         try:
             self._best_routing_table = self._run_algorithm(
@@ -689,13 +695,13 @@ class HostBasedBitFieldRouterCompressor(object):
                 time_to_try_for_each_iteration, use_timer_cut_off)
             self._best_bit_fields_by_key = bit_field_by_key
             self._best_midpoint = mid_point
-            print ("success", len(self._best_routing_table))
+            print("sucess")
             return True
         except MinimisationFailedError:
-            print("MinimisationFailedError")
+            print("fail")
             return False
         except PacmanElementAllocationException:
-            print("PacmanElementAllocationException")
+            print("Exception")
             return False
 
     def _run_algorithm(
@@ -756,18 +762,25 @@ class HostBasedBitFieldRouterCompressor(object):
         """
         n_bit_fields_merged = 0
         n_packets_filtered = 0
-        for key in self._best_bit_fields_by_key.keys():
-            best_bit_fields = self._best_bit_fields_by_key[key]
-            n_bit_fields_merged += len(best_bit_fields)
-            for element in best_bit_fields:
-                n_neurons = len(element.bit_field) * self._BITS_PER_WORD
-                for neuron_id in range(0, n_neurons):
-                    is_set = self._bit_for_neuron_id(
-                        element.bit_field, neuron_id)
-                    if is_set == 0:
-                        n_packets_filtered += 1
+        n_possible_bit_fields = 0
 
-        n_possible_bit_fields = len(sorted_bit_fields)
+        report_out.write("The bit_fields merged are as follows:\n\n")
+
+        for key in self._best_bit_fields_by_key.keys():
+            for bf_by_processor in self._best_bit_fields_by_key[key]:
+                report_out.write("bitfield on core {} for key {} \n".format(
+                    bf_by_processor.processor_id, key))
+
+
+        for key in self._bit_fields_by_processor:
+            for bit_field_data in self._bit_fields_by_processor[key]:
+                n_possible_bit_fields += 1
+                if bit_field_data.sort_index >= self._best_midpoint:
+                    continue
+                n_bit_fields_merged += 1
+                n_neurons = len(bit_field_data.bit_field) * self._BITS_PER_WORD
+                as_array = bit_field_data.bit_field_as_bit_array()
+                n_packets_filtered += sum(as_array)
 
         percentage_done = 100
         if n_possible_bit_fields != 0:
@@ -776,7 +789,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 float(n_bit_fields_merged))
 
         report_out.write(
-            "Table{}:{} has integrated {} out of {} available chip level "
+            "\nTable{}:{} has integrated {} out of {} available chip level "
             "bitfields into the routing table. There by producing a "
             "compression of {}%.\n\n".format(
                 router_table.x, router_table.y, n_bit_fields_merged,
@@ -786,9 +799,9 @@ class HostBasedBitFieldRouterCompressor(object):
             "The uncompressed routing table had {} entries, the compressed "
             "one with {} integrated bitfields has {} entries. \n\n".format(
                 router_table.number_of_entries,
+                n_bit_fields_merged,
                 # Note: _best_routing_table is a list(), router_table is not
-                len(self._best_routing_table),
-                n_bit_fields_merged))
+                len(self._best_routing_table)))
 
         report_out.write(
             "The integration of {} bitfields removes up to {} MC packets "
@@ -796,12 +809,6 @@ class HostBasedBitFieldRouterCompressor(object):
             "chip, just to be dropped as they do not target anything.".format(
                 n_bit_fields_merged, n_packets_filtered))
 
-        report_out.write("The bit_fields merged are as follows:\n\n")
-
-        for key in self._best_bit_fields_by_key.keys():
-            for bf_by_processor in self._best_bit_fields_by_key[key]:
-                report_out.write("bitfield on core {} for key {} \n".format(
-                    bf_by_processor.processor_id, key))
 
         report_out.write("\n\n\n")
         report_out.write("The final routing table entries are as follows:\n\n")
