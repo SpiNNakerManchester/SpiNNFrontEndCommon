@@ -82,6 +82,7 @@ class HostBasedBitFieldRouterCompressor(object):
         "_best_routing_table",
         "_best_bit_fields_by_key",
         "_best_midpoint",
+        "_bit_fields_by_processor"
     ]
 
     # max entries that can be used by the application code
@@ -137,6 +138,7 @@ class HostBasedBitFieldRouterCompressor(object):
         self._best_routing_table = None
         self._best_bit_fields_by_key = None
         self._best_midpoint = -1
+        self._bit_fields_by_processor = None
 
     def __call__(
             self, router_tables, machine, placements, transceiver,
@@ -304,13 +306,14 @@ class HostBasedBitFieldRouterCompressor(object):
             should be allowed to handle per time step
         """
 
+
         # iterate through bitfields on this chip and convert to router
         # table
         bit_field_chip_base_addresses = self.get_bit_field_sdram_base_addresses(
             router_table.x, router_table.y, machine, placements, transceiver)
 
         # read in bitfields.
-        bit_fields_by_processor, sorted_bit_fields = self._read_in_bit_fields(
+        sorted_bit_fields = self._read_in_bit_fields(
             transceiver, router_table.x, router_table.y,
             bit_field_chip_base_addresses, machine_graph,
             placements, machine.get_chip_at(
@@ -335,8 +338,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # remove bitfields from cores that have been merged into the
         # router table
         self._remove_merged_bitfields_from_cores(
-            router_table.x, router_table.y, transceiver,
-            bit_fields_by_processor)
+            router_table.x, router_table.y, transceiver,)
 
         # create report file if required
         if produce_report:
@@ -462,7 +464,7 @@ class HostBasedBitFieldRouterCompressor(object):
         """
 
         # data holder
-        bit_fields_by_processor = defaultdict(list)
+        self._bit_fields_by_processor = defaultdict(list)
         bit_fields_by_coverage = defaultdict(list)
         processor_coverage_by_bitfield = defaultdict(list)
 
@@ -509,14 +511,14 @@ class HostBasedBitFieldRouterCompressor(object):
                     n_redundant_packets)
 
                 # add to the bitfields tracker
-                bit_fields_by_processor[processor_id].append(data)
+                self._bit_fields_by_processor[processor_id].append(data)
 
         # use the ordered process to find the best ones to do first
         list_of_bitfields_in_impact_order = self._order_bit_fields(
             bit_fields_by_coverage, machine_graph, chip_x, chip_y, placements,
             n_processors_on_chip, processor_coverage_by_bitfield)
 
-        return bit_fields_by_processor, list_of_bitfields_in_impact_order
+        return list_of_bitfields_in_impact_order
 
     def _order_bit_fields(
             self, bit_fields_by_coverage, machine_graph, chip_x, chip_y,
@@ -723,8 +725,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # compress the router entries using rigs compressor
         return minimise(entries, target_length)
 
-    def _remove_merged_bitfields_from_cores(
-            self, chip_x, chip_y, transceiver, bit_fields_by_processor):
+    def _remove_merged_bitfields_from_cores(self, chip_x, chip_y, transceiver):
         """ Goes to SDRAM and removes said merged entries from the cores' \
             bitfield region
 
@@ -735,10 +736,8 @@ class HostBasedBitFieldRouterCompressor(object):
         :param ~.Transceiver transceiver: spinnman instance
         :param dict(int,int) bit_field_base_addresses:
             base addresses of chip bit fields
-        :param dict(int,list(_BitFieldData)) bit_fields_by_processor:
-            map of processor to bitfields
         """
-        for entries in bit_fields_by_processor.values():
+        for entries in self._bit_fields_by_processor.values():
             for entry in entries:
                 if entry.sort_index < self._best_midpoint:
                     # set merged
