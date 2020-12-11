@@ -26,17 +26,6 @@ from spinn_front_end_common.utility_models import (
 class InsertEdgesToExtraMonitorFunctionality(object):
     """ Inserts edges between vertices who use MC speed up and its local\
         MC data gatherer.
-
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        the machine graph instance
-    :param ~pacman.model.placements.Placements placements: the placements
-    :param ~spinn_machine.Machine machine: the machine object
-    :param vertex_to_ethernet_connected_chip_mapping:
-        mapping between ethernet connected chips and packet gatherers
-    :type vertex_to_ethernet_connected_chip_mapping:
-        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
-        the application graph
     """
 
     __slots__ = [
@@ -54,13 +43,17 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                  vertex_to_ethernet_connected_chip_mapping,
                  application_graph=None):
         """
-        :param ~.MachineGraph machine_graph:
-        :param ~.Placements placements:
-        :param ~.Machine machine:
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph instance
+        :param ~pacman.model.placements.Placements placements: the placements
+        :param ~spinn_machine.Machine machine: the machine object
         :param vertex_to_ethernet_connected_chip_mapping:
+            mapping between ethernet connected chips and packet gatherers
         :type vertex_to_ethernet_connected_chip_mapping:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-        :param ~.ApplicationGraph application_graph:
+        :param application_graph: the application graph
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         n_app_vertices = 0

@@ -25,24 +25,6 @@ class TDMAAgendaBuilder(object):
         (time-division multiple access) system and graph colouring to deduce\
         the agenda set up. Ensures parallel transmissions so that the\
         destination should never be overloaded.
-
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        the graph for which we are planning an agenda
-    :param int number_of_cpu_cycles_per_receive:
-        how long the packet reception callback takes in CPU cycles
-    :param int other_cpu_demands_in_cpu_cycles:
-        extra costs (e.g. timer tick callback etc.)
-    :param int n_packets_per_time_window:
-        how many packets are to be sent per time window
-    :param int machine_time_step: the timer tick in microseconds
-    :param int time_scale_factor:
-        the multiplicative factor on the machine time step.
-    :param float safety_factor: the end user safety factor
-    :return:
-        the agenda for each vertex on its time window and its offset
-        between spike transmissions
-    :rtype: dict(~pacman.model.graphs.machine.MachineVertex,dict(str,int))
-    :raises ConfigurationException: If colouring fails
     """
 
     def __call__(
@@ -50,14 +32,23 @@ class TDMAAgendaBuilder(object):
             other_cpu_demands_in_cpu_cycles, n_packets_per_time_window,
             machine_time_step, time_scale_factor, safety_factor=1):
         """
-        :param ~.MachineGraph machine_graph:
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the graph for which we are planning an agenda
         :param int number_of_cpu_cycles_per_receive:
+            how long the packet reception callback takes in CPU cycles
         :param int other_cpu_demands_in_cpu_cycles:
+            extra costs (e.g. timer tick callback etc.)
         :param int n_packets_per_time_window:
-        :param int machine_time_step:
+            how many packets are to be sent per time window
+        :param int machine_time_step: the timer tick in microseconds
         :param int time_scale_factor:
-        :param float safety_factor:
-        :rtype: dict(~.MachineVertex,dict(str,int))
+            the multiplicative factor on the machine time step.
+        :param float safety_factor: the end user safety factor
+        :return:
+            the agenda for each vertex on its time window and its offset
+            between spike transmissions
+        :rtype: dict(~pacman.model.graphs.machine.MachineVertex,dict(str,int))
+        :raises ConfigurationException: If colouring fails
         """
         # pylint: disable=too-many-arguments
 
@@ -98,6 +89,7 @@ class TDMAAgendaBuilder(object):
         # pylint: disable=too-many-arguments
         return {
             vertex: {
+                # TODO: Don't use string keys! This should be a tuple
                 'time_offset': cycles_per_window * time_offset[vertex],
                 'time_between_packets': cycles_per_window // packets_per_window
             }
