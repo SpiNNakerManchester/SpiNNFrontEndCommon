@@ -299,8 +299,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param str report_default_directory: Where reporting is done.
         :param bool write_data_speed_up_reports:
             Whether to write low-level reports on data transfer speeds.
-        :param iterable(~pacman.model.constraints.AbstractConstraint) \
-                constraints:
+        :param constraints:
+        :type constraints:
+            iterable(~pacman.model.constraints.AbstractConstraint) or None
         :param app_vertex:
             The application vertex that caused this machine vertex to be
             created. If None, there is no such application vertex.
@@ -632,8 +633,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param int x: chip x for data
         :param int y: chip y for data
         :param int base_address: the address in SDRAM to start writing memory
-        :param data: the data to write (or filename to load data from, \
-            if `is_filename` is True; that's the only time this is a str)
+        :param data: the data to write (or filename to load data from,
+            if ``is_filename`` is True; that's the only time this is a str)
         :type data: bytes or bytearray or memoryview or str
         :param int n_bytes: how many bytes to read, or None if not set
         :param int offset: where in the data to start from
@@ -1221,7 +1222,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             placement object for where to get data from
         :param int memory_address: the address in SDRAM to start reading from
         :param int length_in_bytes: the length of data to read in bytes
-        :param fixed_routes: the fixed routes, used in the report of which\
+        :param fixed_routes: the fixed routes, used in the report of which
             chips were used by the speed up process
         :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
         :return: byte array of the data
