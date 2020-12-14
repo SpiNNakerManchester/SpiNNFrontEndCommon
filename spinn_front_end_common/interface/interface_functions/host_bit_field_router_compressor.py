@@ -352,8 +352,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 report_folder_path,
                 self._REPORT_NAME.format(router_table.x, router_table.y))
             with open(report_file_path, "w") as report_out:
-                self._create_table_report(
-                    router_table, sorted_bit_fields, report_out)
+                self._create_table_report(router_table, report_out)
 
         return generate_provenance_item(
             router_table.x, router_table.y, self._best_midpoint)
@@ -384,6 +383,41 @@ class HostBasedBitFieldRouterCompressor(object):
                 router_table.get_entry_by_routing_entry_key(master_pop_key)
             self._generate_entries_from_bitfield(
                 bitfields_by_key[master_pop_key],  bit_field_original_entry,
+                key_to_n_atoms_map, new_table)
+
+            # remove entry
+            original_route_entries.remove(bit_field_original_entry)
+
+        # add the original not used
+        for entry in original_route_entries:
+            new_table.add_multicast_routing_entry(entry)
+
+        # return the bitfield tables and the reduced original table
+        return new_table
+
+    def _convert_bitfields_into_router_table2(
+            self, router_table, mid_point, key_to_n_atoms_map):
+        """ Converts the bitfield into router table entries for compression, \
+            based off the entry located in the original router table.
+
+        :param ~.UnCompressedMulticastRoutingTable router_table:
+            the original routing table
+        :param int mid_point: cutoff for botfields to use
+        :param dict(int,int) key_to_n_atoms_map:
+        :return: routing tables.
+        :rtype: ~.AbsractMulticastRoutingTable
+        """
+        new_table = UnCompressedMulticastRoutingTable(
+            router_table.x, router_table.y)
+
+        #for processor_id in self._bit_fields_by_processor.
+
+        # go through the bitfields and get the routing table for it
+        for master_pop_key in bitfields_by_key.keys():
+            bit_field_original_entry = \
+                router_table.get_entry_by_routing_entry_key(master_pop_key)
+            self._generate_entries_from_bitfield(
+                bitfields_by_key[master_pop_key], bit_field_original_entry,
                 key_to_n_atoms_map, new_table)
 
             # remove entry
@@ -751,13 +785,11 @@ class HostBasedBitFieldRouterCompressor(object):
                     transceiver.write_memory(
                         chip_x, chip_y, entry.n_atoms_address, n_atoms_word)
 
-    def _create_table_report(
-            self, router_table, sorted_bit_fields, report_out):
+    def _create_table_report(self, router_table, report_out):
         """ creates the report entry
 
         :param ~.AbsractMulticastRoutingTable router_table:
             the uncompressed router table to process
-        :param list sorted_bit_fields: the bitfields overall
         :param ~io.TextIOBase report_out: the report writer
         """
         n_bit_fields_merged = 0
@@ -767,10 +799,9 @@ class HostBasedBitFieldRouterCompressor(object):
         report_out.write("The bit_fields merged are as follows:\n\n")
 
         for key in self._best_bit_fields_by_key.keys():
-            for bf_by_processor in self._best_bit_fields_by_key[key]:
+            for data in self._best_bit_fields_by_key[key]:
                 report_out.write("bitfield on core {} for key {} \n".format(
-                    bf_by_processor.processor_id, key))
-
+                    data.processor_id, key))
 
         for key in self._bit_fields_by_processor:
             for bit_field_data in self._bit_fields_by_processor[key]:
@@ -778,7 +809,6 @@ class HostBasedBitFieldRouterCompressor(object):
                 if bit_field_data.sort_index >= self._best_midpoint:
                     continue
                 n_bit_fields_merged += 1
-                n_neurons = len(bit_field_data.bit_field) * self._BITS_PER_WORD
                 as_array = bit_field_data.bit_field_as_bit_array()
                 n_packets_filtered += sum(as_array)
 
