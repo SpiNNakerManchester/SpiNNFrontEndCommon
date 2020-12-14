@@ -408,7 +408,8 @@ class HostBasedBitFieldRouterCompressor(object):
             # For those below the midpoint use the bitfield data
             for bf_data in self._bit_fields_by_key[base_key]:
                 if bf_data.sort_index < mid_point:
-                    core_map[processor_id] = bf_data.bit_field_as_bit_array()
+                    core_map[bf_data.processor_id] = \
+                        bf_data.bit_field_as_bit_array()
             # Add an Entry for each neuron
             for neuron in range(0, n_neurons):
                 processors = list()
@@ -513,6 +514,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 chip_x, chip_y, bit_field_base_address, BYTES_PER_WORD)
             reading_address = bit_field_base_address + BYTES_PER_WORD
 
+            print(processor_id ,  n_filters)
             # read in each bitfield
             for _ in range(0, n_filters):
                 # master pop key, n words and read pointer
@@ -520,8 +522,8 @@ class HostBasedBitFieldRouterCompressor(object):
                     "<III", transceiver.read_memory(
                         chip_x, chip_y, reading_address, BYTES_PER_3_WORDS))
                 n_atoms_address = reading_address + BYTES_PER_WORD
+                print(reading_address, n_atoms_address, n_atoms_word, master_pop_key)
                 reading_address += BYTES_PER_3_WORDS
-
 
                 # merged: 1; all_ones: 1; n_atoms: 30;
                 atoms = n_atoms_word & self.N_ATOMS_MASK
@@ -737,6 +739,7 @@ class HostBasedBitFieldRouterCompressor(object):
         for entries in self._bit_fields_by_key.values():
             for entry in entries:
                 if entry.sort_index < self._best_midpoint:
+                    print(chip_x, chip_y, entry.processor_id, entry.master_pop_key, entry.n_atoms_word, entry.n_atoms_address, )
                     # set merged
                     n_atoms_word = entry.n_atoms_word | self.MERGED_SETTER
                     transceiver.write_memory(
