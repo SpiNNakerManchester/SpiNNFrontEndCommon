@@ -23,18 +23,6 @@ from spinn_front_end_common.utility_models import (
 
 class PreAllocateResourcesForLivePacketGatherers(object):
     """ Adds Live Packet Gatherer resources as required for a machine.
-
-    :param live_packet_gatherer_parameters:
-        the LPG parameters requested by the script
-    :type live_packet_gatherer_parameters:
-        dict(LivePacketGatherParameters,
-        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
-    :param ~pacman.model.resources.PreAllocatedResourceContainer \
-            pre_allocated_resources:
-        other preallocated resources
-    :param ~spinn_machine.Machine machine: the SpiNNaker machine as discovered
-    :return: preallocated resources
-    :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
     """
 
     def __call__(
@@ -42,12 +30,17 @@ class PreAllocateResourcesForLivePacketGatherers(object):
             pre_allocated_resources=None):
         """
         :param live_packet_gatherer_parameters:
+            the LPG parameters requested by the script
         :type live_packet_gatherer_parameters:
             dict(LivePacketGatherParameters,
-            list(tuple(~.AbstractVertex, list(str))))
-        :param ~.PreAllocatedResourceContainer pre_allocated_resources:
-        :param ~.Machine machine:
-        :rtype: ~.PreAllocatedResourceContainer
+            list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
+        :param ~spinn_machine.Machine machine:
+            the SpiNNaker machine as discovered
+        :param pre_allocated_resources: other preallocated resources
+        :type pre_allocated_resources:
+            ~pacman.model.resources.PreAllocatedResourceContainer or None
+        :return: preallocated resources
+        :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
 
         progress = ProgressBar(

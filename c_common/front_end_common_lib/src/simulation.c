@@ -421,20 +421,20 @@ bool simulation_is_finished(void) {
     }
     // If we are synchronized, check if this is a sync step (or should have been)
     if (*pointer_to_current_time >= next_sync_step) {
-        log_info("Sync at %d", next_sync_step);
+        log_debug("Sync at %d", next_sync_step);
 
         // If using the timer, pause the timer
         if (uses_timer) {
-            log_info("Pausing");
+            log_debug("Pausing");
             spin1_pause();
         }
 
         // Wait for synchronisation to happen
-        log_info("Waiting for sync");
+        log_debug("Waiting for sync");
         set_cpu_wait_state();
         wait_before_run(true);
         next_sync_step += n_sync_steps;
-        log_info("Sync done, next sync at %d", next_sync_step);
+        log_debug("Sync done, next sync at %d", next_sync_step);
 
         // If using the timer, start it again
         if (uses_timer) {

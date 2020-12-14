@@ -280,7 +280,7 @@ def determine_flow_states(executable_types, no_sync_changes):
         the execute types to locate start and end states from
     :param int no_sync_changes: the number of times sync signals been sent
     :return: dict of executable type to states.
-    :rtype: tuple(dict(ExecutableType,~spinnman.model.enums.CPUState),\
+    :rtype: tuple(dict(ExecutableType,~spinnman.model.enums.CPUState),
         dict(ExecutableType,~spinnman.model.enums.CPUState))
     """
     expected_start_states = dict()

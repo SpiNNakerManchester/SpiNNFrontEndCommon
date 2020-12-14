@@ -71,9 +71,9 @@ class ChipPowerMonitorMachineVertex(
             sampling_frequency, app_vertex=None, vertex_slice=None):
         """
         :param str label: vertex label
-        :param iterable(~pacman.model.constraints.AbstractConstraint) \
-                constraints:
-            constraints on this vertex
+        :param constraints: constraints on this vertex
+        :type constraints:
+            iterable(~pacman.model.constraints.AbstractConstraint)
         :param int n_samples_per_recording:
             how may samples between recording entry
         :param int sampling_frequency: how often to sample, in microseconds

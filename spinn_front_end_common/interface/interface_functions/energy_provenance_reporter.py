@@ -35,12 +35,6 @@ _PROV_KEY = "power_provenance"
 
 class EnergyProvenanceReporter(object):
     """ Converts the power usage information into provenance data.
-
-    :param PowerUsed power_used:
-        The computed basic power consumption information
-    :param ~pacman.model.placements.Placements placements:
-        Used for describing what a core was actually doing
-    :rtype: list(ProvenanceDataItem)
     """
 
     __slots__ = []
@@ -48,7 +42,9 @@ class EnergyProvenanceReporter(object):
     def __call__(self, power_used, placements):
         """
         :param PowerUsed power_used:
-        :param ~.Placements placements:
+            The computed basic power consumption information
+        :param ~pacman.model.placements.Placements placements:
+            Used for describing what a core was actually doing
         :rtype: list(ProvenanceDataItem)
         """
         prov_items = [
