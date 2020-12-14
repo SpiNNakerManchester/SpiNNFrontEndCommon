@@ -251,9 +251,6 @@ class MachineBitFieldRouterCompressor(object):
                         transceiver=transceiver, machine_graph=machine_graph,
                         placements=placements, machine=machine,
                         target_length=target_length,
-                        time_to_try_for_each_iteration=(
-                            time_to_try_for_each_iteration),
-                        use_timer_cut_off=use_timer_cut_off,
                         compressed_pacman_router_tables=(
                             compressed_pacman_router_tables),
                         key_atom_map=key_atom_map))
