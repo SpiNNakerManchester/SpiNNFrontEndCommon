@@ -88,8 +88,8 @@ class HostBasedBitFieldRouterCompressor(object):
         "_best_routing_table",
         "_best_bit_fields_by_key",
         "_best_midpoint",
-        "_bit_fields_by_processor",
-        "_bit_fields_by_key"
+        "_bit_fields_by_key",
+        "_n_bitfields"
     ]
 
     # max entries that can be used by the application code
@@ -145,7 +145,6 @@ class HostBasedBitFieldRouterCompressor(object):
         self._best_routing_table = None
         self._best_bit_fields_by_key = None
         self._best_midpoint = -1
-        self._bit_fields_by_processor = None
         self._bit_fields_by_key = None
 
     def __call__(
@@ -321,7 +320,7 @@ class HostBasedBitFieldRouterCompressor(object):
             router_table.x, router_table.y, machine, placements, transceiver)
 
         # read in bitfields.
-        sorted_bit_fields = self._read_in_bit_fields(
+        self._read_in_bit_fields(
             transceiver, router_table.x, router_table.y,
             bit_field_chip_base_addresses, machine_graph,
             placements, machine.get_chip_at(
@@ -329,7 +328,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # execute binary search
         self._start_binary_search(
-            router_table, sorted_bit_fields, target_length,
+            router_table, target_length,
             time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map)
 
         # add final to compressed tables:
@@ -515,7 +514,6 @@ class HostBasedBitFieldRouterCompressor(object):
         """
 
         # data holder
-        self._bit_fields_by_processor = defaultdict(list)
         self._bit_fields_by_key = defaultdict(list)
         bit_fields_by_coverage = defaultdict(list)
         processor_coverage_by_bitfield = defaultdict(list)
@@ -563,15 +561,12 @@ class HostBasedBitFieldRouterCompressor(object):
                     n_redundant_packets)
 
                 # add to the bitfields tracker
-                self._bit_fields_by_processor[processor_id].append(data)
                 self._bit_fields_by_key[master_pop_key].append(data)
 
         # use the ordered process to find the best ones to do first
-        list_of_bitfields_in_impact_order = self._order_bit_fields(
+        self._order_bit_fields(
             bit_fields_by_coverage, machine_graph, chip_x, chip_y, placements,
             n_processors_on_chip, processor_coverage_by_bitfield)
-
-        return list_of_bitfields_in_impact_order
 
     def _order_bit_fields(
             self, bit_fields_by_coverage, machine_graph, chip_x, chip_y,
@@ -585,7 +580,6 @@ class HostBasedBitFieldRouterCompressor(object):
         :param int n_processors_on_chip:
         :param dict(int,list(int)) processor_coverage_by_bitfield:
         """
-        sorted_bit_fields = list()
         sort_index = 0
 
         # get incoming bandwidth for the cores
@@ -633,7 +627,6 @@ class HostBasedBitFieldRouterCompressor(object):
                             bit_field_data.sort_index = sort_index
                             sort_index += 1
                             to_delete.append(bit_field_data)
-                            sorted_bit_fields.append(bit_field_data)
                             covered += 1
                 for bit_field_data in to_delete:
                     bit_fields_by_coverage[redundant_packet_count].remove(
@@ -646,11 +639,8 @@ class HostBasedBitFieldRouterCompressor(object):
             for bit_field_data in bit_fields_by_coverage[coverage_level]:
                 bit_field_data.sort_index = sort_index
                 sort_index += 1
-                sorted_bit_fields.append(bit_field_data)
 
-        for i in range(len(sorted_bit_fields)):
-            assert (i == sorted_bit_fields[i].sort_index)
-        return sorted_bit_fields
+        self._n_bitfields = sort_index
 
     def _detect_redundant_packet_count(self, bitfield):
         """ locate in the bitfield how many possible packets it can filter \
@@ -669,13 +659,12 @@ class HostBasedBitFieldRouterCompressor(object):
         return n_packets_filtered
 
     def _start_binary_search(
-            self, router_table, sorted_bit_fields, target_length,
+            self, router_table, target_length,
             time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map):
         """ start binary search of the merging of bitfield to router table
 
         :param ~.UnCompressedMulticastRoutingTable router_table:
             uncompressed router table
-        :param list(_BitFieldData) sorted_bit_fields: the sorted bitfields
         :param int target_length: length to compress to
         :param int time_to_try_for_each_iteration:
             the time to allow compressor to run for.
@@ -696,21 +685,20 @@ class HostBasedBitFieldRouterCompressor(object):
                 "uncompressed routing tables, regardless of bitfield merging. "
                 "System is fundamentally flawed here")
 
-        find_max_success(len(sorted_bit_fields), functools.partial(
-            self._binary_search_check, sorted_bit_fields=sorted_bit_fields,
-            routing_table=router_table, target_length=target_length,
+        find_max_success(self._n_bitfields, functools.partial(
+            self._binary_search_check, routing_table=router_table,
+            target_length=target_length,
             time_to_try_for_each_iteration=time_to_try_for_each_iteration,
             use_timer_cut_off=use_timer_cut_off,
             key_to_n_atoms_map=key_atom_map))
 
     def _binary_search_check(
-            self, mid_point, sorted_bit_fields, routing_table, target_length,
+            self, mid_point, routing_table, target_length,
             time_to_try_for_each_iteration, use_timer_cut_off,
             key_to_n_atoms_map):
         """ check function for fix max success
 
         :param int mid_point: the point if the list to stop at
-        :param list(_BitFieldData) sorted_bit_fields: lists of bitfields
         :param ~.UnCompressedMulticastRoutingTable routing_table:
             the basic routing table
         :param int target_length: the target length to reach
@@ -723,13 +711,6 @@ class HostBasedBitFieldRouterCompressor(object):
         :rtype: bool
         """
 
-        # find new set of bitfields to try from midpoint
-        bit_field_by_key = DefaultOrderedDict(list)
-
-        for element in range(0, mid_point):
-            bf_data = sorted_bit_fields[element]
-            bit_field_by_key[bf_data.master_pop_key].append(bf_data)
-
         # convert bitfields into router tables
         bit_field_router_table = self._convert_bitfields_into_router_table(
             routing_table, mid_point, key_to_n_atoms_map)
@@ -740,7 +721,6 @@ class HostBasedBitFieldRouterCompressor(object):
             self._best_routing_table = self._run_algorithm(
                 bit_field_router_table, target_length,
                 time_to_try_for_each_iteration, use_timer_cut_off)
-            self._best_bit_fields_by_key = bit_field_by_key
             self._best_midpoint = mid_point
             print("sucess")
             return True
