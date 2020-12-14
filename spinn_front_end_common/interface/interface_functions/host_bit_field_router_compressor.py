@@ -226,17 +226,6 @@ class HostBasedBitFieldRouterCompressor(object):
                         transceiver, placements.get_placement_of_vertex(vertex))
         return base_addresses
 
-    def calculate_threshold(self, machine_time_step, time_scale_factor):
-        """
-        :param int machine_time_step:
-        :param int time_scale_factor:
-        :rtype: float
-        """
-        return(
-            ((int(math.floor(machine_time_step / self._MS_TO_SEC))) *
-             time_scale_factor * self._N_PACKETS_PER_SECOND) /
-            self._THRESHOLD_FRACTION_EFFECT)
-
     @staticmethod
     def generate_key_to_atom_map(machine_graph, routing_infos):
         """ THIS IS NEEDED due to the link from key to edge being lost.
@@ -342,44 +331,6 @@ class HostBasedBitFieldRouterCompressor(object):
         return generate_provenance_item(
             router_table.x, router_table.y, self._best_midpoint)
 
-    def _convert_bitfields_into_router_tableX(
-            self, router_table, bitfields_by_key, key_to_n_atoms_map):
-        """ Converts the bitfield into router table entries for compression, \
-            based off the entry located in the original router table.
-
-        :param ~.UnCompressedMulticastRoutingTable router_table:
-            the original routing table
-        :param dict(int,list(_BitFieldData)) bitfields_by_key:
-            the bitfields of the chip.
-        :param dict(int,int) key_to_n_atoms_map:
-        :return: routing tables.
-        :rtype: ~.AbsractMulticastRoutingTable
-        """
-        # keep track of the original entries unused
-        original_route_entries = set(router_table.multicast_routing_entries)
-
-        new_table = UnCompressedMulticastRoutingTable(
-            router_table.x, router_table.y)
-
-        # go through the bitfields and get the routing table for it
-        for master_pop_key in bitfields_by_key.keys():
-
-            bit_field_original_entry = \
-                router_table.get_entry_by_routing_entry_key(master_pop_key)
-            self._generate_entries_from_bitfield(
-                bitfields_by_key[master_pop_key],  bit_field_original_entry,
-                key_to_n_atoms_map, new_table)
-
-            # remove entry
-            original_route_entries.remove(bit_field_original_entry)
-
-        # add the original not used
-        for entry in original_route_entries:
-            new_table.add_multicast_routing_entry(entry)
-
-        # return the bitfield tables and the reduced original table
-        return new_table
-
     def _convert_bitfields_into_router_table(
             self, router_table, mid_point, key_to_n_atoms_map):
         """ Converts the bitfield into router table entries for compression, \
@@ -424,49 +375,6 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # return the bitfield tables and the reduced original table
         return new_table
-
-    def _generate_entries_from_bitfield(
-            self, bit_fields, routing_table_entry, key_to_n_atoms_map, new_table):
-        """ generate neuron level entries
-
-        :param list(_BitFieldData) bit_fields: the bitfields for a given key
-        :param ~.MulticastRoutingEntry routing_table_entry:
-            the original entry from it
-        :param dict(int,int) key_to_n_atoms_map:
-        :return: the set of bitfield entries
-        """
-
-        processors_filtered = list()
-
-        for bit_field_by_processor in bit_fields:
-            processors_filtered.append(bit_field_by_processor.processor_id)
-
-        # get some basic values
-        entry_links = routing_table_entry.link_ids
-        base_key = routing_table_entry.routing_entry_key
-        n_neurons = key_to_n_atoms_map[base_key]
-
-        # check each neuron to see if any bitfields care, and if so,
-        # add processor
-        for neuron in range(0, n_neurons):
-            processors = list()
-
-            # add processors that are not going to be filtered
-            for processor_id in routing_table_entry.processor_ids:
-                if processor_id not in processors_filtered:
-                    processors.append(processor_id)
-
-            # process bitfields
-            for bit_field_by_processor in bit_fields:
-                if self._bit_for_neuron_id(
-                        bit_field_by_processor.bit_field, neuron):
-                    processors.append(bit_field_by_processor.processor_id)
-
-            # build new entry for this neuron and add to table
-            new_table.add_multicast_routing_entry(MulticastRoutingEntry(
-                routing_entry_key=base_key + neuron,
-                mask=self._NEURON_LEVEL_MASK, link_ids=entry_links,
-                defaultable=False, processor_ids=processors))
 
     def _bit_for_neuron_id(self, bit_field, neuron_id):
         """ locate the bit for the neuron in the bitfield
@@ -536,12 +444,13 @@ class HostBasedBitFieldRouterCompressor(object):
                         chip_x, chip_y, read_pointer,
                         n_words_to_read * BYTES_PER_WORD))
 
-                n_redundant_packets = self._detect_redundant_packet_count(
-                    bit_field)
-
                 # sorted by best coverage of redundant packets
                 data = _BitFieldData(processor_id, bit_field, master_pop_key,
                                      n_atoms_address, n_atoms_word)
+                as_array = data.bit_field_as_bit_array()
+                # Number of fields in the array that are zero instead of one
+                n_redundant_packets = len(as_array) - sum(as_array)
+
                 bit_fields_by_coverage[n_redundant_packets].append(data)
                 processor_coverage_by_bitfield[processor_id].append(
                     n_redundant_packets)
@@ -627,22 +536,6 @@ class HostBasedBitFieldRouterCompressor(object):
                 sort_index += 1
 
         self._n_bitfields = sort_index
-
-    def _detect_redundant_packet_count(self, bitfield):
-        """ locate in the bitfield how many possible packets it can filter \
-            away when integrated into the router table.
-
-        :param list(int) bitfield:
-            the memory blocks that represent the bitfield
-        :return: the number of redundant packets being captured.
-        """
-        n_packets_filtered = 0
-        n_neurons = len(bitfield) * self._BITS_PER_WORD
-
-        for neuron_id in range(0, n_neurons):
-            if self._bit_for_neuron_id(bitfield, neuron_id) == 0:
-                n_packets_filtered += 1
-        return n_packets_filtered
 
     def _start_binary_search(
             self, router_table, target_length, key_atom_map):
