@@ -19,7 +19,6 @@ import math
 import os
 import struct
 from collections import defaultdict
-from spinn_utilities.default_ordered_dict import DefaultOrderedDict
 from spinn_utilities.find_max_success import find_max_success
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import MulticastRoutingEntry
@@ -86,7 +85,6 @@ class HostBasedBitFieldRouterCompressor(object):
 
     __slots__ = [
         "_best_routing_table",
-        "_best_bit_fields_by_key",
         "_best_midpoint",
         "_bit_fields_by_key",
         "_n_bitfields"
@@ -143,7 +141,6 @@ class HostBasedBitFieldRouterCompressor(object):
 
     def __init__(self):
         self._best_routing_table = None
-        self._best_bit_fields_by_key = None
         self._best_midpoint = -1
         self._bit_fields_by_key = None
 
@@ -677,7 +674,6 @@ class HostBasedBitFieldRouterCompressor(object):
             self._best_routing_table = self._run_algorithm(
                 router_table, target_length, time_to_try_for_each_iteration,
                 use_timer_cut_off)
-            self._best_bit_fields_by_key = DefaultOrderedDict(list)
             self._best_midpoint = 0
         except MinimisationFailedError:
             raise PacmanAlgorithmFailedToGenerateOutputsException(
