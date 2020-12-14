@@ -39,6 +39,7 @@ from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD, BYTES_PER_3_WORDS)
 from spinn_front_end_common.utilities.report_functions.\
     bit_field_compressor_report import generate_provenance_item
+from pacman.operations.router_compressors import PairCompressor
 
 
 class _BitFieldData(object):
@@ -596,7 +597,15 @@ class HostBasedBitFieldRouterCompressor(object):
             self._compression_attempts[mid_point] = "Exception"
             return False
 
-    def _run_algorithm(
+    def _run_algorithm(self, router_table, target_length):
+        compressor = PairCompressor(ordered=True)
+        compressed_entries = compressor.compress_table(router_table)
+        if len(compressed_entries) > target_length:
+            raise MinimisationFailedError("{} > {}".format(
+                len(compressed_entries), target_length))
+        return compressed_entries
+
+    def _run_mundy_algorithm(
             self, router_table, target_length):
         """ Attempts to covert the mega router tables into 1 router table.\
             Will raise a MinimisationFailedError exception if it fails to\
