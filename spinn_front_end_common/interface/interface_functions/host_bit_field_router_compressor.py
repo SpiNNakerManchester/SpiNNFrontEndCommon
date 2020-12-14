@@ -88,7 +88,8 @@ class HostBasedBitFieldRouterCompressor(object):
         "_best_routing_table",
         "_best_bit_fields_by_key",
         "_best_midpoint",
-        "_bit_fields_by_processor"
+        "_bit_fields_by_processor",
+        "_bit_fields_by_key"
     ]
 
     # max entries that can be used by the application code
@@ -145,6 +146,7 @@ class HostBasedBitFieldRouterCompressor(object):
         self._best_bit_fields_by_key = None
         self._best_midpoint = -1
         self._bit_fields_by_processor = None
+        self._bit_fields_by_key = None
 
     def __call__(
             self, router_tables, machine, placements, transceiver,
@@ -357,7 +359,7 @@ class HostBasedBitFieldRouterCompressor(object):
         return generate_provenance_item(
             router_table.x, router_table.y, self._best_midpoint)
 
-    def _convert_bitfields_into_router_table(
+    def _convert_bitfields_into_router_tableX(
             self, router_table, bitfields_by_key, key_to_n_atoms_map):
         """ Converts the bitfield into router table entries for compression, \
             based off the entry located in the original router table.
@@ -395,7 +397,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # return the bitfield tables and the reduced original table
         return new_table
 
-    def _convert_bitfields_into_router_table2(
+    def _convert_bitfields_into_router_table(
             self, router_table, mid_point, key_to_n_atoms_map):
         """ Converts the bitfield into router table entries for compression, \
             based off the entry located in the original router table.
@@ -410,22 +412,31 @@ class HostBasedBitFieldRouterCompressor(object):
         new_table = UnCompressedMulticastRoutingTable(
             router_table.x, router_table.y)
 
-        #for processor_id in self._bit_fields_by_processor.
-
         # go through the bitfields and get the routing table for it
-        for master_pop_key in bitfields_by_key.keys():
-            bit_field_original_entry = \
-                router_table.get_entry_by_routing_entry_key(master_pop_key)
-            self._generate_entries_from_bitfield(
-                bitfields_by_key[master_pop_key], bit_field_original_entry,
-                key_to_n_atoms_map, new_table)
-
-            # remove entry
-            original_route_entries.remove(bit_field_original_entry)
-
-        # add the original not used
-        for entry in original_route_entries:
-            new_table.add_multicast_routing_entry(entry)
+        for base_key in self._bit_fields_by_key.keys():
+            n_neurons = key_to_n_atoms_map[base_key]
+            core_map = dict()
+            original_entry = \
+                router_table.get_entry_by_routing_entry_key(base_key)
+            entry_links = original_entry.link_ids
+            # Assume all neurons for each processor to be kept
+            for processor_id in original_entry.processor_ids:
+                core_map[processor_id] = [1] * n_neurons
+            # For those below the midpoint use the bitfield data
+            for bf_data in self._bit_fields_by_key[base_key]:
+                if bf_data.sort_index < mid_point:
+                    core_map[processor_id] = bf_data.bit_field_as_bit_array()
+            # Add an Entry for each neuron
+            for neuron in range(0, n_neurons):
+                processors = list()
+                for processor_id in original_entry.processor_ids:
+                    if core_map[processor_id][neuron]:
+                        processors.append(processor_id)
+                # build new entry for this neuron and add to table
+                new_table.add_multicast_routing_entry(MulticastRoutingEntry(
+                    routing_entry_key=base_key + neuron,
+                    mask=self._NEURON_LEVEL_MASK, link_ids=entry_links,
+                    defaultable=False, processor_ids=processors))
 
         # return the bitfield tables and the reduced original table
         return new_table
@@ -505,6 +516,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # data holder
         self._bit_fields_by_processor = defaultdict(list)
+        self._bit_fields_by_key = defaultdict(list)
         bit_fields_by_coverage = defaultdict(list)
         processor_coverage_by_bitfield = defaultdict(list)
 
@@ -552,6 +564,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
                 # add to the bitfields tracker
                 self._bit_fields_by_processor[processor_id].append(data)
+                self._bit_fields_by_key[master_pop_key].append(data)
 
         # use the ordered process to find the best ones to do first
         list_of_bitfields_in_impact_order = self._order_bit_fields(
@@ -719,7 +732,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # convert bitfields into router tables
         bit_field_router_table = self._convert_bitfields_into_router_table(
-            routing_table, bit_field_by_key, key_to_n_atoms_map)
+            routing_table, mid_point, key_to_n_atoms_map)
 
         print("midpoint:", mid_point, "entries:", bit_field_router_table.number_of_entries)
         # try to compress
@@ -777,7 +790,7 @@ class HostBasedBitFieldRouterCompressor(object):
         :param dict(int,int) bit_field_base_addresses:
             base addresses of chip bit fields
         """
-        for entries in self._bit_fields_by_processor.values():
+        for entries in self._bit_fields_by_key.values():
             for entry in entries:
                 if entry.sort_index < self._best_midpoint:
                     # set merged
@@ -795,22 +808,17 @@ class HostBasedBitFieldRouterCompressor(object):
         n_bit_fields_merged = 0
         n_packets_filtered = 0
         n_possible_bit_fields = 0
+        merged_by_core = defaultdict(list)
 
-        report_out.write("The bit_fields merged are as follows:\n\n")
-
-        for key in self._best_bit_fields_by_key.keys():
-            for data in self._best_bit_fields_by_key[key]:
-                report_out.write("bitfield on core {} for key {} \n".format(
-                    data.processor_id, key))
-
-        for key in self._bit_fields_by_processor:
-            for bit_field_data in self._bit_fields_by_processor[key]:
+        for key in self._bit_fields_by_key:
+            for bf_data in self._bit_fields_by_key[key]:
                 n_possible_bit_fields += 1
-                if bit_field_data.sort_index >= self._best_midpoint:
+                if bf_data.sort_index >= self._best_midpoint:
                     continue
                 n_bit_fields_merged += 1
-                as_array = bit_field_data.bit_field_as_bit_array()
+                as_array = bf_data.bit_field_as_bit_array()
                 n_packets_filtered += sum(as_array)
+                merged_by_core[bf_data.processor_id].append(bf_data)
 
         percentage_done = 100
         if n_possible_bit_fields != 0:
@@ -836,9 +844,15 @@ class HostBasedBitFieldRouterCompressor(object):
         report_out.write(
             "The integration of {} bitfields removes up to {} MC packets "
             "that otherwise would be being processed by the cores on the "
-            "chip, just to be dropped as they do not target anything.".format(
+            "chip, just to be dropped as they do not target anything.\n\n".format(
                 n_bit_fields_merged, n_packets_filtered))
 
+        report_out.write("The bit_fields merged are as follows:\n\n")
+
+        for core in merged_by_core:
+            for bf_data in merged_by_core[core]:
+                report_out.write("bitfield on core {} for key {} \n".format(
+                    core, bf_data.master_pop_key))
 
         report_out.write("\n\n\n")
         report_out.write("The final routing table entries are as follows:\n\n")
