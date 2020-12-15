@@ -85,6 +85,7 @@ from .tags_loader import TagsLoader
 from .tdma_agenda_builder import TDMAAgendaBuilder
 from .virtual_machine_generator import VirtualMachineGenerator
 from .read_routing_tables_from_machine import ReadRoutingTablesFromMachine
+from .sdram_outgoing_partition_allocator import SDRAMOutgoingPartitionAllocator
 
 __all__ = [
     "ApplicationFinisher",
@@ -117,6 +118,6 @@ __all__ = [
     "ProcessPartitionConstraints", "ProfileDataGatherer",
     "ProvenanceJSONWriter", "ProvenanceSQLWriter", "ProvenanceXMLWriter",
     "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "RoutingSetup",
-    "RoutingTableLoader", "SpallocAllocator",
-    "SpallocMaxMachineGenerator", "TagsLoader",
+    "RoutingTableLoader", "SDRAMOutgoingPartitionAllocator",
+    "SpallocAllocator", "SpallocMaxMachineGenerator", "TagsLoader",
     "TDMAAgendaBuilder", "VirtualMachineGenerator"]
