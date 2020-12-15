@@ -65,7 +65,7 @@ class _BitFieldData(object):
         self.bit_field = bit_field
         self.master_pop_key = master_pop_key
         self.n_atoms_address = n_atoms_address
-        self.n_atoms_word =  n_atoms_word
+        self.n_atoms_word = n_atoms_word
         self.sort_index = None
 
     def __str__(self):
