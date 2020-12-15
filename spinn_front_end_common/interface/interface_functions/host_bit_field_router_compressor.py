@@ -162,6 +162,7 @@ class HostBasedBitFieldRouterCompressor(object):
             target_length=None):
         """
         Entry point when using the PACMANAlgorithmExecutor
+
         :param router_tables: routing tables (uncompressed and unordered)
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
