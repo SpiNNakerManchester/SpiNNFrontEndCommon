@@ -359,13 +359,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             validation_cfg=None, front_end_versions=None):
         """
         :param str configfile: What the configuration file is called
-        :param ~spinn_utilities.executable_finder.ExecutableFinder \
-                executable_finder:
-            How to find APLX files to deploy to SpiNNaker
+        :param executable_finder: How to find APLX files to deploy to SpiNNaker
+        :type executable_finder:
+            ~spinn_utilities.executable_finder.ExecutableFinder
         :param str graph_label: A label for the overall application graph
-        :param iterable(~spinn_utilities.socket_address.SocketAddress) \
-                database_socket_addresses:
-            How to talk to notification databases
+        :param database_socket_addresses: How to talk to notification databases
+        :type database_socket_addresses:
+            iterable(~spinn_utilities.socket_address.SocketAddress) or None
         :param iterable(str) extra_algorithm_xml_paths:
             Where to load definitions of extra algorithms from
         :param int n_chips_required:
@@ -1023,10 +1023,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # update counter for runs (used by reports and app data)
         self._n_calls_to_run += 1
-        if run_time is not None:
-            self._state = Simulator_State.FINISHED
-        else:
-            self._state = Simulator_State.RUN_FOREVER
+        self._state = Simulator_State.FINISHED
 
     def _is_per_timestep_sdram(self):
         for placement in self._placements.placements:
@@ -2081,8 +2078,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.append("SdramUsageReportPerChip")
 
         # Clear iobuf from machine
-        if (not self._run_until_complete and
-            not self._use_virtual_board and not self._empty_graphs and
+        if (n_machine_time_steps is not None and
+                not self._use_virtual_board and not self._empty_graphs and
                 self._config.getboolean("Reports", "clear_iobuf_during_run")):
             algorithms.append("ChipIOBufClearer")
 
@@ -2142,7 +2139,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if (self._config.getboolean("Reports", "extract_iobuf") and
                 self._config.getboolean(
                     "Reports", "extract_iobuf_during_run") and
-                not self._use_virtual_board):
+                not self._use_virtual_board and
+                n_machine_time_steps is not None):
             algorithms.append("ChipIOBufExtractor")
 
         # add in the timing finalisation

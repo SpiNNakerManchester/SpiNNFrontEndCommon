@@ -168,9 +168,11 @@ class DatabaseWriter(AbstractContextManager):
                     for proc in chip.processors))
 
     def add_application_vertices(self, application_graph):
-        """
-        :param ~pacman.model.graphs.application.ApplicationGraph \
-                application_graph:
+        """ Stores the main application graph description (vertices, edges).
+
+        :param application_graph: The graph to add from
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
         """
         with self._connection:
             # add vertices
@@ -231,15 +233,15 @@ class DatabaseWriter(AbstractContextManager):
                     ("runtime", -1 if runtime is None else runtime)])
 
     def add_vertices(self, machine_graph, data_n_timesteps, application_graph):
-        """ Add the machine graph and application graph into the database.
+        """ Add the machine graph into the database.
 
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             The machine graph object
         :param int data_n_timesteps:
             The number of timesteps for which data space will been reserved
-        :param ~pacman.model.graphs.application.ApplicationGraph \
-                application_graph:
-            The application graph object
+        :param application_graph: The application graph object
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
         """
         with self._connection:
             for vertex in machine_graph.vertices:
@@ -351,9 +353,9 @@ class DatabaseWriter(AbstractContextManager):
     def add_routing_tables(self, routing_tables):
         """ Adds the routing tables into the database
 
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                routing_tables:
-            the routing tables object
+        :param routing_tables: the routing tables object
+        :type routing_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         """
         with self._connection:
             self._connection.executemany(
@@ -402,8 +404,9 @@ class DatabaseWriter(AbstractContextManager):
     def create_atom_to_event_id_mapping(
             self, application_graph, machine_graph, routing_infos):
         """
-        :param ~pacman.model.graphs.application.ApplicationGraph \
-                application_graph:
+        :param application_graph:
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         """

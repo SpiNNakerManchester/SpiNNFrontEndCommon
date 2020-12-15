@@ -77,7 +77,7 @@ class AbstractDatabase(object):
             simulation, and a flag indicating if any data was missing
 
             .. note::
-                Implementations should not assume that the total buffer is \
+                Implementations should not assume that the total buffer is
                 necessarily shorter than 1GB.
 
         :rtype: tuple(memoryview, bool)

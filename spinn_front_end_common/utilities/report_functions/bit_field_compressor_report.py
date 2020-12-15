@@ -35,24 +35,18 @@ _FILE_NAME = "bit_field_compressed_summary.rpt"
 class BitFieldCompressorReport(object):
     """ Generates a report that shows the impact of the compression of \
         bitfields into the routing table.
-
-    :param str report_default_directory: report folder
-    :param list(ProvenanceDataItem) provenance_items: prov items
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        the machine graph
-    :param ~pacman.model.placements.Placements placements: the placements
-    :return: a summary, or `None` if the report file can't be written
-    :rtype: BitFieldSummary
     """
     def __call__(
             self, report_default_directory, provenance_items, machine_graph,
             placements):
         """
-        :param str report_default_directory:
-        :param list(ProvenanceDataItem) provenance_items:
-        :param ~.MachineGraph machine_graph:
-        :param ~.Placements placements:
-        :rtype: BitFieldSummary or None
+        :param str report_default_directory: report folder
+        :param list(ProvenanceDataItem) provenance_items: prov items
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph
+        :param ~pacman.model.placements.Placements placements: the placements
+        :return: a summary, or `None` if the report file can't be written
+        :rtype: BitFieldSummary
         """
         file_name = os.path.join(report_default_directory, _FILE_NAME)
         try:

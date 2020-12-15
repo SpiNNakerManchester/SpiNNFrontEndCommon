@@ -19,7 +19,14 @@ _REPORT_FILENAME = "tags_on_machine.txt"
 
 
 class TagsFromMachineReport(object):
+    """ Describes what the tags actually present on the machine are.
+    """
+
     def __call__(self, report_default_directory, transceiver):
+        """
+        :param str report_default_directory:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        """
         filename = os.path.join(report_default_directory, _REPORT_FILENAME)
         tags = self._get_tags(transceiver)
         with open(filename, "w") as f:

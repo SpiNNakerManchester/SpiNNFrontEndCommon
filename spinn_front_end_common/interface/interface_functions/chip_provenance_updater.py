@@ -31,19 +31,15 @@ _LIMIT = 10
 
 class ChipProvenanceUpdater(object):
     """ Forces all cores to generate provenance data, and then exit.
-
-    :param ~spinnman.transceiver.Transceiver txrx:
-    :param int app_id:
-    :param ~spinn_machine.CoreSubsets all_core_subsets:
     """
 
     __slots__ = []
 
     def __call__(self, txrx, app_id, all_core_subsets):
         """
-        :param ~.Transceiver txrx:
+        :param ~spinnman.transceiver.Transceiver txrx:
         :param int app_id:
-        :param ~.CoreSubsets all_core_subsets:
+        :param ~spinn_machine.CoreSubsets all_core_subsets:
         """
         # check that the right number of processors are in sync
         processors_completed = txrx.get_core_state_count(

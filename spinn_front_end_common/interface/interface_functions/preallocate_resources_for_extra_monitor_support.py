@@ -25,22 +25,17 @@ from spinn_front_end_common.utility_models import (
 
 class PreAllocateResourcesForExtraMonitorSupport(object):
     """ Allocates resources for the extra monitors.
-
-    :param ~spinn_machine.Machine machine: SpiNNaker machine object
-    :param pre_allocated_resources: resources already preallocated
-    :type pre_allocated_resources:
-        ~pacman.model.resources.PreAllocatedResourceContainer
-    :param int n_cores_to_allocate: how many gatherers to use per chip
-    :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
     """
     def __call__(
             self, machine, pre_allocated_resources=None,
             n_cores_to_allocate=1):
         """
-        :param ~.Machine machine:
-        :param ~.PreAllocatedResourceContainer pre_allocated_resources:
-        :param int n_cores_to_allocate:
-        :rtype: ~.PreAllocatedResourceContainer
+        :param ~spinn_machine.Machine machine: SpiNNaker machine object
+        :param pre_allocated_resources: resources already preallocated
+        :type pre_allocated_resources:
+            ~pacman.model.resources.PreAllocatedResourceContainer or None
+        :param int n_cores_to_allocate: how many gatherers to use per chip
+        :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
 
         progress = ProgressBar(
