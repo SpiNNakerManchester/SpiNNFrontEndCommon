@@ -15,6 +15,7 @@
 
 import logging
 import math
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.logger_utils import warn_once
 from spinn_front_end_common.abstract_models.impl.\
     tdma_aware_application_vertex import (
@@ -24,7 +25,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
     read_config_int, read_config_float, read_config)
 from spinn_front_end_common.utilities.globals_variables import get_simulator
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class LocalTDMABuilder(object):
