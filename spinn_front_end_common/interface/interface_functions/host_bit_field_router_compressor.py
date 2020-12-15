@@ -73,6 +73,9 @@ class _BitFieldData(object):
             self.processor_id, self.master_pop_key, self.bit_field)
 
     def bit_field_as_bit_array(self):
+        """
+        Convert the bitfield into an array of bits like bit_field.c
+        """
         return [(word >> i) & 1
                 for word in self.bit_field
                 for i in range(32)]
@@ -85,10 +88,15 @@ class HostBasedBitFieldRouterCompressor(object):
     """
 
     __slots__ = [
-        "_best_routing_table",
+        # List of the entries from the highest successful midpoint
+        "_best_routing_entires",
+        # The highest successful midpoint
         "_best_midpoint",
+        # Dict of lists of the original bitfields by key
         "_bit_fields_by_key",
+        # Record of which midpoints where tired and with what result
         "_compression_attempts",
+        # Number of bitfields for this core
         "_n_bitfields"
     ]
 
@@ -142,7 +150,7 @@ class HostBasedBitFieldRouterCompressor(object):
     _BITS_PER_WORD = 32
 
     def __init__(self):
-        self._best_routing_table = None
+        self._best_routing_entires = None
         self._best_midpoint = -1
         self._bit_fields_by_key = None
         self._compression_attempts = None
@@ -153,7 +161,8 @@ class HostBasedBitFieldRouterCompressor(object):
             routing_infos,  machine_time_step, time_scale_factor,
             target_length=None):
         """
-        :param router_tables: routing tables (uncompressed)
+        Entry point when using the PACMANAlgorithmExecutor
+        :param router_tables: routing tables (uncompressed and unordered)
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
         :param ~spinn_machine.Machine machine: SpiNNMachine instance
@@ -167,11 +176,11 @@ class HostBasedBitFieldRouterCompressor(object):
             routing information
         :param int machine_time_step: time step
         :param int time_scale_factor: time scale factor
-        :param int target_length: length of table entries to get to.
+        :param target_length: length of table entries to get to.
+        :type target_length: int or None
         :return: compressed routing table entries
         :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
-
         if target_length is None:
             target_length = self._MAX_SUPPORTED_LENGTH
 
@@ -289,12 +298,13 @@ class HostBasedBitFieldRouterCompressor(object):
         :param dict(int,int) key_atom_map: key to atoms map
             should be allowed to handle per time step
         """
-        self._best_routing_table = None
+        # Reset all the self values as they change for each routing table
+        self._best_routing_entires = None
         self._best_midpoint = -1
-        self._compression_attempts = dict()
+        self._bit_fields_by_key = None
+        self._compression_attempts = None
 
-        # iterate through bitfields on this chip and convert to router
-        # table
+        # Find the processors that have bitfield data and where it is
         bit_field_chip_base_addresses = self.get_bit_field_sdram_base_addresses(
             router_table.x, router_table.y, machine, placements, transceiver)
 
@@ -314,7 +324,7 @@ class HostBasedBitFieldRouterCompressor(object):
         best_router_table = CompressedMulticastRoutingTable(
             router_table.x, router_table.y)
 
-        for entry in self._best_routing_table:
+        for entry in self._best_routing_entires:
             best_router_table.add_multicast_routing_entry(
                 entry.to_MulticastRoutingEntry())
 
@@ -470,6 +480,10 @@ class HostBasedBitFieldRouterCompressor(object):
             self, bit_fields_by_coverage, machine_graph, chip_x, chip_y,
             placements, n_processors_on_chip, processor_coverage_by_bitfield):
         """
+        Orders the bit fields by redundancy setting the sorted index
+
+        Also counts the bitfields setting _n_bitfields
+
         :param dict(int,list(_BitFieldData)) bit_fields_by_coverage:
         :param ~.MachineGraph machine_graph:
         :param int chip_x:
@@ -551,7 +565,7 @@ class HostBasedBitFieldRouterCompressor(object):
         """
         # try first just uncompressed. so see if its possible
         try:
-            self._best_routing_table = self._run_algorithm(
+            self._best_routing_entires = self._run_algorithm(
                 router_table, target_length)
             self._best_midpoint = 0
             self._compression_attempts[0] = "succcess"
@@ -585,7 +599,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # try to compress
         try:
-            self._best_routing_table = self._run_algorithm(
+            self._best_routing_entires = self._run_algorithm(
                 bit_field_router_table, target_length)
             self._best_midpoint = mid_point
             self._compression_attempts[mid_point] = "succcess"
@@ -598,6 +612,18 @@ class HostBasedBitFieldRouterCompressor(object):
             return False
 
     def _run_algorithm(self, router_table, target_length):
+        """ Attempts to covert the mega router tables into 1 router table.
+
+        :param list(~.AbsractMulticastRoutingTable) router_tables:
+            the set of router tables that together need to
+            be merged into 1 router table
+        :param int target_length: the number
+        :return: compressor router table
+        :rtype: list(RoutingTableEntry)
+        :throws MinimisationFailedError: if it fails to
+            compress to the correct length.
+
+        """
         compressor = PairCompressor(ordered=True)
         compressed_entries = compressor.compress_table(router_table)
         if len(compressed_entries) > target_length:
@@ -610,6 +636,8 @@ class HostBasedBitFieldRouterCompressor(object):
         """ Attempts to covert the mega router tables into 1 router table.\
             Will raise a MinimisationFailedError exception if it fails to\
             compress to the correct length.
+
+        Note: This method is uncurrently unused
 
         :param list(~.AbsractMulticastRoutingTable) router_tables:
             the set of router tables that together need to
@@ -689,7 +717,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 router_table.number_of_entries,
                 n_bit_fields_merged,
                 # Note: _best_routing_table is a list(), router_table is not
-                len(self._best_routing_table)))
+                len(self._best_routing_entires)))
 
         report_out.write(
             "The integration of {} bitfields removes up to {} MC packets "
@@ -722,7 +750,7 @@ class HostBasedBitFieldRouterCompressor(object):
         entry_count = 0
         n_defaultable = 0
         # Note: _best_routing_table is a list(), router_table is not
-        for entry in self._best_routing_table:
+        for entry in self._best_routing_entires:
             index = entry_count & self._LOWER_16_BITS
             entry_str = line_format.format(index, format_route(
                 entry.to_MulticastRoutingEntry()))
