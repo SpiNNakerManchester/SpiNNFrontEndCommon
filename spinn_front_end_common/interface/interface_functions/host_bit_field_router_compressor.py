@@ -302,7 +302,7 @@ class HostBasedBitFieldRouterCompressor(object):
         self._best_routing_entires = None
         self._best_midpoint = -1
         self._bit_fields_by_key = None
-        self._compression_attempts = None
+        self._compression_attempts = dict()
 
         # Find the processors that have bitfield data and where it is
         bit_field_chip_base_addresses = self.get_bit_field_sdram_base_addresses(
