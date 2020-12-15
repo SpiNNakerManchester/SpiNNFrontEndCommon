@@ -18,7 +18,6 @@ import os
 import sys
 from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
-from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.utilities.helpful_functions import (
     find_executable_start_type)
 from .bit_field_summary import BitFieldSummary
@@ -146,16 +145,13 @@ class BitFieldCompressorReport(object):
 
             if binary_start_type != ExecutableType.SYSTEM:
                 seen_partitions = set()
-                for incoming_edge in machine_graph.get_edges_ending_at_vertex(
-                        placement.vertex):
-                    if incoming_edge.traffic_type == EdgeTrafficType.MULTICAST:
-                        incoming_partition = \
-                            machine_graph.get_outgoing_partition_for_edge(
-                                incoming_edge)
-                        if incoming_partition not in seen_partitions:
-                            total_to_merge += 1
-                            to_merge_per_chip[placement.x, placement.y] += 1
-                            seen_partitions.add(incoming_partition)
+                for incoming_partition in machine_graph.\
+                        get_multicast_edge_partitions_ending_at_vertex(
+                            placement.vertex):
+                    if incoming_partition not in seen_partitions:
+                        total_to_merge += 1
+                        to_merge_per_chip[placement.x, placement.y] += 1
+                        seen_partitions.add(incoming_partition)
 
         return total_to_merge, to_merge_per_chip
 

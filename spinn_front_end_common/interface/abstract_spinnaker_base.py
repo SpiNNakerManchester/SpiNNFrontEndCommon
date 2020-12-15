@@ -43,11 +43,14 @@ from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
 from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
+from pacman.executor.injection_decorator import (
+    clear_injectables, provide_injectables)
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
-from pacman.model.resources import (PreAllocatedResourceContainer)
+from pacman.model.resources import (
+    PreAllocatedResourceContainer, ConstantSDRAM)
 from pacman import __version__ as pacman_version
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
@@ -56,7 +59,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities import (
     globals_variables, SimulatorInterface)
 from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION)
+    MICRO_TO_MILLISECOND_CONVERSION, SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.function_list import (
     get_front_end_common_pacman_xml_paths)
@@ -934,6 +937,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._do_mapping(run_time, total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
+        provide_injectables(self._mapping_outputs)
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
@@ -945,7 +949,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # Work out the maximum run duration given all recordings
         if self._max_run_time_steps is None:
-            self._max_run_time_steps = self._deduce_data_n_timesteps()
+            self._max_run_time_steps = self._deduce_data_n_timesteps(
+                self._machine_graph)
+        clear_injectables()
 
         # Work out an array of timesteps to perform
         steps = None
@@ -1068,16 +1074,18 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         self._application_graph.add_edge(
                             dependant_edge, edge_identifier)
 
-    def _deduce_data_n_timesteps(self):
+    def _deduce_data_n_timesteps(self, machine_graph):
         """ Operates the auto pause and resume functionality by figuring out\
             how many timer ticks a simulation can run before SDRAM runs out,\
             and breaks simulation into chunks of that long.
 
+        :param ~.MachineGraph machine_graph:
         :return: max time a simulation can run.
         """
         # Go through the placements and find how much SDRAM is used
         # on each chip
         usage_by_chip = dict()
+        seen_partitions = set()
 
         for placement in self._placements.placements:
             sdram_required = placement.vertex.resources_required.sdram
@@ -1085,6 +1093,18 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 usage_by_chip[placement.x, placement.y] += sdram_required
             else:
                 usage_by_chip[placement.x, placement.y] = sdram_required
+
+            # add sdram partitions
+            sdram_partitions = (
+                machine_graph.get_sdram_edge_partitions_starting_at_vertex(
+                    placement.vertex))
+            for partition in sdram_partitions:
+                if partition not in seen_partitions:
+                    usage_by_chip[placement.x, placement.y] += (
+                        ConstantSDRAM(
+                            partition.total_sdram_requirements() +
+                            SARK_PER_MALLOC_SDRAM_USAGE))
+                    seen_partitions.add(partition)
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
@@ -1700,6 +1720,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         self._json_folder, java_call, java_spinnaker_path,
                         java_properties)
             inputs["JavaCaller"] = self._java_caller
+
+            # add the sdram allocator to ensure the sdram is allocated before
+            #  dsg on a real machine
+            algorithms.append("SDRAMOutgoingPartitionAllocator")
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(
