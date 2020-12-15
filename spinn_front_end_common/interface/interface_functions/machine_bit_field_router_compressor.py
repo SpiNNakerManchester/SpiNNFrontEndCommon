@@ -241,13 +241,14 @@ class MachineBitFieldRouterCompressor(object):
                 machine_graph, routing_infos)
 
             for (chip_x, chip_y) in progress_bar.over(on_host_chips, False):
+                report_folder_path = host_compressor.generate_report_path(
+                    default_report_folder)
                 prov_items.append(
                     host_compressor.start_compression_selection_process(
                         router_table=routing_tables.get_routing_table_for_chip(
                             chip_x, chip_y),
                         produce_report=produce_report,
-                        report_folder_path=host_compressor.generate_report_path(
-                            default_report_folder),
+                        report_folder_path=report_folder_path,
                         transceiver=transceiver, machine_graph=machine_graph,
                         placements=placements, machine=machine,
                         target_length=target_length,
@@ -367,8 +368,8 @@ class MachineBitFieldRouterCompressor(object):
                     transceiver.get_user_1_register_address_from_core(p)
                 user_2_base_address = \
                     transceiver.get_user_2_register_address_from_core(p)
-                result =  transceiver.read_word(x, y, user_1_base_address)
-                bit_fields_merged =  transceiver.read_word(
+                result = transceiver.read_word(x, y, user_1_base_address)
+                bit_fields_merged = transceiver.read_word(
                     x, y, user_2_base_address)
 
                 if result != self.SUCCESS:

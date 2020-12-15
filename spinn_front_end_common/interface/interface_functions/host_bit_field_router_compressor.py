@@ -235,7 +235,8 @@ class HostBasedBitFieldRouterCompressor(object):
                 if isinstance(
                         vertex, AbstractSupportsBitFieldRoutingCompression):
                     base_addresses[p] = vertex.bit_field_base_address(
-                        transceiver, placements.get_placement_of_vertex(vertex))
+                        transceiver, placements.get_placement_of_vertex(
+                            vertex))
         return base_addresses
 
     @staticmethod
@@ -305,8 +306,10 @@ class HostBasedBitFieldRouterCompressor(object):
         self._compression_attempts = dict()
 
         # Find the processors that have bitfield data and where it is
-        bit_field_chip_base_addresses = self.get_bit_field_sdram_base_addresses(
-            router_table.x, router_table.y, machine, placements, transceiver)
+        bit_field_chip_base_addresses = \
+            self.get_bit_field_sdram_base_addresses(
+                router_table.x, router_table.y, machine, placements,
+                transceiver)
 
         # read in bitfields.
         self._read_in_bit_fields(
@@ -722,8 +725,8 @@ class HostBasedBitFieldRouterCompressor(object):
         report_out.write(
             "The integration of {} bitfields removes up to {} MC packets "
             "that otherwise would be being processed by the cores on the "
-            "chip, just to be dropped as they do not target anything.\n\n".format(
-                n_bit_fields_merged, n_packets_filtered))
+            "chip, just to be dropped as they do not target anything.\n\n"
+            "".format(n_bit_fields_merged, n_packets_filtered))
 
         report_out.write("The compression attempts are as follows:\n\n")
         for mid_point, result in self._compression_attempts.items():

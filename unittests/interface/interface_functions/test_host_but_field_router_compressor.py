@@ -20,20 +20,13 @@ from spinn_front_end_common.interface.interface_functions.\
 
 class TestHostBasedBitFieldRouterCompressorr(unittest.TestCase):
 
-    def test_bit_field_as_bit_array_32(self):
-        data = _BitFieldData(
-            1, [0xF0F0F0F0], None, None, None)
-        as_array = data.bit_field_as_bit_array()
-        self.assertListEqual(
-            [0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1],
-            as_array)
-
     def test_bit_field_as_bit_array(self):
         data = _BitFieldData(
             1, [1], None, None, None)
         as_array = data.bit_field_as_bit_array()
         self.assertListEqual(
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             as_array)
 
 

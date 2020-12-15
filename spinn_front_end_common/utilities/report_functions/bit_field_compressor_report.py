@@ -102,9 +102,9 @@ class BitFieldCompressorReport(object):
                 bits = prov_item.names[1].split("_")
                 x = int(bits[3])
                 y = int(bits[4])
-                if (x,y) not in to_merge_per_chip:
+                if (x, y) not in to_merge_per_chip:
                     continue
-                to_merge = to_merge_per_chip[x,y]
+                to_merge = to_merge_per_chip[x, y]
                 merged = int(prov_item.value)
                 found = True
                 writer.write(
@@ -191,7 +191,7 @@ class BitFieldCompressorReport(object):
         :return: a summary
         :rtype: BitFieldSummary
         """
-        total_to_merge, to_merge_per_chip  = self._compute_to_merge_per_chip(
+        total_to_merge, to_merge_per_chip = self._compute_to_merge_per_chip(
             machine_graph, placements)
         (max_to_merge_per_chip, low_to_merge_per_chip,
          average_per_chip_to_merge) = self._before_merge_component(
@@ -212,7 +212,7 @@ class BitFieldCompressorReport(object):
                 average_per_chip_merged))
         if total_to_merge:
             writer.write("\nIn total {:.2%} of the bitfields merged".format(
-                total_bit_fields_merged/ total_to_merge))
+                total_bit_fields_merged / total_to_merge))
 
         return BitFieldSummary(
             lowest_per_chip=min_bit_field, max_per_chip=top_bit_field,
