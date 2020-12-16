@@ -20,6 +20,7 @@ from __future__ import division
 from collections import defaultdict
 import logging
 import math
+import os
 import signal
 import sys
 import time
@@ -57,12 +58,10 @@ from spinn_front_end_common.abstract_models import (
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
 from spinn_front_end_common.utilities import (
-    globals_variables, SimulatorInterface)
+    globals_variables, SimulatorInterface, report_functions)
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.function_list import (
-    get_front_end_common_pacman_xml_paths)
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import (
@@ -82,6 +81,8 @@ from spinn_front_end_common.interface.interface_functions import (
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
     RouterProvenanceGatherer)
+from spinn_front_end_common.interface import interface_functions
+
 from spinn_front_end_common import __version__ as fec_version
 try:
     from scipy import __version__ as scipy_version
@@ -101,6 +102,21 @@ ALANS_DEFAULT_RANDOM_APP_ID = 16
 
 # Number of provenace items before auto changes to sql format
 PROVENANCE_TYPE_CUTOFF = 20000
+
+
+def get_front_end_common_pacman_xml_paths():
+    """ Get the XML path for the front end common interface functions
+
+    :rtype: list(str)
+    """
+    return [
+        os.path.join(
+            os.path.dirname(interface_functions.__file__),
+            "front_end_common_interface_functions.xml"),
+        os.path.join(
+            os.path.dirname(report_functions.__file__),
+            "front_end_common_reports.xml")
+    ]
 
 
 class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
