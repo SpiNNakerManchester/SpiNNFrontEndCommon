@@ -72,6 +72,7 @@ from spinn_front_end_common.utilities.utility_objs import (
 from spinn_front_end_common.utility_models import (
     CommandSender, CommandSenderMachineVertex,
     DataSpeedUpPacketGatherMachineVertex)
+from spinn_front_end_common.utilities import IOBufExtractor
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.provenance import (
@@ -80,7 +81,7 @@ from spinn_front_end_common.interface.simulator_state import Simulator_State
 from spinn_front_end_common.interface.interface_functions import (
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
-    RouterProvenanceGatherer, ChipIOBufExtractor)
+    RouterProvenanceGatherer)
 from spinn_front_end_common import __version__ as fec_version
 try:
     from scipy import __version__ as scipy_version
@@ -2309,15 +2310,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._all_provenance_items.append(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
-        iobuf = ChipIOBufExtractor()
+        iobuf = IOBufExtractor(
+            self._txrx, executable_targets, self._executable_finder,
+            self._app_provenance_file_path, self._system_provenance_file_path,
+            self._config.get("Reports", "extract_iobuf_from_cores"),
+            self._config.get("Reports", "extract_iobuf_from_binary_types"))
         try:
-            errors, warnings = iobuf(
-                self._txrx, executable_targets, self._executable_finder,
-                self._app_provenance_file_path,
-                self._system_provenance_file_path,
-                self._config.get("Reports", "extract_iobuf_from_cores"),
-                self._config.get("Reports", "extract_iobuf_from_binary_types")
-            )
+            errors, warnings = iobuf.extract_iobuf()
         except Exception:
             logger.exception("Could not get iobuf")
             errors, warnings = [], []
@@ -2877,13 +2876,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             return
         if self._config.getboolean("Reports", "clear_iobuf_during_run"):
             return
-        extractor = ChipIOBufExtractor()
-        extractor(
+        extractor = IOBufExtractor(
             transceiver=self._txrx,
             executable_targets=self._last_run_outputs["ExecutableTargets"],
             executable_finder=self._executable_finder,
             app_provenance_file_path=self._app_provenance_file_path,
             system_provenance_file_path=self._system_provenance_file_path)
+        extractor.extract_iobuf()
 
     @overrides(SimulatorInterface.add_socket_address, extend_doc=False)
     def add_socket_address(self, socket_address):

@@ -37,7 +37,9 @@ from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
 from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset, emergency_recover_state_from_failure)
+    convert_vertices_to_core_subset)
+from spinn_front_end_common.utilities.emergency_recovery import (
+    emergency_recover_state_from_failure)
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (

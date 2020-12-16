@@ -16,9 +16,8 @@
 from spinnman.exceptions import SpinnmanException
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
-from spinn_front_end_common.interface.interface_functions import (
-    ChipIOBufExtractor)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities import IOBufExtractor
 
 
 def run_system_application(
@@ -100,12 +99,13 @@ def run_system_application(
 
     # if doing iobuf or on failure (succeeded is None is not failure)
     if read_algorithm_iobuf or succeeded == False:  # noqa: E712
-        iobuf_reader = ChipIOBufExtractor(
+        iobuf_reader = IOBufExtractor(
+            transceiver, executable_cores, executable_finder,
+            app_provenance_file_path=provenance_file_path,
+            system_provenance_file_path=provenance_file_path,
             filename_template=filename_template,
             suppress_progress=False)
-        error_entries, warn_entries = iobuf_reader(
-            transceiver, executable_cores, executable_finder,
-            system_provenance_file_path=provenance_file_path)
+        error_entries, warn_entries = iobuf_reader.extract_iobuf()
         if logger is not None:
             for entry in warn_entries:
                 logger.warn(entry)
