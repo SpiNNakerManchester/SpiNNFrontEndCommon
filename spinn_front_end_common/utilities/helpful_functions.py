@@ -20,7 +20,6 @@ from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
 from data_specification import utility_calls
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .constants import BYTES_PER_WORD, MICRO_TO_MILLISECOND_CONVERSION
@@ -326,14 +325,3 @@ def convert_vertices_to_core_subset(vertices, placements):
         placement = placements.get_placement_of_vertex(vertex)
         core_subsets.add_processor(placement.x, placement.y, placement.p)
     return core_subsets
-
-
-def find_executable_start_type(machine_vertex):
-    """
-    :param ~pacman.model.graphs.machine.MachineVertex machine_vertex:
-    :rtype: ~spinn_front_end_common.utilities.utility_objs.ExecutableType
-    """
-    if isinstance(machine_vertex, AbstractHasAssociatedBinary):
-        return machine_vertex.get_binary_start_type()
-    else:
-        return None
