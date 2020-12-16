@@ -44,4 +44,4 @@ class ChipIOBufExtractor(object):
             transceiver, executable_targets, executable_finder,
             app_provenance_file_path, system_provenance_file_path, from_cores,
             binary_types)
-        extractor.extract_iobuf()
+        return extractor.extract_iobuf()
