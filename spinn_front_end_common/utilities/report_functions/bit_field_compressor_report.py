@@ -21,8 +21,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.interface.interface_functions.\
     machine_bit_field_router_compressor import (
         PROV_TOP_NAME)
-from spinn_front_end_common.utilities.helpful_functions import (
-    find_executable_start_type)
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.report_functions.\
     bit_field_summary import (
         BitFieldSummary)
@@ -116,7 +115,9 @@ class BitFieldCompressorReport(object):
         to_merge_per_chip = defaultdict(int)
 
         for placement in placements:
-            binary_start_type = find_executable_start_type(placement.vertex)
+            binary_start_type = None
+            if isinstance(placement.vertex, AbstractHasAssociatedBinary):
+                binary_start_type = placement.vertex.get_binary_start_type()
 
             if binary_start_type != ExecutableType.SYSTEM:
                 seen_partitions = set()
