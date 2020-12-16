@@ -61,10 +61,10 @@ class GraphBinaryGatherer(object):
         # if the vertex cannot be executed, ignore it
         if not isinstance(vertex, AbstractHasAssociatedBinary):
             if not isinstance(vertex, AbstractVirtual):
-                msg = \
-                    "Vertex {} does not implement either " \
-                    "AbstractHasAssociatedBinary or AbstractVirtual. " \
-                    "So it is unclear if it should or should not have a binary"
+                msg = (
+                    "Vertex {} does not implement either "
+                    "AbstractHasAssociatedBinary or AbstractVirtual. "
+                    "So it is unclear if it should or should not have a binary")
                 logger.error(msg.format(vertex), vertex)
             return
 
