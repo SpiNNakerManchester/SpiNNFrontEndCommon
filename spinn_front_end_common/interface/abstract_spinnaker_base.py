@@ -20,6 +20,7 @@ from __future__ import division
 from collections import defaultdict
 import logging
 import math
+import os
 import signal
 import sys
 import time
@@ -57,12 +58,10 @@ from spinn_front_end_common.abstract_models import (
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
 from spinn_front_end_common.utilities import (
-    globals_variables, SimulatorInterface)
+    globals_variables, SimulatorInterface, report_functions)
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.function_list import (
-    get_front_end_common_pacman_xml_paths)
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import (
@@ -72,6 +71,7 @@ from spinn_front_end_common.utilities.utility_objs import (
 from spinn_front_end_common.utility_models import (
     CommandSender, CommandSenderMachineVertex,
     DataSpeedUpPacketGatherMachineVertex)
+from spinn_front_end_common.utilities import IOBufExtractor
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.provenance import (
@@ -80,7 +80,9 @@ from spinn_front_end_common.interface.simulator_state import Simulator_State
 from spinn_front_end_common.interface.interface_functions import (
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
-    RouterProvenanceGatherer, ChipIOBufExtractor)
+    RouterProvenanceGatherer)
+from spinn_front_end_common.interface import interface_functions
+
 from spinn_front_end_common import __version__ as fec_version
 try:
     from scipy import __version__ as scipy_version
@@ -100,6 +102,21 @@ ALANS_DEFAULT_RANDOM_APP_ID = 16
 
 # Number of provenace items before auto changes to sql format
 PROVENANCE_TYPE_CUTOFF = 20000
+
+
+def get_front_end_common_pacman_xml_paths():
+    """ Get the XML path for the front end common interface functions
+
+    :rtype: list(str)
+    """
+    return [
+        os.path.join(
+            os.path.dirname(interface_functions.__file__),
+            "front_end_common_interface_functions.xml"),
+        os.path.join(
+            os.path.dirname(report_functions.__file__),
+            "front_end_common_reports.xml")
+    ]
 
 
 class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
@@ -1872,7 +1889,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             optional_algorithms.append("RoutingTableLoader")
             optional_algorithms.append("TagsLoader")
 
-        optional_algorithms.append("WriteMemoryIOData")
         optional_algorithms.append("HostExecuteApplicationDataSpecification")
 
         # Get the executable targets
@@ -2309,15 +2325,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._all_provenance_items.append(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
-        iobuf = ChipIOBufExtractor()
+        iobuf = IOBufExtractor(
+            self._txrx, executable_targets, self._executable_finder,
+            self._app_provenance_file_path, self._system_provenance_file_path,
+            self._config.get("Reports", "extract_iobuf_from_cores"),
+            self._config.get("Reports", "extract_iobuf_from_binary_types"))
         try:
-            errors, warnings = iobuf(
-                self._txrx, executable_targets, self._executable_finder,
-                self._app_provenance_file_path,
-                self._system_provenance_file_path,
-                self._config.get("Reports", "extract_iobuf_from_cores"),
-                self._config.get("Reports", "extract_iobuf_from_binary_types")
-            )
+            errors, warnings = iobuf.extract_iobuf()
         except Exception:
             logger.exception("Could not get iobuf")
             errors, warnings = [], []
@@ -2877,13 +2891,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             return
         if self._config.getboolean("Reports", "clear_iobuf_during_run"):
             return
-        extractor = ChipIOBufExtractor()
-        extractor(
+        extractor = IOBufExtractor(
             transceiver=self._txrx,
             executable_targets=self._last_run_outputs["ExecutableTargets"],
             executable_finder=self._executable_finder,
             app_provenance_file_path=self._app_provenance_file_path,
             system_provenance_file_path=self._system_provenance_file_path)
+        extractor.extract_iobuf()
 
     @overrides(SimulatorInterface.add_socket_address, extend_doc=False)
     def add_socket_address(self, socket_address):
