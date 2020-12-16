@@ -33,7 +33,7 @@ static int processor_heads[MAX_PROCESSORS];
 //! Sum of packets per processor for bitfields with redundancy not yet ordered
 static uint32_t processor_totals[MAX_PROCESSORS];
 
-//! \brief Detemine how many bits are not set in a bit field
+//! \brief Determine how many bits are not set in a bit field
 //! \param[in] filter: The bitfield to look for redundancy in
 //! \return How many redundant packets there are
 static uint32_t n_redundant(filter_info_t *restrict filter) {
