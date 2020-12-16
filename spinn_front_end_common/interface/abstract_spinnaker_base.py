@@ -1872,7 +1872,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             optional_algorithms.append("RoutingTableLoader")
             optional_algorithms.append("TagsLoader")
 
-        optional_algorithms.append("WriteMemoryIOData")
         optional_algorithms.append("HostExecuteApplicationDataSpecification")
 
         # Get the executable targets
