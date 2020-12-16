@@ -13,11 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from spinnman.model import ExecutableTargets
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
+from pacman.model.graphs import AbstractVirtual
 from spinn_front_end_common.utilities.exceptions import (
     ExecutableNotFoundException)
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class GraphBinaryGatherer(object):
@@ -55,6 +60,12 @@ class GraphBinaryGatherer(object):
         """
         # if the vertex cannot be executed, ignore it
         if not isinstance(vertex, AbstractHasAssociatedBinary):
+            if not isinstance(vertex, AbstractVirtual):
+                msg = \
+                    "Vertex {} does not implement either " \
+                    "AbstractHasAssociatedBinary or AbstractVirtual. " \
+                    "So it is unclear if it should or should not have a binary"
+                logger.error(msg.format(vertex), vertex)
             return
 
         # Get name of binary from vertex
