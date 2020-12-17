@@ -28,7 +28,7 @@ jobs:
     - name: "Prepare: Install Ubuntu dependencies"
       run: |
         sudo apt-get update
-        sudo apt-get install vera++ doxygen gcc-arm-none-eabi --fix-missing
+        sudo apt-get install doxygen gcc-arm-none-eabi --fix-missing
 
     - name: "Prepare: Set up Python 3.6"
       # Note: Python is needed for spinn_utilities.make_tools when building
@@ -51,22 +51,22 @@ jobs:
         echo "SPINN_DIRS=$PWD/spinnaker_tools" >> $GITHUB_ENV
 
     - name: "Prepare: Checkout SpiNNaker Dependencies"
-      run: |
-        support/gitclone2.sh https://github.com/SpiNNakerManchester/spinnaker_tools.git
-        support/gitclone2.sh https://github.com/SpiNNakerManchester/spinn_common.git
+      uses: ./support/actions/checkout-spinn-deps
+      with:
         # Note: SpiNNUtils needed for spinn_utilities.make_tools
-        support/gitclone2.sh https://github.com/SpiNNakerManchester/SpiNNUtils.git
-
+        repositories: spinnaker_tools spinn_common SpiNNUtils
     - name: "Prepare: Install SpiNNUtils"
-      run: |
-        python setup.py install
+      run: python setup.py install
       working-directory: SpiNNUtils
 
-    - name: "Check: Lint C code using Vera++"
-      # Note: run this before building to avoid linting modified_src directories
-      run: |
-        support/run-vera.sh c_common/front_end_common_lib
-        support/run-vera.sh c_common/models
+    - name: "Check: Lint C lib code using Vera++"
+      uses: ./support/actions/vera
+      with:
+        base-dir: c_common/front_end_common_lib
+    - name: "Check: Lint C binary code using Vera++"
+      uses: ./support/actions/vera
+      with:
+        base-dir: c_common/models
 
     - name: "Prepare: Build Supporting C libraries"
       run: |
@@ -74,14 +74,11 @@ jobs:
         make -C spinn_common install
 
     - name: "Check: Build C code"
-      run: |
-        make
+      run: make
       working-directory: c_common
       env:
         CFLAGS: -fdiagnostics-color=always
 
     - name: "Check: Build documentation"
-      run: |
-        make doxysetup
-        make doxygen
+      run: make doxysetup doxygen
       working-directory: c_common
