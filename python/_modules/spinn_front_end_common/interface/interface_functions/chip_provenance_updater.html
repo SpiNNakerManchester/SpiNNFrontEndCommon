@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.interface.interface_functions.chip_provenance_updater &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.interface_functions.chip_provenance_updater</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.interface_functions.chip_provenance_updater</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">six</span> <span class="kn">import</span> <span class="n">iterkeys</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
+<span class="kn">from</span> <span class="nn">spinnman.messages.sdp</span> <span class="kn">import</span> <span class="n">SDPFlag</span><span class="p">,</span> <span class="n">SDPHeader</span><span class="p">,</span> <span class="n">SDPMessage</span>
+<span class="kn">from</span> <span class="nn">spinnman.model.enums</span> <span class="kn">import</span> <span class="n">CPUState</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SDP_PORTS</span><span class="p">,</span> <span class="n">SDP_RUNNING_MESSAGE_CODES</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">_ONE_WORD</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;I&quot;</span><span class="p">)</span>
+
+<span class="n">_LIMIT</span> <span class="o">=</span> <span class="mi">10</span>
+
+
+<div class="viewcode-block" id="ChipProvenanceUpdater"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ChipProvenanceUpdater">[docs]</a><span class="k">class</span> <span class="nc">ChipProvenanceUpdater</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Forces all cores to generate provenance data, and then exit.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="ChipProvenanceUpdater.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ChipProvenanceUpdater.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">all_core_subsets</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver txrx:</span>
+<span class="sd">        :param int app_id:</span>
+<span class="sd">        :param ~spinn_machine.CoreSubsets all_core_subsets:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check that the right number of processors are in sync</span>
+        <span class="n">processors_completed</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_core_state_count</span><span class="p">(</span>
+            <span class="n">app_id</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">)</span>
+        <span class="n">total_processors</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_core_subsets</span><span class="p">)</span>
+        <span class="n">left_to_do_cores</span> <span class="o">=</span> <span class="n">total_processors</span> <span class="o">-</span> <span class="n">processors_completed</span>
+
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
+            <span class="n">left_to_do_cores</span><span class="p">,</span>
+            <span class="s2">&quot;Forcing error cores to generate provenance data&quot;</span><span class="p">)</span>
+
+        <span class="n">error_cores</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_cores_in_state</span><span class="p">(</span>
+            <span class="n">all_core_subsets</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">RUN_TIME_EXCEPTION</span><span class="p">)</span>
+        <span class="n">watchdog_cores</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_cores_in_state</span><span class="p">(</span>
+            <span class="n">all_core_subsets</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">WATCHDOG</span><span class="p">)</span>
+        <span class="n">idle_cores</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_cores_in_state</span><span class="p">(</span>
+            <span class="n">all_core_subsets</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">IDLE</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">error_cores</span> <span class="ow">or</span> <span class="n">watchdog_cores</span> <span class="ow">or</span> <span class="n">idle_cores</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                <span class="s2">&quot;Some cores have crashed. RTE cores </span><span class="si">{}</span><span class="s2">, watch-dogged cores </span><span class="si">{}</span><span class="s2">,&quot;</span>
+                <span class="s2">&quot; idle cores </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">error_cores</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">watchdog_cores</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span>
+                    <span class="n">idle_cores</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+        <span class="c1"># check that all cores are in the state FINISHED which shows that</span>
+        <span class="c1"># the core has received the message and done provenance updating</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_provenance</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">total_processors</span><span class="p">,</span> <span class="n">processors_completed</span><span class="p">,</span>
+                                <span class="n">all_core_subsets</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">end</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_update_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">total_processors</span><span class="p">,</span> <span class="n">processors_completed</span><span class="p">,</span>
+                           <span class="n">all_core_subsets</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">progress</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.Transceiver txrx:</span>
+<span class="sd">        :param int total_processors:</span>
+<span class="sd">        :param int processors_completed:</span>
+<span class="sd">        :param ~.CoreSubsets all_core_subsets:</span>
+<span class="sd">        :param int app_id:</span>
+<span class="sd">        :param ~.ProgressBar progress:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+        <span class="n">left_to_do_cores</span> <span class="o">=</span> <span class="n">total_processors</span> <span class="o">-</span> <span class="n">processors_completed</span>
+        <span class="n">attempts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">processors_completed</span> <span class="o">!=</span> <span class="n">total_processors</span> <span class="ow">and</span> <span class="n">attempts</span> <span class="o">&lt;</span> <span class="n">_LIMIT</span><span class="p">:</span>
+            <span class="n">attempts</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">unsuccessful_cores</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_cores_not_in_state</span><span class="p">(</span>
+                <span class="n">all_core_subsets</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="ow">in</span> <span class="n">iterkeys</span><span class="p">(</span><span class="n">unsuccessful_cores</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_send_chip_update_provenance_and_exit</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+
+            <span class="n">processors_completed</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_core_state_count</span><span class="p">(</span>
+                <span class="n">app_id</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">)</span>
+
+            <span class="n">left_over_now</span> <span class="o">=</span> <span class="n">total_processors</span> <span class="o">-</span> <span class="n">processors_completed</span>
+            <span class="n">to_update</span> <span class="o">=</span> <span class="n">left_to_do_cores</span> <span class="o">-</span> <span class="n">left_over_now</span>
+            <span class="n">left_to_do_cores</span> <span class="o">=</span> <span class="n">left_over_now</span>
+            <span class="k">if</span> <span class="n">to_update</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">to_update</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">processors_completed</span> <span class="o">!=</span> <span class="n">total_processors</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Unable to Finish getting provenance data. &quot;</span>
+                         <span class="s2">&quot;Abandoned after too many retries. &quot;</span>
+                         <span class="s2">&quot;Board may be left in an unstable state!&quot;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_send_chip_update_provenance_and_exit</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.Transceiver txrx:</span>
+<span class="sd">        :param int x:</span>
+<span class="sd">        :param int y:</span>
+<span class="sd">        :param int p:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">SDP_RUNNING_MESSAGE_CODES</span><span class="o">.</span><span class="n">SDP_UPDATE_PROVENCE_REGION_AND_EXIT</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">RUNNING_COMMAND_SDP_PORT</span>
+
+        <span class="n">txrx</span><span class="o">.</span><span class="n">send_sdp_message</span><span class="p">(</span><span class="n">SDPMessage</span><span class="p">(</span>
+            <span class="n">SDPHeader</span><span class="p">(</span>
+                <span class="n">flags</span><span class="o">=</span><span class="n">SDPFlag</span><span class="o">.</span><span class="n">REPLY_NOT_EXPECTED</span><span class="p">,</span>
+                <span class="n">destination_port</span><span class="o">=</span><span class="n">port</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">destination_cpu</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
+                <span class="n">destination_chip_x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">destination_chip_y</span><span class="o">=</span><span class="n">y</span><span class="p">),</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">_ONE_WORD</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">cmd</span><span class="o">.</span><span class="n">value</span><span class="p">)))</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.interface_functions.chip_provenance_updater</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

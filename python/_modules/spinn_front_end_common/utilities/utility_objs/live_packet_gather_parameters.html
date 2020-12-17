@@ -1,0 +1,275 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.utilities.utility_objs.live_packet_gather_parameters &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.utility_objs.live_packet_gather_parameters</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utilities.utility_objs.live_packet_gather_parameters</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span> <span class="nn">spinnman.messages.eieio</span> <span class="kn">import</span> <span class="n">EIEIOType</span><span class="p">,</span> <span class="n">EIEIOPrefix</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
+<span class="kn">from</span> <span class="nn">pacman.model.resources.iptag_resource</span> <span class="kn">import</span> <span class="n">IPtagResource</span>
+
+<span class="n">_HAS_PAYLOAD</span> <span class="o">=</span> <span class="p">(</span><span class="n">EIEIOType</span><span class="o">.</span><span class="n">KEY_PAYLOAD_32_BIT</span><span class="p">,</span> <span class="n">EIEIOType</span><span class="o">.</span><span class="n">KEY_PAYLOAD_16_BIT</span><span class="p">)</span>
+<span class="n">_NO_PAYLOAD</span> <span class="o">=</span> <span class="p">(</span><span class="n">EIEIOType</span><span class="o">.</span><span class="n">KEY_32_BIT</span><span class="p">,</span> <span class="n">EIEIOType</span><span class="o">.</span><span class="n">KEY_16_BIT</span><span class="p">)</span>
+<span class="c1">#: Used to identify tags involved with the live packet gatherer.</span>
+<span class="n">TRAFFIC_IDENTIFIER</span> <span class="o">=</span> <span class="s2">&quot;LPG_EVENT_STREAM&quot;</span>
+
+
+<div class="viewcode-block" id="LivePacketGatherParameters"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters">[docs]</a><span class="k">class</span> <span class="nc">LivePacketGatherParameters</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Parameter holder for LPGs so that they can be instantiated at a\</span>
+<span class="sd">        later date.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;_port&#39;</span><span class="p">,</span> <span class="s1">&#39;_hostname&#39;</span><span class="p">,</span> <span class="s2">&quot;_tag&quot;</span><span class="p">,</span> <span class="s2">&quot;_board_address&quot;</span><span class="p">,</span> <span class="s2">&quot;_strip_sdp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_use_prefix&quot;</span><span class="p">,</span> <span class="s2">&quot;_key_prefix&quot;</span><span class="p">,</span> <span class="s2">&quot;_prefix_type&quot;</span><span class="p">,</span> <span class="s2">&quot;_message_type&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_right_shift&quot;</span><span class="p">,</span> <span class="s2">&quot;_payload_as_time_stamps&quot;</span><span class="p">,</span> <span class="s2">&quot;_use_payload_prefix&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_payload_prefix&quot;</span><span class="p">,</span>  <span class="s2">&quot;_payload_right_shift&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_packets_per_time_step&quot;</span><span class="p">,</span> <span class="s2">&quot;_label&quot;</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">strip_sdp</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">use_prefix</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">key_prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">message_type</span><span class="o">=</span><span class="n">EIEIOType</span><span class="o">.</span><span class="n">KEY_32_BIT</span><span class="p">,</span> <span class="n">right_shift</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">payload_as_time_stamps</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_payload_prefix</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">payload_prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">payload_right_shift</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">number_of_packets_sent_per_time_step</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">board_address</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :raises ConfigurationException:</span>
+<span class="sd">            If the parameters passed are known to be an invalid combination.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
+
+        <span class="c1"># Sanity checks</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">message_type</span> <span class="ow">in</span> <span class="n">_HAS_PAYLOAD</span> <span class="ow">and</span> <span class="n">use_payload_prefix</span> <span class="ow">and</span>
+                <span class="n">payload_as_time_stamps</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                <span class="s2">&quot;Timestamp can either be included as payload prefix or as &quot;</span>
+                <span class="s2">&quot;payload to each key, not both&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">message_type</span> <span class="ow">in</span> <span class="n">_NO_PAYLOAD</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">use_payload_prefix</span> <span class="ow">and</span>
+                <span class="n">payload_as_time_stamps</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                <span class="s2">&quot;Timestamp can either be included as payload prefix or as &quot;</span>
+                <span class="s2">&quot;payload to each key, but current configuration does not &quot;</span>
+                <span class="s2">&quot;specify either of these&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">prefix_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prefix_type</span><span class="p">,</span> <span class="n">EIEIOPrefix</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                <span class="s2">&quot;the type of a prefix type should be of a EIEIOPrefix, &quot;</span>
+                <span class="s2">&quot;which can be located in: spinnman.messages.eieio&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hostname</span> <span class="o">=</span> <span class="n">hostname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tag</span> <span class="o">=</span> <span class="n">tag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_board_address</span> <span class="o">=</span> <span class="n">board_address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_strip_sdp</span> <span class="o">=</span> <span class="n">strip_sdp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_prefix</span> <span class="o">=</span> <span class="n">use_prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_key_prefix</span> <span class="o">=</span> <span class="n">key_prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix_type</span> <span class="o">=</span> <span class="n">prefix_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_message_type</span> <span class="o">=</span> <span class="n">message_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_right_shift</span> <span class="o">=</span> <span class="n">right_shift</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_payload_as_time_stamps</span> <span class="o">=</span> <span class="n">payload_as_time_stamps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_payload_prefix</span> <span class="o">=</span> <span class="n">use_payload_prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_payload_prefix</span> <span class="o">=</span> <span class="n">payload_prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_payload_right_shift</span> <span class="o">=</span> <span class="n">payload_right_shift</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_packets_per_time_step</span> <span class="o">=</span> <span class="n">number_of_packets_sent_per_time_step</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="n">label</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">port</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_port</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">hostname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hostname</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">tag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tag</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">board_address</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_board_address</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">strip_sdp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_strip_sdp</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">use_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_prefix</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">key_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_prefix</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prefix_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefix_type</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">message_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_message_type</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">right_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_right_shift</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">payload_as_time_stamps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_payload_as_time_stamps</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">use_payload_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_payload_prefix</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">payload_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_payload_prefix</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">payload_right_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_payload_right_shift</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">number_of_packets_sent_per_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_packets_per_time_step</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span>
+
+<div class="viewcode-block" id="LivePacketGatherParameters.get_iptag_resource"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.get_iptag_resource">[docs]</a>    <span class="k">def</span> <span class="nf">get_iptag_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get a description of the IPtag that the LPG for these parameters \</span>
+<span class="sd">            will require.</span>
+
+<span class="sd">        :rtype: ~pacman.model.resources.IPtagResource</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">IPtagResource</span><span class="p">(</span>
+            <span class="n">ip_address</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
+            <span class="n">strip_sdp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">strip_sdp</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span>
+            <span class="n">traffic_identifier</span><span class="o">=</span><span class="n">TRAFFIC_IDENTIFIER</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_port</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">port</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_hostname</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">hostname</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tag</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">tag</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_board_address</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">board_address</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_strip_sdp</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">strip_sdp</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_use_prefix</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">use_prefix</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_key_prefix</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">key_prefix</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_prefix_type</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">prefix_type</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_message_type</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">message_type</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_right_shift</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">right_shift</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_payload_as_time_stamps</span> <span class="o">==</span>
+                <span class="n">other</span><span class="o">.</span><span class="n">payload_as_time_stamps</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_use_payload_prefix</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">use_payload_prefix</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_payload_prefix</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">payload_prefix</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_payload_right_shift</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">payload_right_shift</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_n_packets_per_time_step</span> <span class="o">==</span>
+                <span class="n">other</span><span class="o">.</span><span class="n">number_of_packets_sent_per_time_step</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tag</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_board_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_strip_sdp</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_use_prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefix_type</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_message_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_right_shift</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_payload_as_time_stamps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_payload_prefix</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_payload_prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_payload_right_shift</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_n_packets_per_time_step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.utility_objs.live_packet_gather_parameters</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

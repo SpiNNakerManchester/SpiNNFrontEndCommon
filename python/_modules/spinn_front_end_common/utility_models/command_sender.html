@@ -1,0 +1,160 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.utility_models.command_sender &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utility_models.command_sender</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utility_models.command_sender</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
+<span class="kn">from</span> <span class="nn">pacman.model.graphs.application</span> <span class="kn">import</span> <span class="n">ApplicationEdge</span><span class="p">,</span> <span class="n">ApplicationVertex</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.model.graphs.application.abstract</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AbstractOneAppOneMachineVertex</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.command_sender_machine_vertex</span> <span class="kn">import</span> <span class="n">CommandSenderMachineVertex</span>
+
+
+<div class="viewcode-block" id="CommandSender"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSender">[docs]</a><span class="k">class</span> <span class="nc">CommandSender</span><span class="p">(</span>
+        <span class="n">AbstractOneAppOneMachineVertex</span><span class="p">,</span>
+        <span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A utility for sending commands to a vertex (possibly an external\</span>
+<span class="sd">        device) at fixed times in the simulation or in response to \</span>
+<span class="sd">        simulation events (e.g., starting and stopping).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str label: The label of this vertex</span>
+<span class="sd">        :param constraints: Any initial constraints to this vertex</span>
+<span class="sd">        :type constraints:</span>
+<span class="sd">            iterable(~pacman.model.constraints.AbstractConstraint)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CommandSender</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">CommandSenderMachineVertex</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="bp">self</span><span class="p">),</span>
+            <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CommandSender.add_commands"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSender.add_commands">[docs]</a>    <span class="k">def</span> <span class="nf">add_commands</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">start_resume_commands</span><span class="p">,</span> <span class="n">pause_stop_commands</span><span class="p">,</span>
+            <span class="n">timed_commands</span><span class="p">,</span> <span class="n">vertex_to_send_to</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add commands to be sent down a given edge</span>
+
+<span class="sd">        :param iterable(MultiCastCommand) start_resume_commands:</span>
+<span class="sd">            The commands to send when the simulation starts or resumes from</span>
+<span class="sd">            pause</span>
+<span class="sd">        :param iterable(MultiCastCommand) pause_stop_commands:</span>
+<span class="sd">            The commands to send when the simulation stops or pauses after</span>
+<span class="sd">            running</span>
+<span class="sd">        :param iterable(MultiCastCommand) timed_commands:</span>
+<span class="sd">            The commands to send at specific times</span>
+<span class="sd">        :param ~pacman.model.graphs.AbstractVertex vertex_to_send_to:</span>
+<span class="sd">            The vertex these commands are to be sent to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertex</span><span class="o">.</span><span class="n">add_commands</span><span class="p">(</span>
+            <span class="n">start_resume_commands</span><span class="p">,</span> <span class="n">pause_stop_commands</span><span class="p">,</span> <span class="n">timed_commands</span><span class="p">,</span>
+            <span class="n">vertex_to_send_to</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CommandSender.edges_and_partitions"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSender.edges_and_partitions">[docs]</a>    <span class="k">def</span> <span class="nf">edges_and_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Construct application edges from this vertex to the app vertices\</span>
+<span class="sd">            that this vertex knows how to target (and has keys allocated for).</span>
+
+<span class="sd">        :return: edges, partition IDs</span>
+<span class="sd">        :rtype: tuple(list(~pacman.model.graphs.application.ApplicationEdge),</span>
+<span class="sd">            list(str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertex</span><span class="o">.</span><span class="n">_get_edges_and_partitions</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">ApplicationVertex</span><span class="p">,</span> <span class="n">ApplicationEdge</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CommandSender.get_outgoing_partition_constraints"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSender.get_outgoing_partition_constraints">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="o">.</span>
+               <span class="n">get_outgoing_partition_constraints</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_outgoing_partition_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partition</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertex</span><span class="o">.</span><span class="n">get_outgoing_partition_constraints</span><span class="p">(</span>
+            <span class="n">partition</span><span class="p">)</span></div></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utility_models.command_sender</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

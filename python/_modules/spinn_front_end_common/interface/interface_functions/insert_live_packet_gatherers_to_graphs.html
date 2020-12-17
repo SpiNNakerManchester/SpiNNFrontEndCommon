@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.interface.interface_functions.insert_live_packet_gatherers_to_graphs &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.interface_functions.insert_live_packet_gatherers_to_graphs</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.interface_functions.insert_live_packet_gatherers_to_graphs</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
+<span class="kn">from</span> <span class="nn">pacman.model.constraints.placer_constraints</span> <span class="kn">import</span> <span class="n">ChipAndCoreConstraint</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">LivePacketGather</span><span class="p">,</span> <span class="n">LivePacketGatherMachineVertex</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="InsertLivePacketGatherersToGraphs"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.InsertLivePacketGatherersToGraphs">[docs]</a><span class="k">class</span> <span class="nc">InsertLivePacketGatherersToGraphs</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Adds LPGs as required into a given graph.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;_machine_graph&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_application_graph&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="InsertLivePacketGatherersToGraphs.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.InsertLivePacketGatherersToGraphs.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">live_packet_gatherer_parameters</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
+            <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add LPG vertices on Ethernet connected chips as required.</span>
+
+<span class="sd">        :param live_packet_gatherer_parameters:</span>
+<span class="sd">            the Live Packet Gatherer parameters requested by the script</span>
+<span class="sd">        :type live_packet_gatherer_parameters:</span>
+<span class="sd">            dict(LivePacketGatherParameters,</span>
+<span class="sd">            list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))</span>
+<span class="sd">        :param ~spinn_machine.Machine machine:</span>
+<span class="sd">            the SpiNNaker machine as discovered</span>
+<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">            the machine graph</span>
+<span class="sd">        :param application_graph: the application graph</span>
+<span class="sd">        :type application_graph:</span>
+<span class="sd">            ~pacman.model.graphs.application.ApplicationGraph</span>
+<span class="sd">        :return: mapping between LPG parameters and LPG vertex</span>
+<span class="sd">        :rtype: dict(LivePacketGatherParameters,</span>
+<span class="sd">            dict(tuple(int,int),LivePacketGatherMachineVertex))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span> <span class="o">=</span> <span class="n">machine_graph</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span> <span class="o">=</span> <span class="n">application_graph</span>
+
+        <span class="c1"># create progress bar</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
+            <span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">,</span>
+            <span class="n">string_describing_what_being_progressed</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">&quot;Adding Live Packet Gatherers to Graph&quot;</span><span class="p">))</span>
+
+        <span class="c1"># Keep track of the vertices added by parameters and board address</span>
+        <span class="n">lpg_params_to_vertices</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+
+        <span class="c1"># for every Ethernet connected chip, add the gatherers required</span>
+        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">live_packet_gatherer_parameters</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">board_address</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span>
+                            <span class="n">params</span><span class="o">.</span><span class="n">board_address</span> <span class="o">==</span> <span class="n">chip</span><span class="o">.</span><span class="n">ip_address</span><span class="p">):</span>
+                        <span class="n">lpg_params_to_vertices</span><span class="p">[</span><span class="n">params</span><span class="p">][</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> \
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_add_app_lpg_vertex</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">live_packet_gatherer_parameters</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">board_address</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span>
+                            <span class="n">params</span><span class="o">.</span><span class="n">board_address</span> <span class="o">==</span> <span class="n">chip</span><span class="o">.</span><span class="n">ip_address</span><span class="p">):</span>
+                        <span class="n">lpg_params_to_vertices</span><span class="p">[</span><span class="n">params</span><span class="p">][</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> \
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_add_mach_lpg_vertex</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lpg_params_to_vertices</span></div>
+
+    <span class="k">def</span> <span class="nf">_add_app_lpg_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Adds a LPG vertex to a machine graph that has an associated\</span>
+<span class="sd">            application graph.</span>
+
+<span class="sd">        :param ~.Chip chip:</span>
+<span class="sd">        :param LivePacketGatherParameters params:</span>
+<span class="sd">        :rtype: LivePacketGatherMachineVertex</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">app_vtx</span> <span class="o">=</span> <span class="n">LivePacketGather</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">app_vtx</span><span class="p">)</span>
+        <span class="c1"># No need to handle resources when allocating; LPG has core to itself</span>
+        <span class="n">vtx</span> <span class="o">=</span> <span class="n">app_vtx</span><span class="o">.</span><span class="n">create_machine_vertex</span><span class="p">(</span>
+            <span class="n">vertex_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resources_required</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;LivePacketGatherer&quot;</span><span class="p">,</span>
+            <span class="n">constraints</span><span class="o">=</span><span class="p">[</span><span class="n">ChipAndCoreConstraint</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">vtx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vtx</span>
+
+    <span class="k">def</span> <span class="nf">_add_mach_lpg_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Adds a LPG vertex to a machine graph without an associated\</span>
+<span class="sd">            application graph.</span>
+
+<span class="sd">        :param ~.Chip chip:</span>
+<span class="sd">        :param LivePacketGatherParameters params:</span>
+<span class="sd">        :rtype: LivePacketGatherMachineVertex</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">vtx</span> <span class="o">=</span> <span class="n">LivePacketGatherMachineVertex</span><span class="p">(</span>
+            <span class="n">params</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="p">[</span><span class="n">ChipAndCoreConstraint</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">vtx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vtx</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.interface_functions.insert_live_packet_gatherers_to_graphs</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

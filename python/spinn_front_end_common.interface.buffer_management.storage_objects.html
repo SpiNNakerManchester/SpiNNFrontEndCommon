@@ -25,6 +25,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="spinn_front_end_common.interface.ds.html" title="spinn_front_end_common.interface.ds package"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -46,8 +49,1001 @@
             
   <div class="section" id="spinn-front-end-common-interface-buffer-management-storage-objects-package">
 <h1>spinn_front_end_common.interface.buffer_management.storage_objects package<a class="headerlink" href="#spinn-front-end-common-interface-buffer-management-storage-objects-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-spinn_front_end_common.interface.buffer_management.storage_objects">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.buffer_management.storage_objects" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.buffer_management.storage_objects.</code><code class="sig-name descname">AbstractDatabase</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>This API separates the required database calls from the implementation.</p>
+<p>Methods here are designed for the convenience of the caller not the    database.</p>
+<p>There should only ever be a single Database Object in use at any time.    In the case of application_graph_changed the first should closed and    a new one created.</p>
+<p>Do not assume that just because 2 database objects where opened with the    same parameters (for example SQLite file)    that they hold the same data.     In fact the second init is allowed to delete any previous data.</p>
+<p>While not recommended implementation objects are allowed to hold data in     memory, with the exception of data required by the java which must be     in the database once commit is called.</p>
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear">
+<em class="property">abstract </em><code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the data for all regions.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method will be removed when the database moves to
+keeping data after reset.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear_region">
+<em class="property">abstract </em><code class="sig-name descname">clear_region</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.clear_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the data for a single region.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method <em>loses information!</em></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Region containing the data to be cleared</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if any region was changed</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.close">
+<em class="property">abstract </em><code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signals that the database can be closed and will not be reused.</p>
+<p>Once this is called any other method in this API is allowed to        raise any kind of exception.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.get_region_data">
+<em class="property">abstract </em><code class="sig-name descname">get_region_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.get_region_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.get_region_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the data stored for a given region of a given core</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Region containing the data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>a buffer containing all the data received during the            simulation, and a flag indicating if any data was missing</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Implementations should not assume that the total buffer is
+necessarily shorter than 1GB.</p>
+</div>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#memoryview" title="(in Python v3.6)">memoryview</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.store_data_in_region_buffer">
+<em class="property">abstract </em><code class="sig-name descname">store_data_in_region_buffer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.store_data_in_region_buffer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store some information in the corresponding buffer for a            specific chip, core and recording region.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Region containing the data to be stored</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytearray" title="(in Python v3.6)"><em>bytearray</em></a>) – <p>data to be stored</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Implementations may assume this to be shorter than 1GB</p>
+</div>
+</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.buffer_management.storage_objects.</code><code class="sig-name descname">BufferedReceivingData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">report_folder</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Stores the information received through the buffering output        technique from the SpiNNaker system. The data kept includes the last        sent packet and last received packet, their correspondent sequence        numbers, the data retrieved, a flag to identify if the data from a        core has been flushed and the final state of the buffering output        state machine</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>report_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The directory to write the database used to store some of the data</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.clear">
+<code class="sig-name descname">clear</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the data from a given data region (only clears things            associated with a given data recording region).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – placement x coordinate</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – placement y coordinate</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – placement p coordinate</p></li>
+<li><p><strong>region_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the recording region ID to clear data from</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.flushing_data_from_region">
+<code class="sig-name descname">flushing_data_from_region</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.flushing_data_from_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.flushing_data_from_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store flushed data from a region of a core on a chip, and mark it            as being flushed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Region containing the data to be stored</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytearray" title="(in Python v3.6)"><em>bytearray</em></a>) – data to be stored</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_end_buffering_sequence_number">
+<code class="sig-name descname">get_end_buffering_sequence_number</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.get_end_buffering_sequence_number"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_end_buffering_sequence_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the last sequence number sent by the core.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The last sequence number</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_end_buffering_state">
+<code class="sig-name descname">get_end_buffering_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.get_end_buffering_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_end_buffering_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the end state of the buffering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The end state</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_data">
+<code class="sig-name descname">get_region_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.get_region_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the data stored for a given region of a given core.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Region containing the data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a buffer containing all the data received during the
+simulation, and a flag indicating if any data was missing</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#memoryview" title="(in Python v3.6)">memoryview</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_data_pointer">
+<code class="sig-name descname">get_region_data_pointer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.get_region_data_pointer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>It is no longer possible to get access to the data pointer.</p>
+<p>Use :py:meth`get_region_data` to get the data and missing flag
+directly.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_data_from_region_flushed">
+<code class="sig-name descname">is_data_from_region_flushed</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.is_data_from_region_flushed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_data_from_region_flushed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the data region has been flushed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Region containing the data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the region has been flushed. False otherwise</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_end_buffering_sequence_number_stored">
+<code class="sig-name descname">is_end_buffering_sequence_number_stored</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.is_end_buffering_sequence_number_stored"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_end_buffering_sequence_number_stored" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if the last sequence number has been retrieved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the number has been retrieved</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_end_buffering_state_recovered">
+<code class="sig-name descname">is_end_buffering_state_recovered</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.is_end_buffering_state_recovered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_end_buffering_state_recovered" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if the end state has been stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Region containing the data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the state has been stored</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.last_received_packet_from_core">
+<code class="sig-name descname">last_received_packet_from_core</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.last_received_packet_from_core"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.last_received_packet_from_core" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the last packet received for a given core.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>SpinnakerRequestReadData packet received</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.messages.eieio.command_messages/#spinnman.messages.eieio.command_messages.SpinnakerRequestReadData" title="(in SpiNNMan)">SpinnakerRequestReadData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.last_sent_packet_to_core">
+<code class="sig-name descname">last_sent_packet_to_core</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.last_sent_packet_to_core"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.last_sent_packet_to_core" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the last packet sent to a core.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>last HostDataRead packet sent</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.messages.eieio.command_messages/#spinnman.messages.eieio.command_messages.HostDataRead" title="(in SpiNNMan)">HostDataRead</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.last_sequence_no_for_core">
+<code class="sig-name descname">last_sequence_no_for_core</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.last_sequence_no_for_core"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.last_sequence_no_for_core" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the last sequence number for a core.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>last sequence number used</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.resume">
+<code class="sig-name descname">resume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.resume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.resume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets states so that it can behave in a resumed mode.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_data_in_region_buffer">
+<code class="sig-name descname">store_data_in_region_buffer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.store_data_in_region_buffer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store some information in the correspondent buffer class for a            specific chip, core and region.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Region containing the data to be stored</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytearray" title="(in Python v3.6)"><em>bytearray</em></a>) – data to be stored</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_end_buffering_sequence_number">
+<code class="sig-name descname">store_end_buffering_sequence_number</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">sequence</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.store_end_buffering_sequence_number"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_end_buffering_sequence_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store the last sequence number sent by the core.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>sequence</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The last sequence number</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_end_buffering_state">
+<code class="sig-name descname">store_end_buffering_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">state</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.store_end_buffering_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_end_buffering_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store the end state of buffering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Region containing the data</p></li>
+<li><p><strong>state</strong> – The end state</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_last_received_packet_from_core">
+<code class="sig-name descname">store_last_received_packet_from_core</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">packet</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.store_last_received_packet_from_core"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_last_received_packet_from_core" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store the most recent packet received from SpiNNaker for a given            core.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>packet</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.messages.eieio.command_messages/#spinnman.messages.eieio.command_messages.SpinnakerRequestReadData" title="(in SpiNNMan)"><em>SpinnakerRequestReadData</em></a>) – SpinnakerRequestReadData packet received</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_last_sent_packet_to_core">
+<code class="sig-name descname">store_last_sent_packet_to_core</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">packet</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.store_last_sent_packet_to_core"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_last_sent_packet_to_core" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store the last packet sent to the given core.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>packet</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.messages.eieio.command_messages/#spinnman.messages.eieio.command_messages.HostDataRead" title="(in SpiNNMan)"><em>HostDataRead</em></a>) – last HostDataRead packet sent</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.update_sequence_no_for_core">
+<code class="sig-name descname">update_sequence_no_for_core</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">sequence_no</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.update_sequence_no_for_core"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.update_sequence_no_for_core" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the last sequence number used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>sequence_no</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – last sequence number used</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.buffer_management.storage_objects.</code><code class="sig-name descname">BufferedSendingRegion</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A set of keys to be sent at given timestamps for a given region of        data.  Note that keys must be added in timestamp order or else an        exception will be raised.</p>
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_key">
+<code class="sig-name descname">add_key</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">timestamp</span></em>, <em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.add_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a key to be sent at a given time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The time at which the key is to be sent</p></li>
+<li><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The key to send</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_keys">
+<code class="sig-name descname">add_keys</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">timestamp</span></em>, <em class="sig-param"><span class="n">keys</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.add_keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a set of keys to be sent at the given time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The time at which the keys are to be sent</p></li>
+<li><p><strong>keys</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em>) – The keys to send</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.clear">
+<code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the buffer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.current_timestamp">
+<em class="property">property </em><code class="sig-name descname">current_timestamp</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.current_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current timestamp in the iterator.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.get_n_keys">
+<code class="sig-name descname">get_n_keys</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">timestamp</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.get_n_keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.get_n_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of keys for a given timestamp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>timestamp</strong> – the time stamp to check if there’s still keys to transmit</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_key">
+<code class="sig-name descname">is_next_key</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">timestamp</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.is_next_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if there is another key for the given timestamp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – the time stamp to check if there’s still keys to transmit</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_timestamp">
+<em class="property">property </em><code class="sig-name descname">is_next_timestamp</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Determines if the region is empty.</dt><dd><p>True if the region is empty, false otherwise.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.n_timestamps">
+<em class="property">property </em><code class="sig-name descname">n_timestamps</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.n_timestamps" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of timestamps available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.next_key">
+<em class="property">property </em><code class="sig-name descname">next_key</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.next_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>The next key to be sent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.next_timestamp">
+<em class="property">property </em><code class="sig-name descname">next_timestamp</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.next_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>The next timestamp of the data to be sent, or None if no more data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.rewind">
+<code class="sig-name descname">rewind</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.rewind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.rewind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rewind the buffer to initial position.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.timestamps">
+<em class="property">property </em><code class="sig-name descname">timestamps</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.timestamps" title="Permalink to this definition">¶</a></dt>
+<dd><p>The timestamps for which there are keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>iterable(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.buffer_management.storage_objects.</code><code class="sig-name descname">BuffersSentDeque</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">sent_stop_message</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">n_sequences_per_tranmission</span><span class="o">=</span><span class="default_value">64</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffers_sent_deque.html#BuffersSentDeque"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A tracker of buffers sent / to send for a region</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The region being managed</p></li>
+<li><p><strong>sent_stop_message</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – True if the stop message has been sent</p></li>
+<li><p><strong>n_sequences_per_tranmission</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The number of sequences allowed in each transmission set</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.add_message_to_send">
+<code class="sig-name descname">add_message_to_send</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffers_sent_deque.html#BuffersSentDeque.add_message_to_send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.add_message_to_send" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a message to send.  The message is converted to a sequenced            message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>message</strong> (<em>AbstractEIEIOMessage</em>) – The message to be added</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_empty">
+<code class="sig-name descname">is_empty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffers_sent_deque.html#BuffersSentDeque.is_empty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if there are no messages.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_full">
+<em class="property">property </em><code class="sig-name descname">is_full</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_full" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if the number of messages sent is at the limit for the            sequencing system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.messages">
+<em class="property">property </em><code class="sig-name descname">messages</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.messages" title="Permalink to this definition">¶</a></dt>
+<dd><p>The messages that have been added to the set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>iterable(<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.messages.eieio.command_messages/#spinnman.messages.eieio.command_messages.HostSendSequencedData" title="(in SpiNNMan)">HostSendSequencedData</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.send_stop_message">
+<code class="sig-name descname">send_stop_message</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffers_sent_deque.html#BuffersSentDeque.send_stop_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.send_stop_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a message to indicate the end of all the messages.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.update_last_received_sequence_number">
+<code class="sig-name descname">update_last_received_sequence_number</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">last_received_sequence_no</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffers_sent_deque.html#BuffersSentDeque.update_last_received_sequence_number"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.update_last_received_sequence_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the last received sequence number.  If the sequence number            is within the valid window, packets before the sequence number            within the window are removed, and the last received sequence            number is updated, thus moving the window for the next call.  If            the sequence number is not within the valid window, it is assumed            to be invalid and so is ignored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>last_received_sequence_no</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The new sequence number</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if update went ahead, False if it was ignored</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.buffer_management.storage_objects.</code><code class="sig-name descname">ChannelBufferState</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start_address</span></em>, <em class="sig-param"><span class="n">current_write</span></em>, <em class="sig-param"><span class="n">current_dma_write</span></em>, <em class="sig-param"><span class="n">current_read</span></em>, <em class="sig-param"><span class="n">end_address</span></em>, <em class="sig-param"><span class="n">region_id</span></em>, <em class="sig-param"><span class="n">missing_info</span></em>, <em class="sig-param"><span class="n">last_buffer_operation</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/channel_buffer_state.html#ChannelBufferState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Stores information related to a single channel output buffering        state, as it is retrieved at the end of a simulation on the        SpiNNaker system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – start buffering area memory address (32 bits)</p></li>
+<li><p><strong>current_write</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – address where data was last written (32 bits)</p></li>
+<li><p><strong>current_read</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – address where data was last read (32 bits)</p></li>
+<li><p><strong>end_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The address of first byte after the buffer (32 bits)</p></li>
+<li><p><strong>region_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The ID of the region (8 bits)</p></li>
+<li><p><strong>missing_info</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – True if the region overflowed during the simulation (8 bits)</p></li>
+<li><p><strong>last_buffer_operation</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Last operation performed on the buffer - read or write (8 bits)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.ChannelBufferStateSize">
+<code class="sig-name descname">ChannelBufferStateSize</code><em class="property"> = 24</em><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.ChannelBufferStateSize" title="Permalink to this definition">¶</a></dt>
+<dd><p>4 bytes for _start_address, 4 for _current_write,
+4 for current_dma_write,
+4 for _current_read, 4 for _end_address, 1 for _region_id,
+1 for _missing_info, 1 for _last_buffer_operation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.create_from_bytearray">
+<em class="property">static </em><code class="sig-name descname">create_from_bytearray</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/channel_buffer_state.html#ChannelBufferState.create_from_bytearray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.create_from_bytearray" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytearray" title="(in Python v3.6)"><em>bytearray</em></a>) – The contents of the buffer state structure on SpiNNaker.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState" title="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState">ChannelBufferState</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.current_read">
+<em class="property">property </em><code class="sig-name descname">current_read</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.current_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>address where data was last read</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.current_write">
+<em class="property">property </em><code class="sig-name descname">current_write</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.current_write" title="Permalink to this definition">¶</a></dt>
+<dd><p>address where data was last written</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.end_address">
+<em class="property">property </em><code class="sig-name descname">end_address</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.end_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>The address of first byte after the buffer</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.is_state_updated">
+<em class="property">property </em><code class="sig-name descname">is_state_updated</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.is_state_updated" title="Permalink to this definition">¶</a></dt>
+<dd><p>bool check for if its extracted data from machine</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.last_buffer_operation">
+<em class="property">property </em><code class="sig-name descname">last_buffer_operation</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.last_buffer_operation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Last operation performed on the buffer - read (0) or write (non-0)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.missing_info">
+<em class="property">property </em><code class="sig-name descname">missing_info</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.missing_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if the region overflowed during the simulation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.region_id">
+<em class="property">property </em><code class="sig-name descname">region_id</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.region_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ID of the region</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.set_update_completed">
+<code class="sig-name descname">set_update_completed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/channel_buffer_state.html#ChannelBufferState.set_update_completed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.set_update_completed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.size_of_channel_state">
+<em class="property">classmethod </em><code class="sig-name descname">size_of_channel_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/channel_buffer_state.html#ChannelBufferState.size_of_channel_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.size_of_channel_state" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.start_address">
+<em class="property">property </em><code class="sig-name descname">start_address</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.start_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>start buffering area memory address</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.update_last_operation">
+<code class="sig-name descname">update_last_operation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">operation</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/channel_buffer_state.html#ChannelBufferState.update_last_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.update_last_operation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.update_read_pointer">
+<code class="sig-name descname">update_read_pointer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">read_ptr</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/channel_buffer_state.html#ChannelBufferState.update_read_pointer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.update_read_pointer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.EndBufferingState">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.buffer_management.storage_objects.</code><code class="sig-name descname">EndBufferingState</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">buffering_out_fsm_state</span></em>, <em class="sig-param"><span class="n">list_channel_buffer_state</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/end_buffering_state.html#EndBufferingState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.EndBufferingState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Stores the buffering state at the end of a simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffering_out_fsm_state</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Final sequence number received</p></li>
+<li><p><strong>list_channel_buffer_state</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState" title="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState"><em>ChannelBufferState</em></a><em>)</em>) – a list of channel state, where each channel is stored in a
+ChannelBufferState object</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.EndBufferingState.buffering_out_fsm_state">
+<em class="property">property </em><code class="sig-name descname">buffering_out_fsm_state</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.EndBufferingState.buffering_out_fsm_state" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.EndBufferingState.channel_buffer_state">
+<code class="sig-name descname">channel_buffer_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/end_buffering_state.html#EndBufferingState.channel_buffer_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.EndBufferingState.channel_buffer_state" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>i</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the index into the buffer states</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState" title="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState">ChannelBufferState</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.EndBufferingState.get_missing_info_for_region">
+<code class="sig-name descname">get_missing_info_for_region</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/end_buffering_state.html#EndBufferingState.get_missing_info_for_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.EndBufferingState.get_missing_info_for_region" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.EndBufferingState.get_state_for_region">
+<code class="sig-name descname">get_state_for_region</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/end_buffering_state.html#EndBufferingState.get_state_for_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.EndBufferingState.get_state_for_region" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>region_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The region identifier</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a> or <a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState" title="spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState">ChannelBufferState</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.EndBufferingState.size_of_region">
+<em class="property">static </em><code class="sig-name descname">size_of_region</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_regions_to_record</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/end_buffering_state.html#EndBufferingState.size_of_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.EndBufferingState.size_of_region" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_regions_to_record</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Number of regions to be recorded</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Size of region required to hold that state, in bytes</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.buffer_management.storage_objects.</code><code class="sig-name descname">SqlLiteDatabase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">database_file</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.abstract_database.AbstractDatabase</span></code>, <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils)"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_utilities.abstract_context_manager.AbstractContextManager</span></code></a></p>
+<p>Specific implementation of the Database for SQLite 3.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><em>Not thread safe on the same database file!</em>
+Threads can access different DBs just fine.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>database_file</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The name of a file that contains (or will contain) an SQLite
+database holding the data. If omitted, an unshared in-memory
+database will be used.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear">
+<code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the data for all regions.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method will be removed when the database moves to
+keeping data after reset.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear_region">
+<code class="sig-name descname">clear_region</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.clear_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the data for a single region.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method <em>loses information!</em></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Region containing the data to be cleared</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if any region was changed</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signals that the database can be closed and will not be reused.</p>
+<p>Once this is called any other method in this API is allowed to        raise any kind of exception.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.get_region_data">
+<code class="sig-name descname">get_region_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.get_region_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.get_region_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the data stored for a given region of a given core</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Region containing the data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>a buffer containing all the data received during the            simulation, and a flag indicating if any data was missing</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Implementations should not assume that the total buffer is
+necessarily shorter than 1GB.</p>
+</div>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#memoryview" title="(in Python v3.6)">memoryview</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.store_data_in_region_buffer">
+<code class="sig-name descname">store_data_in_region_buffer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.store_data_in_region_buffer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store some information in the corresponding buffer for a            specific chip, core and recording region.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the chip</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Core within the specified chip</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Region containing the data to be stored</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytearray" title="(in Python v3.6)"><em>bytearray</em></a>) – <p>data to be stored</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Implementations may assume this to be shorter than 1GB</p>
+</div>
+</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 
@@ -61,7 +1057,7 @@
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.buffer_management.storage_objects package</a><ul>
-<li><a class="reference internal" href="#module-contents">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.buffer_management.storage_objects">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -99,6 +1095,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="spinn_front_end_common.interface.ds.html" title="spinn_front_end_common.interface.ds package"
              >next</a> |</li>

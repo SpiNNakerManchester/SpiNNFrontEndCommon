@@ -25,6 +25,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="spinn_front_end_common.utilities.notification_protocol.html" title="spinn_front_end_common.utilities.notification_protocol package"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -45,8 +48,464 @@
             
   <div class="section" id="spinn-front-end-common-utilities-database-package">
 <h1>spinn_front_end_common.utilities.database package<a class="headerlink" href="#spinn-front-end-common-utilities-database-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-spinn_front_end_common.utilities.database">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities.database" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="spinn_front_end_common.utilities.database.DatabaseConnection">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utilities.database.</code><code class="sig-name descname">DatabaseConnection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start_resume_callback_function</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stop_pause_callback_function</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">local_host</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">local_port</span><span class="o">=</span><span class="default_value">19999</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_connection.html#DatabaseConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseConnection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spinnman.connections.udp_packet_connections.udp_connection.UDPConnection</span></code></p>
+<p>A connection from the toolchain which will be notified when the         database has been written, and can then respond when the database         has been read, and further wait for notification that the simulation         has started.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_resume_callback_function</strong> (<em>callable</em>) – A function to be called when the start message has been received.
+This function should not take any parameters or return anything.</p></li>
+<li><p><strong>local_host</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Optional specification of the local hostname or IP address of the
+interface to listen on</p></li>
+<li><p><strong>local_port</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Optional specification of the local port to listen on. Must match
+the port that the toolchain will send the notification on (19999
+by default)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseConnection.add_database_callback">
+<code class="sig-name descname">add_database_callback</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">database_callback_function</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_connection.html#DatabaseConnection.add_database_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseConnection.add_database_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a database callback to be called when the database is ready.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>database_callback_function</strong> (<em>callable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader" title="spinn_front_end_common.utilities.database.DatabaseReader"><em>DatabaseReader</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a><em>)</em>) – A function to be called when the database message has been
+received.  This function should take a single parameter, which
+will be a DatabaseReader object. Once the function returns, it
+will be assumed that the database has been read, and the return
+response will be sent.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>SpinnmanIOException</strong> – If anything goes wrong</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseConnection.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_connection.html#DatabaseConnection.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseConnection.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the connection</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utilities.database.</code><code class="sig-name descname">DatabaseReader</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">database_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils)"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_utilities.abstract_context_manager.AbstractContextManager</span></code></a></p>
+<p>A reader for the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>database_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The path to the database</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>How to actually close the underlying resources.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.cursor">
+<em class="property">property </em><code class="sig-name descname">cursor</code><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.cursor" title="Permalink to this definition">¶</a></dt>
+<dd><p>The database cursor. Allows custom SQL queries to be performed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/sqlite3.html#sqlite3.Cursor" title="(in Python v3.6)">Cursor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_atom_id_to_key_mapping">
+<code class="sig-name descname">get_atom_id_to_key_mapping</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_atom_id_to_key_mapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_atom_id_to_key_mapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a mapping of atom ID to event key for a given vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The label of the vertex</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dictionary of event keys indexed by atom ID</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_configuration_parameter_value">
+<code class="sig-name descname">get_configuration_parameter_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parameter_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_configuration_parameter_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_configuration_parameter_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value of a configuration parameter</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>parameter_name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The name of the parameter</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The value of the parameter</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_ip_address">
+<code class="sig-name descname">get_ip_address</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_ip_address"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_ip_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an IP address to contact a chip</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The x-coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The y-coordinate of the chip</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The IP address of the Ethernet to use to contact the chip</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_key_to_atom_id_mapping">
+<code class="sig-name descname">get_key_to_atom_id_mapping</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_key_to_atom_id_mapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_key_to_atom_id_mapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a mapping of event key to atom ID for a given vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The label of the vertex</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dictionary of atom IDs indexed by event key</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_live_input_details">
+<code class="sig-name descname">get_live_input_details</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_live_input_details"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_live_input_details" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the IP address and port where live input should be sent            for a given vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The label of the vertex</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tuple of (IP address, port)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_live_output_details">
+<code class="sig-name descname">get_live_output_details</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">receiver_label</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_live_output_details"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_live_output_details" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the IP address, port and whether the SDP headers are to be            stripped from the output from a vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The label of the vertex</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tuple of (IP address, port, strip SDP, board address, tag)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a>, <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_details">
+<code class="sig-name descname">get_machine_live_input_details</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_machine_live_input_details"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_details" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the IP address and port where live input should be sent            for a given machine vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The label of the vertex</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tuple of (IP address, port)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_key">
+<code class="sig-name descname">get_machine_live_input_key</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_machine_live_input_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_key" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The label of the vertex</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_details">
+<code class="sig-name descname">get_machine_live_output_details</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">receiver_label</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_machine_live_output_details"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_details" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the IP address, port and whether the SDP headers are to be            stripped from the output from a machine vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The label of the vertex</p></li>
+<li><p><strong>receiver_label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tuple of (IP address, port, strip SDP, board address, tag)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a>, <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_key">
+<code class="sig-name descname">get_machine_live_output_key</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">receiver_label</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_machine_live_output_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_key" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The label of the vertex</p></li>
+<li><p><strong>receiver_label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_n_atoms">
+<code class="sig-name descname">get_n_atoms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_n_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_n_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of atoms in a given vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The label of the vertex</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The number of atoms</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_placement">
+<code class="sig-name descname">get_placement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_placement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_placement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the placement of a machine vertex with a given label</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The label of the vertex</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The x, y, p coordinates of the vertex</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_placements">
+<code class="sig-name descname">get_placements</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_placements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_placements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the placements of an application vertex with a given label</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The label of the vertex</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of x, y, p coordinates of the vertices</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>))</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.utilities.database.DatabaseWriter">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utilities.database.</code><code class="sig-name descname">DatabaseWriter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">database_directory</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils)"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_utilities.abstract_context_manager.AbstractContextManager</span></code></a></p>
+<p>The interface for the database system for main front ends.        Any special tables needed from a front end should be done        by sub classes of this interface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>database_directory</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Where the database will be written</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices">
+<code class="sig-name descname">add_application_vertices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">application_graph</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_application_vertices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stores the main application graph description (vertices, edges).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>application_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN)"><em>ApplicationGraph</em></a>) – The graph to add from</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_machine_objects">
+<code class="sig-name descname">add_machine_objects</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">machine</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_machine_objects"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_machine_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store the machine object into the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine)"><em>Machine</em></a>) – the machine object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_placements">
+<code class="sig-name descname">add_placements</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">placements</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_placements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_placements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the placements objects into the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN)"><em>Placements</em></a>) – the placements object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_routing_infos">
+<code class="sig-name descname">add_routing_infos</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">routing_infos</span></em>, <em class="sig-param"><span class="n">machine_graph</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_routing_infos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_routing_infos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the routing information (key masks etc) into the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>routing_infos</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN)"><em>RoutingInfo</em></a>) – the routing information object</p></li>
+<li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN)"><em>MachineGraph</em></a>) – the machine graph object</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_routing_tables">
+<code class="sig-name descname">add_routing_tables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">routing_tables</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_routing_tables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_routing_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the routing tables into the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>routing_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN)"><em>MulticastRoutingTables</em></a>) – the routing tables object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params">
+<code class="sig-name descname">add_system_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time_scale_factor</span></em>, <em class="sig-param"><span class="n">machine_time_step</span></em>, <em class="sig-param"><span class="n">runtime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_system_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write system params into the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the time scale factor used in timing</p></li>
+<li><p><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the machine time step used in timing</p></li>
+<li><p><strong>runtime</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the amount of time the application is to run for</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_tags">
+<code class="sig-name descname">add_tags</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">machine_graph</span></em>, <em class="sig-param"><span class="n">tags</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the tags into the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN)"><em>MachineGraph</em></a>) – the machine graph object</p></li>
+<li><p><strong>tags</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN)"><em>Tags</em></a>) – the tags object</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_vertices">
+<code class="sig-name descname">add_vertices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">machine_graph</span></em>, <em class="sig-param"><span class="n">data_n_timesteps</span></em>, <em class="sig-param"><span class="n">application_graph</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_vertices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the machine graph into the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN)"><em>MachineGraph</em></a>) – The machine graph object</p></li>
+<li><p><strong>data_n_timesteps</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The number of timesteps for which data space will been reserved</p></li>
+<li><p><strong>application_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN)"><em>ApplicationGraph</em></a>) – The application graph object</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.auto_detect_database">
+<em class="property">static </em><code class="sig-name descname">auto_detect_database</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">machine_graph</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.auto_detect_database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.auto_detect_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Auto detects if there is a need to activate the database system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN)"><em>MachineGraph</em></a>) – the machine graph of the application problem space.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>whether the database is needed for the application</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>How to actually close the underlying resources.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.create_atom_to_event_id_mapping">
+<code class="sig-name descname">create_atom_to_event_id_mapping</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">application_graph</span></em>, <em class="sig-param"><span class="n">machine_graph</span></em>, <em class="sig-param"><span class="n">routing_infos</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.create_atom_to_event_id_mapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.create_atom_to_event_id_mapping" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>application_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN)"><em>ApplicationGraph</em></a>) – </p></li>
+<li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN)"><em>MachineGraph</em></a>) – </p></li>
+<li><p><strong>routing_infos</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN)"><em>RoutingInfo</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.database_path">
+<em class="property">property </em><code class="sig-name descname">database_path</code><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.database_path" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 
@@ -60,7 +519,7 @@
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.utilities.database package</a><ul>
-<li><a class="reference internal" href="#module-contents">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.database">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -98,6 +557,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="spinn_front_end_common.utilities.notification_protocol.html" title="spinn_front_end_common.utilities.notification_protocol package"
              >next</a> |</li>

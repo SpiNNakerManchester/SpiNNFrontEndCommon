@@ -25,6 +25,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="spinn_front_end_common.interface.simulation.html" title="spinn_front_end_common.interface.simulation package"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -45,8 +48,239 @@
             
   <div class="section" id="spinn-front-end-common-interface-provenance-package">
 <h1>spinn_front_end_common.interface.provenance package<a class="headerlink" href="#spinn-front-end-common-interface-provenance-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-spinn_front_end_common.interface.provenance">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.provenance" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.provenance.</code><code class="sig-name descname">AbstractProvidesLocalProvenanceData</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/abstract_provides_local_provenance_data.html#AbstractProvidesLocalProvenanceData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Indicates an object that provides locally obtained provenance data.</p>
+<p>GraphProvenanceGatherer will check all Vertices and all Edges in both the
+MachineGraph and if it exists the ApplicationGraph</p>
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData.get_local_provenance_data">
+<em class="property">abstract </em><code class="sig-name descname">get_local_provenance_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/abstract_provides_local_provenance_data.html#AbstractProvidesLocalProvenanceData.get_local_provenance_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData.get_local_provenance_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an iterable of provenance data items.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the provenance items</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>iterable(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.provenance.</code><code class="sig-name descname">AbstractProvidesProvenanceDataFromMachine</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/abstract_provides_provenance_data_from_machine.html#AbstractProvidesProvenanceDataFromMachine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Indicates that an object provides provenance data retrieved from the        machine.</p>
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine">
+<em class="property">abstract </em><code class="sig-name descname">get_provenance_data_from_machine</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">transceiver</span></em>, <em class="sig-param"><span class="n">placement</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/abstract_provides_provenance_data_from_machine.html#AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an iterable of provenance data items.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan)"><em>Transceiver</em></a>) – the SpinnMan interface object</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN)"><em>Placement</em></a>) – the placement of the object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the provenance items</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>iterable(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.provenance.PacmanProvenanceExtractor">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.provenance.</code><code class="sig-name descname">PacmanProvenanceExtractor</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/pacman_provenance_extractor.html#PacmanProvenanceExtractor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.PacmanProvenanceExtractor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Extracts Provenance data from a <code class="xref py py-class docutils literal notranslate"><span class="pre">PACMANAlgorithmExecutor</span></code></p>
+<dl class="py attribute">
+<dt id="spinn_front_end_common.interface.provenance.PacmanProvenanceExtractor.TOP_NAME">
+<code class="sig-name descname">TOP_NAME</code><em class="property"> = 'pacman'</em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.PacmanProvenanceExtractor.TOP_NAME" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.PacmanProvenanceExtractor.clear">
+<code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/pacman_provenance_extractor.html#PacmanProvenanceExtractor.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.PacmanProvenanceExtractor.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the provenance data store</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.PacmanProvenanceExtractor.data_items">
+<em class="property">property </em><code class="sig-name descname">data_items</code><a class="headerlink" href="#spinn_front_end_common.interface.provenance.PacmanProvenanceExtractor.data_items" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the provenance data items</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the provenance items</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>iterable(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.PacmanProvenanceExtractor.extract_provenance">
+<code class="sig-name descname">extract_provenance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">executor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/pacman_provenance_extractor.html#PacmanProvenanceExtractor.extract_provenance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.PacmanProvenanceExtractor.extract_provenance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Acquires the timings from PACMAN algorithms (provenance data)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>executor</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.executor/#pacman.executor.PACMANAlgorithmExecutor" title="(in PACMAN)"><em>PACMANAlgorithmExecutor</em></a>) – the PACMAN workflow executor</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.provenance.</code><code class="sig-name descname">ProvidesProvenanceDataFromMachineImpl</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provides_provenance_data_from_machine_impl.html#ProvidesProvenanceDataFromMachineImpl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.provenance.abstract_provides_provenance_data_from_machine.AbstractProvidesProvenanceDataFromMachine</span></code></p>
+<p>An implementation that gets provenance data from a region of ints on        the machine.</p>
+<dl class="py attribute">
+<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.NUM_PROVENANCE_DATA_ENTRIES">
+<code class="sig-name descname">NUM_PROVENANCE_DATA_ENTRIES</code><em class="property"> = 5</em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.NUM_PROVENANCE_DATA_ENTRIES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES">
+<em class="property">class </em><code class="sig-name descname">PROVENANCE_DATA_ENTRIES</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provides_provenance_data_from_machine_impl.html#ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/enum.html#enum.Enum" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<p>Entries for the provenance data generated by models using provides            provenance vertex.</p>
+<dl class="py attribute">
+<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.CALLBACK_QUEUE_OVERLOADED">
+<code class="sig-name descname">CALLBACK_QUEUE_OVERLOADED</code><em class="property"> = 1</em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.CALLBACK_QUEUE_OVERLOADED" title="Permalink to this definition">¶</a></dt>
+<dd><p>The counter of the number of times the callback queue was overloaded</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.DMA_QUEUE_OVERLOADED">
+<code class="sig-name descname">DMA_QUEUE_OVERLOADED</code><em class="property"> = 2</em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.DMA_QUEUE_OVERLOADED" title="Permalink to this definition">¶</a></dt>
+<dd><p>The counter of the number of times the DMA queue was overloaded</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.MAX_NUMBER_OF_TIMER_TIC_OVERRUN">
+<code class="sig-name descname">MAX_NUMBER_OF_TIMER_TIC_OVERRUN</code><em class="property"> = 4</em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.MAX_NUMBER_OF_TIMER_TIC_OVERRUN" title="Permalink to this definition">¶</a></dt>
+<dd><p>The counter of the number of times the timer tick overran</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.TIMER_TIC_HAS_OVERRUN">
+<code class="sig-name descname">TIMER_TIC_HAS_OVERRUN</code><em class="property"> = 3</em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.TIMER_TIC_HAS_OVERRUN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether the timer tick has overrun at all at any point</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.TRANSMISSION_EVENT_OVERFLOW">
+<code class="sig-name descname">TRANSMISSION_EVENT_OVERFLOW</code><em class="property"> = 0</em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.TRANSMISSION_EVENT_OVERFLOW" title="Permalink to this definition">¶</a></dt>
+<dd><p>The counter of transmission overflows</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.get_provenance_data_from_machine">
+<code class="sig-name descname">get_provenance_data_from_machine</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">transceiver</span></em>, <em class="sig-param"><span class="n">placement</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provides_provenance_data_from_machine_impl.html#ProvidesProvenanceDataFromMachineImpl.get_provenance_data_from_machine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.get_provenance_data_from_machine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the provenance data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan)"><em>Transceiver</em></a>) – How to talk to the machine</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN)"><em>Placement</em></a>) – Which vertex are we retrieving from, and where was it</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.get_provenance_data_size">
+<em class="property">classmethod </em><code class="sig-name descname">get_provenance_data_size</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_additional_data_items</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provides_provenance_data_from_machine_impl.html#ProvidesProvenanceDataFromMachineImpl.get_provenance_data_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.get_provenance_data_size" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_additional_data_items</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.reserve_provenance_data_region">
+<code class="sig-name descname">reserve_provenance_data_region</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spec</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provides_provenance_data_from_machine_impl.html#ProvidesProvenanceDataFromMachineImpl.reserve_provenance_data_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.reserve_provenance_data_region" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification)"><em>DataSpecificationGenerator</em></a>) – The data specification being written.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.provenance.SqlLiteDatabase">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.provenance.</code><code class="sig-name descname">SqlLiteDatabase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">database_file</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/sqllite_database.html#SqlLiteDatabase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.SqlLiteDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils)"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_utilities.abstract_context_manager.AbstractContextManager</span></code></a></p>
+<p>Specific implementation of the Database for SQLite 3.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><em>Not thread safe on the same database file.</em>
+Threads can access different DBs just fine.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This totally relies on the way SQLite’s type affinities function.
+You can’t port to a different database engine without a lot of work.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>database_file</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The name of a file that contains (or will contain) an SQLite
+database holding the data. If omitted, an unshared in-memory
+database will be used (suitable only for testing).</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.SqlLiteDatabase.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/sqllite_database.html#SqlLiteDatabase.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.SqlLiteDatabase.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalises and closes the database.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.SqlLiteDatabase.insert_items">
+<code class="sig-name descname">insert_items</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">items</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/sqllite_database.html#SqlLiteDatabase.insert_items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.SqlLiteDatabase.insert_items" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does a bulk insert of the items into the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>items</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem"><em>ProvenanceDataItem</em></a><em>)</em>) – The items to insert</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 
@@ -60,7 +294,7 @@
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.provenance package</a><ul>
-<li><a class="reference internal" href="#module-contents">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.provenance">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -98,6 +332,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="spinn_front_end_common.interface.simulation.html" title="spinn_front_end_common.interface.simulation package"
              >next</a> |</li>

@@ -1,0 +1,247 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.utilities.database.database_connection &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.database.database_connection</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utilities.database.database_connection</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
+<span class="kn">from</span> <span class="nn">six</span> <span class="kn">import</span> <span class="n">raise_from</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">spinnman.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SpinnmanIOException</span><span class="p">,</span> <span class="n">SpinnmanInvalidPacketException</span><span class="p">,</span>
+    <span class="n">SpinnmanTimeoutException</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinnman.messages.eieio.command_messages</span> <span class="kn">import</span> <span class="n">EIEIOCommandHeader</span>
+<span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">UDPConnection</span>
+<span class="kn">from</span> <span class="nn">spinnman.constants</span> <span class="kn">import</span> <span class="n">EIEIO_COMMAND_IDS</span> <span class="k">as</span> <span class="n">CMDS</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">NOTIFY_PORT</span>
+<span class="kn">from</span> <span class="nn">.database_reader</span> <span class="kn">import</span> <span class="n">DatabaseReader</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="DatabaseConnection"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseConnection">[docs]</a><span class="k">class</span> <span class="nc">DatabaseConnection</span><span class="p">(</span><span class="n">UDPConnection</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A connection from the toolchain which will be notified when the \</span>
+<span class="sd">        database has been written, and can then respond when the database \</span>
+<span class="sd">        has been read, and further wait for notification that the simulation \</span>
+<span class="sd">        has started.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;__database_callbacks&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__pause_and_stop_callback&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__running&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__start_resume_callback&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_resume_callback_function</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">stop_pause_callback_function</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">local_host</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">local_port</span><span class="o">=</span><span class="n">NOTIFY_PORT</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param callable start_resume_callback_function:</span>
+<span class="sd">            A function to be called when the start message has been received.</span>
+<span class="sd">            This function should not take any parameters or return anything.</span>
+<span class="sd">        :param str local_host:</span>
+<span class="sd">            Optional specification of the local hostname or IP address of the</span>
+<span class="sd">            interface to listen on</span>
+<span class="sd">        :param int local_port:</span>
+<span class="sd">            Optional specification of the local port to listen on. Must match</span>
+<span class="sd">            the port that the toolchain will send the notification on (19999</span>
+<span class="sd">            by default)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DatabaseConnection</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">local_host</span><span class="o">=</span><span class="n">local_host</span><span class="p">,</span> <span class="n">local_port</span><span class="o">=</span><span class="n">local_port</span><span class="p">,</span>
+            <span class="n">remote_host</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">remote_port</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">thread</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;SpyNNakerDatabaseConnection:</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">local_ip_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_port</span><span class="p">),</span> <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__run</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__database_callbacks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__start_resume_callback</span> <span class="o">=</span> <span class="n">start_resume_callback_function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pause_and_stop_callback</span> <span class="o">=</span> <span class="n">stop_pause_callback_function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__running</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">thread</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DatabaseConnection.add_database_callback"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseConnection.add_database_callback">[docs]</a>    <span class="k">def</span> <span class="nf">add_database_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_callback_function</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add a database callback to be called when the database is ready.</span>
+
+<span class="sd">        :param callable(DatabaseReader,None) database_callback_function:</span>
+<span class="sd">            A function to be called when the database message has been</span>
+<span class="sd">            received.  This function should take a single parameter, which</span>
+<span class="sd">            will be a DatabaseReader object. Once the function returns, it</span>
+<span class="sd">            will be assumed that the database has been read, and the return</span>
+<span class="sd">            response will be sent.</span>
+<span class="sd">        :raises SpinnmanIOException: If anything goes wrong</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__database_callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">database_callback_function</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># pylint: disable=broad-except</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__running</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> Waiting for message to indicate that the database is &quot;</span>
+            <span class="s2">&quot;ready&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_ip_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_port</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">__running</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">,</span> <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">receive_with_address</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__read_db</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+                <span class="c1"># Wait for the start of the simulation</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__start_resume_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__start_resume</span><span class="p">()</span>
+
+                <span class="c1"># Wait for the end of the simulation</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pause_and_stop_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__pause_stop</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failure processing database callback&quot;</span><span class="p">,</span>
+                         <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">raise_from</span><span class="p">(</span><span class="n">SpinnmanIOException</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__running</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">__read_db</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="c1"># Read the read packet confirmation</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> Reading database&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">local_ip_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_port</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">database_path</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;database is at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">database_path</span><span class="p">)</span>
+
+            <span class="c1"># Call the callback</span>
+            <span class="k">with</span> <span class="n">DatabaseReader</span><span class="p">(</span><span class="n">database_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">db_reader</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">db_callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__database_callbacks</span><span class="p">:</span>
+                    <span class="n">db_callback</span><span class="p">(</span><span class="n">db_reader</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Database path was empty - assuming no database&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Send the response</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Notifying the toolchain that the database has been read&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_command</span><span class="p">(</span><span class="n">CMDS</span><span class="o">.</span><span class="n">DATABASE_CONFIRMATION</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__start_resume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Waiting for message to indicate that the simulation has &quot;</span>
+            <span class="s2">&quot;started or resumed&quot;</span><span class="p">)</span>
+        <span class="n">command_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_receive_command</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">command_code</span> <span class="o">!=</span> <span class="n">CMDS</span><span class="o">.</span><span class="n">START_RESUME_NOTIFICATION</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SpinnmanInvalidPacketException</span><span class="p">(</span>
+                <span class="s2">&quot;command_code&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;expected a start/resume command code now, and did not &quot;</span>
+                <span class="s2">&quot;receive it&quot;</span><span class="p">)</span>
+        <span class="c1"># Call the callback</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__start_resume_callback</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__pause_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Waiting for message to indicate that the simulation has &quot;</span>
+            <span class="s2">&quot;stopped or paused&quot;</span><span class="p">)</span>
+        <span class="n">command_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_receive_command</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">command_code</span> <span class="o">!=</span> <span class="n">CMDS</span><span class="o">.</span><span class="n">STOP_PAUSE_NOTIFICATION</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SpinnmanInvalidPacketException</span><span class="p">(</span>
+                <span class="s2">&quot;command_code&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;expected a pause/stop command code now, and did not &quot;</span>
+                <span class="s2">&quot;receive it&quot;</span><span class="p">)</span>
+        <span class="c1"># Call the callback</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pause_and_stop_callback</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_send_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_to</span><span class="p">(</span><span class="n">EIEIOCommandHeader</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">bytestring</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_receive_command</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">EIEIOCommandHeader</span><span class="o">.</span><span class="n">from_bytestring</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">receive</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">command</span>
+
+<div class="viewcode-block" id="DatabaseConnection.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseConnection.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__running</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">UDPConnection</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.database.database_connection</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

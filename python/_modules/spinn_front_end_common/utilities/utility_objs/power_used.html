@@ -1,0 +1,471 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.utilities.utility_objs.power_used &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.utility_objs.power_used</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utilities.utility_objs.power_used</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+
+<div class="viewcode-block" id="PowerUsed"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed">[docs]</a><span class="k">class</span> <span class="nc">PowerUsed</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Describes the power used by a simulation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;__num_chips&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__num_cores&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__num_fpgas&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__num_frames&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__exec_time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__mapping_time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__data_gen_time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__loading_time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__saving_time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__chip_energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__fpga_total_energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__fpga_exec_energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__baseline_energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__packet_energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__mapping_energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__data_gen_energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__loading_energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__saving_energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__core_energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__router_energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_algorithm_timing_provenance&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__num_chips</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__num_cores</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__num_fpgas</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__num_frames</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__exec_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mapping_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__data_gen_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__loading_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__saving_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__chip_energy</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__fpga_total_energy</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__fpga_exec_energy</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__baseline_energy</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__packet_energy</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mapping_energy</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__data_gen_energy</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__loading_energy</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__saving_energy</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__core_energy</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__router_energy</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="c1"># Sneaky backdoor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_timing_provenance</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">num_chips</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The total number of chips used.</span>
+
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__num_chips</span>
+
+    <span class="nd">@num_chips</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">num_chips</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__num_chips</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">num_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The total number of cores used, including for SCAMP.</span>
+
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__num_cores</span>
+
+    <span class="nd">@num_cores</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">num_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__num_cores</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">num_fpgas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The total number of FPGAs used.</span>
+
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__num_fpgas</span>
+
+    <span class="nd">@num_fpgas</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">num_fpgas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__num_fpgas</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">num_frames</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The total number of frames used.</span>
+
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__num_frames</span>
+
+    <span class="nd">@num_frames</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">num_frames</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__num_frames</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">total_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Time taken in total, in seconds.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_time_secs</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">loading_time_secs</span> <span class="o">+</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">saving_time_secs</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_gen_time_secs</span> <span class="o">+</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">mapping_time_secs</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">booted_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Time taken when the machine is booted, in seconds.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_time_secs</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">loading_time_secs</span> <span class="o">+</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">saving_time_secs</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">exec_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Time taken by active simulation running, in seconds.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_time</span>
+
+    <span class="nd">@exec_time_secs</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">exec_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__exec_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mapping_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Time taken by the mapping phase, in seconds.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mapping_time</span>
+
+    <span class="nd">@mapping_time_secs</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">mapping_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mapping_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data_gen_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Time taken by data generation phase, in seconds.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data_gen_time</span>
+
+    <span class="nd">@data_gen_time_secs</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">data_gen_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__data_gen_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">loading_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Time taken by data loading, in seconds.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__loading_time</span>
+
+    <span class="nd">@loading_time_secs</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">loading_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__loading_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">saving_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Time taken by data extraction, in seconds.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__saving_time</span>
+
+    <span class="nd">@saving_time_secs</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">saving_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__saving_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">total_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Total of all energy costs, in Joules.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">baseline_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baseline_joules</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">fpga_total_energy_joules</span>
+        <span class="n">idle_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping_joules</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_gen_joules</span>
+        <span class="n">active_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chip_energy_joules</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">packet_joules</span> <span class="o">+</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">loading_joules</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">saving_joules</span>
+        <span class="k">return</span> <span class="n">baseline_energy</span> <span class="o">+</span> <span class="n">idle_energy</span> <span class="o">+</span> <span class="n">active_energy</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">chip_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Energy used by all SpiNNaker chips during active simulation\</span>
+<span class="sd">            running, in Joules.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__chip_energy</span>
+
+    <span class="nd">@chip_energy_joules</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">chip_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__chip_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fpga_total_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Energy used by all FPGAs in total, in Joules.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fpga_total_energy</span>
+
+    <span class="nd">@fpga_total_energy_joules</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">fpga_total_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__fpga_total_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fpga_exec_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Energy used by all FPGAs during active simulation running, in\</span>
+<span class="sd">            Joules. This is *included* in the total FPGA energy.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fpga_exec_energy</span>
+
+    <span class="nd">@fpga_exec_energy_joules</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">fpga_exec_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__fpga_exec_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">baseline_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Baseline/idle energy used, in Joules. This is used by things like\</span>
+<span class="sd">            the frames the SpiNNaker boards are held in, the cooling system,\</span>
+<span class="sd">            etc.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__baseline_energy</span>
+
+    <span class="nd">@baseline_joules</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">baseline_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__baseline_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">packet_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Energy used by packet transmission, in Joules.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__packet_energy</span>
+
+    <span class="nd">@packet_joules</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">packet_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__packet_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mapping_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Energy used during the mapping phase, in Joules. Assumes that\</span>
+<span class="sd">            the SpiNNaker system has been shut down.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mapping_energy</span>
+
+    <span class="nd">@mapping_joules</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">mapping_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mapping_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data_gen_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Energy used during the data generation phase, in Joules. Assumes\</span>
+<span class="sd">            that the SpiNNaker system has been shut down.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data_gen_energy</span>
+
+    <span class="nd">@data_gen_joules</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">data_gen_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__data_gen_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">loading_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Energy used during data loading, in Joules.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__loading_energy</span>
+
+    <span class="nd">@loading_joules</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">loading_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__loading_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">saving_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Energy used during data extraction, in Joules.</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__saving_energy</span>
+
+    <span class="nd">@saving_joules</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">saving_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__saving_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PowerUsed.get_router_active_energy_joules"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed.get_router_active_energy_joules">[docs]</a>    <span class="k">def</span> <span class="nf">get_router_active_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Energy used (above idle baseline) by a particular router, in \</span>
+<span class="sd">            Joules.</span>
+
+<span class="sd">        Unused routers always report 0.0 for this.</span>
+
+<span class="sd">        :param int x:</span>
+<span class="sd">        :param int y:</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__router_energy</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="PowerUsed.add_router_active_energy"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed.add_router_active_energy">[docs]</a>    <span class="k">def</span> <span class="nf">add_router_active_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">joules</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Adds energy for a particular router. It can be called multiple\</span>
+<span class="sd">            times per router.</span>
+
+<span class="sd">        Only intended to be used during construction of this object.</span>
+
+<span class="sd">        :param int x:</span>
+<span class="sd">        :param int y:</span>
+<span class="sd">        :param float joules: the energy to add for this router, in Joules.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__router_energy</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">joules</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">active_routers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Enumeration of the coordinates of the routers that can report\</span>
+<span class="sd">            active energy usage.</span>
+
+<span class="sd">        :rtype: iterable(tuple(int, int))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">xy</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__router_energy</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">xy</span>
+
+<div class="viewcode-block" id="PowerUsed.get_core_active_energy_joules"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed.get_core_active_energy_joules">[docs]</a>    <span class="k">def</span> <span class="nf">get_core_active_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Energy used (above idle baseline) by a particular core, in Joules.</span>
+
+<span class="sd">        Unused cores always report 0.0 for this.</span>
+
+<span class="sd">        :param int x:</span>
+<span class="sd">        :param int y:</span>
+<span class="sd">        :param int p:</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__core_energy</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="PowerUsed.add_core_active_energy"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed.add_core_active_energy">[docs]</a>    <span class="k">def</span> <span class="nf">add_core_active_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">joules</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Adds energy for a particular core. It can be called multiple\</span>
+<span class="sd">            times per core.</span>
+
+<span class="sd">        Only intended to be used during construction of this object.</span>
+
+<span class="sd">        :param int x:</span>
+<span class="sd">        :param int y:</span>
+<span class="sd">        :param int p:</span>
+<span class="sd">        :param float joules: the energy to add for this core, in Joules.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__core_energy</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">joules</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">active_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Enumeration of the coordinates of the cores that can report active\</span>
+<span class="sd">            energy usage.</span>
+
+<span class="sd">        :rtype: iterable(tuple(int, int, int))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">xyp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__core_energy</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">xyp</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.utility_objs.power_used</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

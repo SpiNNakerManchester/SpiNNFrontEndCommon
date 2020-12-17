@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.interface.ds.data_specification_targets &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.ds.data_specification_targets</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.ds.data_specification_targets</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">MutableMapping</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1"># For 2.7 only</span>
+    <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">MutableMapping</span>
+<span class="kn">from</span> <span class="nn">.data_row_writer</span> <span class="kn">import</span> <span class="n">DataRowWriter</span>
+<span class="kn">from</span> <span class="nn">.ds_sqllite_database</span> <span class="kn">import</span> <span class="n">DsSqlliteDatabase</span>
+
+
+<div class="viewcode-block" id="DataSpecificationTargets"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataSpecificationTargets">[docs]</a><span class="k">class</span> <span class="nc">DataSpecificationTargets</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">):</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_db&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">report_folder</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clear</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~spinn_machine.Machine machine:</span>
+<span class="sd">        :param str report_folder:</span>
+<span class="sd">        :param init:</span>
+<span class="sd">        :type init: bool or None</span>
+<span class="sd">        :param bool clear:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=super-init-not-called</span>
+        <span class="c1"># real DB would write to report_folder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="n">DsSqlliteDatabase</span><span class="p">(</span><span class="n">machine</span><span class="p">,</span> <span class="n">report_folder</span><span class="p">,</span> <span class="n">init</span><span class="p">)</span>
+        <span class="c1"># Clear any current data specs</span>
+        <span class="k">if</span> <span class="n">clear</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">clear_ds</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Implements the mapping `__getitem__` as long as core is the right</span>
+<span class="sd">            type.</span>
+
+<span class="sd">        :param tuple(int,int,int) core: triple of (x, y, p)</span>
+<span class="sd">        :return: dictionary with the keys ``start_address``, ``memory_used``</span>
+<span class="sd">            and ``memory_written``</span>
+<span class="sd">        :rtype: ~io.RawIOBase</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="o">=</span> <span class="n">core</span>
+        <span class="k">return</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">get_ds</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;Direct set not supported. See create_data_spec&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Delete not supported&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DataSpecificationTargets.keys"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataSpecificationTargets.keys">[docs]</a>    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Yields the keys.</span>
+
+<span class="sd">        As the more typical call is iteritems this makes use of that</span>
+
+<span class="sd">        :rtype: iterable(tuple(int,int,int))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">_value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">ds_iteritems</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">key</span></div>
+
+    <span class="fm">__iter__</span> <span class="o">=</span> <span class="n">keys</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        TEMP implementation</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">ds_n_cores</span><span class="p">()</span>
+
+    <span class="n">n_targets</span> <span class="o">=</span> <span class="fm">__len__</span>
+
+<div class="viewcode-block" id="DataSpecificationTargets.create_data_spec"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataSpecificationTargets.create_data_spec">[docs]</a>    <span class="k">def</span> <span class="nf">create_data_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int x:</span>
+<span class="sd">        :param int y:</span>
+<span class="sd">        :param int p:</span>
+<span class="sd">        :rtype: DataRowWriter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DataRowWriter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataSpecificationTargets.write_data_spec"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataSpecificationTargets.write_data_spec">[docs]</a>    <span class="k">def</span> <span class="nf">write_data_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int x:</span>
+<span class="sd">        :param int y:</span>
+<span class="sd">        :param int p:</span>
+<span class="sd">        :param bytearray ds:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">save_ds</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">ds</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataSpecificationTargets.items"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataSpecificationTargets.items">[docs]</a>    <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: iterator over the core locations and how to read the data</span>
+<span class="sd">            spec for them</span>
+<span class="sd">        :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">ds_iteritems</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">key</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+    <span class="c1"># Python 2 backward compatibility</span>
+    <span class="n">iteritems</span> <span class="o">=</span> <span class="n">items</span>
+
+<div class="viewcode-block" id="DataSpecificationTargets.get_database"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataSpecificationTargets.get_database">[docs]</a>    <span class="k">def</span> <span class="nf">get_database</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Expose the database so it can be shared</span>
+
+<span class="sd">        :rtype: DsAbstractDatabase</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span></div>
+
+<div class="viewcode-block" id="DataSpecificationTargets.set_app_id"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataSpecificationTargets.set_app_id">[docs]</a>    <span class="k">def</span> <span class="nf">set_app_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the same app_id for all rows that have DS content</span>
+
+<span class="sd">        :param int app_id: value to set</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">ds_set_app_id</span><span class="p">(</span><span class="n">app_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataSpecificationTargets.get_app_id"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataSpecificationTargets.get_app_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_app_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the app_id set for this core</span>
+
+<span class="sd">        :param int x: core x</span>
+<span class="sd">        :param int y: core y</span>
+<span class="sd">        :param int p: core p</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">ds_get_app_id</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataSpecificationTargets.mark_system_cores"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataSpecificationTargets.mark_system_cores">[docs]</a>    <span class="k">def</span> <span class="nf">mark_system_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~spinn_machine.CoreSubsets core_subsets:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cores_to_mark</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="n">core_subsets</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">x</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">y</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">subset</span><span class="o">.</span><span class="n">processor_ids</span><span class="p">:</span>
+                <span class="n">cores_to_mark</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">ds_mark_as_system</span><span class="p">(</span><span class="n">cores_to_mark</span><span class="p">)</span></div></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.ds.data_specification_targets</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

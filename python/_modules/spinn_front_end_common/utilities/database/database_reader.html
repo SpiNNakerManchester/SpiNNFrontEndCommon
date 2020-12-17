@@ -1,0 +1,354 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.utilities.database.database_reader &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.database.database_reader</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utilities.database.database_reader</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.abstract_context_manager</span> <span class="kn">import</span> <span class="n">AbstractContextManager</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
+<span class="c1"># See https://stackoverflow.com/a/21368622/301832</span>
+<span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY2</span><span class="p">:</span>  <span class="c1"># TODO: Nuke this when 2.7 support is dropped!</span>
+    <span class="ne">FileNotFoundError</span> <span class="o">=</span> <span class="ne">IOError</span>  <span class="c1"># @ReservedAssignment</span>
+
+
+<div class="viewcode-block" id="DatabaseReader"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader">[docs]</a><span class="k">class</span> <span class="nc">DatabaseReader</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A reader for the database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># the database connection (is basically a lock on the database)</span>
+        <span class="s2">&quot;_connection&quot;</span><span class="p">,</span>
+
+        <span class="c1"># the handle for working on the DB</span>
+        <span class="s2">&quot;_cursor&quot;</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str database_path: The path to the database</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Ugly: must ensure database exists ourselves because Python doesn&#39;t</span>
+        <span class="c1"># have option to open read-only (in the real SQLite API!) exposed</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">database_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                <span class="s2">&quot;[Errno 2] No such file or directory: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">database_path</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">database_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">row_factory</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Row</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">cursor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The database cursor. Allows custom SQL queries to be performed.</span>
+
+<span class="sd">        :rtype: ~sqlite3.Cursor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span>
+
+    <span class="k">def</span> <span class="nf">__exec_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span> <span class="o">+</span> <span class="s2">&quot; LIMIT 1&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__exec_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__r2t</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="kc">None</span> <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">row</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DatabaseReader.get_key_to_atom_id_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_key_to_atom_id_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">get_key_to_atom_id_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get a mapping of event key to atom ID for a given vertex</span>
+
+<span class="sd">        :param str label: The label of the vertex</span>
+<span class="sd">        :return: dictionary of atom IDs indexed by event key</span>
+<span class="sd">        :rtype: dict(int, int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;atom&quot;</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_all</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT * FROM label_event_atom_view</span>
+<span class="sd">                    WHERE label = ?</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">)}</span></div>
+
+<div class="viewcode-block" id="DatabaseReader.get_atom_id_to_key_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_atom_id_to_key_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">get_atom_id_to_key_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get a mapping of atom ID to event key for a given vertex</span>
+
+<span class="sd">        :param str label: The label of the vertex</span>
+<span class="sd">        :return: dictionary of event keys indexed by atom ID</span>
+<span class="sd">        :rtype: dict(int, int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;atom&quot;</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_all</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT * FROM label_event_atom_view</span>
+<span class="sd">                    WHERE label = ?</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">)}</span></div>
+
+<div class="viewcode-block" id="DatabaseReader.get_live_output_details"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_live_output_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_live_output_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">receiver_label</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the IP address, port and whether the SDP headers are to be\</span>
+<span class="sd">            stripped from the output from a vertex</span>
+
+<span class="sd">        :param str label: The label of the vertex</span>
+<span class="sd">        :return: tuple of (IP address, port, strip SDP, board address, tag)</span>
+<span class="sd">        :rtype: tuple(str, int, bool, str, int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r2t</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                SELECT * FROM app_output_tag_view</span>
+<span class="sd">                WHERE pre_vertex_label = ?</span>
+<span class="sd">                    AND post_vertex_label LIKE ?</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">receiver_label</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;%&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;ip_address&quot;</span><span class="p">,</span> <span class="s2">&quot;port&quot;</span><span class="p">,</span> <span class="s2">&quot;strip_sdp&quot;</span><span class="p">,</span> <span class="s2">&quot;board_address&quot;</span><span class="p">,</span> <span class="s2">&quot;tag&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatabaseReader.get_live_input_details"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_live_input_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_live_input_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the IP address and port where live input should be sent\</span>
+<span class="sd">            for a given vertex</span>
+
+<span class="sd">        :param str label: The label of the vertex</span>
+<span class="sd">        :return: tuple of (IP address, port)</span>
+<span class="sd">        :rtype: tuple(str, int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r2t</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                SELECT * FROM app_input_tag_view</span>
+<span class="sd">                WHERE application_label = ?</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">),</span>
+            <span class="s2">&quot;board_address&quot;</span><span class="p">,</span> <span class="s2">&quot;port&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatabaseReader.get_machine_live_output_details"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_machine_live_output_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">receiver_label</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the IP address, port and whether the SDP headers are to be\</span>
+<span class="sd">            stripped from the output from a machine vertex</span>
+
+<span class="sd">        :param str label: The label of the vertex</span>
+<span class="sd">        :param str receiver_label:</span>
+<span class="sd">        :return: tuple of (IP address, port, strip SDP, board address, tag)</span>
+<span class="sd">        :rtype: tuple(str, int, bool, str, int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r2t</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                SELECT * FROM machine_output_tag_view</span>
+<span class="sd">                WHERE pre_vertex_label = ?</span>
+<span class="sd">                    AND post_vertex_label LIKE ?</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">receiver_label</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;%&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;ip_address&quot;</span><span class="p">,</span> <span class="s2">&quot;port&quot;</span><span class="p">,</span> <span class="s2">&quot;strip_sdp&quot;</span><span class="p">,</span> <span class="s2">&quot;board_address&quot;</span><span class="p">,</span> <span class="s2">&quot;tag&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatabaseReader.get_machine_live_input_details"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_machine_live_input_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the IP address and port where live input should be sent\</span>
+<span class="sd">            for a given machine vertex</span>
+
+<span class="sd">        :param str label: The label of the vertex</span>
+<span class="sd">        :return: tuple of (IP address, port)</span>
+<span class="sd">        :rtype: tuple(str, int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r2t</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                SELECT * FROM machine_input_tag_view</span>
+<span class="sd">                WHERE machine_label = ?</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">),</span>
+            <span class="s2">&quot;board_address&quot;</span><span class="p">,</span> <span class="s2">&quot;port&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatabaseReader.get_machine_live_output_key"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_key">[docs]</a>    <span class="k">def</span> <span class="nf">get_machine_live_output_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">receiver_label</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str label: The label of the vertex</span>
+<span class="sd">        :param str receiver_label:</span>
+<span class="sd">        :rtype: tuple(int,int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r2t</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                SELECT * FROM machine_edge_key_view</span>
+<span class="sd">                WHERE pre_vertex_label = ?</span>
+<span class="sd">                    AND post_vertex_label LIKE ?</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">receiver_label</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;%&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;mask&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatabaseReader.get_machine_live_input_key"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_key">[docs]</a>    <span class="k">def</span> <span class="nf">get_machine_live_input_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str label: The label of the vertex</span>
+<span class="sd">        :rtype: tuple(int,int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r2t</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                SELECT * FROM machine_edge_key_view</span>
+<span class="sd">                WHERE pre_vertex_label = ?</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">),</span>
+            <span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;mask&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatabaseReader.get_n_atoms"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_n_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the number of atoms in a given vertex</span>
+
+<span class="sd">        :param str label: The label of the vertex</span>
+<span class="sd">        :return: The number of atoms</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            SELECT no_atoms FROM Application_vertices</span>
+<span class="sd">            WHERE vertex_label = ?</span>
+<span class="sd">            &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;no_atoms&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DatabaseReader.get_configuration_parameter_value"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_configuration_parameter_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_configuration_parameter_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the value of a configuration parameter</span>
+
+<span class="sd">        :param str parameter_name: The name of the parameter</span>
+<span class="sd">        :return: The value of the parameter</span>
+<span class="sd">        :rtype: float or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            SELECT value FROM configuration_parameters</span>
+<span class="sd">            WHERE parameter_id = ?</span>
+<span class="sd">            &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">parameter_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">])</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__xyp</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="DatabaseReader.get_placement"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_placement">[docs]</a>    <span class="k">def</span> <span class="nf">get_placement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the placement of a machine vertex with a given label</span>
+
+<span class="sd">        :param str label: The label of the vertex</span>
+<span class="sd">        :return: The x, y, p coordinates of the vertex</span>
+<span class="sd">        :rtype: tuple(int, int, int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            SELECT x, y, p FROM machine_vertex_placement</span>
+<span class="sd">            WHERE vertex_label = ?</span>
+<span class="sd">            &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">__xyp</span><span class="p">(</span><span class="n">row</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatabaseReader.get_placements"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_placements">[docs]</a>    <span class="k">def</span> <span class="nf">get_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the placements of an application vertex with a given label</span>
+
+<span class="sd">        :param str label: The label of the vertex</span>
+<span class="sd">        :return: A list of x, y, p coordinates of the vertices</span>
+<span class="sd">        :rtype: list(tuple(int, int, int))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__xyp</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_all</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            SELECT x, y, p FROM application_vertex_placements</span>
+<span class="sd">            WHERE vertex_label = ?</span>
+<span class="sd">            &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">)]</span></div>
+
+<div class="viewcode-block" id="DatabaseReader.get_ip_address"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_ip_address">[docs]</a>    <span class="k">def</span> <span class="nf">get_ip_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get an IP address to contact a chip</span>
+
+<span class="sd">        :param int x: The x-coordinate of the chip</span>
+<span class="sd">        :param int y: The y-coordinate of the chip</span>
+<span class="sd">        :return: The IP address of the Ethernet to use to contact the chip</span>
+<span class="sd">        :rtype: str or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            SELECT eth_ip_address FROM chip_eth_info</span>
+<span class="sd">            WHERE x = ? AND y = ? OR x = 0 AND y = 0</span>
+<span class="sd">            ORDER BY x DESC</span>
+<span class="sd">            &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="c1"># Should only fail if no machine is present!</span>
+        <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;eth_ip_address&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DatabaseReader.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.close">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="o">.</span><span class="n">close</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.database.database_reader</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

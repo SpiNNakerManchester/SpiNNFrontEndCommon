@@ -25,6 +25,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="spinn_front_end_common.utilities.utility_objs.html" title="spinn_front_end_common.utilities.utility_objs package"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -45,8 +48,69 @@
             
   <div class="section" id="spinn-front-end-common-utilities-scp-package">
 <h1>spinn_front_end_common.utilities.scp package<a class="headerlink" href="#spinn-front-end-common-utilities-scp-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-spinn_front_end_common.utilities.scp">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities.scp" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="spinn_front_end_common.utilities.scp.ClearIOBUFProcess">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utilities.scp.</code><code class="sig-name descname">ClearIOBUFProcess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">connection_selector</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/scp/clear_iobuf_process.html#ClearIOBUFProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.scp.ClearIOBUFProcess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spinnman.processes.abstract_multi_connection_process.AbstractMultiConnectionProcess</span></code></p>
+<p>How to clear the IOBUF buffers of a set of cores.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The cores must be using the simulation interface.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – </p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.scp.ClearIOBUFProcess.clear_iobuf">
+<code class="sig-name descname">clear_iobuf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">core_subsets</span></em>, <em class="sig-param"><span class="n">n_cores</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/scp/clear_iobuf_process.html#ClearIOBUFProcess.clear_iobuf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.scp.ClearIOBUFProcess.clear_iobuf" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>core_subsets</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine)"><em>CoreSubsets</em></a>) – </p></li>
+<li><p><strong>n_cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Defaults to the number of cores in <cite>core_subsets</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.utilities.scp.UpdateRuntimeProcess">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utilities.scp.</code><code class="sig-name descname">UpdateRuntimeProcess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">connection_selector</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/scp/update_runtime_process.html#UpdateRuntimeProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.scp.UpdateRuntimeProcess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spinnman.processes.abstract_multi_connection_process.AbstractMultiConnectionProcess</span></code></p>
+<p>How to update the target running time of a set of cores.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The cores must be using the simulation interface.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – </p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.scp.UpdateRuntimeProcess.update_runtime">
+<code class="sig-name descname">update_runtime</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_time</span></em>, <em class="sig-param"><span class="n">run_time</span></em>, <em class="sig-param"><span class="n">infinite_run</span></em>, <em class="sig-param"><span class="n">core_subsets</span></em>, <em class="sig-param"><span class="n">n_cores</span></em>, <em class="sig-param"><span class="n">n_sync_steps</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/scp/update_runtime_process.html#UpdateRuntimeProcess.update_runtime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.scp.UpdateRuntimeProcess.update_runtime" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current_time</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p></li>
+<li><p><strong>run_time</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p></li>
+<li><p><strong>infinite_run</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – </p></li>
+<li><p><strong>core_subsets</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine)"><em>CoreSubsets</em></a>) – </p></li>
+<li><p><strong>n_cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Number of cores being updated</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 
@@ -60,7 +124,7 @@
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.utilities.scp package</a><ul>
-<li><a class="reference internal" href="#module-contents">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.scp">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -98,6 +162,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="spinn_front_end_common.utilities.utility_objs.html" title="spinn_front_end_common.utilities.utility_objs package"
              >next</a> |</li>

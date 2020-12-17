@@ -1,0 +1,264 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.utilities.report_functions.bit_field_compressor_report &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.report_functions.bit_field_compressor_report</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utilities.report_functions.bit_field_compressor_report</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2019-2020 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions.</span>\
+    <span class="n">machine_bit_field_router_compressor</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">PROV_TOP_NAME</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">find_executable_start_type</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.report_functions.</span>\
+    <span class="n">bit_field_summary</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">BitFieldSummary</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
+<span class="n">_FILE_NAME</span> <span class="o">=</span> <span class="s2">&quot;bit_field_compressed_summary.rpt&quot;</span>
+
+
+<div class="viewcode-block" id="BitFieldCompressorReport"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.BitFieldCompressorReport">[docs]</a><span class="k">class</span> <span class="nc">BitFieldCompressorReport</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Generates a report that shows the impact of the compression of \</span>
+<span class="sd">        bitfields into the routing table.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BitFieldCompressorReport.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.BitFieldCompressorReport.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">report_default_directory</span><span class="p">,</span> <span class="n">provenance_items</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
+            <span class="n">placements</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str report_default_directory: report folder</span>
+<span class="sd">        :param list(ProvenanceDataItem) provenance_items: prov items</span>
+<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">            the machine graph</span>
+<span class="sd">        :param ~pacman.model.placements.Placements placements: the placements</span>
+<span class="sd">        :return: a summary, or `None` if the report file can&#39;t be written</span>
+<span class="sd">        :rtype: BitFieldSummary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">,</span> <span class="n">_FILE_NAME</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write_report</span><span class="p">(</span>
+                    <span class="n">f</span><span class="p">,</span> <span class="n">provenance_items</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Generate_placement_reports: Can&#39;t open file&quot;</span>
+                             <span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> for writing.&quot;</span><span class="p">,</span> <span class="n">_FILE_NAME</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_merged_component</span><span class="p">(</span><span class="n">provenance_items</span><span class="p">,</span> <span class="n">writer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Report how many bitfields were merged into the router.</span>
+
+<span class="sd">        :param list(ProvenanceDataItem) provenance_items: prov items</span>
+<span class="sd">        :param ~io.FileIO writer: file writer.</span>
+<span class="sd">        :return: tuple containing 4 elements.</span>
+<span class="sd">         1. min_bit_fields merged in a chip,</span>
+<span class="sd">         2. the max bit_fields merged in a chip,</span>
+<span class="sd">         3. the total bit_fields_merged into all the routers.</span>
+<span class="sd">         4. average number of bit-fields merged on the routers.</span>
+<span class="sd">        :rtype: tuple(int or str, int or str, int or str, float or str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">top_bit_field</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">min_bit_field</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span>
+        <span class="n">total_bit_fields_merged</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">average_per_chip_merged</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">n_chips</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">prov_item</span> <span class="ow">in</span> <span class="n">provenance_items</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">prov_item</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">PROV_TOP_NAME</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">bits</span> <span class="o">=</span> <span class="n">prov_item</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="s2">&quot;Chip </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> has </span><span class="si">{}</span><span class="s2"> bitfields merged into it</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">bits</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">bits</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+                <span class="n">total_bit_fields_merged</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">top_bit_field</span><span class="p">:</span>
+                    <span class="n">top_bit_field</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_bit_field</span><span class="p">:</span>
+                    <span class="n">min_bit_field</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">average_per_chip_merged</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">n_chips</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+            <span class="n">average_per_chip_merged</span> <span class="o">=</span> \
+                <span class="nb">float</span><span class="p">(</span><span class="n">average_per_chip_merged</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_chips</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">min_bit_field</span> <span class="o">=</span> <span class="s2">&quot;N/A&quot;</span>
+            <span class="n">top_bit_field</span> <span class="o">=</span> <span class="s2">&quot;N/A&quot;</span>
+            <span class="n">total_bit_fields_merged</span> <span class="o">=</span> <span class="s2">&quot;N/A&quot;</span>
+            <span class="n">average_per_chip_merged</span> <span class="o">=</span> <span class="s2">&quot;N/A&quot;</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">min_bit_field</span><span class="p">,</span> <span class="n">top_bit_field</span><span class="p">,</span> <span class="n">total_bit_fields_merged</span><span class="p">,</span>
+                <span class="n">average_per_chip_merged</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_before_merge_component</span><span class="p">(</span><span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">        :param ~.Placements placements:</span>
+<span class="sd">        :rtype: tuple(int, int, int, float or int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">total_to_merge</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">to_merge_per_chip</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">placements</span><span class="p">:</span>
+            <span class="n">binary_start_type</span> <span class="o">=</span> <span class="n">find_executable_start_type</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">binary_start_type</span> <span class="o">!=</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">:</span>
+                <span class="n">seen_partitions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">incoming_partition</span> <span class="ow">in</span> <span class="n">machine_graph</span><span class="o">.</span>\
+                        <span class="n">get_multicast_edge_partitions_ending_at_vertex</span><span class="p">(</span>
+                            <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">incoming_partition</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_partitions</span><span class="p">:</span>
+                        <span class="n">total_to_merge</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">to_merge_per_chip</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">seen_partitions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">incoming_partition</span><span class="p">)</span>
+
+        <span class="n">max_bit_fields_on_chip</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">min_bit_fields_on_chip</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span>
+
+        <span class="k">for</span> <span class="n">bitfield_count</span> <span class="ow">in</span> <span class="n">to_merge_per_chip</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">bitfield_count</span> <span class="o">&gt;</span> <span class="n">max_bit_fields_on_chip</span><span class="p">:</span>
+                <span class="n">max_bit_fields_on_chip</span> <span class="o">=</span> <span class="n">bitfield_count</span>
+            <span class="k">if</span> <span class="n">bitfield_count</span> <span class="o">&lt;</span> <span class="n">min_bit_fields_on_chip</span><span class="p">:</span>
+                <span class="n">min_bit_fields_on_chip</span> <span class="o">=</span> <span class="n">bitfield_count</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">to_merge_per_chip</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">average</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">average</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">total_to_merge</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">to_merge_per_chip</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">total_to_merge</span><span class="p">,</span> <span class="n">max_bit_fields_on_chip</span><span class="p">,</span>
+                <span class="n">min_bit_fields_on_chip</span><span class="p">,</span> <span class="n">average</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_write_report</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">writer</span><span class="p">,</span> <span class="n">provenance_items</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; writes the report</span>
+
+<span class="sd">        :param ~io.FileIO writer: the file writer</span>
+<span class="sd">        :param list(ProvenanceDataItem) provenance_items: the prov items</span>
+<span class="sd">        :param ~.MachineGraph machine_graph: the machine graph</span>
+<span class="sd">        :param ~.Placements placements: the placements</span>
+<span class="sd">        :return: a summary</span>
+<span class="sd">        :rtype: BitFieldSummary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="p">(</span><span class="n">min_bit_field</span><span class="p">,</span> <span class="n">top_bit_field</span><span class="p">,</span> <span class="n">total_bit_fields_merged</span><span class="p">,</span>
+         <span class="n">average_per_chip_merged</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merged_component</span><span class="p">(</span>
+            <span class="n">provenance_items</span><span class="p">,</span> <span class="n">writer</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">total_to_merge</span><span class="p">,</span> <span class="n">max_to_merge_per_chip</span><span class="p">,</span> <span class="n">low_to_merge_per_chip</span><span class="p">,</span>
+         <span class="n">average_per_chip_to_merge</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_before_merge_component</span><span class="p">(</span>
+            <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+
+        <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Summary: merged total </span><span class="si">{}</span><span class="s2"> out of </span><span class="si">{}</span><span class="s2"> bitfields. best per chip &quot;</span>
+            <span class="s2">&quot;was </span><span class="si">{}</span><span class="s2"> and the most on one chip was </span><span class="si">{}</span><span class="s2">. worst&quot;</span>
+            <span class="s2">&quot; per chip was </span><span class="si">{}</span><span class="s2"> where the least on a chip was </span><span class="si">{}</span><span class="s2">. average over &quot;</span>
+            <span class="s2">&quot;all chips is </span><span class="si">{}</span><span class="s2"> out of </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">total_bit_fields_merged</span><span class="p">,</span> <span class="n">total_to_merge</span><span class="p">,</span> <span class="n">top_bit_field</span><span class="p">,</span>
+                <span class="n">max_to_merge_per_chip</span><span class="p">,</span> <span class="n">min_bit_field</span><span class="p">,</span> <span class="n">low_to_merge_per_chip</span><span class="p">,</span>
+                <span class="n">average_per_chip_merged</span><span class="p">,</span> <span class="n">average_per_chip_to_merge</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">BitFieldSummary</span><span class="p">(</span>
+            <span class="n">lowest_per_chip</span><span class="o">=</span><span class="n">min_bit_field</span><span class="p">,</span> <span class="n">max_per_chip</span><span class="o">=</span><span class="n">top_bit_field</span><span class="p">,</span>
+            <span class="n">total_merged</span><span class="o">=</span><span class="n">total_bit_fields_merged</span><span class="p">,</span>
+            <span class="n">total_to_merge</span><span class="o">=</span><span class="n">total_to_merge</span><span class="p">,</span>
+            <span class="n">max_to_merge_per_chip</span><span class="o">=</span><span class="n">max_to_merge_per_chip</span><span class="p">,</span>
+            <span class="n">low_to_merge_per_chip</span><span class="o">=</span><span class="n">low_to_merge_per_chip</span><span class="p">,</span>
+            <span class="n">average_per_chip_merged</span><span class="o">=</span><span class="n">average_per_chip_merged</span><span class="p">,</span>
+            <span class="n">average_per_chip_to_merge</span><span class="o">=</span><span class="n">average_per_chip_to_merge</span><span class="p">)</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.report_functions.bit_field_compressor_report</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

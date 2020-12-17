@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.interface.interface_functions.system_multicast_routing_generator &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.interface_functions.system_multicast_routing_generator</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.interface_functions.system_multicast_routing_generator</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<span class="kn">from</span> <span class="nn">pacman.exceptions</span> <span class="kn">import</span> <span class="p">(</span><span class="n">PacmanRoutingException</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.model.routing_tables</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MulticastRoutingTables</span><span class="p">,</span> <span class="n">UnCompressedMulticastRoutingTable</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">MulticastRoutingEntry</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
+
+<span class="c1"># ADDRESS_KEY, DATA_KEY, BOUNDARY_KEY</span>
+<span class="n">N_KEYS_PER_PARTITION_ID</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="c1"># timeout key, timeout emergency key, clear reinjection queue.</span>
+<span class="n">N_KEYS_PER_REINJECTION_PARTITION</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">KEY_START_VALUE</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">ROUTING_MASK</span> <span class="o">=</span> <span class="mh">0xFFFFFFF8</span>
+
+
+<div class="viewcode-block" id="SystemMulticastRoutingGenerator"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.SystemMulticastRoutingGenerator">[docs]</a><span class="k">class</span> <span class="nc">SystemMulticastRoutingGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Generates routing table entries used by the data in processes with the\</span>
+<span class="sd">        extra monitor cores.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_monitors&quot;</span><span class="p">,</span> <span class="s2">&quot;_machine&quot;</span><span class="p">,</span> <span class="s2">&quot;_key_to_destination_map&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;_placements&quot;</span><span class="p">,</span> <span class="s2">&quot;_routing_tables&quot;</span><span class="p">,</span> <span class="s2">&quot;_time_out_keys_by_board&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="SystemMulticastRoutingGenerator.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.SystemMulticastRoutingGenerator.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~spinn_machine.Machine machine:</span>
+<span class="sd">        :param extra_monitor_cores:</span>
+<span class="sd">        :type extra_monitor_cores:</span>
+<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex)</span>
+<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">        :return: routing tables, destination-to-key map,</span>
+<span class="sd">            board-locn-to-timeout-key map</span>
+<span class="sd">        :rtype: tuple(MulticastRoutingTables,</span>
+<span class="sd">            dict(tuple(int,int),int), dict(tuple(int,int),int))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=attribute-defined-outside-init</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">placements</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span> <span class="o">=</span> <span class="n">extra_monitor_cores</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_routing_tables</span> <span class="o">=</span> <span class="n">MulticastRoutingTables</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_key_to_destination_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_out_keys_by_board</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="c1"># create progress bar</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
+            <span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">,</span>
+            <span class="s2">&quot;Generating routing tables for data in system processes&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">ethernet_chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">):</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_routing_tree</span><span class="p">(</span><span class="n">ethernet_chip</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_routing_entries</span><span class="p">(</span><span class="n">ethernet_chip</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_routing_tables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_to_destination_map</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_time_out_keys_by_board</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_generate_routing_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ethernet_chip</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Generates a map for each chip to over which link it gets its data.</span>
+
+<span class="sd">        :param ~spinn_machine.Chip ethernet_chip:</span>
+<span class="sd">        :return: Map of chip.x, chip.y tp (source.x, source.y, source.link)</span>
+<span class="sd">        :rtype: dict(tuple(int, int), tuple(int, int, int))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">eth_x</span> <span class="o">=</span> <span class="n">ethernet_chip</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">eth_y</span> <span class="o">=</span> <span class="n">ethernet_chip</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="n">to_reach</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_existing_xys_by_ethernet</span><span class="p">(</span><span class="n">eth_x</span><span class="p">,</span> <span class="n">eth_y</span><span class="p">))</span>
+        <span class="n">reached</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">reached</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">eth_x</span><span class="p">,</span> <span class="n">eth_y</span><span class="p">))</span>
+        <span class="n">to_reach</span><span class="o">.</span><span class="n">remove</span><span class="p">((</span><span class="n">eth_x</span><span class="p">,</span> <span class="n">eth_y</span><span class="p">))</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">found</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">eth_x</span><span class="p">,</span> <span class="n">eth_y</span><span class="p">))</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">to_reach</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">just_reached</span> <span class="o">=</span> <span class="n">found</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">just_reached</span><span class="p">:</span>
+                <span class="c1"># Check links starting with the most direct from 0,0</span>
+                <span class="k">for</span> <span class="n">link_id</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]:</span>
+                    <span class="c1"># Get protential destination</span>
+                    <span class="n">destination</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">xy_over_link</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">link_id</span><span class="p">)</span>
+                    <span class="c1"># If it is useful</span>
+                    <span class="k">if</span> <span class="n">destination</span> <span class="ow">in</span> <span class="n">to_reach</span><span class="p">:</span>
+                        <span class="c1"># check it actually exits</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">is_link_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">link_id</span><span class="p">):</span>
+                            <span class="c1"># Add to tree and record chip reachable</span>
+                            <span class="n">tree</span><span class="p">[</span><span class="n">destination</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">link_id</span><span class="p">)</span>
+                            <span class="n">to_reach</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">destination</span><span class="p">)</span>
+                            <span class="n">found</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">destination</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">PacmanRoutingException</span><span class="p">(</span>
+                    <span class="s2">&quot;Unable to do data in routing on </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">ethernet_chip</span><span class="o">.</span><span class="n">ip_address</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">tree</span>
+
+    <span class="k">def</span> <span class="nf">_add_routing_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">processor_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">link_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Adds a routing entry on this chip, creating the table if needed.</span>
+
+<span class="sd">        :param int x: chip.x</span>
+<span class="sd">        :param int y: chip.y</span>
+<span class="sd">        :param int key: The key to use</span>
+<span class="sd">        :param int processor_id:</span>
+<span class="sd">            placement.p of the monitor vertex if applicable</span>
+<span class="sd">        :param int link_id: If of the link out if applicable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_routing_tables</span><span class="o">.</span><span class="n">get_routing_table_for_chip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="n">UnCompressedMulticastRoutingTable</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_routing_tables</span><span class="o">.</span><span class="n">add_routing_table</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">processor_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">processor_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">processor_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">processor_id</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">link_ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">link_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">MulticastRoutingEntry</span><span class="p">(</span>
+            <span class="n">routing_entry_key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">ROUTING_MASK</span><span class="p">,</span>
+            <span class="n">processor_ids</span><span class="o">=</span><span class="n">processor_ids</span><span class="p">,</span> <span class="n">link_ids</span><span class="o">=</span><span class="n">link_ids</span><span class="p">,</span> <span class="n">defaultable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">add_multicast_routing_entry</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_add_routing_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ethernet_chip</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Adds the routing entires based on the tree.</span>
+
+<span class="sd">        For every chip with this ethernet:</span>
+<span class="sd">            - A key is generated (and saved) for this chip.</span>
+<span class="sd">            - A local route to the monitor core is added.</span>
+<span class="sd">            - The tree is walked adding a route on each source to get here</span>
+
+<span class="sd">        :param ~spinn_machine.Chip ethernet_chip:</span>
+<span class="sd">            the ethernet chip to make entries for</span>
+<span class="sd">        :param dict(tuple(int,int),tuple(int,int,int)) tree:</span>
+<span class="sd">            map of chips and links</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">eth_x</span> <span class="o">=</span> <span class="n">ethernet_chip</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">eth_y</span> <span class="o">=</span> <span class="n">ethernet_chip</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">KEY_START_VALUE</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_existing_xys_by_ethernet</span><span class="p">(</span>
+                <span class="n">eth_x</span><span class="p">,</span> <span class="n">eth_y</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_key_to_destination_map</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span>
+            <span class="n">placement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_routing_entry</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">processor_id</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+            <span class="k">while</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="n">tree</span><span class="p">:</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">link</span> <span class="o">=</span> <span class="n">tree</span><span class="p">[(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_add_routing_entry</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">link_ids</span><span class="o">=</span><span class="p">[</span><span class="n">link</span><span class="p">])</span>
+            <span class="n">key</span> <span class="o">+=</span> <span class="n">N_KEYS_PER_PARTITION_ID</span>
+
+        <span class="c1"># accum links to make a broad cast</span>
+        <span class="n">links_per_chip</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">chip_key</span> <span class="ow">in</span> <span class="n">tree</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">link</span> <span class="o">=</span> <span class="n">tree</span><span class="p">[</span><span class="n">chip_key</span><span class="p">]</span>
+            <span class="n">links_per_chip</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+
+        <span class="c1"># add broadcast router timeout keys</span>
+        <span class="n">time_out_key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_existing_xys_by_ethernet</span><span class="p">(</span>
+                <span class="n">eth_x</span><span class="p">,</span> <span class="n">eth_y</span><span class="p">):</span>
+            <span class="n">placement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_routing_entry</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">time_out_key</span><span class="p">,</span> <span class="n">processor_id</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
+                <span class="n">link_ids</span><span class="o">=</span><span class="n">links_per_chip</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+            <span class="c1"># update tracker</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_time_out_keys_by_board</span><span class="p">[(</span><span class="n">eth_x</span><span class="p">,</span> <span class="n">eth_y</span><span class="p">)]</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="n">key</span> <span class="o">+=</span> <span class="n">N_KEYS_PER_REINJECTION_PARTITION</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.interface_functions.system_multicast_routing_generator</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

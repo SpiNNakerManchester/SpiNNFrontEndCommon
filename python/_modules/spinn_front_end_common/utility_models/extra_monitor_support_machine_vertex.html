@@ -1,0 +1,737 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.utility_models.extra_monitor_support_machine_vertex &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utility_models.extra_monitor_support_machine_vertex</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utility_models.extra_monitor_support_machine_vertex</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
+<span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">CoreSubsets</span><span class="p">,</span> <span class="n">Router</span>
+<span class="kn">from</span> <span class="nn">pacman.executor.injection_decorator</span> <span class="kn">import</span> <span class="n">inject_items</span>
+<span class="kn">from</span> <span class="nn">pacman.model.graphs.common</span> <span class="kn">import</span> <span class="n">EdgeTrafficType</span>
+<span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span>
+<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">ResourceContainer</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities</span> <span class="kn">import</span> <span class="n">globals_variables</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs.</span>\
+    <span class="n">extra_monitor_scp_processes</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">ReadStatusProcess</span><span class="p">,</span> <span class="n">ResetCountersProcess</span><span class="p">,</span> <span class="n">SetPacketTypesProcess</span><span class="p">,</span>
+        <span class="n">SetRouterTimeoutProcess</span><span class="p">,</span> <span class="n">ClearQueueProcess</span><span class="p">,</span>
+        <span class="n">LoadApplicationMCRoutesProcess</span><span class="p">,</span> <span class="n">LoadSystemMCRoutesProcess</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SARK_PER_MALLOC_SDRAM_USAGE</span><span class="p">,</span> <span class="n">DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES</span><span class="p">,</span>
+    <span class="n">BYTES_PER_WORD</span><span class="p">,</span> <span class="n">BYTES_PER_KB</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.data_speed_up_packet_gatherer_machine_vertex</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DataSpeedUpPacketGatherMachineVertex</span> <span class="k">as</span>
+    <span class="n">Gatherer</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">convert_vertices_to_core_subset</span><span class="p">,</span> <span class="n">emergency_recover_state_from_failure</span><span class="p">)</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
+
+<span class="n">_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
+<span class="c1">#: 1.new seq key, 2.first data key, 3. transaction id key 4.end flag key,</span>
+<span class="c1"># 5.base key</span>
+<span class="n">_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
+<span class="n">_CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES</span> <span class="o">=</span> <span class="mi">460</span> <span class="o">*</span> <span class="n">BYTES_PER_KB</span>
+<span class="n">_CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
+<span class="n">_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING</span> <span class="o">=</span> <span class="p">((</span><span class="mi">49</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
+<span class="n">_BIT_SHIFT_TO_MOVE_APP_ID</span> <span class="o">=</span> <span class="mi">24</span>
+
+<span class="c1"># cap for stopping wrap arounds</span>
+<span class="n">TRANSACTION_ID_CAP</span> <span class="o">=</span> <span class="mh">0xFFFFFFFF</span>
+
+<span class="c1"># SDRAM requirement for containing router table entries</span>
+<span class="c1"># 16 bytes per entry:</span>
+<span class="c1"># 4 for a key, 4 for mask,</span>
+<span class="c1"># 4 for word alignment for 18 cores and 6 links</span>
+<span class="c1"># (24 bits, for word aligning)</span>
+<span class="n">_SDRAM_FOR_ROUTER_TABLE_ENTRIES</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
+
+
+<span class="k">class</span> <span class="nc">_DSG_REGIONS</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">REINJECT_CONFIG</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">DATA_OUT_CONFIG</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">DATA_IN_CONFIG</span> <span class="o">=</span> <span class="mi">2</span>
+
+
+<span class="k">class</span> <span class="nc">_KEY_OFFSETS</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">ADDRESS_KEY_OFFSET</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">DATA_KEY_OFFSET</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">BOUNDARY_KEY_OFFSET</span> <span class="o">=</span> <span class="mi">2</span>
+
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex">[docs]</a><span class="k">class</span> <span class="nc">ExtraMonitorSupportMachineVertex</span><span class="p">(</span>
+        <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span>
+        <span class="n">AbstractGeneratesDataSpecification</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Machine vertex for talking to extra monitor cores. \</span>
+<span class="sd">        Supports reinjection control and the faster data transfer protocols.</span>
+
+<span class="sd">    Usually deployed once per chip.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="c1"># if we reinject multicast packets</span>
+        <span class="s2">&quot;_reinject_multicast&quot;</span><span class="p">,</span>
+        <span class="c1"># if we reinject point to point packets</span>
+        <span class="s2">&quot;_reinject_point_to_point&quot;</span><span class="p">,</span>
+        <span class="c1"># if we reinject nearest neighbour packets</span>
+        <span class="s2">&quot;_reinject_nearest_neighbour&quot;</span><span class="p">,</span>
+        <span class="c1"># if we reinject fixed route packets</span>
+        <span class="s2">&quot;_reinject_fixed_route&quot;</span><span class="p">,</span>
+        <span class="c1"># placement holder for ease of access</span>
+        <span class="s2">&quot;_placement&quot;</span><span class="p">,</span>
+        <span class="c1"># app id, used for reporting failures on system core RTE</span>
+        <span class="s2">&quot;_app_id&quot;</span><span class="p">,</span>
+        <span class="c1"># machine instance</span>
+        <span class="s2">&quot;_machine&quot;</span><span class="p">,</span>
+        <span class="c1"># the local transaction id</span>
+        <span class="s2">&quot;_transaction_id&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">app_vertex</span><span class="p">,</span>
+            <span class="n">reinject_multicast</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reinject_point_to_point</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">reinject_nearest_neighbour</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reinject_fixed_route</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param constraints: constraints on this vertex</span>
+<span class="sd">        :type constraints:</span>
+<span class="sd">            iterable(~pacman.model.constraints.AbstractConstraint)</span>
+<span class="sd">        :param bool reinject_multicast:</span>
+<span class="sd">            if we reinject multicast packets; defaults to value of</span>
+<span class="sd">            `enable_reinjection` setting in configuration file</span>
+<span class="sd">        :param bool reinject_point_to_point:</span>
+<span class="sd">            if we reinject point-to-point packets</span>
+<span class="sd">        :param bool reinject_nearest_neighbour:</span>
+<span class="sd">            if we reinject nearest-neighbour packets</span>
+<span class="sd">        :param bool reinject_fixed_route: if we reinject fixed route packets</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExtraMonitorSupportMachineVertex</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;SYSTEM:ExtraMonitor&quot;</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
+            <span class="n">app_vertex</span><span class="o">=</span><span class="n">app_vertex</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">reinject_multicast</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">globals_variables</span><span class="o">.</span><span class="n">get_simulator</span><span class="p">()</span><span class="o">.</span><span class="n">config</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_multicast</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
+                <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_reinjection&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_multicast</span> <span class="o">=</span> <span class="n">reinject_multicast</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_point_to_point</span> <span class="o">=</span> <span class="n">reinject_point_to_point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_nearest_neighbour</span> <span class="o">=</span> <span class="n">reinject_nearest_neighbour</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_fixed_route</span> <span class="o">=</span> <span class="n">reinject_fixed_route</span>
+        <span class="c1"># placement holder for ease of access</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">reinject_multicast</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_multicast</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">transaction_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.update_transaction_id"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.update_transaction_id">[docs]</a>    <span class="k">def</span> <span class="nf">update_transaction_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">TRANSACTION_ID_CAP</span></div>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.update_transaction_id_from_machine"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.update_transaction_id_from_machine">[docs]</a>    <span class="k">def</span> <span class="nf">update_transaction_id_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txrx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; looks up from the machine what the current transaction id is</span>
+<span class="sd">        and updates the extra monitor.</span>
+
+<span class="sd">        :param txrx: SpiNNMan instance</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">read_user_1</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">reinject_point_to_point</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_point_to_point</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">reinject_nearest_neighbour</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_nearest_neighbour</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">reinject_fixed_route</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_fixed_route</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">resources_required</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">resources_required</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_resources_required</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">placement</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: ~pacman.model.placements.Placement</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.static_resources_required"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.static_resources_required">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">static_resources_required</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot; The resources required by this vertex.</span>
+
+<span class="sd">        :rtype: ~pacman.model.resources.ResourceContainer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ResourceContainer</span><span class="p">(</span><span class="n">sdram</span><span class="o">=</span><span class="n">ConstantSDRAM</span><span class="p">(</span>
+            <span class="n">_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES</span> <span class="o">+</span>
+            <span class="n">_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES</span> <span class="o">+</span>
+            <span class="n">_CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES</span> <span class="o">+</span>
+            <span class="c1"># Data spec size</span>
+            <span class="n">DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES</span> <span class="o">+</span>
+            <span class="c1"># One malloc for extra sequence numbers</span>
+            <span class="n">SARK_PER_MALLOC_SDRAM_USAGE</span> <span class="o">+</span>
+            <span class="n">_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING</span> <span class="o">+</span>
+            <span class="n">_SDRAM_FOR_ROUTER_TABLE_ENTRIES</span> <span class="o">+</span>
+            <span class="n">_CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.get_binary_start_type"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.get_binary_start_type">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractHasAssociatedBinary</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_binary_start_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_get_binary_start_type</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.static_get_binary_start_type"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.static_get_binary_start_type">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">static_get_binary_start_type</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot; The type of the binary implementing this vertex.</span>
+
+<span class="sd">        :rtype: ExecutableType</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYSTEM</span></div>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.get_binary_file_name"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.get_binary_file_name">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractHasAssociatedBinary</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_binary_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_get_binary_file_name</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.static_get_binary_file_name"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.static_get_binary_file_name">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">static_get_binary_file_name</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot; The name of the binary implementing this vertex.</span>
+
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;extra_monitor_support.aplx&quot;</span></div>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.generate_data_specification">[docs]</a>    <span class="nd">@inject_items</span><span class="p">({</span><span class="s2">&quot;routing_info&quot;</span><span class="p">:</span> <span class="s2">&quot;MemoryRoutingInfos&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;machine_graph&quot;</span><span class="p">:</span> <span class="s2">&quot;MemoryMachineGraph&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;data_in_routing_tables&quot;</span><span class="p">:</span> <span class="s2">&quot;DataInMulticastRoutingTables&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;mc_data_chips_to_keys&quot;</span><span class="p">:</span> <span class="s2">&quot;DataInMulticastKeyToChipMap&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;app_id&quot;</span><span class="p">:</span> <span class="s2">&quot;APPID&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;machine&quot;</span><span class="p">:</span> <span class="s2">&quot;MemoryExtendedMachine&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;router_timeout_keys&quot;</span><span class="p">:</span> <span class="s2">&quot;SystemMulticastRouterTimeoutKeys&quot;</span><span class="p">})</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">,</span>
+               <span class="n">additional_arguments</span><span class="o">=</span><span class="p">{</span>
+                   <span class="s2">&quot;routing_info&quot;</span><span class="p">,</span> <span class="s2">&quot;machine_graph&quot;</span><span class="p">,</span> <span class="s2">&quot;data_in_routing_tables&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;mc_data_chips_to_keys&quot;</span><span class="p">,</span> <span class="s2">&quot;app_id&quot;</span><span class="p">,</span> <span class="s2">&quot;machine&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;router_timeout_keys&quot;</span><span class="p">})</span>
+    <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
+            <span class="n">data_in_routing_tables</span><span class="p">,</span> <span class="n">mc_data_chips_to_keys</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span>
+            <span class="n">machine</span><span class="p">,</span> <span class="n">router_timeout_keys</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)</span>
+<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">            (injected)</span>
+<span class="sd">        :param data_in_routing_tables: (injected)</span>
+<span class="sd">        :type data_in_routing_tables:</span>
+<span class="sd">            ~pacman.model.routing_tables.MulticastRoutingTables</span>
+<span class="sd">        :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)</span>
+<span class="sd">        :param int app_id: (injected)</span>
+<span class="sd">        :param ~spinn_machine.Machine machine: (injected)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=arguments-differ</span>
+        <span class="c1"># storing for future usage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span> <span class="o">=</span> <span class="n">placement</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="n">app_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span>
+        <span class="c1"># write reinjection config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_generate_reinjection_config</span><span class="p">(</span>
+            <span class="n">spec</span><span class="p">,</span> <span class="n">router_timeout_keys</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">machine</span><span class="p">)</span>
+        <span class="c1"># write data speed up out config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_generate_data_speed_up_out_config</span><span class="p">(</span>
+            <span class="n">spec</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">)</span>
+        <span class="c1"># write data speed up in config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_generate_data_speed_up_in_config</span><span class="p">(</span>
+            <span class="n">spec</span><span class="p">,</span> <span class="n">data_in_routing_tables</span><span class="p">,</span>
+            <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">),</span>
+            <span class="n">mc_data_chips_to_keys</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">end_specification</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_generate_data_speed_up_out_config</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.DataSpecificationGenerator spec: spec file</span>
+<span class="sd">        :param ~.RoutingInfo routing_info: the packet routing info</span>
+<span class="sd">        :param ~.MachineGraph machine_graph: The graph containing this vertex</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">DATA_OUT_CONFIG</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="n">_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;data speed-up out config region&quot;</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">DATA_OUT_CONFIG</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">Gatherer</span><span class="o">.</span><span class="n">TRAFFIC_TYPE</span> <span class="o">==</span> <span class="n">EdgeTrafficType</span><span class="o">.</span><span class="n">MULTICAST</span><span class="p">:</span>
+            <span class="n">base_key</span> <span class="o">=</span> <span class="n">routing_info</span><span class="o">.</span><span class="n">get_first_key_for_edge</span><span class="p">(</span>
+                <span class="nb">list</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">get_edges_starting_at_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">base_key</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">base_key</span> <span class="o">+</span> <span class="n">Gatherer</span><span class="o">.</span><span class="n">NEW_SEQ_KEY_OFFSET</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">base_key</span> <span class="o">+</span> <span class="n">Gatherer</span><span class="o">.</span><span class="n">FIRST_DATA_KEY_OFFSET</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">base_key</span> <span class="o">+</span> <span class="n">Gatherer</span><span class="o">.</span><span class="n">TRANSACTION_ID_KEY_OFFSET</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">base_key</span> <span class="o">+</span> <span class="n">Gatherer</span><span class="o">.</span><span class="n">END_FLAG_KEY_OFFSET</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">BASE_KEY</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">NEW_SEQ_KEY</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">FIRST_DATA_KEY</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">TRANSACTION_ID_KEY</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">END_FLAG_KEY</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_generate_reinjection_config</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">router_timeout_keys</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">machine</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.DataSpecificationGenerator spec: spec file</span>
+<span class="sd">        :param dict(tuple(int,int),int) router_timeout_keys:</span>
+<span class="sd">        :param ~.Placement placement:</span>
+<span class="sd">        :param ~.Machine machine:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">REINJECT_CONFIG</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="n">_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;re-injection config region&quot;</span><span class="p">)</span>
+
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">REINJECT_CONFIG</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_multicast</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_point_to_point</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_fixed_route</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_nearest_neighbour</span><span class="p">]:</span>
+            <span class="c1"># Note that this is inverted! Why... I dunno!</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="ow">not</span> <span class="n">value</span><span class="p">))</span>
+
+        <span class="c1"># add the reinjection mc interface</span>
+        <span class="n">chip</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">reinjector_base_mc_key</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">router_timeout_keys</span><span class="p">[</span>
+                <span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">)])</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">reinjector_base_mc_key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_generate_data_speed_up_in_config</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">data_in_routing_tables</span><span class="p">,</span> <span class="n">chip</span><span class="p">,</span> <span class="n">mc_data_chips_to_keys</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.DataSpecificationGenerator spec: spec file</span>
+<span class="sd">        :param ~.MulticastRoutingTables data_in_routing_tables:</span>
+<span class="sd">            routing tables for all chips</span>
+<span class="sd">        :param ~.Chip chip: the chip where this monitor will run</span>
+<span class="sd">        :param dict(tuple(int,int),int) mc_data_chips_to_keys:</span>
+<span class="sd">            data in keys to chips map.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">DATA_IN_CONFIG</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING</span> <span class="o">+</span>
+                  <span class="n">_CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES</span><span class="p">),</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;data speed-up in config region&quot;</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">DATA_IN_CONFIG</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># write address key and data key</span>
+        <span class="n">base_key</span> <span class="o">=</span> <span class="n">mc_data_chips_to_keys</span><span class="p">[</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">base_key</span> <span class="o">+</span> <span class="n">_KEY_OFFSETS</span><span class="o">.</span><span class="n">ADDRESS_KEY_OFFSET</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">base_key</span> <span class="o">+</span> <span class="n">_KEY_OFFSETS</span><span class="o">.</span><span class="n">DATA_KEY_OFFSET</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">base_key</span> <span class="o">+</span> <span class="n">_KEY_OFFSETS</span><span class="o">.</span><span class="n">BOUNDARY_KEY_OFFSET</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># write table entries</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">data_in_routing_tables</span><span class="o">.</span><span class="n">get_routing_table_for_chip</span><span class="p">(</span>
+            <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">number_of_entries</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">multicast_routing_entries</span><span class="p">:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">routing_entry_key</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__encode_route</span><span class="p">(</span><span class="n">entry</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__encode_route</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~spinn_machine.MulticastRoutingEntry entry:</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">route</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">&lt;&lt;</span> <span class="n">_BIT_SHIFT_TO_MOVE_APP_ID</span>
+        <span class="n">route</span> <span class="o">|=</span> <span class="n">Router</span><span class="o">.</span><span class="n">convert_routing_table_entry_to_spinnaker_route</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">route</span>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.set_router_wait1_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_wait1_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait1_timeout</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
+            <span class="n">extra_monitor_cores_to_set</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Supports setting of the router time outs for a set of chips via\</span>
+<span class="sd">            their extra monitor cores. This sets the timeout for the time\</span>
+<span class="sd">            between when a packet arrives and when it starts to be emergency\</span>
+<span class="sd">            routed. (Actual emergency routing is disabled by default.)</span>
+
+<span class="sd">        :param tuple(int,int) timeout:</span>
+<span class="sd">            The mantissa and exponent of the timeout value, each between</span>
+<span class="sd">            0 and 15</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            the spinnman interface</span>
+<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">            vertex placements</span>
+<span class="sd">        :param extra_monitor_cores_to_set:</span>
+<span class="sd">            which monitors control the routers to set the timeout of</span>
+<span class="sd">        :type extra_monitor_cores_to_set:</span>
+<span class="sd">            iterable(ExtraMonitorSupportMachineVertex)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span> <span class="o">=</span> <span class="n">timeout</span>
+        <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">(</span>
+            <span class="n">extra_monitor_cores_to_set</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">SetRouterTimeoutProcess</span><span class="p">(</span>
+            <span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">process</span><span class="o">.</span><span class="n">set_wait1_timeout</span><span class="p">(</span><span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+            <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
+                <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
+                <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="k">raise</span></div>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.set_router_wait2_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_wait2_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait2_timeout</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
+            <span class="n">extra_monitor_cores_to_set</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Supports setting of the router time outs for a set of chips via\</span>
+<span class="sd">            their extra monitor cores. This sets the timeout for the time\</span>
+<span class="sd">            between when a packet starts to be emergency routed and when it\</span>
+<span class="sd">            is dropped. (Actual emergency routing is disabled by default.)</span>
+
+<span class="sd">        :param tuple(int,int) timeout:</span>
+<span class="sd">            The mantissa and exponent of the timeout value, each between</span>
+<span class="sd">            0 and 15</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            the spinnMan instance</span>
+<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">            vertex placements</span>
+<span class="sd">        :param extra_monitor_cores_to_set:</span>
+<span class="sd">            which monitors control the routers to set the timeout of</span>
+<span class="sd">        :type extra_monitor_cores_to_set:</span>
+<span class="sd">            iterable(ExtraMonitorSupportMachineVertex)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span> <span class="o">=</span> <span class="n">timeout</span>
+        <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">(</span>
+            <span class="n">extra_monitor_cores_to_set</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">SetRouterTimeoutProcess</span><span class="p">(</span>
+            <span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">process</span><span class="o">.</span><span class="n">set_wait2_timeout</span><span class="p">(</span><span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+            <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
+                <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
+                <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="k">raise</span></div>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.reset_reinjection_counters"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.reset_reinjection_counters">[docs]</a>    <span class="k">def</span> <span class="nf">reset_reinjection_counters</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">extra_monitor_cores_to_set</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Resets the counters for reinjection</span>
+
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            the spinnMan interface</span>
+<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">            the placements object</span>
+<span class="sd">        :param extra_monitor_cores_to_set:</span>
+<span class="sd">            which monitors control the routers to reset the counters of</span>
+<span class="sd">        :type extra_monitor_cores_to_set:</span>
+<span class="sd">            iterable(ExtraMonitorSupportMachineVertex)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">(</span>
+            <span class="n">extra_monitor_cores_to_set</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">ResetCountersProcess</span><span class="p">(</span><span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">process</span><span class="o">.</span><span class="n">reset_counters</span><span class="p">(</span><span class="n">core_subsets</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+            <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
+                <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
+                <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="k">raise</span></div>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.clear_reinjection_queue"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.clear_reinjection_queue">[docs]</a>    <span class="k">def</span> <span class="nf">clear_reinjection_queue</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">extra_monitor_cores_to_set</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Clears the queues for reinjection</span>
+
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            the spinnMan interface</span>
+<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">            the placements object</span>
+<span class="sd">        :param extra_monitor_cores_to_set:</span>
+<span class="sd">            Which extra monitors need to clear their queues.</span>
+<span class="sd">        :type extra_monitor_cores_to_set:</span>
+<span class="sd">            iterable(ExtraMonitorSupportMachineVertex)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">(</span>
+            <span class="n">extra_monitor_cores_to_set</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">ClearQueueProcess</span><span class="p">(</span><span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">process</span><span class="o">.</span><span class="n">reset_counters</span><span class="p">(</span><span class="n">core_subsets</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+            <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
+                <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
+                <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="k">raise</span></div>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.get_reinjection_status"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.get_reinjection_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_reinjection_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the reinjection status from this extra monitor vertex</span>
+
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            the spinnMan interface</span>
+<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">            the vertex placements</span>
+<span class="sd">        :return: the reinjection status for this vertex</span>
+<span class="sd">        :rtype: ReInjectionStatus</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">placement</span> <span class="o">=</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">ReadStatusProcess</span><span class="p">(</span><span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">process</span><span class="o">.</span><span class="n">get_reinjection_status</span><span class="p">(</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+            <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
+                <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
+            <span class="k">raise</span></div>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.get_reinjection_status_for_vertices"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.get_reinjection_status_for_vertices">[docs]</a>    <span class="k">def</span> <span class="nf">get_reinjection_status_for_vertices</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">extra_monitor_cores_for_data</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the reinjection status from a set of extra monitor cores</span>
+
+<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">            the placements object</span>
+<span class="sd">        :param extra_monitor_cores_for_data:</span>
+<span class="sd">            the extra monitor cores to get status from</span>
+<span class="sd">        :type extra_monitor_cores_for_data:</span>
+<span class="sd">            iterable(ExtraMonitorSupportMachineVertex)</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            the spinnMan interface</span>
+<span class="sd">        :rtype: dict(tuple(int,int), ReInjectionStatus)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">(</span>
+            <span class="n">extra_monitor_cores_for_data</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">ReadStatusProcess</span><span class="p">(</span><span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">process</span><span class="o">.</span><span class="n">get_reinjection_status_for_core_subsets</span><span class="p">(</span><span class="n">core_subsets</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.set_reinjection_packets"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_reinjection_packets">[docs]</a>    <span class="k">def</span> <span class="nf">set_reinjection_packets</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">extra_monitor_cores_for_data</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
+            <span class="n">point_to_point</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multicast</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nearest_neighbour</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">fixed_route</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">            placements object</span>
+<span class="sd">        :param extra_monitor_cores_for_data:</span>
+<span class="sd">            the extra monitor cores to set the packets of</span>
+<span class="sd">        :type extra_monitor_cores_for_data:</span>
+<span class="sd">            iterable(ExtraMonitorSupportMachineVertex)</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance</span>
+<span class="sd">        :param point_to_point:</span>
+<span class="sd">            If point to point should be set, or None if left as before</span>
+<span class="sd">        :type point_to_point: bool or None</span>
+<span class="sd">        :param multicast:</span>
+<span class="sd">            If multicast should be set, or None if left as before</span>
+<span class="sd">        :type multicast: bool or None</span>
+<span class="sd">        :param nearest_neighbour:</span>
+<span class="sd">            If nearest neighbour should be set, or None if left as before</span>
+<span class="sd">        :type nearest_neighbour: bool or None</span>
+<span class="sd">        :param fixed_route:</span>
+<span class="sd">            If fixed route should be set, or None if left as before.</span>
+<span class="sd">        :type fixed_route: bool or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+        <span class="k">if</span> <span class="n">multicast</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_multicast</span> <span class="o">=</span> <span class="n">multicast</span>
+        <span class="k">if</span> <span class="n">point_to_point</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_point_to_point</span> <span class="o">=</span> <span class="n">point_to_point</span>
+        <span class="k">if</span> <span class="n">nearest_neighbour</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_nearest_neighbour</span> <span class="o">=</span> <span class="n">nearest_neighbour</span>
+        <span class="k">if</span> <span class="n">fixed_route</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_fixed_route</span> <span class="o">=</span> <span class="n">fixed_route</span>
+
+        <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">(</span>
+            <span class="n">extra_monitor_cores_for_data</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">SetPacketTypesProcess</span><span class="p">(</span><span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">process</span><span class="o">.</span><span class="n">set_packet_types</span><span class="p">(</span>
+                <span class="n">core_subsets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_point_to_point</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_multicast</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_nearest_neighbour</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_fixed_route</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+            <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
+                <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
+                <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="k">raise</span></div>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.load_system_mc_routes"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.load_system_mc_routes">[docs]</a>    <span class="k">def</span> <span class="nf">load_system_mc_routes</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">extra_monitor_cores_for_data</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the extra monitor cores to load up the system-based \</span>
+<span class="sd">            multicast routes (used by data in).</span>
+
+<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">            the placements object</span>
+<span class="sd">        :param extra_monitor_cores_for_data:</span>
+<span class="sd">            the extra monitor cores to get status from</span>
+<span class="sd">        :type extra_monitor_cores_for_data:</span>
+<span class="sd">            iterable(ExtraMonitorSupportMachineVertex)</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            the spinnMan interface</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">core_subsets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_vertices_to_core_subset</span><span class="p">(</span>
+            <span class="n">extra_monitor_cores_for_data</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">LoadSystemMCRoutesProcess</span><span class="p">(</span>
+            <span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">process</span><span class="o">.</span><span class="n">load_system_mc_routes</span><span class="p">(</span><span class="n">core_subsets</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+            <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
+                <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
+                <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="k">raise</span></div>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.load_application_mc_routes"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.load_application_mc_routes">[docs]</a>    <span class="k">def</span> <span class="nf">load_application_mc_routes</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">extra_monitor_cores_for_data</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the extra monitor cores to load up the application-based\</span>
+<span class="sd">            multicast routes (used by data in).</span>
+
+<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">            the placements object</span>
+<span class="sd">        :param extra_monitor_cores_for_data:</span>
+<span class="sd">            the extra monitor cores to get status from</span>
+<span class="sd">        :type extra_monitor_cores_for_data:</span>
+<span class="sd">            iterable(ExtraMonitorSupportMachineVertex)</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            the spinnMan interface</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">core_subsets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_vertices_to_core_subset</span><span class="p">(</span>
+            <span class="n">extra_monitor_cores_for_data</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">LoadApplicationMCRoutesProcess</span><span class="p">(</span>
+            <span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">process</span><span class="o">.</span><span class="n">load_application_mc_routes</span><span class="p">(</span><span class="n">core_subsets</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+            <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
+                <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
+                <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="k">raise</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_convert_vertices_to_core_subset</span><span class="p">(</span><span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Convert vertices into the subset of cores where they&#39;ve been\</span>
+<span class="sd">            placed.</span>
+
+<span class="sd">        :param iterable(ExtraMonitorSupportMachineVertex) extra_monitor_cores:</span>
+<span class="sd">            the vertices to convert to core subsets</span>
+<span class="sd">        :param ~.Placements placements: the placements object</span>
+<span class="sd">        :return: where the vertices have been placed</span>
+<span class="sd">        :rtype: ~.CoreSubsets</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">CoreSubsets</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">extra_monitor_cores</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">ExtraMonitorSupportMachineVertex</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s2">&quot;can only use ExtraMonitorSupportMachineVertex to set &quot;</span>
+                    <span class="s2">&quot;the router time out&quot;</span><span class="p">)</span>
+            <span class="n">placement</span> <span class="o">=</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+            <span class="n">core_subsets</span><span class="o">.</span><span class="n">add_processor</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">core_subsets</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utility_models.extra_monitor_support_machine_vertex</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

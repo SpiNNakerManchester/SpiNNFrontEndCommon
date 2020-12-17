@@ -25,6 +25,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="spinn_front_end_common.utilities.report_functions.html" title="spinn_front_end_common.utilities.report_functions package"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -45,8 +48,84 @@
             
   <div class="section" id="spinn-front-end-common-utilities-notification-protocol-package">
 <h1>spinn_front_end_common.utilities.notification_protocol package<a class="headerlink" href="#spinn-front-end-common-utilities-notification-protocol-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-spinn_front_end_common.utilities.notification_protocol">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities.notification_protocol" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utilities.notification_protocol.</code><code class="sig-name descname">NotificationProtocol</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">socket_addresses</span></em>, <em class="sig-param"><span class="n">wait_for_read_confirmation</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils)"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_utilities.abstract_context_manager.AbstractContextManager</span></code></a></p>
+<p>The protocol which hand shakes with external devices about the        database and starting execution</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>socket_addresses</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils)"><em>SocketAddress</em></a><em>)</em>) – Where to notify.</p></li>
+<li><p><strong>wait_for_read_confirmation</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Whether to wait for the other side to acknowledge</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the thread pool</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_read_notification">
+<code class="sig-name descname">send_read_notification</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">database_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.send_read_notification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_read_notification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends notifications to all devices which have expressed an            interest in when the database has been written</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>database_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – the path to the database file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_start_resume_notification">
+<code class="sig-name descname">send_start_resume_notification</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.send_start_resume_notification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_start_resume_notification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either waits till all sources have confirmed read the database            and are configured, and/or just sends the start notification            (when the system is executing)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_stop_pause_notification">
+<code class="sig-name descname">send_stop_pause_notification</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.send_stop_pause_notification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_stop_pause_notification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends the pause / stop notifications when the script has either            finished or paused</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.sent_visualisation_confirmation">
+<em class="property">property </em><code class="sig-name descname">sent_visualisation_confirmation</code><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.sent_visualisation_confirmation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether the external application has actually been notified yet.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.wait_for_confirmation">
+<code class="sig-name descname">wait_for_confirmation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.wait_for_confirmation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.wait_for_confirmation" title="Permalink to this definition">¶</a></dt>
+<dd><p>If asked to wait for confirmation, waits for all external systems            to confirm that they are configured and have read the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 
@@ -60,7 +139,7 @@
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.utilities.notification_protocol package</a><ul>
-<li><a class="reference internal" href="#module-contents">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.notification_protocol">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -98,6 +177,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="spinn_front_end_common.utilities.report_functions.html" title="spinn_front_end_common.utilities.report_functions package"
              >next</a> |</li>

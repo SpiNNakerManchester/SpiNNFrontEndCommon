@@ -25,6 +25,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="spinn_front_end_common.utilities.html" title="spinn_front_end_common.utilities package"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -45,8 +48,50 @@
             
   <div class="section" id="spinn-front-end-common-interface-splitter-selectors-package">
 <h1>spinn_front_end_common.interface.splitter_selectors package<a class="headerlink" href="#spinn-front-end-common-interface-splitter-selectors-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-spinn_front_end_common.interface.splitter_selectors">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.splitter_selectors" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.splitter_selectors.SplitterSelector">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.splitter_selectors.</code><code class="sig-name descname">SplitterSelector</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/splitter_selectors/splitter_selector.html#SplitterSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.splitter_selectors.SplitterSelector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Splitter object selector that allocates nothing but legacy        splitter objects where required</p>
+<dl class="py attribute">
+<dt id="spinn_front_end_common.interface.splitter_selectors.SplitterSelector.NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE">
+<code class="sig-name descname">NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE</code><em class="property"> = 'The SplitterSelector has not seen the {} vertex before. Therefore there is no known splitter to allocate to this app vertex and so will use the SplitterSliceLegacy Splitter.'</em><a class="headerlink" href="#spinn_front_end_common.interface.splitter_selectors.SplitterSelector.NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.splitter_selectors.SplitterSelector.__call__">
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">app_graph</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/splitter_selectors/splitter_selector.html#SplitterSelector.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.splitter_selectors.SplitterSelector.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>basic selector which puts the legacy splitter object on            everything without a splitter object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>app_graph</strong> (<em>ApplicationGraph</em>) – app graph</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.splitter_selectors.SplitterSelector.vertex_selector">
+<code class="sig-name descname">vertex_selector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">app_vertex</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/splitter_selectors/splitter_selector.html#SplitterSelector.vertex_selector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.splitter_selectors.SplitterSelector.vertex_selector" title="Permalink to this definition">¶</a></dt>
+<dd><p>main point for selecting a splitter object for a given app vertex.</p>
+<p>Will assume the SplitterSliceLegacy if no heuristic is known for the
+app vertex.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>app_vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN)"><em>ApplicationVertex</em></a>) – app vertex to give a splitter object to</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 
@@ -60,7 +105,7 @@
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.splitter_selectors package</a><ul>
-<li><a class="reference internal" href="#module-contents">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.splitter_selectors">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -98,6 +143,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="spinn_front_end_common.utilities.html" title="spinn_front_end_common.utilities package"
              >next</a> |</li>

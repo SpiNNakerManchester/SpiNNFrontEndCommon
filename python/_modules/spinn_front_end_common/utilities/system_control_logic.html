@@ -1,0 +1,203 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.utilities.system_control_logic &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.system_control_logic</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utilities.system_control_logic</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2019-2020 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span> <span class="nn">spinnman.exceptions</span> <span class="kn">import</span> <span class="n">SpinnmanException</span>
+<span class="kn">from</span> <span class="nn">spinnman.messages.scp.enums</span> <span class="kn">import</span> <span class="n">Signal</span>
+<span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">ExecutableTargets</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ChipIOBufExtractor</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
+
+
+<div class="viewcode-block" id="run_system_application"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.system_control_logic.run_system_application">[docs]</a><span class="k">def</span> <span class="nf">run_system_application</span><span class="p">(</span>
+        <span class="n">executable_cores</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">,</span>
+        <span class="n">executable_finder</span><span class="p">,</span> <span class="n">read_algorithm_iobuf</span><span class="p">,</span> <span class="n">check_for_success_function</span><span class="p">,</span>
+        <span class="n">cpu_end_states</span><span class="p">,</span> <span class="n">needs_sync_barrier</span><span class="p">,</span> <span class="n">filename_template</span><span class="p">,</span>
+        <span class="n">binaries_to_track</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress_bar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Executes the given _system_ application. \</span>
+<span class="sd">        Used for on-chip expanders, compressors, etc.</span>
+
+<span class="sd">    :param ~spinnman.model.ExecutableTargets executable_cores:</span>
+<span class="sd">        the cores to run the executable on</span>
+<span class="sd">    :param int app_id: the app-id for the executable</span>
+<span class="sd">    :param ~spinnman.transceiver.Transceiver transceiver: the SpiNNMan instance</span>
+<span class="sd">    :param str provenance_file_path:</span>
+<span class="sd">        the path for where provenance data is stored</span>
+<span class="sd">    :param ExecutableFinder executable_finder: finder for executable paths</span>
+<span class="sd">    :param bool read_algorithm_iobuf: whether to report IOBUFs</span>
+<span class="sd">    :param callable check_for_success_function:</span>
+<span class="sd">        function used to check success;</span>
+<span class="sd">        expects `executable_cores`, `transceiver` as inputs</span>
+<span class="sd">    :param set(~spinnman.model.enums.CPUState) cpu_end_states:</span>
+<span class="sd">        the states that a successful run is expected to terminate in</span>
+<span class="sd">    :param bool needs_sync_barrier: whether a sync barrier is needed</span>
+<span class="sd">    :param str filename_template: the IOBUF filename template.</span>
+<span class="sd">    :param list(str) binaries_to_track:</span>
+<span class="sd">        A list of binary names to check for exit state.</span>
+<span class="sd">        Or `None` for all binaries</span>
+<span class="sd">    :param progress_bar: Possible progress bar to update.</span>
+<span class="sd">           end() will be called after state checked</span>
+<span class="sd">    :param ~logging.Logger logger:</span>
+<span class="sd">        If provided and IOBUF is extracted, will be used to log errors and</span>
+<span class="sd">        warnings</span>
+<span class="sd">    :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None</span>
+<span class="sd">    :raise SpiNNManException:</span>
+<span class="sd">        If one should arise from the underlying SpiNNMan calls</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># load the executable</span>
+    <span class="n">transceiver</span><span class="o">.</span><span class="n">execute_application</span><span class="p">(</span><span class="n">executable_cores</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">needs_sync_barrier</span><span class="p">:</span>
+
+        <span class="c1"># fire all signals as required</span>
+        <span class="n">transceiver</span><span class="o">.</span><span class="n">send_signal</span><span class="p">(</span><span class="n">app_id</span><span class="p">,</span> <span class="n">Signal</span><span class="o">.</span><span class="n">SYNC0</span><span class="p">)</span>
+
+    <span class="n">error</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">binary_start_types</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">binaries_to_track</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">check_targets</span> <span class="o">=</span> <span class="n">executable_cores</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">check_targets</span> <span class="o">=</span> <span class="n">ExecutableTargets</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">binary_name</span> <span class="ow">in</span> <span class="n">binaries_to_track</span><span class="p">:</span>
+            <span class="n">check_targets</span><span class="o">.</span><span class="n">add_subsets</span><span class="p">(</span>
+                <span class="n">binary_name</span><span class="p">,</span>
+                <span class="n">executable_cores</span><span class="o">.</span><span class="n">get_cores_for_binary</span><span class="p">(</span><span class="n">binary_name</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">binary_name</span> <span class="ow">in</span> <span class="n">executable_cores</span><span class="o">.</span><span class="n">binaries</span><span class="p">:</span>
+        <span class="n">binary_start_types</span><span class="p">[</span><span class="n">binary_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYSTEM</span>
+
+    <span class="c1"># Wait for the executable to finish</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">transceiver</span><span class="o">.</span><span class="n">wait_for_cores_to_be_in_state</span><span class="p">(</span>
+            <span class="n">check_targets</span><span class="o">.</span><span class="n">all_core_subsets</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">cpu_end_states</span><span class="p">,</span>
+            <span class="n">progress_bar</span><span class="o">=</span><span class="n">progress_bar</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">progress_bar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">progress_bar</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+        <span class="n">succeeded</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="n">SpinnmanException</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+        <span class="n">succeeded</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># Delay the exception until iobuff is ready</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">ex</span>
+
+    <span class="k">if</span> <span class="n">progress_bar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">progress_bar</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+
+    <span class="c1"># Check if any cores have not completed successfully</span>
+    <span class="k">if</span> <span class="n">succeeded</span> <span class="ow">and</span> <span class="n">check_for_success_function</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">succeeded</span> <span class="o">=</span> <span class="n">check_for_success_function</span><span class="p">(</span><span class="n">executable_cores</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span>
+
+    <span class="c1"># if doing iobuf or on failure (succeeded is None is not failure)</span>
+    <span class="k">if</span> <span class="n">read_algorithm_iobuf</span> <span class="ow">or</span> <span class="n">succeeded</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>  <span class="c1"># noqa: E712</span>
+        <span class="n">iobuf_reader</span> <span class="o">=</span> <span class="n">ChipIOBufExtractor</span><span class="p">(</span>
+            <span class="n">filename_template</span><span class="o">=</span><span class="n">filename_template</span><span class="p">,</span>
+            <span class="n">suppress_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span> <span class="o">=</span> <span class="n">iobuf_reader</span><span class="p">(</span>
+            <span class="n">transceiver</span><span class="p">,</span> <span class="n">executable_cores</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span>
+            <span class="n">system_provenance_file_path</span><span class="o">=</span><span class="n">provenance_file_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">warn_entries</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">error_entries</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+
+    <span class="c1"># stop anything that&#39;s associated with the compressor binary</span>
+    <span class="n">transceiver</span><span class="o">.</span><span class="n">stop_application</span><span class="p">(</span><span class="n">app_id</span><span class="p">)</span>
+    <span class="n">transceiver</span><span class="o">.</span><span class="n">app_id_tracker</span><span class="o">.</span><span class="n">free_id</span><span class="p">(</span><span class="n">app_id</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">error</span>  <span class="c1"># pylint: disable=raising-bad-type</span>
+
+    <span class="k">return</span> <span class="n">succeeded</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.system_control_logic</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

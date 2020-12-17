@@ -1,0 +1,280 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.utilities.notification_protocol.notification_protocol &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.notification_protocol.notification_protocol</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utilities.notification_protocol.notification_protocol</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">wait</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.abstract_context_manager</span> <span class="kn">import</span> <span class="n">AbstractContextManager</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">EIEIOConnection</span>
+<span class="kn">from</span> <span class="nn">spinnman.messages.eieio.command_messages</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DatabaseConfirmation</span><span class="p">,</span> <span class="n">NotificationProtocolPauseStop</span><span class="p">,</span>
+    <span class="n">NotificationProtocolStartResume</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MAX_DATABASE_PATH_LENGTH</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="NotificationProtocol"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol">[docs]</a><span class="k">class</span> <span class="nc">NotificationProtocol</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The protocol which hand shakes with external devices about the\</span>
+<span class="sd">        database and starting execution</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;__database_message_connections&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__sent_visualisation_confirmation&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__socket_addresses&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__wait_for_read_confirmation&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__wait_futures&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__wait_pool&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_addresses</span><span class="p">,</span> <span class="n">wait_for_read_confirmation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param socket_addresses: Where to notify.</span>
+<span class="sd">        :type socket_addresses:</span>
+<span class="sd">            list(~spinn_utilities.socket_address.SocketAddress)</span>
+<span class="sd">        :param bool wait_for_read_confirmation:</span>
+<span class="sd">            Whether to wait for the other side to acknowledge</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__socket_addresses</span> <span class="o">=</span> <span class="n">socket_addresses</span>
+
+        <span class="c1"># Determines whether to wait for confirmation that the database</span>
+        <span class="c1"># has been read before starting the simulation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span> <span class="o">=</span> <span class="n">wait_for_read_confirmation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sent_visualisation_confirmation</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">socket_address</span> <span class="ow">in</span> <span class="n">socket_addresses</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">EIEIOConnection</span><span class="p">(</span>
+                <span class="n">local_port</span><span class="o">=</span><span class="n">socket_address</span><span class="o">.</span><span class="n">listen_port</span><span class="p">,</span>
+                <span class="n">remote_host</span><span class="o">=</span><span class="n">socket_address</span><span class="o">.</span><span class="n">notify_host_name</span><span class="p">,</span>
+                <span class="n">remote_port</span><span class="o">=</span><span class="n">socket_address</span><span class="o">.</span><span class="n">notify_port_no</span><span class="p">))</span>
+
+<div class="viewcode-block" id="NotificationProtocol.wait_for_confirmation"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.wait_for_confirmation">[docs]</a>    <span class="k">def</span> <span class="nf">wait_for_confirmation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; If asked to wait for confirmation, waits for all external systems\</span>
+<span class="sd">            to confirm that they are configured and have read the database</span>
+
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;** Awaiting for a response from an external source &quot;</span>
+                        <span class="s2">&quot;to state its ready for the simulation to start **&quot;</span><span class="p">)</span>
+            <span class="n">wait</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="NotificationProtocol.send_start_resume_notification"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_start_resume_notification">[docs]</a>    <span class="k">def</span> <span class="nf">send_start_resume_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Either waits till all sources have confirmed read the database\</span>
+<span class="sd">            and are configured, and/or just sends the start notification\</span>
+<span class="sd">            (when the system is executing)</span>
+
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;** Sending start / resume message to external sources &quot;</span>
+                    <span class="s2">&quot;to state the simulation has started or resumed. **&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wait_for_confirmation</span><span class="p">()</span>
+        <span class="n">eieio_command_message</span> <span class="o">=</span> <span class="n">NotificationProtocolStartResume</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">send_eieio_message</span><span class="p">(</span><span class="n">eieio_command_message</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;*** Failed to send start/resume notification to external &quot;</span>
+                    <span class="s2">&quot;application on </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> about the simulation ***&quot;</span><span class="p">,</span>
+                    <span class="n">c</span><span class="o">.</span><span class="n">remote_ip_address</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">remote_port</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NotificationProtocol.send_stop_pause_notification"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_stop_pause_notification">[docs]</a>    <span class="k">def</span> <span class="nf">send_stop_pause_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sends the pause / stop notifications when the script has either\</span>
+<span class="sd">            finished or paused</span>
+
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;** Sending pause / stop message to external sources &quot;</span>
+                    <span class="s2">&quot;to state the simulation has been paused or stopped. **&quot;</span><span class="p">)</span>
+        <span class="n">eieio_command_message</span> <span class="o">=</span> <span class="n">NotificationProtocolPauseStop</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">send_eieio_message</span><span class="p">(</span><span class="n">eieio_command_message</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;*** Failed to send stop/pause notification to external &quot;</span>
+                    <span class="s2">&quot;application on </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> about the simulation ***&quot;</span><span class="p">,</span>
+                    <span class="n">c</span><span class="o">.</span><span class="n">remote_ip_address</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">remote_port</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+    <span class="c1"># noinspection PyPep8</span>
+<div class="viewcode-block" id="NotificationProtocol.send_read_notification"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_read_notification">[docs]</a>    <span class="k">def</span> <span class="nf">send_read_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sends notifications to all devices which have expressed an\</span>
+<span class="sd">            interest in when the database has been written</span>
+
+<span class="sd">        :param str database_path: the path to the database file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">notification_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_send_read_notification</span><span class="p">,</span> <span class="n">database_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">notification_thread</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_send_read_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sends notifications to a list of socket addresses that the\</span>
+<span class="sd">            database has been written. Message also includes the path to the\</span>
+<span class="sd">            database</span>
+
+<span class="sd">        :param str database_path: the path to the database</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyBroadException</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__do_read_notify</span><span class="p">(</span><span class="n">database_path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;problem when sending DB notification&quot;</span><span class="p">,</span>
+                           <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__do_read_notify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_path</span><span class="p">):</span>
+        <span class="c1"># add file path to database into command message.</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">database_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">database_path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">MAX_DATABASE_PATH_LENGTH</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                <span class="s2">&quot;The file path to the database is too large to be transmitted &quot;</span>
+                <span class="s2">&quot;via the command packet, please set the file path manually &quot;</span>
+                <span class="s2">&quot;and set the .cfg parameter [Database] send_file_path to &quot;</span>
+                <span class="s2">&quot;False&quot;</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">DatabaseConfirmation</span><span class="p">(</span><span class="n">database_path</span><span class="p">)</span>
+
+        <span class="c1"># Send command and wait for response</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;** Notifying external sources that the database is ready for &quot;</span>
+            <span class="s2">&quot;reading **&quot;</span><span class="p">)</span>
+
+        <span class="c1"># noinspection PyBroadException</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">send_eieio_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;*** Failed to notify external application on </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;about the database ***&quot;</span><span class="p">,</span>
+                    <span class="n">c</span><span class="o">.</span><span class="n">remote_ip_address</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">remote_port</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sent_visualisation_confirmation</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># if the system needs to wait, try receiving a packet back</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span><span class="p">:</span>
+                    <span class="n">c</span><span class="o">.</span><span class="n">receive_eieio_message</span><span class="p">()</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="s2">&quot;** Confirmation from </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> received, continuing **&quot;</span><span class="p">,</span>
+                        <span class="n">c</span><span class="o">.</span><span class="n">remote_ip_address</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">remote_port</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;*** Failed to receive notification from external &quot;</span>
+                    <span class="s2">&quot;application on </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> about the database ***&quot;</span><span class="p">,</span>
+                    <span class="n">c</span><span class="o">.</span><span class="n">remote_ip_address</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">remote_port</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sent_visualisation_confirmation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Whether the external application has actually been notified yet.</span>
+
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sent_visualisation_confirmation</span>
+
+<div class="viewcode-block" id="NotificationProtocol.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Closes the thread pool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span> <span class="o">=</span> <span class="kc">None</span></div></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.notification_protocol.notification_protocol</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

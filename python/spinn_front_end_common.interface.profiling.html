@@ -25,6 +25,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="spinn_front_end_common.interface.provenance.html" title="spinn_front_end_common.interface.provenance package"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -45,8 +48,141 @@
             
   <div class="section" id="spinn-front-end-common-interface-profiling-package">
 <h1>spinn_front_end_common.interface.profiling package<a class="headerlink" href="#spinn-front-end-common-interface-profiling-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-spinn_front_end_common.interface.profiling">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.profiling" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.profiling.AbstractHasProfileData">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.profiling.</code><code class="sig-name descname">AbstractHasProfileData</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/profiling/abstract_has_profile_data.html#AbstractHasProfileData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.profiling.AbstractHasProfileData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Indicates a MAchineVertex that can record a profile</p>
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.profiling.AbstractHasProfileData.get_profile_data">
+<em class="property">abstract </em><code class="sig-name descname">get_profile_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">transceiver</span></em>, <em class="sig-param"><span class="n">placement</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/profiling/abstract_has_profile_data.html#AbstractHasProfileData.get_profile_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.profiling.AbstractHasProfileData.get_profile_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the profile data recorded during simulation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan)"><em>Transceiver</em></a>) – </p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN)"><em>Placement</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.interface.profiling.ProfileData" title="spinn_front_end_common.interface.profiling.ProfileData">ProfileData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.interface.profiling.ProfileData">
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.profiling.</code><code class="sig-name descname">ProfileData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tag_labels</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/profiling/profile_data.html#ProfileData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.profiling.ProfileData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A container for profile data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tag_labels</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em>) – A list of labels indexed by tag ID</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="spinn_front_end_common.interface.profiling.ProfileData.DURATION">
+<code class="sig-name descname">DURATION</code><em class="property"> = 1</em><a class="headerlink" href="#spinn_front_end_common.interface.profiling.ProfileData.DURATION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="spinn_front_end_common.interface.profiling.ProfileData.START_TIME">
+<code class="sig-name descname">START_TIME</code><em class="property"> = 0</em><a class="headerlink" href="#spinn_front_end_common.interface.profiling.ProfileData.START_TIME" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.profiling.ProfileData.add_data">
+<code class="sig-name descname">add_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/profiling/profile_data.html#ProfileData.add_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.profiling.ProfileData.add_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add profiling data read from the profile section</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytearray" title="(in Python v3.6)"><em>bytearray</em></a>) – Data read from the profile section on the machine</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.profiling.ProfileData.get_mean_ms">
+<code class="sig-name descname">get_mean_ms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tag</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/profiling/profile_data.html#ProfileData.get_mean_ms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.profiling.ProfileData.get_mean_ms" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Get the mean time in milliseconds spent on operations with the</dt><dd><p>given tag</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The tag to get the mean time for</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.profiling.ProfileData.get_mean_ms_per_ts">
+<code class="sig-name descname">get_mean_ms_per_ts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tag</span></em>, <em class="sig-param"><span class="n">machine_time_step_ms</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/profiling/profile_data.html#ProfileData.get_mean_ms_per_ts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.profiling.ProfileData.get_mean_ms_per_ts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the mean time in milliseconds spent on operations with the            given tag per timestep</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The tag to get the data for</p></li>
+<li><p><strong>machine_time_step_ms</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The time step of the simulation in microseconds</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.profiling.ProfileData.get_mean_n_calls_per_ts">
+<code class="sig-name descname">get_mean_n_calls_per_ts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tag</span></em>, <em class="sig-param"><span class="n">machine_time_step_ms</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/profiling/profile_data.html#ProfileData.get_mean_n_calls_per_ts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.profiling.ProfileData.get_mean_n_calls_per_ts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the mean number of times the given tag was recorded per            timestep</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The tag to get the data for</p></li>
+<li><p><strong>machine_time_step_ms</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The time step of the simulation in microseconds</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.profiling.ProfileData.get_n_calls">
+<code class="sig-name descname">get_n_calls</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tag</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/profiling/profile_data.html#ProfileData.get_n_calls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.profiling.ProfileData.get_n_calls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of times the given tag was recorded</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The tag to get the number of calls of</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.profiling.ProfileData.tags">
+<em class="property">property </em><code class="sig-name descname">tags</code><a class="headerlink" href="#spinn_front_end_common.interface.profiling.ProfileData.tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>The tags recorded as labels</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 
@@ -60,7 +196,7 @@
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.profiling package</a><ul>
-<li><a class="reference internal" href="#module-contents">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.profiling">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -98,6 +234,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="spinn_front_end_common.interface.provenance.html" title="spinn_front_end_common.interface.provenance package"
              >next</a> |</li>
