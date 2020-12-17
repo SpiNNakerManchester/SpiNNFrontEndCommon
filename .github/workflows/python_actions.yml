@@ -41,7 +41,6 @@ jobs:
       with:
         repository: SpiNNakerManchester/SupportScripts
         path: support
-        ref: actions
 
     - name: Install pip, etc
       uses: ./support/actions/python-tools

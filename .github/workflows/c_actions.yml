@@ -44,7 +44,6 @@ jobs:
       with:
         repository: SpiNNakerManchester/SupportScripts
         path: support
-        ref: actions
 
     - name: "Prepare: Set SPINN_DIRS"
       run: |
