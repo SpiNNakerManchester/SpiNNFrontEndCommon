@@ -32,7 +32,7 @@ jobs:
         path: support
 
     - name: "Prepare: Install Ubuntu dependencies"
-      uses: .support/actions/apt-get-install
+      uses: ./support/actions/apt-get-install
       with:
         packages: doxygen gcc-arm-none-eabi
     - name: "Prepare: Set up Python 3.6"
