@@ -18,6 +18,50 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+    <algorithm name="BasicSplitterSelector">
+        <python_module>spinn_front_end_common.interface.splitter_selectors.splitter_selector</python_module>
+        <python_class>SplitterSelector</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>app_graph</param_name>
+                <param_type>MemoryApplicationGraph</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>app_graph</param_name>
+        </required_inputs>
+         <outputs>
+            <token>SplitterObjectsAllocated</token>
+        </outputs>
+    </algorithm>
+    <algorithm name="SDRAMOutgoingPartitionAllocator">
+        <python_module>spinn_front_end_common.interface.interface_functions</python_module>
+        <python_class>SDRAMOutgoingPartitionAllocator</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>machine_graph</param_name>
+                <param_type>MemoryMachineGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>machine_graph</param_name>
+            <param_name>transceiver</param_name>
+            <param_name>placements</param_name>
+            <param_name>app_id</param_name>
+        </required_inputs>
+    </algorithm>
     <algorithm name="LocalTDMABuilder">
         <python_module>spinn_front_end_common.interface.interface_functions.local_tdma_builder</python_module>
         <python_class>LocalTDMABuilder</python_class>
@@ -2341,70 +2385,6 @@
             <param_name>machine_time_step</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
-    </algorithm>
-    <algorithm name="WriteMemoryIOData">
-        <python_module>spinn_front_end_common.interface.interface_functions.write_memory_io_data</python_module>
-        <python_class>WriteMemoryIOData</python_class>
-        <input_definitions>
-            <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>app_id</param_name>
-                <param_type>APPID</param_type>
-            </parameter>
-            <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
-                <param_name>hostname</param_name>
-                <param_type>IPAddress</param_type>
-            </parameter>
-            <parameter>
-                <param_name>app_graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
-            </parameter>
-            <parameter>
-                <param_name>transceiver</param_name>
-                <param_type>MemoryTransceiver</param_type>
-            </parameter>
-            <parameter>
-                <param_name>processor_to_app_data_base_address</param_name>
-                <param_type>ProcessorToAppDataBaseAddress</param_type>
-            </parameter>
-            <parameter>
-                <param_name>uses_advanced_monitors</param_name>
-                <param_type>UsingAdvancedMonitorSupport</param_type>
-            </parameter>
-            <parameter>
-                <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
-                <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
-            </parameter>
-        </input_definitions>
-        <required_inputs>
-            <param_name>placements</param_name>
-            <param_name>app_id</param_name>
-            <param_name>report_folder</param_name>
-            <param_name>hostname</param_name>
-        </required_inputs>
-        <optional_inputs>
-            <param_name>app_graph</param_name>
-            <param_name>transceiver</param_name>
-            <param_name>processor_to_app_data_base_address</param_name>
-            <param_name>uses_advanced_monitors</param_name>
-            <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
-            <param_name>machine</param_name>
-        </optional_inputs>
-        <outputs>
-            <param_type>ProcessorToAppDataBaseAddress</param_type>
-            <token part="MemoryIODataLoaded">DataLoaded</token>
-        </outputs>
     </algorithm>
     <algorithm name="FinaliseTimingData">
       <python_module>spinn_front_end_common.interface.interface_functions.finalise_timing_data</python_module>
