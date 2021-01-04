@@ -613,7 +613,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                     self._mask = rinfo.first_mask
             else:
                 partitions = machine_graph\
-                    .get_outgoing_edge_partitions_starting_at_vertex(self)
+                    .get_multicast_edge_partitions_starting_at_vertex(self)
                 partition = next(iter(partitions), None)
 
                 if partition is not None:

@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.routing_info import DictBasedMachinePartitionNKeysMap
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
@@ -49,10 +48,9 @@ class EdgeToNKeysMapper(object):
         # iterate over each partition in the graph
         for vertex in progress.over(machine_graph.vertices):
             for partition in machine_graph.\
-                    get_outgoing_edge_partitions_starting_at_vertex(vertex):
-                if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                    n_keys = partition.pre_vertex.get_n_keys_for_partition(
-                        partition)
-                    n_keys_map.set_n_keys_for_partition(partition, n_keys)
+                    get_multicast_edge_partitions_starting_at_vertex(vertex):
+                n_keys = partition.pre_vertex.get_n_keys_for_partition(
+                    partition)
+                n_keys_map.set_n_keys_for_partition(partition, n_keys)
 
         return n_keys_map

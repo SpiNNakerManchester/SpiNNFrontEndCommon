@@ -12,7 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.machine import MachineEdge
@@ -96,8 +95,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 application_graph, vertex.app_vertex, gatherer.app_vertex)
             if app_edge is None:
                 app_edge = ApplicationEdge(
-                    vertex.app_vertex, gatherer.app_vertex,
-                    traffic_type=DataSpeedUp.TRAFFIC_TYPE)
+                    vertex.app_vertex, gatherer.app_vertex)
                 application_graph.add_edge(
                     app_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
             # Use the application edge to build the machine edge
