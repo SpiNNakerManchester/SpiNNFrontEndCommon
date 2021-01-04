@@ -31,8 +31,9 @@ class ChipIOBufClearer(object):
         :type executable_types:
             dict(ExecutableType,~spinn_machine.CoreSubsets)
         """
-        core_subsets = \
-            executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
+        if ExecutableType.USES_SIMULATION_INTERFACE in executable_types:
+            core_subsets = \
+                executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
 
-        process = ClearIOBUFProcess(transceiver.scamp_connection_selector)
-        process.clear_iobuf(core_subsets, len(core_subsets))
+            process = ClearIOBUFProcess(transceiver.scamp_connection_selector)
+            process.clear_iobuf(core_subsets, len(core_subsets))
