@@ -30,7 +30,7 @@
         <required_inputs>
             <param_name>app_graph</param_name>
         </required_inputs>
-         <outputs>
+        <outputs>
             <token>SplitterObjectsAllocated</token>
         </outputs>
     </algorithm>
@@ -240,7 +240,7 @@
                 <param_name>routing_tables</param_name>
                 <param_type>MemoryRoutingTables</param_type>
             </parameter>
-             <parameter>
+            <parameter>
                 <param_name>executable_targets</param_name>
                 <param_type>ExecutableTargets</param_type>
             </parameter>
@@ -361,7 +361,7 @@
                 <param_name>routing_tables</param_name>
                 <param_type>MemoryRoutingTables</param_type>
             </parameter>
-             <parameter>
+            <parameter>
                 <param_name>executable_targets</param_name>
                 <param_type>ExecutableTargets</param_type>
             </parameter>
@@ -952,7 +952,7 @@
                 <param_name>report_folder</param_name>
                 <param_type>ReportFolder</param_type>
             </parameter>
-             <parameter>
+            <parameter>
                 <param_name>java_caller</param_name>
                 <param_type>JavaCaller</param_type>
             </parameter>
@@ -1044,7 +1044,7 @@
                 <param_name>report_folder</param_name>
                 <param_type>ReportFolder</param_type>
             </parameter>
-             <parameter>
+            <parameter>
                 <param_name>java_caller</param_name>
                 <param_type>JavaCaller</param_type>
             </parameter>
@@ -1366,12 +1366,12 @@
         <required_inputs>
             <one_of>
                 <all_of>
-                   <param_name>width</param_name>
-                   <param_name>height</param_name>
+                    <param_name>width</param_name>
+                    <param_name>height</param_name>
                 </all_of>
                 <param_name>json_path</param_name>
             </one_of>
-       </required_inputs>
+        </required_inputs>
         <optional_inputs>
             <param_name>version</param_name>
             <param_name>down_chips</param_name>
@@ -1514,7 +1514,7 @@
                 <param_name>fixed_routes</param_name>
                 <param_type>MemoryFixedRoutes</param_type>
             </parameter>
-             <parameter>
+            <parameter>
                 <param_name>report_folder</param_name>
                 <param_type>ReportFolder</param_type>
             </parameter>
@@ -1988,7 +1988,7 @@
             <token>ApplicationRun</token>
         </required_inputs>
         <optional_inputs>
-          <token>ReadIOBuf</token>
+            <token>ReadIOBuf</token>
         </optional_inputs>
         <outputs>
             <token>ClearedIOBuf</token>
@@ -2231,7 +2231,7 @@
                 <param_name>machine</param_name>
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
-             <parameter>
+            <parameter>
                 <param_name>plan_n_timesteps</param_name>
                 <param_type>PlanNTimeSteps</param_type>
             </parameter>
@@ -2299,32 +2299,32 @@
         </required_inputs>
     </algorithm>
     <algorithm name="FinaliseTimingData">
-      <python_module>spinn_front_end_common.interface.interface_functions.finalise_timing_data</python_module>
-      <python_class>FinaliseTimingData</python_class>
-      <input_definitions></input_definitions>
-      <required_inputs>
+        <python_module>spinn_front_end_common.interface.interface_functions.finalise_timing_data</python_module>
+        <python_class>FinaliseTimingData</python_class>
+        <input_definitions></input_definitions>
+        <required_inputs>
             <token>ApplicationRun</token>
-      </required_inputs>
-      <optional_inputs>
+        </required_inputs>
+        <optional_inputs>
         <!-- After iobuf extraction, if that happens at all -->
             <token>ReadIOBuf</token>
-      </optional_inputs>
-      <outputs>
+        </optional_inputs>
+        <outputs>
             <param_type>MappingTimeMs</param_type>
             <param_type>DSGTimeMs</param_type>
             <param_type>LoadTimeMs</param_type>
             <param_type>ExecuteTimeMs</param_type>
             <param_type>ExtractionTimeMs</param_type>
-      </outputs>
+        </outputs>
     </algorithm>
     <algorithm name="ComputeEnergyUsed">
-      <python_module>spinn_front_end_common.interface.interface_functions.compute_energy_used</python_module>
-      <python_class>ComputeEnergyUsed</python_class>
-      <input_definitions>
-        <parameter>
-          <param_name>placements</param_name>
+        <python_module>spinn_front_end_common.interface.interface_functions.compute_energy_used</python_module>
+        <python_class>ComputeEnergyUsed</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
-        </parameter>
+            </parameter>
             <parameter>
                 <param_name>machine</param_name>
                 <param_type>MemoryExtendedMachine</param_type>
@@ -2338,8 +2338,8 @@
                 <param_type>TimeScaleFactor</param_type>
             </parameter>
             <parameter>
-              <param_name>router_provenance</param_name>
-              <param_type>RouterProvenanceItems</param_type>
+                <param_name>router_provenance</param_name>
+                <param_type>RouterProvenanceItems</param_type>
             </parameter>
             <parameter>
                 <param_name>runtime</param_name>
@@ -2379,53 +2379,53 @@
             </parameter>
             <parameter>
                 <param_name>machine_allocation_controller</param_name>
-              <param_type>MachineAllocationController</param_type>
-          </parameter>
-      </input_definitions>
-      <required_inputs>
-        <param_name>placements</param_name>
-        <param_name>machine</param_name>
-        <param_name>version</param_name>
-        <param_name>time_scale_factor</param_name>
-        <param_name>router_provenance</param_name>
-        <param_name>runtime</param_name>
-        <param_name>buffer_manager</param_name>
-        <param_name>mapping_time</param_name>
-        <param_name>load_time</param_name>
-        <param_name>execute_time</param_name>
-        <param_name>dsg_time</param_name>
-        <param_name>extraction_time</param_name>
-      </required_inputs>
-      <optional_inputs>
-        <param_name>spalloc_server</param_name>
-        <param_name>remote_spinnaker_url</param_name>
-        <param_name>machine_allocation_controller</param_name>
-      </optional_inputs>
-      <outputs>
-        <param_type>PowerUsed</param_type>
-      </outputs>
+                <param_type>MachineAllocationController</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>placements</param_name>
+            <param_name>machine</param_name>
+            <param_name>version</param_name>
+            <param_name>time_scale_factor</param_name>
+            <param_name>router_provenance</param_name>
+            <param_name>runtime</param_name>
+            <param_name>buffer_manager</param_name>
+            <param_name>mapping_time</param_name>
+            <param_name>load_time</param_name>
+            <param_name>execute_time</param_name>
+            <param_name>dsg_time</param_name>
+            <param_name>extraction_time</param_name>
+        </required_inputs>
+        <optional_inputs>
+            <param_name>spalloc_server</param_name>
+            <param_name>remote_spinnaker_url</param_name>
+            <param_name>machine_allocation_controller</param_name>
+        </optional_inputs>
+        <outputs>
+            <param_type>PowerUsed</param_type>
+        </outputs>
     </algorithm>
-  <algorithm name="EnergyProvenanceReporter">
-      <python_module>spinn_front_end_common.interface.interface_functions.energy_provenance_reporter</python_module>
-      <python_class>EnergyProvenanceReporter</python_class>
-      <input_definitions>
-        <parameter>
-          <param_name>power_used</param_name>
-          <param_type>PowerUsed</param_type>
-        </parameter>
-        <parameter>
-          <param_name>placements</param_name>
+    <algorithm name="EnergyProvenanceReporter">
+        <python_module>spinn_front_end_common.interface.interface_functions.energy_provenance_reporter</python_module>
+        <python_class>EnergyProvenanceReporter</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>power_used</param_name>
+                <param_type>PowerUsed</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
-        </parameter>
-      </input_definitions>
-      <required_inputs>
-        <param_name>power_used</param_name>
-        <param_name>placements</param_name>
-      </required_inputs>
-      <outputs>
-        <param_type>PowerProvenanceItems</param_type>
-      </outputs>
-  </algorithm>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>power_used</param_name>
+            <param_name>placements</param_name>
+        </required_inputs>
+        <outputs>
+            <param_type>PowerProvenanceItems</param_type>
+        </outputs>
+    </algorithm>
     <algorithm name="MundyOnChipRouterCompression">
         <python_module>spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression</python_module>
         <python_function>mundy_on_chip_router_compression</python_function>
