@@ -84,12 +84,17 @@ class SimpleTestVertex(ApplicationVertex, LegacyPartitionerAPI):
             return 1 * vertex_slice.n_atoms
         return self._fixed_sdram_value
 
+    @property
+    def fixed_sdram_value(self):
+        return self._fixed_sdram_value
+
     @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
         return SimpleMachineVertex(
-            resources_required, label, constraints, self, vertex_slice)
+            resources_required, label, constraints, self, vertex_slice,
+            sdram_cost=self._fixed_sdram_value)
 
     @property
     @overrides(LegacyPartitionerAPI.n_atoms)
