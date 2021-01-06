@@ -33,12 +33,12 @@ struct profiler_state profiler_state;
 // Functions
 //---------------------------------------
 void profiler_init(uint32_t* data_region) {
-    log_info("Reading profile setup from 0x%08x", data_region);
+    log_debug("Reading profile setup from 0x%08x", data_region);
     profiler_state.samples_remaining = data_region[0];
     profiler_state.count = &data_region[0];
     profiler_state.output = &data_region[1];
 
-    log_info("Initialising profiler with storage for %u samples starting at 0x%08x",
+    log_debug("Initialising profiler with storage for %u samples starting at 0x%08x",
             profiler_state.samples_remaining, profiler_state.output);
 
     // If profiler is turned on, start timer 2 with no clock divider
@@ -52,6 +52,6 @@ void profiler_init(uint32_t* data_region) {
 void profiler_finalise(void) {
     uint32_t words_written = (profiler_state.output - profiler_state.count) - 1;
     *profiler_state.count = words_written;
-    log_info("Profiler wrote %u bytes to 0x%08x",
+    log_debug("Profiler wrote %u bytes to 0x%08x",
             (words_written * 4) + 4, profiler_state.count);
 }

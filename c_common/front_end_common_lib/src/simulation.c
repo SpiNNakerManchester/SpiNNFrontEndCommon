@@ -93,10 +93,10 @@ static void *simulation_store_provenance_data(void) {
 //! \brief Run the provenance data storage
 static void execute_provenance_storage(void) {
     if (prov != NULL) {
-        log_info("Starting basic provenance gathering");
+        log_debug("Starting basic provenance gathering");
         void *address_to_start_with = simulation_store_provenance_data();
         if (stored_provenance_function != NULL) {
-            log_info("running other provenance gathering");
+            log_debug("running other provenance gathering");
             stored_provenance_function(address_to_start_with);
         }
     }
@@ -202,9 +202,9 @@ static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
         break;
 
     case CMD_RUNTIME:
-        log_info("Setting the runtime of this model to %d starting at %d",
+        log_debug("Setting the runtime of this model to %d starting at %d",
                 msg->arg1, msg->arg3);
-        log_info("Setting the flag of infinite run for this model to %d",
+        log_debug("Setting the flag of infinite run for this model to %d",
                 msg->arg2);
 
         // resetting the simulation time pointer
@@ -223,7 +223,7 @@ static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
         }
 
         if (stored_resume_function != NULL) {
-            log_info("Calling pre-resume function");
+            log_debug("Calling pre-resume function");
             stored_resume_function();
             stored_resume_function = NULL;
         }
@@ -232,7 +232,7 @@ static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
             spin1_schedule_callback(synchronise_start, 0, 0, 1);
         }
         if (uses_timer) {
-            log_info("Resuming");
+            log_debug("Resuming");
             spin1_resume(SYNC_WAIT);
         } else {
             set_cpu_wait_state();
@@ -244,14 +244,14 @@ static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
         break;
 
     case PROVENANCE_DATA_GATHERING:
-        log_info("Forced provenance gathering");
+        log_debug("Forced provenance gathering");
 
         // force provenance to be executed and then exit
         execute_provenance_storage();
 
         // call any stored exit callbacks
         if (stored_exit_function != NULL) {
-            log_info("Calling pre-exit function");
+            log_debug("Calling pre-exit function");
             stored_exit_function();
         }
         spin1_msg_free(msg);
@@ -421,20 +421,20 @@ bool simulation_is_finished(void) {
     }
     // If we are synchronized, check if this is a sync step (or should have been)
     if (*pointer_to_current_time >= next_sync_step) {
-        log_info("Sync at %d", next_sync_step);
+        log_debug("Sync at %d", next_sync_step);
 
         // If using the timer, pause the timer
         if (uses_timer) {
-            log_info("Pausing");
+            log_debug("Pausing");
             spin1_pause();
         }
 
         // Wait for synchronisation to happen
-        log_info("Waiting for sync");
+        log_debug("Waiting for sync");
         set_cpu_wait_state();
         wait_before_run(true);
         next_sync_step += n_sync_steps;
-        log_info("Sync done, next sync at %d", next_sync_step);
+        log_debug("Sync done, next sync at %d", next_sync_step);
 
         // If using the timer, start it again
         if (uses_timer) {

@@ -576,16 +576,16 @@ void recording_finalise(void) {
             /* Calculate the number of bytes that have been written and write
              * back to SDRAM counter */
             if (g_recording_channels[channel].missing_info) {
-                log_info("\tFinalising channel %u - dropped information while"
+                log_debug("\tFinalising channel %u - dropped information while"
                         "buffering - state info stored in SDRAM", channel);
             } else {
-                log_info("\tFinalising channel %u - state info stored in SDRAM",
+                log_debug("\tFinalising channel %u - state info stored in SDRAM",
                         channel);
             }
             if (!close_channel(channel)) {
                 log_error("could not close channel %u.", channel);
             } else {
-                log_info("closed channel %u.", channel);
+                log_debug("closed channel %u.", channel);
             }
         }
     }
@@ -646,7 +646,7 @@ bool recording_initialize(
     }
     last_sequence_number = &(recording_data->last_sequence_number);
 
-    log_info("Recording %d regions, using output tag %d, size before trigger %d, "
+    log_debug("Recording %d regions, using output tag %d, size before trigger %d, "
             "time between triggers %d",
             n_recording_regions, buffering_output_tag, buffer_size_before_trigger,
             time_between_triggers);
@@ -686,7 +686,7 @@ bool recording_initialize(
                 return false;
             }
             sdram_region_ptrs[counter] = region_addresses[counter];
-            log_info("recording address is %x", region_addresses[counter]);
+            log_debug("recording address is %x", region_addresses[counter]);
             *recording_flags = (*recording_flags | (1 << counter));
         } else {
             sdram_region_ptrs[counter] = NULL;
@@ -749,7 +749,7 @@ void recording_reset(void) {
             g_recording_channels[i].region_id = i;
             g_recording_channels[i].missing_info = 0;
 
-            log_info("Recording channel %u configured to use %u byte memory block"
+            log_debug("Recording channel %u configured to use %u byte memory block"
                     " starting at 0x%08x",
                     i, region_size, g_recording_channels[i].start);
         } else {
@@ -763,7 +763,7 @@ void recording_reset(void) {
             g_recording_channels[i].region_id = i;
             g_recording_channels[i].missing_info = 0;
 
-            log_info("Recording channel %u left uninitialised", i);
+            log_debug("Recording channel %u left uninitialised", i);
         }
     }
     recording_buffer_state_data_write();

@@ -84,7 +84,7 @@ bool data_specification_read_header(
     }
 
     // Log what we have found
-    log_info("magic = %08x, version = %d.%d", ds_regions->magic_number,
+    log_debug("magic = %08x, version = %d.%d", ds_regions->magic_number,
             ds_regions->version >> VERSION_SHIFT,
             ds_regions->version & VERSION_MASK);
     return true;
