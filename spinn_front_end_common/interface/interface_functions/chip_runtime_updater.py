@@ -29,13 +29,15 @@ class ChipRuntimeUpdater(object):
     :param int current_timesteps:
     """
 
+    TIME_TO_WAIT_FOR_CACHER_IN_SECONDS = 5
+
     __slots__ = []
 
     def __call__(
             self, txrx, app_id, executable_types, run_until_timesteps,
             current_timesteps, n_sync_steps):
         """
-        :param ~.Transceiver transceiver:
+        :param ~.Transceiver txrx:
         :param int app_id:
         :param dict(ExecutableType,~.CoreSubsets) executable_types:
         :param run_until_timesteps:
@@ -55,7 +57,8 @@ class ChipRuntimeUpdater(object):
             core_subsets, app_id, [CPUState.PAUSED, CPUState.READY],
             error_states=frozenset({
                 CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG,
-                CPUState.FINISHED}))
+                CPUState.FINISHED}),
+            timeout=self.TIME_TO_WAIT_FOR_CACHER_IN_SECONDS)
         ready_progress.end()
 
         infinite_run = 0
