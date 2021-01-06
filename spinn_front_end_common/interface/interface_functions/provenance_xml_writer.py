@@ -27,10 +27,6 @@ _XML_LEAF_NAME = "provenance_data_item"
 
 class ProvenanceXMLWriter(object):
     """ Writes provenance in XML format.
-
-    :param list(ProvenanceDataItem) provenance_data_items:
-        data items for provenance
-    :param str provenance_data_path: the file path to store provenance in
     """
 
     __slots__ = []
@@ -38,7 +34,8 @@ class ProvenanceXMLWriter(object):
     def __call__(self, provenance_data_items, provenance_data_path):
         """
         :param list(ProvenanceDataItem) provenance_data_items:
-        :param str provenance_data_path:
+            data items for provenance
+        :param str provenance_data_path: the file path to store provenance in
         """
         # Group data by the first name
         items = sorted(provenance_data_items, key=lambda item: item.names[0])

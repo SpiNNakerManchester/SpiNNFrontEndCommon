@@ -22,20 +22,6 @@ from spinn_front_end_common.utility_models import (
 
 class InsertLivePacketGatherersToGraphs(object):
     """ Adds LPGs as required into a given graph.
-
-    :param live_packet_gatherer_parameters:
-        the Live Packet Gatherer parameters requested by the script
-    :type live_packet_gatherer_parameters:
-        dict(LivePacketGatherParameters,
-        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
-    :param ~spinn_machine.Machine machine: the SpiNNaker machine as discovered
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        the machine graph
-    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
-        the application graph
-    :return: mapping between LPG parameters and LPG vertex
-    :rtype: dict(LivePacketGatherParameters,
-        dict(tuple(int,int),LivePacketGatherMachineVertex))
     """
 
     __slots__ = [
@@ -48,12 +34,18 @@ class InsertLivePacketGatherersToGraphs(object):
         """ Add LPG vertices on Ethernet connected chips as required.
 
         :param live_packet_gatherer_parameters:
+            the Live Packet Gatherer parameters requested by the script
         :type live_packet_gatherer_parameters:
             dict(LivePacketGatherParameters,
-            list(tuple(~.AbstractVertex, list(str))))
-        :param ~.Machine machine:
-        :param ~.MachineGraph machine_graph:
-        :param ~.ApplicationGraph application_graph:
+            list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
+        :param ~spinn_machine.Machine machine:
+            the SpiNNaker machine as discovered
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph
+        :param application_graph: the application graph
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
+        :return: mapping between LPG parameters and LPG vertex
         :rtype: dict(LivePacketGatherParameters,
             dict(tuple(int,int),LivePacketGatherMachineVertex))
         """

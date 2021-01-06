@@ -24,20 +24,17 @@ from spinnman.model.enums import (
 class RoutingSetup(object):
     """ Initialises the routers. Note that this does not load any routes into\
         them.
-
-    :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
-    :param int app_id:
-    :param ~spinnman.transceiver.Transceiver transceiver:
-    :param ~spinn_machine.Machine machine:
     """
     __slots__ = []
 
     def __call__(self, router_tables, app_id, transceiver, machine):
         """
-        :param ~.MulticastRoutingTables router_tables:
+        :param router_tables:
+        :type router_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         :param int app_id:
-        :param ~.Transceiver transceiver:
-        :param ~.Machine machine:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~spinn_machine.Machine machine:
         """
         routing_tables = list(router_tables.routing_tables)
         progress = ProgressBar(routing_tables, "Preparing Routing Tables")

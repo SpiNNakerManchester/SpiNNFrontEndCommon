@@ -185,7 +185,7 @@ class ConfigHandler(object):
             thrown if this fails.
         :return: The fully qualified name of the child folder.
         :rtype: str
-        :raises OSError: if the directory existed ahead of time and creation\
+        :raises OSError: if the directory existed ahead of time and creation
             was required by the user
         """
         child = os.path.join(parent, child_name)

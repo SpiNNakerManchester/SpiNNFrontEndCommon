@@ -18,7 +18,6 @@ import os
 import sys
 from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
-from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.interface.interface_functions.\
     machine_bit_field_router_compressor import (
         PROV_TOP_NAME)
@@ -36,24 +35,18 @@ _FILE_NAME = "bit_field_compressed_summary.rpt"
 class BitFieldCompressorReport(object):
     """ Generates a report that shows the impact of the compression of \
         bitfields into the routing table.
-
-    :param str report_default_directory: report folder
-    :param list(ProvenanceDataItem) provenance_items: prov items
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        the machine graph
-    :param ~pacman.model.placements.Placements placements: the placements
-    :return: a summary, or `None` if the report file can't be written
-    :rtype: BitFieldSummary
     """
     def __call__(
             self, report_default_directory, provenance_items, machine_graph,
             placements):
         """
-        :param str report_default_directory:
-        :param list(ProvenanceDataItem) provenance_items:
-        :param ~.MachineGraph machine_graph:
-        :param ~.Placements placements:
-        :rtype: BitFieldSummary or None
+        :param str report_default_directory: report folder
+        :param list(ProvenanceDataItem) provenance_items: prov items
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph
+        :param ~pacman.model.placements.Placements placements: the placements
+        :return: a summary, or `None` if the report file can't be written
+        :rtype: BitFieldSummary
         """
         file_name = os.path.join(report_default_directory, _FILE_NAME)
         try:
@@ -127,16 +120,13 @@ class BitFieldCompressorReport(object):
 
             if binary_start_type != ExecutableType.SYSTEM:
                 seen_partitions = set()
-                for incoming_edge in machine_graph.get_edges_ending_at_vertex(
-                        placement.vertex):
-                    if incoming_edge.traffic_type == EdgeTrafficType.MULTICAST:
-                        incoming_partition = \
-                            machine_graph.get_outgoing_partition_for_edge(
-                                incoming_edge)
-                        if incoming_partition not in seen_partitions:
-                            total_to_merge += 1
-                            to_merge_per_chip[placement.x, placement.y] += 1
-                            seen_partitions.add(incoming_partition)
+                for incoming_partition in machine_graph.\
+                        get_multicast_edge_partitions_ending_at_vertex(
+                            placement.vertex):
+                    if incoming_partition not in seen_partitions:
+                        total_to_merge += 1
+                        to_merge_per_chip[placement.x, placement.y] += 1
+                        seen_partitions.add(incoming_partition)
 
         max_bit_fields_on_chip = 0
         min_bit_fields_on_chip = sys.maxsize

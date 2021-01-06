@@ -20,20 +20,20 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 class ChipIOBufClearer(object):
     """ Clears the logging output buffer of an application running on a\
         SpiNNaker machine.
-
-    :param ~spinnman.transceiver.Transceiver transceiver:
-    :param dict(ExecutableType,~spinn_machine.CoreSubsets) executable_types:
     """
 
     __slots__ = []
 
     def __call__(self, transceiver, executable_types):
         """
-        :param ~.Transceiver transceiver:
-        :param dict(ExecutableType,~.CoreSubsets) executable_types:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param executable_types:
+        :type executable_types:
+            dict(ExecutableType,~spinn_machine.CoreSubsets)
         """
-        core_subsets = \
-            executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
+        if ExecutableType.USES_SIMULATION_INTERFACE in executable_types:
+            core_subsets = \
+                executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
 
-        process = ClearIOBUFProcess(transceiver.scamp_connection_selector)
-        process.clear_iobuf(core_subsets, len(core_subsets))
+            process = ClearIOBUFProcess(transceiver.scamp_connection_selector)
+            process.clear_iobuf(core_subsets, len(core_subsets))
