@@ -187,17 +187,17 @@ static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
 
     switch (msg->cmd_rc) {
     case CMD_STOP:
-        log_info("Received exit signal. Program complete.");
+        log_debug("Received exit signal. Program complete.");
 
         // free the message to stop overload
         spin1_msg_free(msg);
 
         // call any stored exit callbacks
         if (stored_exit_function != NULL) {
-            log_info("Calling pre-exit function");
+            log_debug("Calling pre-exit function");
             stored_exit_function();
         }
-        log_info("Exiting");
+        log_debug("Exiting");
         spin1_exit(0);
         break;
 

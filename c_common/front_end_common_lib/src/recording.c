@@ -513,7 +513,7 @@ bool recording_do_record_and_notify(
         }
 
         if (!g_recording_channels[channel].missing_info) {
-            log_info("WARNING: recording channel %u out of space", channel);
+            log_debug("WARNING: recording channel %u out of space", channel);
             g_recording_channels[channel].missing_info = 1;
         }
     }
