@@ -16,11 +16,12 @@
 import logging
 import struct
 from .profile_data import ProfileData
+from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 PROFILE_HEADER_SIZE_BYTES = BYTES_PER_WORD
 SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES = 2 * BYTES_PER_WORD
