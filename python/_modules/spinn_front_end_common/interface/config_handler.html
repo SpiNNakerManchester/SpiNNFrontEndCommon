@@ -71,6 +71,7 @@
 <span class="n">FINISHED_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;finished&quot;</span>
 <span class="n">REPORTS_DIRNAME</span> <span class="o">=</span> <span class="s2">&quot;reports&quot;</span>
 <span class="n">TIMESTAMP_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;time_stamp&quot;</span>
+<span class="n">WARNING_LOGS_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;warning_logs.txt&quot;</span>
 
 
 <div class="viewcode-block" id="ConfigHandler"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler">[docs]</a><span class="k">class</span> <span class="nc">ConfigHandler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -329,6 +330,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span><span class="p">,</span> <span class="n">TIMESTAMP_FILENAME</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">time_of_run_file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_this_run_time_string</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_config_boolean</span><span class="p">(</span><span class="s2">&quot;Logging&quot;</span><span class="p">,</span>
+                                     <span class="s2">&quot;warnings_at_end_to_file&quot;</span><span class="p">):</span>
+            <span class="n">log_report_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span><span class="p">,</span> <span class="n">WARNING_LOGS_FILENAME</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">set_report_File</span><span class="p">(</span><span class="n">log_report_file</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__make_timestamp</span><span class="p">():</span>

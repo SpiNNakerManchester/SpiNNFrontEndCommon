@@ -54,12 +54,13 @@
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinnman.processes</span> <span class="kn">import</span> <span class="n">AbstractMultiConnectionProcess</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages</span>\
     <span class="kn">import</span> <span class="p">(</span>
         <span class="n">GetReinjectionStatusMessage</span><span class="p">)</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="ReadStatusProcess"><a class="viewcode-back" href="../../../../../spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ReadStatusProcess">[docs]</a><span class="k">class</span> <span class="nc">ReadStatusProcess</span><span class="p">(</span><span class="n">AbstractMultiConnectionProcess</span><span class="p">):</span>
