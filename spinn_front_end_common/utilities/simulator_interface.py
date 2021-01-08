@@ -138,3 +138,10 @@ class SimulatorInterface(object):
         """
         :rtype: bool
         """
+
+    @abstractmethod
+    def get_current_time(self):
+        """ Get the current simulation time.
+
+        :rtype: float
+        """

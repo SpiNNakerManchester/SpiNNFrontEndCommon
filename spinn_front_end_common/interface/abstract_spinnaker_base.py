@@ -2553,11 +2553,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
         return self._use_virtual_board
 
+    @overrides(SimulatorInterface.get_current_time)
     def get_current_time(self):
-        """ Get the current simulation time.
-
-        :rtype: float
-        """
         if self._has_ran:
             return (
                 float(self._current_run_timesteps) *

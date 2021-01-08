@@ -110,3 +110,7 @@ class FailedState(SimulatorInterface):
     @overrides(SimulatorInterface.verify_not_running)
     def verify_not_running(self):
         raise ConfigurationException(FAILED_STATE_MSG)
+
+    @overrides(SimulatorInterface.get_current_time)
+    def get_current_time(self):
+        raise ConfigurationException(FAILED_STATE_MSG)
