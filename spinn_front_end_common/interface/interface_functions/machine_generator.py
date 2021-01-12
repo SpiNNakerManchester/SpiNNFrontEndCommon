@@ -60,11 +60,11 @@ class MachineGenerator(object):
         :param str hostname:
             the hostname or IP address of the SpiNNaker machine
         :param str bmp_details: the details of the BMP connections
-        :param set(tuple(int,int)) downed_chips:
+        :param set(IgnoreChip) downed_chips:
             the chips that are down which SARK thinks are alive
-        :param set(tuple(int,int,int)) downed_cores:
+        :param set(IgnoreCore) downed_cores:
             the cores that are down which SARK thinks are alive
-        :param set(tuple(int,int,int)) downed_links:
+        :param set(IgnoreLink) downed_links:
             the links that are down which SARK thinks are alive
         :param int board_version:
             the version of the boards being used within the machine
