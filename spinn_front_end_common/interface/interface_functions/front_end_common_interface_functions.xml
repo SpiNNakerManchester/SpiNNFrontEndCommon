@@ -2427,6 +2427,7 @@
         </outputs>
     </algorithm>
     <algorithm name="MundyOnChipRouterCompression">
+        <!-- This is a stub that will raise a error do not use -->
         <python_module>spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression</python_module>
         <python_function>mundy_on_chip_router_compression</python_function>
         <input_definitions>
