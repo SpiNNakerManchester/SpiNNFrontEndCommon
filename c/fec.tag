@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-<tagfile doxygen_version="1.8.20">
+<tagfile doxygen_version="1.9.0">
   <compound kind="file">
     <name>buffered_eieio_defs.h</name>
     <path>/github/workspace/c_common/front_end_common_lib/include/</path>
@@ -268,8 +268,8 @@
     <filename>eieio_8h.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
     <class kind="union">eieio_header_bitfields</class>
-    <class kind="struct">eieio_header_bitfields.__unnamed__</class>
-    <class kind="struct">eieio_header_bitfields.__unnamed__</class>
+    <class kind="struct">eieio_header_bitfields.__unnamed1__</class>
+    <class kind="struct">eieio_header_bitfields.__unnamed3__</class>
     <member kind="enumeration">
       <type></type>
       <name>eieio_bit_offsets</name>
@@ -786,133 +786,13 @@
     <member kind="enumvalue">
       <name>ITEMS_PER_DATA_PACKET</name>
       <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba83634fa5d88b9e8e880513f8e11e028c</anchor>
+      <anchor>adc29c2ff13d900c2f185ee95427fb06ca83634fa5d88b9e8e880513f8e11e028c</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>LENGTH_OF_SDP_HEADER</name>
       <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad92ffcc0192209f37d454a861ed5ed64</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bab472899e20607fe88982a376f3dbedd3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DATA_SPECIFICATION_VERSION</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba023bd8025ffafc9954a7fd7ae61df33f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>VERSION_MASK</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba3bdd0253bec51792b83d9d6603e131af</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>VERSION_SHIFT</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba7913873b92ba0d517ed68aa06348b5de</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SYSTEM</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba57cc238145ec1361c72c327674c0d754</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>CONFIG</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba702582f7f825ca83bdb076b15b4c0fc2</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RECORDING</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba875fadf1437508cebb97bb5c3445cbdc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>MC_PACKET</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad73783ea228c0f1164d4ed5274bc2fc4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad645defae8408de2415f3dc417f69773</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>USER</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bae2d30a195cee6b2961cc2c23ea4b520b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6537a62f6f155792bb9a320ee2ec4d68</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TIMER</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>COMMAND_ID</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba0ed3879bce4efefae9a9ed50c5853abe</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEQ_NUM_LOC</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba1c954815fb5b778e015418afa27d53b4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TRANSACTION_ID</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba8b52003a52ab660d4253704c1a90db74</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>START_OF_DATA</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEQUENCE_NUMBER_SIZE</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad7babe063e0a6247caaffd6c8caee600</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TRANSACTION_ID_SIZE</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba637adf75b1ab91cb42ca583a87352738</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP_PAYLOAD_WORDS</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6ad2e57f7353682e45c4acc5e5aeee96</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP_PAYLOAD_BYTES</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad752c54a1cb6bf3d556b67c65101668e</anchor>
+      <anchor>adc29c2ff13d900c2f185ee95427fb06cad92ffcc0192209f37d454a861ed5ed64</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -1906,135 +1786,27 @@
     <includes id="data__specification_8h" name="data_specification.h" local="yes" imported="no">data_specification.h</includes>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <member kind="enumvalue">
-      <name>ITEMS_PER_DATA_PACKET</name>
-      <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba83634fa5d88b9e8e880513f8e11e028c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>LENGTH_OF_SDP_HEADER</name>
-      <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad92ffcc0192209f37d454a861ed5ed64</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
       <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
       <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bab472899e20607fe88982a376f3dbedd3</anchor>
+      <anchor>a61dadd085c1777f559549e05962b2c9eab472899e20607fe88982a376f3dbedd3</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DATA_SPECIFICATION_VERSION</name>
       <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba023bd8025ffafc9954a7fd7ae61df33f</anchor>
+      <anchor>a61dadd085c1777f559549e05962b2c9ea023bd8025ffafc9954a7fd7ae61df33f</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>VERSION_MASK</name>
       <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba3bdd0253bec51792b83d9d6603e131af</anchor>
+      <anchor>a61dadd085c1777f559549e05962b2c9ea3bdd0253bec51792b83d9d6603e131af</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>VERSION_SHIFT</name>
       <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba7913873b92ba0d517ed68aa06348b5de</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SYSTEM</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba57cc238145ec1361c72c327674c0d754</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>CONFIG</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba702582f7f825ca83bdb076b15b4c0fc2</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RECORDING</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba875fadf1437508cebb97bb5c3445cbdc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>MC_PACKET</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad73783ea228c0f1164d4ed5274bc2fc4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad645defae8408de2415f3dc417f69773</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>USER</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bae2d30a195cee6b2961cc2c23ea4b520b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6537a62f6f155792bb9a320ee2ec4d68</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TIMER</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>COMMAND_ID</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba0ed3879bce4efefae9a9ed50c5853abe</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEQ_NUM_LOC</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba1c954815fb5b778e015418afa27d53b4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TRANSACTION_ID</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba8b52003a52ab660d4253704c1a90db74</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>START_OF_DATA</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEQUENCE_NUMBER_SIZE</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad7babe063e0a6247caaffd6c8caee600</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TRANSACTION_ID_SIZE</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba637adf75b1ab91cb42ca583a87352738</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP_PAYLOAD_WORDS</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6ad2e57f7353682e45c4acc5e5aeee96</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP_PAYLOAD_BYTES</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad752c54a1cb6bf3d556b67c65101668e</anchor>
+      <anchor>a61dadd085c1777f559549e05962b2c9ea7913873b92ba0d517ed68aa06348b5de</anchor>
       <arglist></arglist>
     </member>
     <member kind="function">
@@ -2685,219 +2457,39 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
-      <name>ITEMS_PER_DATA_PACKET</name>
-      <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba83634fa5d88b9e8e880513f8e11e028c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>LENGTH_OF_SDP_HEADER</name>
-      <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad92ffcc0192209f37d454a861ed5ed64</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bab472899e20607fe88982a376f3dbedd3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DATA_SPECIFICATION_VERSION</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba023bd8025ffafc9954a7fd7ae61df33f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>VERSION_MASK</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba3bdd0253bec51792b83d9d6603e131af</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>VERSION_SHIFT</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba7913873b92ba0d517ed68aa06348b5de</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
       <name>SYSTEM</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba57cc238145ec1361c72c327674c0d754</anchor>
+      <anchor>a726ca809ffd3d67ab4b8476646f26635a57cc238145ec1361c72c327674c0d754</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>CONFIG</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba702582f7f825ca83bdb076b15b4c0fc2</anchor>
+      <anchor>a726ca809ffd3d67ab4b8476646f26635a702582f7f825ca83bdb076b15b4c0fc2</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>RECORDING</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba875fadf1437508cebb97bb5c3445cbdc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>MC_PACKET</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad73783ea228c0f1164d4ed5274bc2fc4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad645defae8408de2415f3dc417f69773</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>USER</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bae2d30a195cee6b2961cc2c23ea4b520b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6537a62f6f155792bb9a320ee2ec4d68</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TIMER</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>COMMAND_ID</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba0ed3879bce4efefae9a9ed50c5853abe</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEQ_NUM_LOC</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba1c954815fb5b778e015418afa27d53b4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TRANSACTION_ID</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba8b52003a52ab660d4253704c1a90db74</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>START_OF_DATA</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEQUENCE_NUMBER_SIZE</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad7babe063e0a6247caaffd6c8caee600</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TRANSACTION_ID_SIZE</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba637adf75b1ab91cb42ca583a87352738</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP_PAYLOAD_WORDS</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6ad2e57f7353682e45c4acc5e5aeee96</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP_PAYLOAD_BYTES</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad752c54a1cb6bf3d556b67c65101668e</anchor>
+      <anchor>a726ca809ffd3d67ab4b8476646f26635a875fadf1437508cebb97bb5c3445cbdc</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>TIMER</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
+      <anchor>a0411cd49bb5b71852cecd93bcbf0ca2da17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SDP</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad645defae8408de2415f3dc417f69773</anchor>
+      <anchor>a0411cd49bb5b71852cecd93bcbf0ca2dad645defae8408de2415f3dc417f69773</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DMA</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a6537a62f6f155792bb9a320ee2ec4d68</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEND_SEQ_DATA_HEADER_WORDS</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a8c30d65ae329b6ebe1a4a0886935be43</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEND_MISSING_SEQ_HEADER_WORDS</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad76316f60dad277272a72fbe572f73e3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEND_DATA_LOCATION_HEADER_WORDS</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a89f9933ed17820997fea73283993bc7b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>ABSOLUTE_MAX_SIZE_OF_SDP_IN_BYTES</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7af578d4f10ba5d4a1de370678339da240</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>CPU_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a31d3dd7993118a16a819118bce59b194</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>CC_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a000b6c62469245f694c3ef9d3390a7c6</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TIMER_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aab240da79e7c1d78a159343d146edd13</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aca95bbc52c7ed3e8240a88dc1a6ba2a3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA_ERROR_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ac749c67267efeb265141afc68e371cdb</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA_TIMEOUT_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a1375671dff545ffd4c86fac72236812a</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>MC_PAYLOAD_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a33728a0193855bd51db0362175f7fc0f</anchor>
+      <anchor>a0411cd49bb5b71852cecd93bcbf0ca2da6537a62f6f155792bb9a320ee2ec4d68</anchor>
       <arglist></arglist>
     </member>
     <member kind="function" static="yes">
@@ -3113,138 +2705,6 @@
       <name>PROVENANCE_REGION</name>
       <anchorfile>command__sender__multicast__source_8c.html</anchorfile>
       <anchor>a6e4d67a0bd74db4da98539f8d2e5ab32a43f0d58cfc0317ea06139b20c9242d1e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>ITEMS_PER_DATA_PACKET</name>
-      <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba83634fa5d88b9e8e880513f8e11e028c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>LENGTH_OF_SDP_HEADER</name>
-      <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad92ffcc0192209f37d454a861ed5ed64</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bab472899e20607fe88982a376f3dbedd3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DATA_SPECIFICATION_VERSION</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba023bd8025ffafc9954a7fd7ae61df33f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>VERSION_MASK</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba3bdd0253bec51792b83d9d6603e131af</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>VERSION_SHIFT</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba7913873b92ba0d517ed68aa06348b5de</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SYSTEM</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba57cc238145ec1361c72c327674c0d754</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>CONFIG</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba702582f7f825ca83bdb076b15b4c0fc2</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RECORDING</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba875fadf1437508cebb97bb5c3445cbdc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>MC_PACKET</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad73783ea228c0f1164d4ed5274bc2fc4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad645defae8408de2415f3dc417f69773</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>USER</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bae2d30a195cee6b2961cc2c23ea4b520b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6537a62f6f155792bb9a320ee2ec4d68</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TIMER</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>COMMAND_ID</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba0ed3879bce4efefae9a9ed50c5853abe</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEQ_NUM_LOC</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba1c954815fb5b778e015418afa27d53b4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TRANSACTION_ID</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba8b52003a52ab660d4253704c1a90db74</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>START_OF_DATA</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEQUENCE_NUMBER_SIZE</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad7babe063e0a6247caaffd6c8caee600</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TRANSACTION_ID_SIZE</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba637adf75b1ab91cb42ca583a87352738</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP_PAYLOAD_WORDS</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6ad2e57f7353682e45c4acc5e5aeee96</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP_PAYLOAD_BYTES</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad752c54a1cb6bf3d556b67c65101668e</anchor>
       <arglist></arglist>
     </member>
     <member kind="function" static="yes">
@@ -5150,219 +4610,33 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
-      <name>ITEMS_PER_DATA_PACKET</name>
-      <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba83634fa5d88b9e8e880513f8e11e028c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>LENGTH_OF_SDP_HEADER</name>
-      <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad92ffcc0192209f37d454a861ed5ed64</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bab472899e20607fe88982a376f3dbedd3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DATA_SPECIFICATION_VERSION</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba023bd8025ffafc9954a7fd7ae61df33f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>VERSION_MASK</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba3bdd0253bec51792b83d9d6603e131af</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>VERSION_SHIFT</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba7913873b92ba0d517ed68aa06348b5de</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SYSTEM</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba57cc238145ec1361c72c327674c0d754</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>CONFIG</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba702582f7f825ca83bdb076b15b4c0fc2</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RECORDING</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba875fadf1437508cebb97bb5c3445cbdc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
       <name>MC_PACKET</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad73783ea228c0f1164d4ed5274bc2fc4</anchor>
+      <anchor>ab04a0655cd1e3bcac5e8f48c18df1a57ad73783ea228c0f1164d4ed5274bc2fc4</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SDP</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad645defae8408de2415f3dc417f69773</anchor>
+      <anchor>ab04a0655cd1e3bcac5e8f48c18df1a57ad645defae8408de2415f3dc417f69773</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>USER</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bae2d30a195cee6b2961cc2c23ea4b520b</anchor>
+      <anchor>ab04a0655cd1e3bcac5e8f48c18df1a57ae2d30a195cee6b2961cc2c23ea4b520b</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DMA</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6537a62f6f155792bb9a320ee2ec4d68</anchor>
+      <anchor>ab04a0655cd1e3bcac5e8f48c18df1a57a6537a62f6f155792bb9a320ee2ec4d68</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>TIMER</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>COMMAND_ID</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba0ed3879bce4efefae9a9ed50c5853abe</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEQ_NUM_LOC</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba1c954815fb5b778e015418afa27d53b4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TRANSACTION_ID</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba8b52003a52ab660d4253704c1a90db74</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>START_OF_DATA</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEQUENCE_NUMBER_SIZE</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad7babe063e0a6247caaffd6c8caee600</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TRANSACTION_ID_SIZE</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba637adf75b1ab91cb42ca583a87352738</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP_PAYLOAD_WORDS</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6ad2e57f7353682e45c4acc5e5aeee96</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP_PAYLOAD_BYTES</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad752c54a1cb6bf3d556b67c65101668e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TIMER</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad645defae8408de2415f3dc417f69773</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a6537a62f6f155792bb9a320ee2ec4d68</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEND_SEQ_DATA_HEADER_WORDS</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a8c30d65ae329b6ebe1a4a0886935be43</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEND_MISSING_SEQ_HEADER_WORDS</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad76316f60dad277272a72fbe572f73e3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEND_DATA_LOCATION_HEADER_WORDS</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a89f9933ed17820997fea73283993bc7b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>ABSOLUTE_MAX_SIZE_OF_SDP_IN_BYTES</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7af578d4f10ba5d4a1de370678339da240</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>CPU_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a31d3dd7993118a16a819118bce59b194</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>CC_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a000b6c62469245f694c3ef9d3390a7c6</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TIMER_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aab240da79e7c1d78a159343d146edd13</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aca95bbc52c7ed3e8240a88dc1a6ba2a3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA_ERROR_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ac749c67267efeb265141afc68e371cdb</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA_TIMEOUT_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a1375671dff545ffd4c86fac72236812a</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>MC_PAYLOAD_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a33728a0193855bd51db0362175f7fc0f</anchor>
+      <anchor>ab04a0655cd1e3bcac5e8f48c18df1a57a17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumeration">
@@ -6397,255 +5671,87 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
-      <name>ITEMS_PER_DATA_PACKET</name>
-      <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba83634fa5d88b9e8e880513f8e11e028c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>LENGTH_OF_SDP_HEADER</name>
-      <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad92ffcc0192209f37d454a861ed5ed64</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bab472899e20607fe88982a376f3dbedd3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DATA_SPECIFICATION_VERSION</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba023bd8025ffafc9954a7fd7ae61df33f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>VERSION_MASK</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba3bdd0253bec51792b83d9d6603e131af</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>VERSION_SHIFT</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba7913873b92ba0d517ed68aa06348b5de</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SYSTEM</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba57cc238145ec1361c72c327674c0d754</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>CONFIG</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba702582f7f825ca83bdb076b15b4c0fc2</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RECORDING</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba875fadf1437508cebb97bb5c3445cbdc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>MC_PACKET</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad73783ea228c0f1164d4ed5274bc2fc4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad645defae8408de2415f3dc417f69773</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>USER</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bae2d30a195cee6b2961cc2c23ea4b520b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6537a62f6f155792bb9a320ee2ec4d68</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TIMER</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
       <name>COMMAND_ID</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba0ed3879bce4efefae9a9ed50c5853abe</anchor>
+      <anchor>abc5c98fcc1211af2b80116dd6e0a035da0ed3879bce4efefae9a9ed50c5853abe</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SEQ_NUM_LOC</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba1c954815fb5b778e015418afa27d53b4</anchor>
+      <anchor>abc5c98fcc1211af2b80116dd6e0a035da1c954815fb5b778e015418afa27d53b4</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>TRANSACTION_ID</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba8b52003a52ab660d4253704c1a90db74</anchor>
+      <anchor>abc5c98fcc1211af2b80116dd6e0a035da8b52003a52ab660d4253704c1a90db74</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>START_OF_DATA</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEQUENCE_NUMBER_SIZE</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad7babe063e0a6247caaffd6c8caee600</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TRANSACTION_ID_SIZE</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba637adf75b1ab91cb42ca583a87352738</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP_PAYLOAD_WORDS</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6ad2e57f7353682e45c4acc5e5aeee96</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP_PAYLOAD_BYTES</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad752c54a1cb6bf3d556b67c65101668e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TIMER</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad645defae8408de2415f3dc417f69773</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a6537a62f6f155792bb9a320ee2ec4d68</anchor>
+      <anchor>abc5c98fcc1211af2b80116dd6e0a035dacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SEND_SEQ_DATA_HEADER_WORDS</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a8c30d65ae329b6ebe1a4a0886935be43</anchor>
+      <anchor>ac36f475ca5b446f4fde4c9b90bec77c8a8c30d65ae329b6ebe1a4a0886935be43</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SEND_MISSING_SEQ_HEADER_WORDS</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad76316f60dad277272a72fbe572f73e3</anchor>
+      <anchor>ac36f475ca5b446f4fde4c9b90bec77c8ad76316f60dad277272a72fbe572f73e3</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SEND_DATA_LOCATION_HEADER_WORDS</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a89f9933ed17820997fea73283993bc7b</anchor>
+      <anchor>ac36f475ca5b446f4fde4c9b90bec77c8a89f9933ed17820997fea73283993bc7b</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>ABSOLUTE_MAX_SIZE_OF_SDP_IN_BYTES</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7af578d4f10ba5d4a1de370678339da240</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>CPU_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a31d3dd7993118a16a819118bce59b194</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>CC_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a000b6c62469245f694c3ef9d3390a7c6</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TIMER_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aab240da79e7c1d78a159343d146edd13</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aca95bbc52c7ed3e8240a88dc1a6ba2a3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA_ERROR_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ac749c67267efeb265141afc68e371cdb</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA_TIMEOUT_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a1375671dff545ffd4c86fac72236812a</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>MC_PAYLOAD_SLOT</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a33728a0193855bd51db0362175f7fc0f</anchor>
+      <anchor>ac36f475ca5b446f4fde4c9b90bec77c8af578d4f10ba5d4a1de370678339da240</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DATA_IN_NORMAL_PACKET_WORDS</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a99fb83031ce9923c84392b4e92f956b5a0dc40ee7b70edfa59f298003c61ace4a</anchor>
+      <anchor>a05589fbab0657f08285ebdfe93f5ec9ea0dc40ee7b70edfa59f298003c61ace4a</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>ITEMS_PER_MISSING_PACKET</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a99fb83031ce9923c84392b4e92f956b5a96443832aeb718a8af969a669a2b9927</anchor>
+      <anchor>a05589fbab0657f08285ebdfe93f5ec9ea96443832aeb718a8af969a669a2b9927</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>CONFIG</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>abc6126af1d45847bc59afa0aa3216b04a702582f7f825ca83bdb076b15b4c0fc2</anchor>
+      <anchor>a16af7b253440dadd46a80a4b9fddba4da702582f7f825ca83bdb076b15b4c0fc2</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>CHIP_TO_KEY</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>abc6126af1d45847bc59afa0aa3216b04a908ad08dc63e1c21f95e82d2e50700a4</anchor>
+      <anchor>a16af7b253440dadd46a80a4b9fddba4da908ad08dc63e1c21f95e82d2e50700a4</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>MC_PACKET</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adc29c2ff13d900c2f185ee95427fb06cad73783ea228c0f1164d4ed5274bc2fc4</anchor>
+      <anchor>aba01db17f4a2bfbc3db60dc172972a25ad73783ea228c0f1164d4ed5274bc2fc4</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SDP</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adc29c2ff13d900c2f185ee95427fb06cad645defae8408de2415f3dc417f69773</anchor>
+      <anchor>aba01db17f4a2bfbc3db60dc172972a25ad645defae8408de2415f3dc417f69773</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumeration">
@@ -7153,135 +6259,27 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
-      <name>ITEMS_PER_DATA_PACKET</name>
-      <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba83634fa5d88b9e8e880513f8e11e028c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>LENGTH_OF_SDP_HEADER</name>
-      <anchorfile>sdp__no__scp_8h.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad92ffcc0192209f37d454a861ed5ed64</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DATA_SPECIFICATION_MAGIC_NUMBER</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bab472899e20607fe88982a376f3dbedd3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DATA_SPECIFICATION_VERSION</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba023bd8025ffafc9954a7fd7ae61df33f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>VERSION_MASK</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba3bdd0253bec51792b83d9d6603e131af</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>VERSION_SHIFT</name>
-      <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba7913873b92ba0d517ed68aa06348b5de</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SYSTEM</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba57cc238145ec1361c72c327674c0d754</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>CONFIG</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba702582f7f825ca83bdb076b15b4c0fc2</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>RECORDING</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba875fadf1437508cebb97bb5c3445cbdc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>MC_PACKET</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad73783ea228c0f1164d4ed5274bc2fc4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad645defae8408de2415f3dc417f69773</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>USER</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bae2d30a195cee6b2961cc2c23ea4b520b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6537a62f6f155792bb9a320ee2ec4d68</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TIMER</name>
-      <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>COMMAND_ID</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba0ed3879bce4efefae9a9ed50c5853abe</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEQ_NUM_LOC</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba1c954815fb5b778e015418afa27d53b4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TRANSACTION_ID</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba8b52003a52ab660d4253704c1a90db74</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>START_OF_DATA</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bacf47d8a1f35b105be9a80e8c42c58b5d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
       <name>SEQUENCE_NUMBER_SIZE</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad7babe063e0a6247caaffd6c8caee600</anchor>
+      <anchor>aaf105ae5beaca1dee30ae54530691fcead7babe063e0a6247caaffd6c8caee600</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>TRANSACTION_ID_SIZE</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba637adf75b1ab91cb42ca583a87352738</anchor>
+      <anchor>aaf105ae5beaca1dee30ae54530691fcea637adf75b1ab91cb42ca583a87352738</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SDP_PAYLOAD_WORDS</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55ba6ad2e57f7353682e45c4acc5e5aeee96</anchor>
+      <anchor>aaf105ae5beaca1dee30ae54530691fcea6ad2e57f7353682e45c4acc5e5aeee96</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>SDP_PAYLOAD_BYTES</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a06fc87d81c62e9abb8790b6e5713c55bad752c54a1cb6bf3d556b67c65101668e</anchor>
+      <anchor>aaf105ae5beaca1dee30ae54530691fcead752c54a1cb6bf3d556b67c65101668e</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumeration">
@@ -7316,87 +6314,45 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
-      <name>TIMER</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a17ba9bae1b8d7e8d6c12d46ec58e0769</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SDP</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad645defae8408de2415f3dc417f69773</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>DMA</name>
-      <anchorfile>chip__power__monitor_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a6537a62f6f155792bb9a320ee2ec4d68</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEND_SEQ_DATA_HEADER_WORDS</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a8c30d65ae329b6ebe1a4a0886935be43</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEND_MISSING_SEQ_HEADER_WORDS</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ad76316f60dad277272a72fbe572f73e3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>SEND_DATA_LOCATION_HEADER_WORDS</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a89f9933ed17820997fea73283993bc7b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>ABSOLUTE_MAX_SIZE_OF_SDP_IN_BYTES</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7af578d4f10ba5d4a1de370678339da240</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
       <name>CPU_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a31d3dd7993118a16a819118bce59b194</anchor>
+      <anchor>a80155586fa275b28773c9b203f52cabaa31d3dd7993118a16a819118bce59b194</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>CC_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a000b6c62469245f694c3ef9d3390a7c6</anchor>
+      <anchor>a80155586fa275b28773c9b203f52cabaa000b6c62469245f694c3ef9d3390a7c6</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>TIMER_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aab240da79e7c1d78a159343d146edd13</anchor>
+      <anchor>a80155586fa275b28773c9b203f52cabaaab240da79e7c1d78a159343d146edd13</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DMA_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7aca95bbc52c7ed3e8240a88dc1a6ba2a3</anchor>
+      <anchor>a80155586fa275b28773c9b203f52cabaaca95bbc52c7ed3e8240a88dc1a6ba2a3</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DMA_ERROR_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7ac749c67267efeb265141afc68e371cdb</anchor>
+      <anchor>a80155586fa275b28773c9b203f52cabaac749c67267efeb265141afc68e371cdb</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>DMA_TIMEOUT_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a1375671dff545ffd4c86fac72236812a</anchor>
+      <anchor>a80155586fa275b28773c9b203f52cabaa1375671dff545ffd4c86fac72236812a</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
       <name>MC_PAYLOAD_SLOT</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>adf764cbdea00d65edcd07bb9953ad2b7a33728a0193855bd51db0362175f7fc0f</anchor>
+      <anchor>a80155586fa275b28773c9b203f52cabaa33728a0193855bd51db0362175f7fc0f</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumeration">
@@ -9654,9 +8610,9 @@
     <anchor>unioneieio__header__bitfields</anchor>
   </compound>
   <compound kind="struct">
-    <name>eieio_header_bitfields.__unnamed__</name>
+    <name>eieio_header_bitfields.__unnamed1__</name>
     <filename>eieio_8h.html</filename>
-    <anchor>structeieio__header__bitfields_8____unnamed____</anchor>
+    <anchor>structeieio__header__bitfields_8____unnamed1____</anchor>
     <member kind="variable">
       <type>uint16_t</type>
       <name>count</name>
@@ -9701,9 +8657,9 @@
     </member>
   </compound>
   <compound kind="struct">
-    <name>eieio_header_bitfields.__unnamed__</name>
+    <name>eieio_header_bitfields.__unnamed3__</name>
     <filename>eieio_8h.html</filename>
-    <anchor>structeieio__header__bitfields_8____unnamed____</anchor>
+    <anchor>structeieio__header__bitfields_8____unnamed3____</anchor>
     <member kind="variable">
       <type>uint16_t</type>
       <name>packet_command</name>
