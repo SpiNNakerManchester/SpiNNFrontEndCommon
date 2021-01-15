@@ -282,7 +282,8 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
 
     //for (uint i = 0; i < write_index; i++) {
     //    entry_t *entry1 = routing_table_get_entry(i);
-    //    log_info("%u route:%u source:%u key:%u mask:%u",i, entry1->route, entry1->source, entry1->key_mask.key, entry1->key_mask.mask);
+    //    log_info("%u route:%u source:%u key:%u mask:%u",i, entry1->route,
+    //      entry1->source, entry1->key_mask.key, entry1->key_mask.mask);
     //}
     routing_table_remove_from_size(table_size-write_index);
     log_info("now %u", routing_table_get_n_entries());
