@@ -350,7 +350,7 @@
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
             <param_type>CompressorExecutableTargetsUsed</param_type>
-            <param_type>RouterProvenanceItems</param_type>
+            <param_type>RouterCompressorProvenanceItems</param_type>
         </outputs>
     </algorithm>
     <algorithm name="MachineBitFieldPairRouterCompressor">
@@ -471,7 +471,7 @@
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
             <param_type>CompressorExecutableTargetsUsed</param_type>
-            <param_type>RouterProvenanceItems</param_type>
+            <param_type>RouterCompressorProvenanceItems</param_type>
         </outputs>
     </algorithm>
     <algorithm name="SystemMulticastRoutingGenerator">
