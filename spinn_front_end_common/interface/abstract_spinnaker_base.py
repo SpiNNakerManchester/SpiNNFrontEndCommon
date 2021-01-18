@@ -1387,9 +1387,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # the graph
         else:
             inputs["MemoryApplicationGraph"] = self._application_graph
-            algorithms.extend(self._config.get(
-                "Mapping",
-                "application_to_machine_graph_algorithms").split(","))
+            algorithms.extend(self._config.get_str_list(
+                "Mapping", "application_to_machine_graph_algorithms"))
             outputs.append("MemoryMachineGraph")
             do_partitioning = True
 
@@ -1671,19 +1670,17 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # only add the partitioner if there isn't already a machine graph
         algorithms.append("MallocBasedChipIDAllocator")
         if not self._machine_graph.n_vertices:
-            full = self._config.get(
-                "Mapping", "application_to_machine_graph_algorithms")
-            algorithms.extend(full.replace(" ", "").split(","))
+            algorithms.extend(self._config.get_str_list(
+                "Mapping", "application_to_machine_graph_algorithms"))
             inputs['MemoryPreviousAllocatedResources'] = \
                 PreAllocatedResourceContainer()
 
         if self._use_virtual_board:
-            full = self._config.get(
-                "Mapping", "machine_graph_to_virtual_machine_algorithms")
+            algorithms.extend(self._config.get_str_list(
+                "Mapping", "machine_graph_to_virtual_machine_algorithms"))
         else:
-            full = self._config.get(
-                "Mapping", "machine_graph_to_machine_algorithms")
-        algorithms.extend(full.replace(" ", "").split(","))
+            algorithms.extend(self._config.get_str_list(
+                "Mapping", "machine_graph_to_machine_algorithms"))
 
         # add check for algorithm start type
         if not self._use_virtual_board:
@@ -1830,9 +1827,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # Get the executable targets
             algorithms.append("GraphBinaryGatherer")
 
-        loading_algorithm = self._read_config("Mapping", "loading_algorithms")
-        if loading_algorithm is not None and (graph_changed or data_changed):
-            algorithms.extend(loading_algorithm.split(","))
+        algorithms.extend(self._config.get_str_list(
+            "Mapping", "loading_algorithms"))
+
         algorithms.extend(self._extra_load_algorithms)
 
         write_memory_report = self._config.getboolean(
@@ -2363,12 +2360,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :rtype: list(str)
         """
         # add the extra xml files from the config file
-        xml_paths = self._config.get("Mapping", "extra_xmls_paths")
-        if xml_paths == "None":
-            xml_paths = list()
-        else:
-            xml_paths = xml_paths.split(",")
-
+        xml_paths = self._config.get_str_list("Mapping", "extra_xmls_paths")
         xml_paths.extend(get_front_end_common_pacman_xml_paths())
 
         if extra_algorithm_xml_paths is not None:
