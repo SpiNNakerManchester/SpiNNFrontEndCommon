@@ -62,11 +62,13 @@ class BitFieldCompressorReport(object):
             return None
 
     @staticmethod
-    def _merged_component(provenance_items, writer):
+    def _merged_component(provenance_items, writer, to_merge_per_chip):
         """ Report how many bitfields were merged into the router.
 
         :param list(ProvenanceDataItem) provenance_items: prov items
         :param ~io.FileIO writer: file writer.
+        :param dict((int,int): int) to_merge_per_chip:
+            number of bitfields per chip
         :return: tuple containing 4 elements.
          1. min_bit_fields merged in a chip,
          2. the max bit_fields merged in a chip,
@@ -79,22 +81,28 @@ class BitFieldCompressorReport(object):
         total_bit_fields_merged = 0
         average_per_chip_merged = 0
         n_chips = 0
+        to_merge_chips = set(to_merge_per_chip.keys())
 
         found = False
         for prov_item in provenance_items:
             if prov_item.names[0] == PROV_TOP_NAME:
-                found = True
                 bits = prov_item.names[1].split("_")
-                writer.write(
-                    "Chip {}:{} has {} bitfields merged into it\n".format(
-                        bits[3], bits[4], prov_item.value))
-                total_bit_fields_merged += int(prov_item.value)
-                if int(prov_item.value) > top_bit_field:
-                    top_bit_field = int(prov_item.value)
-                if int(prov_item.value) < min_bit_field:
-                    min_bit_field = int(prov_item.value)
-                average_per_chip_merged += int(prov_item.value)
-                n_chips += 1
+                x = int(bits[3])
+                y = int(bits[4])
+                if (x, y) in to_merge_per_chip:
+                    to_merge = to_merge_per_chip[(x, y)]
+                    found = True
+                    to_merge_chips.remove((x, y))
+                    writer.write(
+                        "Chip {}:{} has {} bitfields out of {} merged into it\n"
+                        "".format(x, y, prov_item.value, to_merge))
+                    total_bit_fields_merged += int(prov_item.value)
+                    if int(prov_item.value) > top_bit_field:
+                        top_bit_field = int(prov_item.value)
+                    if int(prov_item.value) < min_bit_field:
+                        min_bit_field = int(prov_item.value)
+                    average_per_chip_merged += int(prov_item.value)
+                    n_chips += 1
 
         if found:
             average_per_chip_merged = \
@@ -104,6 +112,12 @@ class BitFieldCompressorReport(object):
             top_bit_field = "N/A"
             total_bit_fields_merged = "N/A"
             average_per_chip_merged = "N/A"
+
+        if len(to_merge_chips) > 0:
+            writer.write(
+                "The Chips {} had bitfields. \n"
+                "But no record was found of any attepmt to merge them \n"
+                "".format(to_merge_chips))
 
         return (min_bit_field, top_bit_field, total_bit_fields_merged,
                 average_per_chip_merged)
@@ -146,7 +160,7 @@ class BitFieldCompressorReport(object):
             average = float(total_to_merge) / float(len(to_merge_per_chip))
 
         return (total_to_merge, max_bit_fields_on_chip,
-                min_bit_fields_on_chip, average)
+                min_bit_fields_on_chip, average, to_merge_per_chip)
 
     def _write_report(
             self, writer, provenance_items, machine_graph, placements):
@@ -160,12 +174,12 @@ class BitFieldCompressorReport(object):
         :rtype: BitFieldSummary
         """
 
+        (total_to_merge, max_to_merge_per_chip, low_to_merge_per_chip,
+         average_per_chip_to_merge, to_merge_per_chip) = \
+            self._before_merge_component(machine_graph, placements)
         (min_bit_field, top_bit_field, total_bit_fields_merged,
          average_per_chip_merged) = self._merged_component(
-            provenance_items, writer)
-        (total_to_merge, max_to_merge_per_chip, low_to_merge_per_chip,
-         average_per_chip_to_merge) = self._before_merge_component(
-            machine_graph, placements)
+            provenance_items, writer, to_merge_per_chip)
 
         writer.write(
             "\n\nSummary: merged total {} out of {} bitfields. best per chip "
