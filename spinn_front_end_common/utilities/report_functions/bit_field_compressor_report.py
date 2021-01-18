@@ -37,17 +37,20 @@ class BitFieldCompressorReport(object):
         bitfields into the routing table.
     """
     def __call__(
-            self, report_default_directory, provenance_items, machine_graph,
-            placements):
+            self, report_default_directory, machine_graph, placements,
+            provenance_items=None):
         """
         :param str report_default_directory: report folder
-        :param list(ProvenanceDataItem) provenance_items: prov items
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph
         :param ~pacman.model.placements.Placements placements: the placements
+        :param provenance_items: prov items
+        :type provenance_items: list(ProvenanceDataItem) or None
         :return: a summary, or `None` if the report file can't be written
         :rtype: BitFieldSummary
         """
+        if provenance_items is None:
+            provenance_items = []
         file_name = os.path.join(report_default_directory, _FILE_NAME)
         try:
             with open(file_name, "w") as f:
