@@ -470,8 +470,8 @@ class MachineBitFieldRouterCompressor(object):
             bit_field_compressor_executable_path, cores,
             compress_as_much_as_possible,
             comms_sdram):
-        """ Updates the user1 address for the compressor cores so they can \
-            set the time per attempt.
+        """ Updates the user addresses for the compressor cores with the
+            compression settings
 
         :param int chip_x: chip x coord
         :param int chip_y: chip y coord
@@ -494,11 +494,13 @@ class MachineBitFieldRouterCompressor(object):
                 transceiver.get_user_2_register_address_from_core(processor_id)
             user3_address = \
                 transceiver.get_user_3_register_address_from_core(processor_id)
+            # user 1 the time per compression attempt
             transceiver.write_memory(
                 chip_x, chip_y, user1_address,
                 self._ONE_WORDS.pack(
                     time_per_iteration * SECOND_TO_MICRO_SECOND),
                 self._USER_BYTES)
+            # user 2 Compress as much as needed flag
             if compress_as_much_as_possible:
                 compressor_setting = 1
             else:
@@ -506,6 +508,7 @@ class MachineBitFieldRouterCompressor(object):
             transceiver.write_memory(
                 chip_x, chip_y, user2_address,
                 self._ONE_WORDS.pack(compressor_setting), self._USER_BYTES)
+            # user 3 the comms_sdram area
             transceiver.write_memory(
                 chip_x, chip_y, user3_address,
                 self._ONE_WORDS.pack(comms_sdram), self._USER_BYTES)
@@ -785,8 +788,16 @@ class MachineBitFieldRouterCompressor(object):
 
     def _generate_chip_data(
             self, address_list, cores, comms_sdram, threshold_percentage):
-        """ Generate byte array data for a list of SDRAM addresses and \
-            finally the time to run per compression iteration.
+        """
+        Generate the region_addresses_t data
+
+        Minimum percentage of bitfields to be merge in (currently ignored)
+
+        Pointer to the area malloced to hold the comms_sdram
+
+        Number of processors in the list
+
+        The data for the processors
 
         :param list(tuple(int,int)) address_list:
             the list of SDRAM addresses
@@ -798,8 +809,10 @@ class MachineBitFieldRouterCompressor(object):
         :return: the byte array
         :rtype: bytes
         """
+        retry_count = 200
         data = b""
         data += self._ONE_WORDS.pack(threshold_percentage)
+        data += self._ONE_WORDS.pack(retry_count)
         data += self._ONE_WORDS.pack(comms_sdram)
         data += self._ONE_WORDS.pack(len(address_list))
         for (bit_field, processor_id) in address_list:
