@@ -31,6 +31,7 @@
 #include <stdbool.h>
 #include <debug.h>
 #include "../common/routing_table.h"
+#include "common/minimise.h"
 
 //! Absolute maximum number of routes that we may produce
 #define MAX_NUM_ROUTES 1023
@@ -194,8 +195,11 @@ static inline bool update_frequency(int index) {
     routes_frequency[routes_count] = 1;
     routes_count++;
     if (routes_count >= MAX_NUM_ROUTES) {
-        log_error("Too many different routes to compress found %d compared "
-                  "to max legal of %d", routes_count, MAX_NUM_ROUTES);
+        if (standalone()) {
+            log_error("Too many different routes to compress found %d "
+                      "compared to max legal of %d",
+                      routes_count, MAX_NUM_ROUTES);
+        }
         return false;
     }
     return true;
@@ -267,8 +271,11 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
         log_debug("compress %u %u", left, right);
         compress_by_route(left, right);
         if (write_index > rtr_alloc_max()){
-            log_error("Compression not possible as already found %d entries "
-            "where max allowed is %d", write_index, rtr_alloc_max());
+            if (standalone()) {
+                log_error("Compression not possible as already found %d "
+                          "entries where max allowed is %d",
+                          write_index, rtr_alloc_max());
+            }
             return false;
         }
         if (*stop_compressing) {

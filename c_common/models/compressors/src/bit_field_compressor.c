@@ -381,6 +381,12 @@ static void initialise(void) {
     log_info("my processor id is %d", spin1_get_core_id());
 }
 
+//! \brief bool to say this is NOT a standalone compressor.
+bool standalone(void){
+    return false;
+}
+
+
 //! \brief the main entrance.
 void c_main(void) {
     log_info("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
