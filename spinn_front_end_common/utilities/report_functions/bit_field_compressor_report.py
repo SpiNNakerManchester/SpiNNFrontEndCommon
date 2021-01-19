@@ -38,7 +38,7 @@ class BitFieldCompressorReport(object):
     """
     def __call__(
             self, report_default_directory, machine_graph, placements,
-            provenance_items=None):
+            provenance_items=None, retry_count=None):
         """
         :param str report_default_directory: report folder
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
@@ -46,6 +46,10 @@ class BitFieldCompressorReport(object):
         :param ~pacman.model.placements.Placements placements: the placements
         :param provenance_items: prov items
         :type provenance_items: list(ProvenanceDataItem) or None
+        :param retry_count:
+            Number of times that the sorters should set of the compressions
+            again. None for as much as needed
+        :type retry_count: int or None
         :return: a summary, or `None` if the report file can't be written
         :rtype: BitFieldSummary
         """
@@ -55,7 +59,8 @@ class BitFieldCompressorReport(object):
         try:
             with open(file_name, "w") as f:
                 return self._write_report(
-                    f, provenance_items, machine_graph, placements)
+                    f, provenance_items, machine_graph, placements,
+                    retry_count)
         except IOError:
             logger.exception("Generate_placement_reports: Can't open file"
                              " {} for writing.", _FILE_NAME)
@@ -162,14 +167,39 @@ class BitFieldCompressorReport(object):
         return (total_to_merge, max_bit_fields_on_chip,
                 min_bit_fields_on_chip, average, to_merge_per_chip)
 
+    def _rety_warning(self, writer,  retry_count):
+        if retry_count is None:
+            return
+        # Wet finger estimates with no proof they are right
+        if retry_count < 5:
+            margin = "10%"
+        elif retry_count < 15:
+            margin = "5%"
+        elif retry_count < 30:
+            margin = "2%"
+        else:
+            margin = "1%"
+        writer.write(
+            "\n\nWarning the number of retires was capped at {}. "
+            "\nWithout this cap the bitfileds merges is likely to be higher. "
+            "\nA very crude estimate suggests up to {} better."
+            "\nRemoving router_table_compression_with_bit_field_retry_count "
+            "from your cfg file may improve bitfields merged.".format(
+                retry_count, margin))
+
     def _write_report(
-            self, writer, provenance_items, machine_graph, placements):
+            self, writer, provenance_items, machine_graph, placements,
+            retry_count):
         """ writes the report
 
         :param ~io.FileIO writer: the file writer
         :param list(ProvenanceDataItem) provenance_items: the prov items
         :param ~.MachineGraph machine_graph: the machine graph
         :param ~.Placements placements: the placements
+        :param retry_count:
+            Number of times that the sorters should set of the compressions
+            again. None for as much as needed
+        :type retry_count: int or None
         :return: a summary
         :rtype: BitFieldSummary
         """
@@ -189,6 +219,8 @@ class BitFieldCompressorReport(object):
                 total_bit_fields_merged, total_to_merge, top_bit_field,
                 max_to_merge_per_chip, min_bit_field, low_to_merge_per_chip,
                 average_per_chip_merged, average_per_chip_to_merge))
+
+        self._rety_warning(writer, retry_count)
 
         return BitFieldSummary(
             lowest_per_chip=min_bit_field, max_per_chip=top_bit_field,

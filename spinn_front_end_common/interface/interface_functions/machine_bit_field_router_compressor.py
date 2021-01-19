@@ -110,8 +110,8 @@ class MachineBitFieldRouterCompressor(object):
         "bit_field_sorter_and_searcher.aplx"
 
     _PROGRESS_BAR_TEXT = \
-        "on chip compressing routing tables and merging in bitfields as " \
-        "appropriate"
+        "on chip {} compressor with bitfields"
+
     _HOST_BAR_TEXT = \
         "on host compressing routing tables and merging in bitfields as " \
         "appropriate"
@@ -184,12 +184,15 @@ class MachineBitFieldRouterCompressor(object):
         routing_table_compressor_app_id = \
             transceiver.app_id_tracker.get_new_id()
 
+        text = self._PROGRESS_BAR_TEXT.format(self.compressor_type)
+        if retry_count is not None:
+            text += " capped at {} retries".format(retry_count)
         progress_bar = ProgressBar(
             total_number_of_things_to_do=(
                 len(machine_graph.vertices) +
                 (len(routing_tables.routing_tables) *
                  self.TIMES_CYCLED_ROUTING_TABLES)),
-            string_describing_what_being_progressed=self._PROGRESS_BAR_TEXT)
+            string_describing_what_being_progressed=text)
 
         # locate data and on_chip_cores to load binary on
         (addresses, matrix_addresses_and_size) = self._generate_addresses(
@@ -289,6 +292,12 @@ class MachineBitFieldRouterCompressor(object):
         :return: The name of the compressor aplx file to use
         """
 
+    @abstractproperty
+    def compressor_type(self):
+        """
+
+        :return: The name of the compressor (excluding bitfields) being used
+        """
     def _generate_core_subsets(
             self, routing_tables, executable_finder, machine, progress_bar,
             system_executable_targets):
@@ -433,9 +442,10 @@ class MachineBitFieldRouterCompressor(object):
         :param int threshold_percentage:
             the percentage of bitfields the user has defined as a minimum
             needed to pass to be successful.
-        :param int retry_count:
+        :param retry_count:
             Number of times that the sorters should set of the compressions
-            again
+            again. None for as much as needed
+        :type retry_count: int or None
         :return:
             the list of tuples saying which chips this will need to use
             host compression, as the malloc failed.
@@ -603,9 +613,10 @@ class MachineBitFieldRouterCompressor(object):
         :param int threshold_percentage:
             the percentage of bitfields the user has defined as a minimum
             needed to pass to be successful.
-        :param int retry_count:
+        :param retry_count:
             Number of times that the sorters should set of the compressions
-            again
+            again. None for as much as needed
+        :type retry_count: int or None
         :rtype: None
         """
         # generate address_data
@@ -823,14 +834,19 @@ class MachineBitFieldRouterCompressor(object):
         :param int threshold_percentage:
             the percentage of bitfields the user has defined as a minimum
             needed to pass to be successful.
-        :param int retry_count:
-            Number of times that the sorters should set of the compressions again
+        :param retry_count:
+            Number of times that the sorters should set of the compressions
+            again. None for as much as needed
+        :type retry_count: int or None
         :return: the byte array
         :rtype: bytes
         """
         data = b""
         data += self._ONE_WORDS.pack(threshold_percentage)
-        data += self._ONE_WORDS.pack(retry_count)
+        if retry_count is None:
+            data += self._ONE_WORDS.pack(0xFFFFFFFF)
+        else:
+            data += self._ONE_WORDS.pack(retry_count)
         data += self._ONE_WORDS.pack(comms_sdram)
         data += self._ONE_WORDS.pack(len(address_list))
         for (bit_field, processor_id) in address_list:
@@ -849,6 +865,11 @@ class MachineBitFieldUnorderedRouterCompressor(
     def compressor_aplx(self):
         return "bit_field_unordered_compressor.aplx"
 
+    @property
+    @overrides(MachineBitFieldRouterCompressor.compressor_type)
+    def compressor_type(self):
+        return "Mundy"
+
 
 class MachineBitFieldPairRouterCompressor(MachineBitFieldRouterCompressor):
 
@@ -856,3 +877,8 @@ class MachineBitFieldPairRouterCompressor(MachineBitFieldRouterCompressor):
     @overrides(MachineBitFieldRouterCompressor.compressor_aplx)
     def compressor_aplx(self):
         return "bit_field_pair_compressor.aplx"
+
+    @property
+    @overrides(MachineBitFieldRouterCompressor.compressor_type)
+    def compressor_type(self):
+        return "Pair"
