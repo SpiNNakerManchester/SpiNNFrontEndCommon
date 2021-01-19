@@ -138,11 +138,19 @@ void *malloc_extras_sdram_malloc_wrapper(uint bytes);
 //! \return: the address of the block of memory to utilise.
 void *malloc_extras_malloc(uint bytes);
 
+//! \brief Allows a search of the 2 heaps available. (stolen SDRAM, DTCM)
+//! \note Commented out as this can cause stack overflow issues quickly.
+//!     If deemed safe, could be uncommented. That is the same to the
+//!     `#define` below at the end of the file
+//! \param[in] bytes: the number of bytes to allocate.
+//! \return: the address of the block of memory to utilise.
+void *malloc_extras_malloc_reverse(uint bytes);
+
 //! \brief Locates the biggest block of available memory from the heaps
 //! \return the biggest block size in the heaps.
 uint malloc_extras_max_available_block_size(void);
 
-//! An easily-insertable name for the memory allocator
+//! An easily-insertable name for the memory allocator of dtcm then sdram.
 #define MALLOC          malloc_extras_malloc
 //! An easily-insertable name for the memory free
 #define FREE            malloc_extras_free
@@ -150,5 +158,6 @@ uint malloc_extras_max_available_block_size(void);
 #define FREE_MARKED     malloc_extras_free_marked
 //! An easily-insertable name for the memory allocator that uses the large pool
 #define MALLOC_SDRAM    malloc_extras_sdram_malloc_wrapper
-
+//! An  easily-insertable name for the memory allocator of sdram then dtcm.
+#define MALLOC_REVERSE  malloc_extras_malloc_reverse
 #endif  // __PLATFORM_H__
