@@ -1786,6 +1786,42 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             data_gen_timer.take_sample())
         self._mapping_outputs["DSGTimeMs"] = self._dsg_time
 
+    def _add_router_compressor_bit_field_inputs(self, inputs):
+        """
+
+        :param dict(str, object) inputs:
+        :return:
+        """
+        # bitfield inputs
+        inputs['RouterBitfieldCompressionReport'] = \
+            self.config.getboolean(
+                "Reports", "generate_router_compression_with_bitfield_report")
+
+        inputs['RouterCompressorBitFieldUseCutOff'] = \
+            self.config.getboolean(
+                "Mapping",
+                "router_table_compression_with_bit_field_use_time_cutoff")
+
+        inputs['RouterCompressorBitFieldTimePerAttempt'] = \
+            self._read_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_iteration_time")
+
+        inputs["RouterCompressorBitFieldPreAllocSize"] = \
+            self._read_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_pre_alloced_sdram")
+        inputs["RouterCompressorBitFieldPercentageThreshold"] = \
+            self._read_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_acceptance_threshold")
+        inputs["RouterCompressorBitFieldRetryCount"] = \
+            self._read_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_retry_count")
+
+
+
     def _do_load(self, graph_changed, data_changed):
         """
         :param bool graph_changed:
@@ -1805,6 +1841,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             graph_changed
         )
         inputs["NoSyncChanges"] = self._no_sync_changes
+        self._add_router_compressor_bit_field_inputs(inputs)
 
         if not graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
@@ -1855,9 +1892,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     algorithms.append("CompressedRouterSummaryReport")
                     algorithms.append("RoutingTableFromMachineReport")
 
-                if self._config.getboolean(
-                        "Reports", "write_bit_field_compressor_report"):
-                    algorithms.append("BitFieldCompressorReport")
+        if self._config.getboolean(
+                "Reports", "write_bit_field_compressor_report"):
+            algorithms.append("BitFieldCompressorReport")
 
         # handle extra monitor functionality
         enable_advanced_monitor = self._config.getboolean(
