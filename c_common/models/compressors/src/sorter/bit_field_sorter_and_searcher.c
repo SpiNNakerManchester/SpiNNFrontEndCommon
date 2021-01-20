@@ -915,6 +915,15 @@ void start_binary_search(void) {
         mid_point -= step;
         available--;
     }
+
+    // Dont need all processors so turn the rest off
+    if (available > 0) {
+        for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
+            if (comms_sdram[processor_id].sorter_instruction == TO_BE_PREPARED) {
+                comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
+            }
+        }
+    }
 }
 
 //! \brief Ensure that for each router table entry there is at most 1 bitfield
