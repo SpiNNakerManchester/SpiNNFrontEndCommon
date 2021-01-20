@@ -29,10 +29,8 @@ from spinnman.exceptions import (
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from pacman.model.routing_tables import MulticastRoutingTables
-from pacman.operations.router_compressors.mundys_router_compressor.\
-    ordered_covering import (
-        get_generality as
-        ordered_covering_generality)
+from pacman.operations.router_compressors.ordered_covering_router_compressor.\
+    ordered_covering import (get_generality as ordered_covering_generality)
 from spinn_front_end_common.interface.interface_functions.\
     on_chip_router_table_compression import (
         make_source_hack)
@@ -857,18 +855,32 @@ class MachineBitFieldRouterCompressor(object):
         return data
 
 
-class MachineBitFieldUnorderedRouterCompressor(
+class MachineBitFieldOrderedCoveringCompressor(
         MachineBitFieldRouterCompressor):
 
     @property
     @overrides(MachineBitFieldRouterCompressor.compressor_aplx)
     def compressor_aplx(self):
-        return "bit_field_unordered_compressor.aplx"
+        return "bit_field_ordered_covering_compressor.aplx"
 
     @property
     @overrides(MachineBitFieldRouterCompressor.compressor_type)
     def compressor_type(self):
-        return "Mundy"
+        return "OrderedCovering"
+
+
+class MachineBitFieldUnorderedRouterCompressor(
+        MachineBitFieldRouterCompressor):
+    """ DEPRACATED use MachineBitFieldRouterCompressor """
+
+    def __new__(cls, *args, **kwargs):
+        logger.warning(
+            "MachineBitFieldUnorderedRouterCompressor algorithm name is "
+            "deprecated. "
+            "Please use MachineBitFieldOrderedCoveringCompressor instead. "
+            "Remove loading_algorithms from your cfg to use defaults")
+        return super(MachineBitFieldUnorderedRouterCompressor, cls).__new__(
+            cls, *args, **kwargs)
 
 
 class MachineBitFieldPairRouterCompressor(MachineBitFieldRouterCompressor):
