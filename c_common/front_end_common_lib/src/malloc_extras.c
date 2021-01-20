@@ -658,3 +658,34 @@ void *malloc_extras_malloc(uint bytes) {
     // if no safety, the point is the point used by the application code.
     return (void *) p;
 }
+
+void *malloc_extras_malloc_reverse(uint bytes) {
+    if (safety) {
+        bytes = bytes + EXTRA_BYTES;
+    }
+
+    // try DTCM if allowed (not safe if overused, due to stack overflows)
+    int *p = NULL;
+    p = safe_sdram_malloc(bytes);
+
+    // if SDRAM failed to malloc, go to DTCM.
+    if (p == NULL) {
+       if (use_dtcm) {
+           if (to_print) {
+               log_info("went to DTCM");
+           }
+           p = sark_alloc(bytes, 1);
+       }
+    }
+
+    // if safety, add the len and buffers and return location for app code.
+    if (safety) {
+        add_safety_len_and_padding(p, bytes);
+
+        // return the point were user code can use from.
+        return (void *) &p[1];
+    }
+
+    // if no safety, the point is the point used by the application code.
+    return (void *) p;
+}
