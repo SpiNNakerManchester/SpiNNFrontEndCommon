@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-<tagfile doxygen_version="1.9.0">
+<tagfile doxygen_version="1.9.1">
   <compound kind="file">
     <name>buffered_eieio_defs.h</name>
     <path>/github/workspace/c_common/front_end_common_lib/include/</path>
@@ -1087,34 +1087,6 @@
       <anchor>a7e98e95deced3f1288c653a9f6675487</anchor>
       <arglist>(type_ident)</arglist>
     </member>
-    <member kind="typedef">
-      <type>void(*</type>
-      <name>vic_interrupt_handler_t</name>
-      <anchorfile>spinn__extra_8h.html</anchorfile>
-      <anchor>af492b0b6744f0f208d85f924885f5e64</anchor>
-      <arglist>)(void)</arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static volatile vic_control_t *const</type>
-      <name>vic_control</name>
-      <anchorfile>spinn__extra_8h.html</anchorfile>
-      <anchor>a5586e6e765351329e87ab72fd0b090af</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static volatile vic_interrupt_handler_t *const</type>
-      <name>vic_interrupt_vector</name>
-      <anchorfile>spinn__extra_8h.html</anchorfile>
-      <anchor>a44406c66f00c3ab37b1c2273f0e3d012</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static volatile vic_vector_control_t *const</type>
-      <name>vic_interrupt_control</name>
-      <anchorfile>spinn__extra_8h.html</anchorfile>
-      <anchor>aaa9ca9cb32bf72e5a627acd4991d3ef5</anchor>
-      <arglist></arglist>
-    </member>
     <member kind="enumeration">
       <type></type>
       <name>timer_pre_divide</name>
@@ -1708,6 +1680,34 @@
       <name>watchdog_control</name>
       <anchorfile>spinn__extra_8h.html</anchorfile>
       <anchor>a2efce1e311d03be8c0cb4047ecdc017d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef">
+      <type>void(*</type>
+      <name>vic_interrupt_handler_t</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>af492b0b6744f0f208d85f924885f5e64</anchor>
+      <arglist>)(void)</arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile vic_control_t *const</type>
+      <name>vic_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a5586e6e765351329e87ab72fd0b090af</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile vic_interrupt_handler_t *const</type>
+      <name>vic_interrupt_vector</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>a44406c66f00c3ab37b1c2273f0e3d012</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static volatile vic_vector_control_t *const</type>
+      <name>vic_interrupt_control</name>
+      <anchorfile>spinn__extra_8h.html</anchorfile>
+      <anchor>aaa9ca9cb32bf72e5a627acd4991d3ef5</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -3272,6 +3272,13 @@
       <arglist>(void)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>standalone</name>
+      <anchorfile>bit__field__compressor_8c.html</anchorfile>
+      <anchor>aa2f563c0026c5a5264fcfe737a523f20</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>c_main</name>
       <anchorfile>bit__field__compressor_8c.html</anchorfile>
@@ -3428,6 +3435,13 @@
       <anchor>a7d58db58c6a9286c610630fb466c8ffe</anchor>
       <arglist>(int target_length, bool *failed_by_malloc, volatile bool *stop_compressing)</arglist>
     </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>standalone</name>
+      <anchorfile>minimise_8h.html</anchorfile>
+      <anchor>aa2f563c0026c5a5264fcfe737a523f20</anchor>
+      <arglist>(void)</arglist>
+    </member>
   </compound>
   <compound kind="file">
     <name>routing_table.h</name>
@@ -3529,6 +3543,7 @@
     <filename>pair__minimize_8h.html</filename>
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="routing__table_8h" name="routing_table.h" local="yes" imported="no">../common/routing_table.h</includes>
+    <includes id="minimise_8h" name="minimise.h" local="yes" imported="no">common/minimise.h</includes>
     <member kind="define">
       <type>#define</type>
       <name>MAX_NUM_ROUTES</name>
@@ -4044,6 +4059,13 @@
       <arglist>(uint unused0, uint unused1)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>standalone</name>
+      <anchorfile>simple__compressor_8c.html</anchorfile>
+      <anchor>aa2f563c0026c5a5264fcfe737a523f20</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>c_main</name>
       <anchorfile>simple__compressor_8c.html</anchorfile>
@@ -4553,6 +4575,13 @@
       <name>just_reduced_cores_due_to_malloc</name>
       <anchorfile>bit__field__sorter__and__searcher_8c.html</anchorfile>
       <anchor>ad690fc1413aedf136f80b660e48d2326</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>retires_left</name>
+      <anchorfile>bit__field__sorter__and__searcher_8c.html</anchorfile>
+      <anchor>ac0690f4848866c991ba93ee6ea829eb6</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -10145,6 +10174,13 @@
       <name>threshold</name>
       <anchorfile>compressor__sorter__structs_8h.html</anchorfile>
       <anchor>adbf7cfb3fc725eadae6decaedd0f97e6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>retry_count</name>
+      <anchorfile>compressor__sorter__structs_8h.html</anchorfile>
+      <anchor>a82af5714aab971cccd2493b7c6a4c5df</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">

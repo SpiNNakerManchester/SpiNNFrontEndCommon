@@ -51,8 +51,10 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.executable_finder</span> <span class="kn">import</span> <span class="n">ExecutableFinder</span>
 <span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">CoreSubsets</span><span class="p">,</span> <span class="n">Router</span>
@@ -66,6 +68,8 @@
 <span class="n">_THREE_WORDS</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;III&quot;</span><span class="p">)</span>
 <span class="c1"># The SDRAM Tag used by the application - note this is fixed in the APLX</span>
 <span class="n">_SDRAM_TAG</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="mundy_on_chip_router_compression"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.html#spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.mundy_on_chip_router_compression">[docs]</a><span class="k">def</span> <span class="nf">mundy_on_chip_router_compression</span><span class="p">(</span>
@@ -144,7 +148,7 @@
     <span class="n">compression</span><span class="o">.</span><span class="n">compress</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="unordered_compression"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.html#spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.unordered_compression">[docs]</a><span class="k">def</span> <span class="nf">unordered_compression</span><span class="p">(</span>
+<div class="viewcode-block" id="ordered_covering_compression"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.html#spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.ordered_covering_compression">[docs]</a><span class="k">def</span> <span class="nf">ordered_covering_compression</span><span class="p">(</span>
         <span class="n">routing_tables</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span>
         <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">,</span> <span class="n">write_compressor_iobuf</span><span class="p">,</span>
         <span class="n">compress_as_much_as_possible</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -181,6 +185,21 @@
         <span class="s2">&quot;Running unordered routing table compression on chip&quot;</span><span class="p">,</span>
         <span class="n">write_compressor_iobuf</span><span class="p">,</span> <span class="n">result_register</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">compression</span><span class="o">.</span><span class="n">compress</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="unordered_compression"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.html#spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.unordered_compression">[docs]</a><span class="k">def</span> <span class="nf">unordered_compression</span><span class="p">(</span>
+        <span class="n">routing_tables</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span>
+        <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">,</span> <span class="n">write_compressor_iobuf</span><span class="p">,</span>
+        <span class="n">compress_as_much_as_possible</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; DEPRECATED use ordered_covering_compression &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+        <span class="s2">&quot;UnorderedOnChipRouterCompression algorithm name is deprecated. &quot;</span>
+        <span class="s2">&quot;Please use OrderedCoveringOnChipRouterCompression instead. &quot;</span>
+        <span class="s2">&quot;loading_algorithms from your cfg to use defaults&quot;</span><span class="p">)</span>
+    <span class="n">ordered_covering_compression</span><span class="p">(</span>
+        <span class="n">routing_tables</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span>
+        <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">,</span> <span class="n">write_compressor_iobuf</span><span class="p">,</span>
+        <span class="n">compress_as_much_as_possible</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="make_source_hack"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.html#spinn_front_end_common.interface.interface_functions.on_chip_router_table_compression.make_source_hack">[docs]</a><span class="k">def</span> <span class="nf">make_source_hack</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>

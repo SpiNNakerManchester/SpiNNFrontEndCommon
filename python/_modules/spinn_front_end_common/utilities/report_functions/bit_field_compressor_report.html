@@ -75,33 +75,43 @@
 <span class="sd">        bitfields into the routing table.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="BitFieldCompressorReport.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.BitFieldCompressorReport.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">report_default_directory</span><span class="p">,</span> <span class="n">provenance_items</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
-            <span class="n">placements</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">report_default_directory</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
+            <span class="n">provenance_items</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">retry_count</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str report_default_directory: report folder</span>
-<span class="sd">        :param list(ProvenanceDataItem) provenance_items: prov items</span>
 <span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
 <span class="sd">            the machine graph</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements: the placements</span>
+<span class="sd">        :param provenance_items: prov items</span>
+<span class="sd">        :type provenance_items: list(ProvenanceDataItem) or None</span>
+<span class="sd">        :param retry_count:</span>
+<span class="sd">            Number of times that the sorters should set of the compressions</span>
+<span class="sd">            again. None for as much as needed</span>
+<span class="sd">        :type retry_count: int or None</span>
 <span class="sd">        :return: a summary, or `None` if the report file can&#39;t be written</span>
 <span class="sd">        :rtype: BitFieldSummary</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">provenance_items</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">provenance_items</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">,</span> <span class="n">_FILE_NAME</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write_report</span><span class="p">(</span>
-                    <span class="n">f</span><span class="p">,</span> <span class="n">provenance_items</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+                    <span class="n">f</span><span class="p">,</span> <span class="n">provenance_items</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
+                    <span class="n">retry_count</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Generate_placement_reports: Can&#39;t open file&quot;</span>
                              <span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> for writing.&quot;</span><span class="p">,</span> <span class="n">_FILE_NAME</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span></div>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_merged_component</span><span class="p">(</span><span class="n">provenance_items</span><span class="p">,</span> <span class="n">writer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_merged_component</span><span class="p">(</span><span class="n">provenance_items</span><span class="p">,</span> <span class="n">writer</span><span class="p">,</span> <span class="n">to_merge_per_chip</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Report how many bitfields were merged into the router.</span>
 
 <span class="sd">        :param list(ProvenanceDataItem) provenance_items: prov items</span>
 <span class="sd">        :param ~io.FileIO writer: file writer.</span>
+<span class="sd">        :param dict((int,int): int) to_merge_per_chip:</span>
+<span class="sd">            number of bitfields per chip</span>
 <span class="sd">        :return: tuple containing 4 elements.</span>
 <span class="sd">         1. min_bit_fields merged in a chip,</span>
 <span class="sd">         2. the max bit_fields merged in a chip,</span>
@@ -114,22 +124,28 @@
         <span class="n">total_bit_fields_merged</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">average_per_chip_merged</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">n_chips</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">to_merge_chips</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">to_merge_per_chip</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
         <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">prov_item</span> <span class="ow">in</span> <span class="n">provenance_items</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">prov_item</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">PROV_TOP_NAME</span><span class="p">:</span>
-                <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">bits</span> <span class="o">=</span> <span class="n">prov_item</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
-                <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-                    <span class="s2">&quot;Chip </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> has </span><span class="si">{}</span><span class="s2"> bitfields merged into it</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">bits</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">bits</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
-                <span class="n">total_bit_fields_merged</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">top_bit_field</span><span class="p">:</span>
-                    <span class="n">top_bit_field</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_bit_field</span><span class="p">:</span>
-                    <span class="n">min_bit_field</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-                <span class="n">average_per_chip_merged</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-                <span class="n">n_chips</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">bits</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">bits</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="n">to_merge_per_chip</span><span class="p">:</span>
+                    <span class="n">to_merge</span> <span class="o">=</span> <span class="n">to_merge_per_chip</span><span class="p">[(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)]</span>
+                    <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">to_merge_chips</span><span class="o">.</span><span class="n">remove</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+                    <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                        <span class="s2">&quot;Chip </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> has </span><span class="si">{}</span><span class="s2"> bitfields out of </span><span class="si">{}</span><span class="s2"> merged into it&quot;</span>
+                        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">to_merge</span><span class="p">))</span>
+                    <span class="n">total_bit_fields_merged</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">top_bit_field</span><span class="p">:</span>
+                        <span class="n">top_bit_field</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_bit_field</span><span class="p">:</span>
+                        <span class="n">min_bit_field</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                    <span class="n">average_per_chip_merged</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prov_item</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                    <span class="n">n_chips</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
             <span class="n">average_per_chip_merged</span> <span class="o">=</span> \
@@ -139,6 +155,12 @@
             <span class="n">top_bit_field</span> <span class="o">=</span> <span class="s2">&quot;N/A&quot;</span>
             <span class="n">total_bit_fields_merged</span> <span class="o">=</span> <span class="s2">&quot;N/A&quot;</span>
             <span class="n">average_per_chip_merged</span> <span class="o">=</span> <span class="s2">&quot;N/A&quot;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">to_merge_chips</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="s2">&quot;The Chips </span><span class="si">{}</span><span class="s2"> had bitfields. </span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;But no record was found of any attepmt to merge them </span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">to_merge_chips</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">min_bit_field</span><span class="p">,</span> <span class="n">top_bit_field</span><span class="p">,</span> <span class="n">total_bit_fields_merged</span><span class="p">,</span>
                 <span class="n">average_per_chip_merged</span><span class="p">)</span>
@@ -181,26 +203,51 @@
             <span class="n">average</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">total_to_merge</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">to_merge_per_chip</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">total_to_merge</span><span class="p">,</span> <span class="n">max_bit_fields_on_chip</span><span class="p">,</span>
-                <span class="n">min_bit_fields_on_chip</span><span class="p">,</span> <span class="n">average</span><span class="p">)</span>
+                <span class="n">min_bit_fields_on_chip</span><span class="p">,</span> <span class="n">average</span><span class="p">,</span> <span class="n">to_merge_per_chip</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_rety_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">writer</span><span class="p">,</span>  <span class="n">retry_count</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">retry_count</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="c1"># Wet finger estimates with no proof they are right</span>
+        <span class="k">if</span> <span class="n">retry_count</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">margin</span> <span class="o">=</span> <span class="s2">&quot;10%&quot;</span>
+        <span class="k">elif</span> <span class="n">retry_count</span> <span class="o">&lt;</span> <span class="mi">15</span><span class="p">:</span>
+            <span class="n">margin</span> <span class="o">=</span> <span class="s2">&quot;5%&quot;</span>
+        <span class="k">elif</span> <span class="n">retry_count</span> <span class="o">&lt;</span> <span class="mi">30</span><span class="p">:</span>
+            <span class="n">margin</span> <span class="o">=</span> <span class="s2">&quot;2%&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">margin</span> <span class="o">=</span> <span class="s2">&quot;1%&quot;</span>
+        <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Warning the number of retires was capped at </span><span class="si">{}</span><span class="s2">. &quot;</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Without this cap the bitfields merges is likely to be higher. &quot;</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">A very crude estimate suggests up to </span><span class="si">{}</span><span class="s2"> better.&quot;</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Removing router_table_compression_with_bit_field_retry_count &quot;</span>
+            <span class="s2">&quot;from your cfg file may improve bitfields merged.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">retry_count</span><span class="p">,</span> <span class="n">margin</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_write_report</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">writer</span><span class="p">,</span> <span class="n">provenance_items</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">writer</span><span class="p">,</span> <span class="n">provenance_items</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
+            <span class="n">retry_count</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; writes the report</span>
 
 <span class="sd">        :param ~io.FileIO writer: the file writer</span>
 <span class="sd">        :param list(ProvenanceDataItem) provenance_items: the prov items</span>
 <span class="sd">        :param ~.MachineGraph machine_graph: the machine graph</span>
 <span class="sd">        :param ~.Placements placements: the placements</span>
+<span class="sd">        :param retry_count:</span>
+<span class="sd">            Number of times that the sorters should set of the compressions</span>
+<span class="sd">            again. None for as much as needed</span>
+<span class="sd">        :type retry_count: int or None</span>
 <span class="sd">        :return: a summary</span>
 <span class="sd">        :rtype: BitFieldSummary</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="p">(</span><span class="n">total_to_merge</span><span class="p">,</span> <span class="n">max_to_merge_per_chip</span><span class="p">,</span> <span class="n">low_to_merge_per_chip</span><span class="p">,</span>
+         <span class="n">average_per_chip_to_merge</span><span class="p">,</span> <span class="n">to_merge_per_chip</span><span class="p">)</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">_before_merge_component</span><span class="p">(</span><span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
         <span class="p">(</span><span class="n">min_bit_field</span><span class="p">,</span> <span class="n">top_bit_field</span><span class="p">,</span> <span class="n">total_bit_fields_merged</span><span class="p">,</span>
          <span class="n">average_per_chip_merged</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merged_component</span><span class="p">(</span>
-            <span class="n">provenance_items</span><span class="p">,</span> <span class="n">writer</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">total_to_merge</span><span class="p">,</span> <span class="n">max_to_merge_per_chip</span><span class="p">,</span> <span class="n">low_to_merge_per_chip</span><span class="p">,</span>
-         <span class="n">average_per_chip_to_merge</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_before_merge_component</span><span class="p">(</span>
-            <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+            <span class="n">provenance_items</span><span class="p">,</span> <span class="n">writer</span><span class="p">,</span> <span class="n">to_merge_per_chip</span><span class="p">)</span>
 
         <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
             <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Summary: merged total </span><span class="si">{}</span><span class="s2"> out of </span><span class="si">{}</span><span class="s2"> bitfields. best per chip &quot;</span>
@@ -210,6 +257,8 @@
                 <span class="n">total_bit_fields_merged</span><span class="p">,</span> <span class="n">total_to_merge</span><span class="p">,</span> <span class="n">top_bit_field</span><span class="p">,</span>
                 <span class="n">max_to_merge_per_chip</span><span class="p">,</span> <span class="n">min_bit_field</span><span class="p">,</span> <span class="n">low_to_merge_per_chip</span><span class="p">,</span>
                 <span class="n">average_per_chip_merged</span><span class="p">,</span> <span class="n">average_per_chip_to_merge</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rety_warning</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">retry_count</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">BitFieldSummary</span><span class="p">(</span>
             <span class="n">lowest_per_chip</span><span class="o">=</span><span class="n">min_bit_field</span><span class="p">,</span> <span class="n">max_per_chip</span><span class="o">=</span><span class="n">top_bit_field</span><span class="p">,</span>

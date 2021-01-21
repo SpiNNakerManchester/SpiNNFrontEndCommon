@@ -67,10 +67,8 @@
 <span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">ExecutableTargets</span>
 <span class="kn">from</span> <span class="nn">spinnman.model.enums</span> <span class="kn">import</span> <span class="n">CPUState</span>
 <span class="kn">from</span> <span class="nn">pacman.model.routing_tables</span> <span class="kn">import</span> <span class="n">MulticastRoutingTables</span>
-<span class="kn">from</span> <span class="nn">pacman.operations.router_compressors.mundys_router_compressor.</span>\
-    <span class="n">ordered_covering</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">get_generality</span> <span class="k">as</span>
-        <span class="n">ordered_covering_generality</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.operations.router_compressors.ordered_covering_router_compressor.</span>\
+    <span class="n">ordered_covering</span> <span class="kn">import</span> <span class="p">(</span><span class="n">get_generality</span> <span class="k">as</span> <span class="n">ordered_covering_generality</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions.</span>\
     <span class="n">on_chip_router_table_compression</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">make_source_hack</span><span class="p">)</span>
@@ -148,8 +146,8 @@
         <span class="s2">&quot;bit_field_sorter_and_searcher.aplx&quot;</span>
 
     <span class="n">_PROGRESS_BAR_TEXT</span> <span class="o">=</span> \
-        <span class="s2">&quot;on chip compressing routing tables and merging in bitfields as &quot;</span> \
-        <span class="s2">&quot;appropriate&quot;</span>
+        <span class="s2">&quot;on chip </span><span class="si">{}</span><span class="s2"> compressor with bitfields&quot;</span>
+
     <span class="n">_HOST_BAR_TEXT</span> <span class="o">=</span> \
         <span class="s2">&quot;on host compressing routing tables and merging in bitfields as &quot;</span> \
         <span class="s2">&quot;appropriate&quot;</span>
@@ -167,7 +165,7 @@
             <span class="n">write_compressor_iobuf</span><span class="p">,</span> <span class="n">produce_report</span><span class="p">,</span> <span class="n">default_report_folder</span><span class="p">,</span>
             <span class="n">target_length</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">,</span> <span class="n">time_to_try_for_each_iteration</span><span class="p">,</span>
             <span class="n">use_timer_cut_off</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span>
-            <span class="n">threshold_percentage</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span>
+            <span class="n">threshold_percentage</span><span class="p">,</span> <span class="n">retry_count</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span>
             <span class="n">compress_as_much_as_possible</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">provenance_data_objects</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; entrance for routing table compression with bit field</span>
 
@@ -196,6 +194,9 @@
 <span class="sd">        :param int threshold_percentage:</span>
 <span class="sd">            the percentage of bitfields to do on chip</span>
 <span class="sd">            before its considered a success</span>
+<span class="sd">        :param int retry_count:</span>
+<span class="sd">            Number of times that the sorters should set of the compressions</span>
+<span class="sd">            again</span>
 <span class="sd">        :param ~spinnman.model.ExecutableTargets executable_targets:</span>
 <span class="sd">            the set of targets and executables</span>
 <span class="sd">        :param bool compress_as_much_as_possible:</span>
@@ -219,12 +220,15 @@
         <span class="n">routing_table_compressor_app_id</span> <span class="o">=</span> \
             <span class="n">transceiver</span><span class="o">.</span><span class="n">app_id_tracker</span><span class="o">.</span><span class="n">get_new_id</span><span class="p">()</span>
 
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PROGRESS_BAR_TEXT</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compressor_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">retry_count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; capped at </span><span class="si">{}</span><span class="s2"> retries&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">retry_count</span><span class="p">)</span>
         <span class="n">progress_bar</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
             <span class="n">total_number_of_things_to_do</span><span class="o">=</span><span class="p">(</span>
                 <span class="nb">len</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">)</span> <span class="o">+</span>
                 <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">routing_tables</span><span class="o">.</span><span class="n">routing_tables</span><span class="p">)</span> <span class="o">*</span>
                  <span class="bp">self</span><span class="o">.</span><span class="n">TIMES_CYCLED_ROUTING_TABLES</span><span class="p">)),</span>
-            <span class="n">string_describing_what_being_progressed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROGRESS_BAR_TEXT</span><span class="p">)</span>
+            <span class="n">string_describing_what_being_progressed</span><span class="o">=</span><span class="n">text</span><span class="p">)</span>
 
         <span class="c1"># locate data and on_chip_cores to load binary on</span>
         <span class="p">(</span><span class="n">addresses</span><span class="p">,</span> <span class="n">matrix_addresses_and_size</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_addresses</span><span class="p">(</span>
@@ -244,7 +248,8 @@
             <span class="n">compressor_executable_targets</span><span class="p">,</span>
             <span class="n">matrix_addresses_and_size</span><span class="p">,</span> <span class="n">time_to_try_for_each_iteration</span><span class="p">,</span>
             <span class="n">bit_field_compressor_executable_path</span><span class="p">,</span>
-            <span class="n">bit_field_sorter_executable_path</span><span class="p">,</span> <span class="n">threshold_percentage</span><span class="p">)</span>
+            <span class="n">bit_field_sorter_executable_path</span><span class="p">,</span> <span class="n">threshold_percentage</span><span class="p">,</span>
+            <span class="n">retry_count</span><span class="p">)</span>
 
         <span class="c1"># load and run binaries</span>
         <span class="k">try</span><span class="p">:</span>
@@ -323,6 +328,12 @@
 <span class="sd">        :return: The name of the compressor aplx file to use</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+    <span class="nd">@abstractproperty</span>
+    <span class="k">def</span> <span class="nf">compressor_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :return: The name of the compressor (excluding bitfields) being used</span>
+<span class="sd">        &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">_generate_core_subsets</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">routing_tables</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">progress_bar</span><span class="p">,</span>
             <span class="n">system_executable_targets</span><span class="p">):</span>
@@ -442,7 +453,8 @@
             <span class="n">compress_as_much_as_possible</span><span class="p">,</span> <span class="n">progress_bar</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span>
             <span class="n">matrix_addresses_and_size</span><span class="p">,</span> <span class="n">time_per_iteration</span><span class="p">,</span>
             <span class="n">bit_field_compressor_executable_path</span><span class="p">,</span>
-            <span class="n">bit_field_sorter_executable_path</span><span class="p">,</span> <span class="n">threshold_percentage</span><span class="p">):</span>
+            <span class="n">bit_field_sorter_executable_path</span><span class="p">,</span> <span class="n">threshold_percentage</span><span class="p">,</span>
+            <span class="n">retry_count</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; load all data onto the chip</span>
 
 <span class="sd">        :param dict(tuple(int,int),tuple(int,int)) addresses:</span>
@@ -463,6 +475,13 @@
 <span class="sd">            the path to the compressor binary path</span>
 <span class="sd">        :param str bit_field_sorter_executable_path:</span>
 <span class="sd">            the path to the sorter binary</span>
+<span class="sd">        :param int threshold_percentage:</span>
+<span class="sd">            the percentage of bitfields the user has defined as a minimum</span>
+<span class="sd">            needed to pass to be successful.</span>
+<span class="sd">        :param retry_count:</span>
+<span class="sd">            Number of times that the sorters should set of the compressions</span>
+<span class="sd">            again. None for as much as needed</span>
+<span class="sd">        :type retry_count: int or None</span>
 <span class="sd">        :return:</span>
 <span class="sd">            the list of tuples saying which chips this will need to use</span>
 <span class="sd">            host compression, as the malloc failed.</span>
@@ -487,7 +506,7 @@
                         <span class="n">cores</span><span class="p">,</span> <span class="n">matrix_addresses_and_size</span><span class="p">[(</span><span class="n">table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">table</span><span class="o">.</span><span class="n">y</span><span class="p">)],</span>
                         <span class="n">bit_field_compressor_executable_path</span><span class="p">,</span>
                         <span class="n">bit_field_sorter_executable_path</span><span class="p">,</span> <span class="n">comms_sdram</span><span class="p">,</span>
-                        <span class="n">threshold_percentage</span><span class="p">)</span>
+                        <span class="n">threshold_percentage</span><span class="p">,</span> <span class="n">retry_count</span><span class="p">)</span>
 
                     <span class="bp">self</span><span class="o">.</span><span class="n">_load_usable_sdram</span><span class="p">(</span>
                         <span class="n">matrix_addresses_and_size</span><span class="p">[(</span><span class="n">table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">table</span><span class="o">.</span><span class="n">y</span><span class="p">)],</span> <span class="n">table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
@@ -508,8 +527,8 @@
             <span class="n">bit_field_compressor_executable_path</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span>
             <span class="n">compress_as_much_as_possible</span><span class="p">,</span>
             <span class="n">comms_sdram</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Updates the user1 address for the compressor cores so they can \</span>
-<span class="sd">            set the time per attempt.</span>
+        <span class="sd">&quot;&quot;&quot; Updates the user addresses for the compressor cores with the</span>
+<span class="sd">            compression settings</span>
 
 <span class="sd">        :param int chip_x: chip x coord</span>
 <span class="sd">        :param int chip_y: chip y coord</span>
@@ -532,11 +551,13 @@
                 <span class="n">transceiver</span><span class="o">.</span><span class="n">get_user_2_register_address_from_core</span><span class="p">(</span><span class="n">processor_id</span><span class="p">)</span>
             <span class="n">user3_address</span> <span class="o">=</span> \
                 <span class="n">transceiver</span><span class="o">.</span><span class="n">get_user_3_register_address_from_core</span><span class="p">(</span><span class="n">processor_id</span><span class="p">)</span>
+            <span class="c1"># user 1 the time per compression attempt</span>
             <span class="n">transceiver</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span>
                 <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">user1_address</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_ONE_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
                     <span class="n">time_per_iteration</span> <span class="o">*</span> <span class="n">SECOND_TO_MICRO_SECOND</span><span class="p">),</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_USER_BYTES</span><span class="p">)</span>
+            <span class="c1"># user 2 Compress as much as needed flag</span>
             <span class="k">if</span> <span class="n">compress_as_much_as_possible</span><span class="p">:</span>
                 <span class="n">compressor_setting</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="k">else</span><span class="p">:</span>
@@ -544,6 +565,7 @@
             <span class="n">transceiver</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span>
                 <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">user2_address</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_ONE_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">compressor_setting</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_USER_BYTES</span><span class="p">)</span>
+            <span class="c1"># user 3 the comms_sdram area</span>
             <span class="n">transceiver</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span>
                 <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">user3_address</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_ONE_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">comms_sdram</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_USER_BYTES</span><span class="p">)</span>
@@ -609,7 +631,7 @@
             <span class="n">routing_table_compressor_app_id</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">matrix_addresses_and_size</span><span class="p">,</span>
             <span class="n">bit_field_compressor_executable_path</span><span class="p">,</span>
             <span class="n">bit_field_sorter_executable_path</span><span class="p">,</span> <span class="n">comms_sdram</span><span class="p">,</span>
-            <span class="n">threshold_percentage</span><span class="p">):</span>
+            <span class="n">threshold_percentage</span><span class="p">,</span> <span class="n">retry_count</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; loads the bitfield addresses space</span>
 
 <span class="sd">        :param dict(tuple(int,int),tuple(int,int)) addresses:</span>
@@ -627,6 +649,10 @@
 <span class="sd">        :param int threshold_percentage:</span>
 <span class="sd">            the percentage of bitfields the user has defined as a minimum</span>
 <span class="sd">            needed to pass to be successful.</span>
+<span class="sd">        :param retry_count:</span>
+<span class="sd">            Number of times that the sorters should set of the compressions</span>
+<span class="sd">            again. None for as much as needed</span>
+<span class="sd">        :type retry_count: int or None</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># generate address_data</span>
@@ -635,7 +661,7 @@
             <span class="n">cores</span><span class="o">.</span><span class="n">get_cores_for_binary</span><span class="p">(</span>
                 <span class="n">bit_field_compressor_executable_path</span><span class="p">)</span><span class="o">.</span><span class="n">get_core_subset_for_chip</span><span class="p">(</span>
                     <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">),</span>
-            <span class="n">comms_sdram</span><span class="p">,</span> <span class="n">threshold_percentage</span><span class="p">)</span>
+            <span class="n">comms_sdram</span><span class="p">,</span> <span class="n">threshold_percentage</span><span class="p">,</span> <span class="n">retry_count</span><span class="p">)</span>
 
         <span class="c1"># get sdram address on chip</span>
         <span class="k">try</span><span class="p">:</span>
@@ -822,9 +848,20 @@
         <span class="k">return</span> <span class="n">region_addresses</span><span class="p">,</span> <span class="n">sdram_block_addresses_and_sizes</span>
 
     <span class="k">def</span> <span class="nf">_generate_chip_data</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">address_list</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">comms_sdram</span><span class="p">,</span> <span class="n">threshold_percentage</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Generate byte array data for a list of SDRAM addresses and \</span>
-<span class="sd">            finally the time to run per compression iteration.</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">address_list</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">comms_sdram</span><span class="p">,</span> <span class="n">threshold_percentage</span><span class="p">,</span>
+            <span class="n">retry_count</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the region_addresses_t data</span>
+
+<span class="sd">        Minimum percentage of bitfields to be merge in (currently ignored)</span>
+
+<span class="sd">        Number of times that the sorters should set of the compressions again</span>
+
+<span class="sd">        Pointer to the area malloced to hold the comms_sdram</span>
+
+<span class="sd">        Number of processors in the list</span>
+
+<span class="sd">        The data for the processors</span>
 
 <span class="sd">        :param list(tuple(int,int)) address_list:</span>
 <span class="sd">            the list of SDRAM addresses</span>
@@ -833,11 +870,19 @@
 <span class="sd">        :param int threshold_percentage:</span>
 <span class="sd">            the percentage of bitfields the user has defined as a minimum</span>
 <span class="sd">            needed to pass to be successful.</span>
+<span class="sd">        :param retry_count:</span>
+<span class="sd">            Number of times that the sorters should set of the compressions</span>
+<span class="sd">            again. None for as much as needed</span>
+<span class="sd">        :type retry_count: int or None</span>
 <span class="sd">        :return: the byte array</span>
 <span class="sd">        :rtype: bytes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
         <span class="n">data</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ONE_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">threshold_percentage</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">retry_count</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ONE_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="mh">0xFFFFFFFF</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ONE_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">retry_count</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ONE_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">comms_sdram</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ONE_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">address_list</span><span class="p">))</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">bit_field</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">)</span> <span class="ow">in</span> <span class="n">address_list</span><span class="p">:</span>
@@ -848,13 +893,32 @@
         <span class="k">return</span> <span class="n">data</span></div>
 
 
-<span class="k">class</span> <span class="nc">MachineBitFieldUnorderedRouterCompressor</span><span class="p">(</span>
+<span class="k">class</span> <span class="nc">MachineBitFieldOrderedCoveringCompressor</span><span class="p">(</span>
         <span class="n">MachineBitFieldRouterCompressor</span><span class="p">):</span>
 
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineBitFieldRouterCompressor</span><span class="o">.</span><span class="n">compressor_aplx</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">compressor_aplx</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;bit_field_unordered_compressor.aplx&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;bit_field_ordered_covering_compressor.aplx&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineBitFieldRouterCompressor</span><span class="o">.</span><span class="n">compressor_type</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">compressor_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;OrderedCovering&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">MachineBitFieldUnorderedRouterCompressor</span><span class="p">(</span>
+        <span class="n">MachineBitFieldRouterCompressor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; DEPRACATED use MachineBitFieldOrderedCoveringCompressor &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">&quot;MachineBitFieldUnorderedRouterCompressor algorithm name is &quot;</span>
+            <span class="s2">&quot;deprecated. &quot;</span>
+            <span class="s2">&quot;Please use MachineBitFieldOrderedCoveringCompressor instead. &quot;</span>
+            <span class="s2">&quot;loading_algorithms from your cfg to use defaults&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MachineBitFieldUnorderedRouterCompressor</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">MachineBitFieldPairRouterCompressor</span><span class="p">(</span><span class="n">MachineBitFieldRouterCompressor</span><span class="p">):</span>
@@ -863,6 +927,11 @@
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineBitFieldRouterCompressor</span><span class="o">.</span><span class="n">compressor_aplx</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">compressor_aplx</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;bit_field_pair_compressor.aplx&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineBitFieldRouterCompressor</span><span class="o">.</span><span class="n">compressor_type</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">compressor_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;Pair&quot;</span>
 </pre></div>
 
             <div class="clearer"></div>

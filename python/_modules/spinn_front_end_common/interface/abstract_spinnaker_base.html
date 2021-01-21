@@ -1425,9 +1425,8 @@
         <span class="c1"># the graph</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;MemoryApplicationGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
-            <span class="n">algorithms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;application_to_machine_graph_algorithms&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+            <span class="n">algorithms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_str_list</span><span class="p">(</span>
+                <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;application_to_machine_graph_algorithms&quot;</span><span class="p">))</span>
             <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MemoryMachineGraph&quot;</span><span class="p">)</span>
             <span class="n">do_partitioning</span> <span class="o">=</span> <span class="kc">True</span>
 
@@ -1709,19 +1708,17 @@
         <span class="c1"># only add the partitioner if there isn&#39;t already a machine graph</span>
         <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MallocBasedChipIDAllocator&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
-            <span class="n">full</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;application_to_machine_graph_algorithms&quot;</span><span class="p">)</span>
-            <span class="n">algorithms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">full</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+            <span class="n">algorithms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_str_list</span><span class="p">(</span>
+                <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;application_to_machine_graph_algorithms&quot;</span><span class="p">))</span>
             <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;MemoryPreviousAllocatedResources&#39;</span><span class="p">]</span> <span class="o">=</span> \
                 <span class="n">PreAllocatedResourceContainer</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
-            <span class="n">full</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;machine_graph_to_virtual_machine_algorithms&quot;</span><span class="p">)</span>
+            <span class="n">algorithms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_str_list</span><span class="p">(</span>
+                <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;machine_graph_to_virtual_machine_algorithms&quot;</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">full</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;machine_graph_to_machine_algorithms&quot;</span><span class="p">)</span>
-        <span class="n">algorithms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">full</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+            <span class="n">algorithms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_str_list</span><span class="p">(</span>
+                <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;machine_graph_to_machine_algorithms&quot;</span><span class="p">))</span>
 
         <span class="c1"># add check for algorithm start type</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
@@ -1827,6 +1824,40 @@
             <span class="n">data_gen_timer</span><span class="o">.</span><span class="n">take_sample</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_outputs</span><span class="p">[</span><span class="s2">&quot;DSGTimeMs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dsg_time</span>
 
+    <span class="k">def</span> <span class="nf">_add_router_compressor_bit_field_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param dict(str, object) inputs:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># bitfield inputs</span>
+        <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;RouterBitfieldCompressionReport&#39;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
+                <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;generate_router_compression_with_bitfield_report&quot;</span><span class="p">)</span>
+
+        <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;RouterCompressorBitFieldUseCutOff&#39;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
+                <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;router_table_compression_with_bit_field_use_time_cutoff&quot;</span><span class="p">)</span>
+
+        <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;RouterCompressorBitFieldTimePerAttempt&#39;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">_read_config_int</span><span class="p">(</span>
+                <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;router_table_compression_with_bit_field_iteration_time&quot;</span><span class="p">)</span>
+
+        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;RouterCompressorBitFieldPreAllocSize&quot;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">_read_config_int</span><span class="p">(</span>
+                <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;router_table_compression_with_bit_field_pre_alloced_sdram&quot;</span><span class="p">)</span>
+        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;RouterCompressorBitFieldPercentageThreshold&quot;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">_read_config_int</span><span class="p">(</span>
+                <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;router_table_compression_with_bit_field_acceptance_threshold&quot;</span><span class="p">)</span>
+        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;RouterCompressorBitFieldRetryCount&quot;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">_read_config_int</span><span class="p">(</span>
+                <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;router_table_compression_with_bit_field_retry_count&quot;</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">_do_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">data_changed</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param bool graph_changed:</span>
@@ -1846,6 +1877,7 @@
             <span class="n">graph_changed</span>
         <span class="p">)</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;NoSyncChanges&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_no_sync_changes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_router_compressor_bit_field_inputs</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">graph_changed</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_ran</span><span class="p">:</span>
             <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;ExecutableTargets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_run_outputs</span><span class="p">[</span>
@@ -1868,9 +1900,9 @@
             <span class="c1"># Get the executable targets</span>
             <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;GraphBinaryGatherer&quot;</span><span class="p">)</span>
 
-        <span class="n">loading_algorithm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_config</span><span class="p">(</span><span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;loading_algorithms&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">loading_algorithm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">graph_changed</span> <span class="ow">or</span> <span class="n">data_changed</span><span class="p">):</span>
-            <span class="n">algorithms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">loading_algorithm</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+        <span class="n">algorithms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_str_list</span><span class="p">(</span>
+            <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;loading_algorithms&quot;</span><span class="p">))</span>
+
         <span class="n">algorithms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_load_algorithms</span><span class="p">)</span>
 
         <span class="n">write_memory_report</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
@@ -1895,6 +1927,10 @@
                     <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;comparisonOfRoutingTablesReport&quot;</span><span class="p">)</span>
                     <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;CompressedRouterSummaryReport&quot;</span><span class="p">)</span>
                     <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;RoutingTableFromMachineReport&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
+                <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_bit_field_compressor_report&quot;</span><span class="p">):</span>
+            <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;BitFieldCompressorReport&quot;</span><span class="p">)</span>
 
         <span class="c1"># handle extra monitor functionality</span>
         <span class="n">enable_advanced_monitor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
@@ -2401,12 +2437,7 @@
 <span class="sd">        :rtype: list(str)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># add the extra xml files from the config file</span>
-        <span class="n">xml_paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;extra_xmls_paths&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">xml_paths</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-            <span class="n">xml_paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">xml_paths</span> <span class="o">=</span> <span class="n">xml_paths</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
-
+        <span class="n">xml_paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_str_list</span><span class="p">(</span><span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;extra_xmls_paths&quot;</span><span class="p">)</span>
         <span class="n">xml_paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">get_front_end_common_pacman_xml_paths</span><span class="p">())</span>
 
         <span class="k">if</span> <span class="n">extra_algorithm_xml_paths</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
