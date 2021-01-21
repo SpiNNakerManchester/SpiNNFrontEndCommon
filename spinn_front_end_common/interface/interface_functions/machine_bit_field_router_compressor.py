@@ -871,7 +871,7 @@ class MachineBitFieldOrderedCoveringCompressor(
 
 class MachineBitFieldUnorderedRouterCompressor(
         MachineBitFieldRouterCompressor):
-    """ DEPRACATED use MachineBitFieldRouterCompressor """
+    """ DEPRACATED use MachineBitFieldOrderedCoveringCompressor """
 
     def __new__(cls, *args, **kwargs):
         logger.warning(
