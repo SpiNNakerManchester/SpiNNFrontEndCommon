@@ -1820,8 +1820,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Mapping",
                 "router_table_compression_with_bit_field_retry_count")
 
-
-
     def _do_load(self, graph_changed, data_changed):
         """
         :param bool graph_changed:
