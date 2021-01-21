@@ -131,17 +131,11 @@ void malloc_extras_free(void *ptr);
 void *malloc_extras_sdram_malloc_wrapper(uint bytes);
 
 //! \brief Allows a search of the 2 heaps available. (DTCM, stolen SDRAM)
-//! \note Commented out as this can cause stack overflow issues quickly.
-//!     If deemed safe, could be uncommented. That is the same to the
-//!     `#define` below at the end of the file
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return: the address of the block of memory to utilise.
 void *malloc_extras_malloc(uint bytes);
 
 //! \brief Allows a search of the 2 heaps available. (stolen SDRAM, DTCM)
-//! \note Commented out as this can cause stack overflow issues quickly.
-//!     If deemed safe, could be uncommented. That is the same to the
-//!     `#define` below at the end of the file
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return: the address of the block of memory to utilise.
 void *malloc_extras_malloc_reverse(uint bytes);
