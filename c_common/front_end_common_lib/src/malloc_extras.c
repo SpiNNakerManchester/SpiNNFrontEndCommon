@@ -664,11 +664,11 @@ void *malloc_extras_malloc_reverse(uint bytes) {
         bytes = bytes + EXTRA_BYTES;
     }
 
-    // try DTCM if allowed (not safe if overused, due to stack overflows)
+    // try SDRAM
     int *p = NULL;
     p = safe_sdram_malloc(bytes);
 
-    // if SDRAM failed to malloc, go to DTCM.
+    // if SDRAM failed to malloc, go to DTCM if allowed.
     if (p == NULL) {
        if (use_dtcm) {
            if (to_print) {
