@@ -109,7 +109,7 @@ def pair_compression(
     compression.compress()
 
 
-def unordered_compression(
+def ordered_covering_compression(
         routing_tables, transceiver, executable_finder,
         machine, app_id, provenance_file_path, write_compressor_iobuf,
         compress_as_much_as_possible=True):
@@ -146,6 +146,21 @@ def unordered_compression(
         "Running unordered routing table compression on chip",
         write_compressor_iobuf, result_register=1)
     compression.compress()
+
+
+def unordered_compression(
+        routing_tables, transceiver, executable_finder,
+        machine, app_id, provenance_file_path, write_compressor_iobuf,
+        compress_as_much_as_possible=True):
+    """ DEPRECATED use ordered_covering_compression """
+    logger.warning(
+        "UnorderedOnChipRouterCompression algorithm name is deprecated. "
+        "Please use OrderedCoveringOnChipRouterCompression instead. "
+        "loading_algorithms from your cfg to use defaults")
+    ordered_covering_compression(
+        routing_tables, transceiver, executable_finder,
+        machine, app_id, provenance_file_path, write_compressor_iobuf,
+        compress_as_much_as_possible)
 
 
 def make_source_hack(entry):
