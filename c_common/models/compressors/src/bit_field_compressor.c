@@ -304,6 +304,7 @@ static void wait_for_instructions(UNUSED uint unused0, UNUSED uint unused1) {
         break;
     case DO_NOT_USE:
         log_info("DO_NOT_USE detected exiting wait");
+        spin1_pause();
         return;
     }
     if (users_match) {
@@ -335,6 +336,9 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
         stop_compressing = true;
         if (comms_sdram->compressor_state == COMPRESSING) {
             log_info("Sorter cancelled run request");
+        } else if (comms_sdram->compressor_state == DO_NOT_USE) {
+            log_info("Compressor no longer to be used");
+            spin1_pause();
         } else {
             log_info("timer weirdness %d %d",
             comms_sdram->sorter_instruction, comms_sdram->compressor_state);
@@ -377,9 +381,14 @@ static void initialise(void) {
     max_counter = time_for_compression_attempt / TIMER_ITERATIONS;
     spin1_set_timer_tick(TIMER_ITERATIONS);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER_TICK_PRIORITY);
-
     log_info("my processor id is %d", spin1_get_core_id());
 }
+
+//! \brief bool to say this is NOT a standalone compressor.
+bool standalone(void) {
+    return false;
+}
+
 
 //! \brief the main entrance.
 void c_main(void) {
