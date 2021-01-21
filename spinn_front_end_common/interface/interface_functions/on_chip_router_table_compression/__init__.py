@@ -15,8 +15,9 @@
 
 from .compression import (
     Compression, make_source_hack, mundy_on_chip_router_compression,
-    pair_compression, unordered_compression)
+    ordered_covering_compression, pair_compression, unordered_compression)
 
 __all__ = (
     "Compression", "make_source_hack", "mundy_on_chip_router_compression",
-    "pair_compression", "unordered_compression")
+    "ordered_covering_compression", "pair_compression",
+    "unordered_compression")
