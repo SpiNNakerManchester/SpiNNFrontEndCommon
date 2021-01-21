@@ -878,7 +878,7 @@ class MachineBitFieldUnorderedRouterCompressor(
             "MachineBitFieldUnorderedRouterCompressor algorithm name is "
             "deprecated. "
             "Please use MachineBitFieldOrderedCoveringCompressor instead. "
-            "Remove loading_algorithms from your cfg to use defaults")
+            "loading_algorithms from your cfg to use defaults")
         return super(MachineBitFieldUnorderedRouterCompressor, cls).__new__(
             cls, *args, **kwargs)
 

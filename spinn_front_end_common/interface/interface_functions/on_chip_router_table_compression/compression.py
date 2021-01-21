@@ -157,7 +157,7 @@ def unordered_compression(
     logger.warning(
         "UnorderedOnChipRouterCompression algorithm name is deprecated. "
         "Please use OrderedCoveringOnChipRouterCompression instead. "
-        "Remove loading_algorithms from your cfg to use defaults")
+        "loading_algorithms from your cfg to use defaults")
     ordered_covering_compression(
         routing_tables, transceiver, executable_finder,
         machine, app_id, provenance_file_path, write_compressor_iobuf,
