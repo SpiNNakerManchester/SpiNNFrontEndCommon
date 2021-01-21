@@ -181,7 +181,7 @@ class BitFieldCompressorReport(object):
             margin = "1%"
         writer.write(
             "\n\nWarning the number of retires was capped at {}. "
-            "\nWithout this cap the bitfileds merges is likely to be higher. "
+            "\nWithout this cap the bitfields merges is likely to be higher. "
             "\nA very crude estimate suggests up to {} better."
             "\nRemoving router_table_compression_with_bit_field_retry_count "
             "from your cfg file may improve bitfields merged.".format(

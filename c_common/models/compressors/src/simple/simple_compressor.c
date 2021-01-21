@@ -93,7 +93,7 @@ void compress_start(UNUSED uint unused0, UNUSED uint unused1) {
 }
 
 //! \brief bool to say this is a standalone compressor.
-bool standalone(void){
+bool standalone(void) {
     return true;
 }
 

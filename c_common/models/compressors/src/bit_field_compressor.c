@@ -338,6 +338,7 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
             log_info("Sorter cancelled run request");
         } else if (comms_sdram->compressor_state == DO_NOT_USE) {
             log_info("Compressor no longer to be used");
+            spin1_pause();
         } else {
             log_info("timer weirdness %d %d",
             comms_sdram->sorter_instruction, comms_sdram->compressor_state);
@@ -384,7 +385,7 @@ static void initialise(void) {
 }
 
 //! \brief bool to say this is NOT a standalone compressor.
-bool standalone(void){
+bool standalone(void) {
     return false;
 }
 

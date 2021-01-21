@@ -329,7 +329,7 @@ static inline int locate_next_mid_point(void) {
         log_info("Stopping compression due to retry count");
         return FAILED_TO_FIND;
     }
-    retires_left-= 1;
+    retires_left -= 1;
 
     // need to find a midpoint
     log_debug("n_bf_addresses %d tested_mid_points %d",
