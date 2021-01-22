@@ -32,8 +32,7 @@ from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.router_compressors.ordered_covering_router_compressor.\
     ordered_covering import (get_generality as ordered_covering_generality)
 from spinn_front_end_common.interface.interface_functions.\
-    on_chip_router_table_compression import (
-        make_source_hack)
+    host_no_bitfield_router_compression import (make_source_hack)
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 from spinn_front_end_common.utilities.exceptions import (
