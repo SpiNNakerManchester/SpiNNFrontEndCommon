@@ -31,8 +31,8 @@ from pacman.model.routing_tables import (
     CompressedMulticastRoutingTable)
 from pacman.operations.algorithm_reports.reports import format_route
 from pacman.operations.router_compressors import Entry
-from pacman.operations.router_compressors.mundys_router_compressor import (
-    minimise)
+from pacman.operations.router_compressors.ordered_covering_router_compressor\
+    import minimise
 from spinn_front_end_common.abstract_models.\
     abstract_supports_bit_field_routing_compression import (
         AbstractSupportsBitFieldRoutingCompression)
