@@ -15,7 +15,6 @@
 
 import logging
 from threading import Thread
-from six import raise_from
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import (
     SpinnmanIOException, SpinnmanInvalidPacketException,
@@ -106,7 +105,7 @@ class DatabaseConnection(UDPConnection):
         except Exception as e:
             logger.error("Failure processing database callback",
                          exc_info=True)
-            raise_from(SpinnmanIOException(str(e)), e)
+            raise SpinnmanIOException(str(e)) from e
         finally:
             self.__running = False
 

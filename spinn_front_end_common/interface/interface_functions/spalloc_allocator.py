@@ -14,8 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import math
-import six
-import sys
 from spinn_utilities.overrides import overrides
 from spalloc import Job
 from spalloc.states import JobState
@@ -84,9 +82,9 @@ class _SpallocJobController(MachineAllocationController):
                 self._state = self._job.wait_for_state_change(self._state)
         except TypeError:
             pass
-        except Exception:  # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             if not self._exited:
-                six.reraise(*sys.exc_info())
+                raise e
         return self._state != JobState.destroyed
 
     @overrides(MachineAllocationController._teardown)

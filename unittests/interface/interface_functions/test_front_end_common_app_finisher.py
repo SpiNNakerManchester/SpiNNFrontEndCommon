@@ -15,7 +15,6 @@
 
 from spinn_machine import CoreSubsets
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from six import itervalues
 from spinnman.model.enums.cpu_state import CPUState
 from spinn_front_end_common.interface.interface_functions import (
     ApplicationFinisher)
@@ -33,8 +32,7 @@ class _MockTransceiver(object):
 
     def get_core_state_count(self, _app_id, state):
         count = 0
-        for core_state in itervalues(
-                self._core_states[self._current_state]):
+        for core_state in self._core_states[self._current_state].values():
             if core_state == state:
                 count += 1
         return count

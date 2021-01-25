@@ -18,7 +18,6 @@ import math
 import struct
 import numpy
 from enum import IntEnum
-from six.moves import xrange
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
@@ -530,7 +529,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int first_time_step:
         :param int n_time_steps:
         """
-        key_list = [key + key_base for key in xrange(self._n_keys)]
+        key_list = [key + key_base for key in range(self._n_keys)]
         for tick in sorted(self._send_buffer_times):
             if self._is_in_range(tick, first_time_step, n_time_steps):
                 self._send_buffer.add_keys(tick, key_list)

@@ -15,10 +15,8 @@
 
 import logging
 import struct
-import sys
 from threading import Thread
 from collections import OrderedDict
-from six import iterkeys, iteritems, reraise
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.data_messages import (
     EIEIODataMessage, KeyPayloadDataElement)
@@ -244,7 +242,7 @@ class LiveEventConnection(DatabaseConnection):
         if self.__receive_labels is not None:
             self.__init_receivers(db_reader, vertex_sizes)
 
-        for label, vertex_size in iteritems(vertex_sizes):
+        for label, vertex_size in vertex_sizes.items():
             for init_callback in self.__init_callbacks[label]:
                 init_callback(
                     label, vertex_size, run_time_ms, machine_timestep_ms)
@@ -293,7 +291,7 @@ class LiveEventConnection(DatabaseConnection):
                 vertex_sizes[label] = 1
             else:
                 key_to_atom_id = db.get_key_to_atom_id_mapping(label)
-                for key, atom_id in iteritems(key_to_atom_id):
+                for key, atom_id in key_to_atom_id.items():
                     self.__key_to_atom_id_and_label[key] = (atom_id, label_id)
                 vertex_sizes[label] = len(key_to_atom_id)
 
@@ -355,10 +353,10 @@ class LiveEventConnection(DatabaseConnection):
                 request.get_scp_response().read_bytestring(
                     response_data, _TWO_SKIP.size)
                 sent = True
-            except SpinnmanTimeoutException:
+            except SpinnmanTimeoutException as e:
                 if not tries_to_go:
                     logger.info("No more tries - Error!")
-                    reraise(*sys.exc_info())
+                    raise e
 
                 logger.info("Timeout, retrying")
                 tries_to_go -= 1
@@ -384,12 +382,12 @@ class LiveEventConnection(DatabaseConnection):
         thread.start()
 
     def __do_start_resume(self):
-        for label, callbacks in iteritems(self.__start_resume_callbacks):
+        for label, callbacks in self.__start_resume_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("start_resume", label, callback)
 
     def __do_stop_pause(self):
-        for label, callbacks in iteritems(self.__pause_stop_callbacks):
+        for label, callbacks in self.__pause_stop_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("pause_stop", label, callback)
 
@@ -424,8 +422,8 @@ class LiveEventConnection(DatabaseConnection):
             else:
                 self.__handle_unknown_key(key)
 
-        for time in iterkeys(key_times_labels):
-            for label_id in iterkeys(key_times_labels[time]):
+        for time in key_times_labels:
+            for label_id in key_times_labels[time]:
                 label = self.__receive_labels[label_id]
                 for c_back, use_atom in self.__live_event_callbacks[label_id]:
                     if use_atom:

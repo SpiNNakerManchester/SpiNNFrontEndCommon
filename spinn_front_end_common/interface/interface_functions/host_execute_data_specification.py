@@ -14,11 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from collections import OrderedDict
-
 import logging
 import struct
 import numpy
-from six import iteritems, itervalues
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
@@ -60,7 +58,7 @@ def filter_out_system_executables(dsg_targets, executable_targets):
     """
     syscores = system_cores(executable_targets)
     return OrderedDict(
-        (core, spec) for (core, spec) in iteritems(dsg_targets)
+        (core, spec) for (core, spec) in dsg_targets.items()
         if core not in syscores)
 
 
@@ -73,7 +71,7 @@ def filter_out_app_executables(dsg_targets, executable_targets):
     """
     syscores = system_cores(executable_targets)
     return OrderedDict(
-        (core, spec) for (core, spec) in iteritems(dsg_targets)
+        (core, spec) for (core, spec) in dsg_targets.items()
         if core in syscores)
 
 
@@ -124,7 +122,7 @@ class HostExecuteDataSpecification(object):
         dw_write_info = DsWriteInfo(dsg_targets.get_database())
         dw_write_info.clear_write_info()
         if self._write_info_map is not None:
-            for core, info in iteritems(self._write_info_map):
+            for core, info in self._write_info_map.items():
                 (x, y, p) = core
                 dw_write_info.set_info(x, y, p, info)
                 del region_sizes[core]
@@ -182,11 +180,11 @@ class HostExecuteDataSpecification(object):
 
         # allocate and set user 0 before loading data
         base_addresses = dict()
-        for core, _ in iteritems(dsg_targets):
+        for core, _ in dsg_targets.items():
             base_addresses[core] = self.__malloc_region_storage(
                 core, region_sizes[core])
 
-        for core, reader in progress.over(iteritems(dsg_targets)):
+        for core, reader in progress.over(dsg_targets.items()):
             results[core] = self.__python_execute(
                 core, reader, self._txrx.write_memory,
                 base_addresses[core], region_sizes[core])
@@ -262,7 +260,7 @@ class HostExecuteDataSpecification(object):
             raise
 
     def __set_router_timeouts(self):
-        for receiver in itervalues(self._core_to_conn_map):
+        for receiver in self._core_to_conn_map.values():
             receiver.load_system_routing_tables(
                 self._txrx, self._monitors, self._placements)
             receiver.set_cores_for_data_streaming(
@@ -270,7 +268,7 @@ class HostExecuteDataSpecification(object):
 
     def __reset_router_timeouts(self):
         # reset router timeouts
-        for receiver in itervalues(self._core_to_conn_map):
+        for receiver in self._core_to_conn_map.values():
             receiver.unset_cores_for_data_streaming(
                 self._txrx, self._monitors, self._placements)
             # reset router tables
@@ -309,12 +307,11 @@ class HostExecuteDataSpecification(object):
 
         # allocate and set user 0 before loading data
         base_addresses = dict()
-        for core, _ in progress.over(
-                iteritems(dsg_targets), finish_at_end=False):
+        for core, _ in progress.over(dsg_targets.items(), finish_at_end=False):
             base_addresses[core] = self.__malloc_region_storage(
                 core, region_sizes[core])
 
-        for core, reader in progress.over(iteritems(dsg_targets)):
+        for core, reader in progress.over(dsg_targets.items()):
             x, y, _p = core
             # write information for the memory map report
             self._write_info_map[core] = self.__python_execute(
@@ -449,12 +446,11 @@ class HostExecuteDataSpecification(object):
 
         # allocate and set user 0 before loading data
         base_addresses = dict()
-        for core, _ in progress.over(
-                iteritems(sys_targets), finish_at_end=False):
+        for core, _ in progress.over(sys_targets.items(), finish_at_end=False):
             base_addresses[core] = self.__malloc_region_storage(
                 core, region_sizes[core])
 
-        for core, reader in progress.over(iteritems(sys_targets)):
+        for core, reader in progress.over(sys_targets.items()):
             self._write_info_map[core] = self.__python_execute(
                 core, reader, self._txrx.write_memory, base_addresses[core],
                 region_sizes[core])

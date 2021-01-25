@@ -19,10 +19,7 @@ import datetime
 import logging
 import time
 import struct
-import sys
 from enum import Enum
-from six.moves import xrange
-from six import reraise, PY2
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -668,12 +665,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             original_data = bytes(data[offset:n_bytes + offset])
             verified_data = bytes(transceiver.read_memory(
                 x, y, base_address, n_bytes))
-            if PY2:
-                self.__verify_sent_data_py2(
-                    original_data, verified_data, x, y, base_address, n_bytes)
-            else:
-                self.__verify_sent_data_py3(
-                    original_data, verified_data, x, y, base_address, n_bytes)
+            self.__verify_sent_data_py3(
+                original_data, verified_data, x, y, base_address, n_bytes)
 
         # write report
         if self._write_data_speed_up_reports:
@@ -681,22 +674,6 @@ class DataSpeedUpPacketGatherMachineVertex(
                 x=x, y=y, time_diff=end - start,
                 data_size=n_bytes, address_written_to=base_address,
                 missing_seq_nums=self._missing_seq_nums_data_in)
-
-    @staticmethod
-    def __verify_sent_data_py2(
-            original_data, verified_data, x, y, base_address, n_bytes):
-        if original_data != verified_data:
-            log.error("VARIANCE: chip:{},{} address:{} len:{}",
-                      x, y, base_address, n_bytes)
-            log.error("original:{}", "".join(
-                "%02X" % ord(x) for x in original_data))
-            log.error("verified:{}", "".join(
-                "%02X" % ord(x) for x in verified_data))
-            i = 0
-            for (a, b) in zip(original_data, verified_data):
-                if a != b:
-                    raise Exception("damn at " + str(i))
-                i += 1
 
     @staticmethod
     def __verify_sent_data_py3(
@@ -1200,16 +1177,16 @@ class DataSpeedUpPacketGatherMachineVertex(
             self._x, self._y, [0, 0, 0, 0], 0,
             self._remote_tag, strip=True, use_sender=True)
         data = connection.get_scp_data(request)
-        einfo = None
+        exn = None
         for _ in range(3):
             try:
                 connection.send(data)
                 _, _, response, offset = connection.receive_scp_response()
                 request.get_scp_response().read_bytestring(response, offset)
                 return
-            except SpinnmanTimeoutException:
-                einfo = sys.exc_info()
-        reraise(*einfo)
+            except SpinnmanTimeoutException as e:
+                exn = e
+        raise exn or SpinnmanTimeoutException
 
     def get_data(
             self, extra_monitor, extra_monitor_placement, memory_address,
@@ -1382,8 +1359,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: list of missing sequence numbers
         :rtype: list(int)
         """
-        return [sn for sn in xrange(0, self._max_seq_num)
-                if sn not in seq_nums]
+        return [sn for sn in range(self._max_seq_num) if sn not in seq_nums]
 
     def _determine_and_retransmit_missing_seq_nums(
             self, seq_nums, transceiver, placement, lost_seq_nums,
@@ -1423,7 +1399,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # transmit missing sequence as a new SDP packet
         first = True
         seq_num_offset = 0
-        for _ in xrange(n_packets):
+        for _ in range(n_packets):
             length_left_in_packet = WORDS_PER_FULL_PACKET
             offset = 0
 

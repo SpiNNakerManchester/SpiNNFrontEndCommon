@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import division
 import functools
 import math
 import os
@@ -32,12 +31,11 @@ from pacman.model.routing_tables import (
 from pacman.operations.algorithm_reports.reports import format_route
 from pacman.operations.router_compressors import Entry
 from pacman.operations.router_compressors.ordered_covering_router_compressor\
-    import minimise
-from spinn_front_end_common.abstract_models.\
-    abstract_supports_bit_field_routing_compression import (
-        AbstractSupportsBitFieldRoutingCompression)
-from spinn_front_end_common.utilities.constants import (
-    BYTES_PER_WORD)
+    import (
+        minimise)
+from spinn_front_end_common.abstract_models import (
+    AbstractSupportsBitFieldRoutingCompression)
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 
 class _BitFieldData(object):
