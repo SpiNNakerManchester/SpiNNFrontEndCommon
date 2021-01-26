@@ -14,8 +14,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from distutils.core import setup
 from collections import defaultdict
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 __version__ = None
 exec(open("spinn_front_end_common/_version.py").read())
