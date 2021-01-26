@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from collections import defaultdict
+import logging
 
 from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 from spinn_utilities.progress_bar import ProgressBar
@@ -24,6 +25,9 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.ds.data_specification_targets import (
     DataSpecificationTargets)
+from pacman.model.resources import MultiRegionSDRAM
+
+logger = logging.getLogger(__name__)
 
 
 class GraphDataSpecificationWriter(object):
@@ -148,6 +152,17 @@ class GraphDataSpecificationWriter(object):
             if not isinstance(self._region_sizes[pl.x, pl.y, pl.p], int):
                 self._region_sizes[pl.x, pl.y, pl.p] =\
                     self._region_sizes[pl.x, pl.y, pl.p].item()
+
+            # Check per-region memory usage if possible
+            sdram = vertex.resources_required.sdram
+            if isinstance(sdram, MultiRegionSDRAM):
+                for i, size in enumerate(spec.region_sizes):
+                    est_size = sdram.regions.get(i, 0)
+                    if size > est_size:
+                        logger.warn(
+                            "Region {} of vertex {} is bigger than expected: "
+                            "{} estimated vs. {} actual".format(
+                                est_size, size))
 
             self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
             self._sdram_usage[pl.x, pl.y] += sum(spec.region_sizes)
