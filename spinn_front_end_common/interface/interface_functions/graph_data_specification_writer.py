@@ -25,7 +25,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.ds.data_specification_targets import (
     DataSpecificationTargets)
-from pacman.model.resources import MultiRegionSDRAM
+from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
 
 logger = logging.getLogger(__name__)
 
@@ -157,12 +157,13 @@ class GraphDataSpecificationWriter(object):
             sdram = vertex.resources_required.sdram
             if isinstance(sdram, MultiRegionSDRAM):
                 for i, size in enumerate(spec.region_sizes):
-                    est_size = sdram.regions.get(i, 0)
+                    est_size = sdram.regions.get(i, ConstantSDRAM(0))
+                    est_size = est_size.get_total_sdram(data_n_timesteps)
                     if size > est_size:
                         logger.warn(
                             "Region {} of vertex {} is bigger than expected: "
                             "{} estimated vs. {} actual".format(
-                                est_size, size))
+                                i, vertex.label, est_size, size))
 
             self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
             self._sdram_usage[pl.x, pl.y] += sum(spec.region_sizes)
