@@ -13,34 +13,27 @@ Requirements
 In addition to a standard Python installation, this package depends on:
 
     six
-    enum34
+    numpy
     DataSpecification
     PACMAN
     SpiNNMan
     SpiNNMachine
-    PyNN
-    numpy
+    spalloc
 
-These dependencies, excluding `numpy`, can be installed using `pip`:
+These dependencies can be installed using `pip`:
 
-    pip install six
-    pip install enum34
-    pip install DataSpecification
-    pip install PACMAN
-    pip install SpiNNMan
-    pip install PyNN
-    pip install SpiNNFrontEndCommon
-    pip install SpiNNMachine
-
-Details of the installation of `numpy` on various operating systems are shown
-below.
+    pip install six numpy
+    pip install DataSpecification PACMAN SpiNNMan SpiNNMachine spalloc
 
 Installing NumPy
 ================
-If you are using `virtualenv`, please also follow the instructions below to
-install `numpy`. Further instructions for adding this global package to your
-`virutalenv` are detailed in the "_User Installation_" and
-"_Developer Installation_" sections below.
+Note however that it is usually possible (and more convenient) to install
+pre-built binary distributions for your platform:
+
+    pip install --upgrade wheel
+    pip install --binary-only numpy
+
+Otherwise, use these instructions, depending on what platform you are using:
 
 Ubuntu Linux
 ------------
@@ -68,6 +61,4 @@ Documentation
 <br>
 [SpiNNFrontEndCommon C documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/c/)
 
-[Combined PyNN7 python documentation](http://spinnaker7manchester.readthedocs.io)
-<br>
 [Combined PyNN8 python documentation](http://spinnaker8manchester.readthedocs.io)
