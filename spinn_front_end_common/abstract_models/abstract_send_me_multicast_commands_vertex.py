@@ -13,12 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 
 
-@add_metaclass(AbstractBase)
-class AbstractSendMeMulticastCommandsVertex(object):
+class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
     """ A vertex which wants to commands to be sent to it as multicast\
         packets at fixed points in the simulation
     """

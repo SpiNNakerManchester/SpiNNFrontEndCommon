@@ -13,15 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
-@add_metaclass(AbstractBase)
-class AbstractHasProfileData(object):
-    """ Indicates a MAchineVertex that can record a profile
+class AbstractHasProfileData(object, metaclass=AbstractBase):
+    """ Indicates a :py:class:`~pacman.model.graphs.machine.MachineVertex` \
+        that can record a profile.
     """
     __slots__ = ()
 

@@ -17,7 +17,6 @@ import functools
 import logging
 import struct
 from collections import defaultdict
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -29,10 +28,11 @@ from spinnman.exceptions import (
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from pacman.model.routing_tables import MulticastRoutingTables
-from pacman.operations.router_compressors.ordered_covering_router_compressor.\
-    ordered_covering import (get_generality as ordered_covering_generality)
-from spinn_front_end_common.interface.interface_functions.\
-    host_no_bitfield_router_compression import (make_source_hack)
+from pacman.operations.router_compressors.ordered_covering_router_compressor\
+    import (
+        get_generality as
+        ordered_covering_generality)
+from .host_no_bitfield_router_compression import make_source_hack
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 from spinn_front_end_common.utilities.exceptions import (
@@ -57,8 +57,7 @@ PROV_CHIP_NAME = "router_at_chip_{}_{}"
 MERGED_NAME = "bit_fields_merged"
 
 
-@add_metaclass(AbstractBase)
-class MachineBitFieldRouterCompressor(object):
+class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
     """ On-machine bitfield-aware routing table compression.
     """
 

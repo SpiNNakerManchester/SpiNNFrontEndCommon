@@ -13,12 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
-@add_metaclass(AbstractBase)
-class AbstractProvidesOutgoingPartitionConstraints(object):
+class AbstractProvidesOutgoingPartitionConstraints(
+        object, metaclass=AbstractBase):
     """ A vertex that can provide constraints for its outgoing edge partitions.
     """
 

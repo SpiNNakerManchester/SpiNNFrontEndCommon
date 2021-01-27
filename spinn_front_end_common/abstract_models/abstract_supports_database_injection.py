@@ -13,14 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
-@add_metaclass(AbstractBase)
-class AbstractSupportsDatabaseInjection(object):
+class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
     """ Marks a machine vertex as supporting injection of information via a\
         database running on the controlling host.
     """

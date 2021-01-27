@@ -13,15 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
-
 from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
-@add_metaclass(AbstractBase)
-class AbstractRewritesDataSpecification(object):
+class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
     """ Indicates an object that allows data to be changed after run,\
         and so can rewrite the data specification
     """

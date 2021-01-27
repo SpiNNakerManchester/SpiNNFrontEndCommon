@@ -14,17 +14,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-@add_metaclass(AbstractBase)
-class AbstractSendsBuffersFromHost(object):
+class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
     """ Interface to an object that sends buffers of keys to be\
         transmitted at given timestamps in the simulation.
     """
