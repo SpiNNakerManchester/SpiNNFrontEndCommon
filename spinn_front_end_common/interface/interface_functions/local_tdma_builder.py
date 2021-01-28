@@ -121,6 +121,12 @@ class LocalTDMABuilder(object):
         (app_machine_quantity, time_between_cores,
          fraction_of_sending, fraction_of_waiting) = self.config_values()
 
+        # check config params for better performance
+        (app_machine_quantity, time_between_cores) = self._auto_config_times(
+            app_machine_quantity, time_between_cores, fraction_of_sending,
+            time_scale_factor, machine_time_step, application_graph,
+            n_keys_map, machine_graph, fraction_of_waiting)
+
         # calculate for each app vertex if the time needed fits
         app_verts = list()
         for app_vertex in application_graph.vertices:
@@ -149,6 +155,64 @@ class LocalTDMABuilder(object):
                     app_vertex, app_verts, time_between_cores,
                     machine_time_step, time_scale_factor, fraction_of_waiting)
                 app_vertex.set_initial_offset(initial_offset)
+
+    @staticmethod
+    def _auto_config_times(
+            app_machine_quantity, time_between_cores, fraction_of_sending,
+            time_scale_factor, machine_time_step, application_graph,
+            n_keys_map, machine_graph, fraction_of_waiting):
+
+        # initial offset in time for first core for beginning of tdma
+        initial_offset_point = int(math.ceil(
+            (machine_time_step * time_scale_factor) * fraction_of_waiting))
+
+        # find worst combo (NOTE: it might not exist as an actual app vertex,
+        # but least it'll cover all the things in between)
+        max_cores = 0
+        max_phases = 0
+        for app_vertex in application_graph.vertices:
+            cores = app_vertex.get_n_cores()
+            phases = app_vertex.find_n_phases_for(machine_graph, n_keys_map)
+            max_cores = max(max_cores, cores)
+            max_phases = max(max_phases, phases)
+        logger.debug(
+            "max cores {} and max phases {}".format(max_cores, max_phases))
+
+        # overall time of the TDMA window minus initial offset
+        overall_time_available = (
+            ((time_scale_factor * machine_time_step) * fraction_of_sending) -
+            initial_offset_point)
+
+        # easier bool compares
+        core_set = time_between_cores is not None
+        app_set = app_machine_quantity is not None
+
+        # adjust time between cores to fit time scale
+        if not core_set and app_set:
+            n_slots = int(math.ceil(max_cores / app_machine_quantity))
+            time_per_phase = (
+                int(math.ceil(overall_time_available / max_phases)))
+            # NOTE the plus 1 ensures the last core finishes, if its the worst
+            # in terms of n keys to transmit
+            time_between_cores = (
+                int(math.floor(time_per_phase / (n_slots + 1))))
+            logger.debug(
+                "adjusted time between cores is {}".format(time_between_cores))
+
+        # adjust cores at same time to fit time between cores.
+        if core_set and not app_set:
+            time_per_phase = (
+                int(math.ceil(overall_time_available / max_phases)))
+            max_slots = int(math.floor(time_per_phase / time_between_cores))
+            app_machine_quantity = int(math.ceil(max_cores / max_slots))
+            logger.debug("adjusted app_machine_quantity is {}".format(
+                app_machine_quantity))
+
+        # somehow adjust both.
+        if not core_set and not app_set:
+            raise Exception("cant figure out when you remove both dials")
+
+        return app_machine_quantity, time_between_cores
 
     @staticmethod
     def _generate_initial_offset(
