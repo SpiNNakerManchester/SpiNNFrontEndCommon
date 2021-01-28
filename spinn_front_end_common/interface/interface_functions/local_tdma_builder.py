@@ -16,7 +16,6 @@
 import logging
 import math
 from spinn_utilities.log import FormatAdapter
-from spinn_utilities.logger_utils import warn_once
 from spinn_front_end_common.abstract_models.impl.\
     tdma_aware_application_vertex import (
         TDMAAwareApplicationVertex)
