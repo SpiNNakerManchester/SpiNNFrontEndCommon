@@ -170,10 +170,12 @@ class LocalTDMABuilder(object):
         max_cores = 0
         max_phases = 0
         for app_vertex in application_graph.vertices:
-            cores = app_vertex.get_n_cores()
-            phases = app_vertex.find_n_phases_for(machine_graph, n_keys_map)
-            max_cores = max(max_cores, cores)
-            max_phases = max(max_phases, phases)
+            if isinstance(app_vertex, TDMAAwareApplicationVertex):
+                cores = app_vertex.get_n_cores()
+                phases = app_vertex.find_n_phases_for(
+                    machine_graph, n_keys_map)
+                max_cores = max(max_cores, cores)
+                max_phases = max(max_phases, phases)
         logger.debug(
             "max cores {} and max phases {}".format(max_cores, max_phases))
 
