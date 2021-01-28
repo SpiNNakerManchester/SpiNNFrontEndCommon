@@ -32,12 +32,14 @@ from pacman.operations.router_compressors.ordered_covering_router_compressor\
     import (
         get_generality as
         ordered_covering_generality)
-from .host_no_bitfield_router_compression import make_source_hack
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 from spinn_front_end_common.utilities.exceptions import (
     CantFindSDRAMToUseException)
-from spinn_front_end_common.utilities import system_control_logic
+from spinn_front_end_common.utilities.helpful_functions import (
+    get_defaultable_source_id)
+from spinn_front_end_common.utilities.system_control_logic import (
+    run_system_application)
 from .load_executable_images import LoadExecutableImages
 from .host_bit_field_router_compressor import HostBasedBitFieldRouterCompressor
 
@@ -213,7 +215,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
 
         # load and run binaries
         try:
-            system_control_logic.run_system_application(
+            run_system_application(
                 compressor_executable_targets,
                 routing_table_compressor_app_id, transceiver,
                 provenance_file_path, executable_finder,
@@ -719,7 +721,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             data += self._FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
-                make_source_hack(entry=entry))
+                get_defaultable_source_id(entry=entry))
         return bytearray(data)
 
     @staticmethod

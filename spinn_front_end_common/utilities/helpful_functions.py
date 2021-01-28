@@ -416,3 +416,19 @@ def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
     """
     _emergency_state_check(txrx, app_id)
     _emergency_iobuf_extract(txrx, executable_targets)
+
+
+def get_defaultable_source_id(entry):
+    """ Hack to support the source requirement for the router compressor\
+        on chip.
+
+    :param ~spinn_machine.MulticastRoutingEntry entry:
+        the multicast router table entry.
+    :return: return the source value
+    :rtype: int
+    """
+    if entry.defaultable:
+        return (list(entry.link_ids)[0] + 3) % 6
+    elif entry.link_ids:
+        return list(entry.link_ids)[0]
+    return 0
