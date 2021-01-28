@@ -307,10 +307,9 @@ class LocalTDMABuilder(object):
             # maybe this warn could be thrown away?
             true_fraction = 1 / (
                 machine_time_step * time_scale_factor / total_time_needed)
-            warn_once(
-                logger,
+            logger.debug(
                 "could reduce fraction of time for sending to {}".format(
-                    true_fraction))
+                 true_fraction))
 
     def config_values(self):
         """ read the config for the right params. Check the 2 fractions are \
