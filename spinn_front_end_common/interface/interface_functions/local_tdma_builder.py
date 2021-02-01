@@ -91,12 +91,6 @@ class LocalTDMABuilder(object):
     FRACTION_OF_TIME_FOR_SPIKE_SENDING = 0.8
     FRACTION_OF_TIME_STEP_BEFORE_SPIKE_SENDING = 0.1
 
-    # default number of cores to fire at same time from this population
-    _DEFAULT_N_CORES_AT_SAME_TIME = 7
-
-    # default number of microseconds between cores firing
-    _DEFAULT_TIME_BETWEEN_CORES = 50
-
     def __call__(
             self, machine_graph, machine_time_step, time_scale_factor,
             n_keys_map, application_graph=None):
@@ -128,6 +122,7 @@ class LocalTDMABuilder(object):
 
         # calculate for each app vertex if the time needed fits
         app_verts = list()
+        max_reduction = 0
         for app_vertex in application_graph.vertices:
             if isinstance(app_vertex, TDMAAwareApplicationVertex):
                 app_verts.append(app_vertex)
@@ -143,9 +138,23 @@ class LocalTDMABuilder(object):
                     int(math.ceil(machine_time_step * time_scale_factor)))
 
                 # test timings
-                self._test_timings(
+                reduction = self._test_timings(
                     n_phases, time_between_phases, machine_time_step,
                     time_scale_factor, fraction_of_sending, app_vertex.label)
+                if reduction is not None:
+                    max_reduction = max(max_reduction, reduction)
+        if max_reduction != 0:
+            total_time_available = int(math.ceil(
+                machine_time_step * time_scale_factor * fraction_of_sending))
+            total_time_available += int(math.ceil(
+                machine_time_step * time_scale_factor * fraction_of_waiting))
+            new_time_scale_factor = int(math.floor(
+                (total_time_available * max_reduction) / machine_time_step))
+            if new_time_scale_factor != time_scale_factor:
+                logger.info(
+                    "could reduce fraction of time for sending to {},"
+                    "or time scale factor to {}".format(
+                        max_reduction, new_time_scale_factor))
 
         # get initial offset for each app vertex.
         for app_vertex in application_graph.vertices:
@@ -176,7 +185,7 @@ class LocalTDMABuilder(object):
                     machine_graph, n_keys_map)
                 max_cores = max(max_cores, cores)
                 max_phases = max(max_phases, phases)
-        logger.debug(
+        logger.info(
             "max cores {} and max phases {}".format(max_cores, max_phases))
 
         # overall time of the TDMA window minus initial offset
@@ -195,9 +204,8 @@ class LocalTDMABuilder(object):
                 int(math.ceil(overall_time_available / max_phases)))
             # NOTE the plus 1 ensures the last core finishes, if its the worst
             # in terms of n keys to transmit
-            time_between_cores = (
-                int(math.floor(time_per_phase / (n_slots + 1))))
-            logger.debug(
+            time_between_cores = time_per_phase / (n_slots + 1)
+            logger.info(
                 "adjusted time between cores is {}".format(time_between_cores))
 
         # adjust cores at same time to fit time between cores.
@@ -206,7 +214,7 @@ class LocalTDMABuilder(object):
                 int(math.ceil(overall_time_available / max_phases)))
             max_slots = int(math.floor(time_per_phase / time_between_cores))
             app_machine_quantity = int(math.ceil(max_cores / max_slots))
-            logger.debug("adjusted app_machine_quantity is {}".format(
+            logger.info("adjusted app_machine_quantity is {}".format(
                 app_machine_quantity))
 
         # somehow adjust both.
@@ -226,7 +234,7 @@ class LocalTDMABuilder(object):
         :param app_verts: the list of app vertices.
         :type app_verts:
             list(~pacman.model.graphs.application.ApplicationVertex)
-        :param int time_between_cores: the time between cores.
+        :param float time_between_cores: the time between cores.
         :param int machine_time_step: the machine time step.
         :param int time_scale_factor: the time scale factor.
         :param float fraction_of_waiting: the fraction of time for waiting.
@@ -308,9 +316,8 @@ class LocalTDMABuilder(object):
             # maybe this warn could be thrown away?
             true_fraction = 1 / (
                 machine_time_step * time_scale_factor / total_time_needed)
-            logger.debug(
-                "could reduce fraction of time for sending to {}".format(
-                 true_fraction))
+            return true_fraction
+        return None
 
     def config_values(self):
         """ read the config for the right params. Check the 2 fractions are \
@@ -327,14 +334,10 @@ class LocalTDMABuilder(object):
         # set the number of cores expected to fire at any given time
         app_machine_quantity = read_config_int(
             config, "Simulation", "app_machine_quantity")
-        if app_machine_quantity is None:
-            app_machine_quantity = self._DEFAULT_N_CORES_AT_SAME_TIME
 
         # set the time between cores to fire
         time_between_cores = read_config_float(
             config, "Simulation", "time_between_cores")
-        if time_between_cores is None:
-            time_between_cores = self._DEFAULT_TIME_BETWEEN_CORES
 
         # fraction of time spend sending
         fraction_of_sending = read_config(
