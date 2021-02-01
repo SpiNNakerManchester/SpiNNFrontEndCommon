@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import os
 import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
@@ -62,14 +61,14 @@ def mundy_on_chip_router_compression(
     :raises SpinnFrontEndException: If compression fails
     """
     # pylint: disable=too-many-arguments
-    binary_path = os.path.join(os.path.dirname(__file__), "rt_minimise.aplx")
-    compression = Compression(
-        app_id, binary_path, compress_as_much_as_possible,
-        machine, system_provenance_folder, routing_tables, transceiver,
-        "Running Mundy routing table compression on chip",
-        write_compressor_iobuf, result_register=0)
-    compression._compress_only_when_needed = compress_only_when_needed
-    compression.compress()
+    msg = "MundyOnChipRouterCompression is no longer supported. " \
+          "To use the currently recommended compression algorithm remove " \
+          "loading_algorithms from your cfg. " \
+          "While not recommended, UnorderedOnChipRouterCompression provides " \
+          "the same algorithm but has been updated to use the current tools."
+    print(msg)
+    logger.warning(msg)
+    raise NotImplementedError(msg)
 
 
 def pair_compression(
