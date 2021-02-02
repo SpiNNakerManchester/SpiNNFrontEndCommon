@@ -152,7 +152,8 @@ class LocalTDMABuilder(object):
                 (total_time_available * max_reduction) / machine_time_step))
             if new_time_scale_factor != time_scale_factor:
                 logger.info(
-                    "could reduce fraction of time for sending to {},"
+                    "Could reduce the cfg param "
+                    "fraction_of_time_spike_sending to {}, "
                     "or time scale factor to {}".format(
                         max_reduction, new_time_scale_factor))
 
@@ -185,7 +186,7 @@ class LocalTDMABuilder(object):
                     machine_graph, n_keys_map)
                 max_cores = max(max_cores, cores)
                 max_phases = max(max_phases, phases)
-        logger.info(
+        logger.debug(
             "max cores {} and max phases {}".format(max_cores, max_phases))
 
         # overall time of the TDMA window minus initial offset
@@ -205,7 +206,7 @@ class LocalTDMABuilder(object):
             # NOTE the plus 1 ensures the last core finishes, if its the worst
             # in terms of n keys to transmit
             time_between_cores = time_per_phase / (n_slots + 1)
-            logger.info(
+            logger.debug(
                 "adjusted time between cores is {}".format(time_between_cores))
 
         # adjust cores at same time to fit time between cores.
@@ -214,12 +215,17 @@ class LocalTDMABuilder(object):
                 int(math.ceil(overall_time_available / max_phases)))
             max_slots = int(math.floor(time_per_phase / time_between_cores))
             app_machine_quantity = int(math.ceil(max_cores / max_slots))
-            logger.info("adjusted app_machine_quantity is {}".format(
-                app_machine_quantity))
+            logger.debug(
+                "Adjusted the number of cores of a app vertex that "
+                "can fire at the same time to {}".format(
+                    app_machine_quantity))
 
         # somehow adjust both.
         if not core_set and not app_set:
-            raise Exception("cant figure out when you remove both dials")
+            raise Exception(
+                "cant figure out when both the app_machine_quantity and "
+                "time_between_cores parameters in the .cfg file are set "
+                "to None. Please set one of these to a value.")
 
         return app_machine_quantity, time_between_cores
 
@@ -313,7 +319,6 @@ class LocalTDMABuilder(object):
                 label, time_scale_factor_needed)
             logger.warning(msg)
         if total_time_needed != 0:
-            # maybe this warn could be thrown away?
             true_fraction = 1 / (
                 machine_time_step * time_scale_factor / total_time_needed)
             return true_fraction
