@@ -336,9 +336,8 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
         stop_compressing = true;
         if (comms_sdram->compressor_state == COMPRESSING) {
             log_info("Sorter cancelled run request");
-        } else if (comms_sdram->compressor_state == DO_NOT_USE) {
+        } else if (comms_sdram->sorter_instruction == DO_NOT_USE) {
             log_info("Compressor no longer to be used");
-            spin1_pause();
         } else {
             log_info("timer weirdness %d %d",
             comms_sdram->sorter_instruction, comms_sdram->compressor_state);
