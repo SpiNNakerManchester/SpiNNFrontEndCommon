@@ -154,7 +154,7 @@ class LocalTDMABuilder(object):
                 logger.info(
                     "Could reduce the cfg param "
                     "fraction_of_time_spike_sending to {}, "
-                    "or time scale factor to {}".format(
+                    "or time_scale_factor to {}".format(
                         max_reduction, new_time_scale_factor))
 
         # get initial offset for each app vertex.
@@ -223,7 +223,7 @@ class LocalTDMABuilder(object):
         # somehow adjust both.
         if not core_set and not app_set:
             raise Exception(
-                "cant figure out when both the app_machine_quantity and "
+                "Cant figure out when both the app_machine_quantity and "
                 "time_between_cores parameters in the .cfg file are set "
                 "to None. Please set one of these to a value.")
 
