@@ -1328,8 +1328,13 @@
                 <param_name>default_report_directory</param_name>
                 <param_type>ReportFolder</param_type>
             </parameter>
+            <parameter>
+                <param_name>report_waiting_logs</param_name>
+                <param_type>ReportWaitingLogsFlag</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
+            <param_name>report_waiting_logs</param_name>
             <param_name>hostname</param_name>
             <param_name>reset_machine_on_start_up</param_name>
             <param_name>bmp_details</param_name>
