@@ -25,8 +25,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def _emergency_state_check(txrx, app_id):
     """
-    :param ~.Transceiver txrx:
-    :param int app_id:
+    :param ~.Transceiver txrx: spinnman interface
+    :param int app_id: the app id
     """
     # pylint: disable=broad-except
     try:
