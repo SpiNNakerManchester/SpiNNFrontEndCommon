@@ -92,7 +92,7 @@
             <span class="bp">self</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">bmp_details</span><span class="p">,</span> <span class="n">downed_chips</span><span class="p">,</span> <span class="n">downed_cores</span><span class="p">,</span>
             <span class="n">downed_links</span><span class="p">,</span> <span class="n">board_version</span><span class="p">,</span> <span class="n">auto_detect_bmp</span><span class="p">,</span>
             <span class="n">scamp_connection_data</span><span class="p">,</span> <span class="n">boot_port_num</span><span class="p">,</span> <span class="n">reset_machine_on_start_up</span><span class="p">,</span>
-            <span class="n">max_sdram_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">repair_machine</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">report_waiting_logs</span><span class="p">,</span> <span class="n">max_sdram_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">repair_machine</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">ignore_bad_ethernets</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default_report_directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str hostname:</span>
@@ -136,6 +136,9 @@
 <span class="sd">        :param str default_report_directory:</span>
 <span class="sd">            Directory to write any reports too.</span>
 <span class="sd">            If None the current directory will be used.</span>
+<span class="sd">        :param report_waiting_logs:</span>
+<span class="sd">            flag for the txrx to report when waiting on busy cores.</span>
+<span class="sd">        :type report_waiting_logs: bool</span>
 <span class="sd">        :return: Transceiver, and description of machine it is connected to</span>
 <span class="sd">        :rtype: tuple(~spinnman.transceiver.Transceiver,</span>
 <span class="sd">            ~spinn_machine.Machine)</span>
@@ -158,7 +161,8 @@
             <span class="n">max_sdram_size</span><span class="o">=</span><span class="n">max_sdram_size</span><span class="p">,</span>
             <span class="n">repair_machine</span><span class="o">=</span><span class="n">repair_machine</span><span class="p">,</span>
             <span class="n">ignore_bad_ethernets</span><span class="o">=</span><span class="n">ignore_bad_ethernets</span><span class="p">,</span>
-            <span class="n">default_report_directory</span><span class="o">=</span><span class="n">default_report_directory</span><span class="p">)</span>
+            <span class="n">default_report_directory</span><span class="o">=</span><span class="n">default_report_directory</span><span class="p">,</span>
+            <span class="n">report_waiting_logs</span><span class="o">=</span><span class="n">report_waiting_logs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">reset_machine_on_start_up</span><span class="p">:</span>
             <span class="n">success</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">power_off_machine</span><span class="p">()</span>

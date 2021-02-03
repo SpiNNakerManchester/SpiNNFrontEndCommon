@@ -1292,6 +1292,8 @@
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;ScampConnectionData&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_config</span><span class="p">(</span>
             <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;scamp_connections_data&quot;</span><span class="p">)</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;ReportFolder&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span>
+        <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;ReportWaitingLogsFlag&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
+            <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;report_waiting_logs&quot;</span><span class="p">)</span>
         <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MachineGenerator&quot;</span><span class="p">)</span>
 
         <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MemoryMachine&quot;</span><span class="p">)</span>
@@ -1353,6 +1355,8 @@
 
         <span class="n">do_partitioning</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_by_size</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">algorithms</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;ReportFolder&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span>
+        <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;ReportWaitingLogsFlag&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
+            <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;report_waiting_logs&quot;</span><span class="p">)</span>
 
         <span class="c1"># if using spalloc system</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spalloc_server</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
