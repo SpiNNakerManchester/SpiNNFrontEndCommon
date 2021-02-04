@@ -59,7 +59,7 @@
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.common</span> <span class="kn">import</span> <span class="n">EdgeTrafficType</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AbstractProvidesKeyToAtomMapping</span><span class="p">,</span> <span class="n">AbstractRecordable</span><span class="p">,</span>
+    <span class="n">AbstractProvidesKeyToAtomMapping</span><span class="p">,</span>
     <span class="n">AbstractSupportsDatabaseInjection</span><span class="p">)</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
@@ -219,13 +219,11 @@
                     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                    INSERT INTO Application_vertices(</span>
 <span class="sd">                        vertex_label, vertex_class, no_atoms,</span>
-<span class="sd">                        max_atom_constrant, recorded)</span>
-<span class="sd">                    VALUES(?, ?, ?, ?, ?)</span>
+<span class="sd">                        max_atom_constrant)</span>
+<span class="sd">                    VALUES(?, ?, ?, ?)</span>
 <span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span>
                     <span class="n">vertex</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">vertex</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">vertex</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">,</span>
-                    <span class="n">vertex</span><span class="o">.</span><span class="n">get_max_atoms_per_core</span><span class="p">(),</span> <span class="nb">int</span><span class="p">(</span>
-                        <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractRecordable</span><span class="p">)</span> <span class="ow">and</span>
-                        <span class="n">vertex</span><span class="o">.</span><span class="n">is_recording</span><span class="p">()))</span>
+                    <span class="n">vertex</span><span class="o">.</span><span class="n">get_max_atoms_per_core</span><span class="p">())</span>
 
             <span class="c1"># add edges</span>
             <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
