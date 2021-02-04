@@ -51,11 +51,16 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">ExecutableTargets</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">pacman.model.graphs</span> <span class="kn">import</span> <span class="n">AbstractVirtual</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ExecutableNotFoundException</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="n">AbstractHasAssociatedBinary</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="GraphBinaryGatherer"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.GraphBinaryGatherer">[docs]</a><span class="k">class</span> <span class="nc">GraphBinaryGatherer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -93,6 +98,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># if the vertex cannot be executed, ignore it</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractVirtual</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;Vertex </span><span class="si">{}</span><span class="s2"> does not implement either &quot;</span>
+                    <span class="s2">&quot;AbstractHasAssociatedBinary or AbstractVirtual. So it is &quot;</span>
+                    <span class="s2">&quot;unclear if it should or should not have a binary&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vertex</span><span class="p">),</span> <span class="n">vertex</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="c1"># Get name of binary from vertex</span>
