@@ -33,8 +33,7 @@ class AbstractSupportsBitFieldRoutingCompression(
         if not issubclass(cls, MachineVertex):
             raise SpinnFrontEndException(
                 cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
-        return super(AbstractSupportsBitFieldRoutingCompression,
-                     cls).__new__(cls)
+        return super().__new__(cls, *args, **kwargs)
 
     @abstractmethod
     def key_to_atom_map_region_base_address(self, transceiver, placement):

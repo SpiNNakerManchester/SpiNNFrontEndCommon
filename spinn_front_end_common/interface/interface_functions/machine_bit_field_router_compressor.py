@@ -879,8 +879,7 @@ class MachineBitFieldUnorderedRouterCompressor(
             "deprecated. "
             "Please use MachineBitFieldOrderedCoveringCompressor instead. "
             "loading_algorithms from your cfg to use defaults")
-        return super(MachineBitFieldUnorderedRouterCompressor, cls).__new__(
-            cls, *args, **kwargs)
+        return super().__new__(cls, *args, **kwargs)
 
 
 class MachineBitFieldPairRouterCompressor(MachineBitFieldRouterCompressor):

@@ -32,7 +32,7 @@ class AbstractHasAssociatedBinary(object, metaclass=AbstractBase):
         if not issubclass(cls, MachineVertex):
             raise SpinnFrontEndException(
                 cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
-        return super(AbstractHasAssociatedBinary, cls).__new__(cls)
+        return super().__new__(cls, *args, **kwargs)
 
     @abstractmethod
     def get_binary_file_name(self):

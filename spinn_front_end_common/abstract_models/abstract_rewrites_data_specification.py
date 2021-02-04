@@ -34,7 +34,7 @@ class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
         if not issubclass(cls, MachineVertex):
             raise SpinnFrontEndException(
                 cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
-        return super(AbstractRewritesDataSpecification, cls).__new__(cls)
+        return super().__new__(cls, *args, **kwargs)
 
     @abstractmethod
     def regenerate_data_specification(self, spec, placement):

@@ -33,7 +33,7 @@ class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
         if not issubclass(cls, MachineVertex):
             raise SpinnFrontEndException(
                 cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
-        return super(AbstractSupportsDatabaseInjection, cls).__new__(cls)
+        return super().__new__(cls, *args, **kwargs)
 
     @abstractproperty
     def is_in_injection_mode(self):

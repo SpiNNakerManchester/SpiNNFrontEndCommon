@@ -35,8 +35,7 @@ class AbstractVertexWithEdgeToDependentVertices(
         if not issubclass(cls, ApplicationVertex):
             raise SpinnFrontEndException(
                 cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
-        return super(AbstractVertexWithEdgeToDependentVertices,
-                     cls).__new__(cls)
+        return super().__new__(cls, *args, **kwargs)
 
     @abstractmethod
     def dependent_vertices(self):
