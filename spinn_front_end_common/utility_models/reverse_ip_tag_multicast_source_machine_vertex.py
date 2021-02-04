@@ -194,8 +194,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             else:
                 raise KeyError("Either provide a vertex_slice or n_keys")
 
-        super(ReverseIPTagMulticastSourceMachineVertex, self).__init__(
-            label, constraints, app_vertex, vertex_slice)
+        super().__init__(label, constraints, app_vertex, vertex_slice)
 
         self._reverse_iptags = None
         self._n_keys = vertex_slice.n_atoms

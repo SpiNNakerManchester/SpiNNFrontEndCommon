@@ -24,7 +24,6 @@ from spinnman.model.cpu_infos import CPUInfos
 class _MockTransceiver(object):
 
     def __init__(self, core_states, time_between_states):
-        super(_MockTransceiver, self).__init__()
         self._core_states = core_states
         self._time_between_states = time_between_states
         self._current_state = 0

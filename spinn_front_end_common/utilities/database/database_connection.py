@@ -56,7 +56,7 @@ class DatabaseConnection(UDPConnection):
             the port that the toolchain will send the notification on (19999
             by default)
         """
-        super(DatabaseConnection, self).__init__(
+        super().__init__(
             local_host=local_host, local_port=local_port,
             remote_host=None, remote_port=None)
         thread = Thread(name="SpyNNakerDatabaseConnection:{}:{}".format(
@@ -162,4 +162,4 @@ class DatabaseConnection(UDPConnection):
 
     def close(self):
         self.__running = False
-        UDPConnection.close(self)
+        super().close()

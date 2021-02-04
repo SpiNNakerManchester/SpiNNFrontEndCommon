@@ -91,7 +91,7 @@ class LiveEventConnection(DatabaseConnection):
             by default)
         """
         # pylint: disable=too-many-arguments
-        super(LiveEventConnection, self).__init__(
+        super().__init__(
             self.__do_start_resume, self.__do_stop_pause,
             local_host=local_host, local_port=local_port)
 
@@ -558,7 +558,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def close(self):
         self.__handle_possible_rerun_state()
-        super(LiveEventConnection, self).close()
+        super().close()
 
     @staticmethod
     def __get_sdp_data(message, x, y, p):

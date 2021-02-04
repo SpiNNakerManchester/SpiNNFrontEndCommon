@@ -39,7 +39,7 @@ class _SpallocJobController(MachineAllocationController):
             raise Exception("must have a real job")
         self._job = job
         self._state = job.state
-        super(_SpallocJobController, self).__init__("SpallocJobController")
+        super().__init__("SpallocJobController")
 
     @overrides(AbstractMachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time):
@@ -48,7 +48,7 @@ class _SpallocJobController(MachineAllocationController):
 
     @overrides(AbstractMachineAllocationController.close)
     def close(self):
-        super(_SpallocJobController, self).close()
+        super().close()
         self._job.destroy()
 
     @property
@@ -91,7 +91,7 @@ class _SpallocJobController(MachineAllocationController):
     def _teardown(self):
         if not self._exited:
             self._job.close()
-        super(_SpallocJobController, self)._teardown()
+        super()._teardown()
 
 
 class SpallocAllocator(object):

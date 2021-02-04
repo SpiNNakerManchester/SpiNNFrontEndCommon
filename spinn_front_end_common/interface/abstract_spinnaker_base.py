@@ -377,8 +377,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             Information about what software is in use
         """
         # pylint: disable=too-many-arguments
-        ConfigHandler.__init__(
-            self, configfile, default_config_paths, validation_cfg)
+        super().__init__(configfile, default_config_paths, validation_cfg)
 
         # timings
         self._mapping_time = 0.0

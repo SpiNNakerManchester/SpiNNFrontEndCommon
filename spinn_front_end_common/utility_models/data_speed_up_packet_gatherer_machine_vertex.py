@@ -305,7 +305,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :type app_vertex:
             ~pacman.model.graphs.application.ApplicationVertex or None
         """
-        super(DataSpeedUpPacketGatherMachineVertex, self).__init__(
+        super().__init__(
             label="SYSTEM:PacketGatherer({},{})".format(x, y),
             constraints=constraints, app_vertex=app_vertex)
 
@@ -787,14 +787,15 @@ class DataSpeedUpPacketGatherMachineVertex(
                             data_to_write, missing)
                         missing.clear()
 
-                except SpinnmanTimeoutException:  # if time out, keep trying
+                except SpinnmanTimeoutException as e:
                     # if the timeout has not occurred x times, keep trying
                     time_out_count += 1
                     if time_out_count > TIMEOUT_RETRY_LIMIT:
                         emergency_recover_state_from_failure(
                             transceiver, self._app_id, self, self._placement)
                         raise SpinnFrontEndException(
-                            TIMEOUT_MESSAGE.format(time_out_count))
+                            TIMEOUT_MESSAGE.format(
+                                time_out_count)) from e
 
                     # If we never received a packet, we will never have
                     # created the buffer, so send everything again
@@ -1293,11 +1294,12 @@ class DataSpeedUpPacketGatherMachineVertex(
                         "ignoring packet as transaction id should be {}"
                         " but is {}".format(
                             transaction_id, response_transaction_id))
-            except SpinnmanTimeoutException:
+            except SpinnmanTimeoutException as e:
                 if timeoutcount > TIMEOUT_RETRY_LIMIT:
                     raise SpinnFrontEndException(
                         "Failed to hear from the machine during {} attempts. "
-                        "Please try removing firewalls".format(timeoutcount))
+                        "Please try removing firewalls".format(
+                            timeoutcount)) from e
 
                 timeoutcount += 1
                 # self.__reset_connection()
