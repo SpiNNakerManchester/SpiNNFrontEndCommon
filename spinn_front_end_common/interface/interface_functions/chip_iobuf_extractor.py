@@ -99,7 +99,7 @@ class ChipIOBufExtractor(object):
         :type app_provenance_file_path: str or None
         :param system_provenance_file_path:
         :type system_provenance_file_path: str or None
-        :param dict(str,ExecutableType) binary_executable_types:
+        :param dict(str,ExecutableType) binary_types:
         :param str from_cores:
         :param str binary_types:
         :return: error_entries, warn_entries
@@ -189,8 +189,8 @@ class ChipIOBufExtractor(object):
         with Replacer() as replacer:
             for binary in progress.over(executable_targets.binaries):
                 if binary in binaries:
-                    core_subsets = \
-                        executable_targets.get_cores_for_binary(binary)
+                    core_subsets = (
+                        executable_targets.get_cores_for_binary(binary))
                 else:
                     core_subsets = iocores.intersect(
                         executable_targets.get_cores_for_binary(binary))
