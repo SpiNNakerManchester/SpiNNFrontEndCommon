@@ -748,25 +748,34 @@ that each chip should have</p></li>
 <em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.interface.interface_functions.</code><code class="sig-name descname">HostBasedBitFieldRouterCompressor</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Host-based fancy router compressor using the bitfield filters of the         cores. Compresses bitfields and router table entries together as         much as feasible.</p>
+<dl class="py attribute">
+<dt id="spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.MERGED_SETTER">
+<code class="sig-name descname">MERGED_SETTER</code><em class="property"> = 2147483648</em><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.MERGED_SETTER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.N_ATOMS_MASK">
+<code class="sig-name descname">N_ATOMS_MASK</code><em class="property"> = 1073741823</em><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.N_ATOMS_MASK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt id="spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.__call__">
-<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">router_tables</span></em>, <em class="sig-param"><span class="n">machine</span></em>, <em class="sig-param"><span class="n">placements</span></em>, <em class="sig-param"><span class="n">transceiver</span></em>, <em class="sig-param"><span class="n">default_report_folder</span></em>, <em class="sig-param"><span class="n">produce_report</span></em>, <em class="sig-param"><span class="n">use_timer_cut_off</span></em>, <em class="sig-param"><span class="n">machine_graph</span></em>, <em class="sig-param"><span class="n">routing_infos</span></em>, <em class="sig-param"><span class="n">machine_time_step</span></em>, <em class="sig-param"><span class="n">time_scale_factor</span></em>, <em class="sig-param"><span class="n">target_length</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">time_to_try_for_each_iteration</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">router_tables</span></em>, <em class="sig-param"><span class="n">machine</span></em>, <em class="sig-param"><span class="n">placements</span></em>, <em class="sig-param"><span class="n">transceiver</span></em>, <em class="sig-param"><span class="n">default_report_folder</span></em>, <em class="sig-param"><span class="n">produce_report</span></em>, <em class="sig-param"><span class="n">machine_graph</span></em>, <em class="sig-param"><span class="n">routing_infos</span></em>, <em class="sig-param"><span class="n">machine_time_step</span></em>, <em class="sig-param"><span class="n">time_scale_factor</span></em>, <em class="sig-param"><span class="n">target_length</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entry point when using the PACMANAlgorithmExecutor</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>router_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN)"><em>MulticastRoutingTables</em></a>) – routing tables (uncompressed)</p></li>
+<li><p><strong>router_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN)"><em>MulticastRoutingTables</em></a>) – routing tables (uncompressed and unordered)</p></li>
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine)"><em>Machine</em></a>) – SpiNNMachine instance</p></li>
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN)"><em>Placements</em></a>) – placements</p></li>
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan)"><em>Transceiver</em></a>) – SpiNNMan instance</p></li>
 <li><p><strong>default_report_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – report folder</p></li>
 <li><p><strong>produce_report</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – flag for producing report</p></li>
-<li><p><strong>use_timer_cut_off</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – flag for whether to use timer for compressor</p></li>
 <li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN)"><em>MachineGraph</em></a>) – the machine graph level</p></li>
 <li><p><strong>routing_infos</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN)"><em>RoutingInfo</em></a>) – routing information</p></li>
 <li><p><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – time step</p></li>
 <li><p><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – time scale factor</p></li>
-<li><p><strong>target_length</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – length of table entries to get to.</p></li>
-<li><p><strong>time_to_try_for_each_iteration</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – time to try per iteration</p></li>
+<li><p><strong>target_length</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – length of table entries to get to.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -774,39 +783,6 @@ that each chip should have</p></li>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN)">MulticastRoutingTables</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.calculate_threshold">
-<code class="sig-name descname">calculate_threshold</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">machine_time_step</span></em>, <em class="sig-param"><span class="n">time_scale_factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.calculate_threshold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.calculate_threshold" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p></li>
-<li><p><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.collect_bit_field_sdram_base_addresses">
-<code class="sig-name descname">collect_bit_field_sdram_base_addresses</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">chip_x</span></em>, <em class="sig-param"><span class="n">chip_y</span></em>, <em class="sig-param"><span class="n">machine</span></em>, <em class="sig-param"><span class="n">placements</span></em>, <em class="sig-param"><span class="n">transceiver</span></em>, <em class="sig-param"><span class="n">bit_field_sdram_base_addresses</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.collect_bit_field_sdram_base_addresses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.collect_bit_field_sdram_base_addresses" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p></li>
-<li><p><strong>chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p></li>
-<li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine)"><em>Machine</em></a>) – </p></li>
-<li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN)"><em>Placements</em></a>) – </p></li>
-<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan)"><em>Transceiver</em></a>) – </p></li>
-<li><p><strong>bit_field_sdram_base_addresses</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em>)</em>) – </p></li>
-</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -845,25 +821,24 @@ that each chip should have</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.locate_vertex_with_the_api">
-<em class="property">static </em><code class="sig-name descname">locate_vertex_with_the_api</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">machine_vertex</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.locate_vertex_with_the_api"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.locate_vertex_with_the_api" title="Permalink to this definition">¶</a></dt>
+<dt id="spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.get_bit_field_sdram_base_addresses">
+<code class="sig-name descname">get_bit_field_sdram_base_addresses</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">chip_x</span></em>, <em class="sig-param"><span class="n">chip_y</span></em>, <em class="sig-param"><span class="n">machine</span></em>, <em class="sig-param"><span class="n">placements</span></em>, <em class="sig-param"><span class="n">transceiver</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.get_bit_field_sdram_base_addresses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.get_bit_field_sdram_base_addresses" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>machine_vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN)"><em>MachineVertex</em></a>) – </p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The vertex associated with the machine vertex that supports
-compression, or <cite>None</cite> if nothing can be found.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression" title="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression">AbstractSupportsBitFieldRoutingCompression</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p></li>
+<li><p><strong>chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p></li>
+<li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine)"><em>Machine</em></a>) – </p></li>
+<li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN)"><em>Placements</em></a>) – </p></li>
+<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan)"><em>Transceiver</em></a>) – </p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.start_compression_selection_process">
-<code class="sig-name descname">start_compression_selection_process</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">router_table</span></em>, <em class="sig-param"><span class="n">produce_report</span></em>, <em class="sig-param"><span class="n">report_folder_path</span></em>, <em class="sig-param"><span class="n">bit_field_sdram_base_addresses</span></em>, <em class="sig-param"><span class="n">transceiver</span></em>, <em class="sig-param"><span class="n">machine_graph</span></em>, <em class="sig-param"><span class="n">placements</span></em>, <em class="sig-param"><span class="n">machine</span></em>, <em class="sig-param"><span class="n">target_length</span></em>, <em class="sig-param"><span class="n">time_to_try_for_each_iteration</span></em>, <em class="sig-param"><span class="n">use_timer_cut_off</span></em>, <em class="sig-param"><span class="n">compressed_pacman_router_tables</span></em>, <em class="sig-param"><span class="n">key_atom_map</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.start_compression_selection_process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.start_compression_selection_process" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">start_compression_selection_process</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">router_table</span></em>, <em class="sig-param"><span class="n">produce_report</span></em>, <em class="sig-param"><span class="n">report_folder_path</span></em>, <em class="sig-param"><span class="n">transceiver</span></em>, <em class="sig-param"><span class="n">machine_graph</span></em>, <em class="sig-param"><span class="n">placements</span></em>, <em class="sig-param"><span class="n">machine</span></em>, <em class="sig-param"><span class="n">target_length</span></em>, <em class="sig-param"><span class="n">compressed_pacman_router_tables</span></em>, <em class="sig-param"><span class="n">key_atom_map</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.start_compression_selection_process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.start_compression_selection_process" title="Permalink to this definition">¶</a></dt>
 <dd><p>Entrance method for doing on host compression. Can be used as a             public method for other compressors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -871,14 +846,11 @@ compression, or <cite>None</cite> if nothing can be found.</p>
 <li><p><strong>router_table</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.UnCompressedMulticastRoutingTable" title="(in PACMAN)"><em>UnCompressedMulticastRoutingTable</em></a>) – the routing table in question to compress</p></li>
 <li><p><strong>produce_report</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – whether the report should be generated</p></li>
 <li><p><strong>report_folder_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – the report folder base address</p></li>
-<li><p><strong>bit_field_sdram_base_addresses</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em>) – the SDRAM addresses for bitfields used in the chip.</p></li>
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan)"><em>Transceiver</em></a>) – spinnMan instance</p></li>
 <li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN)"><em>MachineGraph</em></a>) – machine graph</p></li>
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN)"><em>Placements</em></a>) – placements</p></li>
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine)"><em>Machine</em></a>) – SpiNNMan instance</p></li>
 <li><p><strong>target_length</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – length of router compressor to get to</p></li>
-<li><p><strong>time_to_try_for_each_iteration</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – time in seconds to run each compression attempt for</p></li>
-<li><p><strong>use_timer_cut_off</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – whether the timer cut off is to be used</p></li>
 <li><p><strong>compressed_pacman_router_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN)"><em>MulticastRoutingTables</em></a>) – a data holder for compressed tables</p></li>
 <li><p><strong>key_atom_map</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em>) – key to atoms map
 should be allowed to handle per time step</p></li>

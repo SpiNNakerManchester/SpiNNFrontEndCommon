@@ -57,7 +57,6 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">from</span> <span class="nn">spinn_utilities.default_ordered_dict</span> <span class="kn">import</span> <span class="n">DefaultOrderedDict</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.find_max_success</span> <span class="kn">import</span> <span class="n">find_max_success</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">MulticastRoutingEntry</span>
@@ -75,33 +74,49 @@
     <span class="n">abstract_supports_bit_field_routing_compression</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">AbstractSupportsBitFieldRoutingCompression</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
+    <span class="n">BYTES_PER_WORD</span><span class="p">,</span> <span class="n">BYTES_PER_3_WORDS</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.report_functions.</span>\
+    <span class="n">bit_field_compressor_report</span> <span class="kn">import</span> <span class="nn">generate_provenance_item</span>
+<span class="kn">from</span> <span class="nn">pacman.operations.router_compressors</span> <span class="kn">import</span> <span class="n">PairCompressor</span>
 
 
 <span class="k">class</span> <span class="nc">_BitFieldData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
-    <span class="n">N_ELEMENTS</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># bit_field data</span>
+        <span class="s2">&quot;bit_field&quot;</span><span class="p">,</span>
+        <span class="c1"># Key this applies to</span>
+        <span class="s2">&quot;master_pop_key&quot;</span><span class="p">,</span>
+        <span class="c1"># address of n_atoms word to wrote back merged flags</span>
+        <span class="s2">&quot;n_atoms_address&quot;</span><span class="p">,</span>
+        <span class="c1"># Word that holds merged: 1; all_ones: 1; n_atoms: 30;</span>
+        <span class="s2">&quot;n_atoms_word&quot;</span><span class="p">,</span>
+        <span class="c1"># P cooridnate of processor this applies to</span>
+        <span class="s2">&quot;processor_id&quot;</span><span class="p">,</span>
+        <span class="c1"># index of this entry in the &quot;sorted_list&quot;</span>
+        <span class="s2">&quot;sort_index&quot;</span>
+    <span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">,</span> <span class="n">bit_field</span><span class="p">,</span> <span class="n">master_pop_key</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_processor_id</span> <span class="o">=</span> <span class="n">processor_id</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_bit_field</span> <span class="o">=</span> <span class="n">bit_field</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_master_pop_key</span> <span class="o">=</span> <span class="n">master_pop_key</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">,</span> <span class="n">bit_field</span><span class="p">,</span> <span class="n">master_pop_key</span><span class="p">,</span>
+                 <span class="n">n_atoms_address</span><span class="p">,</span> <span class="n">n_atoms_word</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processor_id</span> <span class="o">=</span> <span class="n">processor_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bit_field</span> <span class="o">=</span> <span class="n">bit_field</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master_pop_key</span> <span class="o">=</span> <span class="n">master_pop_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_address</span> <span class="o">=</span> <span class="n">n_atoms_address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms_word</span> <span class="o">=</span> <span class="n">n_atoms_word</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sort_index</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">processor_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processor_id</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">master_pop_key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bit_field</span><span class="p">)</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">bit_field</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_field</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">master_pop_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_master_pop_key</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">size_in_bytes</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">N_ELEMENTS</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
+    <span class="k">def</span> <span class="nf">bit_field_as_bit_array</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert the bitfield into an array of bits like bit_field.c</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">word</span> <span class="o">&gt;&gt;</span> <span class="n">i</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">1</span>
+                <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bit_field</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">)]</span>
 
 
 <div class="viewcode-block" id="HostBasedBitFieldRouterCompressor"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor">[docs]</a><span class="k">class</span> <span class="nc">HostBasedBitFieldRouterCompressor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -111,8 +126,16 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s2">&quot;_best_routing_table&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_best_bit_fields_by_processor&quot;</span><span class="p">,</span>
+        <span class="c1"># List of the entries from the highest successful midpoint</span>
+        <span class="s2">&quot;_best_routing_entries&quot;</span><span class="p">,</span>
+        <span class="c1"># The highest successful midpoint</span>
+        <span class="s2">&quot;_best_midpoint&quot;</span><span class="p">,</span>
+        <span class="c1"># Dict of lists of the original bitfields by key</span>
+        <span class="s2">&quot;_bit_fields_by_key&quot;</span><span class="p">,</span>
+        <span class="c1"># Record of which midpoints where tired and with what result</span>
+        <span class="s2">&quot;_compression_attempts&quot;</span><span class="p">,</span>
+        <span class="c1"># Number of bitfields for this core</span>
+        <span class="s2">&quot;_n_bitfields&quot;</span>
     <span class="p">]</span>
 
     <span class="c1"># max entries that can be used by the application code</span>
@@ -142,8 +165,11 @@
     <span class="c1"># mask for neuron level</span>
     <span class="n">_NEURON_LEVEL_MASK</span> <span class="o">=</span> <span class="mh">0xFFFFFFFF</span>
 
+    <span class="c1"># to remove the first   merged: 1; and all_ones: 1;</span>
+    <span class="n">N_ATOMS_MASK</span> <span class="o">=</span> <span class="mh">0x3FFFFFFF</span>
+    <span class="n">MERGED_SETTER</span> <span class="o">=</span> <span class="mh">0x80000000</span>
+
     <span class="c1"># structs for performance requirements.</span>
-    <span class="n">_ONE_WORDS</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;I&quot;</span><span class="p">)</span>
     <span class="n">_THREE_WORDS</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;III&quot;</span><span class="p">)</span>
 
     <span class="c1"># for router report</span>
@@ -162,17 +188,20 @@
     <span class="n">_BITS_PER_WORD</span> <span class="o">=</span> <span class="mi">32</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_table</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_best_bit_fields_by_processor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_entries</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_best_midpoint</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bit_fields_by_key</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compression_attempts</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="HostBasedBitFieldRouterCompressor.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">router_tables</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
-            <span class="n">default_report_folder</span><span class="p">,</span> <span class="n">produce_report</span><span class="p">,</span>
-            <span class="n">use_timer_cut_off</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">,</span>
-            <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">target_length</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">time_to_try_for_each_iteration</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">default_report_folder</span><span class="p">,</span> <span class="n">produce_report</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
+            <span class="n">routing_infos</span><span class="p">,</span>  <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span>
+            <span class="n">target_length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param router_tables: routing tables (uncompressed)</span>
+<span class="sd">        Entry point when using the PACMANAlgorithmExecutor</span>
+
+<span class="sd">        :param router_tables: routing tables (uncompressed and unordered)</span>
 <span class="sd">        :type router_tables:</span>
 <span class="sd">            ~pacman.model.routing_tables.MulticastRoutingTables</span>
 <span class="sd">        :param ~spinn_machine.Machine machine: SpiNNMachine instance</span>
@@ -180,25 +209,19 @@
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance</span>
 <span class="sd">        :param str default_report_folder: report folder</span>
 <span class="sd">        :param bool produce_report: flag for producing report</span>
-<span class="sd">        :param bool use_timer_cut_off:</span>
-<span class="sd">            flag for whether to use timer for compressor</span>
 <span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
 <span class="sd">            the machine graph level</span>
 <span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_infos:</span>
 <span class="sd">            routing information</span>
 <span class="sd">        :param int machine_time_step: time step</span>
 <span class="sd">        :param int time_scale_factor: time scale factor</span>
-<span class="sd">        :param int target_length: length of table entries to get to.</span>
-<span class="sd">        :param int time_to_try_for_each_iteration: time to try per iteration</span>
+<span class="sd">        :param target_length: length of table entries to get to.</span>
+<span class="sd">        :type target_length: int or None</span>
 <span class="sd">        :return: compressed routing table entries</span>
 <span class="sd">        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="k">if</span> <span class="n">target_length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">target_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MAX_SUPPORTED_LENGTH</span>
-
-        <span class="k">if</span> <span class="n">time_to_try_for_each_iteration</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">time_to_try_for_each_iteration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DEFAULT_TIME_PER_ITERATION</span>
 
         <span class="c1"># create progress bar</span>
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
@@ -217,63 +240,40 @@
         <span class="n">key_atom_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_key_to_atom_map</span><span class="p">(</span>
             <span class="n">machine_graph</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">)</span>
 
-        <span class="c1"># holder for the bitfields in</span>
-        <span class="n">bit_field_sdram_base_addresses</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">router_table</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">router_tables</span><span class="o">.</span><span class="n">routing_tables</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">collect_bit_field_sdram_base_addresses</span><span class="p">(</span>
-                <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
-                <span class="n">transceiver</span><span class="p">,</span> <span class="n">bit_field_sdram_base_addresses</span><span class="p">)</span>
+        <span class="n">prov_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="c1"># start the routing table choice conversion</span>
         <span class="k">for</span> <span class="n">router_table</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">router_tables</span><span class="o">.</span><span class="n">routing_tables</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">start_compression_selection_process</span><span class="p">(</span>
+            <span class="n">prov_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_compression_selection_process</span><span class="p">(</span>
                 <span class="n">router_table</span><span class="p">,</span> <span class="n">produce_report</span><span class="p">,</span> <span class="n">report_folder_path</span><span class="p">,</span>
-                <span class="n">bit_field_sdram_base_addresses</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
-                <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span>
-                <span class="n">time_to_try_for_each_iteration</span><span class="p">,</span> <span class="n">use_timer_cut_off</span><span class="p">,</span>
-                <span class="n">compressed_pacman_router_tables</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">)</span>
-        <span class="c1"># return compressed tables</span>
-        <span class="k">return</span> <span class="n">compressed_pacman_router_tables</span></div>
+                <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span>
+                <span class="n">compressed_pacman_router_tables</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">))</span>
 
-<div class="viewcode-block" id="HostBasedBitFieldRouterCompressor.collect_bit_field_sdram_base_addresses"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.collect_bit_field_sdram_base_addresses">[docs]</a>    <span class="k">def</span> <span class="nf">collect_bit_field_sdram_base_addresses</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
-            <span class="n">bit_field_sdram_base_addresses</span><span class="p">):</span>
+        <span class="c1"># return compressed tables</span>
+        <span class="k">return</span> <span class="n">compressed_pacman_router_tables</span><span class="p">,</span> <span class="n">prov_items</span></div>
+
+<div class="viewcode-block" id="HostBasedBitFieldRouterCompressor.get_bit_field_sdram_base_addresses"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.get_bit_field_sdram_base_addresses">[docs]</a>    <span class="k">def</span> <span class="nf">get_bit_field_sdram_base_addresses</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param int chip_x:</span>
 <span class="sd">        :param int chip_y:</span>
 <span class="sd">        :param ~spinn_machine.Machine machine:</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
-<span class="sd">        :param bit_field_sdram_base_addresses:</span>
-<span class="sd">        :type bit_field_sdram_base_addresses:</span>
-<span class="sd">            dict(tuple(int,int),dict(int,int))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># locate the bitfields in a chip level scope</span>
+        <span class="n">base_addresses</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">n_processors_on_chip</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">)</span><span class="o">.</span><span class="n">n_processors</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_processors_on_chip</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">placements</span><span class="o">.</span><span class="n">is_processor_occupied</span><span class="p">(</span><span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
                 <span class="n">vertex</span> <span class="o">=</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_vertex_on_processor</span><span class="p">(</span><span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
 
-                <span class="c1"># locate api vertex</span>
-                <span class="n">api_vertex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">locate_vertex_with_the_api</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
-
-                <span class="c1"># get data</span>
-                <span class="k">if</span> <span class="n">api_vertex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">bit_field_sdram_base_addresses</span><span class="p">[</span><span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">][</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> \
-                        <span class="n">api_vertex</span><span class="o">.</span><span class="n">bit_field_base_address</span><span class="p">(</span>
-                            <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span>
-                                <span class="n">vertex</span><span class="p">))</span></div>
-
-<div class="viewcode-block" id="HostBasedBitFieldRouterCompressor.calculate_threshold"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.calculate_threshold">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_threshold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param int machine_time_step:</span>
-<span class="sd">        :param int time_scale_factor:</span>
-<span class="sd">        :rtype: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span><span class="p">(</span>
-            <span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">machine_time_step</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MS_TO_SEC</span><span class="p">)))</span> <span class="o">*</span>
-             <span class="n">time_scale_factor</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N_PACKETS_PER_SECOND</span><span class="p">)</span> <span class="o">/</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_THRESHOLD_FRACTION_EFFECT</span><span class="p">)</span></div>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+                        <span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractSupportsBitFieldRoutingCompression</span><span class="p">):</span>
+                    <span class="n">base_addresses</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="n">bit_field_base_address</span><span class="p">(</span>
+                        <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span>
+                            <span class="n">vertex</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">base_addresses</span></div>
 
 <div class="viewcode-block" id="HostBasedBitFieldRouterCompressor.generate_key_to_atom_map"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.generate_key_to_atom_map">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">generate_key_to_atom_map</span><span class="p">(</span><span class="n">machine_graph</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">):</span>
@@ -311,9 +311,7 @@
 
 <div class="viewcode-block" id="HostBasedBitFieldRouterCompressor.start_compression_selection_process"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.start_compression_selection_process">[docs]</a>    <span class="k">def</span> <span class="nf">start_compression_selection_process</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">router_table</span><span class="p">,</span> <span class="n">produce_report</span><span class="p">,</span> <span class="n">report_folder_path</span><span class="p">,</span>
-            <span class="n">bit_field_sdram_base_addresses</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
-            <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span>
-            <span class="n">time_to_try_for_each_iteration</span><span class="p">,</span> <span class="n">use_timer_cut_off</span><span class="p">,</span>
+            <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span>
             <span class="n">compressed_pacman_router_tables</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Entrance method for doing on host compression. Can be used as a \</span>
 <span class="sd">            public method for other compressors.</span>
@@ -323,8 +321,6 @@
 <span class="sd">            ~pacman.model.routing_tables.UnCompressedMulticastRoutingTable</span>
 <span class="sd">        :param bool produce_report: whether the report should be generated</span>
 <span class="sd">        :param str report_folder_path: the report folder base address</span>
-<span class="sd">        :param dict(tuple(int,int),int) bit_field_sdram_base_addresses:</span>
-<span class="sd">            the SDRAM addresses for bitfields used in the chip.</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">            spinnMan instance</span>
 <span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
@@ -332,10 +328,6 @@
 <span class="sd">        :param ~pacman.model.placements.Placements placements: placements</span>
 <span class="sd">        :param ~spinn_machine.Machine machine: SpiNNMan instance</span>
 <span class="sd">        :param int target_length: length of router compressor to get to</span>
-<span class="sd">        :param int time_to_try_for_each_iteration:</span>
-<span class="sd">            time in seconds to run each compression attempt for</span>
-<span class="sd">        :param bool use_timer_cut_off:</span>
-<span class="sd">            whether the timer cut off is to be used</span>
 <span class="sd">        :param compressed_pacman_router_tables:</span>
 <span class="sd">            a data holder for compressed tables</span>
 <span class="sd">        :type compressed_pacman_router_tables:</span>
@@ -343,14 +335,20 @@
 <span class="sd">        :param dict(int,int) key_atom_map: key to atoms map</span>
 <span class="sd">            should be allowed to handle per time step</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Reset all the self values as they change for each routing table</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_entries</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_best_midpoint</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bit_fields_by_key</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compression_attempts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="c1"># iterate through bitfields on this chip and convert to router</span>
-        <span class="c1"># table</span>
-        <span class="n">bit_field_chip_base_addresses</span> <span class="o">=</span> <span class="n">bit_field_sdram_base_addresses</span><span class="p">[</span>
-            <span class="p">(</span><span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span>
+        <span class="c1"># Find the processors that have bitfield data and where it is</span>
+        <span class="n">bit_field_chip_base_addresses</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_bit_field_sdram_base_addresses</span><span class="p">(</span>
+                <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
+                <span class="n">transceiver</span><span class="p">))</span>
 
         <span class="c1"># read in bitfields.</span>
-        <span class="n">bit_fields_by_processor</span><span class="p">,</span> <span class="n">sorted_bit_fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_in_bit_fields</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_in_bit_fields</span><span class="p">(</span>
             <span class="n">transceiver</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
             <span class="n">bit_field_chip_base_addresses</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
             <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span>
@@ -358,15 +356,14 @@
 
         <span class="c1"># execute binary search</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_start_binary_search</span><span class="p">(</span>
-            <span class="n">router_table</span><span class="p">,</span> <span class="n">sorted_bit_fields</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span>
-            <span class="n">time_to_try_for_each_iteration</span><span class="p">,</span> <span class="n">use_timer_cut_off</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">)</span>
+            <span class="n">router_table</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">)</span>
 
         <span class="c1"># add final to compressed tables:</span>
         <span class="c1"># self._best_routing_table is a list of entries</span>
         <span class="n">best_router_table</span> <span class="o">=</span> <span class="n">CompressedMulticastRoutingTable</span><span class="p">(</span>
             <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_table</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_entries</span><span class="p">:</span>
             <span class="n">best_router_table</span><span class="o">.</span><span class="n">add_multicast_routing_entry</span><span class="p">(</span>
                 <span class="n">entry</span><span class="o">.</span><span class="n">to_MulticastRoutingEntry</span><span class="p">())</span>
 
@@ -375,9 +372,7 @@
         <span class="c1"># remove bitfields from cores that have been merged into the</span>
         <span class="c1"># router table</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_remove_merged_bitfields_from_cores</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_best_bit_fields_by_processor</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
-            <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
-            <span class="n">bit_field_chip_base_addresses</span><span class="p">,</span> <span class="n">bit_fields_by_processor</span><span class="p">)</span>
+            <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span>
 
         <span class="c1"># create report file if required</span>
         <span class="k">if</span> <span class="n">produce_report</span><span class="p">:</span>
@@ -385,103 +380,55 @@
                 <span class="n">report_folder_path</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_REPORT_NAME</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_file_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">report_out</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_create_table_report</span><span class="p">(</span>
-                    <span class="n">router_table</span><span class="p">,</span> <span class="n">sorted_bit_fields</span><span class="p">,</span> <span class="n">report_out</span><span class="p">)</span></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_create_table_report</span><span class="p">(</span><span class="n">router_table</span><span class="p">,</span> <span class="n">report_out</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_convert_bitfields_into_router_tables</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">router_table</span><span class="p">,</span> <span class="n">bitfields_by_key</span><span class="p">,</span> <span class="n">key_to_n_atoms_map</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">generate_provenance_item</span><span class="p">(</span>
+            <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_midpoint</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_convert_bitfields_into_router_table</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">router_table</span><span class="p">,</span> <span class="n">mid_point</span><span class="p">,</span> <span class="n">key_to_n_atoms_map</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Converts the bitfield into router table entries for compression, \</span>
 <span class="sd">            based off the entry located in the original router table.</span>
 
 <span class="sd">        :param ~.UnCompressedMulticastRoutingTable router_table:</span>
 <span class="sd">            the original routing table</span>
-<span class="sd">        :param dict(int,list(_BitFieldData)) bitfields_by_key:</span>
-<span class="sd">            the bitfields of the chip.</span>
+<span class="sd">        :param int mid_point: cutoff for botfields to use</span>
 <span class="sd">        :param dict(int,int) key_to_n_atoms_map:</span>
 <span class="sd">        :return: routing tables.</span>
-<span class="sd">        :rtype: list(~.AbsractMulticastRoutingTable)</span>
+<span class="sd">        :rtype: ~.AbsractMulticastRoutingTable</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">bit_field_router_tables</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-
-        <span class="c1"># clone the original entries</span>
-        <span class="n">original_route_entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">original_route_entries</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">router_table</span><span class="o">.</span><span class="n">multicast_routing_entries</span><span class="p">)</span>
+        <span class="n">new_table</span> <span class="o">=</span> <span class="n">UnCompressedMulticastRoutingTable</span><span class="p">(</span>
+            <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
 
         <span class="c1"># go through the bitfields and get the routing table for it</span>
-        <span class="k">for</span> <span class="n">master_pop_key</span> <span class="ow">in</span> <span class="n">bitfields_by_key</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-
-            <span class="n">bit_field_original_entry</span> <span class="o">=</span> \
-                <span class="n">router_table</span><span class="o">.</span><span class="n">get_entry_by_routing_entry_key</span><span class="p">(</span><span class="n">master_pop_key</span><span class="p">)</span>
-            <span class="n">bit_field_entries</span> <span class="o">=</span> <span class="n">UnCompressedMulticastRoutingTable</span><span class="p">(</span>
-                <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
-                <span class="n">multicast_routing_entries</span><span class="o">=</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_generate_entries_from_bitfield</span><span class="p">(</span>
-                        <span class="n">bitfields_by_key</span><span class="p">[</span><span class="n">master_pop_key</span><span class="p">],</span>
-                        <span class="n">bit_field_original_entry</span><span class="p">,</span> <span class="n">key_to_n_atoms_map</span><span class="p">)))</span>
-
-            <span class="c1"># add to the list</span>
-            <span class="n">bit_field_router_tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bit_field_entries</span><span class="p">)</span>
-
-            <span class="c1"># remove entry</span>
-            <span class="n">original_route_entries</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">bit_field_original_entry</span><span class="p">)</span>
-
-        <span class="c1"># create reduced</span>
-        <span class="n">reduced_original_table</span> <span class="o">=</span> <span class="n">UnCompressedMulticastRoutingTable</span><span class="p">(</span>
-            <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">original_route_entries</span><span class="p">)</span>
-
-        <span class="c1"># add reduced to front of the tables</span>
-        <span class="n">bit_field_router_tables</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">reduced_original_table</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">base_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_fields_by_key</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">n_neurons</span> <span class="o">=</span> <span class="n">key_to_n_atoms_map</span><span class="p">[</span><span class="n">base_key</span><span class="p">]</span>
+            <span class="n">core_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">original_entry</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">router_table</span><span class="o">.</span><span class="n">get_entry_by_routing_entry_key</span><span class="p">(</span><span class="n">base_key</span><span class="p">))</span>
+            <span class="n">entry_links</span> <span class="o">=</span> <span class="n">original_entry</span><span class="o">.</span><span class="n">link_ids</span>
+            <span class="c1"># Assume all neurons for each processor to be kept</span>
+            <span class="k">for</span> <span class="n">processor_id</span> <span class="ow">in</span> <span class="n">original_entry</span><span class="o">.</span><span class="n">processor_ids</span><span class="p">:</span>
+                <span class="n">core_map</span><span class="p">[</span><span class="n">processor_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_neurons</span>
+            <span class="c1"># For those below the midpoint use the bitfield data</span>
+            <span class="k">for</span> <span class="n">bf_data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_fields_by_key</span><span class="p">[</span><span class="n">base_key</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">bf_data</span><span class="o">.</span><span class="n">sort_index</span> <span class="o">&lt;</span> <span class="n">mid_point</span><span class="p">:</span>
+                    <span class="n">core_map</span><span class="p">[</span><span class="n">bf_data</span><span class="o">.</span><span class="n">processor_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">bf_data</span><span class="o">.</span><span class="n">bit_field_as_bit_array</span><span class="p">())</span>
+            <span class="c1"># Add an Entry for each neuron</span>
+            <span class="k">for</span> <span class="n">neuron</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">):</span>
+                <span class="n">processors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">processor_id</span> <span class="ow">in</span> <span class="n">original_entry</span><span class="o">.</span><span class="n">processor_ids</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">core_map</span><span class="p">[</span><span class="n">processor_id</span><span class="p">][</span><span class="n">neuron</span><span class="p">]:</span>
+                        <span class="n">processors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">processor_id</span><span class="p">)</span>
+                <span class="c1"># build new entry for this neuron and add to table</span>
+                <span class="n">new_table</span><span class="o">.</span><span class="n">add_multicast_routing_entry</span><span class="p">(</span><span class="n">MulticastRoutingEntry</span><span class="p">(</span>
+                    <span class="n">routing_entry_key</span><span class="o">=</span><span class="n">base_key</span> <span class="o">+</span> <span class="n">neuron</span><span class="p">,</span>
+                    <span class="n">mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_NEURON_LEVEL_MASK</span><span class="p">,</span> <span class="n">link_ids</span><span class="o">=</span><span class="n">entry_links</span><span class="p">,</span>
+                    <span class="n">defaultable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">processor_ids</span><span class="o">=</span><span class="n">processors</span><span class="p">))</span>
 
         <span class="c1"># return the bitfield tables and the reduced original table</span>
-        <span class="k">return</span> <span class="n">bit_field_router_tables</span>
-
-    <span class="k">def</span> <span class="nf">_generate_entries_from_bitfield</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">bit_fields</span><span class="p">,</span> <span class="n">routing_table_entry</span><span class="p">,</span> <span class="n">key_to_n_atoms_map</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; generate neuron level entries</span>
-
-<span class="sd">        :param list(_BitFieldData) bit_fields: the bitfields for a given key</span>
-<span class="sd">        :param ~.MulticastRoutingEntry routing_table_entry:</span>
-<span class="sd">            the original entry from it</span>
-<span class="sd">        :param dict(int,int) key_to_n_atoms_map:</span>
-<span class="sd">        :return: the set of bitfield entries</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-
-        <span class="n">processors_filtered</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-
-        <span class="k">for</span> <span class="n">bit_field_by_processor</span> <span class="ow">in</span> <span class="n">bit_fields</span><span class="p">:</span>
-            <span class="n">processors_filtered</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bit_field_by_processor</span><span class="o">.</span><span class="n">processor_id</span><span class="p">)</span>
-
-        <span class="c1"># get some basic values</span>
-        <span class="n">entry_links</span> <span class="o">=</span> <span class="n">routing_table_entry</span><span class="o">.</span><span class="n">link_ids</span>
-        <span class="n">base_key</span> <span class="o">=</span> <span class="n">routing_table_entry</span><span class="o">.</span><span class="n">routing_entry_key</span>
-        <span class="n">n_neurons</span> <span class="o">=</span> <span class="n">key_to_n_atoms_map</span><span class="p">[</span><span class="n">base_key</span><span class="p">]</span>
-
-        <span class="c1"># check each neuron to see if any bitfields care, and if so,</span>
-        <span class="c1"># add processor</span>
-        <span class="k">for</span> <span class="n">neuron</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">):</span>
-            <span class="n">processors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-
-            <span class="c1"># add processors that are not going to be filtered</span>
-            <span class="k">for</span> <span class="n">processor_id</span> <span class="ow">in</span> <span class="n">routing_table_entry</span><span class="o">.</span><span class="n">processor_ids</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">processor_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">processors_filtered</span><span class="p">:</span>
-                    <span class="n">processors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">processor_id</span><span class="p">)</span>
-
-            <span class="c1"># process bitfields</span>
-            <span class="k">for</span> <span class="n">bit_field_by_processor</span> <span class="ow">in</span> <span class="n">bit_fields</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_for_neuron_id</span><span class="p">(</span>
-                        <span class="n">bit_field_by_processor</span><span class="o">.</span><span class="n">bit_field</span><span class="p">,</span> <span class="n">neuron</span><span class="p">):</span>
-                    <span class="n">processors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bit_field_by_processor</span><span class="o">.</span><span class="n">processor_id</span><span class="p">)</span>
-
-            <span class="c1"># build new entry for this neuron</span>
-            <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MulticastRoutingEntry</span><span class="p">(</span>
-                <span class="n">routing_entry_key</span><span class="o">=</span><span class="n">base_key</span> <span class="o">+</span> <span class="n">neuron</span><span class="p">,</span>
-                <span class="n">mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_NEURON_LEVEL_MASK</span><span class="p">,</span> <span class="n">link_ids</span><span class="o">=</span><span class="n">entry_links</span><span class="p">,</span>
-                <span class="n">defaultable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">processor_ids</span><span class="o">=</span><span class="n">processors</span><span class="p">))</span>
-
-        <span class="c1"># return the entries</span>
-        <span class="k">return</span> <span class="n">entries</span>
+        <span class="k">return</span> <span class="n">new_table</span>
 
     <span class="k">def</span> <span class="nf">_bit_for_neuron_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bit_field</span><span class="p">,</span> <span class="n">neuron_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; locate the bit for the neuron in the bitfield</span>
@@ -514,75 +461,68 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># data holder</span>
-        <span class="n">bit_fields_by_processor</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bit_fields_by_key</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
         <span class="n">bit_fields_by_coverage</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
         <span class="n">processor_coverage_by_bitfield</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 
         <span class="c1"># read in for each app vertex that would have a bitfield</span>
         <span class="k">for</span> <span class="n">processor_id</span> <span class="ow">in</span> <span class="n">bit_field_chip_base_addresses</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="n">bit_field_base_address</span> <span class="o">=</span> \
-                <span class="n">bit_field_chip_base_addresses</span><span class="p">[</span><span class="n">processor_id</span><span class="p">]</span>
+            <span class="n">bit_field_base_address</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">bit_field_chip_base_addresses</span><span class="p">[</span><span class="n">processor_id</span><span class="p">])</span>
 
-            <span class="c1"># from filter_regoin_t read how many bitfields there are</span>
-            <span class="c1"># n_merged_filters, n_redundancy_filters, n_filters</span>
-            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">n_filters</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span>
-                <span class="s2">&quot;&lt;III&quot;</span><span class="p">,</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
-                    <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span>
-                    <span class="n">bit_field_base_address</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span> <span class="o">*</span> <span class="mi">3</span><span class="p">))</span>
-            <span class="n">reading_address</span> <span class="o">=</span> <span class="n">bit_field_base_address</span> <span class="o">+</span> <span class="n">BYTES_PER_WORD</span> <span class="o">*</span> <span class="mi">3</span>
+            <span class="c1"># from filter_region_t read how many bitfields there are</span>
+            <span class="c1"># n_filters then array of filters</span>
+            <span class="n">n_filters</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_word</span><span class="p">(</span>
+                <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">bit_field_base_address</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
+            <span class="n">reading_address</span> <span class="o">=</span> <span class="n">bit_field_base_address</span> <span class="o">+</span> <span class="n">BYTES_PER_WORD</span>
 
             <span class="c1"># read in each bitfield</span>
             <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_filters</span><span class="p">):</span>
                 <span class="c1"># master pop key, n words and read pointer</span>
-                <span class="n">master_pop_key</span><span class="p">,</span> <span class="n">n_words_to_read</span><span class="p">,</span> <span class="n">read_pointer</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span>
+                <span class="n">master_pop_key</span><span class="p">,</span> <span class="n">n_atoms_word</span><span class="p">,</span> <span class="n">read_pointer</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span>
                     <span class="s2">&quot;&lt;III&quot;</span><span class="p">,</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
-                        <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">reading_address</span><span class="p">,</span>
-                        <span class="n">_BitFieldData</span><span class="o">.</span><span class="n">size_in_bytes</span><span class="p">()))</span>
-                <span class="n">reading_address</span> <span class="o">+=</span> <span class="n">_BitFieldData</span><span class="o">.</span><span class="n">size_in_bytes</span><span class="p">()</span>
+                        <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">reading_address</span><span class="p">,</span> <span class="n">BYTES_PER_3_WORDS</span><span class="p">))</span>
+                <span class="n">n_atoms_address</span> <span class="o">=</span> <span class="n">reading_address</span> <span class="o">+</span> <span class="n">BYTES_PER_WORD</span>
+                <span class="n">reading_address</span> <span class="o">+=</span> <span class="n">BYTES_PER_3_WORDS</span>
 
+                <span class="c1"># merged: 1; all_ones: 1; n_atoms: 30;</span>
+                <span class="n">atoms</span> <span class="o">=</span> <span class="n">n_atoms_word</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">N_ATOMS_MASK</span>
                 <span class="c1"># get bitfield words</span>
+                <span class="n">n_words_to_read</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">atoms</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BITS_PER_WORD</span><span class="p">)</span>
+
                 <span class="n">bit_field</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span>
                     <span class="s2">&quot;&lt;</span><span class="si">{}</span><span class="s2">I&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_words_to_read</span><span class="p">),</span>
                     <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
                         <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">read_pointer</span><span class="p">,</span>
                         <span class="n">n_words_to_read</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span><span class="p">))</span>
 
-                <span class="n">n_redundant_packets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_redundant_packet_count</span><span class="p">(</span>
-                    <span class="n">bit_field</span><span class="p">)</span>
-
                 <span class="c1"># sorted by best coverage of redundant packets</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="n">_BitFieldData</span><span class="p">(</span><span class="n">processor_id</span><span class="p">,</span> <span class="n">bit_field</span><span class="p">,</span> <span class="n">master_pop_key</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">_BitFieldData</span><span class="p">(</span><span class="n">processor_id</span><span class="p">,</span> <span class="n">bit_field</span><span class="p">,</span> <span class="n">master_pop_key</span><span class="p">,</span>
+                                     <span class="n">n_atoms_address</span><span class="p">,</span> <span class="n">n_atoms_word</span><span class="p">)</span>
+                <span class="n">as_array</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">bit_field_as_bit_array</span><span class="p">()</span>
+                <span class="c1"># Number of fields in the array that are zero instead of one</span>
+                <span class="n">n_redundant_packets</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">as_array</span><span class="p">)</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">as_array</span><span class="p">)</span>
+
                 <span class="n">bit_fields_by_coverage</span><span class="p">[</span><span class="n">n_redundant_packets</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
                 <span class="n">processor_coverage_by_bitfield</span><span class="p">[</span><span class="n">processor_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="n">n_redundant_packets</span><span class="p">)</span>
 
                 <span class="c1"># add to the bitfields tracker</span>
-                <span class="n">bit_fields_by_processor</span><span class="p">[</span><span class="n">processor_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bit_fields_by_key</span><span class="p">[</span><span class="n">master_pop_key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
         <span class="c1"># use the ordered process to find the best ones to do first</span>
-        <span class="n">list_of_bitfields_in_impact_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order_bit_fields</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_order_bit_fields</span><span class="p">(</span>
             <span class="n">bit_fields_by_coverage</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
             <span class="n">n_processors_on_chip</span><span class="p">,</span> <span class="n">processor_coverage_by_bitfield</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">bit_fields_by_processor</span><span class="p">,</span> <span class="n">list_of_bitfields_in_impact_order</span>
-
-<div class="viewcode-block" id="HostBasedBitFieldRouterCompressor.locate_vertex_with_the_api"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.locate_vertex_with_the_api">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">locate_vertex_with_the_api</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.graphs.machine.MachineVertex machine_vertex:</span>
-<span class="sd">        :return: The vertex associated with the machine vertex that supports</span>
-<span class="sd">            compression, or `None` if nothing can be found.</span>
-<span class="sd">        :rtype: AbstractSupportsBitFieldRoutingCompression or None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
-                <span class="n">machine_vertex</span><span class="p">,</span> <span class="n">AbstractSupportsBitFieldRoutingCompression</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">machine_vertex</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
 
     <span class="k">def</span> <span class="nf">_order_bit_fields</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">bit_fields_by_coverage</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span>
             <span class="n">placements</span><span class="p">,</span> <span class="n">n_processors_on_chip</span><span class="p">,</span> <span class="n">processor_coverage_by_bitfield</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Orders the bit fields by redundancy setting the sorted index</span>
+
+<span class="sd">        Also counts the bitfields setting _n_bitfields</span>
+
 <span class="sd">        :param dict(int,list(_BitFieldData)) bit_fields_by_coverage:</span>
 <span class="sd">        :param ~.MachineGraph machine_graph:</span>
 <span class="sd">        :param int chip_x:</span>
@@ -591,7 +531,7 @@
 <span class="sd">        :param int n_processors_on_chip:</span>
 <span class="sd">        :param dict(int,list(int)) processor_coverage_by_bitfield:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sorted_bit_fields</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">sort_index</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="c1"># get incoming bandwidth for the cores</span>
         <span class="n">most_costly_cores</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -600,8 +540,8 @@
                 <span class="n">vertex</span> <span class="o">=</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_vertex_on_processor</span><span class="p">(</span>
                     <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">)</span>
 
-                <span class="n">valid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">locate_vertex_with_the_api</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">valid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+                        <span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractSupportsBitFieldRoutingCompression</span><span class="p">):</span>
                     <span class="n">most_costly_cores</span><span class="p">[</span><span class="n">processor_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span>
                         <span class="n">machine_graph</span><span class="o">.</span><span class="n">get_edges_ending_at_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">))</span>
 
@@ -635,8 +575,9 @@
                         <span class="n">redundant_packet_count</span><span class="p">]:</span>
                     <span class="k">if</span> <span class="n">bit_field_data</span><span class="o">.</span><span class="n">processor_id</span> <span class="ow">in</span> <span class="n">cores_to_add_for</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">covered</span> <span class="o">&lt;</span> <span class="n">diff</span><span class="p">:</span>
+                            <span class="n">bit_field_data</span><span class="o">.</span><span class="n">sort_index</span> <span class="o">=</span> <span class="n">sort_index</span>
+                            <span class="n">sort_index</span> <span class="o">+=</span> <span class="mi">1</span>
                             <span class="n">to_delete</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bit_field_data</span><span class="p">)</span>
-                            <span class="n">sorted_bit_fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bit_field_data</span><span class="p">)</span>
                             <span class="n">covered</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="k">for</span> <span class="n">bit_field_data</span> <span class="ow">in</span> <span class="n">to_delete</span><span class="p">:</span>
                     <span class="n">bit_fields_by_coverage</span><span class="p">[</span><span class="n">redundant_packet_count</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span>
@@ -647,224 +588,150 @@
         <span class="n">coverage_levels</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">coverage_level</span> <span class="ow">in</span> <span class="n">coverage_levels</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">bit_field_data</span> <span class="ow">in</span> <span class="n">bit_fields_by_coverage</span><span class="p">[</span><span class="n">coverage_level</span><span class="p">]:</span>
-                <span class="n">sorted_bit_fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bit_field_data</span><span class="p">)</span>
+                <span class="n">bit_field_data</span><span class="o">.</span><span class="n">sort_index</span> <span class="o">=</span> <span class="n">sort_index</span>
+                <span class="n">sort_index</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="k">return</span> <span class="n">sorted_bit_fields</span>
-
-    <span class="k">def</span> <span class="nf">_detect_redundant_packet_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bitfield</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; locate in the bitfield how many possible packets it can filter \</span>
-<span class="sd">            away when integrated into the router table.</span>
-
-<span class="sd">        :param list(int) bitfield:</span>
-<span class="sd">            the memory blocks that represent the bitfield</span>
-<span class="sd">        :return: the number of redundant packets being captured.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">n_packets_filtered</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">n_neurons</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bitfield</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BITS_PER_WORD</span>
-
-        <span class="k">for</span> <span class="n">neuron_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_for_neuron_id</span><span class="p">(</span><span class="n">bitfield</span><span class="p">,</span> <span class="n">neuron_id</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">n_packets_filtered</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="n">n_packets_filtered</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_bitfields</span> <span class="o">=</span> <span class="n">sort_index</span>
 
     <span class="k">def</span> <span class="nf">_start_binary_search</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">router_table</span><span class="p">,</span> <span class="n">sorted_bit_fields</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span>
-            <span class="n">time_to_try_for_each_iteration</span><span class="p">,</span> <span class="n">use_timer_cut_off</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">router_table</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; start binary search of the merging of bitfield to router table</span>
 
 <span class="sd">        :param ~.UnCompressedMulticastRoutingTable router_table:</span>
 <span class="sd">            uncompressed router table</span>
-<span class="sd">        :param list(_BitFieldData) sorted_bit_fields: the sorted bitfields</span>
 <span class="sd">        :param int target_length: length to compress to</span>
-<span class="sd">        :param int time_to_try_for_each_iteration:</span>
-<span class="sd">            the time to allow compressor to run for.</span>
-<span class="sd">        :param bool use_timer_cut_off:</span>
-<span class="sd">            whether we should use the timer cutoff for compression</span>
 <span class="sd">        :param dict(int,int) key_atom_map: map from key to atoms</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># try first just uncompressed. so see if its possible</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_algorithm</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">router_table</span><span class="p">],</span> <span class="n">target_length</span><span class="p">,</span> <span class="n">time_to_try_for_each_iteration</span><span class="p">,</span>
-                <span class="n">use_timer_cut_off</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_best_bit_fields_by_processor</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_entries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_algorithm</span><span class="p">(</span>
+                <span class="n">router_table</span><span class="p">,</span> <span class="n">target_length</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_best_midpoint</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compression_attempts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;succcess&quot;</span>
         <span class="k">except</span> <span class="n">MinimisationFailedError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">PacmanAlgorithmFailedToGenerateOutputsException</span><span class="p">(</span>
                 <span class="s2">&quot;host bitfield router compressor can&#39;t compress the &quot;</span>
                 <span class="s2">&quot;uncompressed routing tables, regardless of bitfield merging. &quot;</span>
                 <span class="s2">&quot;System is fundamentally flawed here&quot;</span><span class="p">)</span>
 
-        <span class="n">find_max_success</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sorted_bit_fields</span><span class="p">),</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_binary_search_check</span><span class="p">,</span> <span class="n">sorted_bit_fields</span><span class="o">=</span><span class="n">sorted_bit_fields</span><span class="p">,</span>
-            <span class="n">routing_table</span><span class="o">=</span><span class="n">router_table</span><span class="p">,</span> <span class="n">target_length</span><span class="o">=</span><span class="n">target_length</span><span class="p">,</span>
-            <span class="n">time_to_try_for_each_iteration</span><span class="o">=</span><span class="n">time_to_try_for_each_iteration</span><span class="p">,</span>
-            <span class="n">use_timer_cut_off</span><span class="o">=</span><span class="n">use_timer_cut_off</span><span class="p">,</span>
+        <span class="n">find_max_success</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_bitfields</span><span class="p">,</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_binary_search_check</span><span class="p">,</span> <span class="n">routing_table</span><span class="o">=</span><span class="n">router_table</span><span class="p">,</span>
+            <span class="n">target_length</span><span class="o">=</span><span class="n">target_length</span><span class="p">,</span>
             <span class="n">key_to_n_atoms_map</span><span class="o">=</span><span class="n">key_atom_map</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_binary_search_check</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">mid_point</span><span class="p">,</span> <span class="n">sorted_bit_fields</span><span class="p">,</span> <span class="n">routing_table</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span>
-            <span class="n">time_to_try_for_each_iteration</span><span class="p">,</span> <span class="n">use_timer_cut_off</span><span class="p">,</span>
-            <span class="n">key_to_n_atoms_map</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">mid_point</span><span class="p">,</span> <span class="n">routing_table</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span> <span class="n">key_to_n_atoms_map</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; check function for fix max success</span>
 
 <span class="sd">        :param int mid_point: the point if the list to stop at</span>
-<span class="sd">        :param list(_BitFieldData) sorted_bit_fields: lists of bitfields</span>
 <span class="sd">        :param ~.UnCompressedMulticastRoutingTable routing_table:</span>
 <span class="sd">            the basic routing table</span>
 <span class="sd">        :param int target_length: the target length to reach</span>
-<span class="sd">        :param int time_to_try_for_each_iteration:</span>
-<span class="sd">            the time in seconds to run for</span>
-<span class="sd">        :param bool use_timer_cut_off:</span>
-<span class="sd">            whether the timer cutoff should be used by the compressor.</span>
 <span class="sd">        :param dict(int,int) key_to_n_atoms_map:</span>
 <span class="sd">        :return: true if it compresses</span>
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># find new set of bitfields to try from midpoint</span>
-        <span class="n">new_bit_field_by_processor</span> <span class="o">=</span> <span class="n">DefaultOrderedDict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">mid_point</span><span class="p">):</span>
-            <span class="n">bf_data</span> <span class="o">=</span> <span class="n">sorted_bit_fields</span><span class="p">[</span><span class="n">element</span><span class="p">]</span>
-            <span class="n">new_bit_field_by_processor</span><span class="p">[</span><span class="n">bf_data</span><span class="o">.</span><span class="n">master_pop_key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bf_data</span><span class="p">)</span>
-
         <span class="c1"># convert bitfields into router tables</span>
-        <span class="n">bit_field_router_tables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_bitfields_into_router_tables</span><span class="p">(</span>
-            <span class="n">routing_table</span><span class="p">,</span> <span class="n">new_bit_field_by_processor</span><span class="p">,</span> <span class="n">key_to_n_atoms_map</span><span class="p">)</span>
+        <span class="n">bit_field_router_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_bitfields_into_router_table</span><span class="p">(</span>
+            <span class="n">routing_table</span><span class="p">,</span> <span class="n">mid_point</span><span class="p">,</span> <span class="n">key_to_n_atoms_map</span><span class="p">)</span>
 
         <span class="c1"># try to compress</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_algorithm</span><span class="p">(</span>
-                <span class="n">bit_field_router_tables</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span>
-                <span class="n">time_to_try_for_each_iteration</span><span class="p">,</span> <span class="n">use_timer_cut_off</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_best_bit_fields_by_processor</span> <span class="o">=</span> <span class="n">new_bit_field_by_processor</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_entries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_algorithm</span><span class="p">(</span>
+                <span class="n">bit_field_router_table</span><span class="p">,</span> <span class="n">target_length</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_best_midpoint</span> <span class="o">=</span> <span class="n">mid_point</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compression_attempts</span><span class="p">[</span><span class="n">mid_point</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;succcess&quot;</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">except</span> <span class="n">MinimisationFailedError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compression_attempts</span><span class="p">[</span><span class="n">mid_point</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;fail&quot;</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">except</span> <span class="n">PacmanElementAllocationException</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compression_attempts</span><span class="p">[</span><span class="n">mid_point</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Exception&quot;</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">_run_algorithm</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">router_tables</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span>
-            <span class="n">time_to_try_for_each_iteration</span><span class="p">,</span> <span class="n">use_timer_cut_off</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_run_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">router_table</span><span class="p">,</span> <span class="n">target_length</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Attempts to covert the mega router tables into 1 router table.</span>
+
+<span class="sd">        :param list(~.AbsractMulticastRoutingTable) router_table:</span>
+<span class="sd">            the set of router tables that together need to</span>
+<span class="sd">            be merged into 1 router table</span>
+<span class="sd">        :param int target_length: the number</span>
+<span class="sd">        :return: compressor router table</span>
+<span class="sd">        :rtype: list(RoutingTableEntry)</span>
+<span class="sd">        :throws MinimisationFailedError: if it fails to</span>
+<span class="sd">            compress to the correct length.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">compressor</span> <span class="o">=</span> <span class="n">PairCompressor</span><span class="p">(</span><span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">compressed_entries</span> <span class="o">=</span> <span class="n">compressor</span><span class="o">.</span><span class="n">compress_table</span><span class="p">(</span><span class="n">router_table</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">compressed_entries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">target_length</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MinimisationFailedError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> &gt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">compressed_entries</span><span class="p">),</span> <span class="n">target_length</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">compressed_entries</span>
+
+    <span class="k">def</span> <span class="nf">_run_mundy_algorithm</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">router_table</span><span class="p">,</span> <span class="n">target_length</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Attempts to covert the mega router tables into 1 router table.\</span>
 <span class="sd">            Will raise a MinimisationFailedError exception if it fails to\</span>
 <span class="sd">            compress to the correct length.</span>
 
-<span class="sd">        :param list(~.AbsractMulticastRoutingTable) router_tables:</span>
+<span class="sd">        Note: This method is uncurrently unused</span>
+
+<span class="sd">        :param list(~.AbsractMulticastRoutingTable) router_table:</span>
 <span class="sd">            the set of router tables that together need to</span>
 <span class="sd">            be merged into 1 router table</span>
 <span class="sd">        :param int target_length: the number</span>
-<span class="sd">        :param int time_to_try_for_each_iteration:</span>
-<span class="sd">            time for compressor to run for</span>
-<span class="sd">        :param bool use_timer_cut_off: whether to use timer cutoff</span>
 <span class="sd">        :return: compressor router table</span>
 <span class="sd">        :rtype: list(RoutingTableEntry)</span>
 <span class="sd">        :throws MinimisationFailedError: If compression fails</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># convert to rig format</span>
         <span class="n">entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">router_table</span> <span class="ow">in</span> <span class="n">router_tables</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">router_entry</span> <span class="ow">in</span> <span class="n">router_table</span><span class="o">.</span><span class="n">multicast_routing_entries</span><span class="p">:</span>
-                <span class="c1"># Add the new entry</span>
-                <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Entry</span><span class="o">.</span><span class="n">from_MulticastRoutingEntry</span><span class="p">(</span><span class="n">router_entry</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">router_entry</span> <span class="ow">in</span> <span class="n">router_table</span><span class="o">.</span><span class="n">multicast_routing_entries</span><span class="p">:</span>
+            <span class="c1"># Add the new entry</span>
+            <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Entry</span><span class="o">.</span><span class="n">from_MulticastRoutingEntry</span><span class="p">(</span><span class="n">router_entry</span><span class="p">))</span>
 
         <span class="c1"># compress the router entries using rigs compressor</span>
-        <span class="k">return</span> <span class="n">minimise</span><span class="p">(</span>
-            <span class="n">entries</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span> <span class="n">time_to_try_for_each_iteration</span><span class="p">,</span>
-            <span class="n">use_timer_cut_off</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">minimise</span><span class="p">(</span><span class="n">entries</span><span class="p">,</span> <span class="n">target_length</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_remove_merged_bitfields_from_cores</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">bit_fields_merged</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
-            <span class="n">bit_field_base_addresses</span><span class="p">,</span> <span class="n">bit_fields_by_processor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_remove_merged_bitfields_from_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Goes to SDRAM and removes said merged entries from the cores&#39; \</span>
 <span class="sd">            bitfield region</span>
 
-<span class="sd">        :param dict(int,list(_BitFieldData)) bit_fields_merged:</span>
-<span class="sd">            the bitfields that were merged into router table</span>
 <span class="sd">        :param int chip_x: the chip x coord from which this happened</span>
 <span class="sd">        :param int chip_y: the chip y coord from which this happened</span>
 <span class="sd">        :param ~.Transceiver transceiver: spinnman instance</span>
-<span class="sd">        :param dict(int,int) bit_field_base_addresses:</span>
-<span class="sd">            base addresses of chip bit fields</span>
-<span class="sd">        :param dict(int,list(_BitFieldData)) bit_fields_by_processor:</span>
-<span class="sd">            map of processor to bitfields</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># get data back in a form useful for write back</span>
-        <span class="n">new_bit_field_by_processor</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">master_pop_key</span> <span class="ow">in</span> <span class="n">bit_fields_merged</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">bit_field_by_processor</span> <span class="ow">in</span> <span class="n">bit_fields_merged</span><span class="p">[</span><span class="n">master_pop_key</span><span class="p">]:</span>
-                <span class="n">new_bit_field_by_processor</span><span class="p">[</span>
-                    <span class="n">bit_field_by_processor</span><span class="o">.</span><span class="n">processor_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">master_pop_key</span><span class="p">)</span>
-
-        <span class="c1"># process the separate cores</span>
-        <span class="k">for</span> <span class="n">processor_id</span> <span class="ow">in</span> <span class="n">bit_fields_by_processor</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-
-            <span class="c1"># amount of entries to remove</span>
-            <span class="n">new_total</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="nb">len</span><span class="p">(</span><span class="n">bit_fields_by_processor</span><span class="p">[</span><span class="n">processor_id</span><span class="p">])</span> <span class="o">-</span>
-                <span class="nb">len</span><span class="p">(</span><span class="n">new_bit_field_by_processor</span><span class="p">[</span><span class="n">processor_id</span><span class="p">]))</span>
-
-            <span class="c1"># base address for the region</span>
-            <span class="n">bit_field_base_address</span> <span class="o">=</span> <span class="n">bit_field_base_addresses</span><span class="p">[</span><span class="n">processor_id</span><span class="p">]</span>
-            <span class="n">writing_address</span> <span class="o">=</span> <span class="n">bit_field_base_address</span>
-            <span class="n">words_writing_address</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">writing_address</span> <span class="o">+</span> <span class="p">(</span>
-                    <span class="n">new_total</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_SIZE_OF_FILTER_INFO_IN_BYTES</span><span class="p">))</span>
-
-            <span class="c1"># write correct number of elements.</span>
-            <span class="n">transceiver</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span>
-                <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">writing_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ONE_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
-                    <span class="n">new_total</span><span class="p">),</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
-            <span class="n">writing_address</span> <span class="o">+=</span> <span class="n">BYTES_PER_WORD</span>
-
-            <span class="c1"># iterate through the original bitfields and omit the ones deleted</span>
-            <span class="k">for</span> <span class="n">bf_by_key</span> <span class="ow">in</span> <span class="n">bit_fields_by_processor</span><span class="p">[</span><span class="n">processor_id</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="n">bf_by_key</span><span class="o">.</span><span class="n">master_pop_key</span> <span class="ow">not</span> <span class="ow">in</span> \
-                        <span class="n">new_bit_field_by_processor</span><span class="p">[</span><span class="n">bf_by_key</span><span class="o">.</span><span class="n">processor_id</span><span class="p">]:</span>
-
-                    <span class="c1"># write key and n words</span>
+        <span class="k">for</span> <span class="n">entries</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_fields_by_key</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">sort_index</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_midpoint</span><span class="p">:</span>
+                    <span class="c1"># set merged</span>
+                    <span class="n">n_atoms_word</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">n_atoms_word</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">MERGED_SETTER</span>
                     <span class="n">transceiver</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span>
-                        <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">writing_address</span><span class="p">,</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_THREE_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
-                            <span class="n">bf_by_key</span><span class="o">.</span><span class="n">master_pop_key</span><span class="p">,</span>
-                            <span class="nb">len</span><span class="p">(</span><span class="n">bf_by_key</span><span class="o">.</span><span class="n">bit_field</span><span class="p">),</span> <span class="n">words_writing_address</span><span class="p">),</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_SIZE_OF_FILTER_INFO_IN_BYTES</span><span class="p">)</span>
-                    <span class="n">writing_address</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_SIZE_OF_FILTER_INFO_IN_BYTES</span>
+                        <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">n_atoms_address</span><span class="p">,</span> <span class="n">n_atoms_word</span><span class="p">)</span>
 
-                    <span class="c1"># write bitfield words</span>
-                    <span class="n">data</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
-                        <span class="s2">&quot;&lt;</span><span class="si">{}</span><span class="s2">I&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bf_by_key</span><span class="o">.</span><span class="n">bit_field</span><span class="p">)),</span>
-                        <span class="o">*</span><span class="n">bf_by_key</span><span class="o">.</span><span class="n">bit_field</span><span class="p">)</span>
-                    <span class="n">transceiver</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span>
-                        <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">words_writing_address</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
-                        <span class="nb">len</span><span class="p">(</span><span class="n">bf_by_key</span><span class="o">.</span><span class="n">bit_field</span><span class="p">)</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
-                    <span class="n">words_writing_address</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span>
-                        <span class="n">bf_by_key</span><span class="o">.</span><span class="n">bit_field</span><span class="p">)</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
-
-    <span class="k">def</span> <span class="nf">_create_table_report</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">router_table</span><span class="p">,</span> <span class="n">sorted_bit_fields</span><span class="p">,</span> <span class="n">report_out</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_create_table_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">router_table</span><span class="p">,</span> <span class="n">report_out</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; creates the report entry</span>
 
 <span class="sd">        :param ~.AbsractMulticastRoutingTable router_table:</span>
 <span class="sd">            the uncompressed router table to process</span>
-<span class="sd">        :param list sorted_bit_fields: the bitfields overall</span>
 <span class="sd">        :param ~io.TextIOBase report_out: the report writer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">n_bit_fields_merged</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">n_packets_filtered</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_bit_fields_by_processor</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="n">best_bit_fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_bit_fields_by_processor</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="n">n_bit_fields_merged</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">best_bit_fields</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">best_bit_fields</span><span class="p">:</span>
-                <span class="n">n_neurons</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">bit_field</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BITS_PER_WORD</span>
-                <span class="k">for</span> <span class="n">neuron_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">):</span>
-                    <span class="n">is_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_for_neuron_id</span><span class="p">(</span>
-                        <span class="n">element</span><span class="o">.</span><span class="n">bit_field</span><span class="p">,</span> <span class="n">neuron_id</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">is_set</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="n">n_packets_filtered</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">n_possible_bit_fields</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">merged_by_core</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 
-        <span class="n">n_possible_bit_fields</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_bit_fields</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_fields_by_key</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">bf_data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_fields_by_key</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                <span class="n">n_possible_bit_fields</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">bf_data</span><span class="o">.</span><span class="n">sort_index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_midpoint</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">n_bit_fields_merged</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">as_array</span> <span class="o">=</span> <span class="n">bf_data</span><span class="o">.</span><span class="n">bit_field_as_bit_array</span><span class="p">()</span>
+                <span class="n">n_packets_filtered</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">as_array</span><span class="p">)</span>
+                <span class="n">merged_by_core</span><span class="p">[</span><span class="n">bf_data</span><span class="o">.</span><span class="n">processor_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bf_data</span><span class="p">)</span>
 
         <span class="n">percentage_done</span> <span class="o">=</span> <span class="mi">100</span>
         <span class="k">if</span> <span class="n">n_possible_bit_fields</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
@@ -873,7 +740,7 @@
                 <span class="nb">float</span><span class="p">(</span><span class="n">n_bit_fields_merged</span><span class="p">))</span>
 
         <span class="n">report_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-            <span class="s2">&quot;Table</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> has integrated </span><span class="si">{}</span><span class="s2"> out of </span><span class="si">{}</span><span class="s2"> available chip level &quot;</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Table </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> has integrated </span><span class="si">{}</span><span class="s2"> out of </span><span class="si">{}</span><span class="s2"> available chip level &quot;</span>
             <span class="s2">&quot;bitfields into the routing table. There by producing a &quot;</span>
             <span class="s2">&quot;compression of </span><span class="si">{}</span><span class="s2">%.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">n_bit_fields_merged</span><span class="p">,</span>
@@ -883,22 +750,26 @@
             <span class="s2">&quot;The uncompressed routing table had </span><span class="si">{}</span><span class="s2"> entries, the compressed &quot;</span>
             <span class="s2">&quot;one with </span><span class="si">{}</span><span class="s2"> integrated bitfields has </span><span class="si">{}</span><span class="s2"> entries. </span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">router_table</span><span class="o">.</span><span class="n">number_of_entries</span><span class="p">,</span>
+                <span class="n">n_bit_fields_merged</span><span class="p">,</span>
                 <span class="c1"># Note: _best_routing_table is a list(), router_table is not</span>
-                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_table</span><span class="p">),</span>
-                <span class="n">n_bit_fields_merged</span><span class="p">))</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_entries</span><span class="p">)))</span>
 
         <span class="n">report_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
             <span class="s2">&quot;The integration of </span><span class="si">{}</span><span class="s2"> bitfields removes up to </span><span class="si">{}</span><span class="s2"> MC packets &quot;</span>
             <span class="s2">&quot;that otherwise would be being processed by the cores on the &quot;</span>
-            <span class="s2">&quot;chip, just to be dropped as they do not target anything.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">n_bit_fields_merged</span><span class="p">,</span> <span class="n">n_packets_filtered</span><span class="p">))</span>
+            <span class="s2">&quot;chip, just to be dropped as they do not target anything.</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_bit_fields_merged</span><span class="p">,</span> <span class="n">n_packets_filtered</span><span class="p">))</span>
 
-        <span class="n">report_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;The bit_fields merged are as follows:</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">report_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;The compression attempts are as follows:</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">mid_point</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compression_attempts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">report_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Midpoint </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mid_point</span><span class="p">,</span> <span class="n">result</span><span class="p">))</span>
 
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_bit_fields_by_processor</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">bf_by_processor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_bit_fields_by_processor</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+        <span class="n">report_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The bit_fields merged are as follows:</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">core</span> <span class="ow">in</span> <span class="n">merged_by_core</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">bf_data</span> <span class="ow">in</span> <span class="n">merged_by_core</span><span class="p">[</span><span class="n">core</span><span class="p">]:</span>
                 <span class="n">report_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;bitfield on core </span><span class="si">{}</span><span class="s2"> for key </span><span class="si">{}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">bf_by_processor</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+                    <span class="n">core</span><span class="p">,</span> <span class="n">bf_data</span><span class="o">.</span><span class="n">master_pop_key</span><span class="p">))</span>
 
         <span class="n">report_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">report_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;The final routing table entries are as follows:</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -914,7 +785,7 @@
         <span class="n">entry_count</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">n_defaultable</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="c1"># Note: _best_routing_table is a list(), router_table is not</span>
-        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_table</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_entries</span><span class="p">:</span>
             <span class="n">index</span> <span class="o">=</span> <span class="n">entry_count</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOWER_16_BITS</span>
             <span class="n">entry_str</span> <span class="o">=</span> <span class="n">line_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">format_route</span><span class="p">(</span>
                 <span class="n">entry</span><span class="o">.</span><span class="n">to_MulticastRoutingEntry</span><span class="p">()))</span>
