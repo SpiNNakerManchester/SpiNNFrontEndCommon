@@ -13,18 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
-from spinn_front_end_common.abstract_models import (
-    AbstractProvidesOutgoingPartitionConstraints)
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
 from .command_sender_machine_vertex import CommandSenderMachineVertex
 
 
 class CommandSender(
-        AbstractOneAppOneMachineVertex,
-        AbstractProvidesOutgoingPartitionConstraints):
+        AbstractOneAppOneMachineVertex):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation or in response to \
         simulation events (e.g., starting and stopping).
@@ -71,9 +67,3 @@ class CommandSender(
         """
         return self._machine_vertex._get_edges_and_partitions(
             self, ApplicationVertex, ApplicationEdge)
-
-    @overrides(AbstractProvidesOutgoingPartitionConstraints.
-               get_outgoing_partition_constraints)
-    def get_outgoing_partition_constraints(self, partition):
-        return self._machine_vertex.get_outgoing_partition_constraints(
-            partition)
