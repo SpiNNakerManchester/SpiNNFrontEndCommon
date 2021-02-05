@@ -15,25 +15,14 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 from pacman.model.graphs.machine import MachineVertex
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
-class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
+class AbstractSupportsDatabaseInjection(MachineVertex, metaclass=AbstractBase):
     """ Marks a machine vertex as supporting injection of information via a\
         database running on the controlling host.
     """
 
     __slots__ = ()
-
-    _WRONG_VERTEX_TYPE_ERROR = (
-        "The vertex {} is not of type MachineVertex. By not being a "
-        "machine vertex, the DatabaseWriter will not check this vertex")
-
-    def __new__(cls, *args, **kwargs):
-        if not issubclass(cls, MachineVertex):
-            raise SpinnFrontEndException(
-                cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
-        return super().__new__(cls, *args, **kwargs)
 
     @abstractproperty
     def is_in_injection_mode(self):

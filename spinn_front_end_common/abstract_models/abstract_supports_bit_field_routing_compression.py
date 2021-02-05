@@ -15,25 +15,14 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from pacman.model.graphs.machine import MachineVertex
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
 class AbstractSupportsBitFieldRoutingCompression(
-        object, metaclass=AbstractBase):
+        MachineVertex, metaclass=AbstractBase):
     """ Marks a machine vertex that can support having the on-chip bitfield \
         compressor running on its core.
     """
-
-    _WRONG_VERTEX_TYPE_ERROR = (
-        "The vertex {} is not of type MachineVertex. By not being a "
-        "machine vertex, the SpiNNFrontEndCommon function "
-        "HostBasedBitFieldRouterCompressor will not check this vertex")
-
-    def __new__(cls, *args, **kwargs):
-        if not issubclass(cls, MachineVertex):
-            raise SpinnFrontEndException(
-                cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
-        return super().__new__(cls, *args, **kwargs)
+    __slots__ = ()
 
     @abstractmethod
     def key_to_atom_map_region_base_address(self, transceiver, placement):

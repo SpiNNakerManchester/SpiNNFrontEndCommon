@@ -27,10 +27,10 @@ _ONE_WORD = struct.Struct("<I")
 
 def add_name(names, name):
     """
-            :param iterable(str) names:
-            :param str name:
-            :rtype: list(str)
-            """
+    :param iterable(str) names:
+    :param str name:
+    :rtype: list(str)
+    """
     new_names = list(names)
     new_names.append(name)
     return new_names

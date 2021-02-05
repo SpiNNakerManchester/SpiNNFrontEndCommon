@@ -15,24 +15,13 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from pacman.model.graphs.machine import MachineVertex
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
-class AbstractHasAssociatedBinary(object, metaclass=AbstractBase):
+class AbstractHasAssociatedBinary(MachineVertex, metaclass=AbstractBase):
     """ Marks a machine graph vertex that can be launched on a SpiNNaker core.
     """
 
     __slots__ = ()
-
-    _WRONG_VERTEX_TYPE_ERROR = (
-        "The vertex {} is not of type MachineVertex. By not being a "
-        "machine vertex, the get_binary_file_name will never be called")
-
-    def __new__(cls, *args, **kwargs):
-        if not issubclass(cls, MachineVertex):
-            raise SpinnFrontEndException(
-                cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
-        return super().__new__(cls, *args, **kwargs)
 
     @abstractmethod
     def get_binary_file_name(self):
