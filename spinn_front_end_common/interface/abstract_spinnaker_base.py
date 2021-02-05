@@ -1254,6 +1254,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ScampConnectionData"] = self._read_config(
             "Machine", "scamp_connections_data")
         inputs['ReportFolder'] = self._report_default_directory
+        inputs['ReportWaitingLogsFlag'] = self._config.getboolean(
+            "Machine", "report_waiting_logs")
         algorithms.append("MachineGenerator")
 
         outputs.append("MemoryMachine")
@@ -1315,6 +1317,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         do_partitioning = self._machine_by_size(inputs, algorithms, outputs)
         inputs['ReportFolder'] = self._report_default_directory
+        inputs['ReportWaitingLogsFlag'] = self._config.getboolean(
+            "Machine", "report_waiting_logs")
 
         # if using spalloc system
         if self._spalloc_server is not None:
@@ -1387,9 +1391,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # the graph
         else:
             inputs["MemoryApplicationGraph"] = self._application_graph
-            algorithms.extend(self._config.get(
-                "Mapping",
-                "application_to_machine_graph_algorithms").split(","))
+            algorithms.extend(self._config.get_str_list(
+                "Mapping", "application_to_machine_graph_algorithms"))
             outputs.append("MemoryMachineGraph")
             do_partitioning = True
 
@@ -1671,19 +1674,17 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # only add the partitioner if there isn't already a machine graph
         algorithms.append("MallocBasedChipIDAllocator")
         if not self._machine_graph.n_vertices:
-            full = self._config.get(
-                "Mapping", "application_to_machine_graph_algorithms")
-            algorithms.extend(full.replace(" ", "").split(","))
+            algorithms.extend(self._config.get_str_list(
+                "Mapping", "application_to_machine_graph_algorithms"))
             inputs['MemoryPreviousAllocatedResources'] = \
                 PreAllocatedResourceContainer()
 
         if self._use_virtual_board:
-            full = self._config.get(
-                "Mapping", "machine_graph_to_virtual_machine_algorithms")
+            algorithms.extend(self._config.get_str_list(
+                "Mapping", "machine_graph_to_virtual_machine_algorithms"))
         else:
-            full = self._config.get(
-                "Mapping", "machine_graph_to_machine_algorithms")
-        algorithms.extend(full.replace(" ", "").split(","))
+            algorithms.extend(self._config.get_str_list(
+                "Mapping", "machine_graph_to_machine_algorithms"))
 
         # add check for algorithm start type
         if not self._use_virtual_board:
@@ -1789,6 +1790,40 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             data_gen_timer.take_sample())
         self._mapping_outputs["DSGTimeMs"] = self._dsg_time
 
+    def _add_router_compressor_bit_field_inputs(self, inputs):
+        """
+
+        :param dict(str, object) inputs:
+        :return:
+        """
+        # bitfield inputs
+        inputs['RouterBitfieldCompressionReport'] = \
+            self.config.getboolean(
+                "Reports", "generate_router_compression_with_bitfield_report")
+
+        inputs['RouterCompressorBitFieldUseCutOff'] = \
+            self.config.getboolean(
+                "Mapping",
+                "router_table_compression_with_bit_field_use_time_cutoff")
+
+        inputs['RouterCompressorBitFieldTimePerAttempt'] = \
+            self._read_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_iteration_time")
+
+        inputs["RouterCompressorBitFieldPreAllocSize"] = \
+            self._read_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_pre_alloced_sdram")
+        inputs["RouterCompressorBitFieldPercentageThreshold"] = \
+            self._read_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_acceptance_threshold")
+        inputs["RouterCompressorBitFieldRetryCount"] = \
+            self._read_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_retry_count")
+
     def _do_load(self, graph_changed, data_changed):
         """
         :param bool graph_changed:
@@ -1808,6 +1843,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             graph_changed
         )
         inputs["NoSyncChanges"] = self._no_sync_changes
+        self._add_router_compressor_bit_field_inputs(inputs)
 
         if not graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
@@ -1830,9 +1866,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # Get the executable targets
             algorithms.append("GraphBinaryGatherer")
 
-        loading_algorithm = self._read_config("Mapping", "loading_algorithms")
-        if loading_algorithm is not None and (graph_changed or data_changed):
-            algorithms.extend(loading_algorithm.split(","))
+        algorithms.extend(self._config.get_str_list(
+            "Mapping", "loading_algorithms"))
+
         algorithms.extend(self._extra_load_algorithms)
 
         write_memory_report = self._config.getboolean(
@@ -1858,6 +1894,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     algorithms.append("CompressedRouterSummaryReport")
                     algorithms.append("RoutingTableFromMachineReport")
 
+        if self._config.getboolean(
+                "Reports", "write_bit_field_compressor_report"):
+            algorithms.append("BitFieldCompressorReport")
+
         # handle extra monitor functionality
         enable_advanced_monitor = self._config.getboolean(
             "Machine", "enable_advanced_monitor_support")
@@ -1872,7 +1912,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             optional_algorithms.append("RoutingTableLoader")
             optional_algorithms.append("TagsLoader")
 
-        optional_algorithms.append("WriteMemoryIOData")
         optional_algorithms.append("HostExecuteApplicationDataSpecification")
 
         # Get the executable targets
@@ -2363,12 +2402,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :rtype: list(str)
         """
         # add the extra xml files from the config file
-        xml_paths = self._config.get("Mapping", "extra_xmls_paths")
-        if xml_paths == "None":
-            xml_paths = list()
-        else:
-            xml_paths = xml_paths.split(",")
-
+        xml_paths = self._config.get_str_list("Mapping", "extra_xmls_paths")
         xml_paths.extend(get_front_end_common_pacman_xml_paths())
 
         if extra_algorithm_xml_paths is not None:
