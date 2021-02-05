@@ -22,7 +22,7 @@
 
 #include <filter_info.h>
 #include <key_atom_map.h>
-#include "../common/routing_table.h"
+#include <common/routing_table.h>
 
 //!===========================================================================
 //! enums
@@ -131,25 +131,25 @@ typedef struct comms_sdram_t {
 } comms_sdram_t;
 
 //! \brief a single mapping in the addresses area
-typedef struct triples_t {
+typedef struct bitfield_proc_t {
     //! The bitfield wrapper
     filter_region_t *filter;
-    //! Key and mask associated with the bitfield
-    key_atom_data_t *key_atom;
     //! The core associated with the bitfield
     int processor;
-} triples_t;
+} bitfield_proc_t;
 
 //! \brief top-level structure in the addresses area
 typedef struct region_addresses_t {
     //! Minimum percentage of bitfields to be merge in (currently ignored)
     uint32_t threshold;
+    //! Number of times that the sorters should set of the compressions again
+    uint32_t retry_count;
     //! Pointer to the area malloced to hold the comms_sdram
     comms_sdram_t* comms_sdram;
-    //! Number of triples in the list
-    int n_triples;
-    //! The mappings
-    triples_t triples[];
+    //! Number of processors in the list
+    int n_processors;
+    //! The data for the processors
+    bitfield_proc_t processors[];
 } region_addresses_t;
 
 #endif  // __COMPRESSOR_SORTER_STRUCTS_H__

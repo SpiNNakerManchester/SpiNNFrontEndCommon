@@ -50,7 +50,7 @@ from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models import (
-    AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable,
+    AbstractProvidesOutgoingPartitionConstraints,
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
     AbstractSupportsDatabaseInjection)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
@@ -79,8 +79,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         AbstractHasAssociatedBinary, AbstractSupportsDatabaseInjection,
         ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
-        SendsBuffersFromHostPreBufferedImpl,
-        AbstractReceiveBuffersToHost, AbstractRecordable):
+        SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost):
     """ A model which allows events to be injected into SpiNNaker and\
         converted in to multicast packets.
 
@@ -613,7 +612,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                     self._mask = rinfo.first_mask
             else:
                 partitions = machine_graph\
-                    .get_outgoing_edge_partitions_starting_at_vertex(self)
+                    .get_multicast_edge_partitions_starting_at_vertex(self)
                 partition = next(iter(partitions), None)
 
                 if partition is not None:
@@ -680,11 +679,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
         spec.write_value(data=self._receive_sdp_port)
 
         # write timer offset in microseconds
-        max_offset = (
-            machine_time_step * time_scale_factor) // _MAX_OFFSET_DENOMINATOR
+        max_offset = ((
+            machine_time_step * time_scale_factor) // (
+            _MAX_OFFSET_DENOMINATOR * 2))
         spec.write_value(
-            int(math.ceil(max_offset / self._n_vertices)) * self._n_data_specs)
-        self._n_data_specs += 1
+            (int(math.ceil(max_offset / self._n_vertices)) *
+             ReverseIPTagMulticastSourceMachineVertex._n_data_specs) +
+            int(math.ceil(max_offset)))
+        ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
@@ -779,10 +781,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(AbstractSupportsDatabaseInjection.is_in_injection_mode)
     def is_in_injection_mode(self):
         return self._in_injection_mode
-
-    @overrides(AbstractRecordable.is_recording)
-    def is_recording(self):
-        return self._is_recording > 0
 
     @inject("FirstMachineTimeStep")
     @inject_items({

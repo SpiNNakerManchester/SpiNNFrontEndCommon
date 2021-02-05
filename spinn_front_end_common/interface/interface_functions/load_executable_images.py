@@ -15,6 +15,7 @@
 
 import logging
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
@@ -22,7 +23,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
     flood_fill_binary_to_spinnaker)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class LoadExecutableImages(object):
@@ -34,7 +35,7 @@ class LoadExecutableImages(object):
 
     def load_app_images(self, executable_targets, app_id, transceiver):
         """
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         :param int app_id:
         :param ~spinnman.transceiver.Transceiver transceiver:
         """
@@ -44,7 +45,7 @@ class LoadExecutableImages(object):
 
     def load_sys_images(self, executable_targets, app_id, transceiver):
         """
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         :param int app_id:
         :param ~spinnman.transceiver.Transceiver transceiver:
         """
@@ -54,7 +55,7 @@ class LoadExecutableImages(object):
 
     def __load_images(self, executable_targets, app_id, txrx, filt, label):
         """
-        :param ExecutableTargets executable_targets:
+        :param ~.ExecutableTargets executable_targets:
         :param int app_id:
         :param ~.Transceiver txrx:
         :param callable(ExecutableType,bool) filt:
@@ -76,7 +77,7 @@ class LoadExecutableImages(object):
     @staticmethod
     def filter_targets(targets, filt):
         """
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         :param callable(ExecutableType,bool) filt:
         :rtype: tuple(list(str), ExecutableTargets)
         """
@@ -93,7 +94,7 @@ class LoadExecutableImages(object):
     @staticmethod
     def __start_simulation(executable_targets, txrx, app_id):
         """
-        :param ExecutableTargets executable_targets:
+        :param ~.ExecutableTargets executable_targets:
         :param ~.Transceiver txrx:
         :param int app_id:
         """

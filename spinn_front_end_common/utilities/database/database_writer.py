@@ -16,10 +16,12 @@
 import logging
 import os
 import sqlite3
+from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.abstract_models import (
-    AbstractProvidesKeyToAtomMapping, AbstractRecordable,
+    AbstractProvidesKeyToAtomMapping,
     AbstractSupportsDatabaseInjection)
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -31,7 +33,7 @@ def _extract_int(x):
     return None if x is None else int(x)
 
 
-class DatabaseWriter(object):
+class DatabaseWriter(AbstractContextManager):
     """ The interface for the database system for main front ends.\
         Any special tables needed from a front end should be done\
         by sub classes of this interface.
@@ -72,15 +74,15 @@ class DatabaseWriter(object):
         # set up checks
         self._machine_id = 0
 
-    def __enter__(self):
+    @overrides(AbstractContextManager._context_entered)
+    def _context_entered(self):
         self._connection = sqlite3.connect(self._database_path)
         self.__create_schema()
-        return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):  # @UnusedVariable
+    @overrides(AbstractContextManager.close)
+    def close(self):
         self._connection.close()
         self._connection = None
-        return False
 
     @staticmethod
     def auto_detect_database(machine_graph):
@@ -166,9 +168,11 @@ class DatabaseWriter(object):
                     for proc in chip.processors))
 
     def add_application_vertices(self, application_graph):
-        """
-        :param ~pacman.model.graphs.application.ApplicationGraph \
-                application_graph:
+        """ Stores the main application graph description (vertices, edges).
+
+        :param application_graph: The graph to add from
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
         """
         with self._connection:
             # add vertices
@@ -177,13 +181,11 @@ class DatabaseWriter(object):
                     """
                     INSERT INTO Application_vertices(
                         vertex_label, vertex_class, no_atoms,
-                        max_atom_constrant, recorded)
-                    VALUES(?, ?, ?, ?, ?)
+                        max_atom_constrant)
+                    VALUES(?, ?, ?, ?)
                     """,
                     vertex.label, vertex.__class__.__name__, vertex.n_atoms,
-                    vertex.get_max_atoms_per_core(), int(
-                        isinstance(vertex, AbstractRecordable) and
-                        vertex.is_recording()))
+                    vertex.get_max_atoms_per_core())
 
             # add edges
             for edge in application_graph.edges:
@@ -229,15 +231,15 @@ class DatabaseWriter(object):
                     ("runtime", -1 if runtime is None else runtime)])
 
     def add_vertices(self, machine_graph, data_n_timesteps, application_graph):
-        """ Add the machine graph and application graph into the database.
+        """ Add the machine graph into the database.
 
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             The machine graph object
         :param int data_n_timesteps:
             The number of timesteps for which data space will been reserved
-        :param ~pacman.model.graphs.application.ApplicationGraph \
-                application_graph:
-            The application graph object
+        :param application_graph: The application graph object
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
         """
         with self._connection:
             for vertex in machine_graph.vertices:
@@ -349,9 +351,9 @@ class DatabaseWriter(object):
     def add_routing_tables(self, routing_tables):
         """ Adds the routing tables into the database
 
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                routing_tables:
-            the routing tables object
+        :param routing_tables: the routing tables object
+        :type routing_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         """
         with self._connection:
             self._connection.executemany(
@@ -400,8 +402,9 @@ class DatabaseWriter(object):
     def create_atom_to_event_id_mapping(
             self, application_graph, machine_graph, routing_infos):
         """
-        :param ~pacman.model.graphs.application.ApplicationGraph \
-                application_graph:
+        :param application_graph:
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         """

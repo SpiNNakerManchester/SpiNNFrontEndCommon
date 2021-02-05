@@ -126,7 +126,8 @@ def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
     """ Flood fills a binary to spinnaker on a given `app_id` \
         given the executable targets and binary.
 
-    :param ExecutableTargets executable_targets: the executable targets object
+    :param ~spinnman.model.ExecutableTargets executable_targets:
+        the executable targets object
     :param str binary: the (name of the) binary to flood fill
     :param ~spinnman.transceiver.Transceiver txrx: spinnman instance
     :param int app_id: the application ID to load it as
@@ -169,6 +170,22 @@ def read_config_int(config, section, item):
     if value is None:
         return value
     return int(value)
+
+
+def read_config_float(config, section, item):
+    """ Get the float value of a config item, returning None if the value\
+        is "None"
+
+    :param ~configparser.ConfigParser config:
+        The configuration to look things up in.
+    :param str section: The section name
+    :param str item: The item name.
+    :rtype: float or None
+    """
+    value = read_config(config, section, item)
+    if value is None:
+        return value
+    return float(value)
 
 
 _BOOLEAN_STATES = {
@@ -250,7 +267,7 @@ def determine_flow_states(executable_types, no_sync_changes):
         the execute types to locate start and end states from
     :param int no_sync_changes: the number of times sync signals been sent
     :return: dict of executable type to states.
-    :rtype: tuple(dict(ExecutableType,~spinnman.model.enums.CPUState),\
+    :rtype: tuple(dict(ExecutableType,~spinnman.model.enums.CPUState),
         dict(ExecutableType,~spinnman.model.enums.CPUState))
     """
     expected_start_states = dict()
@@ -394,7 +411,8 @@ def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
 
     :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
     :param int app_id: The ID of the application.
-    :param ExecutableTargets executable_targets: The what/where mapping
+    :param ~spinnman.model.ExecutableTargets executable_targets:
+        The what/where mapping
     """
     _emergency_state_check(txrx, app_id)
     _emergency_iobuf_extract(txrx, executable_targets)

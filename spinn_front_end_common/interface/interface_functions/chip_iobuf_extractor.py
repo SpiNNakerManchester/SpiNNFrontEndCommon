@@ -17,10 +17,10 @@ import logging
 import os
 import re
 
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_string_into_chip_and_core_subset)
 from spinn_machine.core_subsets import CoreSubsets
@@ -92,8 +92,8 @@ class ChipIOBufExtractor(object):
             app_provenance_file_path=None, system_provenance_file_path=None,
             from_cores="ALL", binary_types=None):
         """
-        :param ~.Transceiver transceiver:
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         :param ExecutableFinder executable_finder:
         :param app_provenance_file_path:
         :type app_provenance_file_path: str or None

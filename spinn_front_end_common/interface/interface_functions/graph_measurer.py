@@ -15,32 +15,29 @@
 
 import logging
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
 from pacman.utilities.utility_objs import ResourceTracker
 from pacman.utilities.algorithm_utilities.placer_algorithm_utilities import (
     sort_vertices_by_known_constraints)
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class GraphMeasurer(object):
     """ Works out how many chips a machine graph needs.
-
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        The machine_graph to measure.
-    :param ~spinn_machine.Machine machine:
-        The machine with respect to which to partition the application graph.
-    :param int plan_n_timesteps: Number of timesteps to plan for.
-    :return: The size of the graph in number of chips.
-    :rtype: int
     """
 
     __slots__ = []
 
     def __call__(self, machine_graph, machine, plan_n_timesteps):
         """
-        :param ~.MachineGraph machine_graph:
-        :param ~.Machine machine:
-        :param int plan_n_timesteps:
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            The machine_graph to measure.
+        :param ~spinn_machine.Machine machine:
+            The machine with respect to which to partition the application
+            graph.
+        :param int plan_n_timesteps: Number of timesteps to plan for.
+        :return: The size of the graph in number of chips.
         :rtype: int
         """
 

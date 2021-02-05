@@ -20,6 +20,10 @@ from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 @add_metaclass(AbstractBase)
 class AbstractProvidesOutgoingPartitionConstraints(object):
     """ A vertex that can provide constraints for its outgoing edge partitions.
+
+    If a Machine_vertex is an instance the Application vertex will not be
+    checked. However if the MachineVertex does not implement this API
+    ProcessPartitionConstraint will then check the ApplicationVertex
     """
 
     __slots__ = ()
@@ -29,7 +33,7 @@ class AbstractProvidesOutgoingPartitionConstraints(object):
         """ Get constraints to be added to the given edge partition that comes\
             out of this vertex.
 
-        :param ~pacman.model.graphs.OutgoingEdgePartition partition:
+        :param ~pacman.model.graphs.AbstractOutgoingEdgePartition partition:
             An edge that comes out of this vertex
         :return: A list of constraints
         :rtype: list(~pacman.model.constraints.AbstractConstraint)

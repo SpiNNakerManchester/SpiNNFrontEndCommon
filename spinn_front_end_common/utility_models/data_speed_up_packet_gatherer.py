@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .abstract_one_app_one_machine_vertex import AbstractOneAppOneMachineVertex
+from pacman.model.graphs.application.abstract import (
+    AbstractOneAppOneMachineVertex)
 from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex)
 
@@ -44,13 +45,11 @@ class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
         super(DataSpeedUpPacketGather, self).__init__(
+            DataSpeedUpPacketGatherMachineVertex(
+                app_vertex=self,
+                x=x, y=y, ip_address=ip_address, constraints=constraints,
+                extra_monitors_by_chip=extra_monitors_by_chip,
+                report_default_directory=report_default_directory,
+                write_data_speed_up_reports=write_data_speed_up_reports),
             "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints)
-        # Create the machine vertex at the same time
-        # As with any MachineVertex this also triggers remember_...
-        self._machine_vertex = DataSpeedUpPacketGatherMachineVertex(
-            app_vertex=self,
-            x=x, y=y, ip_address=ip_address, constraints=constraints,
-            extra_monitors_by_chip=extra_monitors_by_chip,
-            report_default_directory=report_default_directory,
-            write_data_speed_up_reports=write_data_speed_up_reports)

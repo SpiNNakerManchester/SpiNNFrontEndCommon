@@ -1133,6 +1133,7 @@ static bool read_parameters(struct config *config) {
     log_info("space_before_read_request: %d", space_before_data_request);
     log_info("return_tag_id: %d", return_tag_id);
     log_info("return_tag_dest: 0x%08x", return_tag_dest);
+    log_info("tx_offset: %d", tx_offset);
 
     return true;
 }
@@ -1256,7 +1257,7 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
             "next packet buffer time: %d",
             simulation_ticks, time, next_buffer_time);
 
-    if (stopped || ((infinite_run != TRUE) && (time >= simulation_ticks))) {
+    if (stopped || simulation_is_finished()) {
         // Enter pause and resume state to avoid another tick
         simulation_handle_pause_resume(resume_callback);
 

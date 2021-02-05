@@ -77,7 +77,7 @@ class AbstractDatabase(object):
             simulation, and a flag indicating if any data was missing
 
             .. note::
-                Implementations should not assume that the total buffer is \
+                Implementations should not assume that the total buffer is
                 necessarily shorter than 1GB.
 
         :rtype: tuple(memoryview, bool)
@@ -99,7 +99,7 @@ class AbstractDatabase(object):
         """ Clears the data for a single region.
 
         .. note::
-            This method _loses information!_
+            This method *loses information!*
 
         :param int x: x coordinate of the chip
         :param int y: y coordinate of the chip

@@ -1,0 +1,79 @@
+# Copyright (c) 2020 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# This workflow will install Python dependencies, run tests, lint and rat with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: C Actions
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: "Prepare: Checkout"
+      uses: actions/checkout@v2
+    - name: "Prepare: Checkout SupportScripts"
+      uses: actions/checkout@v2
+      with:
+        repository: SpiNNakerManchester/SupportScripts
+        path: support
+
+    - name: "Prepare: Install Ubuntu dependencies"
+      uses: ./support/actions/apt-get-install
+      with:
+        packages: doxygen gcc-arm-none-eabi
+    - name: "Prepare: Set up Python 3.6"
+      # Note: Python is needed for spinn_utilities.make_tools when building
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.6
+    - name: "Prepare: Set SPINN_DIRS"
+      run: |
+        echo "Set SPINN_DIRS to $PWD/spinnaker_tools"
+        echo "SPINN_DIRS=$PWD/spinnaker_tools" >> $GITHUB_ENV
+
+    - name: "Prepare: Checkout SpiNNaker Dependencies"
+      uses: ./support/actions/checkout-spinn-deps
+      with:
+        # Note: SpiNNUtils needed for spinn_utilities.make_tools
+        repositories: spinnaker_tools spinn_common SpiNNUtils
+    - name: "Prepare: Install SpiNNUtils"
+      run: python setup.py install
+      working-directory: SpiNNUtils
+
+    - name: "Check: Lint C lib code using Vera++"
+      uses: ./support/actions/vera
+      with:
+        base-dir: c_common/front_end_common_lib
+    - name: "Check: Lint C binary code using Vera++"
+      uses: ./support/actions/vera
+      with:
+        base-dir: c_common/models
+
+    - name: "Prepare: Build Supporting C libraries"
+      run: |
+        make -C $SPINN_DIRS
+        make -C spinn_common install
+
+    - name: "Check: Build C code"
+      run: make
+      working-directory: c_common
+      env:
+        CFLAGS: -fdiagnostics-color=always
+
+    - name: "Check: Build documentation"
+      run: make doxysetup doxygen
+      working-directory: c_common

@@ -199,33 +199,25 @@ void print_table(table_t *table) {
    }
 }
 
-//! \brief sorts a given table so that the entries in the table are by key
+static inline bool compare_entries(const entry_t *ent_1, const entry_t *ent_2) {
+    return ent_1->key_mask.key > ent_2->key_mask.key;
+}
+
+//! \brief Sort a given table so that the entries in the table are by key
 //!     value.
+//! \details Uses insertion sort.
 //! \param[in] table: the table to sort.
 void sort_table_by_key(table_t *table) {
     uint32_t size = table->size;
     entry_t *entries = table->entries;
 
-    for (uint32_t i = 0; i < size - 1; i++) {
-        for (uint32_t j = i + 1; j < size; j++) {
-            if (entries[i].key_mask.key > entries[j].key_mask.key) {
-                uint32_t temp = entries[i].key_mask.key;
-                entries[i].key_mask.key = entries[j].key_mask.key;
-                entries[j].key_mask.key = temp;
-
-                temp = entries[i].key_mask.mask;
-                entries[i].key_mask.mask = entries[j].key_mask.mask;
-                entries[j].key_mask.mask = temp;
-
-                temp = entries[i].route;
-                entries[i].route = entries[j].route;
-                entries[j].route = temp;
-
-                temp = entries[i].source;
-                entries[i].source = entries[j].source;
-                entries[j].source = temp;
-            }
+    uint32_t i, j;
+    for (i = 1; i < size; i++) {
+        const entry_t temp = entries[i];
+        for (j = i; j > 0 && compare_entries(&entries[j - 1], &temp); j--) {
+            entries[j] = entries[j - 1];
         }
+        entries[j] = temp;
     }
 }
 

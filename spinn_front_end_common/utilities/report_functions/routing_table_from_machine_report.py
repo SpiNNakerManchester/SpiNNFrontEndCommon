@@ -15,27 +15,31 @@
 
 import logging
 import os
-
+from spinn_utilities.log import FormatAdapter
 from pacman.model.routing_tables.compressed_multicast_routing_table import (
     CompressedMulticastRoutingTable)
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.operations.algorithm_reports import reports
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 _FOLDER_NAME = "routing_tables_from_machine"
 
 
 class RoutingTableFromMachineReport(object):
+    """ Report the routing table that was actually on the machine.
     """
-    :param str report_default_directory:
-    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
-    :param ~spinnman.transceiver.Transceiver transceiver:
-    :param int app_id:
-    """
+
     def __call__(
             self, report_default_directory, routing_tables):
-
+        """
+        :param str report_default_directory:
+        :param routing_tables:
+        :type routing_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param int app_id:
+        """
         # pylint: disable=protected-access
         tables = list(routing_tables.routing_tables)
         progress = ProgressBar(tables, "Reading Routing Tables from Machine")

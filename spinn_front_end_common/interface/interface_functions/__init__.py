@@ -13,6 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+The code in this module is intended primarily for being invoked via the
+PACMAN Executor.
+"""
+
 from .application_finisher import ApplicationFinisher
 from .application_runner import ApplicationRunner
 from .buffer_extractor import BufferExtractor
@@ -29,6 +34,7 @@ from .dsg_region_reloader import DSGRegionReloader
 from .edge_to_n_keys_mapper import EdgeToNKeysMapper
 from .energy_provenance_reporter import EnergyProvenanceReporter
 from .finalise_timing_data import FinaliseTimingData
+from .find_application_chips_used import FindApplicationChipsUsed
 from .graph_binary_gatherer import GraphBinaryGatherer
 from .graph_data_specification_writer import (
     GraphDataSpecificationWriter)
@@ -50,6 +56,7 @@ from .insert_live_packet_gatherers_to_graphs import (
     InsertLivePacketGatherersToGraphs)
 from .load_executable_images import LoadExecutableImages
 from .load_fixed_routes import LoadFixedRoutes
+from .local_tdma_builder import LocalTDMABuilder
 from .locate_executable_start_type import LocateExecutableStartType
 from .machine_bit_field_router_compressor import (
     MachineBitFieldRouterCompressor)
@@ -78,6 +85,7 @@ from .tags_loader import TagsLoader
 from .tdma_agenda_builder import TDMAAgendaBuilder
 from .virtual_machine_generator import VirtualMachineGenerator
 from .read_routing_tables_from_machine import ReadRoutingTablesFromMachine
+from .sdram_outgoing_partition_allocator import SDRAMOutgoingPartitionAllocator
 
 __all__ = [
     "ApplicationFinisher",
@@ -89,6 +97,7 @@ __all__ = [
     "SystemMulticastRoutingGenerator",
     "DSGRegionReloader", "EdgeToNKeysMapper",
     "EnergyProvenanceReporter", "FinaliseTimingData",
+    "FindApplicationChipsUsed",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
     "HBPAllocator", "HostBasedBitFieldRouterCompressor",
@@ -99,8 +108,8 @@ __all__ = [
     "InsertEdgesToLivePacketGatherers",
     "InsertExtraMonitorVerticesToGraphs",
     "InsertLivePacketGatherersToGraphs", "LoadExecutableImages",
-    "LocateExecutableStartType", "MachineBitFieldRouterCompressor",
-    "LoadFixedRoutes", "MachineGenerator",
+    "LoadFixedRoutes", "LocalTDMABuilder", "LocateExecutableStartType",
+    "MachineBitFieldRouterCompressor", "MachineGenerator",
     "PlacementsProvenanceGatherer",
     "PreAllocateForBitFieldRouterCompressor",
     "PreAllocateResourcesForChipPowerMonitor",
@@ -108,8 +117,7 @@ __all__ = [
     "PreAllocateResourcesForLivePacketGatherers",
     "ProcessPartitionConstraints", "ProfileDataGatherer",
     "ProvenanceJSONWriter", "ProvenanceSQLWriter", "ProvenanceXMLWriter",
-    "RouterProvenanceGatherer", "RoutingSetup",
-    "RoutingTableLoader", "SpallocAllocator",
-    "SpallocMaxMachineGenerator", "TagsLoader",
-    "TDMAAgendaBuilder", "VirtualMachineGenerator",
-    "ReadRoutingTablesFromMachine"]
+    "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "RoutingSetup",
+    "RoutingTableLoader", "SDRAMOutgoingPartitionAllocator",
+    "SpallocAllocator", "SpallocMaxMachineGenerator", "TagsLoader",
+    "TDMAAgendaBuilder", "VirtualMachineGenerator"]

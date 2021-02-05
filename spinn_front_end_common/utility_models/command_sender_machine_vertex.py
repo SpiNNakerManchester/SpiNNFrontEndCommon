@@ -14,6 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum
+
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
@@ -69,12 +71,18 @@ class CommandSenderMachineVertex(
     # all commands will use this mask
     _DEFAULT_COMMAND_MASK = 0xFFFFFFFF
 
+    _NOT_GOT_KEY_ERROR_MESSAGE = (
+        "The command sender {} has requested key {} for outgoing "
+        "partition {}, but the keys allocated to it do not match. this will "
+        "cause errors in the external devices support and therefore needs "
+        "fixing")
+
     def __init__(self, label, constraints, app_vertex=None):
         """
         :param str label: The label of this vertex
-        :param iterable(~pacman.model.constraints.AbstractConstraint) \
-                constraints:
-            Any initial constraints to this vertex
+        :param constraints: Any initial constraints to this vertex
+        :type constraints:
+            iterable(~pacman.model.constraints.AbstractConstraint)
         :param CommandSender app_vertex:
         """
         super(CommandSenderMachineVertex, self).__init__(
@@ -153,17 +161,31 @@ class CommandSenderMachineVertex(
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
-        "time_scale_factor": "TimeScaleFactor"
-        })
+        "time_scale_factor": "TimeScaleFactor",
+        "routing_infos": "MemoryRoutingInfos"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={"machine_time_step", "time_scale_factor"})
+        additional_arguments={
+            "machine_time_step", "time_scale_factor", "routing_infos"})
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor):
+            self, spec, placement, machine_time_step, time_scale_factor,
+            routing_infos):
         """
         :param int machine_time_step:
         :param int time_scale_factor:
+        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+            the routing infos
         """
+        # pylint: disable=arguments-differ
+        for mc_key in self._keys_to_partition_id.keys():
+            allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(
+                self, self._keys_to_partition_id[mc_key])
+            if allocated_mc_key != mc_key:
+                raise ConfigurationException(
+                    self._NOT_GOT_KEY_ERROR_MESSAGE.format(
+                        self._label, mc_key,
+                        self._keys_to_partition_id[mc_key]))
+
         # pylint: disable=too-many-arguments, arguments-differ
         timed_commands_size = self.get_timed_commands_bytes()
         start_resume_commands_size = \
@@ -174,7 +196,7 @@ class CommandSenderMachineVertex(
         # reverse memory regions
         self._reserve_memory_regions(
             spec, timed_commands_size, start_resume_commands_size,
-            pause_stop_commands_size, placement.vertex)
+            pause_stop_commands_size)
 
         # Write system region
         spec.comment("\n*** Spec for multicast source ***\n\n")
@@ -245,10 +267,9 @@ class CommandSenderMachineVertex(
         spec.write_value(command.repeat)
         spec.write_value(command.delay_between_repeats)
 
-    @classmethod
     def _reserve_memory_regions(
-            cls, spec, time_command_size, start_command_size, end_command_size,
-            vertex):
+            self, spec, time_command_size, start_command_size,
+            end_command_size):
         """ Reserve SDRAM space for memory areas:
 
         1. Area for general system information
@@ -266,22 +287,22 @@ class CommandSenderMachineVertex(
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=cls.DATA_REGIONS.SYSTEM_REGION.value,
+            region=self.DATA_REGIONS.SYSTEM_REGION.value,
             size=SIMULATION_N_BYTES, label='system')
 
         spec.reserve_memory_region(
-            region=cls.DATA_REGIONS.COMMANDS_WITH_ARBITRARY_TIMES.value,
+            region=self.DATA_REGIONS.COMMANDS_WITH_ARBITRARY_TIMES.value,
             size=time_command_size, label='commands with arbitrary times')
 
         spec.reserve_memory_region(
-            region=cls.DATA_REGIONS.COMMANDS_AT_START_RESUME.value,
+            region=self.DATA_REGIONS.COMMANDS_AT_START_RESUME.value,
             size=start_command_size, label='commands with start resume times')
 
         spec.reserve_memory_region(
-            region=cls.DATA_REGIONS.COMMANDS_AT_STOP_PAUSE.value,
+            region=self.DATA_REGIONS.COMMANDS_AT_STOP_PAUSE.value,
             size=end_command_size, label='commands with stop pause times')
 
-        vertex.reserve_provenance_data_region(spec)
+        self.reserve_provenance_data_region(spec)
 
     def get_timed_commands_bytes(self):
         """

@@ -16,12 +16,13 @@
 import functools
 import logging
 import traceback
+from spinn_utilities.log import FormatAdapter
 from spinnman.processes import AbstractMultiConnectionProcess
 from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
     import (
         GetReinjectionStatusMessage)
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class ReadStatusProcess(AbstractMultiConnectionProcess):

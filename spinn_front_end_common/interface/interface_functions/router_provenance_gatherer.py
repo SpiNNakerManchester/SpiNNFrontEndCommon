@@ -23,20 +23,6 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class RouterProvenanceGatherer(object):
     """ Gathers diagnostics from the routers.
-
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the SpiNNMan interface object
-    :param ~spinn_machine.Machine machine:
-        the SpiNNaker machine
-    :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
-        the router tables that have been generated
-    :param bool using_reinjection: whether we are reinjecting packets
-    :param list(~.ProvenanceDataItem) provenance_data_objects:
-        any existing provenance information to add to
-    :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
-        vertices which represent the extra monitor code
-    :param ~pacman.model.placements.Placements placements:
-        the placements object
     """
 
     __slots__ = [
@@ -68,13 +54,20 @@ class RouterProvenanceGatherer(object):
             provenance_data_objects=None, extra_monitor_vertices=None,
             placements=None):
         """
-        :param ~.Transceiver transceiver:
-        :param ~.Machine machine:
-        :param ~.MulticastRoutingTables router_tables:
-        :param bool using_reinjection:
-        :param list(~.ProvenanceDataItem) provenance_data_objects:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the SpiNNMan interface object
+        :param ~spinn_machine.Machine machine:
+            the SpiNNaker machine
+        :param router_tables: the router tables that have been generated
+        :type router_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
+        :param bool using_reinjection: whether we are reinjecting packets
+        :param list(ProvenanceDataItem) provenance_data_objects:
+            any existing provenance information to add to
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
-        :param ~.Placements placements:
+            vertices which represent the extra monitor code
+        :param ~pacman.model.placements.Placements placements:
+            the placements object
         """
         # pylint: disable=too-many-arguments
         # pylint: disable=attribute-defined-outside-init
@@ -265,12 +258,25 @@ class RouterProvenanceGatherer(object):
         items.append(ProvenanceDataItem(
             self.__add_name(names, "External_Multicast_Packets"),
             str(router_diagnostic.n_external_multicast_packets)))
+
+        # simplify the if by making components of it outside.
+        has_dropped = router_diagnostic.n_dropped_multicast_packets > 0
+        missing_stuff = None
+        has_reinjection = reinjection_status is not None
+        if has_reinjection:
+            missing_stuff = (
+                (reinjection_status.n_dropped_packets +
+                 reinjection_status.n_missed_dropped_packets +
+                 reinjection_status.n_dropped_packet_overflows +
+                 reinjection_status.n_reinjected_packets +
+                 reinjection_status.n_link_dumps +
+                 reinjection_status.n_processor_dumps) <
+                router_diagnostic.n_dropped_multicast_packets)
         items.append(ProvenanceDataItem(
             self.__add_name(names, "Dropped_Multicast_Packets"),
             str(router_diagnostic.n_dropped_multicast_packets),
-            report=(
-                router_diagnostic.n_dropped_multicast_packets > 0 and
-                reinjection_status is None),
+            report=((has_dropped and not has_reinjection) or (
+                has_dropped and has_reinjection and missing_stuff)),
             message=(
                 "The router on {}, {} has dropped {} multicast route packets. "
                 "Try increasing the machine_time_step and/or the time scale "

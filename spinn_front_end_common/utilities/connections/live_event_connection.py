@@ -156,10 +156,10 @@ class LiveEventConnection(DatabaseConnection):
         :param str label:
             The label of the vertex to be notified about. Must be one of the
             vertices listed in the constructor
-        :param init_callback: A function to be called to initialise the\
-            vertex. This should take as parameters the label of the vertex,\
-            the number of neurons in the population, the run time of the\
-            simulation in milliseconds, and the simulation timestep in\
+        :param init_callback: A function to be called to initialise the
+            vertex. This should take as parameters the label of the vertex,
+            the number of neurons in the population, the run time of the
+            simulation in milliseconds, and the simulation timestep in
             milliseconds
         :type init_callback: callable(str, int, float, float) -> None
         """
@@ -171,9 +171,9 @@ class LiveEventConnection(DatabaseConnection):
 
         :param str label: The label of the vertex to be notified about.
             Must be one of the vertices listed in the constructor
-        :param live_event_callback: A function to be called when events are\
-            received. This should take as parameters the label of the vertex,\
-            the simulation timestep when the event occurred, and an\
+        :param live_event_callback: A function to be called when events are
+            received. This should take as parameters the label of the vertex,
+            the simulation timestep when the event occurred, and an
             array-like of atom IDs.
         :type live_event_callback: callable(str, int, list(int)) -> None
         :param bool translate_key:
@@ -189,9 +189,9 @@ class LiveEventConnection(DatabaseConnection):
     def add_start_callback(self, label, start_callback):
         """ Add a callback for the start of the simulation
 
-        :param start_callback: A function to be called when the start\
-            message has been received. This function should take the label of\
-            the referenced vertex, and an instance of this class, which can\
+        :param start_callback: A function to be called when the start
+            message has been received. This function should take the label of
+            the referenced vertex, and an instance of this class, which can
             be used to send events
         :type start_callback: callable(str, LiveEventConnection) -> None
         :param str label: the label of the function to be sent
@@ -207,9 +207,9 @@ class LiveEventConnection(DatabaseConnection):
         """ Add a callback for the start and resume state of the simulation
 
         :param str label: the label of the function to be sent
-        :param start_resume_callback: A function to be called when the start\
-            or resume message has been received. This function should take \
-            the label of the referenced vertex, and an instance of this \
+        :param start_resume_callback: A function to be called when the start
+            or resume message has been received. This function should take
+            the label of the referenced vertex, and an instance of this
             class, which can be used to send events.
         :type start_resume_callback: callable(str, LiveEventConnection) -> None
         :rtype: None
@@ -220,9 +220,9 @@ class LiveEventConnection(DatabaseConnection):
         """ Add a callback for the pause and stop state of the simulation
 
         :param str label: the label of the function to be sent
-        :param pause_stop_callback: A function to be called when the pause\
-            or stop message has been received. This function should take the\
-            label of the referenced  vertex, and an instance of this class,\
+        :param pause_stop_callback: A function to be called when the pause
+            or stop message has been received. This function should take the
+            label of the referenced  vertex, and an instance of this class,
             which can be used to send events.
         :type pause_stop_callback: callable(str, LiveEventConnection) -> None
         :rtype: None

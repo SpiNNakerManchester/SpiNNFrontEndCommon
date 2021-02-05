@@ -71,9 +71,9 @@ class ChipPowerMonitorMachineVertex(
             sampling_frequency, app_vertex=None, vertex_slice=None):
         """
         :param str label: vertex label
-        :param iterable(~pacman.model.constraints.AbstractConstraint) \
-                constraints:
-            constraints on this vertex
+        :param constraints: constraints on this vertex
+        :type constraints:
+            iterable(~pacman.model.constraints.AbstractConstraint)
         :param int n_samples_per_recording:
             how may samples between recording entry
         :param int sampling_frequency: how often to sample, in microseconds
@@ -166,18 +166,6 @@ class ChipPowerMonitorMachineVertex(
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             machine_time_step, time_scale_factor, data_n_time_steps):
-        """
-        :param int machine_time_step: machine time step
-        :param int time_scale_factor: time scale factor
-        :param int data_n_time_steps: timesteps to reserve data for
-        """
-        # pylint: disable=too-many-arguments, arguments-differ
-        self._generate_data_specification(
-            spec, machine_time_step, time_scale_factor, data_n_time_steps)
-
-    def _generate_data_specification(
-            self, spec, machine_time_step, time_scale_factor,
-            data_n_time_steps):
         """ Supports the application vertex calling this directly
 
         :param ~data_specification.DataSpecificationGenerator spec: data spec

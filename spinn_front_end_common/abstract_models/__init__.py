@@ -25,7 +25,6 @@ from .abstract_provides_key_to_atom_mapping import (
     AbstractProvidesKeyToAtomMapping)
 from .abstract_provides_outgoing_partition_constraints import (
     AbstractProvidesOutgoingPartitionConstraints)
-from .abstract_recordable import AbstractRecordable
 from .abstract_rewrites_data_specification import (
     AbstractRewritesDataSpecification)
 from .abstract_send_me_multicast_commands_vertex import (
@@ -34,7 +33,6 @@ from .abstract_vertex_with_dependent_vertices import (
     AbstractVertexWithEdgeToDependentVertices)
 from .abstract_supports_database_injection import (
     AbstractSupportsDatabaseInjection)
-from .abstract_uses_memory_io import AbstractUsesMemoryIO
 from .abstract_supports_bit_field_generation import (
     AbstractSupportsBitFieldGeneration)
 from .abstract_supports_bit_field_routing_compression import (
@@ -47,10 +45,9 @@ __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractProvidesIncomingPartitionConstraints",
            "AbstractProvidesKeyToAtomMapping",
            "AbstractProvidesOutgoingPartitionConstraints",
-           "AbstractRecordable", "AbstractRewritesDataSpecification",
+           "AbstractRewritesDataSpecification",
            "AbstractSendMeMulticastCommandsVertex",
            "AbstractSupportsDatabaseInjection",
-           "AbstractVertexWithEdgeToDependentVertices",
-           "AbstractUsesMemoryIO", "AbstractCanReset",
+           "AbstractVertexWithEdgeToDependentVertices", "AbstractCanReset",
            "AbstractSupportsBitFieldGeneration",
            "AbstractSupportsBitFieldRoutingCompression"]
