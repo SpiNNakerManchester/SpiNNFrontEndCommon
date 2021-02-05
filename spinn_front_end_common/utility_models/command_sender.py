@@ -19,8 +19,7 @@ from pacman.model.graphs.application.abstract import (
 from .command_sender_machine_vertex import CommandSenderMachineVertex
 
 
-class CommandSender(
-        AbstractOneAppOneMachineVertex):
+class CommandSender(AbstractOneAppOneMachineVertex):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation or in response to \
         simulation events (e.g., starting and stopping).
@@ -65,5 +64,5 @@ class CommandSender(
         :rtype: tuple(list(~pacman.model.graphs.application.ApplicationEdge),
             list(str))
         """
-        return self._machine_vertex._get_edges_and_partitions(
+        return self._machine_vertex.edges_and_partitions(
             self, ApplicationVertex, ApplicationEdge)

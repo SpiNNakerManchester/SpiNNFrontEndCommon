@@ -369,12 +369,14 @@ class CommandSenderMachineVertex(
                     partition_ids.append(self._keys_to_partition_id[key])
         return edges, partition_ids
 
-    def edges_and_partitions(self):
+    def edges_and_partitions(
+            self, vertex_type=MachineVertex, edge_type=MachineEdge):
         """ Construct machine edges from this vertex to the machine vertices\
             that this vertex knows how to target (and has keys allocated for).
-
+        :param AbstractVertex vertex_type: vertex type to search for
+        :param AbstractEdge edge_type: edge type to search for
         :return: edges, partition IDs
         :rtype:
             tuple(list(~pacman.model.graphs.machine.MachineEdge), list(str))
         """
-        return self._get_edges_and_partitions(self, MachineVertex, MachineEdge)
+        return self._get_edges_and_partitions(self, vertex_type, edge_type)
