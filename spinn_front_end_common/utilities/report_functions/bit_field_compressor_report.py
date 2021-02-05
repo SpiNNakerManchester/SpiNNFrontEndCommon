@@ -120,8 +120,8 @@ class BitFieldCompressorReport(object):
                 n_chips += 1
 
         if found:
-            average_per_chip_merged = \
-                float(average_per_chip_merged) / float(n_chips)
+            average_per_chip_merged = (
+                float(average_per_chip_merged) / float(n_chips))
         else:
             min_bit_field = "N/A"
             top_bit_field = "N/A"
@@ -181,7 +181,7 @@ class BitFieldCompressorReport(object):
         else:
             average = float(total_to_merge) / float(len(to_merge_per_chip))
 
-        return (max_bit_fields_on_chip, min_bit_fields_on_chip, average)
+        return max_bit_fields_on_chip, min_bit_fields_on_chip, average
 
     def _write_report(
             self, writer, provenance_items, machine_graph, placements):
