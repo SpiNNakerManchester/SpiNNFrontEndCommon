@@ -21,7 +21,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.abstract_models import (
-    AbstractProvidesKeyToAtomMapping, AbstractRecordable,
+    AbstractProvidesKeyToAtomMapping,
     AbstractSupportsDatabaseInjection)
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -181,13 +181,11 @@ class DatabaseWriter(AbstractContextManager):
                     """
                     INSERT INTO Application_vertices(
                         vertex_label, vertex_class, no_atoms,
-                        max_atom_constrant, recorded)
-                    VALUES(?, ?, ?, ?, ?)
+                        max_atom_constrant)
+                    VALUES(?, ?, ?, ?)
                     """,
                     vertex.label, vertex.__class__.__name__, vertex.n_atoms,
-                    vertex.get_max_atoms_per_core(), int(
-                        isinstance(vertex, AbstractRecordable) and
-                        vertex.is_recording()))
+                    vertex.get_max_atoms_per_core())
 
             # add edges
             for edge in application_graph.edges:

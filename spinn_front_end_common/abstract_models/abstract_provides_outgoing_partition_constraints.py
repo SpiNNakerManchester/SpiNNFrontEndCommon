@@ -19,6 +19,10 @@ from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 class AbstractProvidesOutgoingPartitionConstraints(
         object, metaclass=AbstractBase):
     """ A vertex that can provide constraints for its outgoing edge partitions.
+
+    If a Machine_vertex is an instance the Application vertex will not be
+    checked. However if the MachineVertex does not implement this API
+    ProcessPartitionConstraint will then check the ApplicationVertex
     """
 
     __slots__ = ()

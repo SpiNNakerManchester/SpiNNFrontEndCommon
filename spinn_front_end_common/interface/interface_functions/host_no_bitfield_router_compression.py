@@ -62,13 +62,14 @@ def mundy_on_chip_router_compression(
     :param bool write_compressor_iobuf: Should IOBUF be read and written out
     :raises SpinnFrontEndException: If compression fails
     """
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments, unused-argument
     msg = (
         "MundyOnChipRouterCompression is no longer supported. "
         "To use the currently recommended compression algorithm remove "
         "loading_algorithms from your cfg. "
-        "While not recommended, UnorderedOnChipRouterCompression provides "
-        "the same algorithm but has been updated to use the current tools.")
+        "While not recommended, OrderedCoveringOnChipRouterCompression "
+        "provides the same algorithm but has been updated to use the "
+        "current tools.")
     print(msg)
     logger.warning(msg)
     raise NotImplementedError(msg)
