@@ -51,18 +51,14 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.application</span> <span class="kn">import</span> <span class="n">ApplicationEdge</span><span class="p">,</span> <span class="n">ApplicationVertex</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.application.abstract</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractOneAppOneMachineVertex</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.command_sender_machine_vertex</span> <span class="kn">import</span> <span class="n">CommandSenderMachineVertex</span>
 
 
 <div class="viewcode-block" id="CommandSender"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSender">[docs]</a><span class="k">class</span> <span class="nc">CommandSender</span><span class="p">(</span>
-        <span class="n">AbstractOneAppOneMachineVertex</span><span class="p">,</span>
-        <span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="p">):</span>
+        <span class="n">AbstractOneAppOneMachineVertex</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A utility for sending commands to a vertex (possibly an external\</span>
 <span class="sd">        device) at fixed times in the simulation or in response to \</span>
 <span class="sd">        simulation events (e.g., starting and stopping).</span>
@@ -108,13 +104,7 @@
 <span class="sd">            list(str))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertex</span><span class="o">.</span><span class="n">_get_edges_and_partitions</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">ApplicationVertex</span><span class="p">,</span> <span class="n">ApplicationEdge</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="CommandSender.get_outgoing_partition_constraints"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSender.get_outgoing_partition_constraints">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="o">.</span>
-               <span class="n">get_outgoing_partition_constraints</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">get_outgoing_partition_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partition</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertex</span><span class="o">.</span><span class="n">get_outgoing_partition_constraints</span><span class="p">(</span>
-            <span class="n">partition</span><span class="p">)</span></div></div>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">ApplicationVertex</span><span class="p">,</span> <span class="n">ApplicationEdge</span><span class="p">)</span></div></div>
 </pre></div>
 
             <div class="clearer"></div>

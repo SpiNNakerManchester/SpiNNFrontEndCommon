@@ -298,7 +298,7 @@ Supports the application vertex calling this directly</p>
 <dl class="py class">
 <dt id="spinn_front_end_common.utility_models.CommandSender">
 <em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utility_models.</code><code class="sig-name descname">CommandSender</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">constraints</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender.html#CommandSender"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSender" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pacman.model.graphs.application.abstract.abstract_one_app_one_machine_vertex.AbstractOneAppOneMachineVertex</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.abstract_provides_outgoing_partition_constraints.AbstractProvidesOutgoingPartitionConstraints</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pacman.model.graphs.application.abstract.abstract_one_app_one_machine_vertex.AbstractOneAppOneMachineVertex</span></code></p>
 <p>A utility for sending commands to a vertex (possibly an external        device) at fixed times in the simulation or in response to         simulation events (e.g., starting and stopping).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -337,23 +337,6 @@ running</p></li>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationEdge" title="(in PACMAN)">ApplicationEdge</a>),
 <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>))</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="spinn_front_end_common.utility_models.CommandSender.get_outgoing_partition_constraints">
-<code class="sig-name descname">get_outgoing_partition_constraints</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">partition</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender.html#CommandSender.get_outgoing_partition_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSender.get_outgoing_partition_constraints" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get constraints to be added to the given edge partition that comes            out of this vertex.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>partition</strong> (<em>AbstractOutgoingEdgePartition</em>) – An edge that comes out of this vertex</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A list of constraints</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN)">AbstractConstraint</a>)</p>
 </dd>
 </dl>
 </dd></dl>
