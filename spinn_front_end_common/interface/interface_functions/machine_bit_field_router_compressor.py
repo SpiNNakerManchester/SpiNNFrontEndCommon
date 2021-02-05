@@ -31,10 +31,14 @@ from spinnman.model.enums import CPUState
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.router_compressors.ordered_covering_router_compressor.\
     ordered_covering import (get_generality as ordered_covering_generality)
+from spinn_front_end_common.abstract_models.\
+    abstract_supports_bit_field_routing_compression import (
+        AbstractSupportsBitFieldRoutingCompression)
 from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (make_source_hack)
-from spinn_front_end_common.utilities.utility_objs import (
-    ProvenanceDataItem, ExecutableType)
+from spinn_front_end_common.utilities.report_functions.\
+    bit_field_compressor_report import generate_provenance_item
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.exceptions import (
     CantFindSDRAMToUseException)
 from spinn_front_end_common.utilities import system_control_logic
@@ -50,11 +54,6 @@ SIZE_OF_SDRAM_ADDRESS_IN_BYTES = (17 * 2 * 4) + (3 * 4)
 SIZE_OF_COMMS_SDRAM = 7 * 4 * 18
 
 SECOND_TO_MICRO_SECOND = 1000000
-
-# provenance data item names
-PROV_TOP_NAME = "bit_field_router_provenance"
-PROV_CHIP_NAME = "router_at_chip_{}_{}"
-MERGED_NAME = "bit_fields_merged"
 
 
 @add_metaclass(AbstractBase)
@@ -246,28 +245,20 @@ class MachineBitFieldRouterCompressor(object):
                 machine_graph, routing_infos)
 
             for (chip_x, chip_y) in progress_bar.over(on_host_chips, False):
-                bit_field_sdram_base_addresses = defaultdict(dict)
-                host_compressor.collect_bit_field_sdram_base_addresses(
-                    chip_x, chip_y, machine, placements, transceiver,
-                    bit_field_sdram_base_addresses)
-
-                host_compressor.start_compression_selection_process(
-                    router_table=routing_tables.get_routing_table_for_chip(
-                        chip_x, chip_y),
-                    produce_report=produce_report,
-                    report_folder_path=host_compressor.generate_report_path(
-                        default_report_folder),
-                    bit_field_sdram_base_addresses=(
-                        bit_field_sdram_base_addresses),
-                    transceiver=transceiver, machine_graph=machine_graph,
-                    placements=placements, machine=machine,
-                    target_length=target_length,
-                    time_to_try_for_each_iteration=(
-                        time_to_try_for_each_iteration),
-                    use_timer_cut_off=use_timer_cut_off,
-                    compressed_pacman_router_tables=(
-                        compressed_pacman_router_tables),
-                    key_atom_map=key_atom_map)
+                report_folder_path = host_compressor.generate_report_path(
+                    default_report_folder)
+                prov_items.append(
+                    host_compressor.start_compression_selection_process(
+                        router_table=routing_tables.get_routing_table_for_chip(
+                            chip_x, chip_y),
+                        produce_report=produce_report,
+                        report_folder_path=report_folder_path,
+                        transceiver=transceiver, machine_graph=machine_graph,
+                        placements=placements, machine=machine,
+                        target_length=target_length,
+                        compressed_pacman_router_tables=(
+                            compressed_pacman_router_tables),
+                        key_atom_map=key_atom_map))
 
             # load host compressed routing tables
             for table in compressed_pacman_router_tables.routing_tables:
@@ -380,12 +371,6 @@ class MachineBitFieldRouterCompressor(object):
             x = core_subset.x
             y = core_subset.y
 
-            # prov names
-            names = list()
-            names.append(PROV_TOP_NAME)
-            names.append(PROV_CHIP_NAME.format(x, y))
-            names.append(MERGED_NAME)
-
             for p in core_subset.processor_ids:
 
                 # Read the result from USER1/USER2 registers
@@ -393,19 +378,16 @@ class MachineBitFieldRouterCompressor(object):
                     transceiver.get_user_1_register_address_from_core(p)
                 user_2_base_address = \
                     transceiver.get_user_2_register_address_from_core(p)
-                result = struct.unpack(
-                    "<I", transceiver.read_memory(
-                        x, y, user_1_base_address, self._USER_BYTES))[0]
-                total_bit_fields_merged = struct.unpack(
-                    "<I", transceiver.read_memory(
-                        x, y, user_2_base_address, self._USER_BYTES))[0]
+                result = transceiver.read_word(x, y, user_1_base_address)
+                bit_fields_merged = transceiver.read_word(
+                    x, y, user_2_base_address)
 
                 if result != self.SUCCESS:
                     if (x, y) not in host_chips:
                         host_chips.append((x, y))
                     return False
-                prov_data_items.append(ProvenanceDataItem(
-                    names, str(total_bit_fields_merged)))
+                prov_data_items.append(generate_provenance_item(
+                    x, y, bit_fields_merged))
         return True
 
     def _load_data(
@@ -793,15 +775,13 @@ class MachineBitFieldRouterCompressor(object):
         region_addresses = defaultdict(list)
         sdram_block_addresses_and_sizes = defaultdict(list)
 
-        for machine_vertex in progress_bar.over(
+        for vertex in progress_bar.over(
                 machine_graph.vertices, finish_at_end=False):
-            placement = placements.get_placement_of_vertex(machine_vertex)
+            placement = placements.get_placement_of_vertex(vertex)
 
             # locate the interface vertex (maybe app or machine)
-            vertex = \
-                HostBasedBitFieldRouterCompressor.locate_vertex_with_the_api(
-                    machine_vertex)
-            if vertex is not None:
+            if isinstance(
+                    vertex, AbstractSupportsBitFieldRoutingCompression):
                 self._add_to_addresses(
                     vertex, placement, transceiver, region_addresses,
                     sdram_block_addresses_and_sizes)
