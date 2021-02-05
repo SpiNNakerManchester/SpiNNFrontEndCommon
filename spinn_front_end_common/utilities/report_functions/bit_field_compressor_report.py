@@ -32,6 +32,7 @@ PROV_CHIP_NAME = "router_at_chip_{}_{}"
 MERGED_NAME = "bit_fields_merged"
 NOT_APPLICABLE = "N/A"
 
+
 def generate_provenance_item(x, y, bit_fields_merged):
     """
     Generates a provenance item in the format BitFieldCompressorReport expects
@@ -222,8 +223,9 @@ class BitFieldCompressorReport(object):
                     "\nNone of the {} bitfields merged".format(
                         total_to_merge))
             else:
-                writer.write("\nIn total {:.2%} of the bitfields merged".format(
-                    total_bit_fields_merged / total_to_merge))
+                writer.write(
+                    "\nIn total {:.2%} of the bitfields merged".format(
+                        total_bit_fields_merged / total_to_merge))
 
         return BitFieldSummary(
             lowest_per_chip=min_bit_field, max_per_chip=top_bit_field,
