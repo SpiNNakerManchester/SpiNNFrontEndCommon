@@ -373,9 +373,10 @@ class CommandSenderMachineVertex(
             self, vertex_type=MachineVertex, edge_type=MachineEdge):
         """ Construct machine edges from this vertex to the machine vertices\
             that this vertex knows how to target (and has keys allocated for).
-        :param vertex_type: vertex type to search for
+
+        :param vertex_type: vertex type to search for.
         :type vertex_type: subclass of :py:class:`~.AbstractVertex`
-        :param edge_type: edge type to search for
+        :param edge_type: edge type to search for.
         :type edge_type: subclass of :py:class:`~.AbstractEdge`
         :return: edges, partition IDs
         :rtype:
