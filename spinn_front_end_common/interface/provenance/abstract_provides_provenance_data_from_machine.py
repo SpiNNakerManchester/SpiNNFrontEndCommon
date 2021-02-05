@@ -15,15 +15,20 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.utilities.class_utils import check_class_type
 
 
 class AbstractProvidesProvenanceDataFromMachine(
-        MachineVertex, metaclass=AbstractBase):
+        object, metaclass=AbstractBase):
     """ Indicates that an object provides provenance data retrieved from the\
         machine.
     """
 
     __slots__ = ()
+
+    def __init_subclass__(cls, **kwargs):  # @NoSelf
+        check_class_type(cls, MachineVertex)
+        super().__init_subclass__(**kwargs)
 
     @abstractmethod
     def get_provenance_data_from_machine(self, transceiver, placement):

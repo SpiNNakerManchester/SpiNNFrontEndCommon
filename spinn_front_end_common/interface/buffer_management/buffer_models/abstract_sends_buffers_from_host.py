@@ -15,14 +15,19 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.utilities.class_utils import check_class_type
 
 
-class AbstractSendsBuffersFromHost(MachineVertex, metaclass=AbstractBase):
+class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
     """ Interface to an object that sends buffers of keys to be\
         transmitted at given timestamps in the simulation.
     """
 
     __slots__ = ()
+
+    def __init_subclass__(cls, **kwargs):  # @NoSelf
+        check_class_type(cls, MachineVertex)
+        super().__init_subclass__(**kwargs)
 
     @abstractmethod
     def buffering_input(self):

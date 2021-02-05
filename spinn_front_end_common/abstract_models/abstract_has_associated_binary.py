@@ -15,13 +15,18 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.utilities.class_utils import check_class_type
 
 
-class AbstractHasAssociatedBinary(MachineVertex, metaclass=AbstractBase):
+class AbstractHasAssociatedBinary(object, metaclass=AbstractBase):
     """ Marks a machine graph vertex that can be launched on a SpiNNaker core.
     """
 
     __slots__ = ()
+
+    def __init_subclass__(cls, **kwargs):  # @NoSelf
+        check_class_type(cls, MachineVertex)
+        super().__init_subclass__(**kwargs)
 
     @abstractmethod
     def get_binary_file_name(self):

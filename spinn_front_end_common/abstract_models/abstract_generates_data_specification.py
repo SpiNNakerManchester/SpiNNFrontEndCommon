@@ -14,11 +14,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.utilities.class_utils import check_class_type
 
 
 class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
 
     __slots__ = ()
+
+    def __init_subclass__(cls, **kwargs):  # @NoSelf
+        check_class_type(cls, MachineVertex)
+        super().__init_subclass__(**kwargs)
 
     @abstractmethod
     def generate_data_specification(self, spec, placement):

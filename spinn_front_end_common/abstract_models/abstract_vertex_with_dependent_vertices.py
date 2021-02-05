@@ -15,15 +15,20 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from pacman.model.graphs.application import ApplicationVertex
+from spinn_front_end_common.utilities.class_utils import check_class_type
 
 
 class AbstractVertexWithEdgeToDependentVertices(
-        ApplicationVertex, metaclass=AbstractBase):
+        object, metaclass=AbstractBase):
     """ A vertex with a dependent vertices, which should be connected to this\
         vertex by an edge directly to each of them
     """
 
     __slots__ = ()
+
+    def __init_subclass__(cls, **kwargs):  # @NoSelf
+        check_class_type(cls, ApplicationVertex)
+        super().__init_subclass__(**kwargs)
 
     @abstractmethod
     def dependent_vertices(self):

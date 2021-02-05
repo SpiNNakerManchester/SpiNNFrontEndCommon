@@ -15,13 +15,18 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.utilities.class_utils import check_class_type
 
 
-class AbstractHasProfileData(MachineVertex, metaclass=AbstractBase):
+class AbstractHasProfileData(object, metaclass=AbstractBase):
     """ Indicates a :py:class:`~pacman.model.graphs.machine.MachineVertex` \
         that can record a profile.
     """
     __slots__ = ()
+
+    def __init_subclass__(cls, **kwargs):  # @NoSelf
+        check_class_type(cls, MachineVertex)
+        super().__init_subclass__(**kwargs)
 
     @abstractmethod
     def get_profile_data(self, transceiver, placement):

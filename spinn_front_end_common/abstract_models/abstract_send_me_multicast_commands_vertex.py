@@ -14,6 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
+from pacman.model.graphs import AbstractVertex
+from spinn_front_end_common.utilities.class_utils import check_class_type
 
 
 class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
@@ -22,6 +24,10 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
     """
 
     __slots__ = ()
+
+    def __init_subclass__(cls, **kwargs):  # @NoSelf
+        check_class_type(cls, AbstractVertex)
+        super().__init_subclass__(**kwargs)
 
     @abstractproperty
     def start_resume_commands(self):

@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from abc import abstractmethod
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import (
     supports_injection, inject_items)
@@ -22,7 +22,8 @@ from spinn_front_end_common.abstract_models import (
 
 
 @supports_injection
-class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
+class MachineDataSpecableVertex(
+        AbstractGeneratesDataSpecification, metaclass=AbstractBase):
     """ Support for a vertex that simplifies generating a data specification.
     """
     __slots__ = ()
