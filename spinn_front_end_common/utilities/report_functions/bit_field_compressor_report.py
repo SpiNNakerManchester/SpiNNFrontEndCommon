@@ -30,7 +30,7 @@ _FILE_NAME = "bit_field_compressed_summary.rpt"
 PROV_TOP_NAME = "bit_field_router_provenance"
 PROV_CHIP_NAME = "router_at_chip_{}_{}"
 MERGED_NAME = "bit_fields_merged"
-
+NOT_APPLICABLE = "N/A"
 
 def generate_provenance_item(x, y, bit_fields_merged):
     """
@@ -53,18 +53,21 @@ class BitFieldCompressorReport(object):
         bitfields into the routing table.
     """
     def __call__(
-            self, report_default_directory, provenance_items, machine_graph,
-            placements):
+            self, report_default_directory, machine_graph, placements,
+            provenance_items=None):
         """
         :param str report_default_directory: report folder
-        :param list(ProvenanceDataItem) provenance_items: prov items
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph
         :param ~pacman.model.placements.Placements placements: the placements
+        :param list(ProvenanceDataItem) provenance_items: prov items
+        :type provenance_items: list(ProvenanceDataItem) or None
         :return: a summary, or `None` if the report file can't be written
         :rtype: BitFieldSummary
         """
         file_name = os.path.join(report_default_directory, _FILE_NAME)
+        if provenance_items is None:
+            provenance_items = []
         try:
             with open(file_name, "w") as f:
                 return self._write_report(
@@ -123,10 +126,10 @@ class BitFieldCompressorReport(object):
             average_per_chip_merged = (
                 float(average_per_chip_merged) / float(n_chips))
         else:
-            min_bit_field = "N/A"
-            top_bit_field = "N/A"
-            total_bit_fields_merged = "N/A"
-            average_per_chip_merged = "N/A"
+            min_bit_field = NOT_APPLICABLE
+            top_bit_field = NOT_APPLICABLE
+            total_bit_fields_merged = NOT_APPLICABLE
+            average_per_chip_merged = NOT_APPLICABLE
 
         if len(to_merge_chips) > 0:
             writer.write(
@@ -214,8 +217,13 @@ class BitFieldCompressorReport(object):
                 total_bit_fields_merged, top_bit_field, min_bit_field,
                 average_per_chip_merged))
         if total_to_merge:
-            writer.write("\nIn total {:.2%} of the bitfields merged".format(
-                total_bit_fields_merged / total_to_merge))
+            if total_bit_fields_merged == NOT_APPLICABLE:
+                writer.write(
+                    "\nNone of the {} bitfields merged".format(
+                        total_to_merge))
+            else:
+                writer.write("\nIn total {:.2%} of the bitfields merged".format(
+                    total_bit_fields_merged / total_to_merge))
 
         return BitFieldSummary(
             lowest_per_chip=min_bit_field, max_per_chip=top_bit_field,
