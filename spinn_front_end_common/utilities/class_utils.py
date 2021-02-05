@@ -31,6 +31,8 @@ def require_subclass(required_class):
     # The setattr() call is from:
     #     https://stackoverflow.com/a/533583/301832
     # The classmethod() call is from:
+    #     https://stackoverflow.com/a/17930262/301832
+    # The use of __class__ to enable super() to work is from:
     #     https://stackoverflow.com/a/43779009/301832
     # The need to do this as a functional decorator is my own discovery;
     # without it, some very weird interactions with metaclasses happen and I
@@ -38,7 +40,8 @@ def require_subclass(required_class):
 
     def decorate(target_class):
         # pylint: disable=unused-variable
-        __class__ = target_class  # @ReservedAssignment
+        __class__ = target_class  # @ReservedAssignment # noqa: F841
+
         def __init_subclass__(cls, **kwargs):
             if not issubclass(cls, required_class) and \
                     type(cls) is not AbstractBase:
@@ -46,6 +49,7 @@ def require_subclass(required_class):
                     f"{cls.__name__} must be a subclass "
                     f"of {required_class.__name__}")
             super().__init_subclass__(**kwargs)
+
         setattr(target_class, '__init_subclass__',
                 classmethod(__init_subclass__))
         return target_class
