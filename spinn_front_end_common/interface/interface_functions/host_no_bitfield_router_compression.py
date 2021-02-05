@@ -62,11 +62,11 @@ def mundy_on_chip_router_compression(
     """
     # pylint: disable=too-many-arguments
     msg = (
-        "MundyOnChipRouterCompression is no longer supported. " 
-        "To use the currently recommended compression algorithm remove " 
-        "loading_algorithms from your cfg. " 
-        "While not recommended, OrderedCoveringOnChipRouterCompression " 
-        "provides the same algorithm but has been updated to use the " 
+        "MundyOnChipRouterCompression is no longer supported. "
+        "To use the currently recommended compression algorithm remove "
+        "loading_algorithms from your cfg. "
+        "While not recommended, OrderedCoveringOnChipRouterCompression "
+        "provides the same algorithm but has been updated to use the "
         "current tools.")
     print(msg)
     logger.warning(msg)
