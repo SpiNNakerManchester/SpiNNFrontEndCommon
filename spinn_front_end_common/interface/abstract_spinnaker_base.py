@@ -43,11 +43,14 @@ from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
 from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
+from pacman.executor.injection_decorator import (
+    clear_injectables, provide_injectables)
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
-from pacman.model.resources import (PreAllocatedResourceContainer)
+from pacman.model.resources import (
+    PreAllocatedResourceContainer, ConstantSDRAM)
 from pacman import __version__ as pacman_version
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
@@ -56,7 +59,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities import (
     globals_variables, SimulatorInterface)
 from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION)
+    MICRO_TO_MILLISECOND_CONVERSION, SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.function_list import (
     get_front_end_common_pacman_xml_paths)
@@ -356,13 +359,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             validation_cfg=None, front_end_versions=None):
         """
         :param str configfile: What the configuration file is called
-        :param ~spinn_utilities.executable_finder.ExecutableFinder \
-                executable_finder:
-            How to find APLX files to deploy to SpiNNaker
+        :param executable_finder: How to find APLX files to deploy to SpiNNaker
+        :type executable_finder:
+            ~spinn_utilities.executable_finder.ExecutableFinder
         :param str graph_label: A label for the overall application graph
-        :param iterable(~spinn_utilities.socket_address.SocketAddress) \
-                database_socket_addresses:
-            How to talk to notification databases
+        :param database_socket_addresses: How to talk to notification databases
+        :type database_socket_addresses:
+            iterable(~spinn_utilities.socket_address.SocketAddress) or None
         :param iterable(str) extra_algorithm_xml_paths:
             Where to load definitions of extra algorithms from
         :param int n_chips_required:
@@ -934,6 +937,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._do_mapping(run_time, total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
+        provide_injectables(self._mapping_outputs)
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
@@ -945,7 +949,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # Work out the maximum run duration given all recordings
         if self._max_run_time_steps is None:
-            self._max_run_time_steps = self._deduce_data_n_timesteps()
+            self._max_run_time_steps = self._deduce_data_n_timesteps(
+                self._machine_graph)
+        clear_injectables()
 
         # Work out an array of timesteps to perform
         steps = None
@@ -1017,10 +1023,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # update counter for runs (used by reports and app data)
         self._n_calls_to_run += 1
-        if run_time is not None:
-            self._state = Simulator_State.FINISHED
-        else:
-            self._state = Simulator_State.RUN_FOREVER
+        self._state = Simulator_State.FINISHED
 
     def _is_per_timestep_sdram(self):
         for placement in self._placements.placements:
@@ -1071,16 +1074,18 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         self._application_graph.add_edge(
                             dependant_edge, edge_identifier)
 
-    def _deduce_data_n_timesteps(self):
+    def _deduce_data_n_timesteps(self, machine_graph):
         """ Operates the auto pause and resume functionality by figuring out\
             how many timer ticks a simulation can run before SDRAM runs out,\
             and breaks simulation into chunks of that long.
 
+        :param ~.MachineGraph machine_graph:
         :return: max time a simulation can run.
         """
         # Go through the placements and find how much SDRAM is used
         # on each chip
         usage_by_chip = dict()
+        seen_partitions = set()
 
         for placement in self._placements.placements:
             sdram_required = placement.vertex.resources_required.sdram
@@ -1088,6 +1093,18 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 usage_by_chip[placement.x, placement.y] += sdram_required
             else:
                 usage_by_chip[placement.x, placement.y] = sdram_required
+
+            # add sdram partitions
+            sdram_partitions = (
+                machine_graph.get_sdram_edge_partitions_starting_at_vertex(
+                    placement.vertex))
+            for partition in sdram_partitions:
+                if partition not in seen_partitions:
+                    usage_by_chip[placement.x, placement.y] += (
+                        ConstantSDRAM(
+                            partition.total_sdram_requirements() +
+                            SARK_PER_MALLOC_SDRAM_USAGE))
+                    seen_partitions.add(partition)
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
@@ -1237,6 +1254,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ScampConnectionData"] = self._read_config(
             "Machine", "scamp_connections_data")
         inputs['ReportFolder'] = self._report_default_directory
+        inputs['ReportWaitingLogsFlag'] = self._config.getboolean(
+            "Machine", "report_waiting_logs")
         algorithms.append("MachineGenerator")
 
         outputs.append("MemoryMachine")
@@ -1298,6 +1317,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         do_partitioning = self._machine_by_size(inputs, algorithms, outputs)
         inputs['ReportFolder'] = self._report_default_directory
+        inputs['ReportWaitingLogsFlag'] = self._config.getboolean(
+            "Machine", "report_waiting_logs")
 
         # if using spalloc system
         if self._spalloc_server is not None:
@@ -1370,9 +1391,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # the graph
         else:
             inputs["MemoryApplicationGraph"] = self._application_graph
-            algorithms.extend(self._config.get(
-                "Mapping",
-                "application_to_machine_graph_algorithms").split(","))
+            algorithms.extend(self._config.get_str_list(
+                "Mapping", "application_to_machine_graph_algorithms"))
             outputs.append("MemoryMachineGraph")
             do_partitioning = True
 
@@ -1654,19 +1674,17 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # only add the partitioner if there isn't already a machine graph
         algorithms.append("MallocBasedChipIDAllocator")
         if not self._machine_graph.n_vertices:
-            full = self._config.get(
-                "Mapping", "application_to_machine_graph_algorithms")
-            algorithms.extend(full.replace(" ", "").split(","))
+            algorithms.extend(self._config.get_str_list(
+                "Mapping", "application_to_machine_graph_algorithms"))
             inputs['MemoryPreviousAllocatedResources'] = \
                 PreAllocatedResourceContainer()
 
         if self._use_virtual_board:
-            full = self._config.get(
-                "Mapping", "machine_graph_to_virtual_machine_algorithms")
+            algorithms.extend(self._config.get_str_list(
+                "Mapping", "machine_graph_to_virtual_machine_algorithms"))
         else:
-            full = self._config.get(
-                "Mapping", "machine_graph_to_machine_algorithms")
-        algorithms.extend(full.replace(" ", "").split(","))
+            algorithms.extend(self._config.get_str_list(
+                "Mapping", "machine_graph_to_machine_algorithms"))
 
         # add check for algorithm start type
         if not self._use_virtual_board:
@@ -1703,6 +1721,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         self._json_folder, java_call, java_spinnaker_path,
                         java_properties)
             inputs["JavaCaller"] = self._java_caller
+
+            # add the sdram allocator to ensure the sdram is allocated before
+            #  dsg on a real machine
+            algorithms.append("SDRAMOutgoingPartitionAllocator")
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(
@@ -1768,6 +1790,40 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             data_gen_timer.take_sample())
         self._mapping_outputs["DSGTimeMs"] = self._dsg_time
 
+    def _add_router_compressor_bit_field_inputs(self, inputs):
+        """
+
+        :param dict(str, object) inputs:
+        :return:
+        """
+        # bitfield inputs
+        inputs['RouterBitfieldCompressionReport'] = \
+            self.config.getboolean(
+                "Reports", "generate_router_compression_with_bitfield_report")
+
+        inputs['RouterCompressorBitFieldUseCutOff'] = \
+            self.config.getboolean(
+                "Mapping",
+                "router_table_compression_with_bit_field_use_time_cutoff")
+
+        inputs['RouterCompressorBitFieldTimePerAttempt'] = \
+            self._read_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_iteration_time")
+
+        inputs["RouterCompressorBitFieldPreAllocSize"] = \
+            self._read_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_pre_alloced_sdram")
+        inputs["RouterCompressorBitFieldPercentageThreshold"] = \
+            self._read_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_acceptance_threshold")
+        inputs["RouterCompressorBitFieldRetryCount"] = \
+            self._read_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_retry_count")
+
     def _do_load(self, graph_changed, data_changed):
         """
         :param bool graph_changed:
@@ -1787,6 +1843,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             graph_changed
         )
         inputs["NoSyncChanges"] = self._no_sync_changes
+        self._add_router_compressor_bit_field_inputs(inputs)
 
         if not graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
@@ -1809,9 +1866,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # Get the executable targets
             algorithms.append("GraphBinaryGatherer")
 
-        loading_algorithm = self._read_config("Mapping", "loading_algorithms")
-        if loading_algorithm is not None and (graph_changed or data_changed):
-            algorithms.extend(loading_algorithm.split(","))
+        algorithms.extend(self._config.get_str_list(
+            "Mapping", "loading_algorithms"))
+
         algorithms.extend(self._extra_load_algorithms)
 
         write_memory_report = self._config.getboolean(
@@ -1837,6 +1894,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     algorithms.append("CompressedRouterSummaryReport")
                     algorithms.append("RoutingTableFromMachineReport")
 
+        if self._config.getboolean(
+                "Reports", "write_bit_field_compressor_report"):
+            algorithms.append("BitFieldCompressorReport")
+
         # handle extra monitor functionality
         enable_advanced_monitor = self._config.getboolean(
             "Machine", "enable_advanced_monitor_support")
@@ -1851,7 +1912,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             optional_algorithms.append("RoutingTableLoader")
             optional_algorithms.append("TagsLoader")
 
-        optional_algorithms.append("WriteMemoryIOData")
         optional_algorithms.append("HostExecuteApplicationDataSpecification")
 
         # Get the executable targets
@@ -2057,8 +2117,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.append("SdramUsageReportPerChip")
 
         # Clear iobuf from machine
-        if (not self._run_until_complete and
-            not self._use_virtual_board and not self._empty_graphs and
+        if (n_machine_time_steps is not None and
+                not self._use_virtual_board and not self._empty_graphs and
                 self._config.getboolean("Reports", "clear_iobuf_during_run")):
             algorithms.append("ChipIOBufClearer")
 
@@ -2118,7 +2178,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if (self._config.getboolean("Reports", "extract_iobuf") and
                 self._config.getboolean(
                     "Reports", "extract_iobuf_during_run") and
-                not self._use_virtual_board):
+                not self._use_virtual_board and
+                n_machine_time_steps is not None):
             algorithms.append("ChipIOBufExtractor")
 
         # add in the timing finalisation
@@ -2342,12 +2403,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :rtype: list(str)
         """
         # add the extra xml files from the config file
-        xml_paths = self._config.get("Mapping", "extra_xmls_paths")
-        if xml_paths == "None":
-            xml_paths = list()
-        else:
-            xml_paths = xml_paths.split(",")
-
+        xml_paths = self._config.get_str_list("Mapping", "extra_xmls_paths")
         xml_paths.extend(get_front_end_common_pacman_xml_paths())
 
         if extra_algorithm_xml_paths is not None:

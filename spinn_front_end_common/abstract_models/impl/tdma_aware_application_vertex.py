@@ -44,19 +44,23 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         "The TDMA fell behind by {} times on core {}, {}, {}. "
         "try increasing the time_between_cores in the corresponding .cfg")
 
-    def __init__(self, label, constraints, max_atoms_per_core):
+    def __init__(self, label, constraints, max_atoms_per_core, splitter=None):
         """
-        :param str label: The optional name of the vertex.
-        :param iterable(~pacman.model.constraints.AbstractConstraint) \
-                constraints:
-            The optional initial constraints of the vertex.
+        :param label: The name of the vertex.
+        :type label: str or None
+        :param constraints: The initial constraints of the vertex.
+        :type constraints:
+            iterable(~pacman.model.constraints.AbstractConstraint) or None
         :param int max_atoms_per_core: The max number of atoms that can be
             placed on a core, used in partitioning.
+        :type splitter:
+            ~pacman.model.partitioner_interfaces.AbstractSplitterCommon
+            or None
         :raise PacmanInvalidParameterException:
             If one of the constraints is not valid
         """
         ApplicationVertex.__init__(
-            self, label, constraints, max_atoms_per_core)
+            self, label, constraints, max_atoms_per_core, splitter=splitter)
         self.__time_between_cores = None
         self.__n_slots = None
         self.__time_between_spikes = None
@@ -77,15 +81,16 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
             by this application vertex can send in one simulation time step.
 
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        :param ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap \
-            n_keys_map:
+        :param n_keys_map:
+        :type n_keys_map:
+            ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
         :rtype: int
         """
         return max(
             sum(
                 n_keys_map.n_keys_for_partition(outgoing_partition)
                 for outgoing_partition in
-                machine_graph.get_outgoing_edge_partitions_starting_at_vertex(
+                machine_graph.get_multicast_edge_partitions_starting_at_vertex(
                     machine_vertex))
             for machine_vertex in self.machine_vertices)
 
@@ -156,6 +161,6 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         """
         return ProvenanceDataItem(
             add_name(names, self._TDMA_MISSED_SLOTS_NAME),
-            tdma_slots_missed, report=tdma_slots_missed > 0,
+            tdma_slots_missed, report=(tdma_slots_missed > 0),
             message=self._TDMA_MISSED_SLOTS_MESSAGE.format(
                 tdma_slots_missed, x, y, p))

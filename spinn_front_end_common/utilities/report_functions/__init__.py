@@ -13,6 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Much of the code in this module is intended primarily for being invoked via the
+PACMAN Executor.
+"""
+
 from .bit_field_compressor_report import BitFieldCompressorReport
 from .bit_field_summary import BitFieldSummary
 from .board_chip_report import BoardChipReport

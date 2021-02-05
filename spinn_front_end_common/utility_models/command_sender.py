@@ -14,7 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
-from .abstract_one_app_one_machine_vertex import AbstractOneAppOneMachineVertex
+from pacman.model.graphs.application.abstract import (
+    AbstractOneAppOneMachineVertex)
 from .command_sender_machine_vertex import CommandSenderMachineVertex
 
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2020-2021 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,19 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
-from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from .splitter_selector import SplitterSelector
 
-
-@add_metaclass(AbstractBase)
-class AbstractRecordable(object):
-    """ Indicates that an object might record some data in to SDRAM
-    """
-    __slots__ = ()
-
-    @abstractmethod
-    def is_recording(self):
-        """ Deduce if the recorder is actually recording
-
-        :rtype: bool
-        """
+__all__ = ['SplitterSelector']

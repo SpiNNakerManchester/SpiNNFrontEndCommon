@@ -13,8 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
+import logging
 import struct
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, Router
@@ -28,6 +29,8 @@ _FOUR_WORDS = struct.Struct("<IIII")
 _THREE_WORDS = struct.Struct("<III")
 # The SDRAM Tag used by the application - note this is fixed in the APLX
 _SDRAM_TAG = 1
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def mundy_on_chip_router_compression(
@@ -58,14 +61,14 @@ def mundy_on_chip_router_compression(
     :raises SpinnFrontEndException: If compression fails
     """
     # pylint: disable=too-many-arguments
-    binary_path = os.path.join(os.path.dirname(__file__), "rt_minimise.aplx")
-    compression = Compression(
-        app_id, binary_path, compress_as_much_as_possible,
-        machine, system_provenance_folder, routing_tables, transceiver,
-        "Running Mundy routing table compression on chip",
-        write_compressor_iobuf, result_register=0)
-    compression._compress_only_when_needed = compress_only_when_needed
-    compression.compress()
+    msg = "MundyOnChipRouterCompression is no longer supported. " \
+          "To use the currently recommended compression algorithm remove " \
+          "loading_algorithms from your cfg. " \
+          "While not recommended, UnorderedOnChipRouterCompression provides " \
+          "the same algorithm but has been updated to use the current tools."
+    print(msg)
+    logger.warning(msg)
+    raise NotImplementedError(msg)
 
 
 def pair_compression(
@@ -81,8 +84,9 @@ def pair_compression(
         the memory routing tables to be compressed
     :param ~spinnman.transceiver.Transceiver transceiver:
         How to talk to the machine
-    :param ~spinn_utilities.executable_finder.ExecutableFinder \
-            executable_finder: tracker of binaries.
+    :param executable_finder: tracker of binaries.
+    :type executable_finder:
+        ~spinn_utilities.executable_finder.ExecutableFinder
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine representation
     :param int app_id: the application ID used by the main application
@@ -105,7 +109,7 @@ def pair_compression(
     compression.compress()
 
 
-def unordered_compression(
+def ordered_covering_compression(
         routing_tables, transceiver, executable_finder,
         machine, app_id, provenance_file_path, write_compressor_iobuf,
         compress_as_much_as_possible=True):
@@ -119,8 +123,9 @@ def unordered_compression(
         the memory routing tables to be compressed
     :param ~spinnman.transceiver.Transceiver transceiver:
         How to talk to the machine
-    :param ~spinn_utilities.executable_finder.ExecutableFinder \
-            executable_finder: tracker of binaries
+    :param executable_finder: tracker of binaries.
+    :type executable_finder:
+        ~spinn_utilities.executable_finder.ExecutableFinder
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine representation
     :param int app_id: the application ID used by the main application
@@ -141,6 +146,21 @@ def unordered_compression(
         "Running unordered routing table compression on chip",
         write_compressor_iobuf, result_register=1)
     compression.compress()
+
+
+def unordered_compression(
+        routing_tables, transceiver, executable_finder,
+        machine, app_id, provenance_file_path, write_compressor_iobuf,
+        compress_as_much_as_possible=True):
+    """ DEPRECATED use ordered_covering_compression """
+    logger.warning(
+        "UnorderedOnChipRouterCompression algorithm name is deprecated. "
+        "Please use OrderedCoveringOnChipRouterCompression instead. "
+        "loading_algorithms from your cfg to use defaults")
+    ordered_covering_compression(
+        routing_tables, transceiver, executable_finder,
+        machine, app_id, provenance_file_path, write_compressor_iobuf,
+        compress_as_much_as_possible)
 
 
 def make_source_hack(entry):
@@ -191,9 +211,9 @@ class Compression(object):
         :param ~spinn_machine.Machine machine: The machine model
         :param str provenance_file_path:
             Where to write provenance data (IOBUF contents)
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                routing_tables:
-            the memory routing tables to be compressed
+        :param routing_tables: the memory routing tables to be compressed
+        :type routing_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         :param ~spinnman.transceiver.Transceiver transceiver:
             How to talk to the machine
         :param str progress_text: Text to use in progress bar

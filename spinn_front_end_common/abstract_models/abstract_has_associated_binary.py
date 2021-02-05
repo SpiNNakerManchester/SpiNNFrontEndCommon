@@ -15,6 +15,8 @@
 
 from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
 @add_metaclass(AbstractBase)
@@ -23,6 +25,16 @@ class AbstractHasAssociatedBinary(object):
     """
 
     __slots__ = ()
+
+    _WRONG_VERTEX_TYPE_ERROR = (
+        "The vertex {} is not of type MachineVertex. By not being a "
+        "machine vertex, the get_binary_file_name will never be called")
+
+    def __new__(cls, *args, **kwargs):
+        if not issubclass(cls, MachineVertex):
+            raise SpinnFrontEndException(
+                cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
+        return super(AbstractHasAssociatedBinary, cls).__new__(cls)
 
     @abstractmethod
     def get_binary_file_name(self):

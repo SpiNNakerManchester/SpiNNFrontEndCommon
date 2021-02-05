@@ -27,8 +27,8 @@ class MultiCastCommand(object):
         :param int key: The key of the command
         :param payload: The payload of the command
         :type payload: int or None
-        :param time: The time within the simulation at which to send the\
-            command, or None if this is not a timed command
+        :param time: The time within the simulation at which to send the
+            command, or ``None`` if this is not a timed command
         :type time: int or None
         :param int repeat:
             The number of times that the command should be repeated after

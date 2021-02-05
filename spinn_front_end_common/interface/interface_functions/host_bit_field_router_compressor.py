@@ -31,8 +31,8 @@ from pacman.model.routing_tables import (
     CompressedMulticastRoutingTable)
 from pacman.operations.algorithm_reports.reports import format_route
 from pacman.operations.router_compressors import Entry
-from pacman.operations.router_compressors.mundys_router_compressor import (
-    minimise)
+from pacman.operations.router_compressors.ordered_covering_router_compressor\
+    import minimise
 from spinn_front_end_common.abstract_models.\
     abstract_supports_bit_field_routing_compression import (
         AbstractSupportsBitFieldRoutingCompression)
@@ -70,26 +70,6 @@ class HostBasedBitFieldRouterCompressor(object):
     """ Host-based fancy router compressor using the bitfield filters of the \
         cores. Compresses bitfields and router table entries together as \
         much as feasible.
-
-    :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
-        routing tables (uncompressed)
-    :param ~spinn_machine.Machine machine: SpiNNMachine instance
-    :param ~pacman.model.placements.Placements placements: placements
-    :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
-    :param str default_report_folder: report folder
-    :param bool produce_report: flag for producing report
-    :param bool use_timer_cut_off:
-        flag for whether to use timer for compressor
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        the machine graph level
-    :param ~pacman.model.routing_info.RoutingInfo routing_info:
-        routing information
-    :param int machine_time_step: time step
-    :param int time_scale_factor: time scale factor
-    :param int target_length: length of table entries to get to.
-    :param int time_to_try_for_each_iteration: time to try per iteration
-    :return: compressed routing table entries
-    :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
     """
 
     __slots__ = [
@@ -154,20 +134,26 @@ class HostBasedBitFieldRouterCompressor(object):
             machine_time_step, time_scale_factor, target_length=None,
             time_to_try_for_each_iteration=None):
         """
-        :param ~.MulticastRoutingTables router_tables:
-        :param ~.Machine machine:
-        :param ~.Placements placements:
-        :param ~.Transceiver transceiver:
-        :param str default_report_folder:
-        :param bool produce_report:
+        :param router_tables: routing tables (uncompressed)
+        :type router_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
+        :param ~spinn_machine.Machine machine: SpiNNMachine instance
+        :param ~pacman.model.placements.Placements placements: placements
+        :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
+        :param str default_report_folder: report folder
+        :param bool produce_report: flag for producing report
         :param bool use_timer_cut_off:
-        :param ~.MachineGraph machine_graph:
-        :param ~.RoutingInfo routing_infos:
-        :param int machine_time_step:
-        :param int time_scale_factor:
-        :param int target_length:
-        :param int time_to_try_for_each_iteration:
-        :rtype: ~.MulticastRoutingTables
+            flag for whether to use timer for compressor
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph level
+        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+            routing information
+        :param int machine_time_step: time step
+        :param int time_scale_factor: time scale factor
+        :param int target_length: length of table entries to get to.
+        :param int time_to_try_for_each_iteration: time to try per iteration
+        :return: compressed routing table entries
+        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
 
         if target_length is None:
@@ -220,8 +206,9 @@ class HostBasedBitFieldRouterCompressor(object):
         :param ~spinn_machine.Machine machine:
         :param ~pacman.model.placements.Placements placements:
         :param ~spinnman.transceiver.Transceiver transceiver:
-        :param dict(tuple(int,int),dict(int,int)) \
-                bit_field_sdram_base_addresses:
+        :param bit_field_sdram_base_addresses:
+        :type bit_field_sdram_base_addresses:
+            dict(tuple(int,int),dict(int,int))
         """
         # locate the bitfields in a chip level scope
         n_processors_on_chip = machine.get_chip_at(chip_x, chip_y).n_processors
@@ -265,7 +252,7 @@ class HostBasedBitFieldRouterCompressor(object):
         key_to_n_atoms_map = dict()
         for vertex in machine_graph.vertices:
             for partition in machine_graph.\
-                    get_outgoing_edge_partitions_starting_at_vertex(vertex):
+                    get_multicast_edge_partitions_starting_at_vertex(vertex):
                 key = routing_infos.get_first_key_from_pre_vertex(
                     vertex, partition.identifier)
 
@@ -293,9 +280,9 @@ class HostBasedBitFieldRouterCompressor(object):
         """ Entrance method for doing on host compression. Can be used as a \
             public method for other compressors.
 
-        :param ~pacman.model.routing_tables.UnCompressedMulticastRoutingTable\
-                router_table:
-            the routing table in question to compress
+        :param router_table: the routing table in question to compress
+        :type router_table:
+            ~pacman.model.routing_tables.UnCompressedMulticastRoutingTable
         :param bool produce_report: whether the report should be generated
         :param str report_folder_path: the report folder base address
         :param dict(tuple(int,int),int) bit_field_sdram_base_addresses:
@@ -311,9 +298,10 @@ class HostBasedBitFieldRouterCompressor(object):
             time in seconds to run each compression attempt for
         :param bool use_timer_cut_off:
             whether the timer cut off is to be used
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                compressed_pacman_router_tables:
+        :param compressed_pacman_router_tables:
             a data holder for compressed tables
+        :type compressed_pacman_router_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         :param dict(int,int) key_atom_map: key to atoms map
             should be allowed to handle per time step
         """
