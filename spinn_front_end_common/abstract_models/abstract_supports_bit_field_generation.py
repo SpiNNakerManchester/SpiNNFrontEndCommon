@@ -15,18 +15,15 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from pacman.model.graphs.machine import MachineVertex
-from spinn_front_end_common.utilities.class_utils import check_class_type
+from spinn_front_end_common.utilities.class_utils import require_subclass
 
 
+@require_subclass(MachineVertex)
 class AbstractSupportsBitFieldGeneration(object, metaclass=AbstractBase):
     """ Marks a vertex that can provide information about bitfields it wants \
         generated on-chip.
     """
     __slots__ = ()
-
-    def __init_subclass__(cls, **kwargs):  # @NoSelf
-        check_class_type(cls, MachineVertex)
-        super().__init_subclass__(**kwargs)
 
     @abstractmethod
     def bit_field_base_address(self, transceiver, placement):

@@ -15,19 +15,16 @@
 
 from pacman.model.graphs.machine import MachineVertex
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
-from spinn_front_end_common.utilities.class_utils import check_class_type
+from spinn_front_end_common.utilities.class_utils import require_subclass
 
 
+@require_subclass(MachineVertex)
 class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
     """ Indicates an object that allows data to be changed after run,\
         and so can rewrite the data specification
     """
 
     __slots__ = []
-
-    def __init_subclass__(cls, **kwargs):  # @NoSelf
-        check_class_type(cls, MachineVertex)
-        super().__init_subclass__(**kwargs)
 
     @abstractmethod
     def regenerate_data_specification(self, spec, placement):

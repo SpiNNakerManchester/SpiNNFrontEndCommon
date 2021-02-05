@@ -15,19 +15,16 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 from pacman.model.graphs.machine import MachineVertex
-from spinn_front_end_common.utilities.class_utils import check_class_type
+from spinn_front_end_common.utilities.class_utils import require_subclass
 
 
+@require_subclass(MachineVertex)
 class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
     """ Marks a machine vertex as supporting injection of information via a\
         database running on the controlling host.
     """
 
     __slots__ = ()
-
-    def __init_subclass__(cls, **kwargs):  # @NoSelf
-        check_class_type(cls, MachineVertex)
-        super().__init_subclass__(**kwargs)
 
     @abstractproperty
     def is_in_injection_mode(self):

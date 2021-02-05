@@ -15,20 +15,38 @@
 from spinn_utilities.abstract_base import AbstractBase
 
 
-def check_class_type(cls, required_type):
-    """ Verify that a class is either a subclass of another class or \
-        an abstract class.
+def require_subclass(required_class):
+    """ Decorator that arranges for subclasses of the decorated class to\
+        require that they are also subclasses of the given class.
 
-    This might be used in an abstract class like this::
-
-        def __init_subclass__(cls, **kwargs):  # @NoSelf
-            check_class_type(cls, MachineVertex)
-            super().__init_subclass__(**kwargs)
-
-    :param type cls: The class to check
-    :param type required_type: The class that we want to require
-    :raises TypeError: If the type check fails
+    :param type required_class:
+        The class that the subclass of the decorated class must be an instance
+        of (if that subclass is concrete).
     """
-    if not issubclass(cls, required_type) and type(cls) is not AbstractBase:
-        raise TypeError(
-            f"{cls.__name__} must be a subclass of {required_type.__name__}")
+
+    # Beware! This is all deep shenanigans!
+    #
+    # The __init_subclass__ stuff is from
+    #     https://stackoverflow.com/a/45400374/301832
+    # The setattr() call is from:
+    #     https://stackoverflow.com/a/533583/301832
+    # The classmethod() call is from:
+    #     https://stackoverflow.com/a/43779009/301832
+    # The need to do this as a functional decorator is my own discovery;
+    # without it, some very weird interactions with metaclasses happen and I
+    # really don't want to debug that stuff.
+
+    def decorate(target_class):
+        # pylint: disable=unused-variable
+        __class__ = target_class  # @ReservedAssignment
+        def __init_subclass__(cls, **kwargs):
+            if not issubclass(cls, required_class) and \
+                    type(cls) is not AbstractBase:
+                raise TypeError(
+                    f"{cls.__name__} must be a subclass "
+                    f"of {required_class.__name__}")
+            super().__init_subclass__(**kwargs)
+        setattr(target_class, '__init_subclass__',
+                classmethod(__init_subclass__))
+        return target_class
+    return decorate

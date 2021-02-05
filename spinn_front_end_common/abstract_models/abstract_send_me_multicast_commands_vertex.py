@@ -15,19 +15,16 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 from pacman.model.graphs import AbstractVertex
-from spinn_front_end_common.utilities.class_utils import check_class_type
+from spinn_front_end_common.utilities.class_utils import require_subclass
 
 
+@require_subclass(AbstractVertex)
 class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
     """ A vertex which wants to commands to be sent to it as multicast\
         packets at fixed points in the simulation
     """
 
     __slots__ = ()
-
-    def __init_subclass__(cls, **kwargs):  # @NoSelf
-        check_class_type(cls, AbstractVertex)
-        super().__init_subclass__(**kwargs)
 
     @abstractproperty
     def start_resume_commands(self):
