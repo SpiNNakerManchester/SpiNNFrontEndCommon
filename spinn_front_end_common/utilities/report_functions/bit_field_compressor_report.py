@@ -94,6 +94,7 @@ class BitFieldCompressorReport(object):
         total_bit_fields_merged = 0
         average_per_chip_merged = 0
         n_chips = 0
+        to_merge_chips = set(to_merge_per_chip.keys())
 
         found = False
         for prov_item in provenance_items:
@@ -126,6 +127,12 @@ class BitFieldCompressorReport(object):
             top_bit_field = "N/A"
             total_bit_fields_merged = "N/A"
             average_per_chip_merged = "N/A"
+
+        if len(to_merge_chips) > 0:
+            writer.write(
+                "The Chips {} had bitfields. \n"
+                "But no record was found of any attepmt to merge them \n"
+                "".format(to_merge_chips))
 
         return (min_bit_field, top_bit_field, total_bit_fields_merged,
                 average_per_chip_merged)
