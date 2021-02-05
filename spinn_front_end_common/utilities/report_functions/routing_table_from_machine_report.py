@@ -15,13 +15,13 @@
 
 import logging
 import os
-
+from spinn_utilities.log import FormatAdapter
 from pacman.model.routing_tables.compressed_multicast_routing_table import (
     CompressedMulticastRoutingTable)
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.operations.algorithm_reports import reports
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 _FOLDER_NAME = "routing_tables_from_machine"
 

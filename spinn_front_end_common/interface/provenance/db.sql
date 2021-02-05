@@ -51,7 +51,8 @@ CREATE VIEW IF NOT EXISTS provenance_view AS
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Show purely core level provenance, as most used
 CREATE VIEW IF NOT EXISTS core_provenance_view AS
-    SELECT source_name, x, y, p, description_name, the_value
+    SELECT provenance_id AS insertion_order,
+    	source_name, x, y, p, description_name, the_value
     FROM source NATURAL JOIN description NATURAL JOIN provenance
     WHERE source_short_name LIKE '%vertex%';
 
