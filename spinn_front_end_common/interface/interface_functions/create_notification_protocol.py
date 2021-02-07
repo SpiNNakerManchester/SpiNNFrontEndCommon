@@ -12,13 +12,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import logging
-from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.notification_protocol import (
     NotificationProtocol)
-
-logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class CreateNotificationProtocol(object):
