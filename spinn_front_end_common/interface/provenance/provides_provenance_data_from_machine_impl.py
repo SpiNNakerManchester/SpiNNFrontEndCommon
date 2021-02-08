@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum
-from spinn_utilities.abstract_base import AbstractBase, abstractproperty
+from spinn_utilities.abstract_base import abstractproperty
 from spinn_utilities.overrides import overrides
 from data_specification.utility_calls import get_region_base_address_offset
 from .abstract_provides_provenance_data_from_machine import (
@@ -36,7 +36,7 @@ def add_name(names, name):
 
 
 class ProvidesProvenanceDataFromMachineImpl(
-        AbstractProvidesProvenanceDataFromMachine, metaclass=AbstractBase):
+        AbstractProvidesProvenanceDataFromMachine, allow_derivation=True):
     """ An implementation that gets provenance data from a region of ints on\
         the machine.
     """

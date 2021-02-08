@@ -13,13 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_utilities.abstract_base import AbstractBase, abstractproperty
+from spinn_utilities.abstract_base import abstractproperty
 from spinn_utilities.overrides import overrides
 from .abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
 
 
 class SendsBuffersFromHostPreBufferedImpl(
-        AbstractSendsBuffersFromHost, metaclass=AbstractBase):
+        AbstractSendsBuffersFromHost, allow_derivation=True):
     """ Implementation of :py:class:`AbstractReceiveBuffersToHost`\
         which uses an existing set of buffers for the details.
     """
