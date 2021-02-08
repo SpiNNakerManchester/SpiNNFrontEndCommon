@@ -36,11 +36,12 @@ from spinn_front_end_common.abstract_models.\
     abstract_supports_bit_field_routing_compression import (
         AbstractSupportsBitFieldRoutingCompression)
 from spinn_front_end_common.utilities.report_functions.\
-    bit_field_compressor_report import generate_provenance_item
+    bit_field_compressor_report import (
+        generate_provenance_item)
 from spinn_front_end_common.utilities.exceptions import (
     CantFindSDRAMToUseException)
 from spinn_front_end_common.utilities.helpful_functions import (
-    get_defaultable_source_id)
+    get_defaultable_source_id, n_word_struct)
 from spinn_front_end_common.utilities.system_control_logic import (
     run_system_application)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
@@ -95,12 +96,8 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
 
     # structs for performance requirements.
     _FOUR_WORDS = struct.Struct("<IIII")
-
-    _THREE_WORDS = struct.Struct("<III")
-
     _TWO_WORDS = struct.Struct("<II")
-
-    _ONE_WORDS = struct.Struct("<I")
+    _ONE_WORD = struct.Struct("<I")
 
     # binary names
     _BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX = \
@@ -113,7 +110,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         "on host compressing routing tables and merging in bitfields as " \
         "appropriate"
     _ON_CHIP_ERROR_MESSAGE = \
-        "The router compressor with bit field on {}, {} failed to complete. " \
+        "The router compressor with bit field on {}:{} failed to complete. " \
         "Will execute host based routing compression instead"
 
     _ON_HOST_WARNING_MESSAGE = \
@@ -469,10 +466,9 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
     def _load_compressor_data(
             self, chip_x, chip_y, time_per_iteration, transceiver,
             bit_field_compressor_executable_path, cores,
-            compress_as_much_as_possible,
-            comms_sdram):
+            compress_as_much_as_possible, comms_sdram):
         """ Updates the user addresses for the compressor cores with the
-            compression settings
+            compression settings.
 
         :param int chip_x: chip x coord
         :param int chip_y: chip y coord
@@ -498,21 +494,14 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             # user 1 the time per compression attempt
             transceiver.write_memory(
                 chip_x, chip_y, user1_address,
-                self._ONE_WORDS.pack(
-                    time_per_iteration * SECOND_TO_MICRO_SECOND),
-                self._USER_BYTES)
+                int(time_per_iteration * SECOND_TO_MICRO_SECOND))
             # user 2 Compress as much as needed flag
-            if compress_as_much_as_possible:
-                compressor_setting = 1
-            else:
-                compressor_setting = 0
             transceiver.write_memory(
                 chip_x, chip_y, user2_address,
-                self._ONE_WORDS.pack(compressor_setting), self._USER_BYTES)
+                int(compress_as_much_as_possible))
             # user 3 the comms_sdram area
             transceiver.write_memory(
-                chip_x, chip_y, user3_address,
-                self._ONE_WORDS.pack(comms_sdram), self._USER_BYTES)
+                chip_x, chip_y, user3_address, comms_sdram)
 
     def _load_usable_sdram(
             self, matrix_addresses_and_size, chip_x, chip_y, transceiver,
@@ -554,8 +543,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         user3_address = transceiver.get_user_3_register_address_from_core(
             processor_id)
         transceiver.write_memory(
-            chip_x, chip_y, user3_address,
-            self._ONE_WORDS.pack(sdram_address), self._USER_BYTES)
+            chip_x, chip_y, user3_address, sdram_address)
 
     def _generate_chip_matrix_data(self, list_of_sizes_and_address):
         """ generate the data for the chip matrix data
@@ -565,7 +553,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         :return: byte array of data
         """
         data = b""
-        data += self._ONE_WORDS.pack(len(list_of_sizes_and_address))
+        data += self._ONE_WORD.pack(len(list_of_sizes_and_address))
         for (memory_address, size) in list_of_sizes_and_address:
             data += self._TWO_WORDS.pack(memory_address, size)
         return data
@@ -631,8 +619,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         user2_address = transceiver.get_user_2_register_address_from_core(
             processor_id)
         transceiver.write_memory(
-            chip_x, chip_y, user2_address,
-            self._ONE_WORDS.pack(sdram_address), self._USER_BYTES)
+            chip_x, chip_y, user2_address, sdram_address)
 
     def _load_routing_table_data(
             self, table, app_id, transceiver,
@@ -674,8 +661,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         user1_address = transceiver.get_user_1_register_address_from_core(
             processor_id)
         transceiver.write_memory(
-            table.x, table.y, user1_address,
-            self._ONE_WORDS.pack(base_address), self._USER_BYTES)
+            table.x, table.y, user1_address, base_address)
 
         # update progress bar
         progress_bar.update()
@@ -710,8 +696,8 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
     def _steal_from_matrix_addresses(matrix_addresses_and_size, size_to_steal):
         """ steals memory from synaptic matrix as needed
 
-        :param list(tuple(int,int)) matrix_addresses_and_size:
-            matrix addresses and sizes
+        :param dict(tuple(int,int),tuple(int,int)) matrix_addresses_and_size:
+            matrix addresses and sizes; updated by this method
         :param int size_to_steal: size needed to steal from matrix's.
         :return: address to start steal from
         :rtype: int
@@ -819,19 +805,14 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         :return: the byte array
         :rtype: bytes
         """
-        data = b""
-        data += self._ONE_WORDS.pack(threshold_percentage)
-        if retry_count is None:
-            data += self._ONE_WORDS.pack(0xFFFFFFFF)
-        else:
-            data += self._ONE_WORDS.pack(retry_count)
-        data += self._ONE_WORDS.pack(comms_sdram)
-        data += self._ONE_WORDS.pack(len(address_list))
+        data = self._FOUR_WORDS.pack(
+            threshold_percentage,
+            retry_count if retry_count is not None else 0xFFFFFFFF,
+            comms_sdram, len(address_list))
         for (bit_field, processor_id) in address_list:
             data += self._TWO_WORDS.pack(bit_field, processor_id)
-        data += self._ONE_WORDS.pack(len(cores))
-        compression_cores = list(cores.processor_ids)
-        data += struct.pack("<{}I".format(len(cores)), *compression_cores)
+        data += self._ONE_WORD.pack(len(cores))
+        data += n_word_struct(len(cores)).pack(*list(cores.processor_ids))
         return data
 
 

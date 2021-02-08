@@ -26,10 +26,10 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .globals_variables import get_simulator
-from .constants import BYTES_PER_WORD, MICRO_TO_MILLISECOND_CONVERSION
+from .constants import MICRO_TO_MILLISECOND_CONVERSION
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_ONE_WORD = struct.Struct("<I")
+_n_word_structs = []
 
 
 def locate_extra_monitor_mc_receiver(
@@ -79,7 +79,7 @@ def write_address_to_user0(txrx, x, y, p, address):
     :param int address: Value to write (32-bit integer)
     """
     user_0_address = txrx.get_user_0_register_address_from_core(p)
-    txrx.write_memory(x, y, user_0_address, _ONE_WORD.pack(address))
+    txrx.write_memory(x, y, user_0_address, address)
 
 
 def locate_memory_region_for_placement(placement, region, transceiver):
@@ -101,9 +101,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
         regions_base_address, region)
 
     # Get the actual address of the region
-    region_address = transceiver.read_memory(
-        placement.x, placement.y, region_offset, BYTES_PER_WORD)
-    return _ONE_WORD.unpack_from(region_address)[0]
+    return transceiver.read_word(placement.x, placement.y, region_offset)
 
 
 def convert_string_into_chip_and_core_subset(cores):
@@ -416,6 +414,34 @@ def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
     """
     _emergency_state_check(txrx, app_id)
     _emergency_iobuf_extract(txrx, executable_targets)
+
+
+def n_word_struct(n_words):
+    """ Manages a precompiled cache of structs for parsing blocks of words. \
+        Thus, this::
+
+        data = n_word_struct(n_words).unpack(data_blob)
+
+    Is much like doing this::
+
+        data = struct.unpack("<{}I".format(n_words), data_blob)
+
+    except quite a bit more efficient because things are shared including the
+    cost of parsing the format.
+
+    :param int n_words: The number of *SpiNNaker words* to be handled.
+    :return: A struct for working with that many words.
+    :rtype: ~struct.Struct
+    """
+    global _n_word_structs
+    while len(_n_word_structs) < n_words + 1:
+        _n_word_structs += [None] * (n_words + 1 - len(_n_word_structs))
+    s = _n_word_structs[n_words]
+    if s is not None:
+        return s
+    new_struct = struct.Struct("<{}I".format(n_words))
+    _n_word_structs[n_words] = new_struct
+    return new_struct
 
 
 def get_defaultable_source_id(entry):

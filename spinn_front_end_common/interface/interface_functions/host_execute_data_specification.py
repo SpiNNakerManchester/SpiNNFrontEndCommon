@@ -15,7 +15,6 @@
 
 from collections import OrderedDict
 import logging
-import struct
 import numpy
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
@@ -32,7 +31,6 @@ from spinn_front_end_common.utilities.helpful_functions import (
     emergency_recover_states_from_failure)
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_ONE_WORD = struct.Struct("<I")
 _MEM_REGIONS = range(MAX_MEM_REGIONS)
 
 

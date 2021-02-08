@@ -34,7 +34,8 @@ from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
 from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset, emergency_recover_state_from_failure)
+    convert_vertices_to_core_subset, emergency_recover_state_from_failure,
+    n_word_struct)
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
@@ -823,8 +824,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         n_elements = (len(data) - position) // BYTES_PER_WORD
 
         # store missing
-        new_seq_nums = struct.unpack_from(
-            "<{}I".format(n_elements), data, position)
+        new_seq_nums = n_word_struct(n_elements).unpack_from(
+            data, position)
 
         # add missing seqs accordingly
         seen_last = False
@@ -1451,9 +1452,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 length_left_in_packet -= WORDS_FOR_COMMAND_TRANSACTION
 
             # fill data field
-            struct.pack_into(
-                "<{}I".format(size_of_data_left_to_transmit), data, offset,
-                *missing_seq_nums[
+            n_word_struct(size_of_data_left_to_transmit).pack_into(
+                data, offset, *missing_seq_nums[
                     seq_num_offset:
                     seq_num_offset + size_of_data_left_to_transmit])
             seq_num_offset += length_left_in_packet
