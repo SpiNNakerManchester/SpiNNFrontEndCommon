@@ -14,8 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-import struct
 from spinn_front_end_common.interface.profiling.profile_data import ProfileData
+from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 
 _ENTER_TAG = 0x80000000
 _EXIT_TAG = 0x00000000
@@ -43,7 +43,7 @@ class Test(unittest.TestCase):
             _get_clock(2, 0.1), _ENTER_TAG | 4,
             _get_clock(2, 0.4), _EXIT_TAG | 4,
         ]
-        data = bytearray(struct.pack("<{}I".format(len(samples)), *samples))
+        data = bytearray(n_word_struct(len(samples)).pack(*samples))
 
         # Read back the data
         profile_data.add_data(data)

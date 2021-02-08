@@ -139,10 +139,9 @@ def get_last_sequence_number(placement, transceiver, recording_data_address):
         The address of the recording data from which to read the number
     :rtype: int
     """
-    data = transceiver.read_memory(
+    return transceiver.read_word(
         placement.x, placement.y,
-        recording_data_address + _LAST_SEQUENCE_NUMBER_OFFSET, BYTES_PER_WORD)
-    return _ONE_WORD.unpack_from(data)[0]
+        recording_data_address + _LAST_SEQUENCE_NUMBER_OFFSET)
 
 
 def get_region_pointer(placement, transceiver, recording_data_address, region):
@@ -157,8 +156,7 @@ def get_region_pointer(placement, transceiver, recording_data_address, region):
     :param int region: The index of the region to get the pointer of
     :rtype: int
     """
-    data = transceiver.read_memory(
+    return transceiver.read_word(
         placement.x, placement.y,
         recording_data_address + _FIRST_REGION_ADDRESS_OFFSET +
-        (region * BYTES_PER_WORD), BYTES_PER_WORD)
-    return _ONE_WORD.unpack_from(data)[0]
+        (region * BYTES_PER_WORD))

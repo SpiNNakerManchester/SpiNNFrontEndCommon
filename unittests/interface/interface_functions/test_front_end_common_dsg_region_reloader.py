@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-import struct
 import shutil
 import numpy
 from spinn_machine import SDRAM
@@ -30,6 +29,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.interface.interface_functions import (
     DSGRegionReloader)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
+from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 
 
 class _TestMachineVertex(MachineVertex, AbstractRewritesDataSpecification):
@@ -147,8 +147,7 @@ class _MockTransceiver(object):
 
     def read_memory(self, x, y, base_address, length, cpu=0):
         addresses = [i + base_address for i in self._region_addresses]
-        return struct.pack(
-            "<{}I".format(MAX_MEM_REGIONS), *addresses)
+        return n_word_struct(MAX_MEM_REGIONS).pack(*addresses)
 
     def write_memory(
             self, x, y, base_address, data, n_bytes=None, offset=0,
