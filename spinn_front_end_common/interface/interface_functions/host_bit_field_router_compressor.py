@@ -31,14 +31,16 @@ from pacman.model.routing_tables import (
 from pacman.operations.algorithm_reports.reports import format_route
 from pacman.operations.router_compressors import Entry
 from pacman.operations.router_compressors.ordered_covering_router_compressor\
-    import minimise
-from spinn_front_end_common.abstract_models.\
-    abstract_supports_bit_field_routing_compression import (
-        AbstractSupportsBitFieldRoutingCompression)
+    import (
+        minimise)
+from spinn_front_end_common.abstract_models import (
+    AbstractSupportsBitFieldRoutingCompression)
+from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD, BYTES_PER_3_WORDS)
 from spinn_front_end_common.utilities.report_functions.\
-    bit_field_compressor_report import generate_provenance_item
+    bit_field_compressor_report import (
+        generate_provenance_item)
 from pacman.operations.router_compressors import PairCompressor
 
 
@@ -131,7 +133,7 @@ class HostBasedBitFieldRouterCompressor(object):
     N_ATOMS_MASK = 0x3FFFFFFF
     MERGED_SETTER = 0x80000000
 
-    # structs for performance requirements.
+    # struct for performance requirements.
     _THREE_WORDS = struct.Struct("<III")
 
     # for router report
@@ -441,8 +443,8 @@ class HostBasedBitFieldRouterCompressor(object):
             # read in each bitfield
             for _ in range(0, n_filters):
                 # master pop key, n words and read pointer
-                master_pop_key, n_atoms_word, read_pointer = struct.unpack(
-                    "<III", transceiver.read_memory(
+                master_pop_key, n_atoms_word, read_pointer = \
+                    self._THREE_WORDS.unpack(transceiver.read_memory(
                         chip_x, chip_y, reading_address, BYTES_PER_3_WORDS))
                 n_atoms_address = reading_address + BYTES_PER_WORD
                 reading_address += BYTES_PER_3_WORDS
@@ -452,8 +454,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 # get bitfield words
                 n_words_to_read = math.ceil(atoms / self._BITS_PER_WORD)
 
-                bit_field = struct.unpack(
-                    "<{}I".format(n_words_to_read),
+                bit_field = n_word_struct(n_words_to_read).unpack(
                     transceiver.read_memory(
                         chip_x, chip_y, read_pointer,
                         n_words_to_read * BYTES_PER_WORD))
