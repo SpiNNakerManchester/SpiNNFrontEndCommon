@@ -14,14 +14,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
-from spinn_utilities.require_subclass import require_subclass
-from pacman.model.graphs import AbstractVertex
 
 
-@require_subclass(AbstractVertex)
 class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
-    """ A vertex which wants to commands to be sent to it as multicast\
-        packets at fixed points in the simulation
+    """ A device that may be a virtual vertex which wants to commands to be\
+        sent to it as multicast packets at fixed points in the simulation.
+
+    .. note::
+        The device might not be a vertex at all. It could instead be
+        instantiated entirely host side, in which case these methods will
+        never be called.
     """
 
     __slots__ = ()
