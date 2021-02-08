@@ -21,6 +21,10 @@ from spinn_utilities.abstract_base import (
 @add_metaclass(AbstractBase)
 class AbstractCanReset(object):
     """ Indicates an object that can be reset to time 0.
+
+    This is used when AbstractSpinnakerBase.reset is called.
+    All Vertices and all edges in the original graph
+    (the one added to by the user) will be checked and reset.
     """
 
     @abstractmethod

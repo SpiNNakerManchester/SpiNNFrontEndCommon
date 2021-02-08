@@ -23,26 +23,21 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 class FindApplicationChipsUsed(object):
     """ Builds a set of stats on how many chips were used for application\
         cores.
-
-    :param ~pacman.model.placements.Placements placements: placements
-    :return: a tuple with 4 elements.
-    1. how many chips were used
-    2. the max application cores on any given chip
-    3. the lowest number of application cores on any given chip
-    4. the average number of application cores on any given chip
-    :rtype: tuple(int,int,int,float)
     """
 
     def __call__(self, placements):
         """ Finds how many application chips there were and the cost on \
             each chip
 
-        :param ~.Placements placements: placements
+        :param ~pacman.model.placements.Placements placements: placements
         :return: a tuple with 4 elements.
-        1. how many chips were used
-        2. the max application cores on any given chip
-        3. the lowest number of application cores on any given chip
-        4. the average number of application cores on any given chip
+
+            1. how many chips were used
+            2. the max application cores on any given chip
+            3. the lowest number of application cores on any given chip
+            4. the average number of application cores on any given chip
+
+        :rtype: tuple(int,int,int,float)
         """
         chips_used = defaultdict(int)
         for placement in placements:

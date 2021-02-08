@@ -29,9 +29,8 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
         ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
-        SetRouterEmergencyTimeoutProcess, SetRouterTimeoutProcess,
-        ClearQueueProcess, LoadApplicationMCRoutesProcess,
-        LoadSystemMCRoutesProcess)
+        SetRouterTimeoutProcess, ClearQueueProcess,
+        LoadApplicationMCRoutesProcess, LoadSystemMCRoutesProcess)
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE, DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES,
     BYTES_PER_WORD, BYTES_PER_KB)
@@ -108,9 +107,9 @@ class ExtraMonitorSupportMachineVertex(
             reinject_multicast=None, reinject_point_to_point=False,
             reinject_nearest_neighbour=False, reinject_fixed_route=False):
         """
-        :param iterable(~pacman.model.constraints.AbstractConstraint) \
-                constraints:
-            constraints on this vertex
+        :param constraints: constraints on this vertex
+        :type constraints:
+            iterable(~pacman.model.constraints.AbstractConstraint)
         :param bool reinject_multicast:
             if we reinject multicast packets; defaults to value of
             `enable_reinjection` setting in configuration file
@@ -259,9 +258,9 @@ class ExtraMonitorSupportMachineVertex(
         :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             (injected)
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                data_in_routing_tables:
-            (injected)
+        :param data_in_routing_tables: (injected)
+        :type data_in_routing_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
         :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
         :param int app_id: (injected)
         :param ~spinn_machine.Machine machine: (injected)
@@ -381,11 +380,13 @@ class ExtraMonitorSupportMachineVertex(
         route |= Router.convert_routing_table_entry_to_spinnaker_route(entry)
         return route
 
-    def set_router_time_outs(
+    def set_router_wait1_timeout(
             self, timeout, transceiver, placements,
             extra_monitor_cores_to_set):
         """ Supports setting of the router time outs for a set of chips via\
-            their extra monitor cores.
+            their extra monitor cores. This sets the timeout for the time\
+            between when a packet arrives and when it starts to be emergency\
+            routed. (Actual emergency routing is disabled by default.)
 
         :param tuple(int,int) timeout:
             The mantissa and exponent of the timeout value, each between
@@ -405,17 +406,20 @@ class ExtraMonitorSupportMachineVertex(
         process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
         try:
-            process.set_timeout(mantissa, exponent, core_subsets)
+            process.set_wait1_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
                 placements.get_placement_of_vertex(self))
             raise
 
-    def set_router_emergency_timeout(
+    def set_router_wait2_timeout(
             self, timeout, transceiver, placements,
             extra_monitor_cores_to_set):
-        """ Sets the timeout of the routers
+        """ Supports setting of the router time outs for a set of chips via\
+            their extra monitor cores. This sets the timeout for the time\
+            between when a packet starts to be emergency routed and when it\
+            is dropped. (Actual emergency routing is disabled by default.)
 
         :param tuple(int,int) timeout:
             The mantissa and exponent of the timeout value, each between
@@ -432,10 +436,10 @@ class ExtraMonitorSupportMachineVertex(
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
-        process = SetRouterEmergencyTimeoutProcess(
+        process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
         try:
-            process.set_timeout(mantissa, exponent, core_subsets)
+            process.set_wait2_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,

@@ -60,6 +60,9 @@ class _MockTransceiver(object):
     def send_sdp_message(self, message):
         self.sdp_send_count += 1
 
+    def send_signal(self, app_id, signal):
+        pass
+
 
 def test_app_finisher():
     finisher = ApplicationFinisher()

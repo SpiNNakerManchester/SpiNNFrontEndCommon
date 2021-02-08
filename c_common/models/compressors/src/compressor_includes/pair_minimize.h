@@ -28,8 +28,10 @@
  * The memory address with tag "1" is expected contain the following struct
  * (entry_t is defined in `routing_table.h` but is described below).
  */
+#include <stdbool.h>
 #include <debug.h>
 #include "../common/routing_table.h"
+#include "common/minimise.h"
 
 //! Absolute maximum number of routes that we may produce
 #define MAX_NUM_ROUTES 1023
@@ -129,10 +131,10 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b) {
     }
     for (uint i = 0; i < routes_count; i++) {
         if (routes[i] == route_a) {
-            return 1;
+            return -1;
         }
         if (routes[i] == route_b) {
-            return -1;
+            return 1;
         }
     }
     log_error("Routes not found %u %u", route_a, route_b);
@@ -142,50 +144,40 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b) {
     return 0;
 }
 
-//! \brief Implementation of quicksort for routes based on route information
-//! \param[in] low: the first index into the array of the section to sort;
-//!                 inclusive lowest index
-//! \param[in] high: the second index into the array of the section to sort;
-//!                  exclusive highest index
-static void sort_table(int table_size) {
-    for (int i = 0; i < table_size -1; i++) {
-        uint32_t route_i = routing_table_get_entry(i)->route;
-        for (int j = i + 1; j < table_size; j++) {
-            uint32_t route_j = routing_table_get_entry(j)->route;
-            if (compare_routes(route_i, route_j) < 0) {
-                swap_entries(i, j);
-                route_i = route_j;
-            }
+//! \brief Implementation of insertion sort for routes based on route
+//!     information
+static void sort_table(uint32_t table_size) {
+    uint32_t i, j;
+
+    for (i = 1; i < table_size; i++) {
+        entry_t tmp = *routing_table_get_entry(i);
+        for (j = i; j > 0 && compare_routes(
+                routing_table_get_entry(j - 1)->route, tmp.route) > 0; j--) {
+            routing_table_put_entry(routing_table_get_entry(j - 1), j);
         }
+        routing_table_put_entry(&tmp, j);
     }
 }
 
-//! \brief Swap two routes
-//!
-//! Also swaps the corresponding information in routes_frequency
-//!
-//! \param[in] index_a: The index of the first route
-//! \param[in] index_b: The index of the second route
-static inline void swap_routes(int index_a, int index_b) {
-    uint32_t temp = routes_frequency[index_a];
-    routes_frequency[index_a] = routes_frequency[index_b];
-    routes_frequency[index_b] = temp;
-    temp = routes[index_a];
-    routes[index_a] = routes[index_b];
-    routes[index_b] = temp;
-}
-
-//! \brief Implementation of quicksort for routes based on frequency.
-//!
-//! The routes must be non-overlapping pre-minimisation routes.
-//!
+//! \brief Implementation of insertion sort for routes based on frequency.
+//! \details The routes must be non-overlapping pre-minimisation routes.
 static void sort_routes(void) {
-    for (int i = 0; i < routes_count -1; i++) {
-        for (int j = i + 1; j < routes_count; j++) {
-            if (routes_frequency[i] > routes_frequency[j]) {
-                swap_routes(i, j);
-            }
+    uint32_t i, j;
+
+    for (i = 1; i < routes_count; i++) {
+        // The entry we're going to move is "taken out"
+        uint32_t r_tmp = routes[i];
+        uint32_t rf_tmp = routes_frequency[i];
+
+        // The entries below it that are larger are shuffled up
+        for (j = i; j > 0 && routes_frequency[j - 1] > rf_tmp; j--) {
+            routes[j] = routes[j - 1];
+            routes_frequency[j] = routes_frequency[j - 1];
         }
+
+        // The entry is dropped back into place
+        routes[j] = r_tmp;
+        routes_frequency[j] = rf_tmp;
     }
 }
 
@@ -203,8 +195,11 @@ static inline bool update_frequency(int index) {
     routes_frequency[routes_count] = 1;
     routes_count++;
     if (routes_count >= MAX_NUM_ROUTES) {
-        log_error("Best compression was %d compared to max legal of %d",
-                routes_count, MAX_NUM_ROUTES);
+        if (standalone()) {
+            log_error("Too many different routes to compress found %d "
+                      "compared to max legal of %d",
+                      routes_count, MAX_NUM_ROUTES);
+        }
         return false;
     }
     return true;
@@ -224,7 +219,7 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
     if (MAX_NUM_ROUTES != rtr_alloc_max()){
         log_error("MAX_NUM_ROUTES %d != rtr_alloc_max() %d",
                 MAX_NUM_ROUTES, rtr_alloc_max());
-            return false;
+        return false;
     }
     int table_size = routing_table_get_n_entries();
 
@@ -252,7 +247,7 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
         log_debug("%u", routes[i]);
     }
 
-    log_debug("do quicksort_table by route %u", table_size);
+    log_debug("do sort_table by route %u", table_size);
     sort_table(table_size);
     if (*stop_compressing) {
         log_info("Stopping before compression as asked to stop");
@@ -276,8 +271,11 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
         log_debug("compress %u %u", left, right);
         compress_by_route(left, right);
         if (write_index > rtr_alloc_max()){
-            log_error("Compression not possible as already found %d entries "
-            "where max allowed is %d", write_index, rtr_alloc_max());
+            if (standalone()) {
+                log_error("Compression not possible as already found %d "
+                          "entries where max allowed is %d",
+                          write_index, rtr_alloc_max());
+            }
             return false;
         }
         if (*stop_compressing) {
@@ -289,7 +287,12 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
 
     log_debug("done %u %u", table_size, write_index);
 
+    //for (uint i = 0; i < write_index; i++) {
+    //    entry_t *entry1 = routing_table_get_entry(i);
+    //    log_info("%u route:%u source:%u key:%u mask:%u",i, entry1->route,
+    //      entry1->source, entry1->key_mask.key, entry1->key_mask.mask);
+    //}
     routing_table_remove_from_size(table_size-write_index);
-    log_debug("now %u", routing_table_get_n_entries());
+    log_info("now %u", routing_table_get_n_entries());
     return true;
 }

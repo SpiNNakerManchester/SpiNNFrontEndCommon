@@ -19,6 +19,7 @@ import re
 import sqlite3
 import sys
 from spinn_utilities.ordered_set import OrderedSet
+from spinn_utilities.abstract_context_manager import AbstractContextManager
 
 
 if sys.version_info < (3,):
@@ -29,11 +30,11 @@ _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 _RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
 
 
-class SqlLiteDatabase(object):
+class SqlLiteDatabase(AbstractContextManager):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::
-        NOT THREAD SAFE ON THE SAME DB.
+        *Not thread safe on the same database file.*
         Threads can access different DBs just fine.
 
     .. note::
@@ -48,9 +49,10 @@ class SqlLiteDatabase(object):
 
     def __init__(self, database_file=None):
         """
-        :param str database_file: The name of a file that contains (or will\
-            contain) an SQLite database holding the data. If omitted, an\
-            unshared in-memory database will be used.
+        :param str database_file:
+            The name of a file that contains (or will contain) an SQLite
+            database holding the data. If omitted, an unshared in-memory
+            database will be used (suitable only for testing).
         :type database_file: str
         """
         if database_file is None:
@@ -59,21 +61,6 @@ class SqlLiteDatabase(object):
         self.__init_db()
 
     def __del__(self):
-        self.close()
-
-    def __enter__(self):
-        """ Start method is use in a ``with`` statement
-        """
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """ End method if used in a ``with`` statement.
-
-        :param exc_type:
-        :param exc_val:
-        :param exc_tb:
-        :return:
-        """
         self.close()
 
     def close(self):

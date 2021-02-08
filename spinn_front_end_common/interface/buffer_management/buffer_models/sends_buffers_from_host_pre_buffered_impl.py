@@ -16,10 +16,11 @@
 import logging
 from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
+from spinn_utilities.log import FormatAdapter
 from .abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
 from spinn_utilities.overrides import overrides
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 @add_metaclass(AbstractBase)

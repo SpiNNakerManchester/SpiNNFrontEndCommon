@@ -15,6 +15,7 @@
 
 import logging
 import math
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.logger_utils import warn_once
 from spinn_front_end_common.abstract_models.impl.\
     tdma_aware_application_vertex import (
@@ -24,7 +25,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
     read_config_int, read_config_float, read_config)
 from spinn_front_end_common.utilities.globals_variables import get_simulator
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class LocalTDMABuilder(object):
@@ -98,13 +99,10 @@ class LocalTDMABuilder(object):
     _DEFAULT_TIME_BETWEEN_CORES = 50
 
     def __call__(
-            self, application_graph, machine_graph, machine_time_step,
-            time_scale_factor, n_keys_map):
+            self, machine_graph, machine_time_step, time_scale_factor,
+            n_keys_map, application_graph=None):
         """ main entrance
 
-        :param application_graph: app graph.
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             machine graph.
         :param int machine_time_step: the machine time step.
@@ -112,7 +110,12 @@ class LocalTDMABuilder(object):
         :param n_keys_map: the map of partitions to n keys.
         :type n_keys_map:
             ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
+        :param application_graph: app graph.
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph or None
         """
+        if application_graph is None:
+            return
 
         # get config params
         (app_machine_quantity, time_between_cores,
@@ -235,8 +238,7 @@ class LocalTDMABuilder(object):
                 total_time_needed / machine_time_step / fraction_of_sending)
             msg = self._VERTEX_TDMA_FAILURE_MSG.format(
                 label, time_scale_factor_needed)
-            logger.error(msg)
-            raise ConfigurationException(msg)
+            logger.warning(msg)
         if total_time_needed != 0:
             # maybe this warn could be thrown away?
             true_fraction = 1 / (

@@ -26,14 +26,14 @@ typedef struct key_atom_pair_t {
     //! Multicast key.
     uint32_t key;
     //! Number of atoms for the key.
-    int n_atoms;
+    uint32_t n_atoms;
 } key_atom_pair_t;
 
 //! \brief A mapping from multicast keys to sections of a contiguous range of
 //!     atoms (neurons, etc.)
 typedef struct key_atom_data_t {
     //! How many key-atom maps are present?
-    int n_pairs;
+    uint32_t n_pairs;
     //! The array of mappings.
     key_atom_pair_t pairs[];
 } key_atom_data_t;

@@ -17,7 +17,6 @@ import os
 import struct
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import SDRAM
-from spinn_storage_handlers import FileDataReader
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
 from data_specification.utility_calls import (
@@ -32,17 +31,6 @@ REGION_STRUCT = struct.Struct("<{}I".format(MAX_MEM_REGIONS))
 
 class DSGRegionReloader(object):
     """ Regenerates and reloads the data specifications.
-
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        SpiNNMan transceiver for communication
-    :param ~pacman.model.placements.Placements placements:
-        the list of placements of the machine graph to cores
-    :param str hostname:
-        the machine name
-    :param str report_directory:
-        the location where reports are stored
-    :param bool write_text_specs:
-        True if the textual version of the specification is to be written
     """
     __slots__ = [
         "_txrx", "_host", "_write_text", "_rpt_dir", "_data_dir"]
@@ -51,11 +39,16 @@ class DSGRegionReloader(object):
             self, transceiver, placements, hostname, report_directory,
             write_text_specs):
         """
-        :param ~.Transceiver transceiver:
-        :param ~.Placements placements:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            SpiNNMan transceiver for communication
+        :param ~pacman.model.placements.Placements placements:
+            the list of placements of the machine graph to cores
         :param str hostname:
+            the machine name
         :param str report_directory:
+            the location where reports are stored
         :param bool write_text_specs:
+            Whether the textual version of the specification is to be written
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         self._txrx = transceiver
@@ -77,51 +70,27 @@ class DSGRegionReloader(object):
                 os.makedirs(report_dir)
         self._rpt_dir = report_dir
 
-        application_vertices_to_reset = set()
-
         progress = ProgressBar(placements.n_placements, "Reloading data")
         for placement in progress.over(placements.placements):
-            # Try to generate the data spec for the placement
-            generated = self._regenerate_data_spec_for_vertices(
-                placement, placement.vertex)
-            # If the region was regenerated, mark it reloaded
-            if generated:
-                placement.vertex.mark_regions_reloaded()
-                continue
-
-            # If the spec wasn't generated directly, but there is an
-            # application vertex, try with that
-            app_vertex = placement.vertex.app_vertex
-            if app_vertex is not None:
-                generated = self._regenerate_data_spec_for_vertices(
-                    placement, app_vertex)
-
-                # If the region was regenerated, remember the application
-                # vertex for resetting later
-                if generated:
-                    application_vertices_to_reset.add(app_vertex)
-
-        # Only reset the application vertices here, otherwise only one
-        # machine vertex's data per app vertex will be updated
-        for app_vertex in application_vertices_to_reset:
-            app_vertex.mark_regions_reloaded()
+            # Generate the data spec for the placement if needed
+            self._regenerate_data_spec_for_vertices(placement)
 
         # App data directory can be removed as should be empty
         os.rmdir(app_data_dir)
 
-    def _regenerate_data_spec_for_vertices(self, placement, vertex):
+    def _regenerate_data_spec_for_vertices(self, placement):
         """
         :param ~.Placement placement:
-        :param ~.AbstractVertex vertex:
-        :rtype: bool
         """
+        vertex = placement.vertex
+
         # If the vertex doesn't regenerate, skip
         if not isinstance(vertex, AbstractRewritesDataSpecification):
-            return False
+            return
 
         # If the vertex doesn't require regeneration, skip
-        if not vertex.requires_memory_regions_to_be_reloaded():
-            return True
+        if not vertex.reload_required():
+            return
 
         # build the writers for the reports and data
         spec_file, spec = get_data_spec_and_file_writer_filename(
@@ -132,7 +101,7 @@ class DSGRegionReloader(object):
         vertex.regenerate_data_specification(spec, placement)
 
         # execute the spec
-        with FileDataReader(spec_file) as spec_reader:
+        with open(spec_file, "rb") as spec_reader:
             data_spec_executor = DataSpecificationExecutor(
                 spec_reader, SDRAM.max_sdram_found)
             data_spec_executor.execute()
@@ -158,5 +127,4 @@ class DSGRegionReloader(object):
                 self._txrx.write_memory(
                     placement.x, placement.y, offsets[i],
                     region.region_data[:region.max_write_pointer])
-
-        return True
+        vertex.set_reload_required(False)

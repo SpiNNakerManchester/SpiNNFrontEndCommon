@@ -135,13 +135,14 @@ class BufferManager(object):
         :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices
         :param ~spinnman.transceiver.Transceiver transceiver:
             The transceiver to use for sending and receiving information
-        :param extra_monitor_cores:
+        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+            The monitors.
         :param packet_gather_cores_to_ethernet_connection_map:
             mapping of cores to the gatherer vertex placed on them
         :type packet_gather_cores_to_ethernet_connection_map:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
         :param extra_monitor_to_chip_mapping:
-        :type exra_monitor_to_chip_mapping:
+        :type extra_monitor_to_chip_mapping:
             dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
         :param ~spinn_machine.Machine machine:
         :param fixed_routes:
@@ -151,7 +152,7 @@ class BufferManager(object):
             The directory for reports which includes the file to use as an SQL
             database.
         :param JavaCaller java_caller:
-            Support class to call Java, or None to use python
+            Support class to call Java, or ``None`` to use Python
         """
         # pylint: disable=too-many-arguments
         self._placements = placements
@@ -252,9 +253,9 @@ class BufferManager(object):
     def _receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers.
 
-        :param ~spinnman.messages.eieio.command_messages.EIEIOCommandMessage \
-                packet:
-            The EIEIO message received
+        :param packet: The EIEIO message received
+        :type packet:
+            ~spinnman.messages.eieio.command_messages.EIEIOCommandMessage
         """
         # pylint: disable=broad-except
         if isinstance(packet, SpinnakerRequestBuffers):
@@ -279,10 +280,9 @@ class BufferManager(object):
     # Factored out of receive_buffer_command_message to keep code readable
     def __request_buffers(self, packet):
         """
-        :param \
-            ~spinnman.messages.eieio.command_messages.SpinnakerRequestBuffers\
-                packet:
-            The EIEIO message received
+        :param packet: The EIEIO message received
+        :type packet:
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestBuffers
         """
         if not self._finished:
             with self._thread_lock_buffer_in:
@@ -296,10 +296,9 @@ class BufferManager(object):
     # Factored out of receive_buffer_command_message to keep code readable
     def __request_read_data(self, packet):
         """
-        :param \
-            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData\
-                packet:
-            The EIEIO message received
+        :param packet: The EIEIO message received
+        :type packet:
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData
         """
         if not self._finished:
             # Send an ACK message to stop the core sending more messages
@@ -611,9 +610,9 @@ class BufferManager(object):
         """ Sends a request.
 
         :param AbstractSendsBuffersFromHost vertex: The vertex to send to
-        :param ~spinman.messages.eieio.command_messagesEIEIOCommandMessage \
-                message:
-            The message to send
+        :param message: The message to send
+        :type message:
+            ~spinman.messages.eieio.command_messages.EIEIOCommandMessage
         """
 
         placement = self._placements.get_placement_of_vertex(vertex)
@@ -915,9 +914,9 @@ class BufferManager(object):
 
     def _process_buffered_in_packet(self, packet):
         """
-        :param \
-            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData\
-                packet:
+        :param packet:
+        :type packet:
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData
         :raises Exception:
         """
         # pylint: disable=broad-except
@@ -939,10 +938,9 @@ class BufferManager(object):
             a data structure, following the specifications of buffering out
             technique.
 
-        :param \
-            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData\
-                packet:
-            SpinnakerRequestReadData packet received from the SpiNNaker system
+        :param packet: packet received from the SpiNNaker system
+        :type packet:
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData
         """
         x = packet.x
         y = packet.y
@@ -992,9 +990,9 @@ class BufferManager(object):
         :param int x:
         :param int y:
         :param int p:
-        :param \
-            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData\
-                packet:
+        :param packet:
+        :type packet:
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData
         :param int pkt_seq:
         :rtype: ~spinnman.messages.eieio.command_messages.HostDataRead
         """

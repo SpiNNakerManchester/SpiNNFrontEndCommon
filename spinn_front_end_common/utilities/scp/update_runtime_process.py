@@ -26,7 +26,8 @@ from spinn_utilities.overrides import overrides
 
 
 class _UpdateRuntimeRequest(AbstractSCPRequest):
-    def __init__(self, x, y, p, current_time, run_time, infinite_run):
+    def __init__(
+            self, x, y, p, current_time, run_time, infinite_run, n_sync_steps):
         """
         :param int x:
         :param int y:
@@ -34,6 +35,7 @@ class _UpdateRuntimeRequest(AbstractSCPRequest):
         :param int current_time:
         :param int run_time:
         :param bool infinite_run:
+        :param int n_sync_steps:
         """
         # pylint: disable=too-many-arguments
         sdp_flags = SDPFlag.REPLY_EXPECTED
@@ -47,7 +49,7 @@ class _UpdateRuntimeRequest(AbstractSCPRequest):
                 command=SDP_RUNNING_MESSAGE_CODES.SDP_NEW_RUNTIME_ID_CODE),
             argument_1=run_time, argument_2=infinite_run,
             argument_3=current_time,
-            data=struct.pack("<B", int(True)))
+            data=struct.pack("<I", int(n_sync_steps)))
 
     @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self):
@@ -77,23 +79,21 @@ class UpdateRuntimeProcess(AbstractMultiConnectionProcess):
             self._progress.update()
 
     def update_runtime(self, current_time, run_time, infinite_run,
-                       core_subsets, n_cores=None):
+                       core_subsets, n_cores, n_sync_steps):
         """
         :param int current_time:
         :param int run_time:
         :param bool infinite_run:
         :param ~spinn_machine.CoreSubsets core_subsets:
-        :param int n_cores: Defaults to the number of cores in `core_subsets`.
+        :param int n_cores: Number of cores being updated
         """
-        if n_cores is None:
-            n_cores = len(core_subsets)
         self._progress = ProgressBar(n_cores, "Updating run time")
         for core_subset in core_subsets:
             for processor_id in core_subset.processor_ids:
                 self._send_request(
                     _UpdateRuntimeRequest(
                         core_subset.x, core_subset.y, processor_id,
-                        current_time, run_time, infinite_run),
+                        current_time, run_time, infinite_run, n_sync_steps),
                     callback=self.__receive_response)
         self._finish()
         self._progress.end()

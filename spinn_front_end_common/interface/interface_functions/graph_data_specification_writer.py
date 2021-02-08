@@ -28,23 +28,6 @@ from spinn_front_end_common.interface.ds.data_specification_targets import (
 
 class GraphDataSpecificationWriter(object):
     """ Executes the data specification generation step.
-
-    :param ~pacman.model.placements.Placements placements:
-        placements of machine graph to cores
-    :param str hostname: SpiNNaker machine name
-    :param str report_default_directory: the location where reports are stored
-    :param bool write_text_specs:
-        True if the textual version of the specification is to be written
-    :param ~spinn_machine.Machine machine:
-        the python representation of the SpiNNaker machine
-    :param int data_n_timesteps:
-        The number of timesteps for which data space will been reserved
-    :param list(~pacman.model.placements.Placement) placement_order:
-        the optional order in which placements should be examined
-    :return: DSG targets (map of placement tuple and filename)
-    :rtype: tuple(DataSpecificationTargets, dict(tuple(int,int,int), int))
-    :raises ConfigurationException:
-        If the DSG asks to use more SDRAM than is available.
     """
 
     __slots__ = (
@@ -74,15 +57,23 @@ class GraphDataSpecificationWriter(object):
             report_default_directory, write_text_specs,
             machine, data_n_timesteps, placement_order=None):
         """
-        :param ~.Placements placements:
-        :param str hostname:
+        :param ~pacman.model.placements.Placements placements:
+            placements of machine graph to cores
+        :param str hostname: SpiNNaker machine name
         :param str report_default_directory:
+            the location where reports are stored
         :param bool write_text_specs:
-        :param ~.Machine machine:
+            True if the textual version of the specification is to be written
+        :param ~spinn_machine.Machine machine:
+            the python representation of the SpiNNaker machine
         :param int data_n_timesteps:
-        :param list(~.Placement) placement_order:
+            The number of timesteps for which data space will been reserved
+        :param list(~pacman.model.placements.Placement) placement_order:
+            the optional order in which placements should be examined
+        :return: DSG targets (map of placement tuple and filename)
         :rtype: tuple(DataSpecificationTargets, dict(tuple(int,int,int), int))
         :raises ConfigurationException:
+            If the DSG asks to use more SDRAM than is available.
         """
         # pylint: disable=too-many-arguments, too-many-locals
         # pylint: disable=attribute-defined-outside-init
@@ -122,7 +113,7 @@ class GraphDataSpecificationWriter(object):
 
         # Ensure that the vertices know their regions have been reloaded
         for vertex in vertices_to_reset:
-            vertex.mark_regions_reloaded()
+            vertex.set_reload_required(False)
 
         return targets, self._region_sizes
 

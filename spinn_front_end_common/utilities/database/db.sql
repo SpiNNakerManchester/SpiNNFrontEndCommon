@@ -59,8 +59,7 @@ CREATE TABLE IF NOT EXISTS Application_vertices(
     vertex_label TEXT,
     vertex_class TEXT,
     no_atoms INTEGER,
-    max_atom_constrant INTEGER,
-    recorded INTEGER);
+    max_atom_constrant INTEGER);
 
 -- A communication link between two application vertices
 CREATE TABLE IF NOT EXISTS Application_edges(

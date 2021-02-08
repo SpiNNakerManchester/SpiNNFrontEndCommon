@@ -40,19 +40,6 @@ class _DummyProgress(object):
 class ChipIOBufExtractor(object):
     """ Extract the logging output buffers from the machine, and separates\
         lines based on their prefix.
-
-    :param ~spinnman.transceiver.Transceiver transceiver:
-    :param ExecutableTargets executable_targets:
-    :param ExecutableFinder executable_finder:
-    :param app_provenance_file_path:
-    :type app_provenance_file_path: str or None
-    :param system_provenance_file_path:
-    :type system_provenance_file_path: str or None
-    :param dict(str,ExecutableType) binary_executable_types:
-    :param str from_cores:
-    :param str binary_types:
-    :return: error_entries, warn_entries
-    :rtype: tuple(list(str),list(str))
     """
 
     __slots__ = ["_filename_template", "_recovery_mode", "__system_binaries",
@@ -75,8 +62,8 @@ class ChipIOBufExtractor(object):
             app_provenance_file_path=None, system_provenance_file_path=None,
             from_cores="ALL", binary_types=None):
         """
-        :param ~.Transceiver transceiver:
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         :param ExecutableFinder executable_finder:
         :param app_provenance_file_path:
         :type app_provenance_file_path: str or None
