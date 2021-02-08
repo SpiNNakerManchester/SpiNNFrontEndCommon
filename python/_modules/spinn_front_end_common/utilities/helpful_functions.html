@@ -64,10 +64,10 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
 <span class="kn">from</span> <span class="nn">.globals_variables</span> <span class="kn">import</span> <span class="n">get_simulator</span>
-<span class="kn">from</span> <span class="nn">.constants</span> <span class="kn">import</span> <span class="n">BYTES_PER_WORD</span><span class="p">,</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span>
+<span class="kn">from</span> <span class="nn">.constants</span> <span class="kn">import</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
-<span class="n">_ONE_WORD</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;I&quot;</span><span class="p">)</span>
+<span class="n">_n_word_structs</span> <span class="o">=</span> <span class="p">[]</span>
 
 
 <div class="viewcode-block" id="locate_extra_monitor_mc_receiver"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.locate_extra_monitor_mc_receiver">[docs]</a><span class="k">def</span> <span class="nf">locate_extra_monitor_mc_receiver</span><span class="p">(</span>
@@ -117,7 +117,7 @@
 <span class="sd">    :param int address: Value to write (32-bit integer)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">user_0_address</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_user_0_register_address_from_core</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-    <span class="n">txrx</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">user_0_address</span><span class="p">,</span> <span class="n">_ONE_WORD</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">address</span><span class="p">))</span></div>
+    <span class="n">txrx</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">user_0_address</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="locate_memory_region_for_placement"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.locate_memory_region_for_placement">[docs]</a><span class="k">def</span> <span class="nf">locate_memory_region_for_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
@@ -139,9 +139,7 @@
         <span class="n">regions_base_address</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
 
     <span class="c1"># Get the actual address of the region</span>
-    <span class="n">region_address</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
-        <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">region_offset</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_ONE_WORD</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">region_address</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_word</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">region_offset</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="convert_string_into_chip_and_core_subset"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.convert_string_into_chip_and_core_subset">[docs]</a><span class="k">def</span> <span class="nf">convert_string_into_chip_and_core_subset</span><span class="p">(</span><span class="n">cores</span><span class="p">):</span>
@@ -454,6 +452,34 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_emergency_state_check</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)</span>
     <span class="n">_emergency_iobuf_extract</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="n_word_struct"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.n_word_struct">[docs]</a><span class="k">def</span> <span class="nf">n_word_struct</span><span class="p">(</span><span class="n">n_words</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Manages a precompiled cache of structs for parsing blocks of words. \</span>
+<span class="sd">        Thus, this::</span>
+
+<span class="sd">        data = n_word_struct(n_words).unpack(data_blob)</span>
+
+<span class="sd">    Is much like doing this::</span>
+
+<span class="sd">        data = struct.unpack(&quot;&lt;{}I&quot;.format(n_words), data_blob)</span>
+
+<span class="sd">    except quite a bit more efficient because things are shared including the</span>
+<span class="sd">    cost of parsing the format.</span>
+
+<span class="sd">    :param int n_words: The number of *SpiNNaker words* to be handled.</span>
+<span class="sd">    :return: A struct for working with that many words.</span>
+<span class="sd">    :rtype: ~struct.Struct</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_n_word_structs</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">_n_word_structs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n_words</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">_n_word_structs</span> <span class="o">+=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_words</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">_n_word_structs</span><span class="p">))</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">_n_word_structs</span><span class="p">[</span><span class="n">n_words</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">s</span>
+    <span class="n">new_struct</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;</span><span class="si">{}</span><span class="s2">I&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_words</span><span class="p">))</span>
+    <span class="n">_n_word_structs</span><span class="p">[</span><span class="n">n_words</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_struct</span>
+    <span class="k">return</span> <span class="n">new_struct</span></div>
 </pre></div>
 
             <div class="clearer"></div>

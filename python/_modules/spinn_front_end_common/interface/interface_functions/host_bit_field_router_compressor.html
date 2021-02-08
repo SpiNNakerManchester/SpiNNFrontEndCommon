@@ -69,14 +69,16 @@
 <span class="kn">from</span> <span class="nn">pacman.operations.algorithm_reports.reports</span> <span class="kn">import</span> <span class="n">format_route</span>
 <span class="kn">from</span> <span class="nn">pacman.operations.router_compressors</span> <span class="kn">import</span> <span class="n">Entry</span>
 <span class="kn">from</span> <span class="nn">pacman.operations.router_compressors.ordered_covering_router_compressor</span>\
-    <span class="kn">import</span> <span class="nn">minimise</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models.</span>\
-    <span class="n">abstract_supports_bit_field_routing_compression</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">AbstractSupportsBitFieldRoutingCompression</span><span class="p">)</span>
+    <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">minimise</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AbstractSupportsBitFieldRoutingCompression</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="n">n_word_struct</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">BYTES_PER_WORD</span><span class="p">,</span> <span class="n">BYTES_PER_3_WORDS</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.report_functions.</span>\
-    <span class="n">bit_field_compressor_report</span> <span class="kn">import</span> <span class="nn">generate_provenance_item</span>
+    <span class="n">bit_field_compressor_report</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">generate_provenance_item</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman.operations.router_compressors</span> <span class="kn">import</span> <span class="n">PairCompressor</span>
 
 
@@ -169,7 +171,7 @@
     <span class="n">N_ATOMS_MASK</span> <span class="o">=</span> <span class="mh">0x3FFFFFFF</span>
     <span class="n">MERGED_SETTER</span> <span class="o">=</span> <span class="mh">0x80000000</span>
 
-    <span class="c1"># structs for performance requirements.</span>
+    <span class="c1"># struct for performance requirements.</span>
     <span class="n">_THREE_WORDS</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;III&quot;</span><span class="p">)</span>
 
     <span class="c1"># for router report</span>
@@ -479,8 +481,8 @@
             <span class="c1"># read in each bitfield</span>
             <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_filters</span><span class="p">):</span>
                 <span class="c1"># master pop key, n words and read pointer</span>
-                <span class="n">master_pop_key</span><span class="p">,</span> <span class="n">n_atoms_word</span><span class="p">,</span> <span class="n">read_pointer</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span>
-                    <span class="s2">&quot;&lt;III&quot;</span><span class="p">,</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+                <span class="n">master_pop_key</span><span class="p">,</span> <span class="n">n_atoms_word</span><span class="p">,</span> <span class="n">read_pointer</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_THREE_WORDS</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
                         <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">reading_address</span><span class="p">,</span> <span class="n">BYTES_PER_3_WORDS</span><span class="p">))</span>
                 <span class="n">n_atoms_address</span> <span class="o">=</span> <span class="n">reading_address</span> <span class="o">+</span> <span class="n">BYTES_PER_WORD</span>
                 <span class="n">reading_address</span> <span class="o">+=</span> <span class="n">BYTES_PER_3_WORDS</span>
@@ -490,8 +492,7 @@
                 <span class="c1"># get bitfield words</span>
                 <span class="n">n_words_to_read</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">atoms</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BITS_PER_WORD</span><span class="p">)</span>
 
-                <span class="n">bit_field</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span>
-                    <span class="s2">&quot;&lt;</span><span class="si">{}</span><span class="s2">I&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_words_to_read</span><span class="p">),</span>
+                <span class="n">bit_field</span> <span class="o">=</span> <span class="n">n_word_struct</span><span class="p">(</span><span class="n">n_words_to_read</span><span class="p">)</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span>
                     <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
                         <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">read_pointer</span><span class="p">,</span>
                         <span class="n">n_words_to_read</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span><span class="p">))</span>

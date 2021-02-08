@@ -654,6 +654,32 @@ or <cite>None</cite> if the variable is not found.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.n_word_struct">
+<code class="sig-prename descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="sig-name descname">n_word_struct</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_words</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#n_word_struct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.n_word_struct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manages a precompiled cache of structs for parsing blocks of words.         Thus, this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">n_word_struct</span><span class="p">(</span><span class="n">n_words</span><span class="p">)</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">data_blob</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Is much like doing this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;&lt;</span><span class="si">{}</span><span class="s2">I&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_words</span><span class="p">),</span> <span class="n">data_blob</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>except quite a bit more efficient because things are shared including the
+cost of parsing the format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_words</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The number of <em>SpiNNaker words</em> to be handled.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A struct for working with that many words.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/struct.html#struct.Struct" title="(in Python v3.6)">Struct</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="spinn_front_end_common.utilities.helpful_functions.read_config">
 <code class="sig-prename descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="sig-name descname">read_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span></em>, <em class="sig-param"><span class="n">section</span></em>, <em class="sig-param"><span class="n">item</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#read_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.read_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the string value of a config item, returning None if the value        is “None”</p>

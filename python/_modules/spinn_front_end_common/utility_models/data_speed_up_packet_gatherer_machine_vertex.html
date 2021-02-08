@@ -75,7 +75,8 @@
     <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">IPtagResource</span><span class="p">,</span> <span class="n">ResourceContainer</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="n">get_simulator</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">convert_vertices_to_core_subset</span><span class="p">,</span> <span class="n">emergency_recover_state_from_failure</span><span class="p">)</span>
+    <span class="n">convert_vertices_to_core_subset</span><span class="p">,</span> <span class="n">emergency_recover_state_from_failure</span><span class="p">,</span>
+    <span class="n">n_word_struct</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
@@ -883,8 +884,8 @@
         <span class="n">n_elements</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">position</span><span class="p">)</span> <span class="o">//</span> <span class="n">BYTES_PER_WORD</span>
 
         <span class="c1"># store missing</span>
-        <span class="n">new_seq_nums</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span>
-            <span class="s2">&quot;&lt;</span><span class="si">{}</span><span class="s2">I&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_elements</span><span class="p">),</span> <span class="n">data</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
+        <span class="n">new_seq_nums</span> <span class="o">=</span> <span class="n">n_word_struct</span><span class="p">(</span><span class="n">n_elements</span><span class="p">)</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
 
         <span class="c1"># add missing seqs accordingly</span>
         <span class="n">seen_last</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1511,9 +1512,8 @@
                 <span class="n">length_left_in_packet</span> <span class="o">-=</span> <span class="n">WORDS_FOR_COMMAND_TRANSACTION</span>
 
             <span class="c1"># fill data field</span>
-            <span class="n">struct</span><span class="o">.</span><span class="n">pack_into</span><span class="p">(</span>
-                <span class="s2">&quot;&lt;</span><span class="si">{}</span><span class="s2">I&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">size_of_data_left_to_transmit</span><span class="p">),</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span>
-                <span class="o">*</span><span class="n">missing_seq_nums</span><span class="p">[</span>
+            <span class="n">n_word_struct</span><span class="p">(</span><span class="n">size_of_data_left_to_transmit</span><span class="p">)</span><span class="o">.</span><span class="n">pack_into</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="o">*</span><span class="n">missing_seq_nums</span><span class="p">[</span>
                     <span class="n">seq_num_offset</span><span class="p">:</span>
                     <span class="n">seq_num_offset</span> <span class="o">+</span> <span class="n">size_of_data_left_to_transmit</span><span class="p">])</span>
             <span class="n">seq_num_offset</span> <span class="o">+=</span> <span class="n">length_left_in_packet</span>
