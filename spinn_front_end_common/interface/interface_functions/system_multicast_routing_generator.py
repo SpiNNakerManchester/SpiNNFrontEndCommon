@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from collections import defaultdict
-
+import logging
+from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import (PacmanRoutingException)
 from pacman.model.routing_tables import (
     MulticastRoutingTables, UnCompressedMulticastRoutingTable)
@@ -26,6 +27,8 @@ N_KEYS_PER_PARTITION_ID = 8
 N_KEYS_PER_REINJECTION_PARTITION = 3
 KEY_START_VALUE = 8
 ROUTING_MASK = 0xFFFFFFF8
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class SystemMulticastRoutingGenerator(object):
@@ -62,6 +65,8 @@ class SystemMulticastRoutingGenerator(object):
 
         for ethernet_chip in progress.over(machine.ethernet_connected_chips):
             tree = self._generate_routing_tree(ethernet_chip)
+            if tree is None:
+                tree = self._logging_retry(ethernet_chip)
             self._add_routing_entries(ethernet_chip, tree)
 
         return (self._routing_tables, self._key_to_destination_map,
@@ -102,10 +107,51 @@ class SystemMulticastRoutingGenerator(object):
                             to_reach.remove(destination)
                             found.add(destination)
             if len(found) == 0:
+                return None
+        return tree
+
+    def _logging_retry(self, ethernet_chip):
+        eth_x = ethernet_chip.x
+        eth_y = ethernet_chip.y
+        tree = dict()
+        to_reach = set(
+            self._machine.get_existing_xys_by_ethernet(eth_x, eth_y))
+        reached = set()
+        reached.add((eth_x, eth_y))
+        to_reach.remove((eth_x, eth_y))
+        found = set()
+        found.add((eth_x, eth_y))
+        logger.warning("In _logging_retry")
+        for x, y in to_reach:
+            logger.warning("Still need to reach {}:{}".format(x, y))
+        while len(to_reach) > 0:
+            just_reached = found
+            found = set()
+            for x, y in just_reached:
+                logger.warning("Trying from {}:{}".format(x, y))
+                # Check links starting with the most direct from 0,0
+                for link_id in [1, 0, 2, 5, 3, 4]:
+                    # Get protential destination
+                    destination = self._machine.xy_over_link(x, y, link_id)
+                    # If it is useful
+                    if destination in to_reach:
+                        logger.warning("Could reach {} over {}".format(
+                            destination, link_id))
+                        # check it actually exits
+                        if self._machine.is_link_at(x, y, link_id):
+                            # Add to tree and record chip reachable
+                            tree[destination] = (x, y, link_id)
+                            to_reach.remove(destination)
+                            found.add(destination)
+                        else:
+                            logger.error("Link down")
+            logger.warning("Found {}".format(len(found)))
+            if len(found) == 0:
                 raise PacmanRoutingException(
                     "Unable to do data in routing on {}.".format(
                         ethernet_chip.ip_address))
         return tree
+
 
     def _add_routing_entry(self, x, y, key, processor_id=None, link_ids=None):
         """ Adds a routing entry on this chip, creating the table if needed.
