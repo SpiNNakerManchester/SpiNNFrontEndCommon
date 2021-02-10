@@ -93,10 +93,14 @@
         <span class="s2">&quot;_update_completed&quot;</span><span class="p">,</span>
     <span class="p">]</span>
 
-    <span class="c1">#: 4 bytes for _start_address, 4 for _current_write,</span>
-    <span class="c1">#: 4 for current_dma_write,</span>
-    <span class="c1">#: 4 for _current_read, 4 for _end_address, 1 for _region_id,</span>
-    <span class="c1">#: 1 for _missing_info, 1 for _last_buffer_operation</span>
+    <span class="c1">#: 1 word for _start_address (pointer),</span>
+    <span class="c1"># 1 word for _current_write (pointer),</span>
+    <span class="c1">#: 1 word for current_dma_write (pointer),</span>
+    <span class="c1">#: 1 word for _current_read (pointer)</span>
+    <span class="c1">#  1 word for _end_address (pointer),</span>
+    <span class="c1">#  1 byte for _region_id (uint8),</span>
+    <span class="c1"># 1 byte for the _missing_info (uint8),</span>
+    <span class="c1"># 2 bytes for _last_buffer_operation enum</span>
     <span class="n">ChannelBufferStateSize</span> <span class="o">=</span> <span class="mi">6</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
