@@ -1115,7 +1115,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 max_this_chip = int((size - sdram.fixed) // sdram.per_timestep)
                 max_time_steps = min(max_time_steps, max_this_chip)
 
-        return max_time_steps
+        # Reduce the number of timesteps as a safetly factor
+        time_safety_factor = self._read_config_int(
+            "Simulation", "auto_pause_safety_reduction")
+        return max_time_steps - time_safety_factor
 
     @staticmethod
     def _generate_steps(n_steps, n_steps_per_segment):
