@@ -29,6 +29,9 @@ _FIRST_REGION_ADDRESS_OFFSET = BYTES_PER_WORD * 7
 # recording regions sizes are stored.
 _RECORDING_ELEMENTS_BEFORE_REGION_SIZES = 7
 
+# the number of words needed to store the 2 len counters
+_RECORDING_LEN_COUNTERS_IN_WORDS = 2
+
 # The Buffer traffic type
 TRAFFIC_IDENTIFIER = "BufferTraffic"
 
@@ -43,8 +46,9 @@ def get_recording_header_size(n_recorded_regions):
     :rtype: int
     """
     # See recording.h/recording_initialise for data included in the header
-    return (_RECORDING_ELEMENTS_BEFORE_REGION_SIZES +
-            (2 * n_recorded_regions)) * BYTES_PER_WORD
+    return ((_RECORDING_ELEMENTS_BEFORE_REGION_SIZES +
+            (2 * n_recorded_regions) + _RECORDING_LEN_COUNTERS_IN_WORDS)
+            * BYTES_PER_WORD)
 
 
 def get_recording_data_constant_size(n_recorded_regions):
