@@ -152,7 +152,6 @@ class SystemMulticastRoutingGenerator(object):
                         ethernet_chip.ip_address))
         return tree
 
-
     def _add_routing_entry(self, x, y, key, processor_id=None, link_ids=None):
         """ Adds a routing entry on this chip, creating the table if needed.
 
