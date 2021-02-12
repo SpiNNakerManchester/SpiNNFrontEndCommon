@@ -15,7 +15,6 @@
 
 import tempfile
 import unittest
-from six import iteritems
 from spinn_machine.virtual_machine import virtual_machine
 from spinn_front_end_common.utilities.utility_objs import DataWritten
 from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
@@ -48,7 +47,7 @@ class TestDsWriteInfo(unittest.TestCase):
         for key in asDict:
             self.assertEqual(check[key], asDict.get_info(*key))
 
-        for key, value in iteritems(asDict):
+        for key, value in asDict.items():
             self.assertEqual(check[key], value)
 
 

@@ -17,7 +17,6 @@ import functools
 import logging
 import struct
 from collections import defaultdict
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -29,26 +28,25 @@ from spinnman.exceptions import (
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from pacman.model.routing_tables import MulticastRoutingTables
-from pacman.operations.router_compressors.ordered_covering_router_compressor.\
-    ordered_covering import (
+from pacman.operations.router_compressors.ordered_covering_router_compressor\
+    import (
         get_generality as
         ordered_covering_generality)
 from spinn_front_end_common.abstract_models.\
     abstract_supports_bit_field_routing_compression import (
         AbstractSupportsBitFieldRoutingCompression)
-from spinn_front_end_common.interface.interface_functions.\
-    host_no_bitfield_router_compression import (
-        make_source_hack)
 from spinn_front_end_common.utilities.report_functions.\
     bit_field_compressor_report import (
         generate_provenance_item)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.exceptions import (
     CantFindSDRAMToUseException)
-from spinn_front_end_common.utilities import system_control_logic
+from spinn_front_end_common.utilities.helpful_functions import (
+    get_defaultable_source_id, n_word_struct)
+from spinn_front_end_common.utilities.system_control_logic import (
+    run_system_application)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .load_executable_images import LoadExecutableImages
 from .host_bit_field_router_compressor import HostBasedBitFieldRouterCompressor
-from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -61,8 +59,7 @@ SIZE_OF_COMMS_SDRAM = 7 * 4 * 18
 SECOND_TO_MICRO_SECOND = 1000000
 
 
-@add_metaclass(AbstractBase)
-class MachineBitFieldRouterCompressor(object):
+class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
     """ On-machine bitfield-aware routing table compression.
     """
 
@@ -214,7 +211,7 @@ class MachineBitFieldRouterCompressor(object):
 
         # load and run binaries
         try:
-            system_control_logic.run_system_application(
+            run_system_application(
                 compressor_executable_targets,
                 routing_table_compressor_app_id, transceiver,
                 provenance_file_path, executable_finder,
@@ -692,7 +689,7 @@ class MachineBitFieldRouterCompressor(object):
             data += self._FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
-                make_source_hack(entry=entry))
+                get_defaultable_source_id(entry=entry))
         return bytearray(data)
 
     @staticmethod
@@ -843,8 +840,7 @@ class MachineBitFieldUnorderedRouterCompressor(
             "deprecated. "
             "Please use MachineBitFieldOrderedCoveringCompressor instead. "
             "loading_algorithms from your cfg to use defaults")
-        return super(MachineBitFieldUnorderedRouterCompressor, cls).__new__(
-            cls, *args, **kwargs)
+        return super().__new__(cls, *args, **kwargs)
 
 
 class MachineBitFieldPairRouterCompressor(MachineBitFieldRouterCompressor):

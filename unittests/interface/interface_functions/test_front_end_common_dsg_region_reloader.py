@@ -37,10 +37,11 @@ class _TestMachineVertex(MachineVertex, AbstractRewritesDataSpecification):
     """
 
     def __init__(self, label, constraints, app_vertex, vertex_slice):
-        super(_TestMachineVertex, self).__init__(
+        super().__init__(
             label=label, constraints=constraints, app_vertex=app_vertex,
             vertex_slice=vertex_slice)
         self._requires_regions_to_be_reloaded = True
+        self._regenerate_call_count = 0
 
     def resources_required(self):
         return ResourceContainer()
@@ -58,6 +59,7 @@ class _TestMachineVertex(MachineVertex, AbstractRewritesDataSpecification):
             spec.write_array(data)
         spec.end_specification()
         self._app_vertex.add_to_count()
+        self._regenerate_call_count += 1
 
     @property
     def regenerate_call_count(self):
@@ -76,7 +78,7 @@ class _TestApplicationVertex(ApplicationVertex):
         :param n_atoms: The number of atoms in the vertex
         :param reload_region_data: list of tuples of (region_id, data to write)
         """
-        super(_TestApplicationVertex, self).__init__()
+        super().__init__()
         self._n_atoms = n_atoms
         self._reload_region_data = reload_region_data
         self._regenerate_call_count = 0
