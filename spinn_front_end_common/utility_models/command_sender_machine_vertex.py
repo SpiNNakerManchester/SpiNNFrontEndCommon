@@ -85,8 +85,7 @@ class CommandSenderMachineVertex(
             iterable(~pacman.model.constraints.AbstractConstraint)
         :param CommandSender app_vertex:
         """
-        super(CommandSenderMachineVertex, self).__init__(
-            label, constraints, app_vertex)
+        super().__init__(label, constraints, app_vertex)
 
         self._timed_commands = list()
         self._commands_at_start_resume = list()

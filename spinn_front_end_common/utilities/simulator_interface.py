@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import (
     AbstractBase, abstractproperty, abstractmethod)
 
 
-@add_metaclass(AbstractBase)
-class SimulatorInterface(object):
+class SimulatorInterface(object, metaclass=AbstractBase):
 
     __slots__ = ()
 

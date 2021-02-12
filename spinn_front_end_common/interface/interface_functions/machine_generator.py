@@ -53,7 +53,7 @@ class MachineGenerator(object):
             self, hostname, bmp_details, downed_chips, downed_cores,
             downed_links, board_version, auto_detect_bmp,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
-            max_sdram_size=None, repair_machine=False,
+            report_waiting_logs, max_sdram_size=None, repair_machine=False,
             ignore_bad_ethernets=True, default_report_directory=None):
         """
         :param str hostname:
@@ -97,6 +97,9 @@ class MachineGenerator(object):
         :param str default_report_directory:
             Directory to write any reports too.
             If None the current directory will be used.
+        :param report_waiting_logs:
+            flag for the txrx to report when waiting on busy cores.
+        :type report_waiting_logs: bool
         :return: Transceiver, and description of machine it is connected to
         :rtype: tuple(~spinnman.transceiver.Transceiver,
             ~spinn_machine.Machine)
@@ -119,7 +122,8 @@ class MachineGenerator(object):
             max_sdram_size=max_sdram_size,
             repair_machine=repair_machine,
             ignore_bad_ethernets=ignore_bad_ethernets,
-            default_report_directory=default_report_directory)
+            default_report_directory=default_report_directory,
+            report_waiting_logs=report_waiting_logs)
 
         if reset_machine_on_start_up:
             success = txrx.power_off_machine()

@@ -51,7 +51,7 @@ class _HBPJobController(MachineAllocationController):
         self._power_on = True
         # Lower the level of requests to WARNING to avoid extra messages
         logging.getLogger("requests").setLevel(logging.WARNING)
-        super(_HBPJobController, self).__init__("HBPJobController")
+        super().__init__("HBPJobController")
 
     @overrides(AbstractMachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time):
@@ -84,7 +84,7 @@ class _HBPJobController(MachineAllocationController):
 
     @overrides(AbstractMachineAllocationController.close)
     def close(self):
-        super(_HBPJobController, self).close()
+        super().close()
         self._release(self._machine_name)
 
     @overrides(MachineAllocationController._teardown)

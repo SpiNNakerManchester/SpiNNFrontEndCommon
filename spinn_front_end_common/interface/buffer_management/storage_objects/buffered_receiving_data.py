@@ -12,16 +12,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import logging
 import os
 from collections import defaultdict
-from spinn_utilities.log import FormatAdapter
 from .sqllite_database import SqlLiteDatabase
 
 #: Name of the database in the data folder
 DB_FILE_NAME = "buffer.sqlite3"
-logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class BufferedReceivingData(object):

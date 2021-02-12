@@ -13,34 +13,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import struct
 from enum import Enum
-from six import add_metaclass
-from spinn_utilities.abstract_base import AbstractBase, abstractproperty
+from spinn_utilities.abstract_base import abstractproperty
+from spinn_utilities.overrides import overrides
 from data_specification.utility_calls import get_region_base_address_offset
 from .abstract_provides_provenance_data_from_machine import (
     AbstractProvidesProvenanceDataFromMachine)
-from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
-from spinn_utilities.overrides import overrides
-
-_ONE_WORD = struct.Struct("<I")
+from spinn_front_end_common.utilities.helpful_functions import n_word_struct
+from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
 
 def add_name(names, name):
     """
-            :param iterable(str) names:
-            :param str name:
-            :rtype: list(str)
-            """
+    :param iterable(str) names:
+    :param str name:
+    :rtype: list(str)
+    """
     new_names = list(names)
     new_names.append(name)
     return new_names
 
 
-@add_metaclass(AbstractBase)
 class ProvidesProvenanceDataFromMachineImpl(
-        AbstractProvidesProvenanceDataFromMachine):
+        AbstractProvidesProvenanceDataFromMachine, allow_derivation=True):
     """ An implementation that gets provenance data from a region of ints on\
         the machine.
     """
@@ -151,15 +147,14 @@ class ProvidesProvenanceDataFromMachineImpl(
         :rtype: int
         """
         # Get the App Data for the core
-        app_data_base_address = transceiver.get_cpu_information_from_core(
+        region_table_address = transceiver.get_cpu_information_from_core(
             placement.x, placement.y, placement.p).user[0]
 
         # Get the provenance region base address
-        base_address_offset = get_region_base_address_offset(
-            app_data_base_address, self._provenance_region_id)
-        base_address = transceiver.read_memory(
-            placement.x, placement.y, base_address_offset, BYTES_PER_WORD)
-        return _ONE_WORD.unpack(base_address)[0]
+        prov_region_entry_address = get_region_base_address_offset(
+            region_table_address, self._provenance_region_id)
+        return transceiver.read_word(
+            placement.x, placement.y, prov_region_entry_address)
 
     def _read_provenance_data(self, transceiver, placement):
         """
@@ -172,9 +167,9 @@ class ProvidesProvenanceDataFromMachineImpl(
         data = transceiver.read_memory(
             placement.x, placement.y, provenance_address,
             self.get_provenance_data_size(self._n_additional_data_items))
-        return struct.unpack_from("<{}I".format(
-            self.NUM_PROVENANCE_DATA_ENTRIES + self._n_additional_data_items),
-            data)
+        return n_word_struct(
+            self.NUM_PROVENANCE_DATA_ENTRIES +
+            self._n_additional_data_items).unpack_from(data)
 
     @staticmethod
     def _get_placement_details(placement):

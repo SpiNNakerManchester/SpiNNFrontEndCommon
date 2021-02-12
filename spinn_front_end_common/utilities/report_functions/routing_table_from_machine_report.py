@@ -12,16 +12,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import logging
 import os
-
 from pacman.model.routing_tables.compressed_multicast_routing_table import (
     CompressedMulticastRoutingTable)
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.operations.algorithm_reports import reports
-
-logger = logging.getLogger(__name__)
 
 _FOLDER_NAME = "routing_tables_from_machine"
 

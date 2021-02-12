@@ -30,7 +30,7 @@ class ExtraMonitorSupport(AbstractOneAppOneMachineVertex):
         :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
-        super(ExtraMonitorSupport, self).__init__(
+        super().__init__(
             ExtraMonitorSupportMachineVertex(
                 constraints=constraints, app_vertex=self),
             label="ExtraMonitorSupport", constraints=constraints)

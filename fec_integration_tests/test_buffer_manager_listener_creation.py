@@ -104,8 +104,7 @@ class _TestVertex(ApplicationVertex, LegacyPartitionerAPI):
     _model_based_max_atoms_per_core = None
 
     def __init__(self, n_atoms, label=None, max_atoms_per_core=256):
-        super(_TestVertex, self).__init__(
-            label=label, max_atoms_per_core=max_atoms_per_core)
+        super().__init__(label=label, max_atoms_per_core=max_atoms_per_core)
         self._model_based_max_atoms_per_core = max_atoms_per_core
         self._n_atoms = n_atoms
 
