@@ -13,31 +13,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_utilities.require_subclass import require_subclass
 from pacman.model.graphs.machine import MachineVertex
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
-@add_metaclass(AbstractBase)
-class AbstractProvidesProvenanceDataFromMachine(object):
+@require_subclass(MachineVertex)
+class AbstractProvidesProvenanceDataFromMachine(
+        object, metaclass=AbstractBase):
     """ Indicates that an object provides provenance data retrieved from the\
         machine.
     """
 
     __slots__ = ()
-
-    _WRONG_VERTEX_TYPE_ERROR = (
-        "The vertex {} is not of type MachineVertex. By not being a "
-        "machine vertex, the PlacementsProvenanceGatherer will not check "
-        "this vertex")
-
-    def __new__(cls, *args, **kwargs):
-        if not issubclass(cls, MachineVertex):
-            raise SpinnFrontEndException(
-                cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
-        return super(AbstractProvidesProvenanceDataFromMachine, cls).__new__(
-            cls)
 
     @abstractmethod
     def get_provenance_data_from_machine(self, transceiver, placement):

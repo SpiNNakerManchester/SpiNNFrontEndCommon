@@ -13,9 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from setuptools import setup
-from collections import defaultdict
 import os
+from collections import defaultdict
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 __version__ = None
 exec(open("spinn_front_end_common/_version.py").read())
@@ -64,7 +67,6 @@ setup(
 
         "Programming Language :: C",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
@@ -78,22 +80,23 @@ setup(
                       'SpiNNaker_DataSpecification >= 1!5.1.1, < 1!6.0.0',
                       'spalloc >= 2.0.2, < 3.0.0',
                       'requests >= 2.4.1',
-                      "numpy > 1.13, < 1.17; python_version == '2.7'",
-                      "numpy > 1.13, < 1.19; python_version == '3.5'",
                       "numpy > 1.13, < 1.20; python_version == '3.6'",
                       "numpy > 1.13, < 1.21; python_version == '3.7'",
                       "numpy; python_version >= '3.8'",
-                      "scipy >= 0.16.0, < 1.3; python_version == '2.7'",
-                      "scipy >= 0.16.0, < 1.5; python_version == '3.5'",
                       "scipy >= 0.16.0, < 1.6; python_version == '3.6'",
-                      "scipy >= 0.16.0; python_version >= '3.7'",
-                      'futures; python_version == "2.7"',
-                      'six'],
+                      "scipy >= 0.16.0; python_version >= '3.7'"],
+    extras_require={
+        'plotting': [
+            'matplotlib',
+            'seaborn',
+        ]},
     entry_points={
         "console_scripts": [
+            "spinnaker_router_provenance_mapper="
+            "spinn_front_end_common.interface.provenance.router_prov_mapper:"
+            "main [plotting]",
             "spybug = tools.spybug:main"
-        ],
-    },
+        ]},
     maintainer="SpiNNakerTeam",
     maintainer_email="spinnakerusers@googlegroups.com"
 )

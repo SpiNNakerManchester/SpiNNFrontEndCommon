@@ -33,6 +33,7 @@ CONFIG_FILE = "spinnaker.cfg"
 FINISHED_FILENAME = "finished"
 REPORTS_DIRNAME = "reports"
 TIMESTAMP_FILENAME = "time_stamp"
+WARNING_LOGS_FILENAME = "warning_logs.txt"
 
 
 class ConfigHandler(object):
@@ -291,6 +292,12 @@ class ConfigHandler(object):
             self._report_simulation_top_directory, TIMESTAMP_FILENAME)
         with open(time_of_run_file_name, "w") as f:
             f.writelines(self._this_run_time_string)
+
+        if self._read_config_boolean("Logging",
+                                     "warnings_at_end_to_file"):
+            log_report_file = os.path.join(
+                self._report_default_directory, WARNING_LOGS_FILENAME)
+            logger.set_report_File(log_report_file)
 
     @staticmethod
     def __make_timestamp():

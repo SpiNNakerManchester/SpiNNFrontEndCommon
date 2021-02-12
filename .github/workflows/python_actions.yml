@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [2.7, 3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8]
 
     steps:
     - name: Checkout
@@ -46,11 +46,8 @@ jobs:
         repositories: >
           SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
         install: true
-        preinstall: ${{ matrix.python-version == 2.7 }}
     - name: Setup
       uses: ./support/actions/run-setup
-      with:
-        preinstall: ${{ matrix.python-version == 2.7 }}
 
     - name: Test with pytest
       uses: ./support/actions/pytest
@@ -63,8 +60,6 @@ jobs:
     - name: Lint with flake8
       run: flake8 spinn_front_end_common unittests fec_integration_tests tools
     - name: Lint with pylint
-      # Broken in 2.7 as it can not find data_specification.exceptions
-      if: matrix.python-version != 2.7
       uses: ./support/actions/pylint
       with: 
         package: spinn_front_end_common tools

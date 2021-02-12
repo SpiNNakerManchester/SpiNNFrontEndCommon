@@ -37,7 +37,7 @@ class ChipPowerMonitor(ApplicationVertex, LegacyPartitionerAPI):
             how many samples to take before recording to SDRAM the total
         :param int sampling_frequency: how many microseconds between sampling
         """
-        super(ChipPowerMonitor, self).__init__(label, constraints, 1)
+        super().__init__(label, constraints, 1)
         self._n_samples_per_recording = n_samples_per_recording
         self._sampling_frequency = sampling_frequency
 
