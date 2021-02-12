@@ -18,7 +18,6 @@ import math
 import struct
 import numpy
 from enum import IntEnum
-from six.moves import xrange
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
@@ -50,7 +49,7 @@ from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models import (
-    AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable,
+    AbstractProvidesOutgoingPartitionConstraints,
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
     AbstractSupportsDatabaseInjection)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
@@ -79,8 +78,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         AbstractHasAssociatedBinary, AbstractSupportsDatabaseInjection,
         ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
-        SendsBuffersFromHostPreBufferedImpl,
-        AbstractReceiveBuffersToHost, AbstractRecordable):
+        SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost):
     """ A model which allows events to be injected into SpiNNaker and\
         converted in to multicast packets.
 
@@ -195,8 +193,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             else:
                 raise KeyError("Either provide a vertex_slice or n_keys")
 
-        super(ReverseIPTagMulticastSourceMachineVertex, self).__init__(
-            label, constraints, app_vertex, vertex_slice)
+        super().__init__(label, constraints, app_vertex, vertex_slice)
 
         self._reverse_iptags = None
         self._n_keys = vertex_slice.n_atoms
@@ -530,7 +527,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int first_time_step:
         :param int n_time_steps:
         """
-        key_list = [key + key_base for key in xrange(self._n_keys)]
+        key_list = [key + key_base for key in range(self._n_keys)]
         for tick in sorted(self._send_buffer_times):
             if self._is_in_range(tick, first_time_step, n_time_steps):
                 self._send_buffer.add_keys(tick, key_list)
@@ -782,10 +779,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(AbstractSupportsDatabaseInjection.is_in_injection_mode)
     def is_in_injection_mode(self):
         return self._in_injection_mode
-
-    @overrides(AbstractRecordable.is_recording)
-    def is_recording(self):
-        return self._is_recording > 0
 
     @inject("FirstMachineTimeStep")
     @inject_items({

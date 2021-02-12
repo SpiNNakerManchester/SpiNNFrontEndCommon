@@ -37,7 +37,7 @@ class LoadApplicationMCRoutesMessage(AbstractSCPRequest):
         :param int p:
             The processor running the extra monitor vertex, between 0 and 17
         """
-        super(LoadApplicationMCRoutesMessage, self).__init__(
+        super().__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(

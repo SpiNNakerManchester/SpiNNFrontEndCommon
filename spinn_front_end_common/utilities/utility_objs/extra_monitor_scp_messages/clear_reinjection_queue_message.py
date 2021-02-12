@@ -35,8 +35,7 @@ class ClearReinjectionQueueMessage(AbstractSCPRequest):
         :param int p:
             The processor running the extra monitor vertex, between 0 and 17
         """
-        # pylint: disable=too-many-arguments
-        super(ClearReinjectionQueueMessage, self).__init__(
+        super().__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(

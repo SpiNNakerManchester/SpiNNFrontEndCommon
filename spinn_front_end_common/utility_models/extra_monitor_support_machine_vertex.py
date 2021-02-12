@@ -137,7 +137,7 @@ class ExtraMonitorSupportMachineVertex(
         :param bool reinject_fixed_route: if we reinject fixed route packets
         """
         # pylint: disable=too-many-arguments
-        super(ExtraMonitorSupportMachineVertex, self).__init__(
+        super().__init__(
             label="SYSTEM:ExtraMonitor", constraints=constraints,
             app_vertex=app_vertex)
 

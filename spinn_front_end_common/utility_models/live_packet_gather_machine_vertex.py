@@ -68,7 +68,7 @@ class LivePacketGatherMachineVertex(
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
         # inheritance
-        super(LivePacketGatherMachineVertex, self).__init__(
+        super().__init__(
             label or lpg_params.label, constraints=constraints,
             app_vertex=app_vertex)
 

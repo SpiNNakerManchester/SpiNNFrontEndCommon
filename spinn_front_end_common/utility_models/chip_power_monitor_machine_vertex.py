@@ -87,7 +87,7 @@ class ChipPowerMonitorMachineVertex(
         :param ChipPowerMonitor app_vertex: associated application vertex
         :param ~pacman.model.graphs.common.Slice vertex_slice:
         """
-        super(ChipPowerMonitorMachineVertex, self).__init__(
+        super().__init__(
             label=label, constraints=constraints, app_vertex=app_vertex,
             vertex_slice=vertex_slice)
         self._n_samples_per_recording = n_samples_per_recording
