@@ -105,12 +105,10 @@ class TDMAAgendaBuilder(object):
             the max number of incoming edges to any vertex in the application
         :rtype: int
         """
-        if not machine_graph.vertices:
-            # Python 2.7 support
-            return 0
-        return max(
+        return max((
             len(machine_graph.get_edges_ending_at_vertex(vertex))
-            for vertex in machine_graph.vertices)
+            for vertex in machine_graph.vertices),
+            default=0)
 
     def _handle_colouring(self, max_in_edges, machine_graph):
         """ Operates the graph colouring greedy code.

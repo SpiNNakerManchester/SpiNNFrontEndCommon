@@ -26,7 +26,7 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 class _TestVertexWithBinary(MachineVertex, AbstractHasAssociatedBinary):
 
     def __init__(self, binary_file_name, binary_start_type):
-        super(_TestVertexWithBinary, self).__init__()
+        super().__init__()
         self._binary_file_name = binary_file_name
         self._binary_start_type = binary_start_type
 

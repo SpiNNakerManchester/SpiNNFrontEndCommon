@@ -12,30 +12,22 @@ Requirements
 
 In addition to a standard Python installation, this package depends on:
 
-    six
-    enum34
     numpy
     SpiNNUtilities
+    SpiNNMachine
     DataSpecification
     PACMAN
     SpiNNMan
-    SpiNNMachine
+    spalloc
 
 These dependencies can be installed using `pip`:
 
-    pip install six
-    pip install enum34
     pip install numpy
-    pip install SpiNNUtilities
-    pip install DataSpecification
-    pip install PACMAN
-    pip install SpiNNMan
-    pip install SpiNNMachine
-    pip install SpiNNFrontEndCommon
+    pip install SpiNNUtilities SpiNNMachine DataSpecification PACMAN SpiNNMan spalloc
 
 If you want to use the `spinnaker_router_provenance_mapper` command line tool
 to visualise the traffic on SpiNNaker boards caused by your simulations, you
-should modify that last line to:
+should install this package using:
 
     pip install "SpiNNFrontEndCommon[plotting]"
 
@@ -52,6 +44,8 @@ above), passing in the name of a provenance database (usually called
 contains the raw data. This will produce a number of graphs as images in your
 current directory; _those have fixed file-names._
 
+    spinnaker_router_provenance_mapper my_code/.../provenance.sqlite3
+
 An example of the sort of map that might be produced is:
 
 ![External_P2P_Packets](.images/External_P2P_Packets.png)
@@ -64,21 +58,22 @@ Installing NumPy on Older Systems
 =================================
 _Note that this part is not normally required on newer systems,_
 where `numpy` installs inside a virtual environment just fine.
+Sometimes you have to provide a little assistance with:
 
-If you are using `virtualenv`, please also follow the instructions below to
-install `numpy`. Further instructions for adding this global package to your
-`virutalenv` are detailed in the "_User Installation_" and
-"_Developer Installation_" sections below.
+    pip install --upgrade wheel
+    pip install --binary-only numpy
+
+Otherwise, use these instructions, depending on what platform you are using:
 
 Ubuntu Linux
 ------------
-Execute the following to install both `gtk` and `pygtk`:
+Execute the following to install `numpy`:
 
     sudo apt-get install python-numpy
 
 Fedora Linux
 ------------
-Execute the following to install both `gtk` and `pygtk`:
+Execute the following to install `numpy`:
 
     sudo yum install numpy
 
@@ -96,6 +91,4 @@ Documentation
 <br>
 [SpiNNFrontEndCommon C documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/c/)
 
-[Combined PyNN7 python documentation](http://spinnaker7manchester.readthedocs.io)
-<br>
 [Combined PyNN8 python documentation](http://spinnaker8manchester.readthedocs.io)

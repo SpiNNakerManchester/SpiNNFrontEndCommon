@@ -14,31 +14,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum
-from six import add_metaclass
-from spinn_utilities.abstract_base import AbstractBase, abstractproperty
+from spinn_utilities.abstract_base import abstractproperty
 from spinn_utilities.overrides import overrides
 from data_specification.utility_calls import get_region_base_address_offset
 from .abstract_provides_provenance_data_from_machine import (
     AbstractProvidesProvenanceDataFromMachine)
-from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
+from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
 
 def add_name(names, name):
     """
-            :param iterable(str) names:
-            :param str name:
-            :rtype: list(str)
-            """
+    :param iterable(str) names:
+    :param str name:
+    :rtype: list(str)
+    """
     new_names = list(names)
     new_names.append(name)
     return new_names
 
 
-@add_metaclass(AbstractBase)
 class ProvidesProvenanceDataFromMachineImpl(
-        AbstractProvidesProvenanceDataFromMachine):
+        AbstractProvidesProvenanceDataFromMachine, allow_derivation=True):
     """ An implementation that gets provenance data from a region of ints on\
         the machine.
     """

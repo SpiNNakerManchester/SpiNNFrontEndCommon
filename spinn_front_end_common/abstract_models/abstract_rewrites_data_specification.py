@@ -13,31 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
-
-from pacman.model.graphs.machine import MachineVertex
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_utilities.require_subclass import require_subclass
+from pacman.model.graphs.machine import MachineVertex
 
 
-@add_metaclass(AbstractBase)
-class AbstractRewritesDataSpecification(object):
+@require_subclass(MachineVertex)
+class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
     """ Indicates an object that allows data to be changed after run,\
         and so can rewrite the data specification
     """
 
     __slots__ = []
-
-    _WRONG_VERTEX_TYPE_ERROR = (
-        "The vertex {} is not of type MachineVertex. By not being a "
-        "machine vertex, the SpiNNFrontEndCommon function DSGRegionReloader "
-        "will not check this vertex")
-
-    def __new__(cls, *args, **kwargs):
-        if not issubclass(cls, MachineVertex):
-            raise SpinnFrontEndException(
-                cls._WRONG_VERTEX_TYPE_ERROR.format(cls))
-        return super(AbstractRewritesDataSpecification, cls).__new__(cls)
 
     @abstractmethod
     def regenerate_data_specification(self, spec, placement):
