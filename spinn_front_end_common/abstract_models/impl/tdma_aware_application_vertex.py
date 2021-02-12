@@ -103,8 +103,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         """
         core_slot = vertex_index & self.__n_slots
         offset_clocks = (
-            self.__initial_offset +
-            (self.__time_between_cores * core_slot * _CLOCKS_PER_NS))
+            (self.__initial_offset + (self.__time_between_cores * core_slot))
+            * _CLOCKS_PER_NS)
         tdma_clocks = (
             self.__n_phases * self.__time_between_spikes * _CLOCKS_PER_NS)
         total_clocks = _CLOCKS_PER_NS * self.__ns_per_cycle
