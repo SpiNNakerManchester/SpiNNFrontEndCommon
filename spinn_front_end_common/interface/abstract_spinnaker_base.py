@@ -1254,6 +1254,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ScampConnectionData"] = self._read_config(
             "Machine", "scamp_connections_data")
         inputs['ReportFolder'] = self._report_default_directory
+        inputs['ReportWaitingLogsFlag'] = self._config.getboolean(
+            "Machine", "report_waiting_logs")
         algorithms.append("MachineGenerator")
 
         outputs.append("MemoryMachine")
@@ -1315,6 +1317,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         do_partitioning = self._machine_by_size(inputs, algorithms, outputs)
         inputs['ReportFolder'] = self._report_default_directory
+        inputs['ReportWaitingLogsFlag'] = self._config.getboolean(
+            "Machine", "report_waiting_logs")
 
         # if using spalloc system
         if self._spalloc_server is not None:
@@ -2316,9 +2320,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             placements = Placements()
             non_rte_core_subsets = CoreSubsets()
             for (x, y, p) in non_rte_cores:
-                vertex = self._placements.get_vertex_on_processor(x, y, p)
                 placements.add_placement(
-                    self._placements.get_placement_of_vertex(vertex))
+                    self._placements.get_placement_on_processor(x, y, p))
                 non_rte_core_subsets.add_processor(x, y, p)
 
             # Attempt to force the cores to write provenance and exit

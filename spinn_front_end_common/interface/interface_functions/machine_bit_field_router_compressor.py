@@ -30,16 +30,25 @@ from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.router_compressors.ordered_covering_router_compressor.\
-    ordered_covering import (get_generality as ordered_covering_generality)
+    ordered_covering import (
+        get_generality as
+        ordered_covering_generality)
+from spinn_front_end_common.abstract_models.\
+    abstract_supports_bit_field_routing_compression import (
+        AbstractSupportsBitFieldRoutingCompression)
 from spinn_front_end_common.interface.interface_functions.\
-    host_no_bitfield_router_compression import (make_source_hack)
-from spinn_front_end_common.utilities.utility_objs import (
-    ProvenanceDataItem, ExecutableType)
+    host_no_bitfield_router_compression import (
+        make_source_hack)
+from spinn_front_end_common.utilities.report_functions.\
+    bit_field_compressor_report import (
+        generate_provenance_item)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.exceptions import (
     CantFindSDRAMToUseException)
 from spinn_front_end_common.utilities import system_control_logic
 from .load_executable_images import LoadExecutableImages
 from .host_bit_field_router_compressor import HostBasedBitFieldRouterCompressor
+from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -50,11 +59,6 @@ SIZE_OF_SDRAM_ADDRESS_IN_BYTES = (17 * 2 * 4) + (3 * 4)
 SIZE_OF_COMMS_SDRAM = 7 * 4 * 18
 
 SECOND_TO_MICRO_SECOND = 1000000
-
-# provenance data item names
-PROV_TOP_NAME = "bit_field_router_provenance"
-PROV_CHIP_NAME = "router_at_chip_{}_{}"
-MERGED_NAME = "bit_fields_merged"
 
 
 @add_metaclass(AbstractBase)
@@ -95,12 +99,8 @@ class MachineBitFieldRouterCompressor(object):
 
     # structs for performance requirements.
     _FOUR_WORDS = struct.Struct("<IIII")
-
-    _THREE_WORDS = struct.Struct("<III")
-
     _TWO_WORDS = struct.Struct("<II")
-
-    _ONE_WORDS = struct.Struct("<I")
+    _ONE_WORD = struct.Struct("<I")
 
     # binary names
     _BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX = \
@@ -113,7 +113,7 @@ class MachineBitFieldRouterCompressor(object):
         "on host compressing routing tables and merging in bitfields as " \
         "appropriate"
     _ON_CHIP_ERROR_MESSAGE = \
-        "The router compressor with bit field on {}, {} failed to complete. " \
+        "The router compressor with bit field on {}:{} failed to complete. " \
         "Will execute host based routing compression instead"
 
     _ON_HOST_WARNING_MESSAGE = \
@@ -246,28 +246,20 @@ class MachineBitFieldRouterCompressor(object):
                 machine_graph, routing_infos)
 
             for (chip_x, chip_y) in progress_bar.over(on_host_chips, False):
-                bit_field_sdram_base_addresses = defaultdict(dict)
-                host_compressor.collect_bit_field_sdram_base_addresses(
-                    chip_x, chip_y, machine, placements, transceiver,
-                    bit_field_sdram_base_addresses)
-
-                host_compressor.start_compression_selection_process(
-                    router_table=routing_tables.get_routing_table_for_chip(
-                        chip_x, chip_y),
-                    produce_report=produce_report,
-                    report_folder_path=host_compressor.generate_report_path(
-                        default_report_folder),
-                    bit_field_sdram_base_addresses=(
-                        bit_field_sdram_base_addresses),
-                    transceiver=transceiver, machine_graph=machine_graph,
-                    placements=placements, machine=machine,
-                    target_length=target_length,
-                    time_to_try_for_each_iteration=(
-                        time_to_try_for_each_iteration),
-                    use_timer_cut_off=use_timer_cut_off,
-                    compressed_pacman_router_tables=(
-                        compressed_pacman_router_tables),
-                    key_atom_map=key_atom_map)
+                report_folder_path = host_compressor.generate_report_path(
+                    default_report_folder)
+                prov_items.append(
+                    host_compressor.start_compression_selection_process(
+                        router_table=routing_tables.get_routing_table_for_chip(
+                            chip_x, chip_y),
+                        produce_report=produce_report,
+                        report_folder_path=report_folder_path,
+                        transceiver=transceiver, machine_graph=machine_graph,
+                        placements=placements, machine=machine,
+                        target_length=target_length,
+                        compressed_pacman_router_tables=(
+                            compressed_pacman_router_tables),
+                        key_atom_map=key_atom_map))
 
             # load host compressed routing tables
             for table in compressed_pacman_router_tables.routing_tables:
@@ -380,12 +372,6 @@ class MachineBitFieldRouterCompressor(object):
             x = core_subset.x
             y = core_subset.y
 
-            # prov names
-            names = list()
-            names.append(PROV_TOP_NAME)
-            names.append(PROV_CHIP_NAME.format(x, y))
-            names.append(MERGED_NAME)
-
             for p in core_subset.processor_ids:
 
                 # Read the result from USER1/USER2 registers
@@ -393,19 +379,16 @@ class MachineBitFieldRouterCompressor(object):
                     transceiver.get_user_1_register_address_from_core(p)
                 user_2_base_address = \
                     transceiver.get_user_2_register_address_from_core(p)
-                result = struct.unpack(
-                    "<I", transceiver.read_memory(
-                        x, y, user_1_base_address, self._USER_BYTES))[0]
-                total_bit_fields_merged = struct.unpack(
-                    "<I", transceiver.read_memory(
-                        x, y, user_2_base_address, self._USER_BYTES))[0]
+                result = transceiver.read_word(x, y, user_1_base_address)
+                bit_fields_merged = transceiver.read_word(
+                    x, y, user_2_base_address)
 
                 if result != self.SUCCESS:
                     if (x, y) not in host_chips:
                         host_chips.append((x, y))
                     return False
-                prov_data_items.append(ProvenanceDataItem(
-                    names, str(total_bit_fields_merged)))
+                prov_data_items.append(generate_provenance_item(
+                    x, y, bit_fields_merged))
         return True
 
     def _load_data(
@@ -486,10 +469,9 @@ class MachineBitFieldRouterCompressor(object):
     def _load_compressor_data(
             self, chip_x, chip_y, time_per_iteration, transceiver,
             bit_field_compressor_executable_path, cores,
-            compress_as_much_as_possible,
-            comms_sdram):
+            compress_as_much_as_possible, comms_sdram):
         """ Updates the user addresses for the compressor cores with the
-            compression settings
+            compression settings.
 
         :param int chip_x: chip x coord
         :param int chip_y: chip y coord
@@ -515,21 +497,14 @@ class MachineBitFieldRouterCompressor(object):
             # user 1 the time per compression attempt
             transceiver.write_memory(
                 chip_x, chip_y, user1_address,
-                self._ONE_WORDS.pack(
-                    time_per_iteration * SECOND_TO_MICRO_SECOND),
-                self._USER_BYTES)
+                int(time_per_iteration * SECOND_TO_MICRO_SECOND))
             # user 2 Compress as much as needed flag
-            if compress_as_much_as_possible:
-                compressor_setting = 1
-            else:
-                compressor_setting = 0
             transceiver.write_memory(
                 chip_x, chip_y, user2_address,
-                self._ONE_WORDS.pack(compressor_setting), self._USER_BYTES)
+                int(compress_as_much_as_possible))
             # user 3 the comms_sdram area
             transceiver.write_memory(
-                chip_x, chip_y, user3_address,
-                self._ONE_WORDS.pack(comms_sdram), self._USER_BYTES)
+                chip_x, chip_y, user3_address, comms_sdram)
 
     def _load_usable_sdram(
             self, matrix_addresses_and_size, chip_x, chip_y, transceiver,
@@ -571,8 +546,7 @@ class MachineBitFieldRouterCompressor(object):
         user3_address = transceiver.get_user_3_register_address_from_core(
             processor_id)
         transceiver.write_memory(
-            chip_x, chip_y, user3_address,
-            self._ONE_WORDS.pack(sdram_address), self._USER_BYTES)
+            chip_x, chip_y, user3_address, sdram_address)
 
     def _generate_chip_matrix_data(self, list_of_sizes_and_address):
         """ generate the data for the chip matrix data
@@ -582,7 +556,7 @@ class MachineBitFieldRouterCompressor(object):
         :return: byte array of data
         """
         data = b""
-        data += self._ONE_WORDS.pack(len(list_of_sizes_and_address))
+        data += self._ONE_WORD.pack(len(list_of_sizes_and_address))
         for (memory_address, size) in list_of_sizes_and_address:
             data += self._TWO_WORDS.pack(memory_address, size)
         return data
@@ -648,8 +622,7 @@ class MachineBitFieldRouterCompressor(object):
         user2_address = transceiver.get_user_2_register_address_from_core(
             processor_id)
         transceiver.write_memory(
-            chip_x, chip_y, user2_address,
-            self._ONE_WORDS.pack(sdram_address), self._USER_BYTES)
+            chip_x, chip_y, user2_address, sdram_address)
 
     def _load_routing_table_data(
             self, table, app_id, transceiver,
@@ -691,8 +664,7 @@ class MachineBitFieldRouterCompressor(object):
         user1_address = transceiver.get_user_1_register_address_from_core(
             processor_id)
         transceiver.write_memory(
-            table.x, table.y, user1_address,
-            self._ONE_WORDS.pack(base_address), self._USER_BYTES)
+            table.x, table.y, user1_address, base_address)
 
         # update progress bar
         progress_bar.update()
@@ -727,8 +699,8 @@ class MachineBitFieldRouterCompressor(object):
     def _steal_from_matrix_addresses(matrix_addresses_and_size, size_to_steal):
         """ steals memory from synaptic matrix as needed
 
-        :param list(tuple(int,int)) matrix_addresses_and_size:
-            matrix addresses and sizes
+        :param dict(tuple(int,int),tuple(int,int)) matrix_addresses_and_size:
+            matrix addresses and sizes; updated by this method
         :param int size_to_steal: size needed to steal from matrix's.
         :return: address to start steal from
         :rtype: int
@@ -793,15 +765,13 @@ class MachineBitFieldRouterCompressor(object):
         region_addresses = defaultdict(list)
         sdram_block_addresses_and_sizes = defaultdict(list)
 
-        for machine_vertex in progress_bar.over(
+        for vertex in progress_bar.over(
                 machine_graph.vertices, finish_at_end=False):
-            placement = placements.get_placement_of_vertex(machine_vertex)
+            placement = placements.get_placement_of_vertex(vertex)
 
             # locate the interface vertex (maybe app or machine)
-            vertex = \
-                HostBasedBitFieldRouterCompressor.locate_vertex_with_the_api(
-                    machine_vertex)
-            if vertex is not None:
+            if isinstance(
+                    vertex, AbstractSupportsBitFieldRoutingCompression):
                 self._add_to_addresses(
                     vertex, placement, transceiver, region_addresses,
                     sdram_block_addresses_and_sizes)
@@ -838,19 +808,14 @@ class MachineBitFieldRouterCompressor(object):
         :return: the byte array
         :rtype: bytes
         """
-        data = b""
-        data += self._ONE_WORDS.pack(threshold_percentage)
-        if retry_count is None:
-            data += self._ONE_WORDS.pack(0xFFFFFFFF)
-        else:
-            data += self._ONE_WORDS.pack(retry_count)
-        data += self._ONE_WORDS.pack(comms_sdram)
-        data += self._ONE_WORDS.pack(len(address_list))
+        data = self._FOUR_WORDS.pack(
+            threshold_percentage,
+            retry_count if retry_count is not None else 0xFFFFFFFF,
+            comms_sdram, len(address_list))
         for (bit_field, processor_id) in address_list:
             data += self._TWO_WORDS.pack(bit_field, processor_id)
-        data += self._ONE_WORDS.pack(len(cores))
-        compression_cores = list(cores.processor_ids)
-        data += struct.pack("<{}I".format(len(cores)), *compression_cores)
+        data += self._ONE_WORD.pack(len(cores))
+        data += n_word_struct(len(cores)).pack(*list(cores.processor_ids))
         return data
 
 

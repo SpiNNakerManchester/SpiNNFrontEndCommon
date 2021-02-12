@@ -87,6 +87,17 @@ setup(
                       "scipy >= 0.16.0; python_version >= '3.7'",
                       'futures; python_version == "2.7"',
                       'six'],
+    extras_require={
+        'plotting': [
+            'matplotlib',
+            'seaborn',
+        ]},
+    entry_points={
+        "console_scripts": [
+            "spinnaker_router_provenance_mapper="
+            "spinn_front_end_common.interface.provenance.router_prov_mapper:"
+            "main [plotting]",
+        ]},
     maintainer="SpiNNakerTeam",
     maintainer_email="spinnakerusers@googlegroups.com"
 )
