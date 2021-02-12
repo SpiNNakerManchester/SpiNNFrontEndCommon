@@ -19,8 +19,8 @@ from spinn_front_end_common.interface.provenance.\
     provides_provenance_data_from_machine_impl import (
         add_name)
 
-# The number of clock cycles per nanosecond
-_CLOCKS_PER_NS = 200
+# The number of clock cycles per microsecond
+_CLOCKS_PER_US = 200
 
 
 class TDMAAwareApplicationVertex(ApplicationVertex):
@@ -32,7 +32,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         "__initial_offset",
         "__n_phases",
         "__n_slots",
-        "__ns_per_cycle",
+        "__us_per_cycle",
         "__time_between_cores",
         "__time_between_spikes")
 
@@ -66,7 +66,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         self.__time_between_spikes = None
         self.__initial_offset = None
         self.__n_phases = None
-        self.__ns_per_cycle = None
+        self.__us_per_cycle = None
 
     def set_initial_offset(self, new_value):
         """ Sets the initial offset
@@ -104,13 +104,13 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         core_slot = vertex_index & self.__n_slots
         offset_clocks = (
             (self.__initial_offset + (self.__time_between_cores * core_slot))
-            * _CLOCKS_PER_NS)
+            * _CLOCKS_PER_US)
         tdma_clocks = (
-            self.__n_phases * self.__time_between_spikes * _CLOCKS_PER_NS)
-        total_clocks = _CLOCKS_PER_NS * self.__ns_per_cycle
+            self.__n_phases * self.__time_between_spikes * _CLOCKS_PER_US)
+        total_clocks = _CLOCKS_PER_US * self.__us_per_cycle
         initial_expected_time = total_clocks - offset_clocks
         min_expected_time = initial_expected_time - tdma_clocks
-        clocks_between_sends = self.__time_between_spikes * _CLOCKS_PER_NS
+        clocks_between_sends = self.__time_between_spikes * _CLOCKS_PER_US
         return [initial_expected_time, min_expected_time,
                 clocks_between_sends]
 
@@ -124,20 +124,20 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
 
     def set_other_timings(
             self, time_between_cores, n_slots, time_between_spikes, n_phases,
-            ns_per_cycle):
+            us_per_cycle):
         """ Sets the other timings needed for the TDMA.
 
         :param int time_between_cores: time between cores
         :param int n_slots: the number of slots
         :param int time_between_spikes: the time to wait between spikes
         :param int n_phases: the number of phases
-        :param int ns_per_cycle: the number of nano-seconds per TDMA cycle
+        :param int us_per_cycle: the number of micro-seconds per TDMA cycle
         """
         self.__time_between_cores = time_between_cores
         self.__n_slots = n_slots
         self.__time_between_spikes = time_between_spikes
         self.__n_phases = n_phases
-        self.__ns_per_cycle = ns_per_cycle
+        self.__us_per_cycle = us_per_cycle
 
     def get_n_cores(self):
         """ Get the number of cores this application vertex is using in \
