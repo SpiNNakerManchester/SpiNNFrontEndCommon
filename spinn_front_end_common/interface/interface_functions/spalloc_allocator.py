@@ -14,8 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import math
-import six
-import sys
 from spinn_utilities.overrides import overrides
 from spalloc import Job
 from spalloc.states import JobState
@@ -41,7 +39,7 @@ class _SpallocJobController(MachineAllocationController):
             raise Exception("must have a real job")
         self._job = job
         self._state = job.state
-        super(_SpallocJobController, self).__init__("SpallocJobController")
+        super().__init__("SpallocJobController")
 
     @overrides(AbstractMachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time):
@@ -50,7 +48,7 @@ class _SpallocJobController(MachineAllocationController):
 
     @overrides(AbstractMachineAllocationController.close)
     def close(self):
-        super(_SpallocJobController, self).close()
+        super().close()
         self._job.destroy()
 
     @property
@@ -84,16 +82,16 @@ class _SpallocJobController(MachineAllocationController):
                 self._state = self._job.wait_for_state_change(self._state)
         except TypeError:
             pass
-        except Exception:  # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             if not self._exited:
-                six.reraise(*sys.exc_info())
+                raise e
         return self._state != JobState.destroyed
 
     @overrides(MachineAllocationController._teardown)
     def _teardown(self):
         if not self._exited:
             self._job.close()
-        super(_SpallocJobController, self)._teardown()
+        super()._teardown()
 
 
 class SpallocAllocator(object):

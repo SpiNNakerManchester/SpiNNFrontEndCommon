@@ -44,7 +44,7 @@ class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
         :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
-        super(DataSpeedUpPacketGather, self).__init__(
+        super().__init__(
             DataSpeedUpPacketGatherMachineVertex(
                 app_vertex=self,
                 x=x, y=y, ip_address=ip_address, constraints=constraints,

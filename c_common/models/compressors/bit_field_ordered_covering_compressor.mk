@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-APP = bit_field_unordered_compressor
+APP = bit_field_ordered_covering_compressor
 
 SOURCES = bit_field_compressor.c
 

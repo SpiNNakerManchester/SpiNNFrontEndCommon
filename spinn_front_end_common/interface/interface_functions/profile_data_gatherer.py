@@ -14,13 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.interface.profiling import AbstractHasProfileData
-
-logger = logging.getLogger(__name__)
 
 
 class ProfileDataGatherer(object):

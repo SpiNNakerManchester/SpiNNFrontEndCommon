@@ -45,7 +45,7 @@ class SetRouterTimeoutMessage(AbstractSCPRequest):
         # pylint: disable=too-many-arguments
         cmd = ReinjectorSCPCommands.SET_ROUTER_WAIT1_TIMEOUT if wait == 1 \
             else ReinjectorSCPCommands.SET_ROUTER_WAIT2_TIMEOUT
-        super(SetRouterTimeoutMessage, self).__init__(
+        super().__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(

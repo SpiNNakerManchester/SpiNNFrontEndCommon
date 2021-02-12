@@ -30,16 +30,16 @@ class ExecutableFinder(BaseEF):
         :param iterable(str) binary_search_paths:
             The initial set of folders to search for binaries.
         :param bool include_common_binaries_folder:
-            If True (i.e. the default), the \
-            spinn_front_end_common.common_model_binaries folder is searched\
-            for binaries.  If you are not using the common models, or the\
-            model binary names conflict with your own, this parameter can be\
-            used to avoid this issue. Note that the folder will be appended\
-            to the value of binary_search_paths, so the common binary search\
+            If True (i.e. the default), the
+            spinn_front_end_common.common_model_binaries folder is searched
+            for binaries.  If you are not using the common models, or the
+            model binary names conflict with your own, this parameter can be
+            used to avoid this issue. Note that the folder will be appended
+            to the value of binary_search_paths, so the common binary search
             path will be looked in last.
         """
         if binary_search_paths is None:
             binary_search_paths = list()
-        super(ExecutableFinder, self).__init__(binary_search_paths)
+        super().__init__(binary_search_paths)
         if include_common_binaries_folder:
             self.add_path(os.path.dirname(common_model_binaries.__file__))

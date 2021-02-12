@@ -40,7 +40,7 @@ class _UpdateRuntimeRequest(AbstractSCPRequest):
         # pylint: disable=too-many-arguments
         sdp_flags = SDPFlag.REPLY_EXPECTED
 
-        super(_UpdateRuntimeRequest, self).__init__(
+        super().__init__(
             SDPHeader(
                 flags=sdp_flags,
                 destination_port=SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value,
@@ -71,7 +71,7 @@ class UpdateRuntimeProcess(AbstractMultiConnectionProcess):
         :type connection_selector:
             ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector
         """
-        super(UpdateRuntimeProcess, self).__init__(connection_selector)
+        super().__init__(connection_selector)
         self._progress = None
 
     def __receive_response(self, _response):
