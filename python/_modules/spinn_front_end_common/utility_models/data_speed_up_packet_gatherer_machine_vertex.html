@@ -57,10 +57,7 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">struct</span>
-<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span> <span class="nn">six.moves</span> <span class="kn">import</span> <span class="n">xrange</span>
-<span class="kn">from</span> <span class="nn">six</span> <span class="kn">import</span> <span class="n">reraise</span><span class="p">,</span> <span class="n">PY2</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinnman.exceptions</span> <span class="kn">import</span> <span class="n">SpinnmanTimeoutException</span>
@@ -347,7 +344,7 @@
 <span class="sd">        :type app_vertex:</span>
 <span class="sd">            ~pacman.model.graphs.application.ApplicationVertex or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">DataSpeedUpPacketGatherMachineVertex</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">label</span><span class="o">=</span><span class="s2">&quot;SYSTEM:PacketGatherer(</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>
             <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="n">app_vertex</span><span class="p">)</span>
 
@@ -707,12 +704,8 @@
             <span class="n">original_data</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">n_bytes</span> <span class="o">+</span> <span class="n">offset</span><span class="p">])</span>
             <span class="n">verified_data</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
                 <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">n_bytes</span><span class="p">))</span>
-            <span class="k">if</span> <span class="n">PY2</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__verify_sent_data_py2</span><span class="p">(</span>
-                    <span class="n">original_data</span><span class="p">,</span> <span class="n">verified_data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">n_bytes</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__verify_sent_data_py3</span><span class="p">(</span>
-                    <span class="n">original_data</span><span class="p">,</span> <span class="n">verified_data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">n_bytes</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__verify_sent_data_py3</span><span class="p">(</span>
+                <span class="n">original_data</span><span class="p">,</span> <span class="n">verified_data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">n_bytes</span><span class="p">)</span>
 
         <span class="c1"># write report</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write_data_speed_up_reports</span><span class="p">:</span>
@@ -720,22 +713,6 @@
                 <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">time_diff</span><span class="o">=</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span>
                 <span class="n">data_size</span><span class="o">=</span><span class="n">n_bytes</span><span class="p">,</span> <span class="n">address_written_to</span><span class="o">=</span><span class="n">base_address</span><span class="p">,</span>
                 <span class="n">missing_seq_nums</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_missing_seq_nums_data_in</span><span class="p">)</span></div>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">__verify_sent_data_py2</span><span class="p">(</span>
-            <span class="n">original_data</span><span class="p">,</span> <span class="n">verified_data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">n_bytes</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">original_data</span> <span class="o">!=</span> <span class="n">verified_data</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;VARIANCE: chip:</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2"> address:</span><span class="si">{}</span><span class="s2"> len:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
-                      <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">n_bytes</span><span class="p">)</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;original:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="s2">&quot;</span><span class="si">%02X</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">ord</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">original_data</span><span class="p">))</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;verified:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="s2">&quot;</span><span class="si">%02X</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">ord</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">verified_data</span><span class="p">))</span>
-            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">for</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">original_data</span><span class="p">,</span> <span class="n">verified_data</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">b</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;damn at &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__verify_sent_data_py3</span><span class="p">(</span>
@@ -849,14 +826,15 @@
                             <span class="n">data_to_write</span><span class="p">,</span> <span class="n">missing</span><span class="p">)</span>
                         <span class="n">missing</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
-                <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span><span class="p">:</span>  <span class="c1"># if time out, keep trying</span>
+                <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="c1"># if the timeout has not occurred x times, keep trying</span>
                     <span class="n">time_out_count</span> <span class="o">+=</span> <span class="mi">1</span>
                     <span class="k">if</span> <span class="n">time_out_count</span> <span class="o">&gt;</span> <span class="n">TIMEOUT_RETRY_LIMIT</span><span class="p">:</span>
                         <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
                             <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="p">)</span>
                         <span class="k">raise</span> <span class="n">SpinnFrontEndException</span><span class="p">(</span>
-                            <span class="n">TIMEOUT_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time_out_count</span><span class="p">))</span>
+                            <span class="n">TIMEOUT_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                <span class="n">time_out_count</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">e</span>
 
                     <span class="c1"># If we never received a packet, we will never have</span>
                     <span class="c1"># created the buffer, so send everything again</span>
@@ -1239,16 +1217,16 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_remote_tag</span><span class="p">,</span> <span class="n">strip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_sender</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">get_scp_data</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
-        <span class="n">einfo</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">exn</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
                 <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">receive_scp_response</span><span class="p">()</span>
                 <span class="n">request</span><span class="o">.</span><span class="n">get_scp_response</span><span class="p">()</span><span class="o">.</span><span class="n">read_bytestring</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
                 <span class="k">return</span>
-            <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span><span class="p">:</span>
-                <span class="n">einfo</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
-        <span class="n">reraise</span><span class="p">(</span><span class="o">*</span><span class="n">einfo</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">exn</span> <span class="o">=</span> <span class="n">e</span>
+        <span class="k">raise</span> <span class="n">exn</span> <span class="ow">or</span> <span class="n">SpinnmanTimeoutException</span>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.get_data"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">extra_monitor</span><span class="p">,</span> <span class="n">extra_monitor_placement</span><span class="p">,</span> <span class="n">memory_address</span><span class="p">,</span>
@@ -1355,11 +1333,12 @@
                         <span class="s2">&quot;ignoring packet as transaction id should be </span><span class="si">{}</span><span class="s2">&quot;</span>
                         <span class="s2">&quot; but is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                             <span class="n">transaction_id</span><span class="p">,</span> <span class="n">response_transaction_id</span><span class="p">))</span>
-            <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span><span class="p">:</span>
+            <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">timeoutcount</span> <span class="o">&gt;</span> <span class="n">TIMEOUT_RETRY_LIMIT</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="n">SpinnFrontEndException</span><span class="p">(</span>
                         <span class="s2">&quot;Failed to hear from the machine during </span><span class="si">{}</span><span class="s2"> attempts. &quot;</span>
-                        <span class="s2">&quot;Please try removing firewalls&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">timeoutcount</span><span class="p">))</span>
+                        <span class="s2">&quot;Please try removing firewalls&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">timeoutcount</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">e</span>
 
                 <span class="n">timeoutcount</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="c1"># self.__reset_connection()</span>
@@ -1421,8 +1400,7 @@
 <span class="sd">        :return: list of missing sequence numbers</span>
 <span class="sd">        :rtype: list(int)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">sn</span> <span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_seq_num</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">sn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seq_nums</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">sn</span> <span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_seq_num</span><span class="p">)</span> <span class="k">if</span> <span class="n">sn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seq_nums</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_determine_and_retransmit_missing_seq_nums</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">seq_nums</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">lost_seq_nums</span><span class="p">,</span>
@@ -1462,7 +1440,7 @@
         <span class="c1"># transmit missing sequence as a new SDP packet</span>
         <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">seq_num_offset</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">n_packets</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_packets</span><span class="p">):</span>
             <span class="n">length_left_in_packet</span> <span class="o">=</span> <span class="n">WORDS_PER_FULL_PACKET</span>
             <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
 

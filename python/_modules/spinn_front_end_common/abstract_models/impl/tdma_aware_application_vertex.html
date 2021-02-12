@@ -97,8 +97,8 @@
 <span class="sd">        :raise PacmanInvalidParameterException:</span>
 <span class="sd">            If one of the constraints is not valid</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ApplicationVertex</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">max_atoms_per_core</span><span class="p">,</span> <span class="n">splitter</span><span class="o">=</span><span class="n">splitter</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">max_atoms_per_core</span><span class="p">,</span> <span class="n">splitter</span><span class="o">=</span><span class="n">splitter</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__time_between_cores</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__n_slots</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__time_between_spikes</span> <span class="o">=</span> <span class="kc">None</span>

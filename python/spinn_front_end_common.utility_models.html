@@ -62,7 +62,7 @@
 <dl class="py method">
 <dt id="spinn_front_end_common.utility_models.ChipPowerMonitor.create_machine_vertex">
 <code class="sig-name descname">create_machine_vertex</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vertex_slice</span></em>, <em class="sig-param"><span class="n">resources_required</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">constraints</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/chip_power_monitor.html#ChipPowerMonitor.create_machine_vertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitor.create_machine_vertex" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a machine vertex from this application vertex</p>
+<dd><p>Create a machine vertex from this application vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -72,13 +72,19 @@
 <li><p><strong>constraints</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN)"><em>AbstractConstraint</em></a><em>)</em>) – Constraints to be passed on to the machine vertex.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The created machine vertex</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN)">MachineVertex</a></p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="spinn_front_end_common.utility_models.ChipPowerMonitor.get_resources_used_by_atoms">
 <code class="sig-name descname">get_resources_used_by_atoms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vertex_slice</span></em>, <em class="sig-param"><span class="n">machine_time_step</span></em>, <em class="sig-param"><span class="n">time_scale_factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/chip_power_monitor.html#ChipPowerMonitor.get_resources_used_by_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitor.get_resources_used_by_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the separate resource requirements for a range of atoms</p>
+<dd><p>Get the separate resource requirements for a range of atoms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -88,8 +94,9 @@
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>a Resource container that contains a
-CPUCyclesPerTickResource, DTCMResource and SDRAMResource</p>
+<dd class="field-even"><p>a resource container that contains a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">CPUCyclesPerTickResource</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">DTCMResource</span></code>
+and <code class="xref py py-class docutils literal notranslate"><span class="pre">SDRAMResource</span></code></p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN)">ResourceContainer</a></p>
@@ -345,7 +352,7 @@ running</p></li>
 
 <dl class="py class">
 <dt id="spinn_front_end_common.utility_models.CommandSenderMachineVertex">
-<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utility_models.</code><code class="sig-name descname">CommandSenderMachineVertex</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender_machine_vertex.html#CommandSenderMachineVertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utility_models.</code><code class="sig-name descname">CommandSenderMachineVertex</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">constraints</span></em>, <em class="sig-param"><span class="n">app_vertex</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender_machine_vertex.html#CommandSenderMachineVertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pacman.model.graphs.machine.machine_vertex.MachineVertex</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.provenance.provides_provenance_data_from_machine_impl.ProvidesProvenanceDataFromMachineImpl</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.abstract_has_associated_binary.AbstractHasAssociatedBinary</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.abstract_provides_outgoing_partition_constraints.AbstractProvidesOutgoingPartitionConstraints</span></code></p>
 <p>Machine vertex for injecting packets at particular times or in         response to particular events into a SpiNNaker application.</p>
 <dl class="field-list simple">
@@ -543,7 +550,7 @@ running</p></li>
 
 <dl class="py class">
 <dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex">
-<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utility_models.</code><code class="sig-name descname">DataSpeedUpPacketGatherMachineVertex</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utility_models.</code><code class="sig-name descname">DataSpeedUpPacketGatherMachineVertex</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">extra_monitors_by_chip</span></em>, <em class="sig-param"><span class="n">ip_address</span></em>, <em class="sig-param"><span class="n">report_default_directory</span></em>, <em class="sig-param"><span class="n">write_data_speed_up_reports</span></em>, <em class="sig-param"><span class="n">app_vertex</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">constraints</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pacman.model.graphs.machine.machine_vertex.MachineVertex</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.abstract_has_associated_binary.AbstractHasAssociatedBinary</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.provenance.abstract_provides_local_provenance_data.AbstractProvidesLocalProvenanceData</span></code></p>
 <p>Machine vertex for handling fast data transfer between host and         SpiNNaker. This machine vertex is only ever placed on chips with a         working Ethernet connection; it collaborates with the         <a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtraMonitorSupportMachineVertex</span></code></a> to write data on other         chips..</p>
 <dl class="field-list simple">
@@ -949,7 +956,7 @@ if <code class="docutils literal notranslate"><span class="pre">is_filename</spa
 
 <dl class="py class">
 <dt id="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex">
-<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utility_models.</code><code class="sig-name descname">ExtraMonitorSupportMachineVertex</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/extra_monitor_support_machine_vertex.html#ExtraMonitorSupportMachineVertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utility_models.</code><code class="sig-name descname">ExtraMonitorSupportMachineVertex</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">constraints</span></em>, <em class="sig-param"><span class="n">app_vertex</span></em>, <em class="sig-param"><span class="n">reinject_multicast</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reinject_point_to_point</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">reinject_nearest_neighbour</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">reinject_fixed_route</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/extra_monitor_support_machine_vertex.html#ExtraMonitorSupportMachineVertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pacman.model.graphs.machine.machine_vertex.MachineVertex</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.abstract_has_associated_binary.AbstractHasAssociatedBinary</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code></p>
 <p>Machine vertex for talking to extra monitor cores.         Supports reinjection control and the faster data transfer protocols.</p>
 <p>Usually deployed once per chip.</p>
@@ -1297,7 +1304,7 @@ and updates the extra monitor.</p>
 <dl class="py method">
 <dt id="spinn_front_end_common.utility_models.LivePacketGather.create_machine_vertex">
 <code class="sig-name descname">create_machine_vertex</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vertex_slice</span></em>, <em class="sig-param"><span class="n">resources_required</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">constraints</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather.html#LivePacketGather.create_machine_vertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGather.create_machine_vertex" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a machine vertex from this application vertex</p>
+<dd><p>Create a machine vertex from this application vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1307,20 +1314,27 @@ and updates the extra monitor.</p>
 <li><p><strong>constraints</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN)"><em>AbstractConstraint</em></a><em>)</em>) – Constraints to be passed on to the machine vertex.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The created machine vertex</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN)">MachineVertex</a></p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="spinn_front_end_common.utility_models.LivePacketGather.get_resources_used_by_atoms">
 <code class="sig-name descname">get_resources_used_by_atoms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vertex_slice</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather.html#LivePacketGather.get_resources_used_by_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGather.get_resources_used_by_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the separate resource requirements for a range of atoms</p>
+<dd><p>Get the separate resource requirements for a range of atoms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>vertex_slice</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN)"><em>Slice</em></a>) – the low value of atoms to calculate resources from</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>a Resource container that contains a
-CPUCyclesPerTickResource, DTCMResource and SDRAMResource</p>
+<dd class="field-even"><p>a resource container that contains a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">CPUCyclesPerTickResource</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">DTCMResource</span></code>
+and <code class="xref py py-class docutils literal notranslate"><span class="pre">SDRAMResource</span></code></p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN)">ResourceContainer</a></p>
@@ -1346,7 +1360,7 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</p>
 
 <dl class="py class">
 <dt id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex">
-<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utility_models.</code><code class="sig-name descname">LivePacketGatherMachineVertex</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather_machine_vertex.html#LivePacketGatherMachineVertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utility_models.</code><code class="sig-name descname">LivePacketGatherMachineVertex</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lpg_params</span></em>, <em class="sig-param"><span class="n">constraints</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">app_vertex</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather_machine_vertex.html#LivePacketGatherMachineVertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pacman.model.graphs.machine.machine_vertex.MachineVertex</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.provenance.provides_provenance_data_from_machine_impl.ProvidesProvenanceDataFromMachineImpl</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.abstract_has_associated_binary.AbstractHasAssociatedBinary</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.abstract_supports_database_injection.AbstractSupportsDatabaseInjection</span></code></p>
 <p>Used to gather multicast packets coming from cores and stream them         out to a receiving application on host. Only ever deployed on chips         with a working Ethernet connection.</p>
 <dl class="field-list simple">
@@ -1928,7 +1942,7 @@ the edges down which the events are to be sent</p></li>
 <dl class="py method">
 <dt id="spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.create_machine_vertex">
 <code class="sig-name descname">create_machine_vertex</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vertex_slice</span></em>, <em class="sig-param"><span class="n">resources_required</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">constraints</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multi_cast_source.html#ReverseIpTagMultiCastSource.create_machine_vertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.create_machine_vertex" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a machine vertex from this application vertex</p>
+<dd><p>Create a machine vertex from this application vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1937,6 +1951,12 @@ the edges down which the events are to be sent</p></li>
 <li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – human readable label for the machine vertex</p></li>
 <li><p><strong>constraints</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN)"><em>AbstractConstraint</em></a><em>)</em>) – Constraints to be passed on to the machine vertex.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The created machine vertex</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN)">MachineVertex</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1966,14 +1986,15 @@ the edges down which the events are to be sent</p></li>
 <dl class="py method">
 <dt id="spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_resources_used_by_atoms">
 <code class="sig-name descname">get_resources_used_by_atoms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vertex_slice</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multi_cast_source.html#ReverseIpTagMultiCastSource.get_resources_used_by_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_resources_used_by_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the separate resource requirements for a range of atoms</p>
+<dd><p>Get the separate resource requirements for a range of atoms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>vertex_slice</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN)"><em>Slice</em></a>) – the low value of atoms to calculate resources from</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>a Resource container that contains a
-CPUCyclesPerTickResource, DTCMResource and SDRAMResource</p>
+<dd class="field-even"><p>a resource container that contains a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">CPUCyclesPerTickResource</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">DTCMResource</span></code>
+and <code class="xref py py-class docutils literal notranslate"><span class="pre">SDRAMResource</span></code></p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN)">ResourceContainer</a></p>

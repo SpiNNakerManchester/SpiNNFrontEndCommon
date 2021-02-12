@@ -76,8 +76,7 @@
 <span class="sd">        :param int p:</span>
 <span class="sd">            The processor running the extra monitor vertex, between 0 and 17</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="nb">super</span><span class="p">(</span><span class="n">GetReinjectionStatusMessage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">SDPHeader</span><span class="p">(</span>
                 <span class="n">flags</span><span class="o">=</span><span class="n">SDPFlag</span><span class="o">.</span><span class="n">REPLY_EXPECTED</span><span class="p">,</span>
                 <span class="n">destination_port</span><span class="o">=</span><span class="p">(</span>
@@ -97,7 +96,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command_code</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">GetReinjectionStatusMessageResponse</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reinjection_functionality_status</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_command_code</span> <span class="o">=</span> <span class="n">command_code</span>
 

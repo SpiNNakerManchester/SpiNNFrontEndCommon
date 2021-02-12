@@ -73,7 +73,7 @@
 <span class="sd">            iterable(~pacman.model.constraints.AbstractConstraint)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">label</span> <span class="o">=</span> <span class="n">lpg_params</span><span class="o">.</span><span class="n">label</span> <span class="ow">or</span> <span class="s2">&quot;Live Packet Gatherer&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">LivePacketGather</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span> <span class="o">=</span> <span class="n">lpg_params</span>
 
 <div class="viewcode-block" id="LivePacketGather.create_machine_vertex"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGather.create_machine_vertex">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">LegacyPartitionerAPI</span><span class="o">.</span><span class="n">create_machine_vertex</span><span class="p">)</span>

@@ -50,11 +50,8 @@
 <span class="c1">#</span>
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
-
-<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.make_tools.replacer</span> <span class="kn">import</span> <span class="n">Replacer</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">spinn_machine.core_subsets</span> <span class="kn">import</span> <span class="n">CoreSubsets</span>
@@ -63,7 +60,6 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">convert_string_into_chip_and_core_subset</span><span class="p">)</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 <span class="n">ERROR_ENTRY</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\[ERROR\]\s+\((.*)\):\s+(.*)&quot;</span><span class="p">)</span>
 <span class="n">WARNING_ENTRY</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\[WARNING\]\s+\((.*)\):\s+(.*)&quot;</span><span class="p">)</span>
 <span class="n">ENTRY_FILE</span> <span class="o">=</span> <span class="mi">1</span>

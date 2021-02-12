@@ -125,13 +125,19 @@
 <dl class="py class">
 <dt id="spinn_front_end_common.utilities.utility_objs.ExecutableFinder">
 <em class="property">class </em><code class="sig-prename descclassname">spinn_front_end_common.utilities.utility_objs.</code><code class="sig-name descname">ExecutableFinder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">binary_search_paths</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">include_common_binaries_folder</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/executable_finder.html#ExecutableFinder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ExecutableFinder" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.executable_finder.ExecutableFinder" title="(in SpiNNUtils)"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_utilities.executable_finder.ExecutableFinder</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_utilities.executable_finder.ExecutableFinder</span></code></p>
 <p>Manages a set of folders in which to search for binaries, and allows        for binaries to be discovered within this path. This adds a default        location to look to the base class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>binary_search_paths</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em>) – The initial set of folders to search for binaries.</p></li>
-<li><p><strong>include_common_binaries_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True (i.e. the default), the             spinn_front_end_common.common_model_binaries folder is searched            for binaries.  If you are not using the common models, or the            model binary names conflict with your own, this parameter can be            used to avoid this issue. Note that the folder will be appended            to the value of binary_search_paths, so the common binary search            path will be looked in last.</p></li>
+<li><p><strong>include_common_binaries_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True (i.e. the default), the
+spinn_front_end_common.common_model_binaries folder is searched
+for binaries.  If you are not using the common models, or the
+model binary names conflict with your own, this parameter can be
+used to avoid this issue. Note that the folder will be appended
+to the value of binary_search_paths, so the common binary search
+path will be looked in last.</p></li>
 </ul>
 </dd>
 </dl>

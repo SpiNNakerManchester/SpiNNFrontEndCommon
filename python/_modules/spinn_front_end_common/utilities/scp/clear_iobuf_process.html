@@ -65,7 +65,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
 
-        <span class="nb">super</span><span class="p">(</span><span class="n">_ClearIOBUFRequest</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">SDPHeader</span><span class="p">(</span>
                 <span class="n">flags</span><span class="o">=</span><span class="n">SDPFlag</span><span class="o">.</span><span class="n">REPLY_EXPECTED</span><span class="p">,</span>
                 <span class="n">destination_cpu</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">destination_chip_x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">destination_chip_y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
@@ -93,7 +93,7 @@
 <span class="sd">        :type connection_selector:</span>
 <span class="sd">            ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ClearIOBUFProcess</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">connection_selector</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">connection_selector</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_progress</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">__receive_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_response</span><span class="p">):</span>

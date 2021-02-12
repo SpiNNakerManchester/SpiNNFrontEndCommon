@@ -68,17 +68,17 @@
 <span class="sd">        :param iterable(str) binary_search_paths:</span>
 <span class="sd">            The initial set of folders to search for binaries.</span>
 <span class="sd">        :param bool include_common_binaries_folder:</span>
-<span class="sd">            If True (i.e. the default), the \</span>
-<span class="sd">            spinn_front_end_common.common_model_binaries folder is searched\</span>
-<span class="sd">            for binaries.  If you are not using the common models, or the\</span>
-<span class="sd">            model binary names conflict with your own, this parameter can be\</span>
-<span class="sd">            used to avoid this issue. Note that the folder will be appended\</span>
-<span class="sd">            to the value of binary_search_paths, so the common binary search\</span>
+<span class="sd">            If True (i.e. the default), the</span>
+<span class="sd">            spinn_front_end_common.common_model_binaries folder is searched</span>
+<span class="sd">            for binaries.  If you are not using the common models, or the</span>
+<span class="sd">            model binary names conflict with your own, this parameter can be</span>
+<span class="sd">            used to avoid this issue. Note that the folder will be appended</span>
+<span class="sd">            to the value of binary_search_paths, so the common binary search</span>
 <span class="sd">            path will be looked in last.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">binary_search_paths</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">binary_search_paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ExecutableFinder</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">binary_search_paths</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">binary_search_paths</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">include_common_binaries_folder</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">common_model_binaries</span><span class="o">.</span><span class="vm">__file__</span><span class="p">))</span></div>
 </pre></div>

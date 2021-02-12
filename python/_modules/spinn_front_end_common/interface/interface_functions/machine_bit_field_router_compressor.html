@@ -55,7 +55,6 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">from</span> <span class="nn">six</span> <span class="kn">import</span> <span class="n">add_metaclass</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.abstract_base</span> <span class="kn">import</span> <span class="n">AbstractBase</span><span class="p">,</span> <span class="n">abstractproperty</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
@@ -67,26 +66,25 @@
 <span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">ExecutableTargets</span>
 <span class="kn">from</span> <span class="nn">spinnman.model.enums</span> <span class="kn">import</span> <span class="n">CPUState</span>
 <span class="kn">from</span> <span class="nn">pacman.model.routing_tables</span> <span class="kn">import</span> <span class="n">MulticastRoutingTables</span>
-<span class="kn">from</span> <span class="nn">pacman.operations.router_compressors.ordered_covering_router_compressor.</span>\
-    <span class="n">ordered_covering</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span> <span class="nn">pacman.operations.router_compressors.ordered_covering_router_compressor</span>\
+    <span class="kn">import</span> <span class="p">(</span>
         <span class="n">get_generality</span> <span class="k">as</span>
         <span class="n">ordered_covering_generality</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models.</span>\
     <span class="n">abstract_supports_bit_field_routing_compression</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">AbstractSupportsBitFieldRoutingCompression</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions.</span>\
-    <span class="n">host_no_bitfield_router_compression</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">make_source_hack</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.report_functions.</span>\
     <span class="n">bit_field_compressor_report</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">generate_provenance_item</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">CantFindSDRAMToUseException</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities</span> <span class="kn">import</span> <span class="n">system_control_logic</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_defaultable_source_id</span><span class="p">,</span> <span class="n">n_word_struct</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.system_control_logic</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">run_system_application</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
 <span class="kn">from</span> <span class="nn">.load_executable_images</span> <span class="kn">import</span> <span class="n">LoadExecutableImages</span>
 <span class="kn">from</span> <span class="nn">.host_bit_field_router_compressor</span> <span class="kn">import</span> <span class="n">HostBasedBitFieldRouterCompressor</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="n">n_word_struct</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -99,8 +97,7 @@
 <span class="n">SECOND_TO_MICRO_SECOND</span> <span class="o">=</span> <span class="mi">1000000</span>
 
 
-<div class="viewcode-block" id="MachineBitFieldRouterCompressor"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.MachineBitFieldRouterCompressor">[docs]</a><span class="nd">@add_metaclass</span><span class="p">(</span><span class="n">AbstractBase</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">MachineBitFieldRouterCompressor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="MachineBitFieldRouterCompressor"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.MachineBitFieldRouterCompressor">[docs]</a><span class="k">class</span> <span class="nc">MachineBitFieldRouterCompressor</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">AbstractBase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; On-machine bitfield-aware routing table compression.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -252,7 +249,7 @@
 
         <span class="c1"># load and run binaries</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">system_control_logic</span><span class="o">.</span><span class="n">run_system_application</span><span class="p">(</span>
+            <span class="n">run_system_application</span><span class="p">(</span>
                 <span class="n">compressor_executable_targets</span><span class="p">,</span>
                 <span class="n">routing_table_compressor_app_id</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
                 <span class="n">provenance_file_path</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span>
@@ -730,7 +727,7 @@
             <span class="n">data</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_FOUR_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
                 <span class="n">entry</span><span class="o">.</span><span class="n">routing_entry_key</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span>
                 <span class="n">Router</span><span class="o">.</span><span class="n">convert_routing_table_entry_to_spinnaker_route</span><span class="p">(</span><span class="n">entry</span><span class="p">),</span>
-                <span class="n">make_source_hack</span><span class="p">(</span><span class="n">entry</span><span class="o">=</span><span class="n">entry</span><span class="p">))</span>
+                <span class="n">get_defaultable_source_id</span><span class="p">(</span><span class="n">entry</span><span class="o">=</span><span class="n">entry</span><span class="p">))</span>
         <span class="k">return</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
@@ -881,8 +878,7 @@
             <span class="s2">&quot;deprecated. &quot;</span>
             <span class="s2">&quot;Please use MachineBitFieldOrderedCoveringCompressor instead. &quot;</span>
             <span class="s2">&quot;loading_algorithms from your cfg to use defaults&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MachineBitFieldUnorderedRouterCompressor</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span>
-            <span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">MachineBitFieldPairRouterCompressor</span><span class="p">(</span><span class="n">MachineBitFieldRouterCompressor</span><span class="p">):</span>

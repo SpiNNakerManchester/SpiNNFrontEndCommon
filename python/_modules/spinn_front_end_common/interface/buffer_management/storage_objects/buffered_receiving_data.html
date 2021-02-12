@@ -50,16 +50,12 @@
 <span class="c1">#</span>
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
-
-<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">.sqllite_database</span> <span class="kn">import</span> <span class="n">SqlLiteDatabase</span>
 
 <span class="c1">#: Name of the database in the data folder</span>
 <span class="n">DB_FILE_NAME</span> <span class="o">=</span> <span class="s2">&quot;buffer.sqlite3&quot;</span>
-<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="BufferedReceivingData"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData">[docs]</a><span class="k">class</span> <span class="nc">BufferedReceivingData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>

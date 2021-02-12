@@ -52,8 +52,6 @@
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">six</span>
-<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 <span class="kn">from</span> <span class="nn">spalloc</span> <span class="kn">import</span> <span class="n">Job</span>
 <span class="kn">from</span> <span class="nn">spalloc.states</span> <span class="kn">import</span> <span class="n">JobState</span>
@@ -79,7 +77,7 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;must have a real job&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_job</span> <span class="o">=</span> <span class="n">job</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">state</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">_SpallocJobController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;SpallocJobController&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;SpallocJobController&quot;</span><span class="p">)</span>
 
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractMachineAllocationController</span><span class="o">.</span><span class="n">extend_allocation</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">extend_allocation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_total_run_time</span><span class="p">):</span>
@@ -88,7 +86,7 @@
 
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractMachineAllocationController</span><span class="o">.</span><span class="n">close</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">_SpallocJobController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_job</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
 
     <span class="nd">@property</span>
@@ -122,16 +120,16 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_job</span><span class="o">.</span><span class="n">wait_for_state_change</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="k">pass</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exited</span><span class="p">:</span>
-                <span class="n">six</span><span class="o">.</span><span class="n">reraise</span><span class="p">(</span><span class="o">*</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
+                <span class="k">raise</span> <span class="n">e</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">!=</span> <span class="n">JobState</span><span class="o">.</span><span class="n">destroyed</span>
 
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineAllocationController</span><span class="o">.</span><span class="n">_teardown</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exited</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_job</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">_SpallocJobController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_teardown</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_teardown</span><span class="p">()</span>
 
 
 <div class="viewcode-block" id="SpallocAllocator"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.SpallocAllocator">[docs]</a><span class="k">class</span> <span class="nc">SpallocAllocator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>

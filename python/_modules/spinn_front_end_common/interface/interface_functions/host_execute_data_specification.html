@@ -54,7 +54,6 @@
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
-<span class="kn">from</span> <span class="nn">six</span> <span class="kn">import</span> <span class="n">iteritems</span><span class="p">,</span> <span class="n">itervalues</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">CoreSubsets</span>
@@ -95,7 +94,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">syscores</span> <span class="o">=</span> <span class="n">system_cores</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">(</span>
-        <span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="ow">in</span> <span class="n">dsg_targets</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">core</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">syscores</span><span class="p">)</span>
 
 
@@ -108,7 +107,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">syscores</span> <span class="o">=</span> <span class="n">system_cores</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">(</span>
-        <span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="ow">in</span> <span class="n">dsg_targets</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">core</span> <span class="ow">in</span> <span class="n">syscores</span><span class="p">)</span>
 
 
@@ -159,7 +158,7 @@
         <span class="n">dw_write_info</span> <span class="o">=</span> <span class="n">DsWriteInfo</span><span class="p">(</span><span class="n">dsg_targets</span><span class="o">.</span><span class="n">get_database</span><span class="p">())</span>
         <span class="n">dw_write_info</span><span class="o">.</span><span class="n">clear_write_info</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="o">=</span> <span class="n">core</span>
                 <span class="n">dw_write_info</span><span class="o">.</span><span class="n">set_info</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
                 <span class="k">del</span> <span class="n">region_sizes</span><span class="p">[</span><span class="n">core</span><span class="p">]</span>
@@ -217,11 +216,11 @@
 
         <span class="c1"># allocate and set user 0 before loading data</span>
         <span class="n">base_addresses</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">dsg_targets</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">base_addresses</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__malloc_region_storage</span><span class="p">(</span>
                 <span class="n">core</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">[</span><span class="n">core</span><span class="p">])</span>
 
-        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">reader</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">iteritems</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">reader</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">dsg_targets</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
             <span class="n">results</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__python_execute</span><span class="p">(</span>
                 <span class="n">core</span><span class="p">,</span> <span class="n">reader</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">write_memory</span><span class="p">,</span>
                 <span class="n">base_addresses</span><span class="p">[</span><span class="n">core</span><span class="p">],</span> <span class="n">region_sizes</span><span class="p">[</span><span class="n">core</span><span class="p">])</span>
@@ -297,7 +296,7 @@
             <span class="k">raise</span></div>
 
     <span class="k">def</span> <span class="nf">__set_router_timeouts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">receiver</span> <span class="ow">in</span> <span class="n">itervalues</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_core_to_conn_map</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">receiver</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_core_to_conn_map</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">receiver</span><span class="o">.</span><span class="n">load_system_routing_tables</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
             <span class="n">receiver</span><span class="o">.</span><span class="n">set_cores_for_data_streaming</span><span class="p">(</span>
@@ -305,7 +304,7 @@
 
     <span class="k">def</span> <span class="nf">__reset_router_timeouts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># reset router timeouts</span>
-        <span class="k">for</span> <span class="n">receiver</span> <span class="ow">in</span> <span class="n">itervalues</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_core_to_conn_map</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">receiver</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_core_to_conn_map</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">receiver</span><span class="o">.</span><span class="n">unset_cores_for_data_streaming</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
             <span class="c1"># reset router tables</span>
@@ -344,12 +343,11 @@
 
         <span class="c1"># allocate and set user 0 before loading data</span>
         <span class="n">base_addresses</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
-                <span class="n">iteritems</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">),</span> <span class="n">finish_at_end</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">dsg_targets</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">finish_at_end</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
             <span class="n">base_addresses</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__malloc_region_storage</span><span class="p">(</span>
                 <span class="n">core</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">[</span><span class="n">core</span><span class="p">])</span>
 
-        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">reader</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">iteritems</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">reader</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">dsg_targets</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
             <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_p</span> <span class="o">=</span> <span class="n">core</span>
             <span class="c1"># write information for the memory map report</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__python_execute</span><span class="p">(</span>
@@ -484,12 +482,11 @@
 
         <span class="c1"># allocate and set user 0 before loading data</span>
         <span class="n">base_addresses</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
-                <span class="n">iteritems</span><span class="p">(</span><span class="n">sys_targets</span><span class="p">),</span> <span class="n">finish_at_end</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">sys_targets</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">finish_at_end</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
             <span class="n">base_addresses</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__malloc_region_storage</span><span class="p">(</span>
                 <span class="n">core</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">[</span><span class="n">core</span><span class="p">])</span>
 
-        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">reader</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">iteritems</span><span class="p">(</span><span class="n">sys_targets</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">reader</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">sys_targets</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__python_execute</span><span class="p">(</span>
                 <span class="n">core</span><span class="p">,</span> <span class="n">reader</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">write_memory</span><span class="p">,</span> <span class="n">base_addresses</span><span class="p">[</span><span class="n">core</span><span class="p">],</span>
                 <span class="n">region_sizes</span><span class="p">[</span><span class="n">core</span><span class="p">])</span>

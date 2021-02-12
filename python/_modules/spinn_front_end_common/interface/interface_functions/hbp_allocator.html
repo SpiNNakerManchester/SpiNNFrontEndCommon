@@ -89,7 +89,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_power_on</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="c1"># Lower the level of requests to WARNING to avoid extra messages</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;requests&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">_HBPJobController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;HBPJobController&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;HBPJobController&quot;</span><span class="p">)</span>
 
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractMachineAllocationController</span><span class="o">.</span><span class="n">extend_allocation</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">extend_allocation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_total_run_time</span><span class="p">):</span>
@@ -122,7 +122,7 @@
 
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractMachineAllocationController</span><span class="o">.</span><span class="n">close</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">_HBPJobController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_release</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_name</span><span class="p">)</span>
 
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineAllocationController</span><span class="o">.</span><span class="n">_teardown</span><span class="p">)</span>

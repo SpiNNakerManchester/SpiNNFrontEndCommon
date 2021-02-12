@@ -52,12 +52,8 @@
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sqlite3</span>
-<span class="kn">import</span> <span class="nn">six</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.abstract_context_manager</span> <span class="kn">import</span> <span class="n">AbstractContextManager</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
-<span class="c1"># See https://stackoverflow.com/a/21368622/301832</span>
-<span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY2</span><span class="p">:</span>  <span class="c1"># TODO: Nuke this when 2.7 support is dropped!</span>
-    <span class="ne">FileNotFoundError</span> <span class="o">=</span> <span class="ne">IOError</span>  <span class="c1"># @ReservedAssignment</span>
 
 
 <div class="viewcode-block" id="DatabaseReader"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader">[docs]</a><span class="k">class</span> <span class="nc">DatabaseReader</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="p">):</span>

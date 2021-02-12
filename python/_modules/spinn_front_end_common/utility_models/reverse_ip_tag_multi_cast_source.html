@@ -152,15 +152,15 @@
 <span class="sd">        :param send_buffer_partition_id: The ID of the partition containing</span>
 <span class="sd">            the edges down which the events are to be sent</span>
 <span class="sd">        :type send_buffer_partition_id: str or None</span>
-<span class="sd">        :param bool reserve_reverse_ip_tag: \</span>
+<span class="sd">        :param bool reserve_reverse_ip_tag:</span>
 <span class="sd">            Extra flag for input without a reserved port</span>
-<span class="sd">        :param bool enable_injection: \</span>
+<span class="sd">        :param bool enable_injection:</span>
 <span class="sd">            Flag to indicate that data will be received to inject</span>
 <span class="sd">        :param splitter: the splitter object needed for this vertex</span>
 <span class="sd">        :type splitter: None or AbstractSplitterCommon</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ReverseIpTagMultiCastSource</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">max_atoms_per_core</span><span class="p">,</span> <span class="n">splitter</span><span class="o">=</span><span class="n">splitter</span><span class="p">)</span>
 
         <span class="c1"># basic items</span>

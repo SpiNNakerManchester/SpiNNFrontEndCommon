@@ -83,7 +83,7 @@
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="n">ReinjectorSCPCommands</span><span class="o">.</span><span class="n">SET_ROUTER_WAIT1_TIMEOUT</span> <span class="k">if</span> <span class="n">wait</span> <span class="o">==</span> <span class="mi">1</span> \
             <span class="k">else</span> <span class="n">ReinjectorSCPCommands</span><span class="o">.</span><span class="n">SET_ROUTER_WAIT2_TIMEOUT</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">SetRouterTimeoutMessage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">SDPHeader</span><span class="p">(</span>
                 <span class="n">flags</span><span class="o">=</span><span class="n">SDPFlag</span><span class="o">.</span><span class="n">REPLY_EXPECTED</span><span class="p">,</span>
                 <span class="n">destination_port</span><span class="o">=</span><span class="p">(</span>

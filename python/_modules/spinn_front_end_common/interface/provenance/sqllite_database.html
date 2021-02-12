@@ -55,14 +55,8 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">sqlite3</span>
-<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.ordered_set</span> <span class="kn">import</span> <span class="n">OrderedSet</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.abstract_context_manager</span> <span class="kn">import</span> <span class="n">AbstractContextManager</span>
-
-
-<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
-    <span class="c1"># pylint: disable=redefined-builtin, undefined-variable</span>
-    <span class="nb">memoryview</span> <span class="o">=</span> <span class="n">buffer</span>  <span class="c1"># noqa</span>
 
 <span class="n">_DDL_FILE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;db.sql&quot;</span><span class="p">)</span>
 <span class="n">_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+)([_,:])(\d+)(?:\2(\d+))?&quot;</span><span class="p">)</span>

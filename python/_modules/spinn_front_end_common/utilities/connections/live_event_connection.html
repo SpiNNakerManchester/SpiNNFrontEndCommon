@@ -53,10 +53,8 @@
 
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">struct</span>
-<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
-<span class="kn">from</span> <span class="nn">six</span> <span class="kn">import</span> <span class="n">iterkeys</span><span class="p">,</span> <span class="n">iteritems</span><span class="p">,</span> <span class="n">reraise</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio.data_messages</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">EIEIODataMessage</span><span class="p">,</span> <span class="n">KeyPayloadDataElement</span><span class="p">)</span>
@@ -131,7 +129,7 @@
 <span class="sd">            by default)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">LiveEventConnection</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__do_start_resume</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__do_stop_pause</span><span class="p">,</span>
             <span class="n">local_host</span><span class="o">=</span><span class="n">local_host</span><span class="p">,</span> <span class="n">local_port</span><span class="o">=</span><span class="n">local_port</span><span class="p">)</span>
 
@@ -282,7 +280,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receive_labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__init_receivers</span><span class="p">(</span><span class="n">db_reader</span><span class="p">,</span> <span class="n">vertex_sizes</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">vertex_size</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="n">vertex_sizes</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">vertex_size</span> <span class="ow">in</span> <span class="n">vertex_sizes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">init_callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_callbacks</span><span class="p">[</span><span class="n">label</span><span class="p">]:</span>
                 <span class="n">init_callback</span><span class="p">(</span>
                     <span class="n">label</span><span class="p">,</span> <span class="n">vertex_size</span><span class="p">,</span> <span class="n">run_time_ms</span><span class="p">,</span> <span class="n">machine_timestep_ms</span><span class="p">)</span>
@@ -331,7 +329,7 @@
                 <span class="n">vertex_sizes</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">key_to_atom_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_key_to_atom_id_mapping</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">atom_id</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="n">key_to_atom_id</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">atom_id</span> <span class="ow">in</span> <span class="n">key_to_atom_id</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">__key_to_atom_id_and_label</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">atom_id</span><span class="p">,</span> <span class="n">label_id</span><span class="p">)</span>
                 <span class="n">vertex_sizes</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">key_to_atom_id</span><span class="p">)</span>
 
@@ -393,10 +391,10 @@
                 <span class="n">request</span><span class="o">.</span><span class="n">get_scp_response</span><span class="p">()</span><span class="o">.</span><span class="n">read_bytestring</span><span class="p">(</span>
                     <span class="n">response_data</span><span class="p">,</span> <span class="n">_TWO_SKIP</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
                 <span class="n">sent</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span><span class="p">:</span>
+            <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">tries_to_go</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No more tries - Error!&quot;</span><span class="p">)</span>
-                    <span class="n">reraise</span><span class="p">(</span><span class="o">*</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
+                    <span class="k">raise</span> <span class="n">e</span>
 
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Timeout, retrying&quot;</span><span class="p">)</span>
                 <span class="n">tries_to_go</span> <span class="o">-=</span> <span class="mi">1</span>
@@ -422,12 +420,12 @@
         <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__do_start_resume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">callbacks</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__start_resume_callbacks</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">callbacks</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__start_resume_callbacks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">callbacks</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__launch_thread</span><span class="p">(</span><span class="s2">&quot;start_resume&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__do_stop_pause</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">callbacks</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pause_stop_callbacks</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">callbacks</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pause_stop_callbacks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">callbacks</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__launch_thread</span><span class="p">(</span><span class="s2">&quot;pause_stop&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
 
@@ -462,8 +460,8 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__handle_unknown_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">iterkeys</span><span class="p">(</span><span class="n">key_times_labels</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">label_id</span> <span class="ow">in</span> <span class="n">iterkeys</span><span class="p">(</span><span class="n">key_times_labels</span><span class="p">[</span><span class="n">time</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">key_times_labels</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">label_id</span> <span class="ow">in</span> <span class="n">key_times_labels</span><span class="p">[</span><span class="n">time</span><span class="p">]:</span>
                 <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receive_labels</span><span class="p">[</span><span class="n">label_id</span><span class="p">]</span>
                 <span class="k">for</span> <span class="n">c_back</span><span class="p">,</span> <span class="n">use_atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__live_event_callbacks</span><span class="p">[</span><span class="n">label_id</span><span class="p">]:</span>
                     <span class="k">if</span> <span class="n">use_atom</span><span class="p">:</span>
@@ -598,7 +596,7 @@
 
 <div class="viewcode-block" id="LiveEventConnection.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__handle_possible_rerun_state</span><span class="p">()</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">LiveEventConnection</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__get_sdp_data</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
