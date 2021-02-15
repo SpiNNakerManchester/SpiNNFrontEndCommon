@@ -65,7 +65,7 @@
 <div class="viewcode-block" id="PreAllocateResourcesForChipPowerMonitor.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.PreAllocateResourcesForChipPowerMonitor.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">n_samples_per_recording</span><span class="p">,</span>
             <span class="n">sampling_frequency</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span>
-            <span class="n">pre_allocated_resources</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">pre_allocated_resources</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~spinn_machine.Machine machine:</span>
 <span class="sd">            the SpiNNaker machine as discovered</span>
@@ -76,7 +76,7 @@
 <span class="sd">        :param int machine_time_step: the machine time step</span>
 <span class="sd">        :param pre_allocated_resources: other preallocated resources</span>
 <span class="sd">        :type pre_allocated_resources:</span>
-<span class="sd">            ~pacman.model.resources.PreAllocatedResourceContainer or None</span>
+<span class="sd">            ~pacman.model.resources.PreAllocatedResourceContainer</span>
 <span class="sd">        :return: preallocated resources</span>
 <span class="sd">        :rtype: ~pacman.model.resources.PreAllocatedResourceContainer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -101,17 +101,11 @@
                 <span class="n">SpecificChipSDRAMResource</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">resources</span><span class="o">.</span><span class="n">sdram</span><span class="p">))</span>
             <span class="n">cores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CoreResource</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
-        <span class="c1"># create preallocated resource container</span>
-        <span class="n">cpm_pre_allocated_resource_container</span> <span class="o">=</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">(</span>
+        <span class="c1"># note what has been preallocated</span>
+        <span class="n">allocated</span> <span class="o">=</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">(</span>
             <span class="n">specific_sdram_usage</span><span class="o">=</span><span class="n">sdrams</span><span class="p">,</span> <span class="n">core_resources</span><span class="o">=</span><span class="n">cores</span><span class="p">)</span>
-
-        <span class="c1"># add other preallocated resources</span>
-        <span class="k">if</span> <span class="n">pre_allocated_resources</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">cpm_pre_allocated_resource_container</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-                <span class="n">pre_allocated_resources</span><span class="p">)</span>
-
-        <span class="c1"># return preallocated resources</span>
-        <span class="k">return</span> <span class="n">cpm_pre_allocated_resource_container</span></div></div>
+        <span class="n">allocated</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pre_allocated_resources</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">allocated</span></div></div>
 </pre></div>
 
             <div class="clearer"></div>

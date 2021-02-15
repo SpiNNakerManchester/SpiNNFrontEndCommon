@@ -1707,11 +1707,10 @@
 
         <span class="c1"># only add the partitioner if there isn&#39;t already a machine graph</span>
         <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MallocBasedChipIDAllocator&quot;</span><span class="p">)</span>
+        <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;MemoryPreAllocatedResources&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
             <span class="n">algorithms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_str_list</span><span class="p">(</span>
                 <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;application_to_machine_graph_algorithms&quot;</span><span class="p">))</span>
-            <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;MemoryPreviousAllocatedResources&#39;</span><span class="p">]</span> <span class="o">=</span> \
-                <span class="n">PreAllocatedResourceContainer</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
             <span class="n">algorithms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_str_list</span><span class="p">(</span>

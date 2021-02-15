@@ -65,13 +65,13 @@
     <span class="sd">&quot;&quot;&quot; Allocates resources for the extra monitors.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="PreAllocateResourcesForExtraMonitorSupport.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.PreAllocateResourcesForExtraMonitorSupport.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">pre_allocated_resources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">pre_allocated_resources</span><span class="p">,</span>
             <span class="n">n_cores_to_allocate</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~spinn_machine.Machine machine: SpiNNaker machine object</span>
 <span class="sd">        :param pre_allocated_resources: resources already preallocated</span>
 <span class="sd">        :type pre_allocated_resources:</span>
-<span class="sd">            ~pacman.model.resources.PreAllocatedResourceContainer or None</span>
+<span class="sd">            ~pacman.model.resources.PreAllocatedResourceContainer</span>
 <span class="sd">        :param int n_cores_to_allocate: how many gatherers to use per chip</span>
 <span class="sd">        :rtype: ~pacman.model.resources.PreAllocatedResourceContainer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -93,17 +93,12 @@
         <span class="c1"># extractor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_handle_second_monitor_support</span><span class="p">(</span><span class="n">cores</span><span class="p">,</span> <span class="n">sdrams</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
 
-        <span class="c1"># create pre allocated resource container</span>
-        <span class="n">extra_monitor_pre_allocations</span> <span class="o">=</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">(</span>
+        <span class="c1"># note what has been preallocated</span>
+        <span class="n">allocated</span> <span class="o">=</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">(</span>
             <span class="n">specific_sdram_usage</span><span class="o">=</span><span class="n">sdrams</span><span class="p">,</span> <span class="n">core_resources</span><span class="o">=</span><span class="n">cores</span><span class="p">,</span>
             <span class="n">specific_iptag_resources</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
-
-        <span class="c1"># add other pre allocated resources</span>
-        <span class="k">if</span> <span class="n">pre_allocated_resources</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">extra_monitor_pre_allocations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pre_allocated_resources</span><span class="p">)</span>
-
-        <span class="c1"># return pre allocated resources</span>
-        <span class="k">return</span> <span class="n">extra_monitor_pre_allocations</span></div>
+        <span class="n">allocated</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pre_allocated_resources</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">allocated</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_handle_second_monitor_support</span><span class="p">(</span><span class="n">cores</span><span class="p">,</span> <span class="n">sdrams</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">progress</span><span class="p">):</span>
