@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import division
 import functools
 import math
 import os
@@ -31,14 +30,16 @@ from pacman.model.routing_tables import (
 from pacman.operations.algorithm_reports.reports import format_route
 from pacman.operations.router_compressors import Entry
 from pacman.operations.router_compressors.ordered_covering_router_compressor\
-    import minimise
-from spinn_front_end_common.abstract_models.\
-    abstract_supports_bit_field_routing_compression import (
-        AbstractSupportsBitFieldRoutingCompression)
+    import (
+        minimise)
+from spinn_front_end_common.abstract_models import (
+    AbstractSupportsBitFieldRoutingCompression)
+from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD, BYTES_PER_3_WORDS)
 from spinn_front_end_common.utilities.report_functions.\
-    bit_field_compressor_report import generate_provenance_item
+    bit_field_compressor_report import (
+        generate_provenance_item)
 from pacman.operations.router_compressors import PairCompressor
 
 
@@ -131,7 +132,7 @@ class HostBasedBitFieldRouterCompressor(object):
     N_ATOMS_MASK = 0x3FFFFFFF
     MERGED_SETTER = 0x80000000
 
-    # structs for performance requirements.
+    # struct for performance requirements.
     _THREE_WORDS = struct.Struct("<III")
 
     # for router report
@@ -441,8 +442,8 @@ class HostBasedBitFieldRouterCompressor(object):
             # read in each bitfield
             for _ in range(0, n_filters):
                 # master pop key, n words and read pointer
-                master_pop_key, n_atoms_word, read_pointer = struct.unpack(
-                    "<III", transceiver.read_memory(
+                master_pop_key, n_atoms_word, read_pointer = \
+                    self._THREE_WORDS.unpack(transceiver.read_memory(
                         chip_x, chip_y, reading_address, BYTES_PER_3_WORDS))
                 n_atoms_address = reading_address + BYTES_PER_WORD
                 reading_address += BYTES_PER_3_WORDS
@@ -452,8 +453,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 # get bitfield words
                 n_words_to_read = math.ceil(atoms / self._BITS_PER_WORD)
 
-                bit_field = struct.unpack(
-                    "<{}I".format(n_words_to_read),
+                bit_field = n_word_struct(n_words_to_read).unpack(
                     transceiver.read_memory(
                         chip_x, chip_y, read_pointer,
                         n_words_to_read * BYTES_PER_WORD))
@@ -570,11 +570,11 @@ class HostBasedBitFieldRouterCompressor(object):
                 router_table, target_length)
             self._best_midpoint = 0
             self._compression_attempts[0] = "succcess"
-        except MinimisationFailedError:
+        except MinimisationFailedError as e:
             raise PacmanAlgorithmFailedToGenerateOutputsException(
                 "host bitfield router compressor can't compress the "
                 "uncompressed routing tables, regardless of bitfield merging. "
-                "System is fundamentally flawed here")
+                "System is fundamentally flawed here") from e
 
         find_max_success(self._n_bitfields, functools.partial(
             self._binary_search_check, routing_table=router_table,

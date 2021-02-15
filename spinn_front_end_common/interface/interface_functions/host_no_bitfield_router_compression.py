@@ -25,6 +25,8 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.system_control_logic import (
     run_system_application)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.helpful_functions import (
+    get_defaultable_source_id)
 _FOUR_WORDS = struct.Struct("<IIII")
 _THREE_WORDS = struct.Struct("<III")
 # The SDRAM Tag used by the application - note this is fixed in the APLX
@@ -60,7 +62,7 @@ def mundy_on_chip_router_compression(
     :param bool write_compressor_iobuf: Should IOBUF be read and written out
     :raises SpinnFrontEndException: If compression fails
     """
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments, unused-argument
     msg = (
         "MundyOnChipRouterCompression is no longer supported. "
         "To use the currently recommended compression algorithm remove "
@@ -163,22 +165,6 @@ def unordered_compression(
         routing_tables, transceiver, executable_finder,
         machine, app_id, provenance_file_path, write_compressor_iobuf,
         compress_as_much_as_possible)
-
-
-def make_source_hack(entry):
-    """ Hack to support the source requirement for the router compressor\
-        on chip
-
-    :param ~spinn_machine.MulticastRoutingEntry entry:
-        the multicast router table entry.
-    :return: return the source value
-    :rtype: int
-    """
-    if entry.defaultable:
-        return (list(entry.link_ids)[0] + 3) % 6
-    elif entry.link_ids:
-        return list(entry.link_ids)[0]
-    return 0
 
 
 class Compression(object):
@@ -377,5 +363,5 @@ class Compression(object):
             data += _FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
-                make_source_hack(entry=entry))
+                get_defaultable_source_id(entry))
         return bytearray(data)

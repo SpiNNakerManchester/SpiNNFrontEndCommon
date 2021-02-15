@@ -12,12 +12,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import logging
 import os
 import re
-
-from spinn_utilities.log import FormatAdapter
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
@@ -26,7 +22,6 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_machine.core_subsets import CoreSubsets
 from spinnman.model.io_buffer import IOBuffer
 
-logger = FormatAdapter(logging.getLogger(__name__))
 ERROR_ENTRY = re.compile(r"\[ERROR\]\s+\((.*)\):\s+(.*)")
 WARNING_ENTRY = re.compile(r"\[WARNING\]\s+\((.*)\):\s+(.*)")
 ENTRY_FILE = 1
