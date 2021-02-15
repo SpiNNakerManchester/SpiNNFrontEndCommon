@@ -15,6 +15,8 @@
 
 import tempfile
 import unittest
+
+from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from spinn_utilities.overrides import overrides
 from pacman.model.placements import Placement, Placements
 from pacman.model.tags import Tags
@@ -95,15 +97,14 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         self.assertEqual(number_of_listeners, 1)
 
 
-class _TestVertex(ApplicationVertex):
+class _TestVertex(ApplicationVertex, LegacyPartitionerAPI):
     """
     taken skeleton test vertex definition from PACMAN.uinit_test_objects
     """
     _model_based_max_atoms_per_core = None
 
     def __init__(self, n_atoms, label=None, max_atoms_per_core=256):
-        super(_TestVertex, self).__init__(
-            label=label, max_atoms_per_core=max_atoms_per_core)
+        super().__init__(label=label, max_atoms_per_core=max_atoms_per_core)
         self._model_based_max_atoms_per_core = max_atoms_per_core
         self._n_atoms = n_atoms
 
@@ -111,14 +112,14 @@ class _TestVertex(ApplicationVertex):
     def get_resources_used_by_atoms(self, vertex_slice):
         pass
 
-    @overrides(ApplicationVertex.create_machine_vertex)
+    @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
         pass
 
     @property
-    @overrides(ApplicationVertex.n_atoms)
+    @overrides(LegacyPartitionerAPI.n_atoms)
     def n_atoms(self):
         return self._n_atoms
 

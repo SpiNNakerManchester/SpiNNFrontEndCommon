@@ -13,12 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_utilities.require_subclass import require_subclass
+from pacman.model.graphs.application import ApplicationVertex
 
 
-@add_metaclass(AbstractBase)
-class AbstractVertexWithEdgeToDependentVertices(object):
+@require_subclass(ApplicationVertex)
+class AbstractVertexWithEdgeToDependentVertices(
+        object, metaclass=AbstractBase):
     """ A vertex with a dependent vertices, which should be connected to this\
         vertex by an edge directly to each of them
     """

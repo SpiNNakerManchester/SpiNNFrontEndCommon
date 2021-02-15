@@ -71,16 +71,16 @@ class ChipPowerMonitorMachineVertex(
             sampling_frequency, app_vertex=None, vertex_slice=None):
         """
         :param str label: vertex label
-        :param iterable(~pacman.model.constraints.AbstractConstraint) \
-                constraints:
-            constraints on this vertex
+        :param constraints: constraints on this vertex
+        :type constraints:
+            iterable(~pacman.model.constraints.AbstractConstraint)
         :param int n_samples_per_recording:
             how may samples between recording entry
         :param int sampling_frequency: how often to sample, in microseconds
         :param ChipPowerMonitor app_vertex: associated application vertex
         :param ~pacman.model.graphs.common.Slice vertex_slice:
         """
-        super(ChipPowerMonitorMachineVertex, self).__init__(
+        super().__init__(
             label=label, constraints=constraints, app_vertex=app_vertex,
             vertex_slice=vertex_slice)
         self._n_samples_per_recording = n_samples_per_recording

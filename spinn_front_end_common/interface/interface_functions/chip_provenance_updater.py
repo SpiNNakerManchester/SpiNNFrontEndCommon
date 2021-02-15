@@ -15,15 +15,15 @@
 
 import struct
 import logging
-from six import iterkeys
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
 
 _LIMIT = 10
@@ -31,19 +31,15 @@ _LIMIT = 10
 
 class ChipProvenanceUpdater(object):
     """ Forces all cores to generate provenance data, and then exit.
-
-    :param ~spinnman.transceiver.Transceiver txrx:
-    :param int app_id:
-    :param ~spinn_machine.CoreSubsets all_core_subsets:
     """
 
     __slots__ = []
 
     def __call__(self, txrx, app_id, all_core_subsets):
         """
-        :param ~.Transceiver txrx:
+        :param ~spinnman.transceiver.Transceiver txrx:
         :param int app_id:
-        :param ~.CoreSubsets all_core_subsets:
+        :param ~spinn_machine.CoreSubsets all_core_subsets:
         """
         # check that the right number of processors are in sync
         processors_completed = txrx.get_core_state_count(
@@ -93,7 +89,7 @@ class ChipProvenanceUpdater(object):
             unsuccessful_cores = txrx.get_cores_not_in_state(
                 all_core_subsets, CPUState.FINISHED)
 
-            for (x, y, p) in iterkeys(unsuccessful_cores):
+            for (x, y, p) in unsuccessful_cores.keys():
                 self._send_chip_update_provenance_and_exit(txrx, x, y, p)
 
             processors_completed = txrx.get_core_state_count(

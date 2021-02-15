@@ -39,7 +39,7 @@ class Close_Once(object):
 class MainInterfaceTimingImpl(AbstractSpinnakerBase):
 
     def __init__(self, machine_time_step=None, time_scale_factor=None):
-        super(MainInterfaceTimingImpl, self).__init__(
+        super().__init__(
             config_handler.CONFIG_FILE, ExecutableFinder())
         self.set_up_timings(machine_time_step, time_scale_factor)
 

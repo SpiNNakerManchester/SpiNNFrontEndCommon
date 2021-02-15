@@ -17,14 +17,8 @@ import datetime
 import os
 import re
 import sqlite3
-import sys
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.abstract_context_manager import AbstractContextManager
-
-
-if sys.version_info < (3,):
-    # pylint: disable=redefined-builtin, undefined-variable
-    memoryview = buffer  # noqa
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 _RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
@@ -49,9 +43,10 @@ class SqlLiteDatabase(AbstractContextManager):
 
     def __init__(self, database_file=None):
         """
-        :param str database_file: The name of a file that contains (or will\
-            contain) an SQLite database holding the data. If omitted, an\
-            unshared in-memory database will be used.
+        :param str database_file:
+            The name of a file that contains (or will contain) an SQLite
+            database holding the data. If omitted, an unshared in-memory
+            database will be used (suitable only for testing).
         :type database_file: str
         """
         if database_file is None:

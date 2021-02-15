@@ -671,8 +671,11 @@ bool recording_initialize(
                     sv->sdram_heap, size + sizeof(recording_channel_t), 0,
                     ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
             if (region_addresses[counter] == NULL) {
-                log_error("Could not allocate recording region %u of %u bytes",
-                        counter, size);
+                log_error(
+                    "Could not allocate recording region %u of %u bytes,"
+                    " available was %u bytes",
+                    counter, size + sizeof(recording_channel_t),
+                    sark_heap_max(sv->sdram_heap, 0));
                 return false;
             }
             sdram_region_ptrs[counter] = region_addresses[counter];

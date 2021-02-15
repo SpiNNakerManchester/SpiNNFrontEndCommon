@@ -80,13 +80,12 @@ class CommandSenderMachineVertex(
     def __init__(self, label, constraints, app_vertex=None):
         """
         :param str label: The label of this vertex
-        :param iterable(~pacman.model.constraints.AbstractConstraint) \
-                constraints:
-            Any initial constraints to this vertex
+        :param constraints: Any initial constraints to this vertex
+        :type constraints:
+            iterable(~pacman.model.constraints.AbstractConstraint)
         :param CommandSender app_vertex:
         """
-        super(CommandSenderMachineVertex, self).__init__(
-            label, constraints, app_vertex)
+        super().__init__(label, constraints, app_vertex)
 
         self._timed_commands = list()
         self._commands_at_start_resume = list()

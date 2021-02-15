@@ -16,14 +16,9 @@
 import os
 import sqlite3
 import time
-import sys
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.overrides import overrides
 from .abstract_database import AbstractDatabase
-
-if sys.version_info < (3,):
-    # pylint: disable=redefined-builtin, undefined-variable
-    memoryview = buffer  # noqa
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000

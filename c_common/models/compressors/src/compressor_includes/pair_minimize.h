@@ -30,7 +30,6 @@
 #include <stdbool.h>
 #include <debug.h>
 #include "../common/routing_table.h"
-#include <stdbool.h>
 #include "common-typedefs.h"
 #include "../common/minimise.h"
 
@@ -132,10 +131,10 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b) {
     }
     for (uint i = 0; i < routes_count; i++) {
         if (routes[i] == route_a) {
-            return 1;
+            return -1;
         }
         if (routes[i] == route_b) {
-            return -1;
+            return 1;
         }
     }
     log_error("Routes not found %u %u", route_a, route_b);
@@ -198,8 +197,11 @@ static inline bool update_frequency(int index) {
     routes_frequency[routes_count] = 1;
     routes_count++;
     if (routes_count >= MAX_NUM_ROUTES) {
-        log_error("Best compression was %d compared to max legal of %d",
-                routes_count, MAX_NUM_ROUTES);
+        if (standalone()) {
+            log_error("Too many different routes to compress found %d "
+                      "compared to max legal of %d",
+                      routes_count, MAX_NUM_ROUTES);
+        }
         return false;
     }
     return true;
@@ -262,8 +264,11 @@ bool minimise_run(UNUSED int target_length, UNUSED bool *failed_by_malloc,
         log_debug("compress %u %u", left, right);
         compress_by_route(left, right);
         if (write_index > rtr_alloc_max()){
-            log_error("Compression not possible as already found %d entries "
-            "where max allowed is %d", write_index, rtr_alloc_max());
+            if (standalone()) {
+                log_error("Compression not possible as already found %d "
+                          "entries where max allowed is %d",
+                          write_index, rtr_alloc_max());
+            }
             return false;
         }
         if (*stop_compressing) {
@@ -275,7 +280,12 @@ bool minimise_run(UNUSED int target_length, UNUSED bool *failed_by_malloc,
 
     log_debug("done %u %u", table_size, write_index);
 
+    //for (uint i = 0; i < write_index; i++) {
+    //    entry_t *entry1 = routing_table_get_entry(i);
+    //    log_info("%u route:%u source:%u key:%u mask:%u",i, entry1->route,
+    //      entry1->source, entry1->key_mask.key, entry1->key_mask.mask);
+    //}
     routing_table_remove_from_size(table_size-write_index);
-    log_debug("now %u", routing_table_get_n_entries());
+    log_info("now %u", routing_table_get_n_entries());
     return true;
 }

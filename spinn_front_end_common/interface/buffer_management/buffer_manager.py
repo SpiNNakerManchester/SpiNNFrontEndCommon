@@ -16,7 +16,6 @@
 import logging
 import threading
 from concurrent.futures import ThreadPoolExecutor
-from six.moves import xrange
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
@@ -253,9 +252,9 @@ class BufferManager(object):
     def _receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers.
 
-        :param ~spinnman.messages.eieio.command_messages.EIEIOCommandMessage \
-                packet:
-            The EIEIO message received
+        :param packet: The EIEIO message received
+        :type packet:
+            ~spinnman.messages.eieio.command_messages.EIEIOCommandMessage
         """
         # pylint: disable=broad-except
         if isinstance(packet, SpinnakerRequestBuffers):
@@ -280,10 +279,9 @@ class BufferManager(object):
     # Factored out of receive_buffer_command_message to keep code readable
     def __request_buffers(self, packet):
         """
-        :param \
-            ~spinnman.messages.eieio.command_messages.SpinnakerRequestBuffers\
-                packet:
-            The EIEIO message received
+        :param packet: The EIEIO message received
+        :type packet:
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestBuffers
         """
         if not self._finished:
             with self._thread_lock_buffer_in:
@@ -297,10 +295,9 @@ class BufferManager(object):
     # Factored out of receive_buffer_command_message to keep code readable
     def __request_read_data(self, packet):
         """
-        :param \
-            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData\
-                packet:
-            The EIEIO message received
+        :param packet: The EIEIO message received
+        :type packet:
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData
         """
         if not self._finished:
             # Send an ACK message to stop the core sending more messages
@@ -612,9 +609,9 @@ class BufferManager(object):
         """ Sends a request.
 
         :param AbstractSendsBuffersFromHost vertex: The vertex to send to
-        :param ~spinman.messages.eieio.command_messagesEIEIOCommandMessage \
-                message:
-            The message to send
+        :param message: The message to send
+        :type message:
+            ~spinman.messages.eieio.command_messages.EIEIOCommandMessage
         """
 
         placement = self._placements.get_placement_of_vertex(vertex)
@@ -897,7 +894,7 @@ class BufferManager(object):
         end_ptr = end_state.end_address
         read_ptr = end_state.current_read
 
-        for i in xrange(last_sent_ack.n_requests):
+        for i in range(last_sent_ack.n_requests):
             in_region = region_id == last_sent_ack.region_id(i)
             if in_region and not end_state.is_state_updated:
                 read_ptr += last_sent_ack.space_read(i)
@@ -916,9 +913,9 @@ class BufferManager(object):
 
     def _process_buffered_in_packet(self, packet):
         """
-        :param \
-            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData\
-                packet:
+        :param packet:
+        :type packet:
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData
         :raises Exception:
         """
         # pylint: disable=broad-except
@@ -940,10 +937,9 @@ class BufferManager(object):
             a data structure, following the specifications of buffering out
             technique.
 
-        :param \
-            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData\
-                packet:
-            SpinnakerRequestReadData packet received from the SpiNNaker system
+        :param packet: packet received from the SpiNNaker system
+        :type packet:
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData
         """
         x = packet.x
         y = packet.y
@@ -993,9 +989,9 @@ class BufferManager(object):
         :param int x:
         :param int y:
         :param int p:
-        :param \
-            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData\
-                packet:
+        :param packet:
+        :type packet:
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData
         :param int pkt_seq:
         :rtype: ~spinnman.messages.eieio.command_messages.HostDataRead
         """
@@ -1003,7 +999,7 @@ class BufferManager(object):
         channels = list()
         region_ids = list()
         space_read = list()
-        for i in xrange(packet.n_requests):
+        for i in range(packet.n_requests):
             length = packet.space_to_be_read(i)
             if not length:
                 continue

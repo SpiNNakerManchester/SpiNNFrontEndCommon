@@ -13,10 +13,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .compression import (
-    Compression, make_source_hack, mundy_on_chip_router_compression,
-    pair_compression, unordered_compression)
+import unittest
+from spinn_front_end_common.interface.interface_functions.\
+    host_bit_field_router_compressor import _BitFieldData
 
-__all__ = (
-    "Compression", "make_source_hack", "mundy_on_chip_router_compression",
-    "pair_compression", "unordered_compression")
+
+class TestHostBasedBitFieldRouterCompressorr(unittest.TestCase):
+
+    def test_bit_field_as_bit_array(self):
+        data = _BitFieldData(
+            1, [1], None, None, None)
+        as_array = data.bit_field_as_bit_array()
+        self.assertListEqual(
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            as_array)
+
+
+if __name__ == "__main__":
+    unittest.main()
