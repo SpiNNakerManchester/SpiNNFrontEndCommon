@@ -1669,11 +1669,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # only add the partitioner if there isn't already a machine graph
         algorithms.append("MallocBasedChipIDAllocator")
+        inputs['MemoryPreAllocatedResources'] = PreAllocatedResourceContainer()
         if not self._machine_graph.n_vertices:
             algorithms.extend(self._config.get_str_list(
                 "Mapping", "application_to_machine_graph_algorithms"))
-            inputs['MemoryPreviousAllocatedResources'] = \
-                PreAllocatedResourceContainer()
 
         if self._use_virtual_board:
             algorithms.extend(self._config.get_str_list(
