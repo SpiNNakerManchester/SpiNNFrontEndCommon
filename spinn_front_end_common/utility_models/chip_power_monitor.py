@@ -14,12 +14,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.overrides import overrides
+from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.application import ApplicationVertex
 from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 
 
-class ChipPowerMonitor(ApplicationVertex):
+class ChipPowerMonitor(ApplicationVertex, LegacyPartitionerAPI):
     """ Represents idle time recording code in a application graph.
     """
     __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
@@ -36,16 +37,16 @@ class ChipPowerMonitor(ApplicationVertex):
             how many samples to take before recording to SDRAM the total
         :param int sampling_frequency: how many microseconds between sampling
         """
-        super(ChipPowerMonitor, self).__init__(label, constraints, 1)
+        super().__init__(label, constraints, 1)
         self._n_samples_per_recording = n_samples_per_recording
         self._sampling_frequency = sampling_frequency
 
     @property
-    @overrides(ApplicationVertex.n_atoms)
+    @overrides(LegacyPartitionerAPI.n_atoms)
     def n_atoms(self):
         return 1
 
-    @overrides(ApplicationVertex.create_machine_vertex)
+    @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
             self,
             vertex_slice, resources_required,  # @UnusedVariable
@@ -64,7 +65,7 @@ class ChipPowerMonitor(ApplicationVertex):
     @inject_items({
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"})
-    @overrides(ApplicationVertex.get_resources_used_by_atoms,
+    @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms,
                additional_arguments={"machine_time_step", "time_scale_factor"})
     def get_resources_used_by_atoms(
             self, vertex_slice,  # @UnusedVariable

@@ -27,7 +27,7 @@ class _ClearIOBUFRequest(AbstractSCPRequest):
     def __init__(self, x, y, p):
         # pylint: disable=too-many-arguments
 
-        super(_ClearIOBUFRequest, self).__init__(
+        super().__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_cpu=p, destination_chip_x=x, destination_chip_y=y,
@@ -55,7 +55,7 @@ class ClearIOBUFProcess(AbstractMultiConnectionProcess):
         :type connection_selector:
             ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector
         """
-        super(ClearIOBUFProcess, self).__init__(connection_selector)
+        super().__init__(connection_selector)
         self._progress = None
 
     def __receive_response(self, _response):

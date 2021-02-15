@@ -15,6 +15,7 @@
 
 import logging
 import math
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.logger_utils import warn_once
 from spinn_front_end_common.abstract_models.impl.\
     tdma_aware_application_vertex import (
@@ -24,7 +25,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
     read_config_int, read_config_float, read_config)
 from spinn_front_end_common.utilities.globals_variables import get_simulator
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class LocalTDMABuilder(object):
@@ -79,17 +80,6 @@ class LocalTDMABuilder(object):
         T4 is the spreader between populations.
         X is pop0 firing,
         Y is pop1 firing
-
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        machine graph.
-    :param int machine_time_step: the machine time step.
-    :param int time_scale_factor: the time scale factor.
-    :param n_keys_map: the map of partitions to n keys.
-    :type n_keys_map:
-        ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
-    :param application_graph: app graph.
-    :type application_graph:
-        ~pacman.model.graphs.application.ApplicationGraph or None
     """
 
     # error message for when the vertex TDMA isnt feasible.

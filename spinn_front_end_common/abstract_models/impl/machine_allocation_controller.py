@@ -16,17 +16,16 @@
 import logging
 import sys
 from threading import Thread
-from six import add_metaclass
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
+logger = FormatAdapter(logging.getLogger(__name__))
 
-logger = logging.getLogger(__name__)
 
-
-@add_metaclass(AbstractBase)
-class MachineAllocationController(AbstractMachineAllocationController):
+class MachineAllocationController(
+        AbstractMachineAllocationController, metaclass=AbstractBase):
     """ How to manage the allocation of a machine so that it gets cleaned up\
         neatly when the script dies.
     """

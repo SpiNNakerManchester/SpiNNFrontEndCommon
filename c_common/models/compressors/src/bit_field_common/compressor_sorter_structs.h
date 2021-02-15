@@ -142,6 +142,8 @@ typedef struct bitfield_proc_t {
 typedef struct region_addresses_t {
     //! Minimum percentage of bitfields to be merge in (currently ignored)
     uint32_t threshold;
+    //! Number of times that the sorters should set of the compressions again
+    uint32_t retry_count;
     //! Pointer to the area malloced to hold the comms_sdram
     comms_sdram_t *comms_sdram;
     //! Number of processors in the list

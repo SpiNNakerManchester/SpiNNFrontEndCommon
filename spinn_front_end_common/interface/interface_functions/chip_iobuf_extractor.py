@@ -12,11 +12,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import logging
 import os
 import re
-from spinn_utilities.log import FormatAdapter
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.core_subsets import CoreSubsets
@@ -25,7 +22,6 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_string_into_chip_and_core_subset)
 
-logger = FormatAdapter(logging.getLogger(__name__))
 ERROR_ENTRY = re.compile(r"\[ERROR\]\s+\((.*)\):\s+(.*)")
 WARNING_ENTRY = re.compile(r"\[WARNING\]\s+\((.*)\):\s+(.*)")
 ENTRY_FILE = 1
@@ -40,19 +36,6 @@ class _DummyProgress(object):
 class ChipIOBufExtractor(object):
     """ Extract the logging output buffers from the machine, and separates\
         lines based on their prefix.
-
-    :param ~spinnman.transceiver.Transceiver transceiver:
-    :param ~spinnman.model.ExecutableTargets executable_targets:
-    :param ExecutableFinder executable_finder:
-    :param app_provenance_file_path:
-    :type app_provenance_file_path: str or None
-    :param system_provenance_file_path:
-    :type system_provenance_file_path: str or None
-    :param dict(str,ExecutableType) binary_executable_types:
-    :param str from_cores:
-    :param str binary_types:
-    :return: error_entries, warn_entries
-    :rtype: tuple(list(str),list(str))
     """
 
     __slots__ = ["_filename_template", "_recovery_mode", "__system_binaries",
@@ -75,8 +58,8 @@ class ChipIOBufExtractor(object):
             app_provenance_file_path=None, system_provenance_file_path=None,
             from_cores="ALL", binary_types=None):
         """
-        :param ~.Transceiver transceiver:
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         :param ExecutableFinder executable_finder:
         :param app_provenance_file_path:
         :type app_provenance_file_path: str or None

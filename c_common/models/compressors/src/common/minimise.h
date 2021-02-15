@@ -33,4 +33,8 @@ bool minimise_run(
         uint32_t target_length, bool *failed_by_malloc,
         volatile bool *stop_compressing);
 
+//! \brief bool to say if this is a standalone compressor.
+//! Mainly used to change logging
+bool standalone(void);
+
 #endif  // __MINIMISE_H__

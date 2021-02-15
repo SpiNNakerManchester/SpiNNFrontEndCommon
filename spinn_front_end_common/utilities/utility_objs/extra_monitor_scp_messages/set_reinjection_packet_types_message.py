@@ -42,7 +42,7 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest):
         :param bool fixed_route: If fixed route should be set
         """
         # pylint: disable=too-many-arguments
-        super(SetReinjectionPacketTypesMessage, self).__init__(
+        super().__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(

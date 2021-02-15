@@ -14,8 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import math
-import six
-import sys
 from spinn_utilities.overrides import overrides
 from spalloc import Job
 from spalloc.states import JobState
@@ -41,7 +39,7 @@ class _SpallocJobController(MachineAllocationController):
             raise Exception("must have a real job")
         self._job = job
         self._state = job.state
-        super(_SpallocJobController, self).__init__("SpallocJobController")
+        super().__init__("SpallocJobController")
 
     @overrides(AbstractMachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time):
@@ -50,7 +48,7 @@ class _SpallocJobController(MachineAllocationController):
 
     @overrides(AbstractMachineAllocationController.close)
     def close(self):
-        super(_SpallocJobController, self).close()
+        super().close()
         self._job.destroy()
 
     @property
@@ -84,34 +82,21 @@ class _SpallocJobController(MachineAllocationController):
                 self._state = self._job.wait_for_state_change(self._state)
         except TypeError:
             pass
-        except Exception:  # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             if not self._exited:
-                six.reraise(*sys.exc_info())
+                raise e
         return self._state != JobState.destroyed
 
     @overrides(MachineAllocationController._teardown)
     def _teardown(self):
         if not self._exited:
             self._job.close()
-        super(_SpallocJobController, self)._teardown()
+        super()._teardown()
 
 
 class SpallocAllocator(object):
     """ Request a machine from a SPALLOC server that will fit the given\
         number of chips.
-
-    :param str spalloc_server:
-        The server from which the machine should be requested
-    :param str spalloc_user: The user to allocate the machine to
-    :param n_chips: The number of chips required.
-        IGNORED if n_boards is not None
-    :type n_chips: int or None
-    :param int n_boards: The number of boards required
-    :type n_boards: int or None
-    :param int spalloc_port: The optional port number to speak to spalloc
-    :param str spalloc_machine: The optional spalloc machine to use
-    :rtype: tuple(str, int, None, bool, bool, None, None,
-        MachineAllocationController)
     """
 
     # Use a worst case calculation
@@ -123,11 +108,15 @@ class SpallocAllocator(object):
             spalloc_port=None, spalloc_machine=None):
         """
         :param str spalloc_server:
-        :param str spalloc_user:
-        :param int n_chips:
-        :param int n_boards:
-        :param int spalloc_port:
-        :param str spalloc_machine:
+            The server from which the machine should be requested
+        :param str spalloc_user: The user to allocate the machine to
+        :param n_chips: The number of chips required.
+            IGNORED if n_boards is not None
+        :type n_chips: int or None
+        :param int n_boards: The number of boards required
+        :type n_boards: int or None
+        :param int spalloc_port: The optional port number to speak to spalloc
+        :param str spalloc_machine: The optional spalloc machine to use
         :rtype: tuple(str, int, None, bool, bool, None, None,
             MachineAllocationController)
         """

@@ -233,4 +233,16 @@ void simulation_dma_transfer_done_callback_off(uint tag);
 //!     Whether the simulation uses the timer (true) or not (false)
 void simulation_set_uses_timer(bool sim_uses_timer);
 
+//! \brief sets the simulation to enter a synchronization barrier repeatedly
+//!        during the simulation.  The synchronization message must be sent
+//!        from the host.  Note simulation_is_finished() must be used each
+//!        timestep to cause the pause to happen.
+//! \param[in] n_steps: The number of steps of simulation between synchronisations
+void simulation_set_sync_steps(uint32_t n_steps);
+
+//! \brief determine if the simulation is finished.  Will also pause the simulation
+//!        for resynchronisation if requested (see simulation_set_sync_steps).
+//! \return true if the simulation is finished, false if not.
+bool simulation_is_finished(void);
+
 #endif // _SIMULATION_H_

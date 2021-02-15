@@ -15,7 +15,6 @@
 
 import logging
 import os
-from six import iteritems
 from spinn_utilities.log import FormatAdapter
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -25,18 +24,16 @@ _FOLDER_NAME = "memory_map_from_processor_to_address_space"
 
 class MemoryMapOnHostReport(object):
     """ Report on memory usage.
-
-    :param str report_default_directory:
-    :param processor_to_app_data_base_address:
-    :type processor_to_app_data_base_address:
-        dict(tuple(int,int,int),DataWritten)
-    :rtype: None
     """
 
     def __call__(
             self, report_default_directory,
             processor_to_app_data_base_address):
         """
+        :param str report_default_directory:
+        :param processor_to_app_data_base_address:
+        :type processor_to_app_data_base_address:
+            dict(tuple(int,int,int),DataWritten)
         """
 
         file_name = os.path.join(report_default_directory, _FOLDER_NAME)
@@ -49,7 +46,7 @@ class MemoryMapOnHostReport(object):
 
     def _describe_mem_map(self, f, memory_map):
         f.write("On host data specification executor\n")
-        for key, data in iteritems(memory_map):
+        for key, data in memory_map.items():
             self._describe_map_entry(f, key, data)
 
     @staticmethod

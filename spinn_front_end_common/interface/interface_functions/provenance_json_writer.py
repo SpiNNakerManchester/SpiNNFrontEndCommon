@@ -25,9 +25,6 @@ _VALID_CHARS = frozenset(
 
 class ProvenanceJSONWriter(object):
     """ Write provenance data into JSON
-
-    :param list(ProvenanceDataItem) provenance_data_items:
-    :param str provenance_data_path:
     """
 
     __slots__ = []

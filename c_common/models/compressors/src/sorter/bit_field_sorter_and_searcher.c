@@ -114,6 +114,10 @@ comms_sdram_t *restrict comms_sdram;
 //! Record if the last action was to reduce cores due to malloc
 bool just_reduced_cores_due_to_malloc = false;
 
+//! Number of ties after the first search compressor cores should be tasked
+//! to find a better solution
+uint32_t retires_left;
+
 //============================================================================
 
 //! \brief Load the best routing table to the router.
@@ -329,6 +333,12 @@ static inline bool locate_next_mid_point(uint32_t *midpoint) {
         *midpoint = sorted_bit_fields->n_bit_fields;
         return true;
     }
+
+    if (retires_left == 0) {
+        log_info("Stopping compression due to retry count");
+        return FAILED_TO_FIND;
+    }
+    retires_left -= 1;
 
     // need to find a midpoint
     log_debug("n_bf_addresses %d tested_mid_points %d",
@@ -730,6 +740,8 @@ void process_failed_malloc(int mid_point, uint32_t processor_id) {
     // Remove the flag that say this midpoint has been checked
     bit_field_clear(tested_mid_points, mid_point);
 
+    // Add a retry to recover from the failure
+    retires_left += 1;
     if (just_reduced_cores_due_to_malloc) {
         log_info("Multiple malloc detected on %d keeping processor %d",
                 mid_point, processor_id);
@@ -914,6 +926,15 @@ void start_binary_search(void) {
         mid_point -= step;
         available--;
     }
+
+    // Dont need all processors so turn the rest off
+    if (available > 0) {
+        for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
+            if (comms_sdram[processor_id].sorter_instruction == TO_BE_PREPARED) {
+                comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
+            }
+        }
+    }
 }
 
 //! \brief Ensure that for each router table entry there is at most 1 bitfield
@@ -1043,6 +1064,8 @@ static void initialise_user_register_tracker(void) {
         comms->fake_heap_data = NULL;
     }
     usable_sdram_regions = (available_sdram_blocks *) this_vcpu_info->user3;
+
+    retires_left = region_addresses->retry_count;
 
     log_debug("finished setting up register tracker:\n\n"
             "user0 = %d\n user1 = %d\n user2 = %d\n user3 = %d\n",

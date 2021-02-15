@@ -16,7 +16,6 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.constraints.key_allocator_constraints import (
     AbstractKeyAllocatorConstraint)
-from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints,
     AbstractProvidesIncomingPartitionConstraints)
@@ -25,13 +24,11 @@ from spinn_front_end_common.abstract_models import (
 class ProcessPartitionConstraints(object):
     """ Adds constraints to partitions if the vertices at either end of the\
         partition request it.
-
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
     """
 
     def __call__(self, machine_graph):
         """
-        :param ~.MachineGraph machine_graph:
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         """
         # generate progress bar
         progress = ProgressBar(
@@ -41,10 +38,9 @@ class ProcessPartitionConstraints(object):
         # iterate over each partition in the graph
         for vertex in progress.over(machine_graph.vertices):
             for partition in machine_graph.\
-                    get_outgoing_edge_partitions_starting_at_vertex(
+                    get_multicast_edge_partitions_starting_at_vertex(
                         vertex):
-                if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                    self._process_partition(partition)
+                self._process_partition(partition)
 
     @staticmethod
     def _process_partition(partition):

@@ -93,6 +93,11 @@ void compress_start(UNUSED uint unused0, UNUSED uint unused1) {
     }
 }
 
+//! \brief bool to say this is a standalone compressor.
+bool standalone(void) {
+    return true;
+}
+
 //! \brief the main entrance.
 void c_main(void) {
     log_info("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));

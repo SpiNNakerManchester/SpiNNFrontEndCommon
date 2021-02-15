@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from six import itervalues
 from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.application import ApplicationGraph, ApplicationVertex
@@ -64,7 +63,7 @@ class TestInsertLPGs(unittest.TestCase):
 
         self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
         locs = [(0, 0), (4, 8), (8, 4)]
-        for vertex in itervalues(lpg_verts_mapping[default_params_holder]):
+        for vertex in lpg_verts_mapping[default_params_holder].values():
             x = list(vertex.constraints)[0].x
             y = list(vertex.constraints)[0].y
             key = (x, y)
@@ -114,7 +113,7 @@ class TestInsertLPGs(unittest.TestCase):
         locs.append((0, 0))
         locs.append((4, 8))
         locs.append((8, 4))
-        for vertex in itervalues(lpg_verts_mapping[default_params_holder]):
+        for vertex in lpg_verts_mapping[default_params_holder].values():
             x = list(vertex.constraints)[0].x
             y = list(vertex.constraints)[0].y
             key = (x, y)
@@ -127,7 +126,7 @@ class TestInsertLPGs(unittest.TestCase):
             self.assertIn(vertex, verts)
 
         app_verts = set()
-        for vertex in itervalues(lpg_verts_mapping[default_params_holder]):
+        for vertex in lpg_verts_mapping[default_params_holder].values():
             app_vertex = vertex.app_vertex
             self.assertNotEqual(app_vertex, None)
             self.assertIsInstance(app_vertex, ApplicationVertex)

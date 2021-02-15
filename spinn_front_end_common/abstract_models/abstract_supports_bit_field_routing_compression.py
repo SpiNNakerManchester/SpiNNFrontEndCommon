@@ -14,14 +14,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
-from six import add_metaclass
+from spinn_utilities.require_subclass import require_subclass
+from pacman.model.graphs.machine import MachineVertex
 
 
-@add_metaclass(AbstractBase)
-class AbstractSupportsBitFieldRoutingCompression(object):
+@require_subclass(MachineVertex)
+class AbstractSupportsBitFieldRoutingCompression(
+        object, metaclass=AbstractBase):
     """ Marks a machine vertex that can support having the on-chip bitfield \
         compressor running on its core.
     """
+    __slots__ = ()
 
     @abstractmethod
     def key_to_atom_map_region_base_address(self, transceiver, placement):
