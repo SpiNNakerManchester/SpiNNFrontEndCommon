@@ -228,8 +228,9 @@ class LocalTDMABuilder(object):
         :rtype: int
         """
         # This is an offset between cores
-        initial_offset_clocks = app_verts.index(app_vertex) * int(
-            math.ceil(len(app_verts) / clocks_between_cores))
+        initial_offset_clocks = int(math.ceil(
+            (app_verts.index(app_vertex) * clocks_between_cores) /
+            len(app_verts)))
         # add the offset the clocks to wait for before sending anything at all
         initial_offset_clocks += clocks_waiting
         return initial_offset_clocks
