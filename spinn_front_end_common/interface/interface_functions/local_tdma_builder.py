@@ -108,9 +108,8 @@ class LocalTDMABuilder(object):
         # get config params
         us_per_cycle = int(math.ceil(machine_time_step * time_scale_factor))
         clocks_per_cycle = us_per_cycle * CLOCKS_PER_US
-        (app_machine_quantity, clocks_between_cores,
-         clocks_for_sending, clocks_waiting) = self.config_values(
-             clocks_per_cycle)
+        (app_machine_quantity, clocks_between_cores, clocks_for_sending,
+         clocks_waiting, clocks_initial) = self.config_values(clocks_per_cycle)
 
         # calculate for each app vertex if the time needed fits
         app_verts = list()
@@ -157,7 +156,7 @@ class LocalTDMABuilder(object):
         for app_vertex in application_graph.vertices:
             if isinstance(app_vertex, TDMAAwareApplicationVertex):
                 initial_offset = self._generate_initial_offset(
-                    app_vertex, app_verts, clocks_between_cores,
+                    app_vertex, app_verts, clocks_initial,
                     clocks_waiting)
                 app_vertex.set_initial_offset(initial_offset)
 
@@ -295,8 +294,8 @@ class LocalTDMABuilder(object):
 
         :param int clocks_per_cycle: The number of clock cycles per time step
         :return: (app_machine_quantity, clocks_between_cores,
-                clocks_for_sending, clocks_waiting)
-        :rtype: tuple(int, int, int, int)
+                clocks_for_sending, clocks_waiting, initial_clocks)
+        :rtype: tuple(int, int, int, int. int)
         """
 
         # get config
@@ -335,7 +334,7 @@ class LocalTDMABuilder(object):
             clocks_for_sending = int(round(
                 clocks_per_cycle * fraction_of_sending))
 
-        # fraction of time waiting before sending
+        # time waiting before sending
         fraction_of_waiting = read_config_float(
             config, "Simulation", "fraction_of_time_before_sending")
         clocks_waiting = read_config_int(
@@ -346,11 +345,23 @@ class LocalTDMABuilder(object):
         if fraction_of_waiting is not None:
             clocks_waiting = int(round(clocks_per_cycle * fraction_of_waiting))
 
+        # time to offset app vertices between each other
+        fraction_initial = read_config_float(
+            config, "Simulation", "fraction_of_time_for_offset")
+        clocks_initial = read_config_int(
+            config, "Simulation", "clock_cycles_for_offset")
+        self.__check_only_one(
+            "fraction_of_time_for_offset", fraction_initial,
+            "clock_cycles_for_offset", clocks_initial)
+        if fraction_initial is not None:
+            clocks_initial = int(round(clocks_per_cycle * fraction_initial))
+
         # check fractions less than 1.
-        if clocks_for_sending + clocks_waiting > clocks_per_cycle:
+        if (clocks_for_sending + clocks_waiting + clocks_initial >
+                clocks_per_cycle):
             raise ConfigurationException(
                 "The total time for the TDMA must not exceed the time per"
                 " cycle")
 
         return (app_machine_quantity, clocks_between_cores,
-                clocks_for_sending, clocks_waiting)
+                clocks_for_sending, clocks_waiting, clocks_initial)
