@@ -41,6 +41,8 @@ typedef struct tdma_parameters {
 extern uint32_t n_tdma_behind_times;
 extern uint32_t tdma_expected_time;
 extern tdma_parameters tdma_params;
+extern uint32_t max_retries_time;
+extern uint32_t max_retries;
 
 //! \brief Get the number of times that the TDMA was behind.
 //! \return the number of times the TDMA lagged
@@ -91,8 +93,14 @@ static inline void tdma_processing_send_packet(
     }
 
     // Send the spike
+    uint32_t retries = 0;
     while (!spin1_send_mc_packet(transmission_key, payload, with_payload)) {
         spin1_delay_us(1);
+        retries += 1;
+    }
+    if (retries > max_retries) {
+        max_retries = retries;
+        max_retries_time = timer_count;
     }
 }
 
