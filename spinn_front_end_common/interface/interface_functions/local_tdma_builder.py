@@ -112,11 +112,6 @@ class LocalTDMABuilder(object):
          clocks_for_sending, clocks_waiting) = self.config_values(
              clocks_per_cycle)
 
-        # check config params for better performance
-        (app_machine_quantity, clocks_between_cores) = self._auto_config_times(
-            app_machine_quantity, clocks_between_cores, clocks_for_sending,
-            application_graph, n_keys_map, machine_graph, clocks_waiting)
-
         # calculate for each app vertex if the time needed fits
         app_verts = list()
         max_fraction_of_sending = 0
@@ -125,10 +120,16 @@ class LocalTDMABuilder(object):
                 app_verts.append(app_vertex)
 
                 # get timings
+
+                # check config params for better performance
+                (n_at_same_time, local_clocks) = self._auto_config_times(
+                    app_machine_quantity, clocks_between_cores,
+                    clocks_for_sending, app_vertex, n_keys_map,
+                    machine_graph, clocks_waiting)
                 n_phases, n_slots, clocks_between_phases = \
                     self._generate_times(
-                        machine_graph, app_vertex, app_machine_quantity,
-                        clocks_between_cores, n_keys_map)
+                        machine_graph, app_vertex, n_at_same_time,
+                        local_clocks, n_keys_map)
 
                 # store in tracker
                 app_vertex.set_other_timings(
@@ -163,21 +164,10 @@ class LocalTDMABuilder(object):
     @staticmethod
     def _auto_config_times(
             app_machine_quantity, clocks_between_cores, clocks_for_sending,
-            application_graph, n_keys_map, machine_graph, clocks_waiting):
+            app_vertex, n_keys_map, machine_graph, clocks_waiting):
 
-        # find worst combo (NOTE: it might not exist as an actual app vertex,
-        # but least it'll cover all the things in between)
-        max_cores = 0
-        max_phases = 0
-        for app_vertex in application_graph.vertices:
-            if isinstance(app_vertex, TDMAAwareApplicationVertex):
-                cores = app_vertex.get_n_cores()
-                phases = app_vertex.find_n_phases_for(
-                    machine_graph, n_keys_map)
-                max_cores = max(max_cores, cores)
-                max_phases = max(max_phases, phases)
-        logger.debug(
-            "max cores {} and max phases {}".format(max_cores, max_phases))
+        n_cores = app_vertex.get_n_cores()
+        n_phases = app_vertex.find_n_phases_for(machine_graph, n_keys_map)
 
         # overall time of the TDMA window minus initial offset
         overall_clocks_available = clocks_for_sending - clocks_waiting
@@ -188,9 +178,9 @@ class LocalTDMABuilder(object):
 
         # adjust time between cores to fit time scale
         if not core_set and app_set:
-            n_slots = int(math.ceil(max_cores / app_machine_quantity))
+            n_slots = int(math.ceil(n_cores / app_machine_quantity))
             clocks_per_phase = (
-                int(math.ceil(overall_clocks_available / max_phases)))
+                int(math.ceil(overall_clocks_available / n_phases)))
             # NOTE the plus 1 ensures the last core finishes, if its the worst
             # in terms of n keys to transmit
             clocks_between_cores = clocks_per_phase / (n_slots + 1)
@@ -200,10 +190,10 @@ class LocalTDMABuilder(object):
         # adjust cores at same time to fit time between cores.
         if core_set and not app_set:
             clocks_per_phase = (
-                int(math.ceil(overall_clocks_available / max_phases)))
+                int(math.ceil(overall_clocks_available / n_phases)))
             max_slots = int(math.floor(
                 clocks_per_phase / clocks_between_cores))
-            app_machine_quantity = int(math.ceil(max_cores / max_slots))
+            app_machine_quantity = int(math.ceil(n_cores / max_slots))
             logger.debug(
                 "Adjusted the number of cores of a app vertex that "
                 "can fire at the same time to {}".format(
