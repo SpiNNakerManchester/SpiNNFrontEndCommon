@@ -19,6 +19,10 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesProvenanceDataFromMachine)
+import pandas as pd
+import numpy as np
+import os
+from spinn_front_end_common.utilities.globals_variables import get_simulator
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -41,6 +45,7 @@ class PlacementsProvenanceGatherer(object):
         :rtype: list(ProvenanceDataItem)
         """
         prov_items = list()
+        prov_placement = list()
 
         progress = ProgressBar(
             placements.n_placements, "Getting provenance data")
@@ -52,14 +57,92 @@ class PlacementsProvenanceGatherer(object):
                           AbstractProvidesProvenanceDataFromMachine):
                 # get data
                 try:
+                    # get data
+                    new_prov = placement.vertex.get_provenance_data_from_machine(
+                        transceiver, placement)
                     prov_items.extend(
-                        placement.vertex.get_provenance_data_from_machine(
-                            transceiver, placement))
+                        new_prov
+                    )
+                    prov_placement.extend([placement] * len(new_prov))
                 except Exception:  # pylint: disable=broad-except
                     errors.append(traceback.format_exc())
         if errors:
             logger.warning("Errors found during provenance gathering:")
             for error in errors:
                 logger.warning("{}", error)
+
+        # Custom provenance presentation from SpiNNCer
+        # write provenance to file here in a useful way
+        columns = ['pop', 'label', 'min_atom', 'max_atom', 'no_atoms',
+                   'x', 'y', 'p',
+                   'prov_name', 'prov_value',
+                   'fixed_sdram', 'sdram_per_timestep',
+                   'cpu_cycles', 'dtcm']
+        assert (len(prov_placement) == len(prov_items))
+        structured_provenance = list()
+        metadata = {}
+        simulator = get_simulator()
+        # Retrieve filename from spynnaker8/spinnaker.py
+        provenance_filename = simulator.structured_provenance_filename
+
+        if provenance_filename:
+            # Produce metadata from the simulator info
+            metadata['name'] = simulator.name
+            metadata['no_machine_time_steps'] = simulator.no_machine_time_steps
+            metadata['machine_time_step'] = simulator.machine_time_step
+            metadata['config'] = simulator.config
+            metadata['machine'] = simulator.machine
+            metadata['structured_provenance_filename'] = simulator.structured_provenance_filename
+
+            for i, (provenance, placement) in enumerate(zip(prov_items, prov_placement)):
+                prov_name = provenance.names[1]
+                prov_value = provenance.value
+                pop = placement.vertex.label.split(":")[0]
+                x = placement.x
+                y = placement.y
+                p = placement.p
+                fixed_sdram = placement.vertex.resources_required.sdram.fixed
+                sdram_per_timestep = placement.vertex.resources_required.sdram.per_timestep
+                cpu_cycles = placement.vertex.resources_required.cpu_cycles.get_value()
+                dtcm = placement.vertex.resources_required.dtcm.get_value()
+
+                label = placement.vertex.label
+                slices = label.split(":")
+                max_atom = int(slices[-1])
+                min_atom = int(slices[-2])
+                no_atoms = max_atom - min_atom + 1
+
+                structured_provenance.append(
+                    [pop, label, min_atom, max_atom, no_atoms,
+                     x, y, p,
+                     prov_name, prov_value,
+                     fixed_sdram, sdram_per_timestep,
+                     cpu_cycles, dtcm]
+                )
+
+            structured_provenance_df = pd.DataFrame.from_records(
+                structured_provenance, columns=columns)
+
+            # check if the same structured prov already exists
+            if os.path.exists(provenance_filename):
+                existing_data = np.load(provenance_filename, allow_pickle=True)
+                # TODO check that metadata is correct
+
+                # figure out the past run id
+                numerical_runs = [int(x) for x in existing_data.files if x not in ["metadata"]]
+                prev_run = np.max(numerical_runs)
+
+            else:
+                existing_data = {"metadata": metadata}
+                prev_run = -1  # no previous run
+
+            # Current data assembly
+            current_data = {str(prev_run + 1):
+                                structured_provenance_df.to_records(index=False)}
+
+            # Append current data to existing data
+            np.savez_compressed(provenance_filename,
+                                **existing_data,
+                                **current_data)
 
         return prov_items
