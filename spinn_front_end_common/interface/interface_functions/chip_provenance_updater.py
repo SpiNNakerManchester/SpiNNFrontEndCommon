@@ -15,7 +15,6 @@
 
 import struct
 import logging
-from six import iterkeys
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
@@ -90,7 +89,7 @@ class ChipProvenanceUpdater(object):
             unsuccessful_cores = txrx.get_cores_not_in_state(
                 all_core_subsets, CPUState.FINISHED)
 
-            for (x, y, p) in iterkeys(unsuccessful_cores):
+            for (x, y, p) in unsuccessful_cores.keys():
                 self._send_chip_update_provenance_and_exit(txrx, x, y, p)
 
             processors_completed = txrx.get_core_state_count(

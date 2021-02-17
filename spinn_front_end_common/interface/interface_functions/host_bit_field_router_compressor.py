@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import division
 import functools
 import math
 import os
@@ -571,11 +570,11 @@ class HostBasedBitFieldRouterCompressor(object):
                 router_table, target_length)
             self._best_midpoint = 0
             self._compression_attempts[0] = "succcess"
-        except MinimisationFailedError:
+        except MinimisationFailedError as e:
             raise PacmanAlgorithmFailedToGenerateOutputsException(
                 "host bitfield router compressor can't compress the "
                 "uncompressed routing tables, regardless of bitfield merging. "
-                "System is fundamentally flawed here")
+                "System is fundamentally flawed here") from e
 
         find_max_success(self._n_bitfields, functools.partial(
             self._binary_search_check, routing_table=router_table,

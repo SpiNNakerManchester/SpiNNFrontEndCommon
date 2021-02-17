@@ -27,4 +27,4 @@ class ProvidesKeyToAtomMappingImpl(AbstractProvidesKeyToAtomMapping):
         vertex_slice = partition.pre_vertex.vertex_slice
         keys = routing_info.get_keys(vertex_slice.n_atoms)
         start = vertex_slice.lo_atom
-        return list(enumerate(keys, start))
+        return enumerate(keys, start)

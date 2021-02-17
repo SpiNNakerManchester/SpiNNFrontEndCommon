@@ -442,3 +442,19 @@ def n_word_struct(n_words):
     new_struct = struct.Struct("<{}I".format(n_words))
     _n_word_structs[n_words] = new_struct
     return new_struct
+
+
+def get_defaultable_source_id(entry):
+    """ Hack to support the source requirement for the router compressor\
+        on chip.
+
+    :param ~spinn_machine.MulticastRoutingEntry entry:
+        the multicast router table entry.
+    :return: return the source value
+    :rtype: int
+    """
+    if entry.defaultable:
+        return (list(entry.link_ids)[0] + 3) % 6
+    elif entry.link_ids:
+        return list(entry.link_ids)[0]
+    return 0

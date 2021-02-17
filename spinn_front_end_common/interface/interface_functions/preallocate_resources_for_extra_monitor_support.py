@@ -27,13 +27,13 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
     """ Allocates resources for the extra monitors.
     """
     def __call__(
-            self, machine, pre_allocated_resources=None,
+            self, machine, pre_allocated_resources,
             n_cores_to_allocate=1):
         """
         :param ~spinn_machine.Machine machine: SpiNNaker machine object
         :param pre_allocated_resources: resources already preallocated
         :type pre_allocated_resources:
-            ~pacman.model.resources.PreAllocatedResourceContainer or None
+            ~pacman.model.resources.PreAllocatedResourceContainer
         :param int n_cores_to_allocate: how many gatherers to use per chip
         :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
@@ -55,17 +55,12 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         # extractor
         self._handle_second_monitor_support(cores, sdrams, machine, progress)
 
-        # create pre allocated resource container
-        extra_monitor_pre_allocations = PreAllocatedResourceContainer(
+        # note what has been preallocated
+        allocated = PreAllocatedResourceContainer(
             specific_sdram_usage=sdrams, core_resources=cores,
             specific_iptag_resources=tags)
-
-        # add other pre allocated resources
-        if pre_allocated_resources is not None:
-            extra_monitor_pre_allocations.extend(pre_allocated_resources)
-
-        # return pre allocated resources
-        return extra_monitor_pre_allocations
+        allocated.extend(pre_allocated_resources)
+        return allocated
 
     @staticmethod
     def _handle_second_monitor_support(cores, sdrams, machine, progress):

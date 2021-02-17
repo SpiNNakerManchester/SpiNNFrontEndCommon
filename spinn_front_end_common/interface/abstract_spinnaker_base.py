@@ -16,7 +16,6 @@
 """
 main interface for the SpiNNaker tools
 """
-from __future__ import division
 from collections import defaultdict
 import logging
 import math
@@ -25,7 +24,6 @@ import sys
 import time
 import threading
 from threading import Condition
-from six import iteritems, reraise
 from numpy import __version__ as numpy_version
 from spinn_utilities.timer import Timer
 from spinn_utilities.log import FormatAdapter
@@ -100,6 +98,8 @@ ALANS_DEFAULT_RANDOM_APP_ID = 16
 
 # Number of provenace items before auto changes to sql format
 PROVENANCE_TYPE_CUTOFF = 20000
+
+_PREALLOC_NAME = 'MemoryPreAllocatedResources'
 
 
 class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
@@ -379,8 +379,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             Information about what software is in use
         """
         # pylint: disable=too-many-arguments
-        ConfigHandler.__init__(
-            self, configfile, default_config_paths, validation_cfg)
+        super().__init__(configfile, default_config_paths, validation_cfg)
 
         # timings
         self._mapping_time = 0.0
@@ -1179,18 +1178,17 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
             return executor
-        except Exception:
+        except Exception as e:
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
             report_folder = executor.get_item("ReportFolder")
             TagsFromMachineReport()(report_folder, self._txrx)
-            exc_info = sys.exc_info()
             try:
                 self._shutdown()
             except Exception:
                 logger.warning("problem when shutting down", exc_info=True)
-            reraise(*exc_info)
+            raise e
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
         """
@@ -1256,6 +1254,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs['ReportFolder'] = self._report_default_directory
         inputs['ReportWaitingLogsFlag'] = self._config.getboolean(
             "Machine", "report_waiting_logs")
+        inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
         algorithms.append("MachineGenerator")
 
         outputs.append("MemoryMachine")
@@ -1292,6 +1291,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ScampConnectionData"] = None
         inputs["RouterTableEntriesPerRouter"] = \
             self._read_config_int("Machine", "RouterTableEntriesPerRouter")
+        inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
 
         algorithms.append("VirtualMachineGenerator")
 
@@ -1319,6 +1319,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs['ReportFolder'] = self._report_default_directory
         inputs['ReportWaitingLogsFlag'] = self._config.getboolean(
             "Machine", "report_waiting_logs")
+        inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
 
         # if using spalloc system
         if self._spalloc_server is not None:
@@ -1673,11 +1674,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # only add the partitioner if there isn't already a machine graph
         algorithms.append("MallocBasedChipIDAllocator")
+        if _PREALLOC_NAME not in inputs:
+            inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
         if not self._machine_graph.n_vertices:
             algorithms.extend(self._config.get_str_list(
                 "Mapping", "application_to_machine_graph_algorithms"))
-            inputs['MemoryPreviousAllocatedResources'] = \
-                PreAllocatedResourceContainer()
 
         if self._use_virtual_board:
             algorithms.extend(self._config.get_str_list(
@@ -2057,7 +2058,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     logger.exception("Error when attempting to stop")
 
             # reraise exception
-            reraise(*e_inf)
+            raise e
 
     def _create_execute_workflow(
             self, n_machine_time_steps, graph_changed, n_sync_steps):
@@ -2286,7 +2287,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         x, y, p, failed_cores.get_cpu_info(x, y, p))
 
         # Print the details of error cores
-        for (x, y, p), core_info in iteritems(unsuccessful_cores):
+        for (x, y, p), core_info in unsuccessful_cores.items():
             state = core_info.state
             rte_state = ""
             if state == CPUState.RUN_TIME_EXCEPTION:
@@ -2309,7 +2310,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Find the cores that are not in RTE i.e. that can still be read
         non_rte_cores = [
             (x, y, p)
-            for (x, y, p), core_info in iteritems(unsuccessful_cores)
+            for (x, y, p), core_info in unsuccessful_cores.items()
             if (core_info.state != CPUState.RUN_TIME_EXCEPTION and
                 core_info.state != CPUState.WATCHDOG)]
 
@@ -2784,7 +2785,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._state = Simulator_State.SHUTDOWN
 
         # Keep track of any exception to be re-raised
-        exc_info = None
+        exn = None
 
         # If we have run forever, stop the binaries
         if (self._has_ran and self._current_run_timesteps is None and
@@ -2800,6 +2801,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 if self._config.getboolean("Reports", "write_provenance_data"):
                     self._gather_provenance_for_writing(executor)
             except Exception as e:
+                exn = e
                 exc_info = sys.exc_info()
 
                 # If an exception occurs during a run, attempt to get
@@ -2835,8 +2837,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # Reset provenance
             self._all_provenance_items = list()
 
-        if exc_info is not None:
-            reraise(*exc_info)
+        if exn is not None:
+            raise exn  # pylint: disable=raising-bad-type
         self.write_finished_file()
 
     def _create_stop_workflow(self):
