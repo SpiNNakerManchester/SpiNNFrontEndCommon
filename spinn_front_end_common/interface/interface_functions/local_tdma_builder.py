@@ -168,6 +168,11 @@ class LocalTDMABuilder(object):
         n_cores = app_vertex.get_n_cores()
         n_phases = app_vertex.find_n_phases_for(machine_graph, n_keys_map)
 
+        # If there are no packets sent, pretend there is 1 to avoid division
+        # by 0; it won't actually matter anyway
+        if n_phases == 0:
+            n_phases = 1
+
         # overall time of the TDMA window minus initial offset
         overall_clocks_available = clocks_for_sending - clocks_waiting
 
