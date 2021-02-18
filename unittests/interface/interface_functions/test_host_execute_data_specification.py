@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import struct
 import tempfile
 import unittest
 from spinn_machine.virtual_machine import virtual_machine
@@ -74,6 +75,8 @@ class _MockTransceiver(object):
     def write_memory(
             self, x, y, base_address, data, n_bytes=None, offset=0,
             cpu=0, is_filename=False):
+        if isinstance(data, int):
+            data = struct.pack("<I", data)
         self._regions_written.append((base_address, data))
 
 

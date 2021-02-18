@@ -25,7 +25,6 @@ from .abstract_provides_key_to_atom_mapping import (
     AbstractProvidesKeyToAtomMapping)
 from .abstract_provides_outgoing_partition_constraints import (
     AbstractProvidesOutgoingPartitionConstraints)
-from .abstract_recordable import AbstractRecordable
 from .abstract_rewrites_data_specification import (
     AbstractRewritesDataSpecification)
 from .abstract_send_me_multicast_commands_vertex import (
@@ -46,7 +45,7 @@ __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractProvidesIncomingPartitionConstraints",
            "AbstractProvidesKeyToAtomMapping",
            "AbstractProvidesOutgoingPartitionConstraints",
-           "AbstractRecordable", "AbstractRewritesDataSpecification",
+           "AbstractRewritesDataSpecification",
            "AbstractSendMeMulticastCommandsVertex",
            "AbstractSupportsDatabaseInjection",
            "AbstractVertexWithEdgeToDependentVertices", "AbstractCanReset",

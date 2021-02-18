@@ -55,10 +55,14 @@ class ChannelBufferState(object):
         "_update_completed",
     ]
 
-    #: 4 bytes for _start_address, 4 for _current_write,
-    #: 4 for current_dma_write,
-    #: 4 for _current_read, 4 for _end_address, 1 for _region_id,
-    #: 1 for _missing_info, 1 for _last_buffer_operation
+    #: 1 word for _start_address (pointer),
+    # 1 word for _current_write (pointer),
+    #: 1 word for current_dma_write (pointer),
+    #: 1 word for _current_read (pointer)
+    #  1 word for _end_address (pointer),
+    #  1 byte for _region_id (uint8),
+    # 1 byte for the _missing_info (uint8),
+    # 2 bytes for _last_buffer_operation enum
     ChannelBufferStateSize = 6 * BYTES_PER_WORD
 
     def __init__(

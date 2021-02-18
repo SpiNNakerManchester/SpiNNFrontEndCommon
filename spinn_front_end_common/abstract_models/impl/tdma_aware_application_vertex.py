@@ -59,8 +59,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         :raise PacmanInvalidParameterException:
             If one of the constraints is not valid
         """
-        ApplicationVertex.__init__(
-            self, label, constraints, max_atoms_per_core, splitter=splitter)
+        super().__init__(
+            label, constraints, max_atoms_per_core, splitter=splitter)
         self.__time_between_cores = None
         self.__n_slots = None
         self.__time_between_spikes = None

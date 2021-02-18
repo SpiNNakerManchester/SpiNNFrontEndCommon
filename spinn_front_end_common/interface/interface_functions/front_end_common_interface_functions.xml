@@ -144,10 +144,8 @@
         <required_inputs>
             <param_name>machine</param_name>
             <param_name>sdram_to_pre_alloc_for_bit_fields</param_name>
-        </required_inputs>
-        <optional_inputs>
             <param_name>pre_allocated_resources</param_name>
-        </optional_inputs>
+        </required_inputs>
         <outputs>
             <param_type>MemoryPreAllocatedResources</param_type>
             <token part="BitFieldRouterCompressor">GeneratedPreAllocatedResources</token>
@@ -182,16 +180,8 @@
                 <param_type>RouterBitfieldCompressionReport</param_type>
             </parameter>
             <parameter>
-                <param_name>time_to_try_for_each_iteration</param_name>
-                <param_type>RouterCompressorBitFieldTimePerAttempt</param_type>
-            </parameter>
-            <parameter>
                 <param_name>target_length</param_name>
                 <param_type>RouterCompressorBitFieldTargetLength</param_type>
-            </parameter>
-            <parameter>
-                <param_name>use_timer_cut_off</param_name>
-                <param_type>RouterCompressorBitFieldUseCutOff</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
@@ -217,7 +207,6 @@
             <param_name>placements</param_name>
             <param_name>default_report_folder</param_name>
             <param_name>produce_report</param_name>
-            <param_name>use_timer_cut_off</param_name>
             <param_name>machine_graph</param_name>
             <param_name>machine_time_step</param_name>
             <param_name>time_scale_factor</param_name>
@@ -225,12 +214,12 @@
             <token part="BitFieldData">DataLoaded</token>
         </required_inputs>
         <optional_inputs>
-            <param_name>time_to_try_for_each_iteration</param_name>
             <param_name>target_length</param_name>
         </optional_inputs>
         <outputs>
             <param_type>MemoryCompressedRoutingTables</param_type>
-        </outputs>
+            <param_type>RouterCompressorProvenanceItems</param_type>
+       </outputs>
     </algorithm>
     <algorithm name="MachineBitFieldOrderedCoveringCompressor">
         <python_module>spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor</python_module>
@@ -773,9 +762,9 @@
         </input_definitions>
         <required_inputs>
             <param_name>machine</param_name>
+            <param_name>pre_allocated_resources</param_name>
         </required_inputs>
         <optional_inputs>
-            <param_name>pre_allocated_resources</param_name>
             <param_name>n_cores_to_allocate</param_name>
         </optional_inputs>
         <outputs>
@@ -821,10 +810,8 @@
             <param_name>sampling_frequency</param_name>
             <param_name>time_scale_factor</param_name>
             <param_name>machine_time_step</param_name>
-        </required_inputs>
-        <optional_inputs>
             <param_name>pre_allocated_resources</param_name>
-        </optional_inputs>
+        </required_inputs>
         <outputs>
             <param_type>MemoryPreAllocatedResources</param_type>
             <token part="EnergyMonitor">GeneratedPreAllocatedResources</token>
@@ -888,10 +875,8 @@
         <required_inputs>
             <param_name>live_packet_gatherer_parameters</param_name>
             <param_name>machine</param_name>
-        </required_inputs>
-        <optional_inputs>
             <param_name>pre_allocated_resources</param_name>
-        </optional_inputs>
+        </required_inputs>
         <outputs>
             <param_type>MemoryPreAllocatedResources</param_type>
             <token part="LivePacketGatherer">GeneratedPreAllocatedResources</token>
@@ -1328,8 +1313,13 @@
                 <param_name>default_report_directory</param_name>
                 <param_type>ReportFolder</param_type>
             </parameter>
+            <parameter>
+                <param_name>report_waiting_logs</param_name>
+                <param_type>ReportWaitingLogsFlag</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
+            <param_name>report_waiting_logs</param_name>
             <param_name>hostname</param_name>
             <param_name>reset_machine_on_start_up</param_name>
             <param_name>bmp_details</param_name>

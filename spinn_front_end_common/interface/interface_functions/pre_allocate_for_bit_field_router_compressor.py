@@ -26,7 +26,7 @@ class PreAllocateForBitFieldRouterCompressor(object):
     """
 
     def __call__(self, machine, sdram_to_pre_alloc_for_bit_fields,
-                 pre_allocated_resources=None):
+                 pre_allocated_resources):
         """
         :param ~spinn_machine.Machine machine:
             the SpiNNaker machine as discovered
@@ -36,7 +36,7 @@ class PreAllocateForBitFieldRouterCompressor(object):
             is no SDRAM available to steal/use.
         :param pre_allocated_resources: other preallocated resources
         :type pre_allocated_resources:
-            ~pacman.model.resources.PreAllocatedResourceContainer or None
+            ~pacman.model.resources.PreAllocatedResourceContainer
         :return: preallocated resources
         :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
@@ -55,13 +55,8 @@ class PreAllocateForBitFieldRouterCompressor(object):
                 (SIZE_OF_SDRAM_ADDRESS_IN_BYTES * chip.n_user_processors) +
                 sdram_to_pre_alloc_for_bit_fields))
 
-        # create preallocated resource container
-        resource_container = PreAllocatedResourceContainer(
+        # note what has been preallocated
+        allocated = PreAllocatedResourceContainer(
             specific_sdram_usage=sdrams)
-
-        # add other preallocated resources
-        if pre_allocated_resources is not None:
-            resource_container.extend(pre_allocated_resources)
-
-        # return preallocated resources
-        return resource_container
+        allocated.extend(pre_allocated_resources)
+        return allocated

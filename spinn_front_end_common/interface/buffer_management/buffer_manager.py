@@ -16,7 +16,6 @@
 import logging
 import threading
 from concurrent.futures import ThreadPoolExecutor
-from six.moves import xrange
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
@@ -895,7 +894,7 @@ class BufferManager(object):
         end_ptr = end_state.end_address
         read_ptr = end_state.current_read
 
-        for i in xrange(last_sent_ack.n_requests):
+        for i in range(last_sent_ack.n_requests):
             in_region = region_id == last_sent_ack.region_id(i)
             if in_region and not end_state.is_state_updated:
                 read_ptr += last_sent_ack.space_read(i)
@@ -1000,7 +999,7 @@ class BufferManager(object):
         channels = list()
         region_ids = list()
         space_read = list()
-        for i in xrange(packet.n_requests):
+        for i in range(packet.n_requests):
             length = packet.space_to_be_read(i)
             if not length:
                 continue

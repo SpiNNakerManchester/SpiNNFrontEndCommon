@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import division
 import functools
 import math
 import os
 import struct
 from collections import defaultdict
-from spinn_utilities.default_ordered_dict import DefaultOrderedDict
 from spinn_utilities.find_max_success import find_max_success
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import MulticastRoutingEntry
@@ -32,38 +30,56 @@ from pacman.model.routing_tables import (
 from pacman.operations.algorithm_reports.reports import format_route
 from pacman.operations.router_compressors import Entry
 from pacman.operations.router_compressors.ordered_covering_router_compressor\
-    import minimise
-from spinn_front_end_common.abstract_models.\
-    abstract_supports_bit_field_routing_compression import (
-        AbstractSupportsBitFieldRoutingCompression)
+    import (
+        minimise)
+from spinn_front_end_common.abstract_models import (
+    AbstractSupportsBitFieldRoutingCompression)
+from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 from spinn_front_end_common.utilities.constants import (
-    BYTES_PER_WORD)
+    BYTES_PER_WORD, BYTES_PER_3_WORDS)
+from spinn_front_end_common.utilities.report_functions.\
+    bit_field_compressor_report import (
+        generate_provenance_item)
+from pacman.operations.router_compressors import PairCompressor
 
 
 class _BitFieldData(object):
 
-    N_ELEMENTS = 3
+    __slots__ = [
+        # bit_field data
+        "bit_field",
+        # Key this applies to
+        "master_pop_key",
+        # address of n_atoms word to wrote back merged flags
+        "n_atoms_address",
+        # Word that holds merged: 1; all_ones: 1; n_atoms: 30;
+        "n_atoms_word",
+        # P cooridnate of processor this applies to
+        "processor_id",
+        # index of this entry in the "sorted_list"
+        "sort_index"
+    ]
 
-    def __init__(self, processor_id, bit_field, master_pop_key):
-        self._processor_id = processor_id
-        self._bit_field = bit_field
-        self._master_pop_key = master_pop_key
+    def __init__(self, processor_id, bit_field, master_pop_key,
+                 n_atoms_address, n_atoms_word):
+        self.processor_id = processor_id
+        self.bit_field = bit_field
+        self.master_pop_key = master_pop_key
+        self.n_atoms_address = n_atoms_address
+        self.n_atoms_word = n_atoms_word
+        self.sort_index = None
 
-    @property
-    def processor_id(self):
-        return self._processor_id
+    def __str__(self):
+        return "{} {} {}".format(
+            self.processor_id, self.master_pop_key, self.bit_field)
 
-    @property
-    def bit_field(self):
-        return self._bit_field
-
-    @property
-    def master_pop_key(self):
-        return self._master_pop_key
-
-    @classmethod
-    def size_in_bytes(cls):
-        return cls.N_ELEMENTS * BYTES_PER_WORD
+    def bit_field_as_bit_array(self):
+        """
+        Convert the bitfield into an array of bits like bit_field.c
+        """
+        return [(word >> i) & 1
+                for word in self.bit_field
+                for i in range(32)]
 
 
 class HostBasedBitFieldRouterCompressor(object):
@@ -73,8 +89,16 @@ class HostBasedBitFieldRouterCompressor(object):
     """
 
     __slots__ = [
-        "_best_routing_table",
-        "_best_bit_fields_by_processor",
+        # List of the entries from the highest successful midpoint
+        "_best_routing_entries",
+        # The highest successful midpoint
+        "_best_midpoint",
+        # Dict of lists of the original bitfields by key
+        "_bit_fields_by_key",
+        # Record of which midpoints where tired and with what result
+        "_compression_attempts",
+        # Number of bitfields for this core
+        "_n_bitfields"
     ]
 
     # max entries that can be used by the application code
@@ -104,8 +128,11 @@ class HostBasedBitFieldRouterCompressor(object):
     # mask for neuron level
     _NEURON_LEVEL_MASK = 0xFFFFFFFF
 
-    # structs for performance requirements.
-    _ONE_WORDS = struct.Struct("<I")
+    # to remove the first   merged: 1; and all_ones: 1;
+    N_ATOMS_MASK = 0x3FFFFFFF
+    MERGED_SETTER = 0x80000000
+
+    # struct for performance requirements.
     _THREE_WORDS = struct.Struct("<III")
 
     # for router report
@@ -124,17 +151,20 @@ class HostBasedBitFieldRouterCompressor(object):
     _BITS_PER_WORD = 32
 
     def __init__(self):
-        self._best_routing_table = None
-        self._best_bit_fields_by_processor = None
+        self._best_routing_entries = None
+        self._best_midpoint = -1
+        self._bit_fields_by_key = None
+        self._compression_attempts = None
 
     def __call__(
             self, router_tables, machine, placements, transceiver,
-            default_report_folder, produce_report,
-            use_timer_cut_off, machine_graph, routing_infos,
-            machine_time_step, time_scale_factor, target_length=None,
-            time_to_try_for_each_iteration=None):
+            default_report_folder, produce_report, machine_graph,
+            routing_infos,  machine_time_step, time_scale_factor,
+            target_length=None):
         """
-        :param router_tables: routing tables (uncompressed)
+        Entry point when using the PACMANAlgorithmExecutor
+
+        :param router_tables: routing tables (uncompressed and unordered)
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
         :param ~spinn_machine.Machine machine: SpiNNMachine instance
@@ -142,25 +172,19 @@ class HostBasedBitFieldRouterCompressor(object):
         :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
         :param str default_report_folder: report folder
         :param bool produce_report: flag for producing report
-        :param bool use_timer_cut_off:
-            flag for whether to use timer for compressor
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph level
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
             routing information
         :param int machine_time_step: time step
         :param int time_scale_factor: time scale factor
-        :param int target_length: length of table entries to get to.
-        :param int time_to_try_for_each_iteration: time to try per iteration
+        :param target_length: length of table entries to get to.
+        :type target_length: int or None
         :return: compressed routing table entries
         :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
-
         if target_length is None:
             target_length = self._MAX_SUPPORTED_LENGTH
-
-        if time_to_try_for_each_iteration is None:
-            time_to_try_for_each_iteration = self._DEFAULT_TIME_PER_ITERATION
 
         # create progress bar
         progress = ProgressBar(
@@ -179,63 +203,40 @@ class HostBasedBitFieldRouterCompressor(object):
         key_atom_map = self.generate_key_to_atom_map(
             machine_graph, routing_infos)
 
-        # holder for the bitfields in
-        bit_field_sdram_base_addresses = defaultdict(dict)
-        for router_table in progress.over(router_tables.routing_tables, False):
-            self.collect_bit_field_sdram_base_addresses(
-                router_table.x, router_table.y, machine, placements,
-                transceiver, bit_field_sdram_base_addresses)
+        prov_items = list()
 
         # start the routing table choice conversion
         for router_table in progress.over(router_tables.routing_tables):
-            self.start_compression_selection_process(
+            prov_items.append(self.start_compression_selection_process(
                 router_table, produce_report, report_folder_path,
-                bit_field_sdram_base_addresses, transceiver, machine_graph,
-                placements, machine, target_length,
-                time_to_try_for_each_iteration, use_timer_cut_off,
-                compressed_pacman_router_tables, key_atom_map)
-        # return compressed tables
-        return compressed_pacman_router_tables
+                transceiver, machine_graph, placements, machine, target_length,
+                compressed_pacman_router_tables, key_atom_map))
 
-    def collect_bit_field_sdram_base_addresses(
-            self, chip_x, chip_y, machine, placements, transceiver,
-            bit_field_sdram_base_addresses):
+        # return compressed tables
+        return compressed_pacman_router_tables, prov_items
+
+    def get_bit_field_sdram_base_addresses(
+            self, chip_x, chip_y, machine, placements, transceiver):
         """
         :param int chip_x:
         :param int chip_y:
         :param ~spinn_machine.Machine machine:
         :param ~pacman.model.placements.Placements placements:
         :param ~spinnman.transceiver.Transceiver transceiver:
-        :param bit_field_sdram_base_addresses:
-        :type bit_field_sdram_base_addresses:
-            dict(tuple(int,int),dict(int,int))
         """
         # locate the bitfields in a chip level scope
+        base_addresses = dict()
         n_processors_on_chip = machine.get_chip_at(chip_x, chip_y).n_processors
         for p in range(0, n_processors_on_chip):
             if placements.is_processor_occupied(chip_x, chip_y, p):
                 vertex = placements.get_vertex_on_processor(chip_x, chip_y, p)
 
-                # locate api vertex
-                api_vertex = self.locate_vertex_with_the_api(vertex)
-
-                # get data
-                if api_vertex is not None:
-                    bit_field_sdram_base_addresses[chip_x, chip_y][p] = \
-                        api_vertex.bit_field_base_address(
-                            transceiver, placements.get_placement_of_vertex(
-                                vertex))
-
-    def calculate_threshold(self, machine_time_step, time_scale_factor):
-        """
-        :param int machine_time_step:
-        :param int time_scale_factor:
-        :rtype: float
-        """
-        return(
-            ((int(math.floor(machine_time_step / self._MS_TO_SEC))) *
-             time_scale_factor * self._N_PACKETS_PER_SECOND) /
-            self._THRESHOLD_FRACTION_EFFECT)
+                if isinstance(
+                        vertex, AbstractSupportsBitFieldRoutingCompression):
+                    base_addresses[p] = vertex.bit_field_base_address(
+                        transceiver, placements.get_placement_of_vertex(
+                            vertex))
+        return base_addresses
 
     @staticmethod
     def generate_key_to_atom_map(machine_graph, routing_infos):
@@ -273,9 +274,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
     def start_compression_selection_process(
             self, router_table, produce_report, report_folder_path,
-            bit_field_sdram_base_addresses, transceiver, machine_graph,
-            placements, machine, target_length,
-            time_to_try_for_each_iteration, use_timer_cut_off,
+            transceiver, machine_graph, placements, machine, target_length,
             compressed_pacman_router_tables, key_atom_map):
         """ Entrance method for doing on host compression. Can be used as a \
             public method for other compressors.
@@ -285,8 +284,6 @@ class HostBasedBitFieldRouterCompressor(object):
             ~pacman.model.routing_tables.UnCompressedMulticastRoutingTable
         :param bool produce_report: whether the report should be generated
         :param str report_folder_path: the report folder base address
-        :param dict(tuple(int,int),int) bit_field_sdram_base_addresses:
-            the SDRAM addresses for bitfields used in the chip.
         :param ~spinnman.transceiver.Transceiver transceiver:
             spinnMan instance
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
@@ -294,10 +291,6 @@ class HostBasedBitFieldRouterCompressor(object):
         :param ~pacman.model.placements.Placements placements: placements
         :param ~spinn_machine.Machine machine: SpiNNMan instance
         :param int target_length: length of router compressor to get to
-        :param int time_to_try_for_each_iteration:
-            time in seconds to run each compression attempt for
-        :param bool use_timer_cut_off:
-            whether the timer cut off is to be used
         :param compressed_pacman_router_tables:
             a data holder for compressed tables
         :type compressed_pacman_router_tables:
@@ -305,14 +298,20 @@ class HostBasedBitFieldRouterCompressor(object):
         :param dict(int,int) key_atom_map: key to atoms map
             should be allowed to handle per time step
         """
+        # Reset all the self values as they change for each routing table
+        self._best_routing_entries = None
+        self._best_midpoint = -1
+        self._bit_fields_by_key = None
+        self._compression_attempts = dict()
 
-        # iterate through bitfields on this chip and convert to router
-        # table
-        bit_field_chip_base_addresses = bit_field_sdram_base_addresses[
-            (router_table.x, router_table.y)]
+        # Find the processors that have bitfield data and where it is
+        bit_field_chip_base_addresses = (
+            self.get_bit_field_sdram_base_addresses(
+                router_table.x, router_table.y, machine, placements,
+                transceiver))
 
         # read in bitfields.
-        bit_fields_by_processor, sorted_bit_fields = self._read_in_bit_fields(
+        self._read_in_bit_fields(
             transceiver, router_table.x, router_table.y,
             bit_field_chip_base_addresses, machine_graph,
             placements, machine.get_chip_at(
@@ -320,15 +319,14 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # execute binary search
         self._start_binary_search(
-            router_table, sorted_bit_fields, target_length,
-            time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map)
+            router_table, target_length, key_atom_map)
 
         # add final to compressed tables:
         # self._best_routing_table is a list of entries
         best_router_table = CompressedMulticastRoutingTable(
             router_table.x, router_table.y)
 
-        for entry in self._best_routing_table:
+        for entry in self._best_routing_entries:
             best_router_table.add_multicast_routing_entry(
                 entry.to_MulticastRoutingEntry())
 
@@ -337,9 +335,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # remove bitfields from cores that have been merged into the
         # router table
         self._remove_merged_bitfields_from_cores(
-            self._best_bit_fields_by_processor, router_table.x,
-            router_table.y, transceiver,
-            bit_field_chip_base_addresses, bit_fields_by_processor)
+            router_table.x, router_table.y, transceiver)
 
         # create report file if required
         if produce_report:
@@ -347,103 +343,55 @@ class HostBasedBitFieldRouterCompressor(object):
                 report_folder_path,
                 self._REPORT_NAME.format(router_table.x, router_table.y))
             with open(report_file_path, "w") as report_out:
-                self._create_table_report(
-                    router_table, sorted_bit_fields, report_out)
+                self._create_table_report(router_table, report_out)
 
-    def _convert_bitfields_into_router_tables(
-            self, router_table, bitfields_by_key, key_to_n_atoms_map):
+        return generate_provenance_item(
+            router_table.x, router_table.y, self._best_midpoint)
+
+    def _convert_bitfields_into_router_table(
+            self, router_table, mid_point, key_to_n_atoms_map):
         """ Converts the bitfield into router table entries for compression, \
             based off the entry located in the original router table.
 
         :param ~.UnCompressedMulticastRoutingTable router_table:
             the original routing table
-        :param dict(int,list(_BitFieldData)) bitfields_by_key:
-            the bitfields of the chip.
+        :param int mid_point: cutoff for botfields to use
         :param dict(int,int) key_to_n_atoms_map:
         :return: routing tables.
-        :rtype: list(~.AbsractMulticastRoutingTable)
+        :rtype: ~.AbsractMulticastRoutingTable
         """
-        bit_field_router_tables = list()
-
-        # clone the original entries
-        original_route_entries = list()
-        original_route_entries.extend(router_table.multicast_routing_entries)
+        new_table = UnCompressedMulticastRoutingTable(
+            router_table.x, router_table.y)
 
         # go through the bitfields and get the routing table for it
-        for master_pop_key in bitfields_by_key.keys():
-
-            bit_field_original_entry = \
-                router_table.get_entry_by_routing_entry_key(master_pop_key)
-            bit_field_entries = UnCompressedMulticastRoutingTable(
-                router_table.x, router_table.y,
-                multicast_routing_entries=(
-                    self._generate_entries_from_bitfield(
-                        bitfields_by_key[master_pop_key],
-                        bit_field_original_entry, key_to_n_atoms_map)))
-
-            # add to the list
-            bit_field_router_tables.append(bit_field_entries)
-
-            # remove entry
-            original_route_entries.remove(bit_field_original_entry)
-
-        # create reduced
-        reduced_original_table = UnCompressedMulticastRoutingTable(
-            router_table.x, router_table.y, original_route_entries)
-
-        # add reduced to front of the tables
-        bit_field_router_tables.insert(0, reduced_original_table)
+        for base_key in self._bit_fields_by_key.keys():
+            n_neurons = key_to_n_atoms_map[base_key]
+            core_map = dict()
+            original_entry = (
+                router_table.get_entry_by_routing_entry_key(base_key))
+            entry_links = original_entry.link_ids
+            # Assume all neurons for each processor to be kept
+            for processor_id in original_entry.processor_ids:
+                core_map[processor_id] = [1] * n_neurons
+            # For those below the midpoint use the bitfield data
+            for bf_data in self._bit_fields_by_key[base_key]:
+                if bf_data.sort_index < mid_point:
+                    core_map[bf_data.processor_id] = (
+                        bf_data.bit_field_as_bit_array())
+            # Add an Entry for each neuron
+            for neuron in range(0, n_neurons):
+                processors = list()
+                for processor_id in original_entry.processor_ids:
+                    if core_map[processor_id][neuron]:
+                        processors.append(processor_id)
+                # build new entry for this neuron and add to table
+                new_table.add_multicast_routing_entry(MulticastRoutingEntry(
+                    routing_entry_key=base_key + neuron,
+                    mask=self._NEURON_LEVEL_MASK, link_ids=entry_links,
+                    defaultable=False, processor_ids=processors))
 
         # return the bitfield tables and the reduced original table
-        return bit_field_router_tables
-
-    def _generate_entries_from_bitfield(
-            self, bit_fields, routing_table_entry, key_to_n_atoms_map):
-        """ generate neuron level entries
-
-        :param list(_BitFieldData) bit_fields: the bitfields for a given key
-        :param ~.MulticastRoutingEntry routing_table_entry:
-            the original entry from it
-        :param dict(int,int) key_to_n_atoms_map:
-        :return: the set of bitfield entries
-        """
-
-        entries = list()
-
-        processors_filtered = list()
-
-        for bit_field_by_processor in bit_fields:
-            processors_filtered.append(bit_field_by_processor.processor_id)
-
-        # get some basic values
-        entry_links = routing_table_entry.link_ids
-        base_key = routing_table_entry.routing_entry_key
-        n_neurons = key_to_n_atoms_map[base_key]
-
-        # check each neuron to see if any bitfields care, and if so,
-        # add processor
-        for neuron in range(0, n_neurons):
-            processors = list()
-
-            # add processors that are not going to be filtered
-            for processor_id in routing_table_entry.processor_ids:
-                if processor_id not in processors_filtered:
-                    processors.append(processor_id)
-
-            # process bitfields
-            for bit_field_by_processor in bit_fields:
-                if self._bit_for_neuron_id(
-                        bit_field_by_processor.bit_field, neuron):
-                    processors.append(bit_field_by_processor.processor_id)
-
-            # build new entry for this neuron
-            entries.append(MulticastRoutingEntry(
-                routing_entry_key=base_key + neuron,
-                mask=self._NEURON_LEVEL_MASK, link_ids=entry_links,
-                defaultable=False, processor_ids=processors))
-
-        # return the entries
-        return entries
+        return new_table
 
     def _bit_for_neuron_id(self, bit_field, neuron_id):
         """ locate the bit for the neuron in the bitfield
@@ -476,75 +424,67 @@ class HostBasedBitFieldRouterCompressor(object):
         """
 
         # data holder
-        bit_fields_by_processor = defaultdict(list)
+        self._bit_fields_by_key = defaultdict(list)
         bit_fields_by_coverage = defaultdict(list)
         processor_coverage_by_bitfield = defaultdict(list)
 
         # read in for each app vertex that would have a bitfield
         for processor_id in bit_field_chip_base_addresses.keys():
-            bit_field_base_address = \
-                bit_field_chip_base_addresses[processor_id]
+            bit_field_base_address = (
+                bit_field_chip_base_addresses[processor_id])
 
-            # from filter_regoin_t read how many bitfields there are
-            # n_merged_filters, n_redundancy_filters, n_filters
-            _, _, n_filters = struct.unpack(
-                "<III", transceiver.read_memory(
-                    chip_x, chip_y,
-                    bit_field_base_address, BYTES_PER_WORD * 3))
-            reading_address = bit_field_base_address + BYTES_PER_WORD * 3
+            # from filter_region_t read how many bitfields there are
+            # n_filters then array of filters
+            n_filters = transceiver.read_word(
+                chip_x, chip_y, bit_field_base_address, BYTES_PER_WORD)
+            reading_address = bit_field_base_address + BYTES_PER_WORD
 
             # read in each bitfield
             for _ in range(0, n_filters):
                 # master pop key, n words and read pointer
-                master_pop_key, n_words_to_read, read_pointer = struct.unpack(
-                    "<III", transceiver.read_memory(
-                        chip_x, chip_y, reading_address,
-                        _BitFieldData.size_in_bytes()))
-                reading_address += _BitFieldData.size_in_bytes()
+                master_pop_key, n_atoms_word, read_pointer = \
+                    self._THREE_WORDS.unpack(transceiver.read_memory(
+                        chip_x, chip_y, reading_address, BYTES_PER_3_WORDS))
+                n_atoms_address = reading_address + BYTES_PER_WORD
+                reading_address += BYTES_PER_3_WORDS
 
+                # merged: 1; all_ones: 1; n_atoms: 30;
+                atoms = n_atoms_word & self.N_ATOMS_MASK
                 # get bitfield words
-                bit_field = struct.unpack(
-                    "<{}I".format(n_words_to_read),
+                n_words_to_read = math.ceil(atoms / self._BITS_PER_WORD)
+
+                bit_field = n_word_struct(n_words_to_read).unpack(
                     transceiver.read_memory(
                         chip_x, chip_y, read_pointer,
                         n_words_to_read * BYTES_PER_WORD))
 
-                n_redundant_packets = self._detect_redundant_packet_count(
-                    bit_field)
-
                 # sorted by best coverage of redundant packets
-                data = _BitFieldData(processor_id, bit_field, master_pop_key)
+                data = _BitFieldData(processor_id, bit_field, master_pop_key,
+                                     n_atoms_address, n_atoms_word)
+                as_array = data.bit_field_as_bit_array()
+                # Number of fields in the array that are zero instead of one
+                n_redundant_packets = len(as_array) - sum(as_array)
+
                 bit_fields_by_coverage[n_redundant_packets].append(data)
                 processor_coverage_by_bitfield[processor_id].append(
                     n_redundant_packets)
 
                 # add to the bitfields tracker
-                bit_fields_by_processor[processor_id].append(data)
+                self._bit_fields_by_key[master_pop_key].append(data)
 
         # use the ordered process to find the best ones to do first
-        list_of_bitfields_in_impact_order = self._order_bit_fields(
+        self._order_bit_fields(
             bit_fields_by_coverage, machine_graph, chip_x, chip_y, placements,
             n_processors_on_chip, processor_coverage_by_bitfield)
-
-        return bit_fields_by_processor, list_of_bitfields_in_impact_order
-
-    @staticmethod
-    def locate_vertex_with_the_api(machine_vertex):
-        """
-        :param ~pacman.model.graphs.machine.MachineVertex machine_vertex:
-        :return: The vertex associated with the machine vertex that supports
-            compression, or `None` if nothing can be found.
-        :rtype: AbstractSupportsBitFieldRoutingCompression or None
-        """
-        if isinstance(
-                machine_vertex, AbstractSupportsBitFieldRoutingCompression):
-            return machine_vertex
-        return None
 
     def _order_bit_fields(
             self, bit_fields_by_coverage, machine_graph, chip_x, chip_y,
             placements, n_processors_on_chip, processor_coverage_by_bitfield):
         """
+        Orders the bit fields by redundancy setting the sorted index
+
+        Also counts the bitfields setting _n_bitfields
+
         :param dict(int,list(_BitFieldData)) bit_fields_by_coverage:
         :param ~.MachineGraph machine_graph:
         :param int chip_x:
@@ -553,7 +493,7 @@ class HostBasedBitFieldRouterCompressor(object):
         :param int n_processors_on_chip:
         :param dict(int,list(int)) processor_coverage_by_bitfield:
         """
-        sorted_bit_fields = list()
+        sort_index = 0
 
         # get incoming bandwidth for the cores
         most_costly_cores = dict()
@@ -562,8 +502,8 @@ class HostBasedBitFieldRouterCompressor(object):
                 vertex = placements.get_vertex_on_processor(
                     chip_x, chip_y, processor_id)
 
-                valid = self.locate_vertex_with_the_api(vertex)
-                if valid is not None:
+                if isinstance(
+                        vertex, AbstractSupportsBitFieldRoutingCompression):
                     most_costly_cores[processor_id] = len(
                         machine_graph.get_edges_ending_at_vertex(vertex))
 
@@ -597,8 +537,9 @@ class HostBasedBitFieldRouterCompressor(object):
                         redundant_packet_count]:
                     if bit_field_data.processor_id in cores_to_add_for:
                         if covered < diff:
+                            bit_field_data.sort_index = sort_index
+                            sort_index += 1
                             to_delete.append(bit_field_data)
-                            sorted_bit_fields.append(bit_field_data)
                             covered += 1
                 for bit_field_data in to_delete:
                     bit_fields_by_coverage[redundant_packet_count].remove(
@@ -609,224 +550,150 @@ class HostBasedBitFieldRouterCompressor(object):
         coverage_levels.sort(reverse=True)
         for coverage_level in coverage_levels:
             for bit_field_data in bit_fields_by_coverage[coverage_level]:
-                sorted_bit_fields.append(bit_field_data)
+                bit_field_data.sort_index = sort_index
+                sort_index += 1
 
-        return sorted_bit_fields
-
-    def _detect_redundant_packet_count(self, bitfield):
-        """ locate in the bitfield how many possible packets it can filter \
-            away when integrated into the router table.
-
-        :param list(int) bitfield:
-            the memory blocks that represent the bitfield
-        :return: the number of redundant packets being captured.
-        """
-        n_packets_filtered = 0
-        n_neurons = len(bitfield) * self._BITS_PER_WORD
-
-        for neuron_id in range(0, n_neurons):
-            if self._bit_for_neuron_id(bitfield, neuron_id) == 0:
-                n_packets_filtered += 1
-        return n_packets_filtered
+        self._n_bitfields = sort_index
 
     def _start_binary_search(
-            self, router_table, sorted_bit_fields, target_length,
-            time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map):
+            self, router_table, target_length, key_atom_map):
         """ start binary search of the merging of bitfield to router table
 
         :param ~.UnCompressedMulticastRoutingTable router_table:
             uncompressed router table
-        :param list(_BitFieldData) sorted_bit_fields: the sorted bitfields
         :param int target_length: length to compress to
-        :param int time_to_try_for_each_iteration:
-            the time to allow compressor to run for.
-        :param bool use_timer_cut_off:
-            whether we should use the timer cutoff for compression
         :param dict(int,int) key_atom_map: map from key to atoms
         """
         # try first just uncompressed. so see if its possible
         try:
-            self._best_routing_table = self._run_algorithm(
-                [router_table], target_length, time_to_try_for_each_iteration,
-                use_timer_cut_off)
-            self._best_bit_fields_by_processor = []
-        except MinimisationFailedError:
+            self._best_routing_entries = self._run_algorithm(
+                router_table, target_length)
+            self._best_midpoint = 0
+            self._compression_attempts[0] = "succcess"
+        except MinimisationFailedError as e:
             raise PacmanAlgorithmFailedToGenerateOutputsException(
                 "host bitfield router compressor can't compress the "
                 "uncompressed routing tables, regardless of bitfield merging. "
-                "System is fundamentally flawed here")
+                "System is fundamentally flawed here") from e
 
-        find_max_success(len(sorted_bit_fields), functools.partial(
-            self._binary_search_check, sorted_bit_fields=sorted_bit_fields,
-            routing_table=router_table, target_length=target_length,
-            time_to_try_for_each_iteration=time_to_try_for_each_iteration,
-            use_timer_cut_off=use_timer_cut_off,
+        find_max_success(self._n_bitfields, functools.partial(
+            self._binary_search_check, routing_table=router_table,
+            target_length=target_length,
             key_to_n_atoms_map=key_atom_map))
 
     def _binary_search_check(
-            self, mid_point, sorted_bit_fields, routing_table, target_length,
-            time_to_try_for_each_iteration, use_timer_cut_off,
-            key_to_n_atoms_map):
+            self, mid_point, routing_table, target_length, key_to_n_atoms_map):
         """ check function for fix max success
 
         :param int mid_point: the point if the list to stop at
-        :param list(_BitFieldData) sorted_bit_fields: lists of bitfields
         :param ~.UnCompressedMulticastRoutingTable routing_table:
             the basic routing table
         :param int target_length: the target length to reach
-        :param int time_to_try_for_each_iteration:
-            the time in seconds to run for
-        :param bool use_timer_cut_off:
-            whether the timer cutoff should be used by the compressor.
         :param dict(int,int) key_to_n_atoms_map:
         :return: true if it compresses
         :rtype: bool
         """
 
-        # find new set of bitfields to try from midpoint
-        new_bit_field_by_processor = DefaultOrderedDict(list)
-
-        for element in range(0, mid_point):
-            bf_data = sorted_bit_fields[element]
-            new_bit_field_by_processor[bf_data.master_pop_key].append(bf_data)
-
         # convert bitfields into router tables
-        bit_field_router_tables = self._convert_bitfields_into_router_tables(
-            routing_table, new_bit_field_by_processor, key_to_n_atoms_map)
+        bit_field_router_table = self._convert_bitfields_into_router_table(
+            routing_table, mid_point, key_to_n_atoms_map)
 
         # try to compress
         try:
-            self._best_routing_table = self._run_algorithm(
-                bit_field_router_tables, target_length,
-                time_to_try_for_each_iteration, use_timer_cut_off)
-            self._best_bit_fields_by_processor = new_bit_field_by_processor
+            self._best_routing_entries = self._run_algorithm(
+                bit_field_router_table, target_length)
+            self._best_midpoint = mid_point
+            self._compression_attempts[mid_point] = "succcess"
             return True
         except MinimisationFailedError:
+            self._compression_attempts[mid_point] = "fail"
             return False
         except PacmanElementAllocationException:
+            self._compression_attempts[mid_point] = "Exception"
             return False
 
-    def _run_algorithm(
-            self, router_tables, target_length,
-            time_to_try_for_each_iteration, use_timer_cut_off):
+    def _run_algorithm(self, router_table, target_length):
+        """ Attempts to covert the mega router tables into 1 router table.
+
+        :param list(~.AbsractMulticastRoutingTable) router_table:
+            the set of router tables that together need to
+            be merged into 1 router table
+        :param int target_length: the number
+        :return: compressor router table
+        :rtype: list(RoutingTableEntry)
+        :throws MinimisationFailedError: if it fails to
+            compress to the correct length.
+
+        """
+        compressor = PairCompressor(ordered=True)
+        compressed_entries = compressor.compress_table(router_table)
+        if len(compressed_entries) > target_length:
+            raise MinimisationFailedError("{} > {}".format(
+                len(compressed_entries), target_length))
+        return compressed_entries
+
+    def _run_mundy_algorithm(
+            self, router_table, target_length):
         """ Attempts to covert the mega router tables into 1 router table.\
             Will raise a MinimisationFailedError exception if it fails to\
             compress to the correct length.
 
-        :param list(~.AbsractMulticastRoutingTable) router_tables:
+        Note: This method is uncurrently unused
+
+        :param list(~.AbsractMulticastRoutingTable) router_table:
             the set of router tables that together need to
             be merged into 1 router table
         :param int target_length: the number
-        :param int time_to_try_for_each_iteration:
-            time for compressor to run for
-        :param bool use_timer_cut_off: whether to use timer cutoff
         :return: compressor router table
         :rtype: list(RoutingTableEntry)
         :throws MinimisationFailedError: If compression fails
         """
         # convert to rig format
         entries = list()
-        for router_table in router_tables:
-            for router_entry in router_table.multicast_routing_entries:
-                # Add the new entry
-                entries.append(Entry.from_MulticastRoutingEntry(router_entry))
+        for router_entry in router_table.multicast_routing_entries:
+            # Add the new entry
+            entries.append(Entry.from_MulticastRoutingEntry(router_entry))
 
         # compress the router entries using rigs compressor
-        return minimise(
-            entries, target_length, time_to_try_for_each_iteration,
-            use_timer_cut_off)
+        return minimise(entries, target_length)
 
-    def _remove_merged_bitfields_from_cores(
-            self, bit_fields_merged, chip_x, chip_y, transceiver,
-            bit_field_base_addresses, bit_fields_by_processor):
+    def _remove_merged_bitfields_from_cores(self, chip_x, chip_y, transceiver):
         """ Goes to SDRAM and removes said merged entries from the cores' \
             bitfield region
 
-        :param dict(int,list(_BitFieldData)) bit_fields_merged:
-            the bitfields that were merged into router table
         :param int chip_x: the chip x coord from which this happened
         :param int chip_y: the chip y coord from which this happened
         :param ~.Transceiver transceiver: spinnman instance
-        :param dict(int,int) bit_field_base_addresses:
-            base addresses of chip bit fields
-        :param dict(int,list(_BitFieldData)) bit_fields_by_processor:
-            map of processor to bitfields
         """
-        # get data back in a form useful for write back
-        new_bit_field_by_processor = defaultdict(list)
-        for master_pop_key in bit_fields_merged:
-            for bit_field_by_processor in bit_fields_merged[master_pop_key]:
-                new_bit_field_by_processor[
-                    bit_field_by_processor.processor_id].append(master_pop_key)
-
-        # process the separate cores
-        for processor_id in bit_fields_by_processor.keys():
-
-            # amount of entries to remove
-            new_total = (
-                len(bit_fields_by_processor[processor_id]) -
-                len(new_bit_field_by_processor[processor_id]))
-
-            # base address for the region
-            bit_field_base_address = bit_field_base_addresses[processor_id]
-            writing_address = bit_field_base_address
-            words_writing_address = (
-                writing_address + (
-                    new_total * self._SIZE_OF_FILTER_INFO_IN_BYTES))
-
-            # write correct number of elements.
-            transceiver.write_memory(
-                chip_x, chip_y, writing_address, self._ONE_WORDS.pack(
-                    new_total), BYTES_PER_WORD)
-            writing_address += BYTES_PER_WORD
-
-            # iterate through the original bitfields and omit the ones deleted
-            for bf_by_key in bit_fields_by_processor[processor_id]:
-                if bf_by_key.master_pop_key not in \
-                        new_bit_field_by_processor[bf_by_key.processor_id]:
-
-                    # write key and n words
+        for entries in self._bit_fields_by_key.values():
+            for entry in entries:
+                if entry.sort_index < self._best_midpoint:
+                    # set merged
+                    n_atoms_word = entry.n_atoms_word | self.MERGED_SETTER
                     transceiver.write_memory(
-                        chip_x, chip_y, writing_address,
-                        self._THREE_WORDS.pack(
-                            bf_by_key.master_pop_key,
-                            len(bf_by_key.bit_field), words_writing_address),
-                        self._SIZE_OF_FILTER_INFO_IN_BYTES)
-                    writing_address += self._SIZE_OF_FILTER_INFO_IN_BYTES
+                        chip_x, chip_y, entry.n_atoms_address, n_atoms_word)
 
-                    # write bitfield words
-                    data = struct.pack(
-                        "<{}I".format(len(bf_by_key.bit_field)),
-                        *bf_by_key.bit_field)
-                    transceiver.write_memory(
-                        chip_x, chip_y, words_writing_address, data,
-                        len(bf_by_key.bit_field) * BYTES_PER_WORD)
-                    words_writing_address += len(
-                        bf_by_key.bit_field) * BYTES_PER_WORD
-
-    def _create_table_report(
-            self, router_table, sorted_bit_fields, report_out):
+    def _create_table_report(self, router_table, report_out):
         """ creates the report entry
 
         :param ~.AbsractMulticastRoutingTable router_table:
             the uncompressed router table to process
-        :param list sorted_bit_fields: the bitfields overall
         :param ~io.TextIOBase report_out: the report writer
         """
         n_bit_fields_merged = 0
         n_packets_filtered = 0
-        for key in self._best_bit_fields_by_processor.keys():
-            best_bit_fields = self._best_bit_fields_by_processor[key]
-            n_bit_fields_merged += len(best_bit_fields)
-            for element in best_bit_fields:
-                n_neurons = len(element.bit_field) * self._BITS_PER_WORD
-                for neuron_id in range(0, n_neurons):
-                    is_set = self._bit_for_neuron_id(
-                        element.bit_field, neuron_id)
-                    if is_set == 0:
-                        n_packets_filtered += 1
+        n_possible_bit_fields = 0
+        merged_by_core = defaultdict(list)
 
-        n_possible_bit_fields = len(sorted_bit_fields)
+        for key in self._bit_fields_by_key:
+            for bf_data in self._bit_fields_by_key[key]:
+                n_possible_bit_fields += 1
+                if bf_data.sort_index >= self._best_midpoint:
+                    continue
+                n_bit_fields_merged += 1
+                as_array = bf_data.bit_field_as_bit_array()
+                n_packets_filtered += sum(as_array)
+                merged_by_core[bf_data.processor_id].append(bf_data)
 
         percentage_done = 100
         if n_possible_bit_fields != 0:
@@ -835,7 +702,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 float(n_bit_fields_merged))
 
         report_out.write(
-            "Table{}:{} has integrated {} out of {} available chip level "
+            "\nTable {}:{} has integrated {} out of {} available chip level "
             "bitfields into the routing table. There by producing a "
             "compression of {}%.\n\n".format(
                 router_table.x, router_table.y, n_bit_fields_merged,
@@ -845,22 +712,26 @@ class HostBasedBitFieldRouterCompressor(object):
             "The uncompressed routing table had {} entries, the compressed "
             "one with {} integrated bitfields has {} entries. \n\n".format(
                 router_table.number_of_entries,
+                n_bit_fields_merged,
                 # Note: _best_routing_table is a list(), router_table is not
-                len(self._best_routing_table),
-                n_bit_fields_merged))
+                len(self._best_routing_entries)))
 
         report_out.write(
             "The integration of {} bitfields removes up to {} MC packets "
             "that otherwise would be being processed by the cores on the "
-            "chip, just to be dropped as they do not target anything.".format(
-                n_bit_fields_merged, n_packets_filtered))
+            "chip, just to be dropped as they do not target anything.\n\n"
+            "".format(n_bit_fields_merged, n_packets_filtered))
 
-        report_out.write("The bit_fields merged are as follows:\n\n")
+        report_out.write("The compression attempts are as follows:\n\n")
+        for mid_point, result in self._compression_attempts.items():
+            report_out.write("Midpoint {}: {}\n".format(mid_point, result))
 
-        for key in self._best_bit_fields_by_processor.keys():
-            for bf_by_processor in self._best_bit_fields_by_processor[key]:
+        report_out.write("\nThe bit_fields merged are as follows:\n\n")
+
+        for core in merged_by_core:
+            for bf_data in merged_by_core[core]:
                 report_out.write("bitfield on core {} for key {} \n".format(
-                    bf_by_processor.processor_id, key))
+                    core, bf_data.master_pop_key))
 
         report_out.write("\n\n\n")
         report_out.write("The final routing table entries are as follows:\n\n")
@@ -876,7 +747,7 @@ class HostBasedBitFieldRouterCompressor(object):
         entry_count = 0
         n_defaultable = 0
         # Note: _best_routing_table is a list(), router_table is not
-        for entry in self._best_routing_table:
+        for entry in self._best_routing_entries:
             index = entry_count & self._LOWER_16_BITS
             entry_str = line_format.format(index, format_route(
                 entry.to_MulticastRoutingEntry()))
