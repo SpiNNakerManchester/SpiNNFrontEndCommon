@@ -99,6 +99,8 @@ ALANS_DEFAULT_RANDOM_APP_ID = 16
 # Number of provenace items before auto changes to sql format
 PROVENANCE_TYPE_CUTOFF = 20000
 
+_PREALLOC_NAME = 'MemoryPreAllocatedResources'
+
 
 class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     """ Main interface into the tools logic flow.
@@ -1252,6 +1254,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs['ReportFolder'] = self._report_default_directory
         inputs['ReportWaitingLogsFlag'] = self._config.getboolean(
             "Machine", "report_waiting_logs")
+        inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
         algorithms.append("MachineGenerator")
 
         outputs.append("MemoryMachine")
@@ -1288,6 +1291,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ScampConnectionData"] = None
         inputs["RouterTableEntriesPerRouter"] = \
             self._read_config_int("Machine", "RouterTableEntriesPerRouter")
+        inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
 
         algorithms.append("VirtualMachineGenerator")
 
@@ -1315,6 +1319,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs['ReportFolder'] = self._report_default_directory
         inputs['ReportWaitingLogsFlag'] = self._config.getboolean(
             "Machine", "report_waiting_logs")
+        inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
 
         # if using spalloc system
         if self._spalloc_server is not None:
@@ -1669,11 +1674,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # only add the partitioner if there isn't already a machine graph
         algorithms.append("MallocBasedChipIDAllocator")
+        if _PREALLOC_NAME not in inputs:
+            inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
         if not self._machine_graph.n_vertices:
             algorithms.extend(self._config.get_str_list(
                 "Mapping", "application_to_machine_graph_algorithms"))
-            inputs['MemoryPreviousAllocatedResources'] = \
-                PreAllocatedResourceContainer()
 
         if self._use_virtual_board:
             algorithms.extend(self._config.get_str_list(

@@ -33,3 +33,4 @@ lastfailed
 *.dict
 .dbeaver/
 ._dbeaver/
+test_output
