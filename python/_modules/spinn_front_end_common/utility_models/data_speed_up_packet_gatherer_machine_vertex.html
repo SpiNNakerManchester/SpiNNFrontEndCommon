@@ -704,7 +704,7 @@
             <span class="n">original_data</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">n_bytes</span> <span class="o">+</span> <span class="n">offset</span><span class="p">])</span>
             <span class="n">verified_data</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
                 <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">n_bytes</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__verify_sent_data_py3</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__verify_sent_data</span><span class="p">(</span>
                 <span class="n">original_data</span><span class="p">,</span> <span class="n">verified_data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">n_bytes</span><span class="p">)</span>
 
         <span class="c1"># write report</span>
@@ -715,7 +715,7 @@
                 <span class="n">missing_seq_nums</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_missing_seq_nums_data_in</span><span class="p">)</span></div>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">__verify_sent_data_py3</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">__verify_sent_data</span><span class="p">(</span>
             <span class="n">original_data</span><span class="p">,</span> <span class="n">verified_data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">n_bytes</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">original_data</span> <span class="o">!=</span> <span class="n">verified_data</span><span class="p">:</span>
             <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;VARIANCE: chip:</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2"> address:</span><span class="si">{}</span><span class="s2"> len:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
