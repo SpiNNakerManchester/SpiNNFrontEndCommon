@@ -666,7 +666,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             original_data = bytes(data[offset:n_bytes + offset])
             verified_data = bytes(transceiver.read_memory(
                 x, y, base_address, n_bytes))
-            self.__verify_sent_data_py3(
+            self.__verify_sent_data(
                 original_data, verified_data, x, y, base_address, n_bytes)
 
         # write report
@@ -677,7 +677,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 missing_seq_nums=self._missing_seq_nums_data_in)
 
     @staticmethod
-    def __verify_sent_data_py3(
+    def __verify_sent_data(
             original_data, verified_data, x, y, base_address, n_bytes):
         if original_data != verified_data:
             log.error("VARIANCE: chip:{},{} address:{} len:{}",
