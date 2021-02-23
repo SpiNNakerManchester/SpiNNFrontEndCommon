@@ -19,7 +19,6 @@ main interface for the SpiNNaker tools
 from collections import defaultdict
 import logging
 import math
-import os
 import signal
 import sys
 import time

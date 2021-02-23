@@ -13,14 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os.path
 from os import path
 import unittest
 from spinn_front_end_common.interface.interface_functions import interface_xml
+from spinn_front_end_common.utilities.report_functions import report_xml
 
 
 class TestXmlFilePath(unittest.TestCase):
 
-    def test_exists(self):
-        the_path = interface_xml()
-        self.assertTrue(path.exists(the_path))
+    def test_interface_exists(self):
+        self.assertTrue(path.exists(interface_xml()))
+
+    def test_report_exists(self):
+        self.assertTrue(path.exists(report_xml()))

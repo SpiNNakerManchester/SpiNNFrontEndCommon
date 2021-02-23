@@ -46,4 +46,3 @@ __all__ = [
     "report_xml",
     "RoutingTableFromMachineReport",
     "TagsFromMachineReport"]
-
