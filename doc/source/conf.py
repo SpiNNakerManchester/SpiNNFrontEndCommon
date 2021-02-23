@@ -407,7 +407,6 @@ explicit_wanted_files = [
     "spinn_front_end_common/utilities/class_utils.py",
     "spinn_front_end_common/utilities/constants.py",
     "spinn_front_end_common/utilities/system_control_logic.py",
-    "spinn_front_end_common/utilities/function_list.py",
     "spinn_front_end_common/utilities/globals_variables.py",
     "spinn_front_end_common/utilities/helpful_functions.py",
     "spinn_front_end_common/utilities/exceptions.py",
