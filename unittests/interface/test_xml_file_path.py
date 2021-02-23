@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2021 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,21 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-from spinn_front_end_common.interface import interface_functions
-from spinn_front_end_common.utilities import report_functions
+from os import path
+import unittest
+from spinn_front_end_common.interface.interface_functions import interface_xml
+from spinn_front_end_common.utilities.report_functions import report_xml
 
 
-def get_front_end_common_pacman_xml_paths():
-    """ Get the XML path for the front end common interface functions
+class TestXmlFilePath(unittest.TestCase):
 
-    :rtype: list(str)
-    """
-    return [
-        os.path.join(
-            os.path.dirname(interface_functions.__file__),
-            "front_end_common_interface_functions.xml"),
-        os.path.join(
-            os.path.dirname(report_functions.__file__),
-            "front_end_common_reports.xml")
-    ]
+    def test_interface_exists(self):
+        self.assertTrue(path.exists(interface_xml()))
+
+    def test_report_exists(self):
+        self.assertTrue(path.exists(report_xml()))

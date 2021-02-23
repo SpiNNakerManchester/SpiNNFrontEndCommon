@@ -27,7 +27,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, DataWritten)
-from spinn_front_end_common.utilities.helpful_functions import (
+from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
 
 logger = FormatAdapter(logging.getLogger(__name__))

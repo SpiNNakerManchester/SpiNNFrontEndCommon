@@ -17,6 +17,7 @@ from spinnman.exceptions import SpinnmanException
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities import IOBufExtractor
 
 
 def run_system_application(
@@ -121,15 +122,13 @@ def _report_iobuf_messages(
     :param str directory:
     """
     # Import in this function to prevent circular import issue
-    from spinn_front_end_common.interface.interface_functions import (
-        ChipIOBufExtractor)
-
-    iobuf_reader = ChipIOBufExtractor(
+    iobuf_reader = IOBufExtractor(
+        txrx, cores, exe_finder, app_provenance_file_path=directory,
+        system_provenance_file_path=directory,
         filename_template=filename_template, suppress_progress=False)
-    error_entries, warn_entries = iobuf_reader(
-        txrx, cores, exe_finder, system_provenance_file_path=directory)
-    if logger:
+    error_entries, warn_entries = iobuf_reader.extract_iobuf()
+    if logger is not None:
         for entry in warn_entries:
-            logger.warning(entry)
+            logger.warn(entry)
         for entry in error_entries:
             logger.error(entry)
