@@ -139,8 +139,10 @@ def get_generated_output(output):
 def provenance_file_path(self):
     """
     Returns the path to the directory that holds all provenance files
+
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
+
     :rtpye: str
     :raises ValueError:
         if the system is in a state where path can't be retrieved
@@ -159,8 +161,10 @@ def provenance_file_path(self):
 def app_provenance_file_path(self):
     """
     Returns the path to the directory that holds all app provenance files
+
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
+
     :rtpye: str
     :raises ValueError:
         if the system is in a state where path can't be retrieved
@@ -179,8 +183,10 @@ def app_provenance_file_path(self):
 def system_provenance_file_path(self):
     """
     Returns the path to the directory that holds all provenance files
+
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
+
     :rtpye: str
     :raises ValueError:
         if the system is in a state where path can't be retrieved
