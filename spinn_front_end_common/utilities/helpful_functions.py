@@ -22,10 +22,10 @@ from spinnman.model.enums import CPUState
 from data_specification import utility_calls
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from .constants import BYTES_PER_WORD, MICRO_TO_MILLISECOND_CONVERSION
+from .constants import MICRO_TO_MILLISECOND_CONVERSION
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_ONE_WORD = struct.Struct("<I")
+_n_word_structs = []
 
 
 def locate_extra_monitor_mc_receiver(
@@ -75,7 +75,7 @@ def write_address_to_user0(txrx, x, y, p, address):
     :param int address: Value to write (32-bit integer)
     """
     user_0_address = txrx.get_user_0_register_address_from_core(p)
-    txrx.write_memory(x, y, user_0_address, _ONE_WORD.pack(address))
+    txrx.write_memory(x, y, user_0_address, address)
 
 
 def locate_memory_region_for_placement(placement, region, transceiver):
@@ -97,9 +97,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
         regions_base_address, region)
 
     # Get the actual address of the region
-    region_address = transceiver.read_memory(
-        placement.x, placement.y, region_offset, BYTES_PER_WORD)
-    return _ONE_WORD.unpack_from(region_address)[0]
+    return transceiver.read_word(placement.x, placement.y, region_offset)
 
 
 def convert_string_into_chip_and_core_subset(cores):
@@ -312,3 +310,47 @@ def convert_vertices_to_core_subset(vertices, placements):
         placement = placements.get_placement_of_vertex(vertex)
         core_subsets.add_processor(placement.x, placement.y, placement.p)
     return core_subsets
+
+
+def n_word_struct(n_words):
+    """ Manages a precompiled cache of structs for parsing blocks of words. \
+        Thus, this::
+
+        data = n_word_struct(n_words).unpack(data_blob)
+
+    Is much like doing this::
+
+        data = struct.unpack("<{}I".format(n_words), data_blob)
+
+    except quite a bit more efficient because things are shared including the
+    cost of parsing the format.
+
+    :param int n_words: The number of *SpiNNaker words* to be handled.
+    :return: A struct for working with that many words.
+    :rtype: ~struct.Struct
+    """
+    global _n_word_structs
+    while len(_n_word_structs) < n_words + 1:
+        _n_word_structs += [None] * (n_words + 1 - len(_n_word_structs))
+    s = _n_word_structs[n_words]
+    if s is not None:
+        return s
+    new_struct = struct.Struct("<{}I".format(n_words))
+    _n_word_structs[n_words] = new_struct
+    return new_struct
+
+
+def get_defaultable_source_id(entry):
+    """ Hack to support the source requirement for the router compressor\
+        on chip.
+
+    :param ~spinn_machine.MulticastRoutingEntry entry:
+        the multicast router table entry.
+    :return: return the source value
+    :rtype: int
+    """
+    if entry.defaultable:
+        return (list(entry.link_ids)[0] + 3) % 6
+    elif entry.link_ids:
+        return list(entry.link_ids)[0]
+    return 0

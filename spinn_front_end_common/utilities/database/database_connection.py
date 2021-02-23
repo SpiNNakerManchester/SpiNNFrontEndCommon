@@ -15,7 +15,6 @@
 
 import logging
 from threading import Thread
-from six import raise_from
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import (
     SpinnmanIOException, SpinnmanInvalidPacketException,
@@ -57,7 +56,7 @@ class DatabaseConnection(UDPConnection):
             the port that the toolchain will send the notification on (19999
             by default)
         """
-        super(DatabaseConnection, self).__init__(
+        super().__init__(
             local_host=local_host, local_port=local_port,
             remote_host=None, remote_port=None)
         thread = Thread(name="SpyNNakerDatabaseConnection:{}:{}".format(
@@ -106,7 +105,7 @@ class DatabaseConnection(UDPConnection):
         except Exception as e:
             logger.error("Failure processing database callback",
                          exc_info=True)
-            raise_from(SpinnmanIOException(str(e)), e)
+            raise SpinnmanIOException(str(e)) from e
         finally:
             self.__running = False
 
@@ -163,4 +162,4 @@ class DatabaseConnection(UDPConnection):
 
     def close(self):
         self.__running = False
-        UDPConnection.close(self)
+        super().close()

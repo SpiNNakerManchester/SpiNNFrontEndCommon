@@ -60,7 +60,8 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         pre_alloc = PreAllocateResourcesForLivePacketGatherers()
         pre_res = pre_alloc(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine)
+            machine=machine,
+            pre_allocated_resources=PreAllocatedResourceContainer())
 
         locs = list()
         locs.append((0, 0))
@@ -125,7 +126,8 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         pre_alloc = PreAllocateResourcesForLivePacketGatherers()
         pre_res = pre_alloc(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine)
+            machine=machine,
+            pre_allocated_resources=PreAllocatedResourceContainer())
 
         # verify sdram
         locs = [(0, 0), (4, 8), (8, 4)]
@@ -245,19 +247,25 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         pre_alloc = PreAllocateResourcesForLivePacketGatherers()
         pre_res = pre_alloc(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine)
+            machine=machine,
+            pre_allocated_resources=PreAllocatedResourceContainer())
         self.assertEqual(len(pre_res.specific_core_resources), 0)
         self.assertEqual(len(pre_res.core_resources), 0)
         self.assertEqual(len(pre_res.specific_sdram_usage), 0)
 
     def test_fail(self):
         machine = virtual_machine(width=12, height=12)
-        live_packet_gatherers = dict()
+        live_packet_gatherers = {'foo': 'bar'}
         pre_alloc = PreAllocateResourcesForLivePacketGatherers()
-        self.assertRaises(
-            Exception, pre_alloc(
+        with self.assertRaises(Exception) as exn:
+            pre_alloc(
                 live_packet_gatherer_parameters=live_packet_gatherers,
-                machine=machine))
+                machine=machine,
+                pre_allocated_resources=PreAllocatedResourceContainer())
+        # Make sure we know what the exception was; NOT an important test!
+        self.assertEqual(
+            "'str' object has no attribute 'board_address'",
+            str(exn.exception))
 
 
 if __name__ == "__main__":

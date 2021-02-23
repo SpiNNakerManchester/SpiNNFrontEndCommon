@@ -13,13 +13,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_utilities.require_subclass import require_subclass
+from pacman.model.graphs import AbstractVertex
 
 
-@add_metaclass(AbstractBase)
-class AbstractProvidesOutgoingPartitionConstraints(object):
+@require_subclass(AbstractVertex)
+class AbstractProvidesOutgoingPartitionConstraints(
+        object, metaclass=AbstractBase):
     """ A vertex that can provide constraints for its outgoing edge partitions.
+
+    If a Machine_vertex is an instance the Application vertex will not be
+    checked. However if the MachineVertex does not implement this API
+    ProcessPartitionConstraint will then check the ApplicationVertex
     """
 
     __slots__ = ()

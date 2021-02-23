@@ -13,19 +13,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
-from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+import unittest
+from spinn_front_end_common.interface.interface_functions.\
+    host_bit_field_router_compressor import _BitFieldData
 
 
-@add_metaclass(AbstractBase)
-class AbstractRecordable(object):
-    """ Indicates that an object might record some data in to SDRAM
-    """
-    __slots__ = ()
+class TestHostBasedBitFieldRouterCompressorr(unittest.TestCase):
 
-    @abstractmethod
-    def is_recording(self):
-        """ Deduce if the recorder is actually recording
+    def test_bit_field_as_bit_array(self):
+        data = _BitFieldData(
+            1, [1], None, None, None)
+        as_array = data.bit_field_as_bit_array()
+        self.assertListEqual(
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            as_array)
 
-        :rtype: bool
-        """
+
+if __name__ == "__main__":
+    unittest.main()

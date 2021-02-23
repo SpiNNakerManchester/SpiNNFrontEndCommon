@@ -38,8 +38,7 @@ class GetReinjectionStatusMessage(AbstractSCPRequest):
         :param int p:
             The processor running the extra monitor vertex, between 0 and 17
         """
-
-        super(GetReinjectionStatusMessage, self).__init__(
+        super().__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(
@@ -59,7 +58,7 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
     """
 
     def __init__(self, command_code):
-        super(GetReinjectionStatusMessageResponse, self).__init__()
+        super().__init__()
         self._reinjection_functionality_status = None
         self._command_code = command_code
 

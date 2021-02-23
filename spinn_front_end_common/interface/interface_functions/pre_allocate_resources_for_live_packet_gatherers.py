@@ -27,7 +27,7 @@ class PreAllocateResourcesForLivePacketGatherers(object):
 
     def __call__(
             self, live_packet_gatherer_parameters, machine,
-            pre_allocated_resources=None):
+            pre_allocated_resources):
         """
         :param live_packet_gatherer_parameters:
             the LPG parameters requested by the script
@@ -38,7 +38,7 @@ class PreAllocateResourcesForLivePacketGatherers(object):
             the SpiNNaker machine as discovered
         :param pre_allocated_resources: other preallocated resources
         :type pre_allocated_resources:
-            ~pacman.model.resources.PreAllocatedResourceContainer or None
+            ~pacman.model.resources.PreAllocatedResourceContainer
         :return: preallocated resources
         :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
@@ -60,17 +60,12 @@ class PreAllocateResourcesForLivePacketGatherers(object):
                 live_packet_gatherer_parameters, chip, sdram_requirement,
                 sdrams, cores, iptags)
 
-        # create preallocated resource container
-        lpg_prealloc_resource_container = PreAllocatedResourceContainer(
+        # note what has been preallocated
+        allocated = PreAllocatedResourceContainer(
             specific_sdram_usage=sdrams, core_resources=cores,
             specific_iptag_resources=iptags)
-
-        # add other preallocated resources
-        if pre_allocated_resources is not None:
-            lpg_prealloc_resource_container.extend(pre_allocated_resources)
-
-        # return preallocated resources
-        return lpg_prealloc_resource_container
+        allocated.extend(pre_allocated_resources)
+        return allocated
 
     @staticmethod
     def _add_chip_lpg_reqs(

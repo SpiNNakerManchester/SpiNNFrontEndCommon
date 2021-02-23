@@ -15,7 +15,6 @@
 
 import tempfile
 import unittest
-from six import iteritems
 from spinn_front_end_common.interface.ds import DataSpecificationTargets
 from spinn_machine.virtual_machine import virtual_machine
 
@@ -51,7 +50,7 @@ class TestDataSpecificationTargets(unittest.TestCase):
             (x, y, p) = key
             self.assertEqual(12, asDict.get_app_id(x, y, p))
 
-        for key, value in iteritems(asDict):
+        for key, value in asDict.items():
             self.assertEqual(check[key], value.getvalue())
 
 

@@ -19,10 +19,7 @@ import datetime
 import logging
 import time
 import struct
-import sys
 from enum import Enum
-from six.moves import xrange
-from six import reraise, PY2
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -37,7 +34,7 @@ from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
 from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset)
+    convert_vertices_to_core_subset, n_word_struct)
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_state_from_failure)
 from spinn_front_end_common.abstract_models import (
@@ -310,7 +307,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :type app_vertex:
             ~pacman.model.graphs.application.ApplicationVertex or None
         """
-        super(DataSpeedUpPacketGatherMachineVertex, self).__init__(
+        super().__init__(
             label="SYSTEM:PacketGatherer({},{})".format(x, y),
             constraints=constraints, app_vertex=app_vertex)
 
@@ -670,12 +667,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             original_data = bytes(data[offset:n_bytes + offset])
             verified_data = bytes(transceiver.read_memory(
                 x, y, base_address, n_bytes))
-            if PY2:
-                self.__verify_sent_data_py2(
-                    original_data, verified_data, x, y, base_address, n_bytes)
-            else:
-                self.__verify_sent_data_py3(
-                    original_data, verified_data, x, y, base_address, n_bytes)
+            self.__verify_sent_data(
+                original_data, verified_data, x, y, base_address, n_bytes)
 
         # write report
         if self._write_data_speed_up_reports:
@@ -685,23 +678,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 missing_seq_nums=self._missing_seq_nums_data_in)
 
     @staticmethod
-    def __verify_sent_data_py2(
-            original_data, verified_data, x, y, base_address, n_bytes):
-        if original_data != verified_data:
-            log.error("VARIANCE: chip:{},{} address:{} len:{}",
-                      x, y, base_address, n_bytes)
-            log.error("original:{}", "".join(
-                "%02X" % ord(x) for x in original_data))
-            log.error("verified:{}", "".join(
-                "%02X" % ord(x) for x in verified_data))
-            i = 0
-            for (a, b) in zip(original_data, verified_data):
-                if a != b:
-                    raise Exception("damn at " + str(i))
-                i += 1
-
-    @staticmethod
-    def __verify_sent_data_py3(
+    def __verify_sent_data(
             original_data, verified_data, x, y, base_address, n_bytes):
         if original_data != verified_data:
             log.error("VARIANCE: chip:{},{} address:{} len:{}",
@@ -812,14 +789,15 @@ class DataSpeedUpPacketGatherMachineVertex(
                             data_to_write, missing)
                         missing.clear()
 
-                except SpinnmanTimeoutException:  # if time out, keep trying
+                except SpinnmanTimeoutException as e:
                     # if the timeout has not occurred x times, keep trying
                     time_out_count += 1
                     if time_out_count > TIMEOUT_RETRY_LIMIT:
                         emergency_recover_state_from_failure(
                             transceiver, self._app_id, self, self._placement)
                         raise SpinnFrontEndException(
-                            TIMEOUT_MESSAGE.format(time_out_count))
+                            TIMEOUT_MESSAGE.format(
+                                time_out_count)) from e
 
                     # If we never received a packet, we will never have
                     # created the buffer, so send everything again
@@ -847,8 +825,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         n_elements = (len(data) - position) // BYTES_PER_WORD
 
         # store missing
-        new_seq_nums = struct.unpack_from(
-            "<{}I".format(n_elements), data, position)
+        new_seq_nums = n_word_struct(n_elements).unpack_from(
+            data, position)
 
         # add missing seqs accordingly
         seen_last = False
@@ -1202,16 +1180,16 @@ class DataSpeedUpPacketGatherMachineVertex(
             self._x, self._y, [0, 0, 0, 0], 0,
             self._remote_tag, strip=True, use_sender=True)
         data = connection.get_scp_data(request)
-        einfo = None
+        exn = None
         for _ in range(3):
             try:
                 connection.send(data)
                 _, _, response, offset = connection.receive_scp_response()
                 request.get_scp_response().read_bytestring(response, offset)
                 return
-            except SpinnmanTimeoutException:
-                einfo = sys.exc_info()
-        reraise(*einfo)
+            except SpinnmanTimeoutException as e:
+                exn = e
+        raise exn or SpinnmanTimeoutException
 
     def get_data(
             self, extra_monitor, extra_monitor_placement, memory_address,
@@ -1318,11 +1296,12 @@ class DataSpeedUpPacketGatherMachineVertex(
                         "ignoring packet as transaction id should be {}"
                         " but is {}".format(
                             transaction_id, response_transaction_id))
-            except SpinnmanTimeoutException:
+            except SpinnmanTimeoutException as e:
                 if timeoutcount > TIMEOUT_RETRY_LIMIT:
                     raise SpinnFrontEndException(
                         "Failed to hear from the machine during {} attempts. "
-                        "Please try removing firewalls".format(timeoutcount))
+                        "Please try removing firewalls".format(
+                            timeoutcount)) from e
 
                 timeoutcount += 1
                 # self.__reset_connection()
@@ -1384,8 +1363,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: list of missing sequence numbers
         :rtype: list(int)
         """
-        return [sn for sn in xrange(0, self._max_seq_num)
-                if sn not in seq_nums]
+        return [sn for sn in range(self._max_seq_num) if sn not in seq_nums]
 
     def _determine_and_retransmit_missing_seq_nums(
             self, seq_nums, transceiver, placement, lost_seq_nums,
@@ -1425,7 +1403,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # transmit missing sequence as a new SDP packet
         first = True
         seq_num_offset = 0
-        for _ in xrange(n_packets):
+        for _ in range(n_packets):
             length_left_in_packet = WORDS_PER_FULL_PACKET
             offset = 0
 
@@ -1475,9 +1453,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 length_left_in_packet -= WORDS_FOR_COMMAND_TRANSACTION
 
             # fill data field
-            struct.pack_into(
-                "<{}I".format(size_of_data_left_to_transmit), data, offset,
-                *missing_seq_nums[
+            n_word_struct(size_of_data_left_to_transmit).pack_into(
+                data, offset, *missing_seq_nums[
                     seq_num_offset:
                     seq_num_offset + size_of_data_left_to_transmit])
             seq_num_offset += length_left_in_packet

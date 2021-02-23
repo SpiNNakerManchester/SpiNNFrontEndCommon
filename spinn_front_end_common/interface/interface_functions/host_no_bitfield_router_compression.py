@@ -13,8 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
+import logging
 import struct
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, Router
@@ -24,10 +25,14 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.system_control_logic import (
     run_system_application)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.helpful_functions import (
+    get_defaultable_source_id)
 _FOUR_WORDS = struct.Struct("<IIII")
 _THREE_WORDS = struct.Struct("<III")
 # The SDRAM Tag used by the application - note this is fixed in the APLX
 _SDRAM_TAG = 1
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def mundy_on_chip_router_compression(
@@ -57,15 +62,17 @@ def mundy_on_chip_router_compression(
     :param bool write_compressor_iobuf: Should IOBUF be read and written out
     :raises SpinnFrontEndException: If compression fails
     """
-    # pylint: disable=too-many-arguments
-    binary_path = os.path.join(os.path.dirname(__file__), "rt_minimise.aplx")
-    compression = Compression(
-        app_id, binary_path, compress_as_much_as_possible,
-        machine, system_provenance_folder, routing_tables, transceiver,
-        "Running Mundy routing table compression on chip",
-        write_compressor_iobuf, result_register=0)
-    compression._compress_only_when_needed = compress_only_when_needed
-    compression.compress()
+    # pylint: disable=too-many-arguments, unused-argument
+    msg = (
+        "MundyOnChipRouterCompression is no longer supported. "
+        "To use the currently recommended compression algorithm remove "
+        "loading_algorithms from your cfg. "
+        "While not recommended, OrderedCoveringOnChipRouterCompression "
+        "provides the same algorithm but has been updated to use the "
+        "current tools.")
+    print(msg)
+    logger.warning(msg)
+    raise NotImplementedError(msg)
 
 
 def pair_compression(
@@ -106,7 +113,7 @@ def pair_compression(
     compression.compress()
 
 
-def unordered_compression(
+def ordered_covering_compression(
         routing_tables, transceiver, executable_finder,
         machine, app_id, provenance_file_path, write_compressor_iobuf,
         compress_as_much_as_possible=True):
@@ -145,20 +152,19 @@ def unordered_compression(
     compression.compress()
 
 
-def make_source_hack(entry):
-    """ Hack to support the source requirement for the router compressor\
-        on chip
-
-    :param ~spinn_machine.MulticastRoutingEntry entry:
-        the multicast router table entry.
-    :return: return the source value
-    :rtype: int
-    """
-    if entry.defaultable:
-        return (list(entry.link_ids)[0] + 3) % 6
-    elif entry.link_ids:
-        return list(entry.link_ids)[0]
-    return 0
+def unordered_compression(
+        routing_tables, transceiver, executable_finder,
+        machine, app_id, provenance_file_path, write_compressor_iobuf,
+        compress_as_much_as_possible=True):
+    """ DEPRECATED use ordered_covering_compression """
+    logger.warning(
+        "UnorderedOnChipRouterCompression algorithm name is deprecated. "
+        "Please use OrderedCoveringOnChipRouterCompression instead. "
+        "loading_algorithms from your cfg to use defaults")
+    ordered_covering_compression(
+        routing_tables, transceiver, executable_finder,
+        machine, app_id, provenance_file_path, write_compressor_iobuf,
+        compress_as_much_as_possible)
 
 
 class Compression(object):
@@ -357,5 +363,5 @@ class Compression(object):
             data += _FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
-                make_source_hack(entry=entry))
+                get_defaultable_source_id(entry))
         return bytearray(data)
