@@ -55,6 +55,7 @@
 <span class="kn">from</span> <span class="nn">spinnman.messages.scp.enums</span> <span class="kn">import</span> <span class="n">Signal</span>
 <span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">ExecutableTargets</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities</span> <span class="kn">import</span> <span class="n">IOBufExtractor</span>
 
 
 <div class="viewcode-block" id="run_system_application"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.system_control_logic.run_system_application">[docs]</a><span class="k">def</span> <span class="nf">run_system_application</span><span class="p">(</span>
@@ -159,16 +160,14 @@
 <span class="sd">    :param str directory:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Import in this function to prevent circular import issue</span>
-    <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">ChipIOBufExtractor</span><span class="p">)</span>
-
-    <span class="n">iobuf_reader</span> <span class="o">=</span> <span class="n">ChipIOBufExtractor</span><span class="p">(</span>
+    <span class="n">iobuf_reader</span> <span class="o">=</span> <span class="n">IOBufExtractor</span><span class="p">(</span>
+        <span class="n">txrx</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">exe_finder</span><span class="p">,</span> <span class="n">app_provenance_file_path</span><span class="o">=</span><span class="n">directory</span><span class="p">,</span>
+        <span class="n">system_provenance_file_path</span><span class="o">=</span><span class="n">directory</span><span class="p">,</span>
         <span class="n">filename_template</span><span class="o">=</span><span class="n">filename_template</span><span class="p">,</span> <span class="n">suppress_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span> <span class="o">=</span> <span class="n">iobuf_reader</span><span class="p">(</span>
-        <span class="n">txrx</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">exe_finder</span><span class="p">,</span> <span class="n">system_provenance_file_path</span><span class="o">=</span><span class="n">directory</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">logger</span><span class="p">:</span>
+    <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span> <span class="o">=</span> <span class="n">iobuf_reader</span><span class="o">.</span><span class="n">extract_iobuf</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">warn_entries</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">error_entries</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
 </pre></div>

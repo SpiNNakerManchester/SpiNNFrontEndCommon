@@ -56,14 +56,10 @@
 <span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">CoreSubsets</span>
-<span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">ExecutableTargets</span>
 <span class="kn">from</span> <span class="nn">spinnman.model.enums</span> <span class="kn">import</span> <span class="n">CPUState</span>
-<span class="kn">from</span> <span class="nn">spinnman.model.cpu_infos</span> <span class="kn">import</span> <span class="n">CPUInfos</span>
 <span class="kn">from</span> <span class="nn">data_specification</span> <span class="kn">import</span> <span class="n">utility_calls</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="n">AbstractHasAssociatedBinary</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
-<span class="kn">from</span> <span class="nn">.globals_variables</span> <span class="kn">import</span> <span class="n">get_simulator</span>
 <span class="kn">from</span> <span class="nn">.constants</span> <span class="kn">import</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
@@ -352,106 +348,6 @@
         <span class="n">placement</span> <span class="o">=</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
         <span class="n">core_subsets</span><span class="o">.</span><span class="n">add_processor</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">core_subsets</span></div>
-
-
-<div class="viewcode-block" id="find_executable_start_type"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.find_executable_start_type">[docs]</a><span class="k">def</span> <span class="nf">find_executable_start_type</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param ~pacman.model.graphs.machine.MachineVertex machine_vertex:</span>
-<span class="sd">    :rtype: ~spinn_front_end_common.utilities.utility_objs.ExecutableType</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">machine_vertex</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
-
-
-<span class="k">def</span> <span class="nf">_emergency_state_check</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param ~.Transceiver txrx:</span>
-<span class="sd">    :param int app_id:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># pylint: disable=broad-except</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">rte_count</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_core_state_count</span><span class="p">(</span>
-            <span class="n">app_id</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">RUN_TIME_EXCEPTION</span><span class="p">)</span>
-        <span class="n">watchdog_count</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_core_state_count</span><span class="p">(</span><span class="n">app_id</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">WATCHDOG</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">rte_count</span> <span class="ow">or</span> <span class="n">watchdog_count</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;unexpected core states (rte=</span><span class="si">{}</span><span class="s2">, wdog=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="p">,</span>
-                <span class="n">txrx</span><span class="o">.</span><span class="n">get_cores_in_state</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">RUN_TIME_EXCEPTION</span><span class="p">),</span>
-                <span class="n">txrx</span><span class="o">.</span><span class="n">get_cores_in_state</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">WATCHDOG</span><span class="p">))</span>
-    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
-            <span class="s2">&quot;Could not read the status count - going to individual cores&quot;</span><span class="p">)</span>
-        <span class="n">machine</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_machine_details</span><span class="p">()</span>
-        <span class="n">infos</span> <span class="o">=</span> <span class="n">CPUInfos</span><span class="p">()</span>
-        <span class="n">errors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">chip</span><span class="o">.</span><span class="n">processors</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">info</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_cpu_information_from_core</span><span class="p">(</span>
-                        <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">state</span> <span class="ow">in</span> <span class="p">(</span>
-                            <span class="n">CPUState</span><span class="o">.</span><span class="n">RUN_TIME_EXCEPTION</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">WATCHDOG</span><span class="p">):</span>
-                        <span class="n">infos</span><span class="o">.</span><span class="n">add_processor</span><span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
-                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                    <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">txrx</span><span class="o">.</span><span class="n">get_core_status_string</span><span class="p">(</span><span class="n">infos</span><span class="p">))</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not read information from cores </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">errors</span><span class="p">))</span>
-
-
-<span class="c1"># TRICKY POINT: Have to delay the import to here because of import circularity</span>
-<span class="k">def</span> <span class="nf">_emergency_iobuf_extract</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param ~.Transceiver txrx:</span>
-<span class="sd">    :param ExecutableTargets executable_targets:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># pylint: disable=protected-access</span>
-    <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">ChipIOBufExtractor</span><span class="p">)</span>
-    <span class="n">sim</span> <span class="o">=</span> <span class="n">get_simulator</span><span class="p">()</span>
-    <span class="n">extractor</span> <span class="o">=</span> <span class="n">ChipIOBufExtractor</span><span class="p">(</span>
-        <span class="n">recovery_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">filename_template</span><span class="o">=</span><span class="s2">&quot;emergency_iobuf_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">.txt&quot;</span><span class="p">)</span>
-    <span class="n">extractor</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">sim</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">,</span>
-              <span class="n">sim</span><span class="o">.</span><span class="n">_app_provenance_file_path</span><span class="p">,</span> <span class="n">sim</span><span class="o">.</span><span class="n">_system_provenance_file_path</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="emergency_recover_state_from_failure"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.emergency_recover_state_from_failure">[docs]</a><span class="k">def</span> <span class="nf">emergency_recover_state_from_failure</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Used to get at least *some* information out of a core when something\</span>
-<span class="sd">        goes badly wrong. Not a replacement for what abstract spinnaker base\</span>
-<span class="sd">        does.</span>
-
-<span class="sd">    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.</span>
-<span class="sd">    :param int app_id: The ID of the application.</span>
-<span class="sd">    :param AbstractHasAssociatedBinary vertex:</span>
-<span class="sd">        The vertex to retrieve the IOBUF from if it is suspected as being dead</span>
-<span class="sd">    :param ~pacman.model.placements.Placement placement:</span>
-<span class="sd">        Where the vertex is located.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># pylint: disable=protected-access</span>
-    <span class="n">_emergency_state_check</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)</span>
-    <span class="n">target</span> <span class="o">=</span> <span class="n">ExecutableTargets</span><span class="p">()</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">get_simulator</span><span class="p">()</span><span class="o">.</span><span class="n">_executable_finder</span><span class="o">.</span><span class="n">get_executable_path</span><span class="p">(</span>
-        <span class="n">vertex</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">())</span>
-    <span class="n">target</span><span class="o">.</span><span class="n">add_processor</span><span class="p">(</span>
-        <span class="n">path</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
-        <span class="n">vertex</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">())</span>
-    <span class="n">_emergency_iobuf_extract</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="emergency_recover_states_from_failure"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.emergency_recover_states_from_failure">[docs]</a><span class="k">def</span> <span class="nf">emergency_recover_states_from_failure</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Used to get at least *some* information out of a core when something\</span>
-<span class="sd">        goes badly wrong. Not a replacement for what abstract spinnaker base\</span>
-<span class="sd">        does.</span>
-
-<span class="sd">    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.</span>
-<span class="sd">    :param int app_id: The ID of the application.</span>
-<span class="sd">    :param ~spinnman.model.ExecutableTargets executable_targets:</span>
-<span class="sd">        The what/where mapping</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_emergency_state_check</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)</span>
-    <span class="n">_emergency_iobuf_extract</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="n_word_struct"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.n_word_struct">[docs]</a><span class="k">def</span> <span class="nf">n_word_struct</span><span class="p">(</span><span class="n">n_words</span><span class="p">):</span>

@@ -93,21 +93,20 @@
     <span class="n">AbstractVertexWithEdgeToDependentVertices</span><span class="p">,</span> <span class="n">AbstractChangableAfterRun</span><span class="p">,</span>
     <span class="n">AbstractCanReset</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">globals_variables</span><span class="p">,</span> <span class="n">SimulatorInterface</span><span class="p">)</span>
+    <span class="n">globals_variables</span><span class="p">,</span> <span class="n">SimulatorInterface</span><span class="p">,)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">,</span> <span class="n">SARK_PER_MALLOC_SDRAM_USAGE</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.function_list</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">get_front_end_common_pacman_xml_paths</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">convert_time_diff_to_total_milliseconds</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.report_functions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">EnergyReport</span><span class="p">,</span> <span class="n">TagsFromMachineReport</span><span class="p">)</span>
+    <span class="n">EnergyReport</span><span class="p">,</span> <span class="n">TagsFromMachineReport</span><span class="p">,</span> <span class="n">report_xml</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ExecutableType</span><span class="p">,</span> <span class="n">ProvenanceDataItem</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">CommandSender</span><span class="p">,</span> <span class="n">CommandSenderMachineVertex</span><span class="p">,</span>
     <span class="n">DataSpeedUpPacketGatherMachineVertex</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities</span> <span class="kn">import</span> <span class="n">IOBufExtractor</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.java_caller</span> <span class="kn">import</span> <span class="n">JavaCaller</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.config_handler</span> <span class="kn">import</span> <span class="n">ConfigHandler</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
@@ -116,7 +115,8 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ProvenanceJSONWriter</span><span class="p">,</span> <span class="n">ProvenanceSQLWriter</span><span class="p">,</span> <span class="n">ProvenanceXMLWriter</span><span class="p">,</span>
     <span class="n">ChipProvenanceUpdater</span><span class="p">,</span>  <span class="n">PlacementsProvenanceGatherer</span><span class="p">,</span>
-    <span class="n">RouterProvenanceGatherer</span><span class="p">,</span> <span class="n">ChipIOBufExtractor</span><span class="p">)</span>
+    <span class="n">RouterProvenanceGatherer</span><span class="p">,</span> <span class="n">interface_xml</span><span class="p">)</span>
+
 <span class="kn">from</span> <span class="nn">spinn_front_end_common</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">fec_version</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">scipy_version</span>
@@ -2386,15 +2386,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_all_provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prov_items</span><span class="p">)</span>
 
         <span class="c1"># Read IOBUF where possible (that should be everywhere)</span>
-        <span class="n">iobuf</span> <span class="o">=</span> <span class="n">ChipIOBufExtractor</span><span class="p">()</span>
+        <span class="n">iobuf</span> <span class="o">=</span> <span class="n">IOBufExtractor</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_app_provenance_file_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf_from_cores&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf_from_binary_types&quot;</span><span class="p">))</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">errors</span><span class="p">,</span> <span class="n">warnings</span> <span class="o">=</span> <span class="n">iobuf</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_app_provenance_file_path</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf_from_cores&quot;</span><span class="p">),</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf_from_binary_types&quot;</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="n">errors</span><span class="p">,</span> <span class="n">warnings</span> <span class="o">=</span> <span class="n">iobuf</span><span class="o">.</span><span class="n">extract_iobuf</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Could not get iobuf&quot;</span><span class="p">)</span>
             <span class="n">errors</span><span class="p">,</span> <span class="n">warnings</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
@@ -2442,7 +2440,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># add the extra xml files from the config file</span>
         <span class="n">xml_paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_str_list</span><span class="p">(</span><span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;extra_xmls_paths&quot;</span><span class="p">)</span>
-        <span class="n">xml_paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">get_front_end_common_pacman_xml_paths</span><span class="p">())</span>
+        <span class="n">xml_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">interface_xml</span><span class="p">())</span>
+        <span class="n">xml_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">report_xml</span><span class="p">())</span>
 
         <span class="k">if</span> <span class="n">extra_algorithm_xml_paths</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">xml_paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extra_algorithm_xml_paths</span><span class="p">)</span>
@@ -2950,13 +2949,13 @@
             <span class="k">return</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;clear_iobuf_during_run&quot;</span><span class="p">):</span>
             <span class="k">return</span>
-        <span class="n">extractor</span> <span class="o">=</span> <span class="n">ChipIOBufExtractor</span><span class="p">()</span>
-        <span class="n">extractor</span><span class="p">(</span>
+        <span class="n">extractor</span> <span class="o">=</span> <span class="n">IOBufExtractor</span><span class="p">(</span>
             <span class="n">transceiver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span>
             <span class="n">executable_targets</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_run_outputs</span><span class="p">[</span><span class="s2">&quot;ExecutableTargets&quot;</span><span class="p">],</span>
             <span class="n">executable_finder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">,</span>
             <span class="n">app_provenance_file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_app_provenance_file_path</span><span class="p">,</span>
             <span class="n">system_provenance_file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span><span class="p">)</span>
+        <span class="n">extractor</span><span class="o">.</span><span class="n">extract_iobuf</span><span class="p">()</span>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.add_socket_address"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_socket_address">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">add_socket_address</span><span class="p">,</span> <span class="n">extend_doc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">add_socket_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_address</span><span class="p">):</span>

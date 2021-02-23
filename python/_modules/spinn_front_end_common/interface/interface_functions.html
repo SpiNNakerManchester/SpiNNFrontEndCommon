@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.interface.interface_functions &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.interface_functions</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.interface_functions</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The code in this module is intended primarily for being invoked via the</span>
+<span class="sd">PACMAN Executor.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">.application_finisher</span> <span class="kn">import</span> <span class="n">ApplicationFinisher</span>
+<span class="kn">from</span> <span class="nn">.application_runner</span> <span class="kn">import</span> <span class="n">ApplicationRunner</span>
+<span class="kn">from</span> <span class="nn">.buffer_extractor</span> <span class="kn">import</span> <span class="n">BufferExtractor</span>
+<span class="kn">from</span> <span class="nn">.chip_iobuf_clearer</span> <span class="kn">import</span> <span class="n">ChipIOBufClearer</span>
+<span class="kn">from</span> <span class="nn">.chip_iobuf_extractor</span> <span class="kn">import</span> <span class="n">ChipIOBufExtractor</span>
+<span class="kn">from</span> <span class="nn">.buffer_manager_creator</span> <span class="kn">import</span> <span class="n">BufferManagerCreator</span>
+<span class="kn">from</span> <span class="nn">.chip_provenance_updater</span> <span class="kn">import</span> <span class="n">ChipProvenanceUpdater</span>
+<span class="kn">from</span> <span class="nn">.chip_runtime_updater</span> <span class="kn">import</span> <span class="n">ChipRuntimeUpdater</span>
+<span class="kn">from</span> <span class="nn">.compute_energy_used</span> <span class="kn">import</span> <span class="n">ComputeEnergyUsed</span>
+<span class="kn">from</span> <span class="nn">.database_interface</span> <span class="kn">import</span> <span class="n">DatabaseInterface</span>
+<span class="kn">from</span> <span class="nn">.system_multicast_routing_generator</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SystemMulticastRoutingGenerator</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.dsg_region_reloader</span> <span class="kn">import</span> <span class="n">DSGRegionReloader</span>
+<span class="kn">from</span> <span class="nn">.edge_to_n_keys_mapper</span> <span class="kn">import</span> <span class="n">EdgeToNKeysMapper</span>
+<span class="kn">from</span> <span class="nn">.energy_provenance_reporter</span> <span class="kn">import</span> <span class="n">EnergyProvenanceReporter</span>
+<span class="kn">from</span> <span class="nn">.finalise_timing_data</span> <span class="kn">import</span> <span class="n">FinaliseTimingData</span>
+<span class="kn">from</span> <span class="nn">.find_application_chips_used</span> <span class="kn">import</span> <span class="n">FindApplicationChipsUsed</span>
+<span class="kn">from</span> <span class="nn">.graph_binary_gatherer</span> <span class="kn">import</span> <span class="n">GraphBinaryGatherer</span>
+<span class="kn">from</span> <span class="nn">.graph_data_specification_writer</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GraphDataSpecificationWriter</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.graph_measurer</span> <span class="kn">import</span> <span class="n">GraphMeasurer</span>
+<span class="kn">from</span> <span class="nn">.graph_provenance_gatherer</span> <span class="kn">import</span> <span class="n">GraphProvenanceGatherer</span>
+<span class="kn">from</span> <span class="nn">.hbp_allocator</span> <span class="kn">import</span> <span class="n">HBPAllocator</span>
+<span class="kn">from</span> <span class="nn">.hbp_max_machine_generator</span> <span class="kn">import</span> <span class="n">HBPMaxMachineGenerator</span>
+<span class="kn">from</span> <span class="nn">.host_bit_field_router_compressor</span> <span class="kn">import</span> <span class="n">HostBasedBitFieldRouterCompressor</span>
+<span class="kn">from</span> <span class="nn">.host_execute_data_specification</span> <span class="kn">import</span> <span class="n">HostExecuteDataSpecification</span>
+<span class="kn">from</span> <span class="nn">.insert_chip_power_monitors_to_graphs</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">InsertChipPowerMonitorsToGraphs</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.insert_edges_to_extra_monitor_functionality</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">InsertEdgesToExtraMonitorFunctionality</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.insert_edges_to_live_packet_gatherers</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">InsertEdgesToLivePacketGatherers</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.insert_extra_monitor_vertices_to_graphs</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">InsertExtraMonitorVerticesToGraphs</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.insert_live_packet_gatherers_to_graphs</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">InsertLivePacketGatherersToGraphs</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.load_executable_images</span> <span class="kn">import</span> <span class="n">LoadExecutableImages</span>
+<span class="kn">from</span> <span class="nn">.load_fixed_routes</span> <span class="kn">import</span> <span class="n">LoadFixedRoutes</span>
+<span class="kn">from</span> <span class="nn">.local_tdma_builder</span> <span class="kn">import</span> <span class="n">LocalTDMABuilder</span>
+<span class="kn">from</span> <span class="nn">.locate_executable_start_type</span> <span class="kn">import</span> <span class="n">LocateExecutableStartType</span>
+<span class="kn">from</span> <span class="nn">.machine_bit_field_router_compressor</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MachineBitFieldRouterCompressor</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.machine_generator</span> <span class="kn">import</span> <span class="n">MachineGenerator</span>
+<span class="kn">from</span> <span class="nn">.create_notification_protocol</span> <span class="kn">import</span> <span class="n">CreateNotificationProtocol</span>
+<span class="kn">from</span> <span class="nn">.placements_provenance_gatherer</span> <span class="kn">import</span> <span class="n">PlacementsProvenanceGatherer</span>
+<span class="kn">from</span> <span class="nn">.pre_allocate_for_bit_field_router_compressor</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PreAllocateForBitFieldRouterCompressor</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.pre_allocate_resources_for_chip_power_monitor</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PreAllocateResourcesForChipPowerMonitor</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.pre_allocate_resources_for_live_packet_gatherers</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PreAllocateResourcesForLivePacketGatherers</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.preallocate_resources_for_extra_monitor_support</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PreAllocateResourcesForExtraMonitorSupport</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.process_partition_constraints</span> <span class="kn">import</span> <span class="n">ProcessPartitionConstraints</span>
+<span class="kn">from</span> <span class="nn">.profile_data_gatherer</span> <span class="kn">import</span> <span class="n">ProfileDataGatherer</span>
+<span class="kn">from</span> <span class="nn">.provenance_json_writer</span> <span class="kn">import</span> <span class="n">ProvenanceJSONWriter</span>
+<span class="kn">from</span> <span class="nn">.provenance_sql_writer</span> <span class="kn">import</span> <span class="n">ProvenanceSQLWriter</span>
+<span class="kn">from</span> <span class="nn">.provenance_xml_writer</span> <span class="kn">import</span> <span class="n">ProvenanceXMLWriter</span>
+<span class="kn">from</span> <span class="nn">.router_provenance_gatherer</span> <span class="kn">import</span> <span class="n">RouterProvenanceGatherer</span>
+<span class="kn">from</span> <span class="nn">.routing_setup</span> <span class="kn">import</span> <span class="n">RoutingSetup</span>
+<span class="kn">from</span> <span class="nn">.routing_table_loader</span> <span class="kn">import</span> <span class="n">RoutingTableLoader</span>
+<span class="kn">from</span> <span class="nn">.spalloc_allocator</span> <span class="kn">import</span> <span class="n">SpallocAllocator</span>
+<span class="kn">from</span> <span class="nn">.spalloc_max_machine_generator</span> <span class="kn">import</span> <span class="n">SpallocMaxMachineGenerator</span>
+<span class="kn">from</span> <span class="nn">.tags_loader</span> <span class="kn">import</span> <span class="n">TagsLoader</span>
+<span class="kn">from</span> <span class="nn">.tdma_agenda_builder</span> <span class="kn">import</span> <span class="n">TDMAAgendaBuilder</span>
+<span class="kn">from</span> <span class="nn">.virtual_machine_generator</span> <span class="kn">import</span> <span class="n">VirtualMachineGenerator</span>
+<span class="kn">from</span> <span class="nn">.read_routing_tables_from_machine</span> <span class="kn">import</span> <span class="n">ReadRoutingTablesFromMachine</span>
+<span class="kn">from</span> <span class="nn">.sdram_outgoing_partition_allocator</span> <span class="kn">import</span> <span class="n">SDRAMOutgoingPartitionAllocator</span>
+
+
+<div class="viewcode-block" id="interface_xml"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.interface_xml">[docs]</a><span class="k">def</span> <span class="nf">interface_xml</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;front_end_common_interface_functions.xml&quot;</span><span class="p">)</span></div>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;ApplicationFinisher&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ApplicationRunner&quot;</span><span class="p">,</span> <span class="s2">&quot;BufferExtractor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BufferManagerCreator&quot;</span><span class="p">,</span> <span class="s2">&quot;ChipIOBufClearer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ChipIOBufExtractor&quot;</span><span class="p">,</span> <span class="s2">&quot;ChipProvenanceUpdater&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ChipRuntimeUpdater&quot;</span><span class="p">,</span> <span class="s2">&quot;CreateNotificationProtocol&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ComputeEnergyUsed&quot;</span><span class="p">,</span> <span class="s2">&quot;DatabaseInterface&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SystemMulticastRoutingGenerator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DSGRegionReloader&quot;</span><span class="p">,</span> <span class="s2">&quot;EdgeToNKeysMapper&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EnergyProvenanceReporter&quot;</span><span class="p">,</span> <span class="s2">&quot;FinaliseTimingData&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FindApplicationChipsUsed&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GraphBinaryGatherer&quot;</span><span class="p">,</span> <span class="s2">&quot;GraphDataSpecificationWriter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GraphMeasurer&quot;</span><span class="p">,</span> <span class="s2">&quot;GraphProvenanceGatherer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HBPAllocator&quot;</span><span class="p">,</span> <span class="s2">&quot;HostBasedBitFieldRouterCompressor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HBPMaxMachineGenerator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HostExecuteDataSpecification&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;InsertChipPowerMonitorsToGraphs&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;InsertEdgesToExtraMonitorFunctionality&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;InsertEdgesToLivePacketGatherers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;InsertExtraMonitorVerticesToGraphs&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;InsertLivePacketGatherersToGraphs&quot;</span><span class="p">,</span> <span class="s2">&quot;interface_xml&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LoadExecutableImages&quot;</span><span class="p">,</span> <span class="s2">&quot;LoadFixedRoutes&quot;</span><span class="p">,</span> <span class="s2">&quot;LocalTDMABuilder&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LocateExecutableStartType&quot;</span><span class="p">,</span> <span class="s2">&quot;MachineBitFieldRouterCompressor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MachineGenerator&quot;</span><span class="p">,</span> <span class="s2">&quot;PlacementsProvenanceGatherer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PreAllocateForBitFieldRouterCompressor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PreAllocateResourcesForChipPowerMonitor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PreAllocateResourcesForExtraMonitorSupport&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PreAllocateResourcesForLivePacketGatherers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ProcessPartitionConstraints&quot;</span><span class="p">,</span> <span class="s2">&quot;ProfileDataGatherer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ProvenanceJSONWriter&quot;</span><span class="p">,</span> <span class="s2">&quot;ProvenanceSQLWriter&quot;</span><span class="p">,</span> <span class="s2">&quot;ProvenanceXMLWriter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ReadRoutingTablesFromMachine&quot;</span><span class="p">,</span> <span class="s2">&quot;RouterProvenanceGatherer&quot;</span><span class="p">,</span> <span class="s2">&quot;RoutingSetup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RoutingTableLoader&quot;</span><span class="p">,</span> <span class="s2">&quot;SDRAMOutgoingPartitionAllocator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SpallocAllocator&quot;</span><span class="p">,</span> <span class="s2">&quot;SpallocMaxMachineGenerator&quot;</span><span class="p">,</span> <span class="s2">&quot;TagsLoader&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TDMAAgendaBuilder&quot;</span><span class="p">,</span> <span class="s2">&quot;VirtualMachineGenerator&quot;</span><span class="p">]</span>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.interface_functions</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
+    </div>
+  </body>
+</html>

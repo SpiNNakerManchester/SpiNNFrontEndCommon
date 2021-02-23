@@ -25,7 +25,8 @@
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../report_functions.html" accesskey="U">spinn_front_end_common.utilities.report_functions</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.report_functions.bit_field_compressor_report</a></li> 
       </ul>
     </div>  
@@ -56,8 +57,7 @@
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">find_executable_start_type</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="n">AbstractHasAssociatedBinary</span>
 <span class="kn">from</span> <span class="nn">.bit_field_summary</span> <span class="kn">import</span> <span class="n">BitFieldSummary</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ProvenanceDataItem</span><span class="p">,</span> <span class="n">ExecutableType</span><span class="p">)</span>
@@ -190,7 +190,9 @@
         <span class="n">to_merge_per_chip</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">placements</span><span class="p">:</span>
-            <span class="n">binary_start_type</span> <span class="o">=</span> <span class="n">find_executable_start_type</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">)</span>
+            <span class="n">binary_start_type</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">):</span>
+                <span class="n">binary_start_type</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">()</span>
 
             <span class="k">if</span> <span class="n">binary_start_type</span> <span class="o">!=</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">:</span>
                 <span class="n">seen_partitions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -306,6 +308,7 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../report_functions.html" >spinn_front_end_common.utilities.report_functions</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.report_functions.bit_field_compressor_report</a></li> 
       </ul>
     </div>

@@ -189,17 +189,9 @@ and where any java provenance can be written.</p></li>
 
 <dl class="py class">
 <dt id="spinn_front_end_common.interface.interface_functions.ChipIOBufExtractor">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></code><code class="sig-name descname"><span class="pre">ChipIOBufExtractor</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recovery_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iobuf_for_chip_{}_{}_processor_id_{}.txt'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/chip_iobuf_extractor.html#ChipIOBufExtractor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.ChipIOBufExtractor" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></code><code class="sig-name descname"><span class="pre">ChipIOBufExtractor</span></code><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/chip_iobuf_extractor.html#ChipIOBufExtractor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.ChipIOBufExtractor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Extract the logging output buffers from the machine, and separates        lines based on their prefix.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>recovery_mode</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – </p></li>
-<li><p><strong>filename_template</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </p></li>
-</ul>
-</dd>
-</dl>
 <dl class="py method">
 <dt id="spinn_front_end_common.interface.interface_functions.ChipIOBufExtractor.__call__">
 <code class="sig-name descname"><span class="pre">__call__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_finder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_provenance_file_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_provenance_file_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/chip_iobuf_extractor.html#ChipIOBufExtractor.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.ChipIOBufExtractor.__call__" title="Permalink to this definition">¶</a></dt>
@@ -586,7 +578,7 @@ Massively-Parallel Neural Network Simulation)</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN)"><em>Placements</em></a>) – </p></li>
 <li><p><strong>graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN)"><em>MachineGraph</em></a>) – </p></li>
-<li><p><strong>executable_finder</strong> (<em>ExecutableFinder</em>) – </p></li>
+<li><p><strong>executable_finder</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.executable_finder.ExecutableFinder" title="(in SpiNNUtils)"><em>ExecutableFinder</em></a>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1926,7 +1918,7 @@ could be <code class="docutils literal notranslate"><span class="pre">None</span
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>iptags</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine)"><em>IPTag</em></a><em>)</em>) – the IP tags to be loaded.</p></li>
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan)"><em>Transceiver</em></a>) – the transceiver object</p></li>
-<li><p><strong>progress_bar</strong> (<em>ProgressBar</em>) – </p></li>
+<li><p><strong>progress_bar</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.progress_bar.ProgressBar" title="(in SpiNNUtils)"><em>ProgressBar</em></a>) – </p></li>
 </ul>
 </dd>
 </dl>
@@ -1941,7 +1933,7 @@ could be <code class="docutils literal notranslate"><span class="pre">None</span
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>reverse_ip_tags</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.ReverseIPTag" title="(in SpiNNMachine)"><em>ReverseIPTag</em></a><em>)</em>) – the reverse IP tags to be loaded</p></li>
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan)"><em>Transceiver</em></a>) – the transceiver object</p></li>
-<li><p><strong>progress_bar</strong> (<em>ProgressBar</em>) – </p></li>
+<li><p><strong>progress_bar</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.progress_bar.ProgressBar" title="(in SpiNNUtils)"><em>ProgressBar</em></a>) – </p></li>
 </ul>
 </dd>
 </dl>
@@ -1984,6 +1976,11 @@ could be <code class="docutils literal notranslate"><span class="pre">None</span
 </dd></dl>
 
 </dd></dl>
+
+<dl class="py function">
+<dt id="spinn_front_end_common.interface.interface_functions.interface_xml">
+<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></code><code class="sig-name descname"><span class="pre">interface_xml</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions.html#interface_xml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.interface_xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </div>
 </div>

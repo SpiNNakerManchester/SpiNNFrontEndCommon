@@ -25,7 +25,8 @@
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../interface_functions.html" accesskey="U">spinn_front_end_common.interface.interface_functions</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.interface_functions.find_application_chips_used</a></li> 
       </ul>
     </div>  
@@ -53,9 +54,8 @@
 
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">find_executable_start_type</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="n">AbstractHasAssociatedBinary</span>
 
 
 <div class="viewcode-block" id="FindApplicationChipsUsed"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.FindApplicationChipsUsed">[docs]</a><span class="k">class</span> <span class="nc">FindApplicationChipsUsed</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -80,7 +80,9 @@
         <span class="n">chips_used</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">placements</span><span class="p">:</span>
             <span class="c1"># find binary type if applicable</span>
-            <span class="n">binary_start_type</span> <span class="o">=</span> <span class="n">find_executable_start_type</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">)</span>
+            <span class="n">binary_start_type</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">):</span>
+                <span class="n">binary_start_type</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">binary_start_type</span> <span class="o">!=</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">:</span>
                 <span class="n">chips_used</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
 
@@ -130,6 +132,7 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../interface_functions.html" >spinn_front_end_common.interface.interface_functions</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.interface_functions.find_application_chips_used</a></li> 
       </ul>
     </div>

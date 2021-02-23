@@ -1,0 +1,361 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.utilities.iobuf_extractor &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.iobuf_extractor</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utilities.iobuf_extractor</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2020 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.make_tools.replacer</span> <span class="kn">import</span> <span class="n">Replacer</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
+<span class="kn">from</span> <span class="nn">spinn_machine.core_subsets</span> <span class="kn">import</span> <span class="n">CoreSubsets</span>
+<span class="kn">from</span> <span class="nn">spinnman.model.io_buffer</span> <span class="kn">import</span> <span class="n">IOBuffer</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">convert_string_into_chip_and_core_subset</span><span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
+<span class="n">ERROR_ENTRY</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\[ERROR\]\s+\((.*)\):\s+(.*)&quot;</span><span class="p">)</span>
+<span class="n">WARNING_ENTRY</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\[WARNING\]\s+\((.*)\):\s+(.*)&quot;</span><span class="p">)</span>
+<span class="n">ENTRY_FILE</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">ENTRY_TEXT</span> <span class="o">=</span> <span class="mi">2</span>
+
+
+<span class="k">class</span> <span class="nc">_DummyProgress</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">over</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+
+<div class="viewcode-block" id="IOBufExtractor"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.IOBufExtractor">[docs]</a><span class="k">class</span> <span class="nc">IOBufExtractor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Extract the logging output buffers from the machine, and separates\</span>
+<span class="sd">        lines based on their prefix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_filename_template&quot;</span><span class="p">,</span> <span class="s2">&quot;_recovery_mode&quot;</span><span class="p">,</span> <span class="s2">&quot;__system_binaries&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;__app_path&quot;</span><span class="p">,</span> <span class="s2">&quot;__sys_path&quot;</span><span class="p">,</span> <span class="s2">&quot;__transceiver&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;__suppress_progress&quot;</span><span class="p">,</span> <span class="s2">&quot;__from_cores&quot;</span><span class="p">,</span> <span class="s2">&quot;__binary_types&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;__executable_targets&quot;</span><span class="p">,</span> <span class="s2">&quot;__executable_finder&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span>
+                 <span class="n">executable_finder</span><span class="p">,</span> <span class="n">app_provenance_file_path</span><span class="p">,</span>
+                 <span class="n">system_provenance_file_path</span><span class="p">,</span> <span class="n">from_cores</span><span class="o">=</span><span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
+                 <span class="n">binary_types</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">recovery_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">filename_template</span><span class="o">=</span><span class="s2">&quot;iobuf_for_chip_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">_processor_id_</span><span class="si">{}</span><span class="s2">.txt&quot;</span><span class="p">,</span>
+                 <span class="n">suppress_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param bool recovery_mode:</span>
+<span class="sd">        :param str filename_template:</span>
+<span class="sd">        :param bool suppress_progress:</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">        :param ~spinnman.model.ExecutableTargets executable_targets:</span>
+<span class="sd">        :param ExecutableFinder executable_finder:</span>
+<span class="sd">        :param app_provenance_file_path:</span>
+<span class="sd">        :type app_provenance_file_path: str or None</span>
+<span class="sd">        :param system_provenance_file_path:</span>
+<span class="sd">        :type system_provenance_file_path: str or None</span>
+<span class="sd">        :param str from_cores:</span>
+<span class="sd">        :param str binary_types:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filename_template</span> <span class="o">=</span> <span class="n">filename_template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_mode</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">recovery_mode</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__suppress_progress</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">suppress_progress</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__app_path</span> <span class="o">=</span> <span class="n">app_provenance_file_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sys_path</span> <span class="o">=</span> <span class="n">system_provenance_file_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__transceiver</span> <span class="o">=</span> <span class="n">transceiver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__from_cores</span> <span class="o">=</span> <span class="n">from_cores</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__binary_types</span> <span class="o">=</span> <span class="n">binary_types</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__executable_targets</span> <span class="o">=</span> <span class="n">executable_targets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__executable_finder</span> <span class="o">=</span> <span class="n">executable_finder</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__system_binaries</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__system_binaries</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="n">executable_targets</span><span class="o">.</span><span class="n">get_binaries_of_executable_type</span><span class="p">(</span>
+                    <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+<div class="viewcode-block" id="IOBufExtractor.extract_iobuf"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.IOBufExtractor.extract_iobuf">[docs]</a>    <span class="k">def</span> <span class="nf">extract_iobuf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Perform the extraction of IOBUF</span>
+
+<span class="sd">        :return: error_entries, warn_entries</span>
+<span class="sd">        :rtype: tuple(list(str),list(str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__from_cores</span> <span class="o">==</span> <span class="s2">&quot;ALL&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__extract_all_cores</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">__from_cores</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__binary_types</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__extract_selected_cores_and_types</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">__from_cores</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__extract_selected_cores</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">__binary_types</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__extract_selected_types</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># nothing</span>
+            <span class="k">return</span> <span class="p">[],</span> <span class="p">[]</span></div>
+
+    <span class="k">def</span> <span class="nf">__progress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param list bins:</span>
+<span class="sd">        :rtype: ~.ProgressBar</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__suppress_progress</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_DummyProgress</span><span class="p">()</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;Recovering&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_mode</span> <span class="k">else</span> <span class="s2">&quot;Extracting&quot;</span><span class="p">)</span>
+                 <span class="o">+</span> <span class="s2">&quot; IOBUF from the machine&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ProgressBar</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bins</span><span class="p">),</span> <span class="n">label</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__prov_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str binary:</span>
+<span class="sd">        :return: provenance directory path</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__sys_path</span> <span class="k">if</span> <span class="n">binary</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__system_binaries</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">__app_path</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__extract_all_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: tuple(list(str), list(str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">error_entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">warn_entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="c1"># all the cores</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__progress</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__executable_targets</span><span class="o">.</span><span class="n">binaries</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">binary</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__executable_targets</span><span class="o">.</span><span class="n">binaries</span><span class="p">):</span>
+            <span class="n">core_subsets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__executable_targets</span><span class="o">.</span><span class="n">get_cores_for_binary</span><span class="p">(</span>
+                <span class="n">binary</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__extract_iobufs_for_binary</span><span class="p">(</span>
+                <span class="n">core_subsets</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span>
+
+    <span class="k">def</span> <span class="nf">__extract_selected_cores_and_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: tuple(list(str), list(str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">error_entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">warn_entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="c1"># bit of both</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__progress</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__executable_targets</span><span class="o">.</span><span class="n">binaries</span><span class="p">)</span>
+        <span class="n">binaries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__executable_finder</span><span class="o">.</span><span class="n">get_executable_paths</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__binary_types</span><span class="p">)</span>
+        <span class="n">iocores</span> <span class="o">=</span> <span class="n">convert_string_into_chip_and_core_subset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__from_cores</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">binary</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__executable_targets</span><span class="o">.</span><span class="n">binaries</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">binary</span> <span class="ow">in</span> <span class="n">binaries</span><span class="p">:</span>
+                <span class="n">core_subsets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__executable_targets</span><span class="o">.</span><span class="n">get_cores_for_binary</span><span class="p">(</span>
+                    <span class="n">binary</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">iocores</span><span class="o">.</span><span class="n">intersect</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__executable_targets</span><span class="o">.</span><span class="n">get_cores_for_binary</span><span class="p">(</span><span class="n">binary</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">core_subsets</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__extract_iobufs_for_binary</span><span class="p">(</span>
+                    <span class="n">core_subsets</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span>
+
+    <span class="k">def</span> <span class="nf">__extract_selected_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: tuple(list(str), list(str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">error_entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">warn_entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="c1"># some hard coded cores</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__progress</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__executable_targets</span><span class="o">.</span><span class="n">binaries</span><span class="p">)</span>
+        <span class="n">iocores</span> <span class="o">=</span> <span class="n">convert_string_into_chip_and_core_subset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__from_cores</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">binary</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__executable_targets</span><span class="o">.</span><span class="n">binaries</span><span class="p">):</span>
+            <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">iocores</span><span class="o">.</span><span class="n">intersect</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__executable_targets</span><span class="o">.</span><span class="n">get_cores_for_binary</span><span class="p">(</span><span class="n">binary</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">core_subsets</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__extract_iobufs_for_binary</span><span class="p">(</span>
+                    <span class="n">core_subsets</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span>
+
+    <span class="k">def</span> <span class="nf">__extract_selected_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: tuple(list(str), list(str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">error_entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">warn_entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="c1"># some binaries</span>
+        <span class="n">binaries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__executable_finder</span><span class="o">.</span><span class="n">get_executable_paths</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__binary_types</span><span class="p">)</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__progress</span><span class="p">(</span><span class="n">binaries</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">binary</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">binaries</span><span class="p">):</span>
+            <span class="n">core_subsets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__executable_targets</span><span class="o">.</span><span class="n">get_cores_for_binary</span><span class="p">(</span>
+                <span class="n">binary</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__extract_iobufs_for_binary</span><span class="p">(</span>
+                <span class="n">core_subsets</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span>
+
+    <span class="k">def</span> <span class="nf">__extract_iobufs_for_binary</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.CoreSubsets core_subsets: Where the binary is deployed</span>
+<span class="sd">        :param str binary: What binary was deployed there.</span>
+<span class="sd">            This is used to determine how to decompress the IOBUF output.</span>
+<span class="sd">        :param list(str) error_entries:</span>
+<span class="sd">        :param list(str) warn_entries:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">replacer</span> <span class="o">=</span> <span class="n">Replacer</span><span class="p">(</span><span class="n">binary</span><span class="p">)</span>
+        <span class="n">prov_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__prov_path</span><span class="p">(</span><span class="n">binary</span><span class="p">)</span>
+
+        <span class="c1"># extract iobuf</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_mode</span><span class="p">:</span>
+            <span class="n">io_buffers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__recover_iobufs</span><span class="p">(</span><span class="n">core_subsets</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">io_buffers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__transceiver</span><span class="o">.</span><span class="n">get_iobuf</span><span class="p">(</span><span class="n">core_subsets</span><span class="p">))</span>
+
+        <span class="c1"># write iobuf</span>
+        <span class="k">for</span> <span class="n">iobuf</span> <span class="ow">in</span> <span class="n">io_buffers</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__process_one_iobuf</span><span class="p">(</span><span class="n">iobuf</span><span class="p">,</span> <span class="n">prov_path</span><span class="p">,</span> <span class="n">replacer</span><span class="p">,</span>
+                                     <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__process_one_iobuf</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">iobuf</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">replacer</span><span class="p">,</span> <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.IOBuffer iobuf:</span>
+<span class="sd">        :param str file_path:</span>
+<span class="sd">        :param ~.Replacer replacer:</span>
+<span class="sd">        :param list(str) error_entries:</span>
+<span class="sd">        :param list(str) warn_entries:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">file_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">iobuf</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">iobuf</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">iobuf</span><span class="o">.</span><span class="n">p</span><span class="p">))</span>
+
+        <span class="c1"># set mode of the file based off if the file already exists</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;a&quot;</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;w&quot;</span>
+
+        <span class="c1"># write iobuf to file and call out errors and warnings.</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">iobuf</span><span class="o">.</span><span class="n">iobuf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">):</span>
+                <span class="n">replaced</span> <span class="o">=</span> <span class="n">replacer</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">replaced</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__add_value_if_match</span><span class="p">(</span>
+                    <span class="n">ERROR_ENTRY</span><span class="p">,</span> <span class="n">replaced</span><span class="p">,</span> <span class="n">error_entries</span><span class="p">,</span> <span class="n">iobuf</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__add_value_if_match</span><span class="p">(</span>
+                    <span class="n">WARNING_ENTRY</span><span class="p">,</span> <span class="n">replaced</span><span class="p">,</span> <span class="n">warn_entries</span><span class="p">,</span> <span class="n">iobuf</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__recover_iobufs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.CoreSubsets core_subsets:</span>
+<span class="sd">        :rtype: list(~.IOBuffer)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">io_buffers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">core_subset</span> <span class="ow">in</span> <span class="n">core_subsets</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">processor_ids</span><span class="p">:</span>
+                <span class="n">cs</span> <span class="o">=</span> <span class="n">CoreSubsets</span><span class="p">()</span>
+                <span class="n">cs</span><span class="o">.</span><span class="n">add_processor</span><span class="p">(</span><span class="n">core_subset</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">io_buffers</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__transceiver</span><span class="o">.</span><span class="n">get_iobuf</span><span class="p">(</span><span class="n">cs</span><span class="p">))</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
+                    <span class="n">io_buffers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">IOBuffer</span><span class="p">(</span>
+                        <span class="n">core_subset</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span>
+                        <span class="s2">&quot;failed to retrieve iobufs from </span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">core_subset</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))))</span>
+        <span class="k">return</span> <span class="n">io_buffers</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__add_value_if_match</span><span class="p">(</span><span class="n">regex</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">entries</span><span class="p">,</span> <span class="n">iobuf</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~typing.Pattern regex:</span>
+<span class="sd">        :param str line:</span>
+<span class="sd">        :param list(str) entries:</span>
+<span class="sd">        :param ~.IOBuffer iobuf:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">iobuf</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">iobuf</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">iobuf</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">ENTRY_TEXT</span><span class="p">),</span>
+                <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">ENTRY_FILE</span><span class="p">)))</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.iobuf_extractor</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
+    </div>
+  </body>
+</html>

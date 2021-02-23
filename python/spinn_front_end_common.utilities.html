@@ -328,20 +328,6 @@ for the application hash.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-spinn_front_end_common.utilities.function_list">
-<span id="spinn-front-end-common-utilities-function-list-module"></span><h2>spinn_front_end_common.utilities.function_list module<a class="headerlink" href="#module-spinn_front_end_common.utilities.function_list" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
-<dt id="spinn_front_end_common.utilities.function_list.get_front_end_common_pacman_xml_paths">
-<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.function_list.</span></code><code class="sig-name descname"><span class="pre">get_front_end_common_pacman_xml_paths</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/function_list.html#get_front_end_common_pacman_xml_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.function_list.get_front_end_common_pacman_xml_paths" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the XML path for the front end common interface functions</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-</div>
 <div class="section" id="module-spinn_front_end_common.utilities.globals_variables">
 <span id="spinn-front-end-common-utilities-globals-variables-module"></span><h2>spinn_front_end_common.utilities.globals_variables module<a class="headerlink" href="#module-spinn_front_end_common.utilities.globals_variables" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
@@ -499,50 +485,6 @@ or <cite>None</cite> if the variable is not found.</p>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a>,<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model.enums/#spinnman.model.enums.CPUState" title="(in SpiNNMan)">CPUState</a>),
 <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a>,<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model.enums/#spinnman.model.enums.CPUState" title="(in SpiNNMan)">CPUState</a>))</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="spinn_front_end_common.utilities.helpful_functions.emergency_recover_state_from_failure">
-<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.helpful_functions.</span></code><code class="sig-name descname"><span class="pre">emergency_recover_state_from_failure</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txrx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#emergency_recover_state_from_failure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.emergency_recover_state_from_failure" title="Permalink to this definition">¶</a></dt>
-<dd><p>Used to get at least <em>some</em> information out of a core when something        goes badly wrong. Not a replacement for what abstract spinnaker base        does.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>txrx</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan)"><em>Transceiver</em></a>) – The transceiver.</p></li>
-<li><p><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The ID of the application.</p></li>
-<li><p><strong>vertex</strong> (<a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary" title="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary"><em>AbstractHasAssociatedBinary</em></a>) – The vertex to retrieve the IOBUF from if it is suspected as being dead</p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN)"><em>Placement</em></a>) – Where the vertex is located.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="spinn_front_end_common.utilities.helpful_functions.emergency_recover_states_from_failure">
-<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.helpful_functions.</span></code><code class="sig-name descname"><span class="pre">emergency_recover_states_from_failure</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txrx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_targets</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#emergency_recover_states_from_failure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.emergency_recover_states_from_failure" title="Permalink to this definition">¶</a></dt>
-<dd><p>Used to get at least <em>some</em> information out of a core when something        goes badly wrong. Not a replacement for what abstract spinnaker base        does.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>txrx</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan)"><em>Transceiver</em></a>) – The transceiver.</p></li>
-<li><p><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The ID of the application.</p></li>
-<li><p><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan)"><em>ExecutableTargets</em></a>) – The what/where mapping</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="spinn_front_end_common.utilities.helpful_functions.find_executable_start_type">
-<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.helpful_functions.</span></code><code class="sig-name descname"><span class="pre">find_executable_start_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#find_executable_start_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.find_executable_start_type" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>machine_vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN)"><em>MachineVertex</em></a>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -826,7 +768,7 @@ expects <cite>executable_cores</cite>, <cite>transceiver</cite> as inputs</p></l
 <li><p><strong>filename_template</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – the IOBUF filename template.</p></li>
 <li><p><strong>binaries_to_track</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em>) – A list of binary names to check for exit state.
 Or <cite>None</cite> for all binaries</p></li>
-<li><p><strong>progress_bar</strong> (<em>ProgressBar</em><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – Possible progress bar to update.
+<li><p><strong>progress_bar</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.progress_bar.ProgressBar" title="(in SpiNNUtils)"><em>ProgressBar</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – Possible progress bar to update.
 end() will be called after state checked</p></li>
 <li><p><strong>logger</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/logging.html#logging.Logger" title="(in Python v3.6)"><em>Logger</em></a>) – If provided and IOBUF is extracted, will be used to log errors and
 warnings</p></li>
@@ -1021,6 +963,43 @@ run_forever</p>
 <dt id="spinn_front_end_common.utilities.FailedState.verify_not_running">
 <code class="sig-name descname"><span class="pre">verify_not_running</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/failed_state.html#FailedState.verify_not_running"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.verify_not_running" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify that the simulator is in a state where it can start running.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.utilities.IOBufExtractor">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.</span></code><code class="sig-name descname"><span class="pre">IOBufExtractor</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_finder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_provenance_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_provenance_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recovery_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iobuf_for_chip_{}_{}_processor_id_{}.txt'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/iobuf_extractor.html#IOBufExtractor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.IOBufExtractor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Extract the logging output buffers from the machine, and separates        lines based on their prefix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>recovery_mode</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – </p></li>
+<li><p><strong>filename_template</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </p></li>
+<li><p><strong>suppress_progress</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – </p></li>
+<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan)"><em>Transceiver</em></a>) – </p></li>
+<li><p><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan)"><em>ExecutableTargets</em></a>) – </p></li>
+<li><p><strong>executable_finder</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableFinder" title="spinn_front_end_common.utilities.utility_objs.ExecutableFinder"><em>ExecutableFinder</em></a>) – </p></li>
+<li><p><strong>app_provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – </p></li>
+<li><p><strong>system_provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – </p></li>
+<li><p><strong>from_cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </p></li>
+<li><p><strong>binary_types</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.IOBufExtractor.extract_iobuf">
+<code class="sig-name descname"><span class="pre">extract_iobuf</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/iobuf_extractor.html#IOBufExtractor.extract_iobuf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.IOBufExtractor.extract_iobuf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the extraction of IOBUF</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>error_entries, warn_entries</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>),<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>))</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -1221,7 +1200,6 @@ run_forever</p>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.constants">spinn_front_end_common.utilities.constants module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.exceptions">spinn_front_end_common.utilities.exceptions module</a></li>
-<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.function_list">spinn_front_end_common.utilities.function_list module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.globals_variables">spinn_front_end_common.utilities.globals_variables module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.helpful_functions">spinn_front_end_common.utilities.helpful_functions module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.system_control_logic">spinn_front_end_common.utilities.system_control_logic module</a></li>
