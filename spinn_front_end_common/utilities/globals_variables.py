@@ -98,6 +98,25 @@ def set_failed_state(new_failed_state):
         raise ValueError("You may only setup/init one type of simulator")
 
 
+def _last_simulator():
+    """ Get last simulator to be used.
+
+    Before setup this will return None.
+    Between setup and end this will return the simulator.
+    After end this will return the previous simulator
+    """
+    global _simulator, _cached_simulator
+    if _simulator is not None:
+        return _simulator
+    if _cached_simulator is not None:
+        return _cached_simulator
+    if _failed_state is not None:
+        return None
+    else:
+        raise ValueError(
+            "There should be some sort of simulator set. Why am i here?!")
+
+
 def get_generated_output(output):
     """ Get one of the simulator outputs by name.
 
@@ -107,17 +126,70 @@ def get_generated_output(output):
     :raises ValueError:
         if the system is in a state where outputs can't be retrieved
     """
-    global _simulator, _failed_state, _cached_simulator
-    if _simulator is not None:
-        return _simulator.get_generated_output(output)
-    elif _failed_state is not None:
-        if _cached_simulator is not None:
-            return _cached_simulator.get_generated_output(output)
-        else:
-            raise ValueError(
-                "You need to have ran a simulator before asking for its "
-                "generated output, and the simulator needs to be cached "
-                "before you can request outputs.")
-    else:
+    simulator = _last_simulator()
+    if simulator is None:
         raise ValueError(
-            "There should be some sort of simulator set. Why am i here?!")
+            "You need to have ran a simulator before asking for its "
+            "generated output.")
+    else:
+        return simulator.get_generated_output(output)
+
+
+@property
+def provenance_file_path(self):
+    """
+    Returns the path to the directory that holds all provenance files
+    This will be the path used by the last run call or to be used by
+    the next run if it has not yet been called.
+    :rtpye: str
+    :raises ValueError:
+        if the system is in a state where path can't be retrieved
+    """
+    simulator = _last_simulator()
+    if simulator is None:
+        raise ValueError(
+            "You need to have setup a simulator before asking for its "
+            "provenance_file_path.")
+    else:
+        # underscore param used avoid exposing a None PyNN parameter
+        return simulator._provenance_file_path
+
+
+@property
+def app_provenance_file_path(self):
+    """
+    Returns the path to the directory that holds all app provenance files
+    This will be the path used by the last run call or to be used by
+    the next run if it has not yet been called.
+    :rtpye: str
+    :raises ValueError:
+        if the system is in a state where path can't be retrieved
+    """
+    simulator = _last_simulator()
+    if simulator is None:
+        raise ValueError(
+            "You need to have setup a simulator before asking for its "
+            "app_provenance_file_path.")
+    else:
+        # underscore param used avoid exposing a None PyNN parameter
+        return simulator._app_provenance_file_path
+
+
+@property
+def system_provenance_file_path(self):
+    """
+    Returns the path to the directory that holds all provenance files
+    This will be the path used by the last run call or to be used by
+    the next run if it has not yet been called.
+    :rtpye: str
+    :raises ValueError:
+        if the system is in a state where path can't be retrieved
+    """
+    simulator = _last_simulator()
+    if simulator is None:
+        raise ValueError(
+            "You need to have setup a simulator before asking for its "
+            "system_provenance_file_path.")
+    else:
+        # underscore param used avoid exposing a None PyNN parameter
+        return simulator._system_provenance_file_path
