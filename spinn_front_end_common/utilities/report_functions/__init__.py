@@ -18,6 +18,7 @@ Much of the code in this module is intended primarily for being invoked via the
 PACMAN Executor.
 """
 
+import os
 from .bit_field_compressor_report import BitFieldCompressorReport
 from .bit_field_summary import BitFieldSummary
 from .board_chip_report import BoardChipReport
@@ -28,6 +29,12 @@ from .memory_map_on_host_report import MemoryMapOnHostReport
 from .routing_table_from_machine_report import RoutingTableFromMachineReport
 from .real_tags_report import TagsFromMachineReport
 
+
+def report_xml():
+    return os.path.join(
+        os.path.dirname(__file__), "front_end_common_reports.xml")
+
+
 __all__ = [
     "BitFieldCompressorReport",
     "BitFieldSummary",
@@ -36,5 +43,7 @@ __all__ = [
     "FixedRouteFromMachineReport",
     "MemoryMapOnHostChipReport",
     "MemoryMapOnHostReport",
+    "report_xml",
     "RoutingTableFromMachineReport",
     "TagsFromMachineReport"]
+
