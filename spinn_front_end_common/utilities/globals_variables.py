@@ -135,7 +135,6 @@ def get_generated_output(output):
         return simulator.get_generated_output(output)
 
 
-@property
 def provenance_file_path(self):
     """
     Returns the path to the directory that holds all provenance files
@@ -157,7 +156,6 @@ def provenance_file_path(self):
         return simulator._provenance_file_path
 
 
-@property
 def app_provenance_file_path(self):
     """
     Returns the path to the directory that holds all app provenance files
@@ -179,7 +177,6 @@ def app_provenance_file_path(self):
         return simulator._app_provenance_file_path
 
 
-@property
 def system_provenance_file_path(self):
     """
     Returns the path to the directory that holds all provenance files
@@ -201,7 +198,6 @@ def system_provenance_file_path(self):
         return simulator._system_provenance_file_path
 
 
-@property
 def run_report_directory(self):
     """
     Returns the path to the directory that holds all the reports for run

@@ -80,7 +80,7 @@ class BaseTestCase(unittest.TestCase):
             report_file.write(message)
 
     def get_provenance(self, main_name, detail_name):
-        provenance_file_path = globals_variables.provenance_file_path
+        provenance_file_path = globals_variables.provenance_file_path()
         xml_path = os.path.join(provenance_file_path, "pacman.xml")
         xml_root = etree.parse(xml_path)
         results = []
@@ -95,7 +95,7 @@ class BaseTestCase(unittest.TestCase):
         return "".join(results)
 
     def get_provenance_files(self):
-        provenance_file_path = globals_variables.provenance_file_path
+        provenance_file_path = globals_variables.provenance_file_path()
         return os.listdir(provenance_file_path)
 
     def get_run_time_of_BufferExtractor(self):
