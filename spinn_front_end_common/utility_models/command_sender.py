@@ -33,7 +33,7 @@ class CommandSender(
         :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
-        super(CommandSender, self).__init__(
+        super().__init__(
             CommandSenderMachineVertex(label, constraints, self),
             label, constraints)
 

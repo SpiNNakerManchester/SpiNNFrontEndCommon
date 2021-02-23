@@ -1,4 +1,4 @@
-# Copyright (c) 2019 The University of Manchester
+# Copyright (c) 2021 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,20 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_utilities.abstract_base import (
-    AbstractBase, abstractmethod)
+from os import path
+import unittest
+from spinn_front_end_common.interface.interface_functions import interface_xml
+from spinn_front_end_common.utilities.report_functions import report_xml
 
 
-class AbstractCanReset(object, metaclass=AbstractBase):
-    """ Indicates an object that can be reset to time 0.
+class TestXmlFilePath(unittest.TestCase):
 
-    This is used when AbstractSpinnakerBase.reset is called.
-    All Vertices and all edges in the original graph
-    (the one added to by the user) will be checked and reset.
-    """
-    __slots__ = []
+    def test_interface_exists(self):
+        self.assertTrue(path.exists(interface_xml()))
 
-    @abstractmethod
-    def reset_to_first_timestep(self):
-        """ Reset the object to first time step.
-        """
+    def test_report_exists(self):
+        self.assertTrue(path.exists(report_xml()))

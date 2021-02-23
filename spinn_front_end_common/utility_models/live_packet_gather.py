@@ -35,7 +35,7 @@ class LivePacketGather(ApplicationVertex, LegacyPartitionerAPI):
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
         label = lpg_params.label or "Live Packet Gatherer"
-        super(LivePacketGather, self).__init__(label, constraints, 1)
+        super().__init__(label, constraints, 1)
         self._lpg_params = lpg_params
 
     @overrides(LegacyPartitionerAPI.create_machine_vertex)

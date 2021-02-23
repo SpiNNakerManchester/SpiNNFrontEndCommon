@@ -32,3 +32,5 @@ lastfailed
 *modified_src/
 *.dict
 .dbeaver/
+._dbeaver/
+test_output

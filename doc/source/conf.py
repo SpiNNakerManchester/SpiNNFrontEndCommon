@@ -29,6 +29,7 @@
 
 # import sys
 import os
+from sphinx.ext import apidoc
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -376,7 +377,7 @@ for f in os.listdir("."):
 
 # We want to document __call__ when encountered
 autodoc_default_options = {
-    "members": True,
+    "members": None,
     "special-members": "__call__"
 }
 
@@ -403,9 +404,9 @@ explicit_wanted_files = [
     "spinn_front_end_common/interface/abstract_spinnaker_base.py",
     "spinn_front_end_common/interface/simulator_state.py",
     "spinn_front_end_common/interface/config_handler.py",
+    "spinn_front_end_common/utilities/class_utils.py",
     "spinn_front_end_common/utilities/constants.py",
     "spinn_front_end_common/utilities/system_control_logic.py",
-    "spinn_front_end_common/utilities/function_list.py",
     "spinn_front_end_common/utilities/globals_variables.py",
     "spinn_front_end_common/utilities/helpful_functions.py",
     "spinn_front_end_common/utilities/exceptions.py",
@@ -413,11 +414,4 @@ explicit_wanted_files = [
 options = ['-o', output_dir, "spinn_front_end_common"]
 options.extend(filtered_files("spinn_front_end_common", explicit_wanted_files))
 
-try:
-    # Old style API; Python 2.7
-    from sphinx import apidoc
-    options = [None] + options
-except ImportError:
-    # New style API; Python 3.6 onwards
-    from sphinx.ext import apidoc
 apidoc.main(options)

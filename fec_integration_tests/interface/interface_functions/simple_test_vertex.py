@@ -34,7 +34,7 @@ class SimpleTestVertex(ApplicationVertex, LegacyPartitionerAPI):
     def __init__(self, n_atoms, label="testVertex", max_atoms_per_core=256,
                  constraints=None, fixed_sdram_value=None):
         # pylint: disable=too-many-arguments
-        super(SimpleTestVertex, self).__init__(
+        super().__init__(
             label=label, max_atoms_per_core=max_atoms_per_core,
             constraints=constraints)
         self._model_based_max_atoms_per_core = max_atoms_per_core
@@ -45,6 +45,7 @@ class SimpleTestVertex(ApplicationVertex, LegacyPartitionerAPI):
         """
         standard method call to get the sdram, cpu and dtcm usage of a
         collection of atoms
+
         :param vertex_slice: the collection of atoms
         :return:
         """
@@ -58,7 +59,6 @@ class SimpleTestVertex(ApplicationVertex, LegacyPartitionerAPI):
 
     def get_cpu_usage_for_atoms(self, vertex_slice, graph):
         """
-
         :param vertex_slice: the atoms being considered
         :param graph: the graph
         :return: the amount of cpu (in cycles this model will use)
@@ -67,7 +67,6 @@ class SimpleTestVertex(ApplicationVertex, LegacyPartitionerAPI):
 
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
         """
-
         :param vertex_slice: the atoms being considered
         :param graph: the graph
         :return: the amount of dtcm (in bytes this model will use)
