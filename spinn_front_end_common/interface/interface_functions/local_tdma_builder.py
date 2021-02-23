@@ -173,25 +173,25 @@ class LocalTDMABuilder(object):
         if n_phases == 0:
             n_phases = 1
 
-        # overall time of the TDMA window minus initial offset
+        # Overall time of the TDMA window minus initial offset
         overall_clocks_available = clocks_for_sending - clocks_waiting
 
-        # easier bool compares
+        # Easier bool compares
         core_set = clocks_between_cores is not None
         app_set = app_machine_quantity is not None
 
-        # adjust time between cores to fit time scale
+        # Adjust time between cores to fit time scale
         if not core_set and app_set:
             n_slots = int(math.ceil(n_cores / app_machine_quantity))
             clocks_per_phase = (
                 int(math.ceil(overall_clocks_available / n_phases)))
-            # NOTE the plus 1 ensures the last core finishes, if its the worst
+            # NOTE the plus 1 ensures the last core finishes, if it's the worst
             # in terms of n keys to transmit
             clocks_between_cores = clocks_per_phase / (n_slots + 1)
             logger.debug("adjusted clocks between cores is {}".format(
                 clocks_between_cores))
 
-        # adjust cores at same time to fit time between cores.
+        # Adjust cores at same time to fit time between cores.
         if core_set and not app_set:
             clocks_per_phase = (
                 int(math.ceil(overall_clocks_available / n_phases)))
