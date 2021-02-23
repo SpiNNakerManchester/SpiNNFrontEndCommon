@@ -202,6 +202,28 @@ def system_provenance_file_path(self):
 
 
 @property
+def run_report_directory(self):
+    """
+    Returns the path to the directory that holds all the reports for run
+
+    This will be the path used by the last run call or to be used by
+    the next run if it has not yet been called.
+
+    :rtpye: str
+    :raises ValueError:
+        if the system is in a state where path can't be retrieved
+    """
+    simulator = _last_simulator()
+    if simulator is None:
+        raise ValueError(
+            "You need to have setup a simulator before asking for its "
+            "run_report_directory.")
+    else:
+        # underscore param used avoid exposing a None PyNN parameter
+        return simulator._report_default_directory
+
+
+@property
 def config(self):
     """ Provides access to the configuration used or a best effort to the
     config to be used
