@@ -19,7 +19,6 @@ main interface for the SpiNNaker tools
 from collections import defaultdict
 import logging
 import math
-import os
 import signal
 import sys
 import time
@@ -56,14 +55,14 @@ from spinn_front_end_common.abstract_models import (
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
 from spinn_front_end_common.utilities import (
-    globals_variables, SimulatorInterface, report_functions)
+    globals_variables, SimulatorInterface,)
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import (
-    EnergyReport, TagsFromMachineReport)
+    EnergyReport, TagsFromMachineReport, report_xml)
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utility_models import (
@@ -78,8 +77,7 @@ from spinn_front_end_common.interface.simulator_state import Simulator_State
 from spinn_front_end_common.interface.interface_functions import (
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
-    RouterProvenanceGatherer)
-from spinn_front_end_common.interface import interface_functions
+    RouterProvenanceGatherer, interface_xml)
 
 from spinn_front_end_common import __version__ as fec_version
 try:
@@ -102,21 +100,6 @@ ALANS_DEFAULT_RANDOM_APP_ID = 16
 PROVENANCE_TYPE_CUTOFF = 20000
 
 _PREALLOC_NAME = 'MemoryPreAllocatedResources'
-
-
-def get_front_end_common_pacman_xml_paths():
-    """ Get the XML path for the front end common interface functions
-
-    :rtype: list(str)
-    """
-    return [
-        os.path.join(
-            os.path.dirname(interface_functions.__file__),
-            "front_end_common_interface_functions.xml"),
-        os.path.join(
-            os.path.dirname(report_functions.__file__),
-            "front_end_common_reports.xml")
-    ]
 
 
 class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
@@ -2419,7 +2402,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
         # add the extra xml files from the config file
         xml_paths = self._config.get_str_list("Mapping", "extra_xmls_paths")
-        xml_paths.extend(get_front_end_common_pacman_xml_paths())
+        xml_paths.append(interface_xml())
+        xml_paths.append(report_xml())
 
         if extra_algorithm_xml_paths is not None:
             xml_paths.extend(extra_algorithm_xml_paths)
