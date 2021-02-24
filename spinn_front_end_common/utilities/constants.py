@@ -119,3 +119,6 @@ PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP = "DATA_SPEED_UP_ROAD"
 #: The default local port that the toolchain listens on for the notification
 #: protocol.
 NOTIFY_PORT = 19999
+
+#: The number of clock cycles per micro-second (at 200Mhz)
+CLOCKS_PER_US = 200
