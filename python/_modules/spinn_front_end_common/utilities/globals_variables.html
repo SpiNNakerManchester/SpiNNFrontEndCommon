@@ -136,6 +136,25 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You may only setup/init one type of simulator&quot;</span><span class="p">)</span></div>
 
 
+<span class="k">def</span> <span class="nf">_last_simulator</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Get last simulator to be used.</span>
+
+<span class="sd">    Before setup this will return None.</span>
+<span class="sd">    Between setup and end this will return the simulator.</span>
+<span class="sd">    After end this will return the previous simulator</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">_cached_simulator</span>
+    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_simulator</span>
+    <span class="k">if</span> <span class="n">_cached_simulator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_cached_simulator</span>
+    <span class="k">if</span> <span class="n">_failed_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;There should be some sort of simulator set. Why am i here?!&quot;</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="get_generated_output"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.get_generated_output">[docs]</a><span class="k">def</span> <span class="nf">get_generated_output</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Get one of the simulator outputs by name.</span>
 
@@ -145,20 +164,116 @@
 <span class="sd">    :raises ValueError:</span>
 <span class="sd">        if the system is in a state where outputs can&#39;t be retrieved</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">_failed_state</span><span class="p">,</span> <span class="n">_cached_simulator</span>
-    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">get_generated_output</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">_failed_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">_cached_simulator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">_cached_simulator</span><span class="o">.</span><span class="n">get_generated_output</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;You need to have ran a simulator before asking for its &quot;</span>
-                <span class="s2">&quot;generated output, and the simulator needs to be cached &quot;</span>
-                <span class="s2">&quot;before you can request outputs.&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
+    <span class="n">simulator</span> <span class="o">=</span> <span class="n">_last_simulator</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;There should be some sort of simulator set. Why am i here?!&quot;</span><span class="p">)</span></div>
+            <span class="s2">&quot;You need to have ran a simulator before asking for its &quot;</span>
+            <span class="s2">&quot;generated output.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">simulator</span><span class="o">.</span><span class="n">get_generated_output</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="provenance_file_path"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.provenance_file_path">[docs]</a><span class="k">def</span> <span class="nf">provenance_file_path</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the path to the directory that holds all provenance files</span>
+
+<span class="sd">    This will be the path used by the last run call or to be used by</span>
+<span class="sd">    the next run if it has not yet been called.</span>
+
+<span class="sd">    :rtpye: str</span>
+<span class="sd">    :raises ValueError:</span>
+<span class="sd">        if the system is in a state where path can&#39;t be retrieved</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">simulator</span> <span class="o">=</span> <span class="n">_last_simulator</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;You need to have setup a simulator before asking for its &quot;</span>
+            <span class="s2">&quot;provenance_file_path.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># underscore param used avoid exposing a None PyNN parameter</span>
+        <span class="k">return</span> <span class="n">simulator</span><span class="o">.</span><span class="n">_provenance_file_path</span></div>
+
+
+<div class="viewcode-block" id="app_provenance_file_path"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.app_provenance_file_path">[docs]</a><span class="k">def</span> <span class="nf">app_provenance_file_path</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the path to the directory that holds all app provenance files</span>
+
+<span class="sd">    This will be the path used by the last run call or to be used by</span>
+<span class="sd">    the next run if it has not yet been called.</span>
+
+<span class="sd">    :rtpye: str</span>
+<span class="sd">    :raises ValueError:</span>
+<span class="sd">        if the system is in a state where path can&#39;t be retrieved</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">simulator</span> <span class="o">=</span> <span class="n">_last_simulator</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;You need to have setup a simulator before asking for its &quot;</span>
+            <span class="s2">&quot;app_provenance_file_path.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># underscore param used avoid exposing a None PyNN parameter</span>
+        <span class="k">return</span> <span class="n">simulator</span><span class="o">.</span><span class="n">_app_provenance_file_path</span></div>
+
+
+<div class="viewcode-block" id="system_provenance_file_path"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.system_provenance_file_path">[docs]</a><span class="k">def</span> <span class="nf">system_provenance_file_path</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the path to the directory that holds all provenance files</span>
+
+<span class="sd">    This will be the path used by the last run call or to be used by</span>
+<span class="sd">    the next run if it has not yet been called.</span>
+
+<span class="sd">    :rtpye: str</span>
+<span class="sd">    :raises ValueError:</span>
+<span class="sd">        if the system is in a state where path can&#39;t be retrieved</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">simulator</span> <span class="o">=</span> <span class="n">_last_simulator</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;You need to have setup a simulator before asking for its &quot;</span>
+            <span class="s2">&quot;system_provenance_file_path.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># underscore param used avoid exposing a None PyNN parameter</span>
+        <span class="k">return</span> <span class="n">simulator</span><span class="o">.</span><span class="n">_system_provenance_file_path</span></div>
+
+
+<div class="viewcode-block" id="run_report_directory"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.run_report_directory">[docs]</a><span class="k">def</span> <span class="nf">run_report_directory</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the path to the directory that holds all the reports for run</span>
+
+<span class="sd">    This will be the path used by the last run call or to be used by</span>
+<span class="sd">    the next run if it has not yet been called.</span>
+
+<span class="sd">    :rtpye: str</span>
+<span class="sd">    :raises ValueError:</span>
+<span class="sd">        if the system is in a state where path can&#39;t be retrieved</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">simulator</span> <span class="o">=</span> <span class="n">_last_simulator</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;You need to have setup a simulator before asking for its &quot;</span>
+            <span class="s2">&quot;run_report_directory.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># underscore param used avoid exposing a None PyNN parameter</span>
+        <span class="k">return</span> <span class="n">simulator</span><span class="o">.</span><span class="n">_report_default_directory</span></div>
+
+
+<div class="viewcode-block" id="config"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.config">[docs]</a><span class="k">def</span> <span class="nf">config</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Provides access to the configuration used or a best effort to the</span>
+<span class="sd">    config to be used</span>
+
+<span class="sd">    If called before setup will return the values found in the config file</span>
+<span class="sd">    BEFORE any cleanup alterations that setup could do.</span>
+
+<span class="sd">    After setup will return the simulation config even if end has been called</span>
+
+<span class="sd">    :rtype: ~spinn_front_end_common.interface.config_handler.ConfigHandler</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_failed_state</span>
+    <span class="n">simulator</span> <span class="o">=</span> <span class="n">_last_simulator</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_failed_state</span><span class="o">.</span><span class="n">config</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">simulator</span><span class="o">.</span><span class="n">config</span></div>
 </pre></div>
 
             <div class="clearer"></div>

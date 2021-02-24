@@ -337,6 +337,37 @@ for the application hash.</p>
 <div class="section" id="module-spinn_front_end_common.utilities.globals_variables">
 <span id="spinn-front-end-common-utilities-globals-variables-module"></span><h2>spinn_front_end_common.utilities.globals_variables module<a class="headerlink" href="#module-spinn_front_end_common.utilities.globals_variables" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
+<dt id="spinn_front_end_common.utilities.globals_variables.app_provenance_file_path">
+<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></code><code class="sig-name descname"><span class="pre">app_provenance_file_path</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#app_provenance_file_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.app_provenance_file_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the path to the directory that holds all app provenance files</p>
+<p>This will be the path used by the last run call or to be used by
+the next run if it has not yet been called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Rtpye</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – if the system is in a state where path can’t be retrieved</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="spinn_front_end_common.utilities.globals_variables.config">
+<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></code><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides access to the configuration used or a best effort to the
+config to be used</p>
+<p>If called before setup will return the values found in the config file
+BEFORE any cleanup alterations that setup could do.</p>
+<p>After setup will return the simulation config even if end has been called</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler" title="spinn_front_end_common.interface.config_handler.ConfigHandler">ConfigHandler</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="spinn_front_end_common.utilities.globals_variables.get_generated_output">
 <code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></code><code class="sig-name descname"><span class="pre">get_generated_output</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#get_generated_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.get_generated_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get one of the simulator outputs by name.</p>
@@ -388,6 +419,38 @@ or <cite>None</cite> if the variable is not found.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt id="spinn_front_end_common.utilities.globals_variables.provenance_file_path">
+<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></code><code class="sig-name descname"><span class="pre">provenance_file_path</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#provenance_file_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.provenance_file_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the path to the directory that holds all provenance files</p>
+<p>This will be the path used by the last run call or to be used by
+the next run if it has not yet been called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Rtpye</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – if the system is in a state where path can’t be retrieved</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="spinn_front_end_common.utilities.globals_variables.run_report_directory">
+<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></code><code class="sig-name descname"><span class="pre">run_report_directory</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#run_report_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.run_report_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the path to the directory that holds all the reports for run</p>
+<p>This will be the path used by the last run call or to be used by
+the next run if it has not yet been called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Rtpye</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – if the system is in a state where path can’t be retrieved</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="spinn_front_end_common.utilities.globals_variables.set_failed_state">
 <code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></code><code class="sig-name descname"><span class="pre">set_failed_state</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_failed_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#set_failed_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.set_failed_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Install a marker to say that the simulator has failed.</p>
@@ -405,6 +468,22 @@ or <cite>None</cite> if the variable is not found.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>new_simulator</strong> (<a class="reference internal" href="#spinn_front_end_common.utilities.SimulatorInterface" title="spinn_front_end_common.utilities.SimulatorInterface"><em>SimulatorInterface</em></a>) – The simulator to set.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="spinn_front_end_common.utilities.globals_variables.system_provenance_file_path">
+<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></code><code class="sig-name descname"><span class="pre">system_provenance_file_path</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#system_provenance_file_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.system_provenance_file_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the path to the directory that holds all provenance files</p>
+<p>This will be the path used by the last run call or to be used by
+the next run if it has not yet been called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Rtpye</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – if the system is in a state where path can’t be retrieved</p>
 </dd>
 </dl>
 </dd></dl>
