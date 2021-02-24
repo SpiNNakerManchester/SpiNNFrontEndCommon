@@ -55,14 +55,14 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
-<span class="kn">from</span> <span class="nn">spinn_utilities.logger_utils</span> <span class="kn">import</span> <span class="n">warn_once</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models.impl.</span>\
     <span class="n">tdma_aware_application_vertex</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">TDMAAwareApplicationVertex</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">read_config_int</span><span class="p">,</span> <span class="n">read_config_float</span><span class="p">,</span> <span class="n">read_config</span><span class="p">)</span>
+    <span class="n">read_config_int</span><span class="p">,</span> <span class="n">read_config_float</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="n">get_simulator</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">CLOCKS_PER_US</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -121,21 +121,9 @@
 <span class="sd">        Y is pop1 firing</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c1"># error message for when the vertex TDMA isnt feasible.</span>
-    <span class="n">_VERTEX_TDMA_FAILURE_MSG</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;vertex </span><span class="si">{}</span><span class="s2"> does not have enough time to execute the &quot;</span>
-        <span class="s2">&quot;TDMA in the given time. The population would need a time &quot;</span>
-        <span class="s2">&quot;scale factor of </span><span class="si">{}</span><span class="s2"> to correctly execute this TDMA.&quot;</span><span class="p">)</span>
-
     <span class="c1"># default fraction of the real time we will use for spike transmissions</span>
     <span class="n">FRACTION_OF_TIME_FOR_SPIKE_SENDING</span> <span class="o">=</span> <span class="mf">0.8</span>
     <span class="n">FRACTION_OF_TIME_STEP_BEFORE_SPIKE_SENDING</span> <span class="o">=</span> <span class="mf">0.1</span>
-
-    <span class="c1"># default number of cores to fire at same time from this population</span>
-    <span class="n">_DEFAULT_N_CORES_AT_SAME_TIME</span> <span class="o">=</span> <span class="mi">7</span>
-
-    <span class="c1"># default number of microseconds between cores firing</span>
-    <span class="n">_DEFAULT_TIME_BETWEEN_CORES</span> <span class="o">=</span> <span class="mi">50</span>
 
 <div class="viewcode-block" id="LocalTDMABuilder.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.LocalTDMABuilder.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span>
@@ -157,69 +145,133 @@
             <span class="k">return</span>
 
         <span class="c1"># get config params</span>
-        <span class="p">(</span><span class="n">app_machine_quantity</span><span class="p">,</span> <span class="n">time_between_cores</span><span class="p">,</span>
-         <span class="n">fraction_of_sending</span><span class="p">,</span> <span class="n">fraction_of_waiting</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_values</span><span class="p">()</span>
+        <span class="n">us_per_cycle</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">machine_time_step</span> <span class="o">*</span> <span class="n">time_scale_factor</span><span class="p">))</span>
+        <span class="n">clocks_per_cycle</span> <span class="o">=</span> <span class="n">us_per_cycle</span> <span class="o">*</span> <span class="n">CLOCKS_PER_US</span>
+        <span class="p">(</span><span class="n">app_machine_quantity</span><span class="p">,</span> <span class="n">clocks_between_cores</span><span class="p">,</span> <span class="n">clocks_for_sending</span><span class="p">,</span>
+         <span class="n">clocks_waiting</span><span class="p">,</span> <span class="n">clocks_initial</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_values</span><span class="p">(</span><span class="n">clocks_per_cycle</span><span class="p">)</span>
 
         <span class="c1"># calculate for each app vertex if the time needed fits</span>
         <span class="n">app_verts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">max_fraction_of_sending</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">app_vertex</span> <span class="ow">in</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">TDMAAwareApplicationVertex</span><span class="p">):</span>
                 <span class="n">app_verts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">)</span>
 
                 <span class="c1"># get timings</span>
-                <span class="n">n_phases</span><span class="p">,</span> <span class="n">n_slots</span><span class="p">,</span> <span class="n">time_between_phases</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_times</span><span class="p">(</span>
-                    <span class="n">machine_graph</span><span class="p">,</span> <span class="n">app_vertex</span><span class="p">,</span> <span class="n">app_machine_quantity</span><span class="p">,</span>
-                    <span class="n">time_between_cores</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">)</span>
+
+                <span class="c1"># check config params for better performance</span>
+                <span class="p">(</span><span class="n">n_at_same_time</span><span class="p">,</span> <span class="n">local_clocks</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_config_times</span><span class="p">(</span>
+                    <span class="n">app_machine_quantity</span><span class="p">,</span> <span class="n">clocks_between_cores</span><span class="p">,</span>
+                    <span class="n">clocks_for_sending</span><span class="p">,</span> <span class="n">app_vertex</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">,</span>
+                    <span class="n">machine_graph</span><span class="p">,</span> <span class="n">clocks_waiting</span><span class="p">)</span>
+                <span class="n">n_phases</span><span class="p">,</span> <span class="n">n_slots</span><span class="p">,</span> <span class="n">clocks_between_phases</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_generate_times</span><span class="p">(</span>
+                        <span class="n">machine_graph</span><span class="p">,</span> <span class="n">app_vertex</span><span class="p">,</span> <span class="n">n_at_same_time</span><span class="p">,</span>
+                        <span class="n">local_clocks</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">)</span>
 
                 <span class="c1"># store in tracker</span>
                 <span class="n">app_vertex</span><span class="o">.</span><span class="n">set_other_timings</span><span class="p">(</span>
-                    <span class="n">time_between_cores</span><span class="p">,</span> <span class="n">n_slots</span><span class="p">,</span> <span class="n">time_between_phases</span><span class="p">,</span> <span class="n">n_phases</span><span class="p">,</span>
-                    <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">machine_time_step</span> <span class="o">*</span> <span class="n">time_scale_factor</span><span class="p">)))</span>
+                    <span class="n">local_clocks</span><span class="p">,</span> <span class="n">n_slots</span><span class="p">,</span> <span class="n">clocks_between_phases</span><span class="p">,</span>
+                    <span class="n">n_phases</span><span class="p">,</span> <span class="n">clocks_per_cycle</span><span class="p">)</span>
 
                 <span class="c1"># test timings</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_test_timings</span><span class="p">(</span>
-                    <span class="n">n_phases</span><span class="p">,</span> <span class="n">time_between_phases</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span>
-                    <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">fraction_of_sending</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+                <span class="n">fraction_of_sending</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_fraction_of_sending</span><span class="p">(</span>
+                    <span class="n">n_phases</span><span class="p">,</span> <span class="n">clocks_between_phases</span><span class="p">,</span> <span class="n">clocks_for_sending</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">fraction_of_sending</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">max_fraction_of_sending</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+                        <span class="n">max_fraction_of_sending</span><span class="p">,</span> <span class="n">fraction_of_sending</span><span class="p">)</span>
+
+        <span class="n">time_scale_factor_needed</span> <span class="o">=</span> <span class="n">time_scale_factor</span> <span class="o">*</span> <span class="n">max_fraction_of_sending</span>
+        <span class="k">if</span> <span class="n">max_fraction_of_sending</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;A time scale factor of </span><span class="si">{}</span><span class="s2"> may be needed to run correctly&quot;</span>
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time_scale_factor_needed</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">max_fraction_of_sending</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;The time scale factor could be reduced to </span><span class="si">{}</span><span class="s2">&quot;</span>
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time_scale_factor_needed</span><span class="p">))</span>
 
         <span class="c1"># get initial offset for each app vertex.</span>
         <span class="k">for</span> <span class="n">app_vertex</span> <span class="ow">in</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">TDMAAwareApplicationVertex</span><span class="p">):</span>
                 <span class="n">initial_offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_initial_offset</span><span class="p">(</span>
-                    <span class="n">app_vertex</span><span class="p">,</span> <span class="n">app_verts</span><span class="p">,</span> <span class="n">time_between_cores</span><span class="p">,</span>
-                    <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">fraction_of_waiting</span><span class="p">)</span>
+                    <span class="n">app_vertex</span><span class="p">,</span> <span class="n">app_verts</span><span class="p">,</span> <span class="n">clocks_initial</span><span class="p">,</span>
+                    <span class="n">clocks_waiting</span><span class="p">)</span>
                 <span class="n">app_vertex</span><span class="o">.</span><span class="n">set_initial_offset</span><span class="p">(</span><span class="n">initial_offset</span><span class="p">)</span></div>
 
     <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_auto_config_times</span><span class="p">(</span>
+            <span class="n">app_machine_quantity</span><span class="p">,</span> <span class="n">clocks_between_cores</span><span class="p">,</span> <span class="n">clocks_for_sending</span><span class="p">,</span>
+            <span class="n">app_vertex</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">clocks_waiting</span><span class="p">):</span>
+
+        <span class="n">n_cores</span> <span class="o">=</span> <span class="n">app_vertex</span><span class="o">.</span><span class="n">get_n_cores</span><span class="p">()</span>
+        <span class="n">n_phases</span> <span class="o">=</span> <span class="n">app_vertex</span><span class="o">.</span><span class="n">find_n_phases_for</span><span class="p">(</span><span class="n">machine_graph</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">)</span>
+
+        <span class="c1"># If there are no packets sent, pretend there is 1 to avoid division</span>
+        <span class="c1"># by 0; it won&#39;t actually matter anyway</span>
+        <span class="k">if</span> <span class="n">n_phases</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">n_phases</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># Overall time of the TDMA window minus initial offset</span>
+        <span class="n">overall_clocks_available</span> <span class="o">=</span> <span class="n">clocks_for_sending</span> <span class="o">-</span> <span class="n">clocks_waiting</span>
+
+        <span class="c1"># Easier bool compares</span>
+        <span class="n">core_set</span> <span class="o">=</span> <span class="n">clocks_between_cores</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">app_set</span> <span class="o">=</span> <span class="n">app_machine_quantity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="c1"># Adjust time between cores to fit time scale</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">core_set</span> <span class="ow">and</span> <span class="n">app_set</span><span class="p">:</span>
+            <span class="n">n_slots</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_cores</span> <span class="o">/</span> <span class="n">app_machine_quantity</span><span class="p">))</span>
+            <span class="n">clocks_per_phase</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">overall_clocks_available</span> <span class="o">/</span> <span class="n">n_phases</span><span class="p">)))</span>
+            <span class="c1"># Note: The plus 1 ensures the last core finishes, if it&#39;s the</span>
+            <span class="c1"># worst in terms of n keys to transmit</span>
+            <span class="n">clocks_between_cores</span> <span class="o">=</span> <span class="n">clocks_per_phase</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_slots</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;adjusted clocks between cores is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">clocks_between_cores</span><span class="p">))</span>
+
+        <span class="c1"># Adjust cores at same time to fit time between cores.</span>
+        <span class="k">if</span> <span class="n">core_set</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">app_set</span><span class="p">:</span>
+            <span class="n">clocks_per_phase</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">overall_clocks_available</span> <span class="o">/</span> <span class="n">n_phases</span><span class="p">)))</span>
+            <span class="n">max_slots</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span>
+                <span class="n">clocks_per_phase</span> <span class="o">/</span> <span class="n">clocks_between_cores</span><span class="p">))</span>
+            <span class="n">app_machine_quantity</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_cores</span> <span class="o">/</span> <span class="n">max_slots</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;Adjusted the number of cores of a app vertex that &quot;</span>
+                <span class="s2">&quot;can fire at the same time to </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">app_machine_quantity</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">app_machine_quantity</span><span class="p">,</span> <span class="n">clocks_between_cores</span>
+
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_generate_initial_offset</span><span class="p">(</span>
-            <span class="n">app_vertex</span><span class="p">,</span> <span class="n">app_verts</span><span class="p">,</span> <span class="n">time_between_cores</span><span class="p">,</span>
-            <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">fraction_of_waiting</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; figures from the app vertex index the initial offset.</span>
+            <span class="n">app_vertex</span><span class="p">,</span> <span class="n">app_verts</span><span class="p">,</span> <span class="n">clocks_between_cores</span><span class="p">,</span> <span class="n">clocks_waiting</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calculates from the app vertex index the initial offset for the\</span>
+<span class="sd">            TDMA between all cores</span>
 
 <span class="sd">        :param ~pacman.model.graphs.application.ApplicationVertex app_vertex:</span>
 <span class="sd">            the app vertex in question.</span>
 <span class="sd">        :param app_verts: the list of app vertices.</span>
 <span class="sd">        :type app_verts:</span>
 <span class="sd">            list(~pacman.model.graphs.application.ApplicationVertex)</span>
-<span class="sd">        :param int time_between_cores: the time between cores.</span>
-<span class="sd">        :param int machine_time_step: the machine time step.</span>
-<span class="sd">        :param int time_scale_factor: the time scale factor.</span>
-<span class="sd">        :param float fraction_of_waiting: the fraction of time for waiting.</span>
-<span class="sd">        :return: the initial offset for this app vertex.</span>
+<span class="sd">        :param int clocks_between_cores: the clock cycles between cores.</span>
+<span class="sd">        :param int clocks_waiting: the clock cycles to wait for.</span>
+<span class="sd">        :return: the initial offset for this app vertex including wait time.</span>
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">initial_offset</span> <span class="o">=</span> <span class="n">app_verts</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">)</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span>
-            <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">app_verts</span><span class="p">)</span> <span class="o">/</span> <span class="n">time_between_cores</span><span class="p">))</span>
-        <span class="c1"># add the offset of a portion of the time step BEFORE doing any</span>
-        <span class="c1"># slots to allow initial processing to work.</span>
-        <span class="n">initial_offset</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">machine_time_step</span> <span class="o">*</span> <span class="n">time_scale_factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">fraction_of_waiting</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">initial_offset</span>
+        <span class="c1"># This is an offset between cores</span>
+        <span class="n">initial_offset_clocks</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">app_verts</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">)</span> <span class="o">*</span> <span class="n">clocks_between_cores</span><span class="p">)</span> <span class="o">/</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">app_verts</span><span class="p">)))</span>
+        <span class="c1"># add the offset the clocks to wait for before sending anything at all</span>
+        <span class="n">initial_offset_clocks</span> <span class="o">+=</span> <span class="n">clocks_waiting</span>
+        <span class="k">return</span> <span class="n">initial_offset_clocks</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_generate_times</span><span class="p">(</span>
             <span class="n">machine_graph</span><span class="p">,</span> <span class="n">app_vertex</span><span class="p">,</span> <span class="n">app_machine_quantity</span><span class="p">,</span>
-            <span class="n">time_between_cores</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">):</span>
+            <span class="n">clocks_between_cores</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Generates the number of phases needed for this app vertex, as well\</span>
 <span class="sd">            as the number of slots and the time between spikes for this app\</span>
 <span class="sd">            vertex, given the number of machine verts to fire at the same time\</span>
@@ -229,7 +281,7 @@
 <span class="sd">            machine graph</span>
 <span class="sd">        :param TDMAAwareApplicationVertex app_vertex: the app vertex</span>
 <span class="sd">        :param int app_machine_quantity: the pop spike control level</span>
-<span class="sd">        :param float time_between_cores: the time between cores</span>
+<span class="sd">        :param int clocks_between_cores: the clock cycles between cores</span>
 <span class="sd">        :param n_keys_map: the partition to n keys map.</span>
 <span class="sd">        :type n_keys_map:</span>
 <span class="sd">            ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap</span>
@@ -245,21 +297,17 @@
         <span class="n">n_slots</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_cores</span> <span class="o">/</span> <span class="n">app_machine_quantity</span><span class="p">))</span>
 
         <span class="c1"># figure T2</span>
-        <span class="n">time_between_phases</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">time_between_cores</span> <span class="o">*</span> <span class="n">n_slots</span><span class="p">))</span>
+        <span class="n">clocks_between_phases</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">clocks_between_cores</span> <span class="o">*</span> <span class="n">n_slots</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">n_phases</span><span class="p">,</span> <span class="n">n_slots</span><span class="p">,</span> <span class="n">time_between_phases</span>
+        <span class="k">return</span> <span class="n">n_phases</span><span class="p">,</span> <span class="n">n_slots</span><span class="p">,</span> <span class="n">clocks_between_phases</span>
 
-    <span class="k">def</span> <span class="nf">_test_timings</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">n_phases</span><span class="p">,</span> <span class="n">time_between_phases</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span>
-            <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">fraction_of_sending</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; verifies that the timings fit into the time scale factor and \</span>
-<span class="sd">            machine time step.</span>
+    <span class="k">def</span> <span class="nf">_get_fraction_of_sending</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">n_phases</span><span class="p">,</span> <span class="n">clocks_between_phases</span><span class="p">,</span> <span class="n">clocks_for_sending</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the fraction of the send</span>
 
 <span class="sd">        :param int n_phases:</span>
 <span class="sd">            the max number of phases this TDMA needs for a given app vertex</span>
 <span class="sd">        :param int time_between_phases: the time between phases.</span>
-<span class="sd">        :param int machine_time_step: the machine time step</span>
-<span class="sd">        :param int time_scale_factor: the time scale factor</span>
 <span class="sd">        :param float fraction_of_sending:</span>
 <span class="sd">            fraction of time step for sending packets</span>
 <span class="sd">        :param str label: the app vertex we&#39;re considering at this point</span>
@@ -267,33 +315,31 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># figure how much time this TDMA needs</span>
-        <span class="n">total_time_needed</span> <span class="o">=</span> <span class="n">n_phases</span> <span class="o">*</span> <span class="n">time_between_phases</span>
+        <span class="n">total_clocks_needed</span> <span class="o">=</span> <span class="n">n_phases</span> <span class="o">*</span> <span class="n">clocks_between_phases</span>
+        <span class="k">return</span> <span class="n">total_clocks_needed</span> <span class="o">/</span> <span class="n">clocks_for_sending</span>
 
-        <span class="c1"># figure how much time the TDMA has in transmission</span>
-        <span class="n">total_time_available</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
-            <span class="n">machine_time_step</span> <span class="o">*</span> <span class="n">time_scale_factor</span> <span class="o">*</span> <span class="n">fraction_of_sending</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">total_time_needed</span> <span class="o">&gt;</span> <span class="n">total_time_available</span><span class="p">:</span>
-            <span class="n">time_scale_factor_needed</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
-                <span class="n">total_time_needed</span> <span class="o">/</span> <span class="n">machine_time_step</span> <span class="o">/</span> <span class="n">fraction_of_sending</span><span class="p">)</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_VERTEX_TDMA_FAILURE_MSG</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">label</span><span class="p">,</span> <span class="n">time_scale_factor_needed</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">total_time_needed</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c1"># maybe this warn could be thrown away?</span>
-            <span class="n">true_fraction</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span>
-                <span class="n">machine_time_step</span> <span class="o">*</span> <span class="n">time_scale_factor</span> <span class="o">/</span> <span class="n">total_time_needed</span><span class="p">)</span>
-            <span class="n">warn_once</span><span class="p">(</span>
-                <span class="n">logger</span><span class="p">,</span>
-                <span class="s2">&quot;could reduce fraction of time for sending to </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">true_fraction</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">__check_at_most_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name_1</span><span class="p">,</span> <span class="n">value_1</span><span class="p">,</span> <span class="n">name_2</span><span class="p">,</span> <span class="n">value_2</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value_1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">value_2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                <span class="s2">&quot;Both </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2"> have been specified; please choose just one&quot;</span>
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name_1</span><span class="p">,</span> <span class="n">name_2</span><span class="p">))</span>
 
-<div class="viewcode-block" id="LocalTDMABuilder.config_values"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.LocalTDMABuilder.config_values">[docs]</a>    <span class="k">def</span> <span class="nf">config_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; read the config for the right params. Check the 2 fractions are \</span>
-<span class="sd">            together less than 1. else broken</span>
+    <span class="k">def</span> <span class="nf">__check_only_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name_1</span><span class="p">,</span> <span class="n">value_1</span><span class="p">,</span> <span class="n">name_2</span><span class="p">,</span> <span class="n">value_2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Checks that exactly one of the values is not None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__check_at_most_one</span><span class="p">(</span><span class="n">name_1</span><span class="p">,</span> <span class="n">value_1</span><span class="p">,</span> <span class="n">name_2</span><span class="p">,</span> <span class="n">value_2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value_1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">value_2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                <span class="s2">&quot;Exactly one of </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2"> must be specified&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">name_1</span><span class="p">,</span> <span class="n">name_2</span><span class="p">))</span>
 
-<span class="sd">        :return: (app_machine_quantity, time_between_cores,</span>
-<span class="sd">                fraction_of_sending, fraction_of_waiting)</span>
-<span class="sd">        :rtype: tuple(int, float, float, float)</span>
+<div class="viewcode-block" id="LocalTDMABuilder.config_values"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.LocalTDMABuilder.config_values">[docs]</a>    <span class="k">def</span> <span class="nf">config_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clocks_per_cycle</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Read the config for the right parameters and combinations.</span>
+
+<span class="sd">        :param int clocks_per_cycle: The number of clock cycles per time step</span>
+<span class="sd">        :return: (app_machine_quantity, clocks_between_cores,</span>
+<span class="sd">                clocks_for_sending, clocks_waiting, initial_clocks)</span>
+<span class="sd">        :rtype: tuple(int, int, int, int. int)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># get config</span>
@@ -302,40 +348,67 @@
         <span class="c1"># set the number of cores expected to fire at any given time</span>
         <span class="n">app_machine_quantity</span> <span class="o">=</span> <span class="n">read_config_int</span><span class="p">(</span>
             <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;app_machine_quantity&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">app_machine_quantity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">app_machine_quantity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DEFAULT_N_CORES_AT_SAME_TIME</span>
 
         <span class="c1"># set the time between cores to fire</span>
         <span class="n">time_between_cores</span> <span class="o">=</span> <span class="n">read_config_float</span><span class="p">(</span>
             <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;time_between_cores&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">time_between_cores</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">time_between_cores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DEFAULT_TIME_BETWEEN_CORES</span>
+        <span class="n">clocks_between_cores</span> <span class="o">=</span> <span class="n">read_config_int</span><span class="p">(</span>
+            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;clock_cycles_between_cores&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__check_at_most_one</span><span class="p">(</span>
+            <span class="s2">&quot;time_between_cores&quot;</span><span class="p">,</span> <span class="n">time_between_cores</span><span class="p">,</span>
+            <span class="s2">&quot;clock_cycles_betwen_cores&quot;</span><span class="p">,</span> <span class="n">clocks_between_cores</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">time_between_cores</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">clocks_between_cores</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span>
+                <span class="n">app_machine_quantity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                <span class="s2">&quot;Either one of time_between_cores and clocks_between_cores&quot;</span>
+                <span class="s2">&quot; must be specified or else app_machine_quantity must be&quot;</span>
+                <span class="s2">&quot; specified&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">time_between_cores</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">clocks_between_cores</span> <span class="o">=</span> <span class="n">time_between_cores</span> <span class="o">*</span> <span class="n">CLOCKS_PER_US</span>
 
-        <span class="c1"># fraction of time spend sending</span>
-        <span class="n">fraction_of_sending</span> <span class="o">=</span> <span class="n">read_config</span><span class="p">(</span>
+        <span class="c1"># time spend sending</span>
+        <span class="n">fraction_of_sending</span> <span class="o">=</span> <span class="n">read_config_float</span><span class="p">(</span>
             <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;fraction_of_time_spike_sending&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">fraction_of_sending</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">fraction_of_sending</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">FRACTION_OF_TIME_FOR_SPIKE_SENDING</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">fraction_of_sending</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">fraction_of_sending</span><span class="p">)</span>
+        <span class="n">clocks_for_sending</span> <span class="o">=</span> <span class="n">read_config_int</span><span class="p">(</span>
+            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;clock_cycles_sending&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__check_only_one</span><span class="p">(</span>
+            <span class="s2">&quot;fraction_of_time_spike_sending&quot;</span><span class="p">,</span> <span class="n">fraction_of_sending</span><span class="p">,</span>
+            <span class="s2">&quot;clock_cycles_sending&quot;</span><span class="p">,</span> <span class="n">clocks_for_sending</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fraction_of_sending</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">clocks_for_sending</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span>
+                <span class="n">clocks_per_cycle</span> <span class="o">*</span> <span class="n">fraction_of_sending</span><span class="p">))</span>
 
-        <span class="c1"># fraction of time waiting before sending</span>
-        <span class="n">fraction_of_waiting</span> <span class="o">=</span> <span class="n">read_config</span><span class="p">(</span>
+        <span class="c1"># time waiting before sending</span>
+        <span class="n">fraction_of_waiting</span> <span class="o">=</span> <span class="n">read_config_float</span><span class="p">(</span>
             <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;fraction_of_time_before_sending&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">fraction_of_waiting</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">fraction_of_waiting</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">FRACTION_OF_TIME_STEP_BEFORE_SPIKE_SENDING</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">fraction_of_waiting</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">fraction_of_waiting</span><span class="p">)</span>
+        <span class="n">clocks_waiting</span> <span class="o">=</span> <span class="n">read_config_int</span><span class="p">(</span>
+            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;clock_cycles_before_sending&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__check_only_one</span><span class="p">(</span>
+            <span class="s2">&quot;fraction_of_time_before_sending&quot;</span><span class="p">,</span> <span class="n">fraction_of_waiting</span><span class="p">,</span>
+            <span class="s2">&quot;clock_cycles_before_sending&quot;</span><span class="p">,</span> <span class="n">clocks_waiting</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fraction_of_waiting</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">clocks_waiting</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">clocks_per_cycle</span> <span class="o">*</span> <span class="n">fraction_of_waiting</span><span class="p">))</span>
+
+        <span class="c1"># time to offset app vertices between each other</span>
+        <span class="n">fraction_initial</span> <span class="o">=</span> <span class="n">read_config_float</span><span class="p">(</span>
+            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;fraction_of_time_for_offset&quot;</span><span class="p">)</span>
+        <span class="n">clocks_initial</span> <span class="o">=</span> <span class="n">read_config_int</span><span class="p">(</span>
+            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;clock_cycles_for_offset&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__check_only_one</span><span class="p">(</span>
+            <span class="s2">&quot;fraction_of_time_for_offset&quot;</span><span class="p">,</span> <span class="n">fraction_initial</span><span class="p">,</span>
+            <span class="s2">&quot;clock_cycles_for_offset&quot;</span><span class="p">,</span> <span class="n">clocks_initial</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fraction_initial</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">clocks_initial</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">clocks_per_cycle</span> <span class="o">*</span> <span class="n">fraction_initial</span><span class="p">))</span>
 
         <span class="c1"># check fractions less than 1.</span>
-        <span class="k">if</span> <span class="n">fraction_of_sending</span> <span class="o">+</span> <span class="n">fraction_of_waiting</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">clocks_for_sending</span> <span class="o">+</span> <span class="n">clocks_waiting</span> <span class="o">+</span> <span class="n">clocks_initial</span> <span class="o">&gt;</span>
+                <span class="n">clocks_per_cycle</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                <span class="s2">&quot;the 2 fractions of timing need to be at most 1.&quot;</span><span class="p">)</span>
+                <span class="s2">&quot;The total time for the TDMA must not exceed the time per&quot;</span>
+                <span class="s2">&quot; cycle&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="n">app_machine_quantity</span><span class="p">,</span> <span class="n">time_between_cores</span><span class="p">,</span>
-                <span class="n">fraction_of_sending</span><span class="p">,</span> <span class="n">fraction_of_waiting</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">app_machine_quantity</span><span class="p">,</span> <span class="n">clocks_between_cores</span><span class="p">,</span>
+                <span class="n">clocks_for_sending</span><span class="p">,</span> <span class="n">clocks_waiting</span><span class="p">,</span> <span class="n">clocks_initial</span><span class="p">)</span></div></div>
 </pre></div>
 
             <div class="clearer"></div>

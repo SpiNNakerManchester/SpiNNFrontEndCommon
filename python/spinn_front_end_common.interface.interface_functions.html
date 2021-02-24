@@ -1223,15 +1223,18 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 
 <dl class="py method">
 <dt id="spinn_front_end_common.interface.interface_functions.LocalTDMABuilder.config_values">
-<code class="sig-name descname"><span class="pre">config_values</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/local_tdma_builder.html#LocalTDMABuilder.config_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.LocalTDMABuilder.config_values" title="Permalink to this definition">¶</a></dt>
-<dd><p>read the config for the right params. Check the 2 fractions are             together less than 1. else broken</p>
+<code class="sig-name descname"><span class="pre">config_values</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clocks_per_cycle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/local_tdma_builder.html#LocalTDMABuilder.config_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.LocalTDMABuilder.config_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the config for the right parameters and combinations.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>(app_machine_quantity, time_between_cores,
-fraction_of_sending, fraction_of_waiting)</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>clocks_per_cycle</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The number of clock cycles per time step</p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a>)</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(app_machine_quantity, clocks_between_cores,
+clocks_for_sending, clocks_waiting, initial_clocks)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, int. int)</p>
 </dd>
 </dl>
 </dd></dl>

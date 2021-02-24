@@ -246,16 +246,16 @@ placed on a core, used in partitioning.</p></li>
 
 <dl class="py method">
 <dt id="spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.set_other_timings">
-<code class="sig-name descname"><span class="pre">set_other_timings</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_between_cores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_slots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_between_spikes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_phases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ns_per_cycle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/tdma_aware_application_vertex.html#TDMAAwareApplicationVertex.set_other_timings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.set_other_timings" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">set_other_timings</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clocks_between_cores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_slots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clocks_between_spikes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_phases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clocks_per_cycle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/tdma_aware_application_vertex.html#TDMAAwareApplicationVertex.set_other_timings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.set_other_timings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the other timings needed for the TDMA.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>time_between_cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – time between cores</p></li>
+<li><p><strong>clocks_between_cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – clock cycles between cores</p></li>
 <li><p><strong>n_slots</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the number of slots</p></li>
-<li><p><strong>time_between_spikes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the time to wait between spikes</p></li>
+<li><p><strong>clocks_between_spikes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the clock cycles to wait between spikes</p></li>
 <li><p><strong>n_phases</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the number of phases</p></li>
-<li><p><strong>ns_per_cycle</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the number of nano-seconds per TDMA cycle</p></li>
+<li><p><strong>clocks_per_cycle</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the number of clock cycles per TDMA cycle</p></li>
 </ul>
 </dd>
 </dl>
