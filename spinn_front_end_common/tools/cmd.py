@@ -18,7 +18,7 @@ import os
 import re
 import socket
 import struct
-from tools.scp import SCP
+from .scp import SCP
 
 
 def _word(a, b, c, d):

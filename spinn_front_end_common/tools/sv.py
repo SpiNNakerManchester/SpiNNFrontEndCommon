@@ -15,8 +15,8 @@
 import re
 import struct
 from collections import namedtuple
-from tools.exn import StructParseException
-from tools.util import find_path
+from .exn import StructParseException
+from .util import find_path
 
 
 Field = namedtuple("Field", ["pack", "offset", "fmt", "index", "size"])
@@ -96,10 +96,10 @@ class Struct(object):
         try:
             offset = int(offset, base=0)
             value = int(value, base=0)
-        except ValueError:
+        except ValueError as e:
             raise StructParseException(
                 "read_file: syntax error - {}.{}".format(
-                    file_name, line_number))
+                    file_name, line_number)) from e
 
         index = 1 if index is None else int(index)
         self.__structs[struct_name].add_field(

@@ -14,14 +14,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """ Boot a SpiNNaker system.
 """
-from __future__ import print_function  # for 2.7
 from enum import IntEnum
 import socket
 import struct
 import time
-from tools.util import find_path, read_path
-from tools.cmd import SCAMPCmd
-from tools.sv import Struct
+from spinn_front_end_common.tools.util import find_path, read_path
+from spinn_front_end_common.tools.cmd import SCAMPCmd
+from spinn_front_end_common.tools.sv import Struct
 
 PROT_VER = 1
 BOOT_BYTE_SIZE = 1024

@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """ An application for booting SpiNNaker chips
 """
-from __future__ import print_function  # for 2.7
 from collections import namedtuple
 from datetime import datetime
 from enum import IntEnum
@@ -25,12 +24,12 @@ import sys
 import time
 from zlib import crc32
 from spinn_front_end_common import __version__ as fec_version
-from tools.exn import BadArgs, SpinnException, SpinnTooManyRetriesException
-from tools.cli import CLI
-from tools.boot import boot
-from tools.sv import Struct
-from tools.cmd import SCAMPCmd, BMPCmd
-from tools.util import (
+from .exn import BadArgs, SpinnException, SpinnTooManyRetriesException
+from .cli import CLI
+from .boot import boot
+from .sv import Struct
+from .cmd import SCAMPCmd, BMPCmd
+from .util import (
     read_file, hex_dump, parse_cores, parse_region, parse_apps, parse_bits)
 
 # This code ought to be rewritten to use the Cmd package:

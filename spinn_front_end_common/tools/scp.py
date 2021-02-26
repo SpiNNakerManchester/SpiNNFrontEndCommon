@@ -17,8 +17,9 @@ import select
 import socket
 import struct
 import time
-from tools.util import hex_dump
-from tools.exn import SpinnException, SpinnTooManyRetriesException
+from spinn_front_end_common.tools.util import hex_dump
+from spinn_front_end_common.tools.exn import (
+    SpinnException, SpinnTooManyRetriesException)
 
 SPIN_PORT = 17893
 TIMEOUT = 0.5
