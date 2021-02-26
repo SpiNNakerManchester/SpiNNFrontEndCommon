@@ -13,21 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-from spinn_front_end_common.interface import interface_functions
-from spinn_front_end_common.utilities import report_functions
-
-
-def get_front_end_common_pacman_xml_paths():
-    """ Get the XML path for the front end common interface functions
-
-    :rtype: list(str)
-    """
-    return [
-        os.path.join(
-            os.path.dirname(interface_functions.__file__),
-            "front_end_common_interface_functions.xml"),
-        os.path.join(
-            os.path.dirname(report_functions.__file__),
-            "front_end_common_reports.xml")
-    ]
+version: 2
+build:
+  image: latest
+sphinx:
+  configuration: doc/source/conf.py
+  builder: dirhtml
+  fail_on_warning: false
+formats: [pdf]  # This is ADDITIONAL to HTML
+python:
+  version: 3.8
+  install:
+    - requirements: doc/doc_requirements.txt

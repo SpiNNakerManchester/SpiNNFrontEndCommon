@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2021 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,24 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-.project
-.pydevproject
-.pytest_cache/
-.idea
-*.pyc
-*build/
-/dist/
-/SpiNNFrontEndCommon.egg-info/
-.settings
-.cproject
-Debug
-lastfailed
-/.cache
-.coverage
-*.o
-*.class
-*modified_src/
-*.dict
-.dbeaver/
-._dbeaver/
-test_output
+from os import path
+import unittest
+from spinn_front_end_common.interface.interface_functions import interface_xml
+from spinn_front_end_common.utilities.report_functions import report_xml
+
+
+class TestXmlFilePath(unittest.TestCase):
+
+    def test_interface_exists(self):
+        self.assertTrue(path.exists(interface_xml()))
+
+    def test_report_exists(self):
+        self.assertTrue(path.exists(report_xml()))

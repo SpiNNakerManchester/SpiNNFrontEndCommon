@@ -55,21 +55,20 @@ from spinn_front_end_common.abstract_models import (
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
 from spinn_front_end_common.utilities import (
-    globals_variables, SimulatorInterface)
+    globals_variables, SimulatorInterface,)
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.function_list import (
-    get_front_end_common_pacman_xml_paths)
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import (
-    EnergyReport, TagsFromMachineReport)
+    EnergyReport, TagsFromMachineReport, report_xml)
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utility_models import (
     CommandSender, CommandSenderMachineVertex,
     DataSpeedUpPacketGatherMachineVertex)
+from spinn_front_end_common.utilities import IOBufExtractor
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.provenance import (
@@ -78,7 +77,8 @@ from spinn_front_end_common.interface.simulator_state import Simulator_State
 from spinn_front_end_common.interface.interface_functions import (
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
-    RouterProvenanceGatherer, ChipIOBufExtractor)
+    RouterProvenanceGatherer, interface_xml)
+
 from spinn_front_end_common import __version__ as fec_version
 try:
     from scipy import __version__ as scipy_version
@@ -98,6 +98,8 @@ ALANS_DEFAULT_RANDOM_APP_ID = 16
 
 # Number of provenace items before auto changes to sql format
 PROVENANCE_TYPE_CUTOFF = 20000
+
+_PREALLOC_NAME = 'MemoryPreAllocatedResources'
 
 
 class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
@@ -1252,6 +1254,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs['ReportFolder'] = self._report_default_directory
         inputs['ReportWaitingLogsFlag'] = self._config.getboolean(
             "Machine", "report_waiting_logs")
+        inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
         algorithms.append("MachineGenerator")
 
         outputs.append("MemoryMachine")
@@ -1288,6 +1291,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ScampConnectionData"] = None
         inputs["RouterTableEntriesPerRouter"] = \
             self._read_config_int("Machine", "RouterTableEntriesPerRouter")
+        inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
 
         algorithms.append("VirtualMachineGenerator")
 
@@ -1315,6 +1319,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs['ReportFolder'] = self._report_default_directory
         inputs['ReportWaitingLogsFlag'] = self._config.getboolean(
             "Machine", "report_waiting_logs")
+        inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
 
         # if using spalloc system
         if self._spalloc_server is not None:
@@ -1669,11 +1674,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # only add the partitioner if there isn't already a machine graph
         algorithms.append("MallocBasedChipIDAllocator")
+        if _PREALLOC_NAME not in inputs:
+            inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
         if not self._machine_graph.n_vertices:
             algorithms.extend(self._config.get_str_list(
                 "Mapping", "application_to_machine_graph_algorithms"))
-            inputs['MemoryPreviousAllocatedResources'] = \
-                PreAllocatedResourceContainer()
 
         if self._use_virtual_board:
             algorithms.extend(self._config.get_str_list(
@@ -2343,15 +2348,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._all_provenance_items.append(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
-        iobuf = ChipIOBufExtractor()
+        iobuf = IOBufExtractor(
+            self._txrx, executable_targets, self._executable_finder,
+            self._app_provenance_file_path, self._system_provenance_file_path,
+            self._config.get("Reports", "extract_iobuf_from_cores"),
+            self._config.get("Reports", "extract_iobuf_from_binary_types"))
         try:
-            errors, warnings = iobuf(
-                self._txrx, executable_targets, self._executable_finder,
-                self._app_provenance_file_path,
-                self._system_provenance_file_path,
-                self._config.get("Reports", "extract_iobuf_from_cores"),
-                self._config.get("Reports", "extract_iobuf_from_binary_types")
-            )
+            errors, warnings = iobuf.extract_iobuf()
         except Exception:
             logger.exception("Could not get iobuf")
             errors, warnings = [], []
@@ -2399,7 +2402,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
         # add the extra xml files from the config file
         xml_paths = self._config.get_str_list("Mapping", "extra_xmls_paths")
-        xml_paths.extend(get_front_end_common_pacman_xml_paths())
+        xml_paths.append(interface_xml())
+        xml_paths.append(report_xml())
 
         if extra_algorithm_xml_paths is not None:
             xml_paths.extend(extra_algorithm_xml_paths)
@@ -2907,13 +2911,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             return
         if self._config.getboolean("Reports", "clear_iobuf_during_run"):
             return
-        extractor = ChipIOBufExtractor()
-        extractor(
+        extractor = IOBufExtractor(
             transceiver=self._txrx,
             executable_targets=self._last_run_outputs["ExecutableTargets"],
             executable_finder=self._executable_finder,
             app_provenance_file_path=self._app_provenance_file_path,
             system_provenance_file_path=self._system_provenance_file_path)
+        extractor.extract_iobuf()
 
     @overrides(SimulatorInterface.add_socket_address, extend_doc=False)
     def add_socket_address(self, socket_address):
