@@ -116,7 +116,7 @@ class ProvenanceReader(object):
             """
         results = []
         for row in self.run_query(query, [description_name]):
-            results.append("{}: {}\n".format(row["description"], row["value"]))
+            results.append("{}: {}\n".format(row[0], row[1]))
         return "".join(results)
 
     def get_run_time_of_BufferExtractor(self):
@@ -137,3 +137,4 @@ if __name__ == '__main__':
     for row in results:
         print(row)
     print(pr.cores_with_late_spikes())
+    print(pr.get_run_time_of_BufferExtractor())
