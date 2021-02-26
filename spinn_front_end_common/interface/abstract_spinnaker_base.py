@@ -1572,7 +1572,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Mapping", "router_table_compress_as_far_as_possible")
         inputs["WriteCompressorIobuf"] = self._config.getboolean(
             "Reports", "write_compressor_iobuf")
-        inputs["UseVirtualBoard"] = self._use_virtual_board
 
         algorithms = list()
 
@@ -1724,9 +1723,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         java_properties)
             inputs["JavaCaller"] = self._java_caller
 
-            # add the sdram allocator to ensure the sdram is allocated before
-            #  dsg on a real machine
-            algorithms.append("SDRAMOutgoingPartitionAllocator")
+        # Add the sdram allocator to ensure the sdram is allocated before
+        # DSG.  Note this can run with a virtual machine but then makes fake
+        # allocations, but avoids DSG issues.
+        algorithms.append("SDRAMOutgoingPartitionAllocator")
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(

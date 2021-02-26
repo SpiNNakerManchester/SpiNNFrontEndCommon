@@ -21,15 +21,15 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 class SDRAMOutgoingPartitionAllocator(object):
 
-    def __call__(self, machine_graph, transceiver, placements, app_id,
-                 use_virtual_board=False):
+    def __call__(self, machine_graph, placements, app_id,
+                 transceiver=None):
 
         progress_bar = ProgressBar(
             total_number_of_things_to_do=len(machine_graph.vertices),
             string_describing_what_being_progressed=(
                 "Allocating SDRAM for SDRAM outgoing egde partitions"))
 
-        if use_virtual_board:
+        if transceiver is None:
             virtual_usage = defaultdict(int)
 
         for machine_vertex in machine_graph.vertices:
@@ -58,7 +58,7 @@ class SDRAMOutgoingPartitionAllocator(object):
                         "partition {}".format(sdram_partition))
 
                 # allocate
-                if not use_virtual_board:
+                if transceiver is not None:
                     sdram_base_address = transceiver.malloc_sdram(
                         placement.x, placement.y, total_sdram, app_id)
                 else:
