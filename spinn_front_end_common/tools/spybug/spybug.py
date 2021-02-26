@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """ An application for booting SpiNNaker chips
 """
-from collections import namedtuple
 from datetime import datetime
 from enum import IntEnum
 import re
@@ -22,6 +21,7 @@ import readline
 import struct
 import sys
 import time
+from typing import NamedTuple
 from zlib import crc32
 from spinn_front_end_common import __version__ as fec_version
 from .exn import BadArgs, SpinnException, SpinnTooManyRetriesException
@@ -36,6 +36,8 @@ from .util import (
 # https://docs.python.org/3.8/library/cmd.html
 
 # ------------------------------------------------------------------------------
+
+script_name = "spybug"
 
 spin = None          # Cmd object for SpiNNaker
 bmp = None           # Cmd object for BMP (or undef)
@@ -119,7 +121,7 @@ def cmd_boot(cli):
         n = sv.read_var("sv.p2p_active", addr=[])
         spin.iptag_set(0, TUBE_PORT, host="0.0.0.0", addr=[])
 
-        print("Booted {} on {} chips".format(s, n))
+        print(f"Booted {s} on {n} chips")
     finally:
         # Return to the chip we were on before booting
         spin.addr(chip_x, chip_y, cpu)
@@ -139,7 +141,7 @@ def cmd_lw(cli):
 
     if cli.count == 2:
         data, = spin.link_read(link, addr, 4, unpack="<I")
-        print("{:08x} = {:08x}".format(addr, data))
+        print(f"{addr:08x} = {data:08x}")
     else:
         data = struct.pack("<I", cli.arg_i(2))
         spin.link_write(link, addr, data)
@@ -184,7 +186,7 @@ def cmd_sw(cli):
     addr = cli.arg_i(0)
     if cli.count == 1:
         data, = spin.read(addr, 4, type="word", unpack="<I")
-        print("{:08x} = {:08x}".format(addr, data))
+        print(f"{addr:08x} = {data:08x}")
     else:
         data = struct.pack("<I", cli.arg_i(1))
         spin.write(addr, data, type="word")
@@ -196,7 +198,7 @@ def cmd_sh(cli):
     addr = cli.arg_i(0)
     if cli.count == 1:
         data, = spin.read(addr, 2, type="half", unpack="<H")
-        print("{:08x} = {:04x}".format(addr, data))
+        print(f"{addr:08x} = {data:04x}")
     else:
         data = struct.pack("<H", cli.arg_i(1))
         spin.write(addr, data, type="half")
@@ -208,7 +210,7 @@ def cmd_sb(cli):
     addr = cli.arg_i(0)
     if cli.count == 1:
         data, = spin.read(addr, 1, type="byte", unpack="<B")
-        print("{:08x} = {:02x}".format(addr, data))
+        print(f"{addr:08x} = {data:02x}")
     else:
         data = struct.pack("<B", cli.arg_x(1))
         spin.write(addr, data, type="byte")
@@ -246,8 +248,7 @@ def cmd_sp(cli):
         raise BadArgs
 
     # Update the prompt
-    cli.prompt = re.sub(
-        r":.+", ":{},{},{} > ".format(chip_x, chip_y, cpu), cli.prompt)
+    cli.prompt = re.sub(r":.+", f":{chip_x},{chip_y},{cpu} > ", cli.prompt)
 
 
 # ------------------------------------------------------------------------------
@@ -294,7 +295,7 @@ def cmd_iobuf(cli):
 def dump_heap(heap, name):
     heap_free, heap_first, _, free_bytes = spin.read(heap, 16, unpack="<IIII")
     print("")
-    print("{} {}".format(name, free_bytes))
+    print(f"{name} {free_bytes}")
     print("-" * len(name))
 
     p = heap_first
@@ -304,17 +305,15 @@ def dump_heap(heap, name):
         if free & 0xFFFF0000 == 0xFFFF0000:
             fs = "Tag {:3d} ID {:3d}".format(free & 0xFF, (free >> 8) & 0xFF)
         else:
-            fs = "Free  {:08x}".format(free)
-        print("BLOCK  {:8x}  Next {:8x}  {}  Size {}".format(
-            p, _next, fs, size))
+            fs = f"Free  {free:08x}"
+        print(f"BLOCK  {p:8x}  Next {_next:8x}  {fs}  Size {size}")
         p = _next
 
     p = heap_free
     while p:
         _next, free = spin.read(p, 8, unpack="<II")
         size = 0 if _next == 0 else _next - p - 8
-        print("FREE   {:8x}  Next {:8x}  Free  {:08x}  Size {}".format(
-            p, _next, free, size))
+        print(f"FREE   {p:8x}  Next {_next:8x}  Free  {free:08x}  Size {size}")
         p = free
 
 
@@ -345,7 +344,7 @@ def cmd_rtr_load(cli):
     buf = read_file(_file, 65536)
     size = len(buf)
     if size % 16 or not 32 <= size <= 1024 * 16:
-        raise ValueError("Funny file size: {}".format(size))
+        raise ValueError(f"Funny file size: {size}")
     size = (size - 16) % 16
 
     addr = 0x67800000
@@ -372,7 +371,7 @@ def dump_iptag():
     _max = pool + fix
     tto = (1 << (tto - 1)) / 100 if tto else 0
 
-    print("IPTags={} (F={}, T={}), TTO={}s\n".format(_max, fix, pool, tto))
+    print(f"IPTags={_max} (F={fix}, T={pool}), TTO={tto}s\n")
     print("Tag    IP address    TxPort RxPort  T/O   Flags    Addr    Port"
           "      Count")
     print("---    ----------    ------ ------  ---   -----    ----    ----"
@@ -491,8 +490,8 @@ def cmd_app_sig(cli):
         data += signal << 16
 
     if debug:
-        print("Type {} data {:08x} mask {:08x}".format(_type, data, mask))
-        print("Region {:08x} signal {} state {}".format(region, signal, state))
+        print(f"Type {_type} data {data:08x} mask {mask:08x}")
+        print(f"Region {region:08x} signal {signal} state {state}")
 
     if _type == 1:
         xb = region >> 24
@@ -509,11 +508,11 @@ def cmd_app_sig(cli):
                 # General exception: just try somewhere else
                 continue
             if signal == 18:
-                print("Count {}".format(r))
+                print(f"Count {r}")
             else:
-                print("Mask 0x{:08x}".format(r))
+                print(f"Mask 0x{r:08x}")
             return
-        print("Region {} is unreachable".format(save_region))
+        print(f"Region {save_region} is unreachable")
     else:
         spin.signal(_type, data, mask, addr=[])
 
@@ -568,7 +567,7 @@ def cmd_app_load(cli):
     buf = read_file(filename, 65536)
 
     if debug:
-        print("Region {:08x}, mask {:08x}".format(region, mask))
+        print(f"Region {region:08x}, mask {mask:08x}")
 
     spin.flood_fill(buf, region, mask, app_id, flags)
 
@@ -692,7 +691,7 @@ class _CpuDumpFormat(IntEnum):
     PHYSICAL = 3
 
 
-def cpu_dump(num, long_form=False, fmt=_CpuDumpFormat.TIMESTAMPS):
+def cpu_dump(num, *, long_form=False, fmt=_CpuDumpFormat.TIMESTAMPS):
     base = sv.read_var("sv.vcpu_base")
     sv.base("vcpu", base + sv.size("vcpu") * num)
     sv.read_struct("vcpu")
@@ -779,7 +778,12 @@ def cmd_ps(cli):
 
 # ------------------------------------------------------------------------------
 
-SromInfo = namedtuple("SromInfo", ["PAGE", "ADDR"])
+
+class SromInfo(NamedTuple):
+    PAGE: int
+    ADDR: int
+
+
 Srom_info = {
     "25aa1024": SromInfo(256, 24),
     "25aa080a": SromInfo(16, 16),
@@ -796,9 +800,8 @@ def cmd_srom_type(cli):
             raise ValueError("bad SROM type")
         srom_type = _type
 
-    info = Srom_info[srom_type]
-    print("SROM type {} (page {}, addr {})".format(
-        srom_type, info.PAGE, info.ADDR))
+    info: SromInfo = Srom_info[srom_type]
+    print(f"SROM type {srom_type} (page {info.PAGE}, addr {info.ADDR})")
 
 
 def cmd_srom_read(cli):
@@ -824,9 +827,9 @@ def cmd_srom_write(cli):
         raise BadArgs
     addr = cli.arg_x(1)
     buf = read_file(cli.arg(0), 128 * 1024)
-    info = Srom_info[srom_type]
+    info: SromInfo = Srom_info[srom_type]
 
-    print("Length {}, CRC32 0x{:08x}".format(len(buf), crc32(buf)))
+    print(f"Length {len(buf)}, CRC32 0x{crc32(buf):08x}")
 
     spin.srom_write(addr, buf, page_size=info.PAGE, addr_size=info.ADDR)
 
@@ -837,7 +840,7 @@ def cmd_srom_dump(cli):
     filename = cli.arg(0)
     addr = cli.arg_x(1)
     length = cli.arg_i(2)
-    info = Srom_info[srom_type]
+    info: SromInfo = Srom_info[srom_type]
 
     byte_count = 0
     size = 256
@@ -851,7 +854,7 @@ def cmd_srom_dump(cli):
         addr += _l
         buf += data
 
-    print("Length {}, CRC32 0x{:08x}".format(len(buf), crc32(buf)))
+    print(f"Length {len(buf)}, CRC32 0x{crc32(buf):08x}")
 
     with open(filename, "wb") as f:
         f.write(buf)
@@ -895,15 +898,14 @@ def get_srom_info(long_form):
     port = d[22]
 
     if long_form:
-        print("Flag: {:04x}".format(flag))
-        print("MAC:  {}".format(mac))
-        print("IP:   {}".format(ip))
-        print("GW:   {}".format(gw))
-        print("NM:   {}".format(nm))
-        print("Port: {:d}".format(port))
+        print(f"Flag: {flag:04x}")
+        print(f"MAC:  {mac}")
+        print(f"IP:   {ip}")
+        print(f"GW:   {gw}")
+        print(f"NM:   {nm}")
+        print(f"Port: {port:d}")
     else:
-        print("{:04x} {} {} {} {} {:d}".format(
-            flag, mac, ip, gw, nm, port))
+        print(f"{flag:04x} {mac} {ip} {gw} {nm} {port:d}")
 
 
 def cmd_srom_init(cli):
@@ -932,7 +934,7 @@ def cmd_srom_init(cli):
     data = struct.pack(">2I 2B H 4B 4B 4B 4B 2B H 2I I", *([
         0x553A0008, 0xF5007FE0, mac[4], mac[5], flag, mac[0], mac[1], mac[2],
         mac[3]] + addresses + [0, 0, port, 0, 0, 0xAAAAAAAA]))
-    info = Srom_info[srom_type]
+    info: SromInfo = Srom_info[srom_type]
     spin.srom_write(0, data, page_size=info.PAGE, addr_size=info.ADDR)
     get_srom_info(True)
 
@@ -943,7 +945,7 @@ def cmd_srom_ip(cli):
         return
     if not 0 <= cli.count <= 3:
         raise BadArgs
-    info = Srom_info[srom_type]
+    info: SromInfo = Srom_info[srom_type]
 
     addr = 16
     data = b''
@@ -951,7 +953,7 @@ def cmd_srom_ip(cli):
         data += struct.pack(">4B", *check_ip(cli.arg(a)))
     length = len(data)
 
-    print("Writing {} bytes at address {}".format(length, addr))
+    print(f"Writing {length} bytes at address {addr}")
 
     spin.srom_write(addr, data, page=info.PAGE, addr=info.ADDR)
 
@@ -998,7 +1000,7 @@ def cmd_remap(cli):
         raise BadArgs
     map_type = map_type == "phys"
 
-    spin.remap(proc, map_type)
+    spin.remap(proc, proc_id_is_physical=map_type)
 
 
 # ------------------------------------------------------------------------------
@@ -1012,8 +1014,8 @@ def app_dump(data):
         cores, clean, sema, lead, mask = struct.unpack_from(
             "<4BI", data, offset=i * 8)
         if cores or clean:
-            print("{:3d} {:5d} {:5d} {:5d} {:5d} {:08x}".format(
-                i, cores, clean, sema, lead, mask))
+            print(
+                f"{i:3d} {cores:5d} {clean:5d} {sema:5d} {lead:5d} {mask:08x}")
 
 
 def cmd_app_dump(cli):
@@ -1026,7 +1028,7 @@ def cmd_app_dump(cli):
 # ------------------------------------------------------------------------------
 
 
-def rtr_heap(rtr_copy, rtr_free, name="Router"):
+def rtr_heap(rtr_copy, rtr_free, *, name="Router"):
     print("\n{}\n{}".format(name, "-" * len(name)))
 
     p = 1  # RTR_ALLOC_FIRST
@@ -1037,9 +1039,8 @@ def rtr_heap(rtr_copy, rtr_free, name="Router"):
         if free & 0x8000:
             fs = "AppID  {:3d}".format(free & 255)
         else:
-            fs = "Free {:5d}".format(free)
-        print("BLOCK {:5d}  Next {:5d}  {}  Size {}".format(
-            p, _next, fs, size))
+            fs = f"Free {free:5d}"
+        print(f"BLOCK {p:5d}  Next {_next:5d}  {fs}  Size {size}")
         p = _next
 
     p = rtr_free
@@ -1047,8 +1048,7 @@ def rtr_heap(rtr_copy, rtr_free, name="Router"):
         _next, free = spin.read(rtr_copy + 16 * p, 4, unpack="<HH")
         size = _next - p if _next else 0
 
-        print("FREE  {:5d}  Next {:5d}  Free {:5d}  Size {}".format(
-            p, _next, free, size))
+        print(f"FREE  {p:5d}  Next {_next:5d}  Free {free:5d}  Size {size}")
         p = free
 
     print("")
@@ -1181,7 +1181,7 @@ def cmd_debug(cli):
     if bmp is not None:
         bmp.debug(debug)
 
-    print("Debug {}".format(debug))
+    print(f"Debug {debug}")
 
 
 def cmd_sleep(cli):
@@ -1201,7 +1201,7 @@ def cmd_timeout(cli):
         t = float(cli.arg(0))
         spin.timeout(t)
 
-    print("Timeout {}".format(spin.timeout()))
+    print(f"Timeout {spin.timeout()}")
 
 
 def cmd_cmd(cli):
@@ -1218,7 +1218,7 @@ def cmd_cmd(cli):
 def cmd_version(cli):
     if cli and cli.count:
         raise BadArgs
-    print("# spybug - version {}".format(fec_version))
+    print(f"# {script_name} - version {fec_version}")
 
 
 # ------------------------------------------------------------------------------
@@ -1232,7 +1232,7 @@ def cmd_expert(cli):
     if expert:
         return
     expert = True
-    _cli.cmd(expert_cmds, False)
+    _cli.cmd(expert_cmds, delete=False)
 
     print("# You are now an expert!")
 
@@ -1450,7 +1450,8 @@ expert_cmds = {
 
 
 def usage():
-    print("usage: spybug <options> <spiNNakerBoardIPAddress>", file=sys.stderr)
+    print(f"usage: {script_name} <options> <spiNNakerBoardIPAddress>",
+          file=sys.stderr)
     print("  -bmp  <name>[/<slots>]   - set BMP target", file=sys.stderr)
     print("  -version                 - print version number", file=sys.stderr)
     print("  -expert                  - set 'expert' mode", file=sys.stderr)
@@ -1535,5 +1536,5 @@ def main():
 
     _cli = CLI(sys.stdin, prompt, spin_cmds)
     if expert:
-        _cli.cmd(expert_cmds, False)
+        _cli.cmd(expert_cmds, delete=False)
     _cli.run()

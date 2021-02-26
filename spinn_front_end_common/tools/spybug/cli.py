@@ -21,7 +21,7 @@ class CLI(object):
         self._channel = channel
         self.prompt = prompt
         self._commands = {}
-        self.cmd(commands, True)
+        self.cmd(commands, delete=True)
         self._term = readline
         self._level = 0
         self._quiet = 0
@@ -39,7 +39,7 @@ class CLI(object):
         (self._channel, self._tty, self.prompt, self._quiet, self._term,
          self._level, self._commands) = state
 
-    def cmd(self, command_set, delete=False):
+    def cmd(self, command_set, *, delete=False):
         """ update command list """
         if delete:
             self._commands = {
@@ -97,9 +97,9 @@ class CLI(object):
                     if self._commands[cmd][0](self):
                         break
                 except Exception as e:  # pylint: disable=broad-except
-                    print("error: {}".format(e))
+                    print(f"error: {e}")
             else:
-                print("bad command \"{}\"".format(cmd))
+                print(f'bad command "{cmd}"')
             self.__prompt()
 
     def __write(self, text):
@@ -145,8 +145,8 @@ class CLI(object):
             cmd = self.arg(0)
             info = self._commands.get(cmd, None)
             if info is not None:
-                print("usage:   {} {}".format(cmd, info[1]))
-                print("purpose: {}".format(info[2]))
+                print(f"usage:   {cmd} {info[1]}")
+                print(f"purpose: {info[2]}")
                 return
         elif self.count:
             raise BadArgs
@@ -155,7 +155,7 @@ class CLI(object):
         cmds.sort()
         for cmd in cmds:
             info = self._commands[cmd]
-            print(" {:<12s} {:<30s} - {}".format(cmd, info[1], info[2]))
+            print(f" {cmd:<12s} {info[1]:<30s} - {info[2]}")
 
     def _cmd_at(self):
         """ command to read CLI commands from a file """

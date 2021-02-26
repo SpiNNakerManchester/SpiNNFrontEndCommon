@@ -18,13 +18,14 @@ from enum import IntEnum
 import socket
 import struct
 import time
-from spinn_front_end_common.tools.util import find_path, read_path
-from spinn_front_end_common.tools.cmd import SCAMPCmd
-from spinn_front_end_common.tools.sv import Struct
+from spinn_front_end_common.tools.spybug.util import find_path, read_path
+from spinn_front_end_common.tools.spybug.cmd import SCAMPCmd
+from spinn_front_end_common.tools.spybug.sv import Struct
 
 PROT_VER = 1
 BOOT_BYTE_SIZE = 1024
 MAX_BLOCKS = 32
+_expected_version = "0.91"
 
 
 class _BootCmd(IntEnum):
@@ -38,8 +39,8 @@ def _send_boot_pkt(sock, op, a1, a2, a3, data, delay):
     if data:
         # Byte-swap the data; this protocol is BIG-ENDIAN!
         wordlen = len(data) // 4
-        data = struct.pack(">{}I".format(wordlen),
-                           *struct.unpack("<{}I".format(wordlen), data))
+        data = struct.pack(
+            f">{wordlen}I", *struct.unpack(f"<{wordlen}I", data))
     sock.send(hdr + data)
     time.sleep(delay)
 
@@ -54,21 +55,21 @@ def _rom_boot(host, buf, debug, port):
         blocks += 1
 
     if debug:
-        print("Boot: {} bytes, {} blocks".format(size, blocks))
+        print(f"Boot: {size} bytes, {blocks} blocks")
     if blocks > MAX_BLOCKS:
         raise ValueError("boot file too big")
 
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         sock.connect((host, port))
         if debug:
-            print("Boot: Start (delay {})".format(delay))
+            print(f"Boot: Start (delay {delay})")
         _send_boot_pkt(sock, _BootCmd.START, 0, 0, blocks - 1, b'', delay)
 
         for block in range(blocks):
             data = buf[block * BOOT_BYTE_SIZE:(block + 1) * BOOT_BYTE_SIZE]
             a1 = ((BOOT_BYTE_SIZE // 4 - 1) << 8) | (block & 0xFF)
             if debug:
-                print("Boot: Data {}".format(block), end="\r")
+                print(f"Boot: Data {block}", end="\r")
             _send_boot_pkt(sock, _BootCmd.DATA, a1, 0, 0, data, delay)
 
         if debug:
@@ -83,8 +84,8 @@ def _scamp_boot(host, buf, sv, timestamp, debug):
     """
     spin = SCAMPCmd(target=host, debug=debug)
     try:
-        if "SC&MP 0.91" not in spin.ver():
-            raise RuntimeError("Expected SC&MP 0.91")
+        if f"SC&MP {_expected_version}" not in spin.ver():
+            raise RuntimeError(f"Expected SC&MP {_expected_version}")
         spin.write(sv.addr("sv.ron_cpus"), b'\0')
         spin.flood_boot(buf)
         data, = spin.read(0xF5007F5C, 4, unpack="<I")
@@ -94,7 +95,7 @@ def _scamp_boot(host, buf, sv, timestamp, debug):
         spin.close()
 
 
-def boot(host, filename, conf, debug=0, port=54321):
+def boot(host, filename, conf, *, debug=0, port=54321):
     """ Main bootstrap routine.
     """
     sv = Struct(None)

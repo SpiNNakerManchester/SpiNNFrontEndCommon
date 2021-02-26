@@ -34,22 +34,22 @@ def hex_dump(data, format="byte",  # @ReservedAssignment
         if not len(chunk):
             break
 
-        text = "{}0{}x ".format(prefix, addr + ptr)
+        text = f"{prefix}0{addr + ptr}x "
 
         if format == "byte":
-            ds = struct.unpack("<{}B".format(len(chunk)), chunk)
+            ds = struct.unpack(f"<{len(chunk)}B", chunk)
             for d in ds:
-                text += " {:02x}".format(d)
+                text += f" {d:02x}"
             text += "   " * (width - len(ds))
             text += "  "
             for d in ds:
                 text += struct.pack("c", d) if 32 <= d < 127 else "."
         elif format == "half":
-            for d in struct.unpack("<{}H".format(len(chunk) // 2), chunk):
-                text += " {:04x}".format(d)
+            for d in struct.unpack(f"<{len(chunk) // 2}H", chunk):
+                text += f" {d:04x}"
         elif format == "word":
-            for d in struct.unpack("<{}I".format(len(chunk) // 4), chunk):
-                text += " {:08x}".format(d)
+            for d in struct.unpack(f"<{len(chunk) // 4}I", chunk):
+                text += f" {d:08x}"
 
         if do_print:
             print(text)
@@ -84,7 +84,7 @@ def parse_bits(mask, minimum, maximum):
     if mask is None:
         raise ValueError("bad mask specifier")
     elif "all" == mask:
-        mask = "{}-{}".format(minimum, maximum)
+        mask = f"{minimum}-{maximum}"
 
     r = 0
     for sub in mask.split(","):
@@ -168,7 +168,7 @@ def find_path(filename):
         if os.path.exists(file_on_path):
             return os.path.normpath(file_on_path)
 
-    raise ValueError("{} not found!".format(filename))
+    raise ValueError(f"{filename} not found!")
 
 
 def read_path(filename, max_size=0):

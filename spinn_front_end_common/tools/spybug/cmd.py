@@ -107,9 +107,11 @@ class IPTAG(IntEnum):
 
 
 class Cmd(SCP):
+    """ SCP commands common to both SCAMP and the BMP.
+    """
     __slots__ = ()
 
-    def _chunk(self, data, chunk_size=None):
+    def _chunk(self, data, *, chunk_size=None):
         chunk_size = self._buf_size if chunk_size is None else chunk_size
         offset = 0
         while True:
@@ -121,7 +123,7 @@ class Cmd(SCP):
 
     # -------------------------------------------------------------------------
 
-    def ver(self, raw=False, **kwargs):
+    def ver(self, *, raw=False, **kwargs):
         data = self.scp_cmd(SCP_CMD.VER, **kwargs)
         vc, pc, cy, cx, size, ver_num, timestamp = struct.unpack_from(
             "<4B 2H I", data)
@@ -132,7 +134,7 @@ class Cmd(SCP):
         if ver_num != 0xFFFF:  # If an old style version number...
             if raw:
                 return vc, pc, cy, cx, size, ver_num, timestamp, ver_str
-            ver_num = "{:02f}".format(ver_num / 100)
+            ver_num = f"{ver_num / 100:02f}"
         else:  # New style version number (three part)
             # Trim stuff after first NUL byte
             ver_num = vn.partition(b'\0')[0]
@@ -155,7 +157,7 @@ class Cmd(SCP):
             data = struct.unpack_from(unpack, data)
         return data
 
-    def read(self, base, length, unpack=None,
+    def read(self, base, length, *, unpack=None,
              type="byte",  # pylint: disable=redefined-builtin
              **kwargs):
         data = b''
@@ -176,7 +178,7 @@ class Cmd(SCP):
 
         return self._decode(data, unpack)
 
-    def link_read(self, link, base, length, unpack=None, **kwargs):
+    def link_read(self, link, base, length, *, unpack=None, **kwargs):
         if not 0 <= link <= 5:
             raise ValueError("bad link")
 
@@ -213,7 +215,7 @@ class Cmd(SCP):
                 base += len(data)
 
     def write(self, base, data,
-              type="byte",  # pylint: disable=redefined-builtin
+              *, type="byte",  # pylint: disable=redefined-builtin
               **kwargs):
         if type not in Mem_type:
             raise ValueError("bad memory type")
@@ -259,7 +261,7 @@ class Cmd(SCP):
 
     # -------------------------------------------------------------------------
 
-    def iptag_set(self, tag, port, host="", dest_addr=0, dest_port=0,
+    def iptag_set(self, tag, port, *, host="", dest_addr=0, dest_port=0,
                   reverse=False, strip=False, **kwargs):
         if reverse:
             strip = True
@@ -307,7 +309,7 @@ class SCAMPCmd(Cmd):
         debug   - a debug value (integers>0 cause debug output; defaults to 0)
         delay   - delay (seconds) before sending (to throttle packets)
         """
-        super(SCAMPCmd, self).__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._nn_id = 0
 
     def _next_id(self):
@@ -353,7 +355,7 @@ class SCAMPCmd(Cmd):
 
     # -------------------------------------------------------------------------
 
-    def remap(self, proc_id, proc_id_is_physical=False, **kwargs):
+    def remap(self, proc_id, *, proc_id_is_physical=False, **kwargs):
         self.scp_cmd(
             SCAMP_CMD.REMAP, arg1=proc_id, arg2=proc_id_is_physical, **kwargs)
 
@@ -385,7 +387,7 @@ class SCAMPCmd(Cmd):
 
     # -------------------------------------------------------------------------
 
-    def srom_read(self, base, length, unpack=None, addr_size=24, **kwargs):
+    def srom_read(self, base, length, *, unpack=None, addr_size=24, **kwargs):
         data = b""
         while length:
             _l = min(length, self._buf_size)
@@ -398,8 +400,8 @@ class SCAMPCmd(Cmd):
 
         return self._decode(data, unpack)
 
-    def srom_write(self, base, data, page_size=256, addr_size=24, **kwargs):
-        for buf in self._chunk(data, page_size):
+    def srom_write(self, base, data, *, page_size=256, addr_size=24, **kwargs):
+        for buf in self._chunk(data, chunk_size=page_size):
             length = len(buf)
             self.scp_cmd(
                 SCAMP_CMD.SROM, arg1=(length << 16) + 0x1C0 + addr_size + 8,
@@ -412,14 +414,14 @@ class SCAMPCmd(Cmd):
 
     # -------------------------------------------------------------------------
 
-    def flood_fill(self, buf, region, mask, app_id, app_flags, base=0x67800000,
-                   **kwargs):
+    def flood_fill(self, buf, region, mask, app_id, app_flags, *,
+                   base=0x67800000, **kwargs):
         size = len(buf)
         blocks = size // 256
         if size % 256:
             blocks += 1
         if self._debug:
-            print("# FF {} bytes, {} blocks".format(size, blocks))
+            print(f"# FF {size} bytes, {blocks} blocks")
 
         sfwd, srty = 0x3F, 0x18         # Forward, retry parameters
         _id = self._next_id()           # ID for FF packets
@@ -430,15 +432,15 @@ class SCAMPCmd(Cmd):
         key = _word(NN_CMD.FFS, _id, blocks, 0)
         data = region
         if self._debug:
-            print("FFS {:08x} {:08x} {:08x}".format(key, data, sfr))
+            print(f"FFS {key:08x} {data:08x} {sfr:08x}")
         self.nnp(key, data, sfr, **kwargs)
 
         # Send FFD data blocks
-        for block, data in enumerate(self._chunk(buf, 256)):
+        for block, data in enumerate(self._chunk(buf, chunk_size=256)):
             arg1 = _word(sfwd, srty, 0, _id)
             arg2 = _word(0, block, (len(data) // 4) - 1, 0)
             if self._debug:
-                print("FFD {:08x} {:08x} {:08x}".format(arg1, arg2, base))
+                print(f"FFD {arg1:08x} {arg2:08x} {base:08x}")
             self.scp_cmd(SCAMP_CMD.FFD, arg1=arg1, arg2=arg2, arg3=base,
                          data=data, **kwargs)
             base += len(data)
@@ -447,7 +449,7 @@ class SCAMPCmd(Cmd):
         key = _word(NN_CMD.FFE, 0, 0, _id)
         data = (app_id << 24) | (app_flags << 18) | (mask & 0x3FFFF)
         if self._debug:
-            print("FFE {:08x} {:08x} {:08x}".format(key, data, fr))
+            print(f"FFE {key:08x} {data:08x} {fr:08x}")
         self.nnp(key, data, fr, **kwargs)
 
     def flood_boot(self, buf, **kwargs):
@@ -456,7 +458,7 @@ class SCAMPCmd(Cmd):
         if size % 256:
             blocks += 1
         if self._debug:
-            print("# FF Boot - {} bytes, {} blocks".format(size, blocks))
+            print(f"# FF Boot - {size} bytes, {blocks} blocks")
 
         sfwd, srty = 0x3F, 0x18
         nnp, ffd = SCAMP_CMD.NNP - 8, SCAMP_CMD.FFD - 8  # <<< WAT
@@ -468,15 +470,15 @@ class SCAMPCmd(Cmd):
         # Send FFS packet (buffer address in data field)
         key = _word(NN_CMD.FFS, 0, blocks, _id)
         if self._debug:
-            print("FFS {:08x} {:08x} {:08x}".format(key, base, fr))
+            print(f"FFS {key:08x} {base:08x} {fr:08x}")
         self.scp_cmd(nnp, arg1=key, arg2=base, arg3=fr, addr=[], *kwargs)
 
         # Send FFD data blocks
-        for block, data in enumerate(self._chunk(buf, 256)):
+        for block, data in enumerate(self._chunk(buf, chunk_size=256)):
             arg1 = _word(sfwd, srty, 0, _id)
             arg2 = _word(0, block, (len(data) // 4) - 1, 0)
             if self._debug:
-                print("FFD {:08x} {:08x} {:08x}".format(arg1, arg2, base))
+                print(f"FFD {arg1:08x} {arg2:08x} {base:08x}")
             self.scp_cmd(ffd, arg1=arg1, arg2=arg2, arg3=base, data=data,
                          addr=[], **kwargs)
             base += len(data)
@@ -484,7 +486,7 @@ class SCAMPCmd(Cmd):
         # Send FFE packet (mask (= 1) in data field)
         key = _word(NN_CMD.FFE, 0, 0, _id)
         if self._debug:
-            print("FFS {:08x} {:08x} {:08x}".format(key, mask, fr))
+            print(f"FFS {key:08x} {mask:08x} {fr:08x}")
         self.scp_cmd(nnp, arg1=key, arg2=mask, arg3=fr, addr=[], **kwargs)
 
 
@@ -512,7 +514,7 @@ class BMPCmd(Cmd):
                          data=buf, **kwargs)
             base += len(buf)
 
-    def flash_write(self, addr, data, update=False, **kwargs):
+    def flash_write(self, addr, data, *, update=False, **kwargs):
         size = len(data)
         if not size:
             raise ValueError("no data")
@@ -530,7 +532,7 @@ class BMPCmd(Cmd):
 
         # Write as many times as needed
         base = addr
-        for buf in self._chunk(data, 4096):
+        for buf in self._chunk(data, chunk_size=4096):
             self.write(flash_buf, buf)
             self.scp_cmd(BMP_CMD.FLASH_WRITE, arg1=base, arg2=4096, **kwargs)
             base += 4096
@@ -541,11 +543,11 @@ class BMPCmd(Cmd):
                 BMP_CMD.FLASH_COPY, arg1=0x10000, arg2=addr, arg3=size,
                 **kwargs)
 
-    def reset(self, mask, delay=0, **kwargs):
+    def reset(self, mask, *, delay=0, **kwargs):
         self.scp_cmd(
             BMP_CMD.RESET, arg1=(delay << 16) | 6, arg2=mask, **kwargs)
 
-    def power(self, on, mask, delay=0, **kwargs):
+    def power(self, on, mask, *, delay=0, **kwargs):
         self.scp_cmd(
             BMP_CMD.POWER, arg1=(delay << 16) | on, arg2=mask,
             timeout=(5.0 if on else self._timeout), **kwargs)

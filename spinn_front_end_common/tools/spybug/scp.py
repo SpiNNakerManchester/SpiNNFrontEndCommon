@@ -17,9 +17,8 @@ import select
 import socket
 import struct
 import time
-from spinn_front_end_common.tools.util import hex_dump
-from spinn_front_end_common.tools.exn import (
-    SpinnException, SpinnTooManyRetriesException)
+from .util import hex_dump
+from .exn import SpinnException, SpinnTooManyRetriesException
 
 SPIN_PORT = 17893
 TIMEOUT = 0.5
@@ -132,7 +131,7 @@ class SCP(object):
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def _sdp_dump(hdr, body, prefix="#SDP ", print_data=0):
+    def _sdp_dump(hdr, body, *, prefix="#SDP ", print_data=False):
         text = prefix
 
         flags, tag, dp, sp, dy, dx, sy, sx = struct.unpack_from("<8B", hdr, 0)
@@ -158,23 +157,23 @@ class SCP(object):
         return text
 
     @staticmethod
-    def _scp_dump(data, num_args=0, prefix="#SCP ", print_data=False):
+    def _scp_dump(data, *, num_args=0, prefix="#SCP ", print_data=False):
         cmd_rc, seq = struct.unpack_from("<2H", data)
-        text = "{}Cmd_RC {:3d}  Seq {:5d}".format(prefix, cmd_rc, seq)
+        text = f"{prefix}Cmd_RC {cmd_rc:3d}  Seq {seq:5d}"
         offset = 4
         if num_args:
-            args = struct.unpack_from("<{}V".format(num_args), data, offset)
+            args = struct.unpack_from(f"<{num_args}I", data, offset)
             offset += 4 * num_args
             for i, arg in enumerate(args):
-                text += "  Arg{} 0x{:08x}".format(i + 1, arg)
-        text += " [{}]\n".format(len(data) - offset)
+                text += f"  Arg{i + 1} 0x{arg:08x}"
+        text += f" [{len(data) - offset}]\n"
         if print_data and offset < len(data):
             text += hex_dump(data[offset:], prefix=prefix, do_print=False)
         return text
 
     # -------------------------------------------------------------------------
 
-    def send_sdp(self, data, addr=None, port=0, reply=False, debug=None,
+    def send_sdp(self, data, *, addr=None, port=0, reply=False, debug=None,
                  delay=None):
         """
         Send a packet containing SDP data to a SpiNNaker machine. The default
@@ -226,7 +225,7 @@ class SCP(object):
             print(self._sdp_dump(hdr, data, prefix="#>SDP ",
                                  print_data=(debug >= 4)))
 
-    def send_scp(self, cmd, arg1, arg2, arg3, data, debug=None, **kwargs):
+    def send_scp(self, cmd, arg1, arg2, arg3, data, *, debug=None, **kwargs):
         """
         Send a packet containing SCP data to a SpiNNaker machine (uses
         "send_sdp"). A command and three arguments must be supplied and these
@@ -244,7 +243,7 @@ class SCP(object):
                                  print_data=(debug >= 2)))
         self.send_sdp(scp_hdr + data, debug=debug, **kwargs)
 
-    def recv_sdp(self, timeout=None, debug=None):
+    def recv_sdp(self, *, timeout=None, debug=None):
         """
         Receive a packet containing SDP data. Waits for a timeout which is
         taken from the class data unless overridden by an option. Returns
@@ -271,7 +270,7 @@ class SCP(object):
                                  prefix="#<SDP ", print_data=(debug >= 4)))
         return True
 
-    def recv_scp(self, timeout=None, debug=None):
+    def recv_scp(self, *, timeout=None, debug=None):
         """
         Receive a packet containing SCP data. Waits for a timeout which is
         taken from the class data unless overridden by an option. Returns
@@ -281,7 +280,7 @@ class SCP(object):
         timeout = self._timeout if timeout is None else timeout
         debug = self._debug if debug is None else debug
 
-        if not self.recv_sdp(timeout, debug):
+        if not self.recv_sdp(timeout=timeout, debug=debug):
             return None
         if len(self._sdp_data) < 4:
             raise RuntimeError("malformed SCP packet")
@@ -292,8 +291,9 @@ class SCP(object):
                                  print_data=(debug >= 2)))
         return self._cmd_rc
 
-    def scp_cmd(self, cmd, arg1=0, arg2=0, arg3=0, data=b'', addr=None, port=0,
-                unpack=None, timeout=None, retries=None, debug=None):
+    def scp_cmd(self, cmd, *, arg1=0, arg2=0, arg3=0, data=b'',
+                addr=None, port=0, unpack=None, timeout=None, retries=None,
+                debug=None):
         """
         Send a command to a Spinnaker target using SDP over UDP and receive
         a reply.
@@ -323,7 +323,7 @@ class SCP(object):
         for tries in range(retries):
             self.send_scp(cmd, arg1, arg2, arg3, data, debug=debug, addr=addr,
                           port=port, reply=True)
-            rc = self.recv_scp(timeout, debug)
+            rc = self.recv_scp(timeout=timeout, debug=debug)
             if self._rx_seq != self._tx_seq:
                 # Skip unexpected crossed reply
                 continue
@@ -335,7 +335,7 @@ class SCP(object):
             raise SpinnTooManyRetriesException("too many retries")
         if rc != RC_OK:
             raise SpinnException("error {}".format(
-                RC[rc] if rc in RC else "0x{:02x}".format(rc)))
+                RC[rc] if rc in RC else f"0x{rc:02x}"))
 
         if unpack:
             return struct.unpack(unpack, self._sdp_data[4:])

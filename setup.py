@@ -96,7 +96,7 @@ setup(
             "spinnaker_router_provenance_mapper="
             "spinn_front_end_common.interface.provenance.router_prov_mapper:"
             "main [plotting]",
-            "spybug = tools.spybug:main"
+            "spybug = spinn_front_end_common.tools.spybug.spybug:main",
         ]},
     maintainer="SpiNNakerTeam",
     maintainer_email="spinnakerusers@googlegroups.com"

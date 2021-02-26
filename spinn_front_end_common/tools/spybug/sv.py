@@ -14,12 +14,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import re
 import struct
-from collections import namedtuple
+from typing import NamedTuple
 from .exn import StructParseException
 from .util import find_path
 
 
-Field = namedtuple("Field", ["pack", "offset", "fmt", "index", "size"])
+class Field(NamedTuple):
+    pack: str
+    offset: int
+    fmt: str
+    index: int
+    size: int
 
 
 class _Struct(object):
@@ -45,7 +50,7 @@ class _Struct(object):
         self.__fields = dict()
         self.__values = dict()
 
-    def __getitem__(self, name):
+    def __getitem__(self, name) -> Field:
         return self.__fields[name]
 
     def __setitem__(self, name, value):
@@ -82,10 +87,15 @@ class Struct(object):
         (\S+)
         $""")
 
-    def __init__(self, scp, filename="sark.struct", debug=False):
+    def __init__(self, scp, *, filename="sark.struct", debug=False):
+        """
+        :param SCAMPCmd scp:
+        :param str filename:
+        :param bool debug:
+        """
         self.__scp = scp
         self.__structs = {}
-        self.read_file(filename, debug)
+        self.read_file(filename, debug=debug)
 
     def __parse_field(self, line, struct_name, file_name, line_number):
         m = self._FIELD_MATCHER.match(line)
@@ -98,15 +108,14 @@ class Struct(object):
             value = int(value, base=0)
         except ValueError as e:
             raise StructParseException(
-                "read_file: syntax error - {}.{}".format(
-                    file_name, line_number)) from e
+                f"read_file: syntax error - {file_name}.{line_number}") from e
 
         index = 1 if index is None else int(index)
         self.__structs[struct_name].add_field(
             field, value, pack, offset, re.sub(r"(.+)", r"{:\1}", fmt), index)
         return True
 
-    def read_file(self, filename, debug=False):
+    def read_file(self, filename, *, debug=False):
         filename = find_path(filename)
 
         name = ""
@@ -120,23 +129,21 @@ class Struct(object):
 
                 m = re.match(r"^symlink\s+(.*)", line)
                 if m:
-                    self.read_file(m.group(1), debug)
+                    self.read_file(m.group(1), debug=debug)
                     return
 
                 if debug:
-                    print(">> {}".format(line))
+                    print(f">> {line}")
 
                 m = re.match(r"^name\s*=\s*(\w+)$", line)
                 if m:
                     if name:
                         if not self.__structs[name].size:
                             raise StructParseException(
-                                "read_file: size undefined in {}".format(
-                                    filename))
+                                f"read_file: size undefined in {filename}")
                         if self.__structs[name].base is None:
                             raise StructParseException(
-                                "read_file: base undefined in {}".format(
-                                    filename))
+                                f"read_file: base undefined in {filename}")
                     name = m.group(1)
                     self.__structs[name] = _Struct()
                     continue
@@ -155,47 +162,45 @@ class Struct(object):
                     continue
 
                 raise StructParseException(
-                    "read_file: syntax error - {}.{}".format(
-                        filename, line_number))
+                    f"read_file: syntax error - {filename}.{line_number}")
         if debug:
             print(">> EOF")
             for n in self.__structs:
-                print(">> {} {}".format(n, self.__structs[n]))
+                print(f">> {n} {self.__structs[n]}")
 
-    def __read(self, *args, **kwargs):
+    def __read(self, base, length, addr):
         if self.__scp is None:
             raise RuntimeError("not bound to existing SpiNNaker instance")
-        return self.__scp.read(*args, **kwargs)
+        return self.__scp.read(base, length, addr=addr)
 
-    def __write(self, *args, **kwargs):
+    def __write(self, base, data, addr):
         if self.__scp is None:
             raise RuntimeError("not bound to existing SpiNNaker instance")
-        return self.__scp.write(*args, **kwargs)
+        return self.__scp.write(base, data, addr=addr)
 
-    def read_struct(self, name, addr=None):
+    def read_struct(self, name, *, addr=None):
         sv = self.__structs[name]
-        self.unpack(name, self.__read(sv.base, sv.size, addr=addr))
+        self.unpack(name, self.__read(sv.base, sv.size, addr))
 
-    def write_struct(self, name, addr=None):
+    def write_struct(self, name, *, addr=None):
         data = self.pack(name)
         sv = self.__structs[name]
-        self.__write(sv.base, sv.size, data, addr=addr)
+        self.__write(sv.base, data, addr)
 
-    def read_var(self, var, addr=None):
+    def read_var(self, var, *, addr=None):
         name, field = var.split(".")
-        sv = self.__structs[name]
-        f = sv[field]
+        sv: _Struct = self.__structs[name]
+        f: Field = sv[field]
         data, = struct.unpack(f.pack, self.__read(
-            sv.base + f.offset, f.size, addr=addr))
+            sv.base + f.offset, f.size, addr))
         sv[field] = data
         return data
 
-    def write_var(self, var, new, addr=None):
+    def write_var(self, var, new, *, addr=None):
         name, field = var.split(".")
         sv = self.__structs[name]
         f = sv[field]
-        self.__write(
-            sv.base + f.offset, struct.pack(f.pack, new), addr=addr)
+        self.__write(sv.base + f.offset, struct.pack(f.pack, new), addr)
         sv[field] = new
 
     def pack(self, name):
