@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import defaultdict
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.machine import SourceSegmentedSDRAMMachinePartition
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
@@ -20,12 +21,16 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 class SDRAMOutgoingPartitionAllocator(object):
 
-    def __call__(self, machine_graph, transceiver, placements, app_id):
+    def __call__(self, machine_graph, transceiver, placements, app_id,
+                 use_virtual_board=False):
 
         progress_bar = ProgressBar(
             total_number_of_things_to_do=len(machine_graph.vertices),
             string_describing_what_being_progressed=(
                 "Allocating SDRAM for SDRAM outgoing egde partitions"))
+
+        if use_virtual_board:
+            virtual_usage = defaultdict(int)
 
         for machine_vertex in machine_graph.vertices:
             sdram_partitions = (
@@ -53,11 +58,16 @@ class SDRAMOutgoingPartitionAllocator(object):
                         "partition {}".format(sdram_partition))
 
                 # allocate
-                sdram_base_address = transceiver.malloc_sdram(
-                    placement.x, placement.y, total_sdram, app_id)
+                if not use_virtual_board:
+                    sdram_base_address = transceiver.malloc_sdram(
+                        placement.x, placement.y, total_sdram, app_id)
+                else:
+                    sdram_base_address = virtual_usage[
+                        placement.x, placement.y]
+                    virtual_usage[placement.x, placement.y] += total_sdram
 
                 # update
-                sdram_partition.sdram_base_address = (sdram_base_address)
+                sdram_partition.sdram_base_address = sdram_base_address
 
             progress_bar.update()
         progress_bar.end()
