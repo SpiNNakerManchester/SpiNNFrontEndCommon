@@ -1163,8 +1163,8 @@ def cmd_p2p_route(cli):
     if enable not in ("off", "on"):
         raise BadArgs
 
-    flags = spin.flags()
-    spin.flags(flags & ~0x20 if enable == "on" else flags | 0x20)
+    flags = spin.flags
+    spin.flags = flags & ~0x20 if enable == "on" else flags | 0x20
 
 
 # ------------------------------------------------------------------------------
@@ -1177,9 +1177,9 @@ def cmd_debug(cli):
     elif cli.count:
         debug = cli.arg_i(0)
 
-    spin.debug(debug)
+    spin.debug = debug
     if bmp is not None:
-        bmp.debug(debug)
+        bmp.debug = debug
 
     print(f"Debug {debug}")
 
@@ -1199,9 +1199,9 @@ def cmd_timeout(cli):
         raise BadArgs
     elif cli.count:
         t = float(cli.arg(0))
-        spin.timeout(t)
+        spin.timeout = t
 
-    print(f"Timeout {spin.timeout()}")
+    print(f"Timeout {spin.timeout}")
 
 
 def cmd_cmd(cli):
