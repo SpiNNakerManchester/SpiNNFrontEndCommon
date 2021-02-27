@@ -9,7 +9,7 @@
 **/iobuf_for_*.txt
 **/compressor_on_*.txt
 **/test_output/**
-**/tools/boot/*.conf
+**/tools/spybug/boot/*.conf
 **/.nojekyll
 **/*.tag
 **/SpiNNUtils/**
