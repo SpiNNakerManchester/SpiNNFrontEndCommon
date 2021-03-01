@@ -194,7 +194,7 @@ class ProvenanceReader(object):
 
 
 if __name__ == '__main__':
-    # This only works if there is a local sqlfile in the directory
+    # This only works if there is a local sql file in the directory
     pr = ProvenanceReader("provenance.sqlite3")
     query = """
         SELECT the_value
