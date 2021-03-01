@@ -111,10 +111,14 @@ class SCP(object):
         SpiNNaker. Up to three arguments can be given with the following
         effects:
 
-        0 args - chip_x = 255, chip_y = 255, core = 0
-        1 arg  - core = arg1 (chip_x, chip_y unchanged)
-        2 args - chip_x = arg1, chip_y = arg2, core = 0
-        3 args - chip_x = arg1, chip_y = arg2, core = arg3
+        0 args
+            ``chip_x = 255``, ``chip_y = 255``, ``core = 0``
+        1 arg
+            ``core = args[0]`` (``chip_x``, ``chip_y`` unchanged)
+        2 args
+            ``chip_x = args[0]``, ``chip_y = args[1]``, ``core = 0``
+        3 args
+            ``chip_x = args[0]``, ``chip_y = args[1]``, ``core = args[2]``
         """
         if len(args) == 0:
             self._x, self._y, self._c = 255, 255, 0
@@ -238,7 +242,7 @@ class SCP(object):
             print(self._sdp_dump(hdr, data, prefix="#>SDP ",
                                  print_data=(debug >= 4)))
 
-    def send_scp(self, cmd, arg1, arg2, arg3, data, *, debug=None, **kwargs):
+    def __send_scp(self, cmd, arg1, arg2, arg3, data, *, debug=None, **kwargs):
         """
         Send a packet containing SCP data to a SpiNNaker machine. A command
         and three arguments must be supplied and these are packed along with
@@ -370,7 +374,9 @@ class SCP(object):
         :keyword int retries:
             Override for the retries
         :keyword int debug:
-            Override for the debugging level
+            Override for the debugging level;
+            will dump the received packet contents if >= 2.
+            If >= 3, the outgoing message will be logged as well.
         :return: the content of the message, unpacked if ``unpack`` supplied
         :rtype: bytes or list(int)
         """
@@ -381,8 +387,9 @@ class SCP(object):
         self._tx_seq = (self._tx_seq + 1) & 0xFFFF
 
         for tries in range(retries):
-            self.send_scp(cmd, arg1, arg2, arg3, data, debug=debug, addr=addr,
-                          port=port, reply=True)
+            self.__send_scp(
+                cmd, arg1, arg2, arg3, data, debug=debug, addr=addr,
+                port=port, reply=True)
             rc = self.__recv_scp(timeout=timeout, debug=debug)
             if self._rx_seq != self._tx_seq:
                 # Skip unexpected crossed reply
@@ -405,6 +412,10 @@ class SCP(object):
 
     @property
     def timeout(self):
+        """ The timeout on SCP commands
+
+        :rtype: float
+        """
         return self._timeout
 
     @timeout.setter
@@ -413,6 +424,15 @@ class SCP(object):
 
     @property
     def debug(self):
+        """ The debugging level.
+
+        0. No debugging info
+        1. Summary of each message.
+        2. Also detail of each received message
+        3. Also detail of each sent message
+
+        :rtype: int
+        """
         return self._debug
 
     @debug.setter
@@ -421,6 +441,10 @@ class SCP(object):
 
     @property
     def flags(self):
+        """ Flags on sent messages
+
+        :rtype: int
+        """
         return self._flags
 
     @flags.setter
@@ -429,6 +453,10 @@ class SCP(object):
 
     @property
     def retries(self):
+        """ Number of retries for SCP
+
+        :rtype: int
+        """
         return self._retries
 
     @retries.setter

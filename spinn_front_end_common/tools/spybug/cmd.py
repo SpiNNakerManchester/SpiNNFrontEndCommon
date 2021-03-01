@@ -355,7 +355,7 @@ class Cmd(SCP):
         :param bytes data:
             What data to write.
         :keyword list(int) addr:
-            If given, says where on the board to write from to instead of the
+            If given, says where on the board to read from instead of the
             default.
         :keyword float timeout:
             Override for the timeout
@@ -433,6 +433,9 @@ class Cmd(SCP):
         """
         Configure an IPTAG.
 
+        .. note::
+            Only meaningful when an Ethernet connection is present.
+
         :param int tag:
             Which tag to configure
         :param bytes port:
@@ -479,6 +482,9 @@ class Cmd(SCP):
         """
         Clear an IPTAG.
 
+        .. note::
+            Only meaningful when an Ethernet connection is present.
+
         :param int tag:
             Which tag to clear
         :keyword list(int) addr:
@@ -496,6 +502,9 @@ class Cmd(SCP):
     def iptag_get(self, tag, count, **kwargs):
         """
         Get the configuration of an IPTAG.
+
+        .. note::
+            Only meaningful when an Ethernet connection is present.
 
         :param int tag:
             Which tag to read
@@ -519,6 +528,9 @@ class Cmd(SCP):
     def iptag_tto(self, tto, **kwargs):
         """
         Set the timeout configuration of all IPTAG.
+
+        .. note::
+            Only meaningful when an Ethernet connection is present.
 
         :param int tto:
             The timeout to set
@@ -572,6 +584,24 @@ class SCAMPCmd(Cmd):
     # -------------------------------------------------------------------------
 
     def rtr_alloc(self, app_id, size, **kwargs):
+        """ Router allocate entries
+
+        :param int app_id:
+            Allocate for what application
+        :param int size:
+            How many entries to allocate
+        :keyword list(int) addr:
+            If given, says where on the board to allocate instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        :return: The first allocated entry index
+        :rtype: int
+        """
         alloc_op = _AllocOp.ALLOC_RTR
         base_entry_id, = self.scp_cmd(
             SCAMP_CMD.ALLOC, arg1=(app_id << 8) + alloc_op, arg2=size,
@@ -579,27 +609,103 @@ class SCAMPCmd(Cmd):
         return base_entry_id
 
     def rtr_init(self, **kwargs):
+        """ Router initialise
+
+        :keyword list(int) addr:
+            If given, says where on the board to initialise instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         rtr_op = _RouterOp.RTR_INIT
         self.scp_cmd(SCAMP_CMD.RTR, arg1=rtr_op, **kwargs)
 
     def rtr_clear(self, start, count, **kwargs):
+        """ Router clear
+
+        :param int start:
+            What entry index to start the clear from
+        :param int count:
+            How many entries to clear
+        :keyword list(int) addr:
+            If given, says where on the board to clear instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         rtr_op = _RouterOp.RTR_CLEAR
         self.scp_cmd(
             SCAMP_CMD.RTR, arg1=(count << 16) | rtr_op, arg2=start, **kwargs)
 
     def rtr_load(self, app_id, mem_addr, size, base_entry_id, **kwargs):
+        """ Router load entries from pre-loaded memory block
+
+        :param int app_id:
+            What application will own the entries
+        :param int mem_addr:
+            Where in memory to load the router entries from
+        :param int size:
+            Number of entries to load
+        :param int base_entry_id:
+            The index of the first entry to be written
+        :keyword list(int) addr:
+            If given, says where on the board to load to instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         rtr_op = _RouterOp.RTR_MC_LOAD
         self.scp_cmd(
             SCAMP_CMD.RTR, arg1=(size << 16) | (app_id << 8) | rtr_op,
             arg2=mem_addr, arg3=base_entry_id, **kwargs)
 
     def rtr_fr_get(self, **kwargs):
+        """ Get the fixed route
+
+        :keyword list(int) addr:
+            If given, says where on the board to read from instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        :return: The fixed route word
+        :rtype: int
+        """
         rtr_op = _RouterOp.RTR_FR
         route, = self.scp_cmd(
             SCAMP_CMD.RTR, arg1=rtr_op, arg2=-1, unpack="<I", **kwargs)
         return route
 
     def rtr_fr_set(self, route, **kwargs):
+        """ Set the fixed route
+
+        :param int route:
+            The fixed route word to set
+        :keyword list(int) addr:
+            If given, says where on the board to write to instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         if route & (1 << 31):
             raise ValueError("route must not have top bit set")
         rtr_op = _RouterOp.RTR_FR
@@ -608,25 +714,111 @@ class SCAMPCmd(Cmd):
     # -------------------------------------------------------------------------
 
     def remap(self, proc_id, *, proc_id_is_physical=False, **kwargs):
+        """ Change the virtual-to-physical processor mapping
+
+        :param int proc_id:
+        :param bool proc_id_is_physical:
+        :keyword list(int) addr:
+            If given, says where on the board to write to instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         self.scp_cmd(
             SCAMP_CMD.REMAP, arg1=proc_id, arg2=proc_id_is_physical, **kwargs)
 
     # -------------------------------------------------------------------------
 
     def astart(self, base, mask, app_id, app_flags, **kwargs):
+        """ Start an application
+
+        :param int base:
+            Where the application is in memory
+        :param int mask:
+            What cores to launch the application on
+        :param int app_id:
+            What application ID to use
+        :param int app_flags:
+        :keyword list(int) addr:
+            If given, says where on the board to start instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         arg = (app_id << 24) | (app_flags << 18) | mask
         self.scp_cmd(SCAMP_CMD.AS, arg1=base, arg2=arg, **kwargs)
 
     def ar(self, mask, app_id, app_flags, **kwargs):
+        """ Run an application; code must be already in ITCM
+
+        :param int mask:
+            What cores to launch the application on
+        :param int app_id:
+            What application ID to use
+        :param int app_flags:
+        :keyword list(int) addr:
+            If given, says where on the board to run instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         arg = (app_id << 24) | (app_flags << 18) | mask
         self.scp_cmd(SCAMP_CMD.AR, arg1=arg, **kwargs)
 
     def signal(self, type,  # pylint: disable=redefined-builtin
                data, mask, **kwargs):
+        """ Send a signal
+
+        :param int type:
+            What kind of signal
+        :param int data:
+            Payload data for the signal
+        :param int mask:
+            Where to send the signal
+        :keyword str unpack:
+            An unpacking to apply
+        :keyword list(int) addr:
+            If given, says where on the board to send from instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        :return: the result payload of the signal
+        :rtype: bytes or tuple
+        """
         return self.scp_cmd(
             SCAMP_CMD.SIG, arg1=type, arg2=data, arg3=mask, **kwargs)
 
     def p2pc(self, x, y, **kwargs):
+        """ Send a peer-to-peer command
+
+        :param int x:
+        :param int y:
+        :keyword list(int) addr:
+            If given, says where on the board to send from instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         _id = self._next_id()
         arg1 = _word(0, 0x3E, 0, _id)
         arg2 = _word(x, y, 0, 0)
@@ -635,11 +827,48 @@ class SCAMPCmd(Cmd):
                      addr=[], **kwargs)
 
     def nnp(self, arg1, arg2, arg3, **kwargs):
+        """ Send a nearest-neighbour (flood) command
+
+        :param int arg1:
+        :param int arg2:
+        :param int arg3:
+        :keyword list(int) addr:
+            If given, says where on the board to send from instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         self.scp_cmd(SCAMP_CMD.NNP, arg1=arg1, arg2=arg2, arg3=arg3, **kwargs)
 
     # -------------------------------------------------------------------------
 
     def srom_read(self, base, length, *, unpack=None, addr_size=24, **kwargs):
+        """ Read the SROM
+
+        :param int base:
+            Where to read from in the SROM
+        :param int length:
+            How much to read
+        :keyword str unpack:
+            An unpacking to apply
+        :keyword int addr_size:
+            The size of address space
+        :keyword list(int) addr:
+            If given, says where on the board to read from instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        :return: The data read from the SROM
+        :rtype: bytes or tuple
+        """
         data = b""
         while length:
             _l = min(length, self._buf_size)
@@ -653,6 +882,26 @@ class SCAMPCmd(Cmd):
         return self._decode(data, unpack)
 
     def srom_write(self, base, data, *, page_size=256, addr_size=24, **kwargs):
+        """ Write the SROM
+
+        :param int base:
+            Where to read from in the SROM
+        :param bytes data:
+            What to write
+        :keyword int page_size:
+            The size of chunks to write; 256 is maximum
+        :keyword int addr_size:
+            The size of address space
+        :keyword list(int) addr:
+            If given, says where on the board to write to instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         for buf in self._chunk(data, chunk_size=page_size):
             length = len(buf)
             self.scp_cmd(
@@ -662,16 +911,47 @@ class SCAMPCmd(Cmd):
             base += length
 
     def srom_erase(self, **kwargs):
+        """ Erase the SROM
+
+        :keyword list(int) addr:
+            If given, says where on the board to erase instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         self.scp_cmd(SCAMP_CMD.SROM, arg1=0xC8, arg2=0xC7000000, **kwargs)
 
     # -------------------------------------------------------------------------
 
     def flood_fill(self, buf, region, mask, app_id, app_flags, *,
                    base=0x67800000, **kwargs):
+        """ Flood fill data
+
+        :param bytes buf:
+            The data to write
+        :param int region:
+        :param int mask:
+        :param int app_id:
+        :param int app_flags:
+        :keyword int base:
+            Where to write the data to
+        :keyword list(int) addr:
+            If given, says where on the board to start the fill from instead
+            of the default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         size = len(buf)
-        blocks = size // 256
-        if size % 256:
-            blocks += 1
+        blocks, left = divmod(size, 256)
+        blocks += bool(left)
         if self._debug:
             print(f"# FF {size} bytes, {blocks} blocks")
 
@@ -705,10 +985,23 @@ class SCAMPCmd(Cmd):
         self.nnp(key, data, fr, **kwargs)
 
     def flood_boot(self, buf, **kwargs):
+        """ Flood fill a boot image
+
+        :param bytes buf:
+            The data to write
+        :keyword list(int) addr:
+            If given, says where on the board to start the fill from instead
+            of the default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         size = len(buf)
-        blocks = size // 256
-        if size % 256:
-            blocks += 1
+        blocks, left = divmod(size, 256)
+        blocks += bool(left)
         if self._debug:
             print(f"# FF Boot - {size} bytes, {blocks} blocks")
 
@@ -750,7 +1043,7 @@ class BMPCmd(Cmd):
     """
     __slots__ = ()
 
-    def sf_read(self, base, length, **kwargs):
+    def sf_read(self, base, length, *, unpack=None, **kwargs):
         """
         Read from SF.
 
@@ -758,6 +1051,9 @@ class BMPCmd(Cmd):
             Where to start the read from.
         :param int length:
             How much to read.
+        :keyword str unpack:
+            An unpacking to apply
+        :rtype: bytes or tuple
         """
         data = b''
         while length:
@@ -766,7 +1062,7 @@ class BMPCmd(Cmd):
                                  **kwargs)
             length -= _l
             base += _l
-        return data
+        return self._decode(data, unpack)
 
     def sf_write(self, base, data, **kwargs):
         """
