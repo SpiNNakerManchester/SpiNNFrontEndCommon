@@ -24,6 +24,18 @@ class ProvenanceReader(object):
     Provides a connection to a sqllite3 database and some provenenace
     convenience methods
 
+    By default this will wrap around the database used to store the
+    provenance of the last run. The path is not updated so this reader is
+    not effected by a reset or an end
+
+    The assumption is that the database is in the current provenance format.
+    This inlcudes both that DDL statements used to create the database but
+    also the underlying database structure. Currenlty sqllite3
+
+    .. warning::
+        This class is only a wrapper around the database file so if the file
+        is deleted the class will no longer work.
+
     """
 
     __slots__ = ["_provenance_data_path"]
@@ -33,10 +45,8 @@ class ProvenanceReader(object):
         """ Get the path of the current provenance database of the last run
 
        .. warning::
-            Calling this method before run is called can lead to unexpected
-            results and is not supported.
-            Especially between reset and run it could return either
-            the provenance of the previous run or for the next run.
+            Calling this method between start/reset and run may result in a
+            path to a database not yet created.
 
         :raises ValueError:
             if the system is in a state where path can't be retrieved,
@@ -46,6 +56,15 @@ class ProvenanceReader(object):
         return os.path.join(provenance_data_path, PROVENANCE_DB)
 
     def __init__(self, provenance_data_path=None):
+        """
+        Create a wrapper around the database.
+
+        The suggested way to call this is without the path param allowing
+        get_last_run_database_path to find the correct path
+
+        :param provenance_data_path: Path to the provenace database to wrap
+        :type provenance_data_path: None or str
+        """
         if provenance_data_path:
             self._provenance_data_path = provenance_data_path
         else:
@@ -56,14 +75,21 @@ class ProvenanceReader(object):
         Gets a handle to the open database.
 
         .. note::
+            This method is mainly provided as a support method for the later
+            methods that return specific data. For new IntergationTests
+            please add a specific method rather than call this directly.
+
+        .. warning::
             It is the callers responsibility to close the database.
             The recommended usage is therefor a with statement
 
-        :param bool read_only: If true will return a readonly database
+        :param read_only: If true will return a readonly database
+        :type read_only: None or bool
         :param use_sqlite_rows:
         If true the results of run_query will be Sqlite3 rows.
         If False the results of run_query will be unnamed tuples.
-        :return: and Open sqlite3 connection
+        :type use_sqlite_rows: None or bool
+        :return: an Open sqlite3 connection
         """
         if not os.path.exists(self._provenance_data_path):
             raise Exception("no such DB: " + self._provenance_data_path)
@@ -78,18 +104,55 @@ class ProvenanceReader(object):
             db.row_factory = sqlite3.Row
         return db
 
-    def run_query(self, query, params=None):
+    def run_query(
+            self, query, params=None, read_only=True, use_sqlite_rows=False):
+        """
+        Opens a connection to the database, runs a query, extracts the results
+        and closes the connection
+
+        The return type depends on the use_sqlite_rows param.
+        By default this method returns tuples
+
+        This method will not allow queries that change the database unless the
+        read_only flag is set to False.
+
+        .. note::
+            This method is mainly provided as a support method for the later
+            methods that return specific data. For new IntergationTests
+            please add a specific method rather than call this directly.
+
+        :param str query: The sql query to be run. May include ? wildcards
+        :param params: In iterable of the values to replace the ? wildacrds
+            with. The number and types must match what the query expects
+        :param read_only: see get_database_handle
+        :type read_only: None or bool
+        :param use_sqlite_rows: see get_database_handle
+        :type use_sqlite_rows: None or bool
+        :return: A list possibly empty of tuples/rows
+        (one for each row in the database)
+        where the number and tyoe of the values cooresponds to the where
+        statement
+        """
         if params is None:
             params = []
         if not os.path.exists(self._provenance_data_path):
             raise Exception("no such DB: " + self._provenance_data_path)
-        with self.get_database_handle() as db:
+        with self.get_database_handle(read_only, use_sqlite_rows) as db:
             results = []
             for row in db.execute(query, params):
                 results.append(row)
         return results
 
     def cores_with_late_spikes(self):
+        """
+        Gets the x, y, p and count of the cores where late spikes arrived.
+
+        Cores that received spikes but where none where late are NOT included.
+
+        :return: A list hopefully empty of tuples (x, y, p , count) of cores
+        where their where late arrving spikes.
+        :rtype: list(tuple(int, int, int , int))
+        """
         query = """
             SELECT x, y, p, the_value 
             FROM provenance_view 
@@ -131,7 +194,8 @@ class ProvenanceReader(object):
 
 
 if __name__ == '__main__':
-    pr = ProvenanceReader("/home/brenninc/spinnaker/SpiNNFrontEndCommon/spinn_front_end_common/interface/provenance/provenance.sqlite3")
+    # This only works if there is a local sqlfile in the directory
+    pr = ProvenanceReader("provenance.sqlite3")
     query = "SELECT the_value FROM provenance_view WHERE description_name = 'Local_P2P_Packets'"
     results = pr.run_query(query)
     for row in results:
