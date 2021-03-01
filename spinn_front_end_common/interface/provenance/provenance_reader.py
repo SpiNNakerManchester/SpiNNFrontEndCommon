@@ -154,9 +154,9 @@ class ProvenanceReader(object):
         :rtype: list(tuple(int, int, int , int))
         """
         query = """
-            SELECT x, y, p, the_value 
-            FROM provenance_view 
-            WHERE description_name = 'Number_of_late_spikes' 
+            SELECT x, y, p, the_value
+            FROM provenance_view
+            WHERE description_name = 'Number_of_late_spikes'
                 AND the_value > 0
             """
         return self.run_query(query)
@@ -173,8 +173,8 @@ class ProvenanceReader(object):
         description_name: value
         """
         query = """
-            SELECT description_name AS description, the_value AS 'value' 
-            FROM provenance_view  
+            SELECT description_name AS description, the_value AS 'value'
+            FROM provenance_view
             WHERE description_name LIKE ?
             """
         results = []
@@ -196,7 +196,11 @@ class ProvenanceReader(object):
 if __name__ == '__main__':
     # This only works if there is a local sqlfile in the directory
     pr = ProvenanceReader("provenance.sqlite3")
-    query = "SELECT the_value FROM provenance_view WHERE description_name = 'Local_P2P_Packets'"
+    query = """
+        SELECT the_value 
+        FROM provenance_view 
+        WHERE description_name = 'Local_P2P_Packets'
+        """
     results = pr.run_query(query)
     for row in results:
         print(row)

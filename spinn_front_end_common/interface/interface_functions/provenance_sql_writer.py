@@ -34,4 +34,3 @@ class ProvenanceSQLWriter(object):
             provenance_data_path, PROVENANCE_DB)
         with SqlLiteDatabase(database_file) as db:
             db.insert_items(provenance_data_items)
-
