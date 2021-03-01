@@ -165,12 +165,13 @@ class ProvenanceReader(object):
         """
         Gets the provenance item(s) from the last run
 
-        :param str description_name: The value to LIKE search for in the
-        description_name column. Can be the full name have %  amd _ wildcards
+        :param str description_name:
+            The value to LIKE search for in the description_name column.
+            Can be the full name have %  amd _ wildcards
 
-        :return: A possibly multiline string with
-        for each row which matches the like a line
-        description_name: value
+        :return:
+            A possibly multiline string with for each row which matches the
+            like a line description_name: value
         """
         query = """
             SELECT description_name AS description, the_value AS 'value'
@@ -186,9 +187,9 @@ class ProvenanceReader(object):
         """
         Gets the BufferExtractor provenance item(s) from the last run
 
-        :return: A possibly multiline string with
-        for each row which matches the like %BufferExtractor
-        description_name: value
+        :return:
+            A possibly multiline string with for each row which matches the
+            like %BufferExtractor description_name: value
         """
         return self.get_provenance("%BufferExtractor")
 
