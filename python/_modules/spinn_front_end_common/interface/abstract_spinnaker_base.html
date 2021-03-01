@@ -945,9 +945,6 @@
             <span class="c1"># sync to 0</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_no_sync_changes</span> <span class="o">=</span> <span class="mi">0</span>
 
-            <span class="c1"># create new sub-folder for reporting data</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_set_up_output_folders</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_calls_to_run</span><span class="p">)</span>
-
         <span class="c1"># build the graphs to modify with system requirements</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_ran</span> <span class="ow">or</span> <span class="n">graph_changed</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_build_graphs_for_usage</span><span class="p">()</span>
@@ -2416,6 +2413,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Resetting&quot;</span><span class="p">)</span>
+
+        <span class="c1"># create new sub-folder for reporting data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_up_output_folders</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_calls_to_run</span><span class="p">)</span>
 
         <span class="c1"># rewind the buffers from the buffer manager, to start at the beginning</span>
         <span class="c1"># of the simulation again and clear buffered out</span>

@@ -151,6 +151,211 @@ MachineGraph and if it exists the ApplicationGraph</p>
 </dd></dl>
 
 <dl class="py class">
+<dt id="spinn_front_end_common.interface.provenance.ProvenanceReader">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></code><code class="sig-name descname"><span class="pre">ProvenanceReader</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provenance_data_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Provides a connection to an sqlite3 database and some provenance
+convenience methods</p>
+<p>By default this will wrap around the database used to store the
+provenance of the last run. The path is not updated so this reader is
+not effected by a reset or an end</p>
+<p>The assumption is that the database is in the current provenance format.
+This includes both that DDL statements used to create the database but
+also the underlying database structure. Currently sqlite3</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This class is only a wrapper around the database file so if the file
+is deleted the class will no longer work.</p>
+</div>
+<p>Create a wrapper around the database.</p>
+<p>The suggested way to call this is without the
+<code class="docutils literal notranslate"><span class="pre">provenance_data_path</span></code> parameter, allowing
+<a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path" title="spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_last_run_database_path()</span></code></a> to find the correct path</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>provenance_data_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Path to the provenance database to wrap</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.ProvenanceReader.cores_with_late_spikes">
+<code class="sig-name descname"><span class="pre">cores_with_late_spikes</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.cores_with_late_spikes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.cores_with_late_spikes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the x, y, p and count of the cores where late spikes arrived.</p>
+<p>Cores that received spikes but where none were late are <em>not</em> included.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A list hopefully empty of tuples (x, y, p, count) of cores
+where their where late arriving spikes.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle">
+<code class="sig-name descname"><span class="pre">get_database_handle</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">read_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_sqlite_rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_database_handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a handle to the open database.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is mainly provided as a support method for the later
+methods that return specific data. For new IntergationTests
+please add a specific method rather than call this directly.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>It is the callers responsibility to close the database.
+The recommended usage is therefore a <code class="docutils literal notranslate"><span class="pre">with</span></code> statement</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>read_only</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If true will return a readonly database</p></li>
+<li><p><strong>use_sqlite_rows</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the results of <a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.run_query" title="spinn_front_end_common.interface.provenance.ProvenanceReader.run_query"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run_query()</span></code></a> will be
+<a class="reference external" href="https://docs.python.org/3.6/library/sqlite3.html#sqlite3.Row" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Row</span></code></a>s.
+If <code class="docutils literal notranslate"><span class="pre">False</span></code> the results of <a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.run_query" title="spinn_front_end_common.interface.provenance.ProvenanceReader.run_query"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run_query()</span></code></a> will be
+<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>s.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>an open sqlite3 connection</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/sqlite3.html#sqlite3.Connection" title="(in Python v3.6)">Connection</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">get_last_run_database_path</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_last_run_database_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the path of the current provenance database of the last run</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<blockquote>
+<div><p>Calling this method between start/reset and run may result in a
+path to a database not yet created.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">raises ValueError</dt>
+<dd class="field-odd"><p>if the system is in a state where path can’t be retrieved,
+for example before run is called</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_provenance">
+<code class="sig-name descname"><span class="pre">get_provenance</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_provenance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_provenance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the provenance item(s) from the last run</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>description_name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The value to LIKE search for in the description_name column.
+Can be the full name, or have <code class="docutils literal notranslate"><span class="pre">%</span></code>  and <code class="docutils literal notranslate"><span class="pre">_</span></code> wildcards.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A possibly multiline string with for each row which matches the
+like a line <code class="docutils literal notranslate"><span class="pre">description_name:</span> <span class="pre">value</span></code></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_provenance_for_chip">
+<code class="sig-name descname"><span class="pre">get_provenance_for_chip</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_provenance_for_chip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_provenance_for_chip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the provenance item(s) from the last run relating to a chip</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The X coordinate of the chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The Y coordinate of the chip</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A possibly multiline string with for each row which matches the
+like a line <code class="docutils literal notranslate"><span class="pre">description_name:</span> <span class="pre">value</span></code></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_time_of_BufferExtractor">
+<code class="sig-name descname"><span class="pre">get_run_time_of_BufferExtractor</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_run_time_of_BufferExtractor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_time_of_BufferExtractor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the BufferExtractor provenance item(s) from the last run</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A possibly multiline string with for each row which matches the
+like %BufferExtractor description_name: value</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_times">
+<code class="sig-name descname"><span class="pre">get_run_times</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_run_times"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_times" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the algorithm running times from the last run. If an algorithm is
+invoked multiple times in the run, its times are summed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A possibly multiline string with for each row which matches the
+like a line <code class="docutils literal notranslate"><span class="pre">description_name:</span> <span class="pre">time</span></code>. The times are in seconds.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.ProvenanceReader.run_query">
+<code class="sig-name descname"><span class="pre">run_query</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_sqlite_rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.run_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.run_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opens a connection to the database, runs a query, extracts the results
+and closes the connection</p>
+<p>The return type depends on the use_sqlite_rows param.
+By default this method returns tuples</p>
+<p>This method will not allow queries that change the database unless the
+read_only flag is set to False.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is mainly provided as a support method for the later
+methods that return specific data. For new IntergationTests
+please add a specific method rather than call this directly.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The SQL query to be run. May include <code class="docutils literal notranslate"><span class="pre">?</span></code> wildcards</p></li>
+<li><p><strong>or int</strong><strong>) </strong><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.6)"><em>Iterable</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The values to replace the <code class="docutils literal notranslate"><span class="pre">?</span></code> wildcards with.
+The number and types must match what the query expects</p></li>
+<li><p><strong>read_only</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – see <a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle" title="spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_database_handle()</span></code></a></p></li>
+<li><p><strong>use_sqlite_rows</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – see <a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle" title="spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_database_handle()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list possibly empty of tuples/rows
+(one for each row in the database)
+where the number and type of the values corresponds to the where
+statement</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a> or <a class="reference external" href="https://docs.python.org/3.6/library/sqlite3.html#sqlite3.Row" title="(in Python v3.6)">Row</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></code><code class="sig-name descname"><span class="pre">ProvidesProvenanceDataFromMachineImpl</span></code><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provides_provenance_data_from_machine_impl.html#ProvidesProvenanceDataFromMachineImpl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.provenance.abstract_provides_provenance_data_from_machine.AbstractProvidesProvenanceDataFromMachine</span></code></p>

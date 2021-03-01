@@ -54,6 +54,7 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="n">SqlLiteDatabase</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">PROVENANCE_DB</span>
 
 
 <div class="viewcode-block" id="ProvenanceSQLWriter"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ProvenanceSQLWriter">[docs]</a><span class="k">class</span> <span class="nc">ProvenanceSQLWriter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -69,7 +70,7 @@
 <span class="sd">        :param str provenance_data_path:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">database_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="n">provenance_data_path</span><span class="p">,</span> <span class="s2">&quot;provenance.sqlite3&quot;</span><span class="p">)</span>
+            <span class="n">provenance_data_path</span><span class="p">,</span> <span class="n">PROVENANCE_DB</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">SqlLiteDatabase</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_items</span><span class="p">(</span><span class="n">provenance_data_items</span><span class="p">)</span></div></div>
 </pre></div>
