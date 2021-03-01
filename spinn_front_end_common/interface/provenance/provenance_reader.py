@@ -14,14 +14,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sqlite3
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
-import sqlite3
 
 
 class ProvenanceReader(object):
     """
-    Provides a connection to a sqllite3 database and some provenenace
+    Provides a connection to an sqlite3 database and some provenance
     convenience methods
 
     By default this will wrap around the database used to store the
@@ -29,13 +29,12 @@ class ProvenanceReader(object):
     not effected by a reset or an end
 
     The assumption is that the database is in the current provenance format.
-    This inlcudes both that DDL statements used to create the database but
-    also the underlying database structure. Currenlty sqllite3
+    This includes both that DDL statements used to create the database but
+    also the underlying database structure. Currently sqlite3
 
     .. warning::
         This class is only a wrapper around the database file so if the file
         is deleted the class will no longer work.
-
     """
 
     __slots__ = ["_provenance_data_path"]
@@ -52,17 +51,18 @@ class ProvenanceReader(object):
             if the system is in a state where path can't be retrieved,
             for example before run is called
         """
-        provenance_data_path = globals_variables.provenance_file_path()
-        return os.path.join(provenance_data_path, PROVENANCE_DB)
+        return os.path.join(
+            globals_variables.provenance_file_path(), PROVENANCE_DB)
 
     def __init__(self, provenance_data_path=None):
         """
         Create a wrapper around the database.
 
-        The suggested way to call this is without the path param allowing
-        get_last_run_database_path to find the correct path
+        The suggested way to call this is without the
+        ``provenance_data_path`` parameter, allowing
+        :py:meth:`get_last_run_database_path` to find the correct path
 
-        :param provenance_data_path: Path to the provenace database to wrap
+        :param provenance_data_path: Path to the provenance database to wrap
         :type provenance_data_path: None or str
         """
         if provenance_data_path:
@@ -81,15 +81,16 @@ class ProvenanceReader(object):
 
         .. warning::
             It is the callers responsibility to close the database.
-            The recommended usage is therefor a with statement
+            The recommended usage is therefore a ``with`` statement
 
-        :param read_only: If true will return a readonly database
-        :type read_only: None or bool
-        :param use_sqlite_rows:
-        If true the results of run_query will be Sqlite3 rows.
-        If False the results of run_query will be unnamed tuples.
-        :type use_sqlite_rows: None or bool
-        :return: an Open sqlite3 connection
+        :param bool read_only: If true will return a readonly database
+        :param bool use_sqlite_rows:
+            If ``True`` the results of :py:meth:`run_query` will be
+            :py:class:`~sqlite3.Row`\\ s.
+            If ``False`` the results of :py:meth:`run_query` will be
+            :py:class:`tuple`\\ s.
+        :return: an open sqlite3 connection
+        :rtype: ~sqlite3.Connection
         """
         if not os.path.exists(self._provenance_data_path):
             raise Exception("no such DB: " + self._provenance_data_path)
@@ -105,7 +106,7 @@ class ProvenanceReader(object):
         return db
 
     def run_query(
-            self, query, params=None, read_only=True, use_sqlite_rows=False):
+            self, query, params=(), read_only=True, use_sqlite_rows=False):
         """
         Opens a connection to the database, runs a query, extracts the results
         and closes the connection
@@ -121,20 +122,18 @@ class ProvenanceReader(object):
             methods that return specific data. For new IntergationTests
             please add a specific method rather than call this directly.
 
-        :param str query: The sql query to be run. May include ? wildcards
-        :param params: In iterable of the values to replace the ? wildacrds
-            with. The number and types must match what the query expects
-        :param read_only: see get_database_handle
-        :type read_only: None or bool
-        :param use_sqlite_rows: see get_database_handle
-        :type use_sqlite_rows: None or bool
+        :param str query: The SQL query to be run. May include ``?`` wildcards
+        :param ~collections.abc.Iterable(str or int) params:
+            The values to replace the ``?`` wildcards with.
+            The number and types must match what the query expects
+        :param bool read_only: see :py:meth:`get_database_handle`
+        :param bool use_sqlite_rows: see :py:meth:`get_database_handle`
         :return: A list possibly empty of tuples/rows
-        (one for each row in the database)
-        where the number and tyoe of the values cooresponds to the where
-        statement
+            (one for each row in the database)
+            where the number and type of the values corresponds to the where
+            statement
+        :rtype: tuple or ~sqlite3.Row
         """
-        if params is None:
-            params = []
         if not os.path.exists(self._provenance_data_path):
             raise Exception("no such DB: " + self._provenance_data_path)
         with self.get_database_handle(read_only, use_sqlite_rows) as db:
@@ -147,14 +146,14 @@ class ProvenanceReader(object):
         """
         Gets the x, y, p and count of the cores where late spikes arrived.
 
-        Cores that received spikes but where none where late are NOT included.
+        Cores that received spikes but where none were late are *not* included.
 
-        :return: A list hopefully empty of tuples (x, y, p , count) of cores
-            where their where late arrving spikes.
-        :rtype: list(tuple(int, int, int , int))
+        :return: A list hopefully empty of tuples (x, y, p, count) of cores
+            where their where late arriving spikes.
+        :rtype: list(tuple(int, int, int, int))
         """
         query = """
-            SELECT x, y, p, the_value
+            SELECT x, y, p, the_value AS "value"
             FROM provenance_view
             WHERE description_name = 'Number_of_late_spikes'
                 AND the_value > 0
@@ -167,21 +166,47 @@ class ProvenanceReader(object):
 
         :param str description_name:
             The value to LIKE search for in the description_name column.
-            Can be the full name have %  amd _ wildcards
-
+            Can be the full name, or have ``%``  and ``_`` wildcards.
         :return:
             A possibly multiline string with for each row which matches the
-            like a line description_name: value
+            like a line ``description_name: value``
+        :rtype: str
         """
         query = """
-            SELECT description_name AS description, the_value AS 'value'
+            SELECT description_name AS description, the_value AS "value"
             FROM provenance_view
-            WHERE description_name LIKE ?
+            WHERE description LIKE ?
+            ORDER BY description
             """
         results = []
         for row in self.run_query(query, [description_name]):
-            results.append("{}: {}\n".format(row[0], row[1]))
-        return "".join(results)
+            results.append("{}: {}".format(row[0], row[1]))
+        return "\n".join(results)
+
+    def get_run_times(self):
+        """
+        Gets the algorithm running times from the last run. If an algorithm is
+        invoked multiple times in the run, its times are summed.
+
+        :return:
+            A possibly multiline string with for each row which matches the
+            like a line ``description_name: time``. The times are in seconds.
+        :rtype: str
+        """
+        # We know the database actually stores microseconds for durations
+        query = """
+            SELECT
+                description_name AS "description",
+                SUM(the_value) / 1000000.0 AS "value"
+            FROM provenance_view
+            WHERE description LIKE 'run_time_of_%'
+            GROUP BY description_name
+            ORDER BY the_value
+            """
+        results = []
+        for row in self.run_query(query):
+            results.append("{}: {} s".format(row[0].replace("_", " "), row[1]))
+        return "\n".join(results)
 
     def get_run_time_of_BufferExtractor(self):
         """
@@ -190,20 +215,53 @@ class ProvenanceReader(object):
         :return:
             A possibly multiline string with for each row which matches the
             like %BufferExtractor description_name: value
+        :rtype: str
         """
         return self.get_provenance("%BufferExtractor")
 
+    def get_provenance_for_chip(self, x, y):
+        """
+        Gets the provenance item(s) from the last run relating to a chip
+
+        :param int x:
+            The X coordinate of the chip
+        :param int y:
+            The Y coordinate of the chip
+        :return:
+            A possibly multiline string with for each row which matches the
+            like a line ``description_name: value``
+        :rtype: str
+        """
+        query = """
+            SELECT description_name AS description, sum(the_value) AS "value"
+            FROM provenance_view
+            WHERE x = ? and y = ?
+            GROUP BY description
+            ORDER BY description
+            """
+        results = []
+        for row in self.run_query(query, [int(x), int(y)]):
+            results.append("{}: {}".format(row[0], row[1]))
+        return "\n".join(results)
+
+    @staticmethod
+    def _demo():
+        """ A demonstration of how to use this class.
+        """
+        # This uses the example file in the same directory as this script
+        pr = ProvenanceReader(os.path.join(
+            os.path.dirname(__file__), "provenance.sqlite3"))
+        query = """
+            SELECT x, y, the_value
+            FROM provenance_view
+            WHERE description_name = 'Local_P2P_Packets'
+            """
+        results = pr.run_query(query)
+        for row in results:
+            print(row)
+        print(pr.cores_with_late_spikes())
+        print(pr.get_run_time_of_BufferExtractor())
+
 
 if __name__ == '__main__':
-    # This only works if there is a local sql file in the directory
-    pr = ProvenanceReader("provenance.sqlite3")
-    query = """
-        SELECT the_value
-        FROM provenance_view
-        WHERE description_name = 'Local_P2P_Packets'
-        """
-    results = pr.run_query(query)
-    for row in results:
-        print(row)
-    print(pr.cores_with_late_spikes())
-    print(pr.get_run_time_of_BufferExtractor())
+    ProvenanceReader._demo()
