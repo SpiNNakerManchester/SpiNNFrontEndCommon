@@ -15,9 +15,8 @@
 
 from collections import defaultdict
 import sys
-from spinn_front_end_common.utilities.helpful_functions import (
-    find_executable_start_type)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 
 class FindApplicationChipsUsed(object):
@@ -42,7 +41,9 @@ class FindApplicationChipsUsed(object):
         chips_used = defaultdict(int)
         for placement in placements:
             # find binary type if applicable
-            binary_start_type = find_executable_start_type(placement.vertex)
+            binary_start_type = None
+            if isinstance(placement.vertex, AbstractHasAssociatedBinary):
+                binary_start_type = placement.vertex.get_binary_start_type()
             if binary_start_type != ExecutableType.SYSTEM:
                 chips_used[placement.x, placement.y] += 1
 
