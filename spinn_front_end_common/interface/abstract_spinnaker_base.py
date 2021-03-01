@@ -907,9 +907,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # sync to 0
             self._no_sync_changes = 0
 
-            # create new sub-folder for reporting data
-            self._set_up_output_folders(self._n_calls_to_run)
-
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
             self._build_graphs_for_usage()
@@ -2378,6 +2375,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
 
         logger.info("Resetting")
+
+        # create new sub-folder for reporting data
+        self._set_up_output_folders(self._n_calls_to_run)
 
         # rewind the buffers from the buffer manager, to start at the beginning
         # of the simulation again and clear buffered out
