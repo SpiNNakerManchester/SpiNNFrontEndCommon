@@ -17,9 +17,40 @@ from .exn import BadArgs
 
 
 class CLI(object):
+    """ Basic support code for an interactive command line interface.
+
+    **Standard commands:**
+
+    ``pause <string>``
+        Print string and wait for Enter key
+    ``echo <string>``
+        Print string
+    ``quit``
+        Terminate
+    ``help [<command>]``
+        Print help, either general or on a specific command
+    ``@ <filename> [quiet]``
+        Read commands from a file
+    ``?``
+        List available commands
+    """
     def __init__(self, channel, prompt, commands):
+        """
+        :param channel:
+            Where to read commands from.
+        :param str prompt:
+            The prompt to display
+        :param commands:
+            The set of commands to install; each command has its name as its
+            key, and a tuple as value containing the implementation, a
+            description of the arguments accepted, and some help text. The
+            implementation will get passed a copy of this object when called,
+            which it can use to get the arguments that were passed.
+        :type commands:
+            dict(str,tuple(~collections.abc.Callable[[CLI],None],str,str))
+        """
         self._channel = channel
-        self.prompt = prompt
+        self._prompt = prompt
         self._commands = {}
         self.cmd(commands, delete=True)
         self._term = readline
@@ -29,7 +60,24 @@ class CLI(object):
         self._args = []
 
     @property
+    def prompt(self):
+        """ The prompt to display; settable
+
+        :rtype: str
+        """
+        return self._prompt
+
+    @prompt.setter
+    def prompt(self, value):
+        self._prompt = str(value)
+
+    @property
     def state(self):
+        """ The state of the CLI, so it can be saved and restored.
+
+        There is no guarantee that any state can be set other than one read
+        from this object.
+        """
         return (
             self._channel, self._tty, self.prompt, self._quiet,
             self._term, self._level, self._commands)
@@ -40,7 +88,19 @@ class CLI(object):
          self._level, self._commands) = state
 
     def cmd(self, command_set, *, delete=False):
-        """ update command list """
+        """ Update the command list
+
+        :param command_set:
+            The commands to add; each command has its name as its key, and
+            a tuple as value containing the implementation, a description
+            of the arguments accepted, and some help text. The
+            implementation will get passed a copy of this object when it is
+            called, which it can use to get the arguments that were passed.
+        :type command_set:
+            dict(str,tuple(~collections.abc.Callable[[CLI],None],str,str))
+        :keyword bool delete:
+            Whether to reset the existing commands to default first.
+        """
         if delete:
             self._commands = {
                 "pause": (
@@ -71,6 +131,11 @@ class CLI(object):
         self._commands.update(command_set)
 
     def commands_starting_with(self, string):
+        """ The commands whose names start with a given prefix.
+
+        :param str string: The prefix
+        :rtype: ~collections.abc.Iterable(str)
+        """
         for c in self._commands:
             if c.startswith(string):
                 yield c
@@ -80,7 +145,10 @@ class CLI(object):
             print(self.prompt, end="", flush=True)
 
     def run(self):
-        """ execute a CLI """
+        """
+        Execute a CLI; the commands are those installed in the command set.
+        Lines starting with ``#`` (after spaces are stripped) are comments.
+        """
         self.__prompt()
         for line in self._channel:
             if not self._tty and not self._quiet:
@@ -107,20 +175,42 @@ class CLI(object):
 
     @property
     def count(self):
+        """ The number of arguments in the current command.
+
+        :rtype: int
+        """
         return len(self._args)
 
     @property
     def args(self):
-        for a in self._args:
-            yield a
+        """ The arguments in the current command.
+
+        :rtype: ~collections.abc.Iterable(str)
+        """
+        yield from self._args
 
     def arg(self, n):
+        """ Get the *n*'th argument
+
+        :param int n:
+        :rtype: str
+        """
         return self._args[n]
 
     def arg_i(self, n):
+        """ Get the *n*'th argument as an integer
+
+        :param int n:
+        :rtype: int
+        """
         return int(self._args[n], base=0)
 
     def arg_x(self, n):
+        """ Get the *n*'th argument as a hexadecimal integer
+
+        :param int n:
+        :rtype: int
+        """
         return int(self._args[n], base=16)
 
     # Default commands of a CLI object; always present!

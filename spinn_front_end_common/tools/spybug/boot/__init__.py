@@ -96,7 +96,22 @@ def _scamp_boot(host, buf, sv, timestamp, debug):
 
 
 def boot(host, filename, conf, *, debug=0, port=54321):
-    """ Main bootstrap routine.
+    """
+    Bootstrap a SpiNNaker board or SCAMP instance.
+    Supports both the ``.boot`` and ``.aplx`` formats.
+
+    :param str host:
+        Address of the board to boot.
+    :param str filename:
+        The boot image file.
+    :param str conf:
+        Additional configuration file
+    :keyword int debug:
+        Debugging level
+    :keyword int port:
+        Boot protocol port; should be left at default except for testing
+    :raises ValueError:
+        If the boot image format is not supported
     """
     sv = Struct(None)
     if conf:

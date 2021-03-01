@@ -70,11 +70,15 @@ srom_type = "25aa1024"  # SROM type
 
 
 class NN_CMD(IntEnum):
+    """ Command codes for nearest-neighbour packets.
+    """
+    #: Stop signal
     SIG0 = 0
+    #: Global write
     SIG1 = 4
 
 
-def parse_app_id(string):
+def _parse_app_id(string):
     app_id = str(string, base=0)
     if not APP_MIN <= app_id <= APP_MAX:
         raise ValueError("bad App ID")
@@ -84,7 +88,7 @@ def parse_app_id(string):
 # ------------------------------------------------------------------------------
 
 
-def cmd_boot(cli):
+def _cmd_boot(cli):
     if cli.count > 2:
         raise BadArgs
     filename = cli.arg(0) or "scamp.boot"
@@ -127,13 +131,13 @@ def cmd_boot(cli):
         spin.addr(chip_x, chip_y, cpu)
 
 
-def cmd_sver(cli):
+def _cmd_sver(cli):
     if cli.count:
         raise BadArgs
     print(spin.ver())
 
 
-def cmd_lw(cli):
+def _cmd_lw(cli):
     if not 2 <= cli.count <= 3:
         raise BadArgs
     link = cli.arg_i(0)
@@ -147,7 +151,7 @@ def cmd_lw(cli):
         spin.link_write(link, addr, data)
 
 
-def cmd_lmemw(cli):
+def _cmd_lmemw(cli):
     if cli.count != 2:
         raise BadArgs
     link = cli.arg_i(0)
@@ -156,7 +160,7 @@ def cmd_lmemw(cli):
     hex_dump(data, addr=addr, format="word")
 
 
-def cmd_smemw(cli):
+def _cmd_smemw(cli):
     if cli.count > 1:
         raise BadArgs
     addr = cli.arg_i(0) if cli.count else 0
@@ -164,7 +168,7 @@ def cmd_smemw(cli):
     hex_dump(data, addr=addr, format="word")
 
 
-def cmd_smemh(cli):
+def _cmd_smemh(cli):
     if cli.count > 1:
         raise BadArgs
     addr = cli.arg_i(0) if cli.count else 0
@@ -172,7 +176,7 @@ def cmd_smemh(cli):
     hex_dump(data, addr=addr, format="half", width=16)
 
 
-def cmd_smemb(cli):
+def _cmd_smemb(cli):
     if cli.count > 1:
         raise BadArgs
     addr = cli.arg_i(0) if cli.count else 0
@@ -180,7 +184,7 @@ def cmd_smemb(cli):
     hex_dump(data, addr=addr)
 
 
-def cmd_sw(cli):
+def _cmd_sw(cli):
     if not 1 <= cli.count <= 2:
         raise BadArgs
     addr = cli.arg_i(0)
@@ -192,7 +196,7 @@ def cmd_sw(cli):
         spin.write(addr, data, type="word")
 
 
-def cmd_sh(cli):
+def _cmd_sh(cli):
     if not 1 <= cli.count <= 2:
         raise BadArgs
     addr = cli.arg_i(0)
@@ -204,7 +208,7 @@ def cmd_sh(cli):
         spin.write(addr, data, type="half")
 
 
-def cmd_sb(cli):
+def _cmd_sb(cli):
     if not 1 <= cli.count <= 2:
         raise BadArgs
     addr = cli.arg_i(0)
@@ -216,7 +220,7 @@ def cmd_sb(cli):
         spin.write(addr, data, type="byte")
 
 
-def cmd_sfill(cli):
+def _cmd_sfill(cli):
     if cli.count != 3:
         raise BadArgs
     _from = cli.arg_i(0)
@@ -224,7 +228,7 @@ def cmd_sfill(cli):
     spin.fill(_from, cli.arg_i(2), to - _from)
 
 
-def cmd_sp(cli):
+def _cmd_sp(cli):
     global chip_x, chip_y, cpu
     if not cli.count or (cli.count == 1 and cli.arg(0) == "root"):
         # Try and determine the true coordinates of the root chip
@@ -254,36 +258,41 @@ def cmd_sp(cli):
 # ------------------------------------------------------------------------------
 
 
-def _iodump(fh, buf):
-    _next, _time, _ms, _len = struct.unpack_from("<IIII", buf)
-    base = 16
-    _string = buf[base:base + _len]
-    fh.write(_string)
-    return _next
+def iobuf(address):
+    """ Get the sequence of byte buffers in the IOBUF chain.
+
+    :param int address: The start of the IOBUF chain.
+    :return: The sequence of raw byte buffers in the chain.
+    :rtype: ~collections.abc.Iterable(bytes)
+    """
+    size = sv.read_var("sv.iobuf_size")
+    header = struct.Struct("<IIII")
+    while address:
+        data = spin.read(address, size + header.size)
+        address, _time, _ms, length = header.unpack_from(data)
+        yield data[header.size:header.size + length]
 
 
-def cmd_iobuf(cli):
+def _cmd_iobuf(cli):
+    """ Print IOBUF data
+    """
     if not 1 <= cli.count <= 2:
         raise BadArgs
     core = cli.arg_i(0)
 
     opened = cli.count > 1
     if opened:
-        fh = open(cli.arg(1))
+        fh = open(cli.arg(1), "wb")
     else:
         fh = sys.stdout
 
     try:
         vbase = sv.read_var("sv.vcpu_base")
-        size = sv.read_var("sv.iobuf_size")
         vsize = sv.size("vcpu")
-
         sv.base("vcpu", vbase + vsize * core)
-
-        iobuf = sv.read_var("vcpu.iobuf")
-        while iobuf:
-            data = spin.read(iobuf, size + 16)
-            iobuf = _iodump(fh, data)
+        for buffer in iobuf(sv.read_var("vcpu.iobuf")):
+            # If we were to apply a mapping dict, it would be done here
+            fh.write(buffer)
     finally:
         if opened:
             fh.close()
@@ -293,6 +302,11 @@ def cmd_iobuf(cli):
 
 
 def dump_heap(heap, name):
+    """ Print a heap usage map and free-space map.
+
+    :param int heap: The heap master record address
+    :param str name: The name of the heap
+    """
     heap_free, heap_first, _, free_bytes = spin.read(heap, 16, unpack="<IIII")
     print("")
     print(f"{name} {free_bytes}")
@@ -317,7 +331,7 @@ def dump_heap(heap, name):
         p = free
 
 
-def cmd_heap(cli):
+def _cmd_heap(cli):
     if cli.count > 1:
         raise BadArgs
     arg = cli.arg(0) if cli.count else None
@@ -335,11 +349,11 @@ def cmd_heap(cli):
 # ------------------------------------------------------------------------------
 
 
-def cmd_rtr_load(cli):
+def _cmd_rtr_load(cli):
     if cli.count != 2:
         raise BadArgs
     _file = cli.arg(0)
-    app_id = parse_app_id(cli.arg(1))
+    app_id = _parse_app_id(cli.arg(1))
 
     buf = read_file(_file, 65536)
     size = len(buf)
@@ -358,7 +372,7 @@ def cmd_rtr_load(cli):
 # ------------------------------------------------------------------------------
 
 
-def ipflag(flags):
+def _ipflag(flags):
     r = "T" if flags & 0x4000 else ""
     r += "A" if flags & 0x2000 else ""
     r += "R" if flags & 0x0200 else ""
@@ -367,6 +381,8 @@ def ipflag(flags):
 
 
 def dump_iptag():
+    """ Print information about what IPTAGs are in use.
+    """
     tto, pool, fix = spin.iptag_tto(255, unpack="<BxBB")
     _max = pool + fix
     tto = (1 << (tto - 1)) / 100 if tto else 0
@@ -379,17 +395,17 @@ def dump_iptag():
 
     for i in range(_max):
         (ip, _mac, tx_port, timeout, flags, count, rx_port, spin_addr,
-         spin_port_id) = spin.iptag_get(i, True, unpack="<4s6sHHHIHHB")
+         spin_port_id) = spin.iptag_get(i, 1, unpack="<4s6sHHHIHHB")
         if flags & 0x8000:  # Tag in use
             print(
                 "{:3d}  {:<15s}  {:5d}  {:5d}  {:<4s}  {:<4s}   0x{:04x}    "
                 "0x{:02x} {:10d}".format(
                     i, ".".join(map(str, struct.unpack("BBBB", ip))),
-                    tx_port, rx_port, timeout / 100, ipflag(flags), spin_addr,
-                    spin_port_id, count))
+                    tx_port, rx_port, timeout / 100, _ipflag(flags),
+                    spin_addr, spin_port_id, count))
 
 
-def cmd_iptag(cli):
+def _cmd_iptag(cli):
     if not cli.count:
         dump_iptag()
         return
@@ -455,7 +471,7 @@ Sig_type = {
 }
 
 
-def cmd_app_sig(cli):
+def _cmd_app_sig(cli):
     if cli.count < 3:
         raise BadArgs
     save_region = region = cli.arg(0)
@@ -517,7 +533,7 @@ def cmd_app_sig(cli):
         spin.signal(_type, data, mask, addr=[])
 
 
-def cmd_app_stop(cli):
+def _cmd_app_stop(cli):
     if cli.count != 1:
         raise BadArgs
     app_id, app_mask = parse_apps(cli.arg(0))
@@ -533,12 +549,12 @@ def cmd_app_stop(cli):
 # ------------------------------------------------------------------------------
 
 
-def cmd_app_load_old(cli):
+def _cmd_app_load_old(cli):
     if not 4 <= cli.count <= 5:
         raise BadArgs
     filename = cli.arg(0)
     mask = parse_cores(cli.arg(1))
-    app_id = parse_app_id(cli.arg(2))
+    app_id = _parse_app_id(cli.arg(2))
     flags = 0
     if cli.count == 4:
         if cli.arg(3) != "wait":
@@ -552,7 +568,7 @@ def cmd_app_load_old(cli):
     spin.ar(mask, app_id, flags)
 
 
-def cmd_app_load(cli):
+def _cmd_app_load(cli):
     if not 3 <= cli.count <= 4:
         raise BadArgs
     filename = cli.arg(0)
@@ -575,7 +591,7 @@ def cmd_app_load(cli):
 # ------------------------------------------------------------------------------
 
 
-def cmd_data_load(cli):
+def _cmd_data_load(cli):
     if cli.count != 3:
         raise BadArgs
     region = parse_region(cli.arg(1), chip_x, chip_y)
@@ -588,14 +604,22 @@ def cmd_data_load(cli):
 # ------------------------------------------------------------------------------
 
 
-def global_write(addr, data, _type):
-    if _type == 2 and addr & 3:
+def global_write(addr, data, type):  # @ReservedAssignment
+    """ Write data globally into critical areas.
+
+    :param int addr:
+        Where to write; must be in a supported range
+    :param int data:
+    :param int type:
+        0 = byte, 1 = half-word, 2 = word
+    """
+    if type == 2 and addr & 3:
         raise ValueError("bad address alignment")
-    if _type == 1 and addr & 1:
+    if type == 1 and addr & 1:
         raise ValueError("bad address alignment")
 
     if 0xF5007F00 <= addr < 0xF5008000:
-        addr -= 0xf5007f00
+        addr -= 0xF5007F00
         op = 0
     elif 0xF5000000 <= addr < 0xF5000100:
         addr -= 0xF5000000
@@ -606,25 +630,25 @@ def global_write(addr, data, _type):
     else:
         raise ValueError("bad address")
 
-    key = ((NN_CMD.SIG1 << 24) | (0 << 20) | (_type << 18) | (op << 16) |
+    key = ((NN_CMD.SIG1 << 24) | (0 << 20) | (type << 18) | (op << 16) |
            (addr << 8) | 0)
     fr = (1 << 31) | (0x3F << 8) | 0xF8
     spin.nnp(key, data, fr, addr=[])
 
 
-def cmd_gw(cli):
+def _cmd_gw(cli):
     if cli.count != 2:
         raise BadArgs
     global_write(cli.arg_x(0), cli.arg_x(1), 2)
 
 
-def cmd_gh(cli):
+def _cmd_gh(cli):
     if cli.count != 2:
         raise BadArgs
     global_write(cli.arg_x(0), cli.arg_x(1), 1)
 
 
-def cmd_gb(cli):
+def _cmd_gb(cli):
     if cli.count != 2:
         raise BadArgs
     global_write(cli.arg_x(0), cli.arg_x(1), 0)
@@ -633,7 +657,7 @@ def cmd_gb(cli):
 # ------------------------------------------------------------------------------
 
 
-def cmd_sload(cli):
+def _cmd_sload(cli):
     if cli.count != 2:
         raise BadArgs
     filename = cli.arg(0)
@@ -641,7 +665,7 @@ def cmd_sload(cli):
     spin.write_file(addr, filename)
 
 
-def cmd_sdump(cli):
+def _cmd_sdump(cli):
     if cli.count != 3:
         raise BadArgs
     filename = cli.arg(0)
@@ -670,7 +694,7 @@ Rte = ("NONE", "RESET", "UNDEF", "SVC", "PABT", "DABT", "IRQ", "FIQ", "VIC",
        "PKT", "TIMER", "API", "VER")
 
 
-def cpu_dump_header(fmt):
+def _cpu_dump_header(fmt):
     if fmt == 0:
         print("Core State  Application       ID   Running  Started")
         print("---- -----  -----------       --   -------  -------")
@@ -684,14 +708,22 @@ def cpu_dump_header(fmt):
         print("---- -----  -----------       --   -----  --------")
 
 
-class _CpuDumpFormat(IntEnum):
+class CpuDumpFormat(IntEnum):
+    """ Options for :py:func:`cpu_dump`'s ``fmt`` argument.
+    """
     TIMESTAMPS = 0
     REG_HEX = 1
     REG_DEC = 2
     PHYSICAL = 3
 
 
-def cpu_dump(num, *, long_form=False, fmt=_CpuDumpFormat.TIMESTAMPS):
+def cpu_dump(num, *, long_form=False, fmt=CpuDumpFormat.TIMESTAMPS):
+    """ Print information about a processor.
+
+    :param int num: The processor number, 0..17
+    :keyword bool long_form: Whether to print in long form
+    :keyword CpuDumpFormat fmt: Which info to dump (only in short form)
+    """
     base = sv.read_var("sv.vcpu_base")
     sv.base("vcpu", base + sv.size("vcpu") * num)
     sv.read_struct("vcpu")
@@ -735,15 +767,15 @@ def cpu_dump(num, *, long_form=False, fmt=_CpuDumpFormat.TIMESTAMPS):
         print("{:3d}  {:<6s} {:<16s} {:3d} ".format(
             num, Cs[sv.get_var("vcpu.cpu_state")],
             sv.get_var("vcpu.app_name"), sv.get_var("vcpu.app_id")), end="")
-        if fmt == _CpuDumpFormat.REG_HEX:
+        if fmt == CpuDumpFormat.REG_HEX:
             print("    {:08x}   {:08x}   {:08x}   {:08x}".format(
                 sv.get_var("vcpu.user0"), sv.get_var("vcpu.user1"),
                 sv.get_var("vcpu.user2"), sv.get_var("vcpu.user3")))
-        elif fmt == _CpuDumpFormat.REG_DEC:
+        elif fmt == CpuDumpFormat.REG_DEC:
             print("  {:10u} {:10u} {:10u} {:10u}".format(
                 sv.get_var("vcpu.user0"), sv.get_var("vcpu.user1"),
                 sv.get_var("vcpu.user2"), sv.get_var("vcpu.user3")))
-        elif fmt == _CpuDumpFormat.PHYSICAL:
+        elif fmt == CpuDumpFormat.PHYSICAL:
             v = sv.get_var("vcpu.sw_ver")
             print("   {:2u}    {}.{}.{}".format(
                 sv.get_var("vcpu.phys_cpu"),
@@ -754,7 +786,15 @@ def cpu_dump(num, *, long_form=False, fmt=_CpuDumpFormat.TIMESTAMPS):
                 et, _time, (" SWC {}".format(swc) if swc else "")))
 
 
-def cmd_ps(cli):
+_ps_fmts = {
+    "x": CpuDumpFormat.REG_HEX,
+    "d": CpuDumpFormat.REG_DEC,
+    "p": CpuDumpFormat.PHYSICAL,
+    "t": CpuDumpFormat.TIMESTAMPS
+}
+
+
+def _cmd_ps(cli):
     if cli.count > 1:
         raise BadArgs
 
@@ -763,24 +803,23 @@ def cmd_ps(cli):
         if not 0 <= vc < 18:
             raise BadArgs
         cpu_dump(vc, long_form=True)
-    elif cli.count == 1 and cli.arg(0) in ("x", "d", "p"):
-        arg = cli.arg(0)
-        fmt = _CpuDumpFormat.REG_HEX if arg == "x" else \
-            _CpuDumpFormat.REG_DEC if arg == "d" else _CpuDumpFormat.PHYSICAL
-        cpu_dump_header(fmt)
-        for vc in range(18):
-            cpu_dump(vc, fmt=fmt)
+        return
+    elif cli.count == 1 and cli.arg(0) in _ps_fmts:
+        fmt = _ps_fmts[cli.arg(0)]
     else:
-        cpu_dump_header(0)
-        for vc in range(18):
-            cpu_dump(vc, fmt=_CpuDumpFormat.TIMESTAMPS)
+        fmt = CpuDumpFormat.TIMESTAMPS
+    _cpu_dump_header(fmt)
+    for vc in range(18):
+        cpu_dump(vc, fmt=fmt)
 
 
 # ------------------------------------------------------------------------------
 
 
 class SromInfo(NamedTuple):
+    #: The size of the pages in the SROM
     PAGE: int
+    #: The size of the address space in the SROM
     ADDR: int
 
 
@@ -790,7 +829,7 @@ Srom_info = {
     "25aa160b": SromInfo(32, 16)}
 
 
-def cmd_srom_type(cli):
+def _cmd_srom_type(cli):
     global srom_type
     if cli.count > 1:
         raise BadArgs
@@ -804,7 +843,7 @@ def cmd_srom_type(cli):
     print(f"SROM type {srom_type} (page {info.PAGE}, addr {info.ADDR})")
 
 
-def cmd_srom_read(cli):
+def _cmd_srom_read(cli):
     if cli.count > 1:
         raise BadArgs
     elif cli.count == 1:
@@ -816,13 +855,13 @@ def cmd_srom_read(cli):
     hex_dump(data, addr=addr)
 
 
-def cmd_srom_erase(cli):
+def _cmd_srom_erase(cli):
     if cli.count:
         raise BadArgs
     spin.srom_erase()
 
 
-def cmd_srom_write(cli):
+def _cmd_srom_write(cli):
     if cli.count != 2:
         raise BadArgs
     addr = cli.arg_x(1)
@@ -834,7 +873,7 @@ def cmd_srom_write(cli):
     spin.srom_write(addr, buf, page_size=info.PAGE, addr_size=info.ADDR)
 
 
-def cmd_srom_dump(cli):
+def _cmd_srom_dump(cli):
     if cli.count != 3:
         raise BadArgs
     filename = cli.arg(0)
@@ -863,7 +902,12 @@ def cmd_srom_dump(cli):
 # ------------------------------------------------------------------------------
 
 
-def check_ip(s):
+def _check_ip(s):
+    """ Validate IP address and split into pieces.
+
+    :param str s: The address to parse
+    :rtype: list(int)
+    """
     m = re.match(r"^/(\d+)$", s)
     if m:
         s = int(m.group(1))
@@ -878,10 +922,15 @@ def check_ip(s):
     if not all(0 <= n <= 255 for n in v):
         raise ValueError("bad IP address")
     v.reverse()
-    return v
+    return map(int, v)
 
 
 def get_srom_info(long_form):
+    """ Get and print information from the SROM.
+
+    :param bool long_form:
+        Whether to print in long form (easier to read, harder to parse).
+    """
     addr = 8
     length = 32
 
@@ -908,7 +957,7 @@ def get_srom_info(long_form):
         print(f"{flag:04x} {mac} {ip} {gw} {nm} {port:d}")
 
 
-def cmd_srom_init(cli):
+def _cmd_srom_init(cli):
     if cli.count == 0:
         get_srom_info(False)
         return
@@ -917,9 +966,9 @@ def cmd_srom_init(cli):
 
     flag = cli.arg_x(0)
     mac = cli.arg(1)
-    ip = check_ip(cli.arg(2))
-    gw = check_ip(cli.arg(3))
-    nm = check_ip(cli.arg(4))
+    ip = _check_ip(cli.arg(2))
+    gw = _check_ip(cli.arg(3))
+    nm = _check_ip(cli.arg(4))
     addresses = ip + gw + nm
     port = cli.arg_i(5)
 
@@ -939,7 +988,7 @@ def cmd_srom_init(cli):
     get_srom_info(True)
 
 
-def cmd_srom_ip(cli):
+def _cmd_srom_ip(cli):
     if cli.count == 0:
         get_srom_info(True)
         return
@@ -950,7 +999,7 @@ def cmd_srom_ip(cli):
     addr = 16
     data = b''
     for a in range(cli.count):
-        data += struct.pack(">4B", *check_ip(cli.arg(a)))
+        data += struct.pack(">4B", *_check_ip(cli.arg(a)))
     length = len(data)
 
     print(f"Writing {length} bytes at address {addr}")
@@ -970,7 +1019,7 @@ def cmd_srom_ip(cli):
 # ------------------------------------------------------------------------------
 
 
-def cmd_led(cli):
+def _cmd_led(cli):
     Led = {"on": 3, "off": 2, "inv": 1, "flip": 1}
 
     if cli.count != 2:
@@ -989,7 +1038,7 @@ def cmd_led(cli):
 # ------------------------------------------------------------------------------
 
 
-def cmd_remap(cli):
+def _cmd_remap(cli):
     if not 1 <= cli.count <= 2:
         raise BadArgs
     proc = cli.arg_i(0)
@@ -1007,6 +1056,10 @@ def cmd_remap(cli):
 
 
 def app_dump(data):
+    """ Print application metdata information.
+
+    :param bytes data: The raw metadata block
+    """
     print(" ID Cores Clean  Sema  Lead Mask")
     print("--- ----- -----  ----  ---- ----")
 
@@ -1018,7 +1071,7 @@ def app_dump(data):
                 f"{i:3d} {cores:5d} {clean:5d} {sema:5d} {lead:5d} {mask:08x}")
 
 
-def cmd_app_dump(cli):
+def _cmd_app_dump(cli):
     if cli.count:
         raise BadArgs
     addr = sv.read_var("sv.app_data")
@@ -1029,6 +1082,12 @@ def cmd_app_dump(cli):
 
 
 def rtr_heap(rtr_copy, rtr_free, *, name="Router"):
+    """ Print a router heap usage map and free-space map.
+
+    :param int rtr_copy: The router heap master record address
+    :param int rtr_free: The router heap free data master address
+    :keyword str name: The name of the heap
+    """
     print("\n{}\n{}".format(name, "-" * len(name)))
 
     p = 1  # RTR_ALLOC_FIRST
@@ -1055,6 +1114,11 @@ def rtr_heap(rtr_copy, rtr_free, *, name="Router"):
 
 
 def rtr_dump(buf, fr):
+    """ Print the configuration of the router.
+
+    :param bytes buf: The raw multicast configuration table
+    :param int fr: The fixed route configuration word
+    """
     print("Entry  Route       (Core) (Link)  Key       Mask      AppID  Core")
     print("-----  765432109876543210 543210  ---       ----      -----  ----")
     print("")
@@ -1071,13 +1135,13 @@ def rtr_dump(buf, fr):
     print("  FR:  {:018b} {:06b}".format((fr >> 6) & 0x3FFFF, fr & 0x3F))
 
 
-def cmd_rtr_init(cli):
+def _cmd_rtr_init(cli):
     if cli.count:
         raise BadArgs
     spin.rtr_init()
 
 
-def cmd_rtr_dump(cli):
+def _cmd_rtr_dump(cli):
     if cli.count:
         raise BadArgs
 
@@ -1086,13 +1150,20 @@ def cmd_rtr_dump(cli):
     rtr_dump(spin.read(rtr, 1025 * 16), fr)
 
 
-def rtr_wait(v):
+def _rtr_wait(v):
+    """ Convert router timeout byte into its real value from its
+        unsigned 8-bit floating point form.
+
+    :param int v: The value to convert (only low 8 bits used)
+    :return: The converted form
+    :rtype: int
+    """
     m = v & 0x0F         # mantissa
     e = (v >> 4) & 0x0F  # exponent
     return (m + (0x10 if e > 4 else (0xF0 >> e) & 0x0F)) << e
 
 
-def cmd_rtr_diag(cli):
+def _cmd_rtr_diag(cli):
     if cli.count >= 2:
         raise BadArgs
     arg0 = cli.arg(0).lower() if cli.count else ""
@@ -1104,21 +1175,21 @@ def cmd_rtr_diag(cli):
 
     rcr, = spin.read(0xE1000000, 4, type="word", unpack="<I")
     print("\nCtrl Reg:  0x{:08x} (Mon {}, Wait1 {}, Wait2 {})".format(
-        rcr, (rcr >> 8) & 0x1F, rtr_wait(rcr >> 16), rtr_wait(rcr >> 24)))
+        rcr, (rcr >> 8) & 0x1F, _rtr_wait(rcr >> 16), _rtr_wait(rcr >> 24)))
 
     es, = spin.read(0xE1000014, 4, type="word", unpack="<I")
-    print("Err Stat:  0x{:08x}\n".format(es))
+    print(f"Err Stat:  0x{es:08x}\n")
 
     data = spin.read(0xE1000300, 64, type="word", unpack="<16I")
     for label, datum in zip(rtrc, data):
-        print("{:<10s} {}".format(label, datum))
+        print(f"{label:<10s} {datum}")
 
     if arg0 == "clr":
         c = struct.pack("<I", 0xFFFFFFFF)
         spin.write(0xF100002C, c, type="word")
 
 
-def cmd_rtr_heap(cli):
+def _cmd_rtr_heap(cli):
     if cli.count:
         raise BadArgs
 
@@ -1130,7 +1201,7 @@ def cmd_rtr_heap(cli):
 # ------------------------------------------------------------------------------
 
 
-def cmd_reset(cli):
+def _cmd_reset(cli):
     if cli.count:
         raise BadArgs
     if bmp is None:
@@ -1139,7 +1210,7 @@ def cmd_reset(cli):
     bmp.reset(bmp_range)
 
 
-def cmd_power(cli):
+def _cmd_power(cli):
     if cli.count != 1:
         raise BadArgs
     power = cli.arg(0).lower()
@@ -1152,11 +1223,11 @@ def cmd_power(cli):
     bmp.power(power, bmp_range, timeout=3.0 if power else bmp.timeout)
 
 
-def cmd_p2p_route(cli):
+def _cmd_p2p_route(cli):
     if cli.count > 1:
         raise BadArgs
     elif not cli.count:
-        print("Flags 0x{:02x}".format(spin.flags))
+        print(f"Flags 0x{spin.flags:02x}")
         return
 
     enable = cli.arg(0).lower()
@@ -1170,7 +1241,7 @@ def cmd_p2p_route(cli):
 # ------------------------------------------------------------------------------
 
 
-def cmd_debug(cli):
+def _cmd_debug(cli):
     global debug
     if cli.count > 1:
         raise BadArgs
@@ -1184,7 +1255,7 @@ def cmd_debug(cli):
     print(f"Debug {debug}")
 
 
-def cmd_sleep(cli):
+def _cmd_sleep(cli):
     naptime = 1.0
     if cli.count > 1:
         raise BadArgs
@@ -1194,7 +1265,7 @@ def cmd_sleep(cli):
     time.sleep(naptime)
 
 
-def cmd_timeout(cli):
+def _cmd_timeout(cli):
     if cli.count > 1:
         raise BadArgs
     elif cli.count:
@@ -1204,7 +1275,7 @@ def cmd_timeout(cli):
     print(f"Timeout {spin.timeout}")
 
 
-def cmd_cmd(cli):
+def _cmd_cmd(cli):
     if not 1 <= cli.count <= 4:
         raise BadArgs
     op = cli.arg_i(0)
@@ -1215,7 +1286,7 @@ def cmd_cmd(cli):
     spin.scp_cmd(op, arg1=arg1, arg2=arg2, arg3=arg3)
 
 
-def cmd_version(cli):
+def _cmd_version(cli):
     if cli and cli.count:
         raise BadArgs
     print(f"# {script_name} - version {fec_version}")
@@ -1224,7 +1295,7 @@ def cmd_version(cli):
 # ------------------------------------------------------------------------------
 
 
-def cmd_expert(cli):
+def _cmd_expert(cli):
     if cli.count:
         raise BadArgs
     global expert
@@ -1242,119 +1313,119 @@ def cmd_expert(cli):
 
 spin_cmds = {
     "version": (
-        cmd_version,
+        _cmd_version,
         "",
-        "Show ybug version"),
+        f"Show {script_name} version"),
     "expert": (
-        cmd_expert,
+        _cmd_expert,
         "",
         "Enable expert commands"),
     "debug": (
-        cmd_debug,
+        _cmd_debug,
         "<num.D>",
         "Set debug level"),
     "timeout": (
-        cmd_timeout,
+        _cmd_timeout,
         "<secs.R>",
         "Set target timeout"),
     "sleep": (
-        cmd_sleep,
+        _cmd_sleep,
         "<secs.D>",
         "Sleep (secs)"),
     "sp": (
-        cmd_sp,
+        _cmd_sp,
         "<chip_x.D> <chip_y.D> <core.D>",
         "Select SpiNNaker chip and core"),
     "sver": (
-        cmd_sver,
+        _cmd_sver,
         "",
         "Show SpiNNaker S/W version"),
     "ps": (
-        cmd_ps,
+        _cmd_ps,
         "[<core.D>|d|x|p]",
         "Display core state"),
     "smemb": (
-        cmd_smemb,
+        _cmd_smemb,
         "<addr.X>",
         "Read SpiNNaker memory (bytes)"),
     "smemh": (
-        cmd_smemh,
+        _cmd_smemh,
         "<addr.X>",
         "Read SpiNNaker memory (half-words)"),
     "smemw": (
-        cmd_smemw,
+        _cmd_smemw,
         "<addr.X>",
         "Read SpiNNaker memory (words)"),
     "sload": (
-        cmd_sload,
+        _cmd_sload,
         "<file.F> <addr.X>",
         "Load SpiNNaker memory from file"),
     "sw": (
-        cmd_sw,
+        _cmd_sw,
         "<addr.X> [<data.X>]",
         "Read/write Spinnaker word"),
     "sh": (
-        cmd_sh,
+        _cmd_sh,
         "<addr.X> [<data.X>]",
         "Read/write Spinnaker half-word"),
     "sb": (
-        cmd_sb,
+        _cmd_sb,
         "<addr.X> [<data.X>]",
         "Read/write Spinnaker byte"),
     "sfill": (
-        cmd_sfill,
+        _cmd_sfill,
         "<from_addr.X> <to_addr.X> <word.X>",
         "Fill Spinnaker memory (words)"),
     "boot": (
-        cmd_boot,
+        _cmd_boot,
         "[<boot_file.F>] [<conf_file.F>]",
         "System bootstrap"),
     "app_load": (
-        cmd_app_load,
+        _cmd_app_load,
         "<file.F> .|@<X.D>,<Y.D>|<region> <cores> <app_id.D> [wait]",
         "Load application"),
     "app_stop": (
-        cmd_app_stop,
+        _cmd_app_stop,
         "<app_id.D>[-<app_id.D>]",
         "Stop application(s)"),
     "app_sig": (
-        cmd_app_sig,
+        _cmd_app_sig,
         "<region> <app_id.D>[-<app_id.D>] <signal> [state]",
         "Send signal to application"),
     "data_load": (
-        cmd_data_load,
+        _cmd_data_load,
         "<file.F> <region> <addr.X>",
         "Load data to all chips in region"),
     "rtr_load": (
-        cmd_rtr_load,
+        _cmd_rtr_load,
         "<file.F> <app_id.D>",
         "Load router file"),
     "rtr_dump": (
-        cmd_rtr_dump,
+        _cmd_rtr_dump,
         "",
         "Dump router MC table"),
     # "rtr_init": (
-    #     cmd_rtr_init,
+    #     _cmd_rtr_init,
     #     "",
     #     "Initialise router MC table and heap"),
     "rtr_heap": (
-        cmd_rtr_heap,
+        _cmd_rtr_heap,
         "",
         "Dump router MC heap"),
     "rtr_diag": (
-        cmd_rtr_diag,
+        _cmd_rtr_diag,
         "[clr]",
         "Show router diagnostic counts, etc"),
     "iobuf": (
-        cmd_iobuf,
+        _cmd_iobuf,
         "<core.D> [<file.F>]",
         "Display/write I/O buffer for core"),
     "sdump": (
-        cmd_sdump,
+        _cmd_sdump,
         "<file.F> <addr.X> <len.X>",
         "Dump SpiNNaker memory to file"),
     "iptag": (
-        cmd_iptag,
+        _cmd_iptag,
         """<tag.D> <cmd.S> args...
                <tag.D> clear
                <tag.D> set     <host.P> <port.D>
@@ -1362,86 +1433,86 @@ spin_cmds = {
                <tag.D> reverse <port.D> <address.X> <port.X>""",
         "Set up IPTags"),
     "led": (
-        cmd_led,
+        _cmd_led,
         "<0123>* on|off|inv|flip",
         "Set/clear LEDs"),
     "heap": (
-        cmd_heap,
+        _cmd_heap,
         "sdram|sysram|system",
         "Dump heaps"),
     "reset": (
-        cmd_reset,
+        _cmd_reset,
         "",
         "Reset Spinnakers via BMP"),
     "power": (
-        cmd_power,
+        _cmd_power,
         "on|off",
         "Switch power on/off via BMP"),
 }
 
 expert_cmds = {
     "gw": (
-        cmd_gw,
+        _cmd_gw,
         "<addr.X> <data.X>",
         "Global word write"),
     "gh": (
-        cmd_gh,
+        _cmd_gh,
         "<addr.X> <data.X>",
         "Global half-word write"),
     "gb": (
-        cmd_gb,
+        _cmd_gb,
         "<addr.X> <data.X>",
         "Global byte write"),
     "lmemw": (
-        cmd_lmemw,
+        _cmd_lmemw,
         "<link.D> <addr.X>",
         "Read SpiNNaker memory via link (words)"),
     "lw": (
-        cmd_lw,
+        _cmd_lw,
         "<link.D> <addr.X> [<data.X]",
         "Read/write SpiNNaker word via link"),
     "srom_ip": (
-        cmd_srom_ip,
+        _cmd_srom_ip,
         "[<ip_addr.P> [<gw_addr.P> [<net_mask.P>]]]",
         "Set IP address in serial ROM"),
     "srom_read": (
-        cmd_srom_read,
+        _cmd_srom_read,
         "<addr.X>",
         "Read serial ROM data"),
     "srom_type": (
-        cmd_srom_type,
+        _cmd_srom_type,
         "25aa1024|25aa080a|25aa160b",
         "Set SROM type"),
     "srom_dump": (
-        cmd_srom_dump,
+        _cmd_srom_dump,
         "<file.F> <addr.X> <len.D>",
         "Dump serial ROM data"),
     "srom_write": (
-        cmd_srom_write,
+        _cmd_srom_write,
         "<file.F> <addr.X>",
         "Write serial ROM data"),
     "srom_erase": (
-        cmd_srom_erase,
+        _cmd_srom_erase,
         "",
         "Erase (all) serial ROM data"),
     "srom_init": (
-        cmd_srom_init,
+        _cmd_srom_init,
         "<Flag.X> <MAC.M> <ip_addr.P> <gw_addr.P> <net_mask.P> <port.D>",
         "Initialise serial ROM"),
     "remap": (
-        cmd_remap,
+        _cmd_remap,
         "<core.D> [phys|virt]",
         "Remove bad core from core map"),
     "p2p_route": (
-        cmd_p2p_route,
+        _cmd_p2p_route,
         "[on|off]",
         "Control P2P routing"),
     "app_dump": (
-        cmd_app_dump,
+        _cmd_app_dump,
         "",
         "Show app data for this chip"),
     "cmd": (
-        cmd_cmd,
+        _cmd_cmd,
         '<cmd.D> <arg1.X> <arg2.X> <arg3.X>',
         'User specified command'),
 }
@@ -1449,7 +1520,9 @@ expert_cmds = {
 # ------------------------------------------------------------------------------
 
 
-def usage():
+def _usage():
+    """ Print script usage information and exit.
+    """
     print(f"usage: {script_name} <options> <spiNNakerBoardIPAddress>",
           file=sys.stderr)
     print("  -bmp  <name>[/<slots>]   - set BMP target", file=sys.stderr)
@@ -1459,7 +1532,7 @@ def usage():
     sys.exit(1)
 
 
-def process_args():
+def _process_args():
     global spinn_target, bmp_target, expert, debug
     global bmp_range
     _range = "0"
@@ -1472,7 +1545,7 @@ def process_args():
             if m:
                 bmp_target, _range = m.groups()
         elif arg == "-version":
-            cmd_version(None)
+            _cmd_version(None)
             sys.exit()
         elif arg == "-debug":
             debug = int(args.pop(0))
@@ -1482,9 +1555,9 @@ def process_args():
             spinn_target = arg
             break
         else:
-            usage()
+            _usage()
     if args:
-        usage()
+        _usage()
 
     bmp_range = parse_bits(_range, 0, 23)
     if spinn_target is None:
@@ -1516,23 +1589,29 @@ class _Completer(object):
 
 
 def main():
-    """ Main entry-point of spybug script.
+    """ Main entry-point of the ``spybug`` script.
 
-    Usage:
+    Usage::
 
         spybug <options> <spiNNakerBoardIPAddress>
 
-    Try `spybug -help` for more information (which calls :py:func:`usage`).
+    Options::
+
+        -bmp  <name>[/<slots>]   - set BMP target
+        -version                 - print version number
+        -expert                  - set 'expert' mode
+        -debug <value>           - set debug variable
+        -help                    - print help information
     """
     global _cli, spin, sv, bmp
-    prompt = process_args()
+    prompt = _process_args()
     readline.set_completer(_Completer())
 
     spin = SCAMPCmd(target=spinn_target, port=spin_port, debug=debug)
     sv = Struct(scp=spin)
     if bmp_target is not None:
         bmp = BMPCmd(target=bmp_target, port=bmp_port, debug=debug)
-    cmd_version(None)
+    _cmd_version(None)
 
     _cli = CLI(sys.stdin, prompt, spin_cmds)
     if expert:

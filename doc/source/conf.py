@@ -404,6 +404,8 @@ explicit_wanted_files = [
     "spinn_front_end_common/interface/abstract_spinnaker_base.py",
     "spinn_front_end_common/interface/simulator_state.py",
     "spinn_front_end_common/interface/config_handler.py",
+    "spinn_front_end_common/tools/spybug/spybug.py",
+    "spinn_front_end_common/tools/spybug/util.py",
     "spinn_front_end_common/utilities/class_utils.py",
     "spinn_front_end_common/utilities/constants.py",
     "spinn_front_end_common/utilities/system_control_logic.py",

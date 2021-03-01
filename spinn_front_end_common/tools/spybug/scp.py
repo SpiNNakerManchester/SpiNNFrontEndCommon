@@ -52,21 +52,26 @@ class SCP(object):
     __slots__ = ("__socket", "_port", "_target_name", "_target_ip", "_host_ip",
                  "_timeout", "_retries", "_debug", "_delay", "_buf_size",
                  "_tx_seq", "_rx_seq", "_cmd_rc", "_x", "_y", "_c",
-                 "_tag", "_flags", "_sa", "_sp", "_sdp_hdr", "_sdp_data")
+                 "_tag", "_flags", "_sa", "_sp", "__scp_data")
 
     def __init__(self, target="", port=SPIN_PORT, timeout=TIMEOUT,
                  retries=RETRIES, debug=0, delay=0.0):
         """
         The following options are allowed
 
-        target  - the target host name or IP. If omitted, a listening socket is
-                  created
-        port    - the UDP port to use (defaults to 17893 which is OK for
-                  sending)
-        timeout - the timeout to use when waiting for reply packets
-        retries - the number of retries to use when the target doesn't respond
-        debug   - a debug value (integers>0 cause debug output; defaults to 0)
-        delay   - delay (seconds) before sending (to throttle packets)
+        :keyword str target:
+            the target host name or IP. If omitted, a listening socket is
+            created
+        :keyword int port:
+            the UDP port to use (defaults to 17893 which is OK for sending)
+        :keyword float timeout:
+            the timeout to use when waiting for reply packets
+        :keyword int retries:
+            the number of retries to use when the target doesn't respond
+        :keyword int debug:
+            a debug value (integers>0 cause debug output; defaults to 0)
+        :keyword float delay:
+            delay (seconds) before sending (to throttle packets)
         """
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         if target:
@@ -98,8 +103,7 @@ class SCP(object):
         self._sa = 0
         self._sp = 255
 
-        self._sdp_hdr = b""
-        self._sdp_data = b""
+        self.__scp_data = b""
 
     def addr(self, *args):
         """
@@ -179,13 +183,22 @@ class SCP(object):
         Send a packet containing SDP data to a SpiNNaker machine. The default
         address (chip/core) is used unless it is overridden. An SDP header is
         constructed and prepended to the data which is then sent in a single
-        UDP packet. The following options are possible
+        UDP packet.
 
-        addr  - specifies an address to override the default. A list
-                containing up to three args (see "addr" above for spec.)
-        port  - a 3 bit port number to be used at the destination (default 0)
-        reply - must be set True if a reply is expected from the destination
-        delay - delay in seconds before each send (for throttling)
+        :param bytes data:
+            The contents of the message to send, *not* including the header
+        :keyword list(int) addr:
+            specifies an address to override the default. A list
+            containing up to three args (see :py:meth:`addr` above for spec.)
+        :keyword int port:
+            a 3 bit port number to be used at the destination (default 0)
+        :keyword bool reply:
+            must be set ``True`` if a reply is expected from the destination
+        :keyword int debug:
+            the override for the debugging setting;
+            if >= 3, the message will be logged (very noisy!)
+        :keyword float delay:
+            delay in seconds before each send (for throttling)
         """
         debug = self._debug if debug is None else debug
         delay = self._delay if delay is None else delay
@@ -227,11 +240,33 @@ class SCP(object):
 
     def send_scp(self, cmd, arg1, arg2, arg3, data, *, debug=None, **kwargs):
         """
-        Send a packet containing SCP data to a SpiNNaker machine (uses
-        "send_sdp"). A command and three arguments must be supplied and these
-        are packed along with the data before being sent with "send_sdp". A
-        sequence number is inserted which is kept in the class data. The same
-        options as for "send_sdp" may be provided (addr, retry, port, delay).
+        Send a packet containing SCP data to a SpiNNaker machine. A command
+        and three arguments must be supplied and these are packed along with
+        the data before being sent with :py:meth:`send_sdp`. A sequence number
+        is inserted which is kept in the class data.
+
+        :param int cmd:
+            The SCP command
+        :param int arg1:
+            The first argument
+        :param int arg2:
+            The second argument
+        :param int arg3:
+            The third argument
+        :param bytes data:
+            Any additional payload data
+        :keyword list(int) addr:
+            specifies an address to override the default. A list
+            containing up to three args (see :py:meth:`addr` above for spec.)
+        :keyword int port:
+            a 3 bit port number to be used at the destination (default 0)
+        :keyword bool reply:
+            must be set ``True`` if a reply is expected from the destination
+        :keyword int debug:
+            the override for the debugging setting;
+            if >= 3, the message will be logged (very noisy!)
+        :keyword float delay:
+            delay in seconds before each send (for throttling)
         """
         debug = self._debug if debug is None else debug
         if len(data) > self._buf_size:
@@ -246,48 +281,63 @@ class SCP(object):
     def recv_sdp(self, *, timeout=None, debug=None):
         """
         Receive a packet containing SDP data. Waits for a timeout which is
-        taken from the class data unless overridden by an option. Returns
-        False if the receive times out otherwise True; The SDP header and data
-        are saved in the class data.
+        taken from the class data unless overridden by an option.
 
-        timeout - timeout for reception (overrides class data default)
+        :keyword float timeout:
+            timeout for reception (overrides class data default)
+        :keyword int debug:
+            the override for the debugging setting;
+            if >= 3, the message will be logged (very noisy!)
+        :return:
+            ``None`` if the receive times out, otherwise the content of the
+            message after SDP header stripping (may be empty).
+        :rtype: bytes or None
         """
         timeout = self._timeout if timeout is None else timeout
         debug = self._debug if debug is None else debug
 
-        self._sdp_hdr = b''
         ready = select.select([self.__socket], [], [], timeout)
         if not ready:
-            return False
+            return None
         buf = self.__socket.recv(65536)
         if len(buf) < 10:
             raise RuntimeError("malformed SDP header")
-        self._sdp_hdr = buf[2:10]
-        self._sdp_data = buf[10:]
+        sdp_hdr = buf[2:10]
+        sdp_data = buf[10:]
 
         if debug >= 3:
-            print(self._sdp_dump(self._sdp_hdr, self._sdp_data,
+            print(self._sdp_dump(sdp_hdr, sdp_data,
                                  prefix="#<SDP ", print_data=(debug >= 4)))
-        return True
+        return sdp_data
 
-    def recv_scp(self, *, timeout=None, debug=None):
+    def __recv_scp(self, *, timeout=None, debug=None):
         """
         Receive a packet containing SCP data. Waits for a timeout which is
-        taken from the class data unless overridden by an option. Returns
-        None if the receive times out otherwise the "cmd_rc" field from
-        the packet
+        taken from the class data unless overridden by an option.
+
+        :param float timeout:
+            Override for the timeout
+        :param int debug:
+            Override for the debugging level;
+            will dump the received packet contents if >= 2.
+        :return:
+            ``None`` if the receive times out otherwise the "cmd_rc" field
+            from the packet
+        :rtype: int or None
         """
         timeout = self._timeout if timeout is None else timeout
         debug = self._debug if debug is None else debug
 
-        if not self.recv_sdp(timeout=timeout, debug=debug):
+        message = self.recv_sdp(timeout=timeout, debug=debug)
+        if message is None:
             return None
-        if len(self._sdp_data) < 4:
+        if len(message) < 4:
             raise RuntimeError("malformed SCP packet")
-        self._cmd_rc, self._rx_seq = struct.unpack_from("<2H", self._sdp_data)
+        self._cmd_rc, self._rx_seq = struct.unpack_from("<2H", message)
+        self.__scp_data = message[4:]
 
         if debug:
-            print(self._scp_dump(self._sdp_data, prefix="#<SCP ",
+            print(self._scp_dump(message, prefix="#<SCP ",
                                  print_data=(debug >= 2)))
         return self._cmd_rc
 
@@ -298,21 +348,31 @@ class SCP(object):
         Send a command to a Spinnaker target using SDP over UDP and receive
         a reply.
 
-        Arguments: cmd options...
-
-        Options:
-            arg1 - argument 1
-            arg2 - argument 2
-            arg3 - argument 3
-            data - data
-            port (integer) SpiNNaker (3-bit) port
-            addr ([]) chip/core address
-            unpack - unpack format for returned data
-            timeout - override default timeout
-            retries - override default retries
-            debug - set debug level
-
-        Returns: data (possibly unpacked)
+        :param int cmd:
+            The SCP command code
+        :keyword int arg1:
+            The first argument
+        :keyword int arg2:
+            The second argument
+        :keyword int arg3:
+            The third argument
+        :keyword bytes data:
+            Any additional payload data to send
+        :keyword list(int) addr:
+            Specifies an address to override the default. A list
+            containing up to three args (see :py:meth:`addr` above for spec.)
+        :keyword int port:
+            SpiNNaker (3-bit) port
+        :keyword str unpack:
+            :py:mod:`struct` format for unpacking the returned data
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        :return: the content of the message, unpacked if ``unpack`` supplied
+        :rtype: bytes or list(int)
         """
         timeout = self._timeout if timeout is None else timeout
         retries = self._retries if retries is None else retries
@@ -323,14 +383,14 @@ class SCP(object):
         for tries in range(retries):
             self.send_scp(cmd, arg1, arg2, arg3, data, debug=debug, addr=addr,
                           port=port, reply=True)
-            rc = self.recv_scp(timeout=timeout, debug=debug)
+            rc = self.__recv_scp(timeout=timeout, debug=debug)
             if self._rx_seq != self._tx_seq:
                 # Skip unexpected crossed reply
                 continue
             if rc is not None:
                 break
             if debug:
-                print("# Timeout (attempt {})".format(tries + 1))
+                print(f"# Timeout (attempt {tries + 1})")
         else:
             raise SpinnTooManyRetriesException("too many retries")
         if rc != RC_OK:
@@ -338,8 +398,8 @@ class SCP(object):
                 RC[rc] if rc in RC else f"0x{rc:02x}"))
 
         if unpack:
-            return struct.unpack(unpack, self._sdp_data[4:])
-        return self._sdp_data[4:]
+            return struct.unpack(unpack, self.__scp_data)
+        return self.__scp_data
 
     # -------------------------------------------------------------------------
 
@@ -378,10 +438,11 @@ class SCP(object):
     # -------------------------------------------------------------------------
 
     def close(self):
+        """ Close the connection. """
         self.__socket.close()
         self.__socket = None
 
-    def dump_self(self):
+    def __repr__(self):
         for name, value in inspect.getmembers(
                 self, lambda obj: not inspect.isroutine(obj)):
             if name.startswith("_") and not name.startswith("__"):

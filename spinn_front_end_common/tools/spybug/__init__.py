@@ -13,8 +13,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .scp import SCP
-from .cmd import SCAMPCmd, BMPCmd
-from .sv import Struct as SpiNNStruct
+"""
+The implementation of the ``spybug`` program, which is a conversion of the
+original ``ypbug`` program (from ``spinnaker_tools``) to Python.
 
-__all__ = ("SCP", "SCAMPCmd", "BMPCmd", "SpiNNStruct")
+The implementation is in :py:func:`~.spybug.main`.
+"""
+
+from .cli import CLI
+from .scp import SCP
+from .cmd import Cmd, SCAMPCmd, BMPCmd
+from .sv import Struct
+from .exn import (
+    SpinnException, SpinnTooManyRetriesException, StructParseException)
+
+__all__ = ("CLI", "SCP", "Cmd", "SCAMPCmd", "BMPCmd", "Struct",
+           "SpinnException", "SpinnTooManyRetriesException",
+           "StructParseException")

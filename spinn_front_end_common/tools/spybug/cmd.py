@@ -103,6 +103,17 @@ class IPTAG(IntEnum):
     TTO = 4
     UDP = 5
 
+
+class _AllocOp(IntEnum):
+    ALLOC_RTR = 3
+
+
+class _RouterOp(IntEnum):
+    RTR_INIT = 0
+    RTR_CLEAR = 1
+    RTR_MC_LOAD = 2
+    RTR_FR = 3
+
 # -----------------------------------------------------------------------------
 
 
@@ -124,6 +135,20 @@ class Cmd(SCP):
     # -------------------------------------------------------------------------
 
     def ver(self, *, raw=False, **kwargs):
+        """
+        Get version data.
+
+        :keyword bool raw:
+            Whether to get it in raw form.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        :return: Version data, as a formatted string or raw
+        :rtype: str or tuple(int,int,int,int,int,int,int,str)
+        """
         data = self.scp_cmd(SCP_CMD.VER, **kwargs)
         vc, pc, cy, cx, size, ver_num, timestamp = struct.unpack_from(
             "<4B 2H I", data)
@@ -151,15 +176,46 @@ class Cmd(SCP):
 
     # -------------------------------------------------------------------------
 
-    def _decode(self, data, unpack):
-        if unpack:
-            # Important! Some use cases have more data than we unpack
-            data = struct.unpack_from(unpack, data)
-        return data
+    @staticmethod
+    def _decode(data, unpack):
+        """ Apply an unpacker if necessary.
+
+        :param bytes data:
+        :param unpack: The structure spec, or ``None`` for don't-unpack
+        :type unpack: str or ~struct.Struct or None
+        :rtype: bytes or tuple
+        """
+        if not unpack:
+            return data
+        # Important! Some use cases have more data than we unpack
+        if isinstance(unpack, struct.Struct):
+            return unpack.unpack_from(data)
+        else:
+            return struct.unpack_from(unpack, data)
 
     def read(self, base, length, *, unpack=None,
              type="byte",  # pylint: disable=redefined-builtin
              **kwargs):
+        """
+        Read from memory.
+
+        :param int base:
+            Where to start the read.
+        :param int length:
+            How many bytes to read.
+        :keyword str unpack:
+            If given, apply a :py:mod:`struct`-style unpacking.
+        :rtype: bytes or tuple
+        :keyword list(int) addr:
+            If given, says where on the board to read from instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         data = b''
         if type not in Mem_type:
             raise ValueError("bad memory type")
@@ -179,6 +235,28 @@ class Cmd(SCP):
         return self._decode(data, unpack)
 
     def link_read(self, link, base, length, *, unpack=None, **kwargs):
+        """
+        Read from memory over a link.
+
+        :param int link:
+            What link to read over.
+        :param int base:
+            Where to start the read.
+        :param int length:
+            How many bytes to read.
+        :keyword str unpack:
+            If given, apply a :py:mod:`struct`-style unpacking.
+        :rtype: bytes or tuple
+        :keyword list(int) addr:
+            If given, says where on the board to read from instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         if not 0 <= link <= 5:
             raise ValueError("bad link")
 
@@ -196,6 +274,23 @@ class Cmd(SCP):
     # -------------------------------------------------------------------------
 
     def write_file(self, base, filename, **kwargs):
+        """
+        Write to memory from a file.
+
+        :param int base:
+            Where to start the write.
+        :param str filename:
+            What file of data to write.
+        :keyword list(int) addr:
+            If given, says where on the board to write to instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         SIZE = 4096
         with open(filename, "rb") as f:
             # Determine the type
@@ -217,6 +312,25 @@ class Cmd(SCP):
     def write(self, base, data,
               *, type="byte",  # pylint: disable=redefined-builtin
               **kwargs):
+        """
+        Write to memory.
+
+        :param int base:
+            Where to start the write.
+        :param bytes data:
+            What data to write.
+        :keyword str type:
+            What kind of write to use.
+        :keyword list(int) addr:
+            If given, says where on the board to write to instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         if type not in Mem_type:
             raise ValueError("bad memory type")
         if type == "word" and base & 3:
@@ -231,6 +345,25 @@ class Cmd(SCP):
             base += len(buf)
 
     def link_write(self, link, base, data, **kwargs):
+        """
+        Write to memory over a link.
+
+        :param int link:
+            What link to write over.
+        :param int base:
+            Where to start the write.
+        :param bytes data:
+            What data to write.
+        :keyword list(int) addr:
+            If given, says where on the board to write from to instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         if not 0 <= link <= 5:
             raise ValueError("bad link")
         while len(data) & 3:
@@ -245,11 +378,45 @@ class Cmd(SCP):
     # -------------------------------------------------------------------------
 
     def led(self, leds, **kwargs):
+        """
+        Set the state of one or more LEDs on the board.
+
+        :param int leds:
+            What LEDs to set.
+        :keyword list(int) addr:
+            If given, says where on the board to set the LED of to instead of
+            the default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         self.scp_cmd(SCP_CMD.LED, arg1=leds, arg2=1 << self._c, **kwargs)
 
     # -------------------------------------------------------------------------
 
     def fill(self, base, data, length, **kwargs):
+        """
+        Fill data to SDRAM across the board.
+
+        :param int base:
+            Where to start the write on each chip.
+        :param bytes data:
+            What data to write.
+        :param int length:
+            How much data to write.
+        :keyword list(int) addr:
+            If given, says where on the board to write to instead of the
+            default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         if base & 3:
             raise ValueError("address not multiple of 4")
         if length & 3:
@@ -263,6 +430,37 @@ class Cmd(SCP):
 
     def iptag_set(self, tag, port, *, host="", dest_addr=0, dest_port=0,
                   reverse=False, strip=False, **kwargs):
+        """
+        Configure an IPTAG.
+
+        :param int tag:
+            Which tag to configure
+        :param bytes port:
+            Which UDP port to send to or receive on.
+        :keyword str host:
+            The IP address to configure the tag to send to.
+        :keyword list(int) dest_addr:
+            The destination SDP address on the board to forward inbound
+            messages to.
+        :keyword int dest_port:
+            The destination SDP port on the board to forward inbound
+            messages to.
+        :keyword bool reverse:
+            In forward mode (``False``), SpiNNaker sends messages out.
+            In reverse mode (``True``), SpiNNaker receives messages.
+        :keyword bool strip:
+            Whether to strip the SDP header. Typically ``False`` in forward
+            mode and ``True`` in reverse mode.
+        :keyword list(int) addr:
+            If given, says where on the board to do the IPTAG reconfiguration
+            instead of the default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         if reverse:
             strip = True
         flag = (reverse << 1) | strip
@@ -278,13 +476,62 @@ class Cmd(SCP):
         self.scp_cmd(SCP_CMD.IPTAG, arg1=arg1, arg2=arg2, arg3=ip, **kwargs)
 
     def iptag_clear(self, tag, **kwargs):
+        """
+        Clear an IPTAG.
+
+        :param int tag:
+            Which tag to clear
+        :keyword list(int) addr:
+            If given, says where on the board to do the IPTAG clear
+            instead of the default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         self.scp_cmd(SCP_CMD.IPTAG, arg1=(IPTAG.CLR << 16) | tag, **kwargs)
 
     def iptag_get(self, tag, count, **kwargs):
+        """
+        Get the configuration of an IPTAG.
+
+        :param int tag:
+            Which tag to read
+        :param int count:
+            How many tags to read
+        :keyword list(int) addr:
+            If given, says where on the board to do the IPTAG read
+            instead of the default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        :return: The raw IPTAG configuration.
+        :rtype: bytes
+        """
         return self.scp_cmd(SCP_CMD.IPTAG, arg1=(IPTAG.GET << 16) | tag,
                             arg2=count, **kwargs)
 
     def iptag_tto(self, tto, **kwargs):
+        """
+        Set the timeout configuration of all IPTAG.
+
+        :param int tto:
+            The timeout to set
+        :keyword list(int) addr:
+            If given, says where on the board to do the IPTAG timeout configure
+            instead of the default.
+        :keyword float timeout:
+            Override for the timeout
+        :keyword int retries:
+            Override for the retries
+        :keyword int debug:
+            Override for the debugging level
+        """
         return self.scp_cmd(SCP_CMD.IPTAG, arg1=IPTAG.TTO << 16, arg2=tto,
                             **kwargs)
 
@@ -300,14 +547,19 @@ class SCAMPCmd(Cmd):
         """
         The following options are allowed
 
-        target  - the target host name or IP. If omitted, a listening socket is
-                  created
-        port    - the UDP port to use (defaults to 17893 which is OK for
-                  sending)
-        timeout - the timeout to use when waiting for reply packets
-        retries - the number of retries to use when the target doesn't respond
-        debug   - a debug value (integers>0 cause debug output; defaults to 0)
-        delay   - delay (seconds) before sending (to throttle packets)
+        :keyword str target:
+            the target host name or IP. If omitted, a listening socket is
+            created
+        :keyword int port:
+            the UDP port to use (defaults to 17893 which is OK for sending)
+        :keyword float timeout:
+            the timeout to use when waiting for reply packets
+        :keyword int retries:
+            the number of retries to use when the target doesn't respond
+        :keyword int debug:
+            a debug value (integers>0 cause debug output; defaults to 0)
+        :keyword float delay:
+            delay (seconds) before sending (to throttle packets)
         """
         super().__init__(*args, **kwargs)
         self._nn_id = 0
@@ -320,29 +572,29 @@ class SCAMPCmd(Cmd):
     # -------------------------------------------------------------------------
 
     def rtr_alloc(self, app_id, size, **kwargs):
-        alloc_op = 3  # ALLOC_RTR
+        alloc_op = _AllocOp.ALLOC_RTR
         base_entry_id, = self.scp_cmd(
             SCAMP_CMD.ALLOC, arg1=(app_id << 8) + alloc_op, arg2=size,
             unpack="<I", **kwargs)
         return base_entry_id
 
     def rtr_init(self, **kwargs):
-        rtr_op = 0  # RTR_INIT
+        rtr_op = _RouterOp.RTR_INIT
         self.scp_cmd(SCAMP_CMD.RTR, arg1=rtr_op, **kwargs)
 
     def rtr_clear(self, start, count, **kwargs):
-        rtr_op = 1  # RTR_CLEAR
+        rtr_op = _RouterOp.RTR_CLEAR
         self.scp_cmd(
             SCAMP_CMD.RTR, arg1=(count << 16) | rtr_op, arg2=start, **kwargs)
 
     def rtr_load(self, app_id, mem_addr, size, base_entry_id, **kwargs):
-        rtr_op = 2  # RTR_MC_LOAD
+        rtr_op = _RouterOp.RTR_MC_LOAD
         self.scp_cmd(
             SCAMP_CMD.RTR, arg1=(size << 16) | (app_id << 8) | rtr_op,
             arg2=mem_addr, arg3=base_entry_id, **kwargs)
 
     def rtr_fr_get(self, **kwargs):
-        rtr_op = 3  # RTR_FR
+        rtr_op = _RouterOp.RTR_FR
         route, = self.scp_cmd(
             SCAMP_CMD.RTR, arg1=rtr_op, arg2=-1, unpack="<I", **kwargs)
         return route
@@ -350,7 +602,7 @@ class SCAMPCmd(Cmd):
     def rtr_fr_set(self, route, **kwargs):
         if route & (1 << 31):
             raise ValueError("route must not have top bit set")
-        rtr_op = 3  # RTR_FR
+        rtr_op = _RouterOp.RTR_FR
         self.scp_cmd(SCAMP_CMD.RTR, arg1=rtr_op, arg2=route, **kwargs)
 
     # -------------------------------------------------------------------------
@@ -499,6 +751,14 @@ class BMPCmd(Cmd):
     __slots__ = ()
 
     def sf_read(self, base, length, **kwargs):
+        """
+        Read from SF.
+
+        :param int base:
+            Where to start the read from.
+        :param int length:
+            How much to read.
+        """
         data = b''
         while length:
             _l = min(length, self._buf_size)
@@ -509,12 +769,30 @@ class BMPCmd(Cmd):
         return data
 
     def sf_write(self, base, data, **kwargs):
+        """
+        Write to SF.
+
+        :param int base:
+            Where to start the write.
+        :param bytes data:
+            What to write.
+        """
         for buf in self._chunk(data):
             self.scp_cmd(BMP_CMD.BMP_SF, arg1=base, arg2=len(buf), arg3=1,
                          data=buf, **kwargs)
             base += len(buf)
 
     def flash_write(self, addr, data, *, update=False, **kwargs):
+        """
+        Write to Flash.
+
+        :param int base:
+            Where to start the write.
+        :param bytes data:
+            What to write.
+        :param bool update:
+            Whether to update the backup copy as well.
+        """
         size = len(data)
         if not size:
             raise ValueError("no data")
@@ -544,10 +822,28 @@ class BMPCmd(Cmd):
                 **kwargs)
 
     def reset(self, mask, *, delay=0, **kwargs):
+        """
+        Reset the processors on a board.
+
+        :param int mask:
+            What processors to reset.
+        :param int delay:
+            How long to wait between applying each reset.
+        """
         self.scp_cmd(
             BMP_CMD.RESET, arg1=(delay << 16) | 6, arg2=mask, **kwargs)
 
     def power(self, on, mask, *, delay=0, **kwargs):
+        """
+        Turn a board on or off.
+
+        :param bool on:
+            Whether to switch on or off.
+        :param bool mask:
+            What boards to control.
+        :param int delay:
+            How long to wait between applying each reset.
+        """
         self.scp_cmd(
             BMP_CMD.POWER, arg1=(delay << 16) | on, arg2=mask,
             timeout=(5.0 if on else self._timeout), **kwargs)

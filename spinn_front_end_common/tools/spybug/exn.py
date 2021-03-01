@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-class BadArgs(Exception):
+class BadArgs(TypeError):
     """ Bad number of arguments to a command.
     """
     def __str__(self):

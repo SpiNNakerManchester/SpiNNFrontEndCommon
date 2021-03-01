@@ -90,8 +90,11 @@ class Struct(object):
     def __init__(self, scp, *, filename="sark.struct", debug=False):
         """
         :param SCAMPCmd scp:
-        :param str filename:
-        :param bool debug:
+            How to talk to SCAMP about the structure
+        :keyword str filename:
+            Where to load the structure definition from
+        :keyword bool debug:
+            Whether to print debugging messages
         """
         self.__scp = scp
         self.__structs = {}
@@ -111,11 +114,25 @@ class Struct(object):
                 f"read_file: syntax error - {file_name}.{line_number}") from e
 
         index = 1 if index is None else int(index)
-        self.__structs[struct_name].add_field(
+        self.__s(struct_name).add_field(
             field, value, pack, offset, re.sub(r"(.+)", r"{:\1}", fmt), index)
         return True
 
+    def __s(self, name):
+        """
+        :param str name:
+        :rtype: _Struct
+        """
+        return self.__structs[name]
+
     def read_file(self, filename, *, debug=False):
+        """ Parse a structure definition file.
+
+        :param str filename:
+            The name of the file to load
+        :keyword bool debug:
+            Whether to print debugging messages
+        """
         filename = find_path(filename)
 
         name = ""
@@ -138,24 +155,27 @@ class Struct(object):
                 m = re.match(r"^name\s*=\s*(\w+)$", line)
                 if m:
                     if name:
-                        if not self.__structs[name].size:
+                        if not self.__s(name).size:
                             raise StructParseException(
                                 f"read_file: size undefined in {filename}")
-                        if self.__structs[name].base is None:
+                        if self.__s(name).base is None:
                             raise StructParseException(
                                 f"read_file: base undefined in {filename}")
                     name = m.group(1)
                     self.__structs[name] = _Struct()
                     continue
 
+                if not name:
+                    raise StructParseException(
+                        f"read_file: name undefined in {filename}")
                 m = re.match(r"^size\s*=\s*(\S+)$", line)
                 if m:
-                    self.__structs[name].size = int(m.group(1), base=0)
+                    self.__s(name).size = int(m.group(1), base=0)
                     continue
 
                 m = re.match(r"base\s*=\s*(\S+)$", line)
                 if m:
-                    self.__structs[name].base = int(m.group(1), base=0)
+                    self.__s(name).base = int(m.group(1), base=0)
                     continue
 
                 if self.__parse_field(line, name, filename, line_number):
@@ -166,7 +186,7 @@ class Struct(object):
         if debug:
             print(">> EOF")
             for n in self.__structs:
-                print(f">> {n} {self.__structs[n]}")
+                print(f">> {n} {self.__s(n)}")
 
     def __read(self, base, length, addr):
         if self.__scp is None:
@@ -179,17 +199,36 @@ class Struct(object):
         return self.__scp.write(base, data, addr=addr)
 
     def read_struct(self, name, *, addr=None):
-        sv = self.__structs[name]
+        """
+        Read the named structure from the SpiNNaker machine
+
+        :param str name: Which structure to read
+        :keyword addr: Which core to read the structure from
+        """
+        sv = self.__s(name)
         self.unpack(name, self.__read(sv.base, sv.size, addr))
 
     def write_struct(self, name, *, addr=None):
+        """
+        Write the named structure to the SpiNNaker machine
+
+        :param str name: Which structure to write
+        :keyword addr: Which core to write the structure to
+        """
         data = self.pack(name)
-        sv = self.__structs[name]
+        sv = self.__s(name)
         self.__write(sv.base, data, addr)
 
     def read_var(self, var, *, addr=None):
+        """
+        Read the named field of a structure from the SpiNNaker machine
+
+        :param str name: Which field to read; format ``structname.fieldname``
+        :keyword addr: Which core to read the field from
+        :rtype: int
+        """
         name, field = var.split(".")
-        sv: _Struct = self.__structs[name]
+        sv: _Struct = self.__s(name)
         f: Field = sv[field]
         data, = struct.unpack(f.pack, self.__read(
             sv.base + f.offset, f.size, addr))
@@ -197,14 +236,27 @@ class Struct(object):
         return data
 
     def write_var(self, var, new, *, addr=None):
+        """
+        Write the named field of a structure to the SpiNNaker machine
+
+        :param str name: Which field to write; format ``structname.fieldname``
+        :param int new: The new value of the field
+        :keyword addr: Which core to write the field to
+        """
         name, field = var.split(".")
-        sv = self.__structs[name]
+        sv = self.__s(name)
         f = sv[field]
         self.__write(sv.base + f.offset, struct.pack(f.pack, new), addr)
         sv[field] = new
 
     def pack(self, name):
-        sv = self.__structs[name]
+        """
+        Construct the literal data representing the named structure
+
+        :param str name: Which structure to pack
+        :rtype: bytes
+        """
+        sv = self.__s(name)
         data = b'\0' * sv.size
         for field in sv.fields:
             f = sv[field]
@@ -212,44 +264,99 @@ class Struct(object):
         return data
 
     def unpack(self, name, data):
-        sv = self.__structs[name]
+        """
+        Extract local cache values from literal data.
+
+        :param str name: Which structure to unpack
+        :param bytes data: What data to unpack
+        """
+        sv = self.__s(name)
         for field in sv.fields:
             f = sv[field]
             values = struct.unpack_from(f.pack, data, f.offset)
             sv[field] = values[0]
 
     def dump(self, name):
-        sv = self.__structs[name]
+        """
+        Print the content of a structure, in alphabetical order of fields
+
+        :param str name: Which structure to print
+        """
+        sv = self.__s(name)
         fields = list(sv.fields)
         fields.sort(key=lambda f: sv[f].offset)
         for field in fields:
             print(("{:<16s} " + sv[field].fmt).format(field, sv.value(field)))
 
     def size(self, name):
-        return self.__structs[name].size
+        """
+        Get the size of a structure
+
+        :param str name: Which structure to get the size of
+        :return: The size of the structure, in bytes
+        :rtype: int
+        """
+        return self.__s(name).size
 
     def base(self, name, new=None):
-        sv = self.__structs[name]
+        """ Get or set the base address of a structure
+
+        :param str name: Which structure
+        :param int new: The new base address, if setting
+        :return: The base address (or old base address, if setting)
+        :rtype: int
+        """
+        sv = self.__s(name)
         old = sv.base
         if new is not None:
             sv.base = new
         return old
 
     def addr(self, name, field):
-        sv = self.__structs[name]
+        """ Get or set the base address of a structure
+
+        :param str name: Which structure
+        :param int new: The new base address, if setting
+        :return: The base address (or old base address, if setting)
+        :rtype: int
+        """
+        sv = self.__s(name)
         return sv.base + sv[field].offset
 
     def get_var(self, var):
+        """ Get the cached value of a field of a structure
+
+        :param str name: Which field to get; format ``structname.fieldname``
+        :rtype: int
+        """
         name, field = var.split(".")
-        sv = self.__structs[name]
-        return sv.value(field)
+        return self.__s(name).value(field)
 
     def set_var(self, var, value):
+        """ Set the cached value of a field of a structure
+
+        :param str name: Which field to set; format ``structname.fieldname``
+        :param int value: What value to set
+        :return: The old value of the field
+        :rtype: int
+        """
         name, field = var.split(".")
-        sv = self.__structs[name]
+        sv = self.__s(name)
         old = sv.value(field)
         sv[field] = value
         return old
 
     def update(self, name, filename):
-        raise NotImplementedError
+        """
+        Load values for a structure from a file
+
+        :param str name: Which structure
+        :param str filename: Where to load values from.
+            Each line of the file is a setting, being the field name, some
+            whitespace, and the integer value.
+        """
+        sv = self.__s(name)
+        with open(filename) as f:
+            for line in f:
+                field, value = line.split()
+                sv[field] = int(value, 0)

@@ -21,9 +21,32 @@ _REGION_RE = re.compile(r"^(\d+),(\d+)$")
 
 
 # pylint: disable=redefined-builtin
-def hex_dump(data, format="byte",  # @ReservedAssignment
+def hex_dump(data, *, format="byte",  # @ReservedAssignment
              width=None, addr=0, start=0, length=None, prefix="",
              do_print=True):
+    """
+    Convert a block of data into human-readable string form.
+
+    :param bytes data:
+        The block of data to render
+    :return:
+        The human-readable version, if not directly printed
+    :rtype: str
+    :keyword str format:
+        ``byte`` or ``half`` or ``word``
+    :keyword int width:
+        Number of bytes per output line
+    :keyword int addr:
+        The start address of the block
+    :keyword int start:
+        Where in the block to start printing from
+    :keyword int length:
+        The actual length of the data, if not just the whole buffer
+    :keyword str prefix:
+        String to put at the start of each line
+    :keyword bool do_print:
+        Whether to directly print the data
+    """
     width = width if width is not None else 16 if format == "byte" else 32
     count = length if length is not None else len(data)
 
@@ -62,6 +85,14 @@ def hex_dump(data, format="byte",  # @ReservedAssignment
 
 
 def parse_apps(apps):
+    """
+    Parse an application ID or ID range.
+
+    :param str apps: The user-specified string
+    :return: The inclusive endpoints of the range
+    :rtype: tuple(int,int)
+    :raises ValueError: On bad input
+    """
     m = _RANGE_RE.match(apps)
     if not m:
         raise ValueError("bad app specifier")
@@ -81,6 +112,15 @@ def parse_apps(apps):
 
 
 def parse_bits(mask, minimum, maximum):
+    """
+    Parse a collection of bits and bit ranges into a bit mask.
+
+    :param str mask: the mask description string from the user
+    :param int minimum: the minimum value of bit ID
+    :param int maximum: the maximum value of bit ID
+    :return: the combined bit mask
+    :rtype: int
+    """
     if mask is None:
         raise ValueError("bad mask specifier")
     elif "all" == mask:
@@ -107,10 +147,29 @@ def parse_bits(mask, minimum, maximum):
 
 
 def parse_cores(mask):
+    """
+    Parse a collection of bits and bit ranges into a bit mask selecting
+    application cores.
+
+    :param str mask: the mask description string from the user
+    :return: the combined bit mask
+    :rtype: int
+    """
     return parse_bits(mask, 1, 17)
 
 
 def parse_region(region, x, y):
+    """
+    Parse a board region description.
+
+    :param str region:
+        ``.`` or ``x,y`` (e.g., ``3,4``) or ``all``
+        or ``a`` (``a`` = integer in 0..15) or ``a.b`` or ``a.b.c``
+    :param int x: Default x
+    :param int y: Default y
+    :return: region descriptor
+    :rtype: int
+    """
     if region is None:
         raise ValueError("bad region specifier")
 
@@ -150,6 +209,17 @@ def parse_region(region, x, y):
 
 
 def read_file(filename, max_size=0):
+    """ Read a file.
+
+    :param str filename:
+        The name of the file to read
+    :param int max_size:
+        If given, the max size of file that will be read
+    :return: The byte content of the file
+    :rtype: bytes
+    :raises ValueError:
+        If a max size is given and the file is too large.
+    """
     with open(filename, "rb") as f:
         if max_size and os.fstat(f.fileno()).st_size > max_size:
             raise ValueError("file too large")
@@ -157,6 +227,15 @@ def read_file(filename, max_size=0):
 
 
 def find_path(filename):
+    """ Locate a file on the ``SPINN_PATH``.
+
+    :param str filename:
+        The filename to locate
+    :return: The located filename
+    :rtype: str
+    :raises ValueError:
+        If the file can't be found.
+    """
     currentdir = os.path.dirname(os.path.abspath(__file__))
     file_in_bootdir = os.path.join(currentdir, "boot", filename)
     if os.path.exists(file_in_bootdir):
@@ -172,4 +251,16 @@ def find_path(filename):
 
 
 def read_path(filename, max_size=0):
+    """ Locate and read a file on the ``SPINN_PATH``.
+
+    :param str filename:
+        The filename to locate
+    :param int max_size:
+        If given, the max size of file that will be read
+    :return: The byte content of the file
+    :rtype: bytes
+    :raises ValueError:
+        If the file can't be found, or
+        if it is too large (if a max size is given).
+    """
     return read_file(find_path(filename), max_size)
