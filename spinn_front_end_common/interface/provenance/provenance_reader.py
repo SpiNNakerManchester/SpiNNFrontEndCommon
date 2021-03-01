@@ -150,7 +150,7 @@ class ProvenanceReader(object):
         Cores that received spikes but where none where late are NOT included.
 
         :return: A list hopefully empty of tuples (x, y, p , count) of cores
-        where their where late arrving spikes.
+            where their where late arrving spikes.
         :rtype: list(tuple(int, int, int , int))
         """
         query = """
