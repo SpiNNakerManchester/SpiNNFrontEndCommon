@@ -15,6 +15,7 @@
 
 import os
 from spinn_front_end_common.interface.provenance import SqlLiteDatabase
+from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 
 
 class ProvenanceSQLWriter(object):
@@ -30,6 +31,6 @@ class ProvenanceSQLWriter(object):
         :param str provenance_data_path:
         """
         database_file = os.path.join(
-            provenance_data_path, "provenance.sqlite3")
+            provenance_data_path, PROVENANCE_DB)
         with SqlLiteDatabase(database_file) as db:
             db.insert_items(provenance_data_items)

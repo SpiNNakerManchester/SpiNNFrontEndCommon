@@ -18,6 +18,7 @@ The code in this module is intended primarily for being invoked via the
 PACMAN Executor.
 """
 
+import os
 from .application_finisher import ApplicationFinisher
 from .application_runner import ApplicationRunner
 from .buffer_extractor import BufferExtractor
@@ -88,6 +89,12 @@ from .virtual_machine_generator import VirtualMachineGenerator
 from .read_routing_tables_from_machine import ReadRoutingTablesFromMachine
 from .sdram_outgoing_partition_allocator import SDRAMOutgoingPartitionAllocator
 
+
+def interface_xml():
+    return os.path.join(
+        os.path.dirname(__file__), "front_end_common_interface_functions.xml")
+
+
 __all__ = [
     "ApplicationFinisher",
     "ApplicationRunner", "BufferExtractor",
@@ -108,10 +115,10 @@ __all__ = [
     "InsertEdgesToExtraMonitorFunctionality",
     "InsertEdgesToLivePacketGatherers",
     "InsertExtraMonitorVerticesToGraphs",
-    "InsertLivePacketGatherersToGraphs", "LoadExecutableImages",
-    "LoadFixedRoutes", "LocalTDMABuilder", "LocateExecutableStartType",
-    "MachineBitFieldRouterCompressor", "MachineGenerator",
-    "PlacementsProvenanceGatherer",
+    "InsertLivePacketGatherersToGraphs", "interface_xml",
+    "LoadExecutableImages", "LoadFixedRoutes", "LocalTDMABuilder",
+    "LocateExecutableStartType", "MachineBitFieldRouterCompressor",
+    "MachineGenerator", "PlacementsProvenanceGatherer",
     "PreAllocateForBitFieldRouterCompressor",
     "PreAllocateResourcesForChipPowerMonitor",
     "PreAllocateResourcesForExtraMonitorSupport",
