@@ -150,6 +150,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_this_run_time_string</span> <span class="o">=</span> <span class="kc">None</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span>
+
     <span class="k">def</span> <span class="nf">_adjust_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">debug_enable_opts</span><span class="p">,</span> <span class="n">report_disable_opts</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Adjust and checks config based on runtime and mode</span>
 

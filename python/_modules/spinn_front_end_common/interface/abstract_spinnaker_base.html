@@ -3053,11 +3053,6 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_reset_last</span>
 
     <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span>
-
-    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">get_number_of_available_cores_on_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; The number of available cores on the machine after taking\</span>
 <span class="sd">            into account preallocated resources.</span>
