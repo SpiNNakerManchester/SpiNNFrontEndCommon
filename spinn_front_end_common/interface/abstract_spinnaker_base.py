@@ -3015,11 +3015,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._has_reset_last
 
     @property
-    @overrides(SimulatorInterface.config)
-    def config(self):
-        return self._config
-
-    @property
     def get_number_of_available_cores_on_machine(self):
         """ The number of available cores on the machine after taking\
             into account preallocated resources.
