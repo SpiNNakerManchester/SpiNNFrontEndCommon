@@ -375,8 +375,10 @@ bool simulation_initialise(
             sdp_packet_callback_priority);
     simulation_sdp_callback_on(config->control_sdp_port,
             simulation_control_scp_callback);
-    spin1_callback_on(DMA_TRANSFER_DONE, simulation_dma_transfer_done_callback,
-            dma_transfer_done_callback_priority);
+    if (dma_transfer_done_callback_priority >= -1) {
+        spin1_callback_on(DMA_TRANSFER_DONE, simulation_dma_transfer_done_callback,
+                dma_transfer_done_callback_priority);
+    }
 
     // if all simulation initialisation complete return true,
     return true;

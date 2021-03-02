@@ -132,7 +132,7 @@ bool simulation_initialise(
 //! \param[in] sdp_packet_callback_priority The priority to use for the
 //!            SDP packet reception
 //! \param[in] dma_transfer_complete_priority The priority to use for the
-//!            DMA transfer complete callbacks
+//!            DMA transfer complete callbacks or <= -2 to disable
 //! \return True if the data was found, false otherwise
 static inline bool simulation_steps_initialise(
         address_t address, uint32_t expected_application_magic_number,
