@@ -90,12 +90,29 @@ static inline void close_channel(recording_channel_t *rec) {
     rec->start = NULL;
 }
 
+//! \brief copy data in word-size chunks
+//! \param[in] target where to write the data to
+//! \param[in] source where to read the data from
+//! \param[in] n_words the number of words to copy
+static inline void copy_data(
+        void *restrict target, const void *source, uint n_words) {
+    uint *to = target;
+    const uint *from = source;
+    while (n_words-- > 0) {
+        *to++ = *from++;
+    }
+}
+
 bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
     recording_channel_t *rec = &channels[channel];
     if (has_been_initialised(rec)) {
 
         if (rec->space >= size_bytes) {
-            spin1_memcpy(rec->write, data, size_bytes);
+            if ((((int) data & 0x3) != 0) || ((size_bytes & 0x3) != 0)) {
+                spin1_memcpy(rec->write, data, size_bytes);
+            } else {
+                copy_data(rec->write, data, size_bytes >> 2);
+            }
             rec->space -= size_bytes;
             rec->write += size_bytes;
             return true;
