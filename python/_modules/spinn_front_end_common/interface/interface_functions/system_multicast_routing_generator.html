@@ -52,7 +52,8 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">pacman.exceptions</span> <span class="kn">import</span> <span class="p">(</span><span class="n">PacmanRoutingException</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman.model.routing_tables</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">MulticastRoutingTables</span><span class="p">,</span> <span class="n">UnCompressedMulticastRoutingTable</span><span class="p">)</span>
@@ -65,6 +66,8 @@
 <span class="n">N_KEYS_PER_REINJECTION_PARTITION</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">KEY_START_VALUE</span> <span class="o">=</span> <span class="mi">8</span>
 <span class="n">ROUTING_MASK</span> <span class="o">=</span> <span class="mh">0xFFFFFFF8</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="SystemMulticastRoutingGenerator"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.SystemMulticastRoutingGenerator">[docs]</a><span class="k">class</span> <span class="nc">SystemMulticastRoutingGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -101,6 +104,8 @@
 
         <span class="k">for</span> <span class="n">ethernet_chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">):</span>
             <span class="n">tree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_routing_tree</span><span class="p">(</span><span class="n">ethernet_chip</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tree</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logging_retry</span><span class="p">(</span><span class="n">ethernet_chip</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_routing_entries</span><span class="p">(</span><span class="n">ethernet_chip</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_routing_tables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_to_destination_map</span><span class="p">,</span>
@@ -140,6 +145,46 @@
                             <span class="n">tree</span><span class="p">[</span><span class="n">destination</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">link_id</span><span class="p">)</span>
                             <span class="n">to_reach</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">destination</span><span class="p">)</span>
                             <span class="n">found</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">destination</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">tree</span>
+
+    <span class="k">def</span> <span class="nf">_logging_retry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ethernet_chip</span><span class="p">):</span>
+        <span class="n">eth_x</span> <span class="o">=</span> <span class="n">ethernet_chip</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">eth_y</span> <span class="o">=</span> <span class="n">ethernet_chip</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">to_reach</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_existing_xys_by_ethernet</span><span class="p">(</span><span class="n">eth_x</span><span class="p">,</span> <span class="n">eth_y</span><span class="p">))</span>
+        <span class="n">reached</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">reached</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">eth_x</span><span class="p">,</span> <span class="n">eth_y</span><span class="p">))</span>
+        <span class="n">to_reach</span><span class="o">.</span><span class="n">remove</span><span class="p">((</span><span class="n">eth_x</span><span class="p">,</span> <span class="n">eth_y</span><span class="p">))</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">found</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">eth_x</span><span class="p">,</span> <span class="n">eth_y</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;In _logging_retry&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">to_reach</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Still need to reach </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">to_reach</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">just_reached</span> <span class="o">=</span> <span class="n">found</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">just_reached</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Trying from </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+                <span class="c1"># Check links starting with the most direct from 0,0</span>
+                <span class="k">for</span> <span class="n">link_id</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]:</span>
+                    <span class="c1"># Get protential destination</span>
+                    <span class="n">destination</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">xy_over_link</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">link_id</span><span class="p">)</span>
+                    <span class="c1"># If it is useful</span>
+                    <span class="k">if</span> <span class="n">destination</span> <span class="ow">in</span> <span class="n">to_reach</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could reach </span><span class="si">{}</span><span class="s2"> over </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">destination</span><span class="p">,</span> <span class="n">link_id</span><span class="p">))</span>
+                        <span class="c1"># check it actually exits</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">is_link_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">link_id</span><span class="p">):</span>
+                            <span class="c1"># Add to tree and record chip reachable</span>
+                            <span class="n">tree</span><span class="p">[</span><span class="n">destination</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">link_id</span><span class="p">)</span>
+                            <span class="n">to_reach</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">destination</span><span class="p">)</span>
+                            <span class="n">found</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">destination</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Link down&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">)))</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">PacmanRoutingException</span><span class="p">(</span>
                     <span class="s2">&quot;Unable to do data in routing on </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
