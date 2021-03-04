@@ -40,18 +40,18 @@ typedef struct recording_channel_t {
     uint8_t *start;             //!< The first byte of the buffer
     uint8_t *end;               //!< One byte past the end of the buffer
     uint8_t *write;             //!< Where to write to next
-    uint32_t missing: 1;        //!< Flag indicating if recording missed data
     uint32_t space: 31;         //!< The space remaining in the channel
+    uint32_t missing: 1;        //!< Flag indicating if recording missed data
 } recording_channel_t;
 
 //! Data for an individual region
 typedef struct recording_region_t {
     //! The size of the region to record into
     uint32_t space;
-    //! Flag indicating if any data is missing
-    uint32_t missing: 1;
     //! The size of the region after recording
     uint32_t size:31;
+    //! Flag indicating if any data is missing
+    uint32_t missing: 1;
     //! Pointer to the recorded data
     uint8_t *data;
 } recording_region_t;

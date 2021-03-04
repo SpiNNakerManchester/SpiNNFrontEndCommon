@@ -64,10 +64,10 @@ class _RecordingRegion(ctypes.LittleEndianStructure):
     _fields_ = [
         # Space available for recording
         ("space", ctypes.c_uint32),
-        # Whether any data is missing
-        ("missing", ctypes.c_uint32, 1),
         # The size of the recording region
         ("size", ctypes.c_uint32, 31),
+        # Whether any data is missing
+        ("missing", ctypes.c_uint32, 1),
         # The address of the data
         ("data", ctypes.c_uint32)
     ]
