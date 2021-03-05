@@ -203,8 +203,9 @@ class SqlLiteDatabase(AbstractDatabase, AbstractContextManager):
         return cursor.lastrowid
 
     @overrides(AbstractDatabase.store_data_in_region_buffer)
-    def store_data_in_region_buffer(self, x, y, p, region, data):
+    def store_data_in_region_buffer(self, x, y, p, region, missing, data):
         # pylint: disable=too-many-arguments
+        # TODO: Use missing
         datablob = sqlite3.Binary(data)
         with self._db:
             cursor = self._db.cursor()
