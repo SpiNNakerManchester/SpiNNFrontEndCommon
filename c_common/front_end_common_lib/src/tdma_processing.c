@@ -32,6 +32,11 @@ uint32_t tdma_expected_time;
 //! Number of times the core got behind its TDMA
 uint32_t n_tdma_behind_times = 0;
 
+
+uint32_t tdma_latest_send = 0xFFFFFFFF;
+
+uint32_t tdma_waits = 0;
+
 bool tdma_processing_initialise(void **address) {
     // Get the parameters
     struct tdma_parameters *sdram_params = *address;

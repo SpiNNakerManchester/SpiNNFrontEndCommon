@@ -60,6 +60,10 @@ static inline void tdma_processing_reset_phase(void) {
     tdma_expected_time = tdma_params.initial_expected_time;
 }
 
+extern uint32_t tdma_latest_send;
+
+extern uint32_t tdma_waits;
+
 //! \brief Send a packet according to the TDMA schedule.
 //! \param[in] transmission_key: The key to send with
 //! \param[in] payload: the payload to send
@@ -78,7 +82,7 @@ static inline void tdma_processing_send_packet(
     // which point we will sent immediately.  We also should just send
     // if the timer has already expired completely as then we are really late!
     while ((ticks == timer_count) && (timer_value < tdma_expected_time)
-            && (tdma_expected_time > tdma_params.min_expected_time)) {
+            && (tdma_expected_time >= tdma_params.min_expected_time)) {
         tdma_expected_time -= tdma_params.time_between_sends;
     }
 
@@ -88,10 +92,14 @@ static inline void tdma_processing_send_packet(
     // which case we just skip this
     while ((ticks == timer_count) &&
             (timer1_control->current_value > tdma_expected_time)) {
-        // Do Nothing
+        tdma_waits++;
     }
 
     // Send the spike
+    uint32_t time = tc[T1_COUNT];
+    if (time < tdma_latest_send) {
+        tdma_latest_send = time;
+    }
     while (!spin1_send_mc_packet(transmission_key, payload, with_payload)) {
         spin1_delay_us(1);
     }
