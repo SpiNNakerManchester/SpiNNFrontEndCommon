@@ -48,5 +48,9 @@ bool tdma_processing_initialise(void **address) {
     // Start expected time at the initial offset
     tdma_expected_time = tdma_params.initial_expected_time;
 
+    log_info("TDMA initial_expected_time=%u, min_expected_time=%u, time_between_sends=%u",
+            tdma_params.initial_expected_time, tdma_params.min_expected_time,
+            tdma_params.time_between_sends);
+
     return true;
 }

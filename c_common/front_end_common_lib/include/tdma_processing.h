@@ -27,6 +27,7 @@
 #define _TDMA_PROCESSING_H_
 #include <stdbool.h>
 #include <spin1_api.h>
+#include <spin1_api_params.h>
 #include <spinn_extra.h>
 
 //! The format of the TDMA processing state, and the config in SDRAM.
@@ -64,6 +65,17 @@ extern uint32_t tdma_latest_send;
 
 extern uint32_t tdma_waits;
 
+static inline void send_packet(uint32_t key, uint32_t payload, uint32_t with_payload) {
+    while (cc[CC_TCR] & TX_FULL_MASK) {
+        spin1_delay_us(1);
+    }
+    cc[CC_TCR] = PKT_MC;
+    if (with_payload) {
+        cc[CC_TXDATA] = payload;
+    }
+    cc[CC_TXKEY]  = key;
+}
+
 //! \brief Send a packet according to the TDMA schedule.
 //! \param[in] transmission_key: The key to send with
 //! \param[in] payload: the payload to send
@@ -100,9 +112,7 @@ static inline void tdma_processing_send_packet(
     if (time < tdma_latest_send) {
         tdma_latest_send = time;
     }
-    while (!spin1_send_mc_packet(transmission_key, payload, with_payload)) {
-        spin1_delay_us(1);
-    }
+    send_packet(transmission_key, payload, with_payload);
 }
 
 #endif // _TDMA_PROCESSING_H_
