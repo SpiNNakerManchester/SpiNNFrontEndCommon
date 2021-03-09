@@ -185,9 +185,7 @@ class LocalTDMABuilder(object):
             n_slots = int(math.ceil(n_cores / app_machine_quantity))
             clocks_per_phase = (
                 int(math.ceil(overall_clocks_available / n_phases)))
-            # Note: The plus 1 ensures the last core finishes, if it's the
-            # worst in terms of n keys to transmit
-            clocks_between_cores = clocks_per_phase / (n_slots + 1)
+            clocks_between_cores = clocks_per_phase / n_slots
             logger.debug("adjusted clocks between cores is {}".format(
                 clocks_between_cores))
 
