@@ -34,10 +34,11 @@ def _emergency_state_check(txrx, app_id):
             app_id, CPUState.RUN_TIME_EXCEPTION)
         watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
         if rte_count or watchdog_count:
-            logger.warning(
-                "unexpected core states (rte={}, wdog={})",
-                txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
-                txrx.get_cores_in_state(None, CPUState.WATCHDOG))
+            states = txrx.get_cores_in_state(
+                None, [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG])
+            logger.warning("unexpected core states (rte={}, wdog={})".format(
+                rte_count, watchdog_count))
+            logger.warning(txrx.get_core_status_string(states))
     except Exception:
         logger.exception(
             "Could not read the status count - going to individual cores")
