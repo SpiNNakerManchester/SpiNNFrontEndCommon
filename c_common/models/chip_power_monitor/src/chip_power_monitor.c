@@ -181,8 +181,6 @@ static void sample_in_slot(UNUSED uint unused0, UNUSED uint unused1) {
         record_aggregate_sample();
         reset_core_counters();
     }
-
-    recording_do_timestep_update(time);
 }
 
 //! \brief Reads the configuration of the application out of the configuration
