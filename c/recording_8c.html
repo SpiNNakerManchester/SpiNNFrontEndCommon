@@ -69,7 +69,6 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
-<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
@@ -95,77 +94,34 @@ Data Structures</h2></td></tr>
 <tr class="memitem:structrecording__channel__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#structrecording__channel__t">recording_channel_t</a></td></tr>
 <tr class="memdesc:structrecording__channel__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure that defines a channel in memory.  <a href="recording_8c.html#structrecording__channel__t">More...</a><br /></td></tr>
 <tr class="separator:structrecording__channel__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:structrecording__data__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#structrecording__data__t">recording_data_t</a></td></tr>
-<tr class="memdesc:structrecording__data__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">header of general structure describing all recordings  <a href="recording_8c.html#structrecording__data__t">More...</a><br /></td></tr>
-<tr class="separator:structrecording__data__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a4f7e6fbaee184f1230151ef6282b6b74"><td class="memItemLeft" align="right" valign="top"><a id="a4f7e6fbaee184f1230151ef6282b6b74"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a4f7e6fbaee184f1230151ef6282b6b74">MIN_TIME_BETWEEN_TRIGGERS</a>&#160;&#160;&#160;50</td></tr>
-<tr class="memdesc:a4f7e6fbaee184f1230151ef6282b6b74"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time between buffer read messages. <br /></td></tr>
-<tr class="separator:a4f7e6fbaee184f1230151ef6282b6b74"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a39db4f53b92f30d7e57a7daf601b033d"><td class="memItemLeft" align="right" valign="top"><a id="a39db4f53b92f30d7e57a7daf601b033d"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a39db4f53b92f30d7e57a7daf601b033d">N_WORDS_USED_OUTSIDE_STRUCT_PER_REGION</a>&#160;&#160;&#160;2</td></tr>
-<tr class="memdesc:a39db4f53b92f30d7e57a7daf601b033d"><td class="mdescLeft">&#160;</td><td class="mdescRight">n words outside struct per recording region used <br /></td></tr>
-<tr class="separator:a39db4f53b92f30d7e57a7daf601b033d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a40f2b6d1be79264f430431197541e127"><td class="memItemLeft" align="right" valign="top"><a id="a40f2b6d1be79264f430431197541e127"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a40f2b6d1be79264f430431197541e127">WORD_TO_BYTE_CONVERSION</a>&#160;&#160;&#160;4</td></tr>
-<tr class="memdesc:a40f2b6d1be79264f430431197541e127"><td class="mdescLeft">&#160;</td><td class="mdescRight">word to byte conversion <br /></td></tr>
-<tr class="separator:a40f2b6d1be79264f430431197541e127"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:structrecording__region__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#structrecording__region__t">recording_region_t</a></td></tr>
+<tr class="memdesc:structrecording__region__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data for an individual region.  <a href="recording_8c.html#structrecording__region__t">More...</a><br /></td></tr>
+<tr class="separator:structrecording__region__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:structrecording__regions__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#structrecording__regions__t">recording_regions_t</a></td></tr>
+<tr class="memdesc:structrecording__regions__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">header of general structure describing all recordings  <a href="recording_8c.html#structrecording__regions__t">More...</a><br /></td></tr>
+<tr class="separator:structrecording__regions__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a135a6c8f1b18c8ff754202af47dd934c"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a135a6c8f1b18c8ff754202af47dd934c">has_been_initialised</a> (uint8_t channel)</td></tr>
-<tr class="memdesc:a135a6c8f1b18c8ff754202af47dd934c"><td class="mdescLeft">&#160;</td><td class="mdescRight">checks that a channel has been initialised  <a href="recording_8c.html#a135a6c8f1b18c8ff754202af47dd934c">More...</a><br /></td></tr>
-<tr class="separator:a135a6c8f1b18c8ff754202af47dd934c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1e50ecd8c6d149b490f9dd17aff7ecd3"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a1e50ecd8c6d149b490f9dd17aff7ecd3">close_channel</a> (uint8_t channel)</td></tr>
-<tr class="memdesc:a1e50ecd8c6d149b490f9dd17aff7ecd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">closes a channel  <a href="recording_8c.html#a1e50ecd8c6d149b490f9dd17aff7ecd3">More...</a><br /></td></tr>
-<tr class="separator:a1e50ecd8c6d149b490f9dd17aff7ecd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5cddb925e2ac18cdacd99ba0b1b00795"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a5cddb925e2ac18cdacd99ba0b1b00795">recording_host_data_read</a> (const <a class="el" href="buffered__eieio__defs_8h.html#ab1cb4165aa150178971770a1a95d332d">eieio_msg_t</a> msg)</td></tr>
-<tr class="memdesc:a5cddb925e2ac18cdacd99ba0b1b00795"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handles a <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a78bd33182d3446399b98f456a154a626" title="Host confirming data being read form SpiNNaker memory.">HOST_DATA_READ</a> EIEIO message.  <a href="recording_8c.html#a5cddb925e2ac18cdacd99ba0b1b00795">More...</a><br /></td></tr>
-<tr class="separator:a5cddb925e2ac18cdacd99ba0b1b00795"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa2dc3adc7cf4f90d3012a88147080b5e"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#aa2dc3adc7cf4f90d3012a88147080b5e">recording_host_data_read_ack</a> (const <a class="el" href="buffered__eieio__defs_8h.html#ab1cb4165aa150178971770a1a95d332d">eieio_msg_t</a> msg)</td></tr>
-<tr class="memdesc:aa2dc3adc7cf4f90d3012a88147080b5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handles a <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a9b2476cbb47aa712ee051c690774f254" title="Host confirming message received to read data.">HOST_DATA_READ_ACK</a> EIEIO message.  <a href="recording_8c.html#aa2dc3adc7cf4f90d3012a88147080b5e">More...</a><br /></td></tr>
-<tr class="separator:aa2dc3adc7cf4f90d3012a88147080b5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a712522f1d0055e8c29f0eddb9e4ea374"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a712522f1d0055e8c29f0eddb9e4ea374">recording_eieio_packet_handler</a> (const <a class="el" href="buffered__eieio__defs_8h.html#ab1cb4165aa150178971770a1a95d332d">eieio_msg_t</a> msg, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> length)</td></tr>
-<tr class="memdesc:a712522f1d0055e8c29f0eddb9e4ea374"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receives an EIEIO message intended for the recording code.  <a href="recording_8c.html#a712522f1d0055e8c29f0eddb9e4ea374">More...</a><br /></td></tr>
-<tr class="separator:a712522f1d0055e8c29f0eddb9e4ea374"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac2fbf08fec2d96c8c6e8e8a3a5144c7f"><td class="memItemLeft" align="right" valign="top">static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#ac2fbf08fec2d96c8c6e8e8a3a5144c7f">compute_available_space_in_channel</a> (uint8_t channel)</td></tr>
-<tr class="memdesc:ac2fbf08fec2d96c8c6e8e8a3a5144c7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Work out the space available in the given channel for recording.  <a href="recording_8c.html#ac2fbf08fec2d96c8c6e8e8a3a5144c7f">More...</a><br /></td></tr>
-<tr class="separator:ac2fbf08fec2d96c8c6e8e8a3a5144c7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af695b9f5933b3cb417fd2a0b97748e2d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#af695b9f5933b3cb417fd2a0b97748e2d">recording_write_one_chunk</a> (uint8_t channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, void *<a class="el" href="reverse__iptag__multicast__source_8c.html#a1457f38508d0ff5bab79b395dee38daa">write_pointer</a>, uint32_t length, void *finished_write_pointer, <a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a> <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a7f4271a2bb359cefd04d8ca74346ca05">callback</a>)</td></tr>
-<tr class="memdesc:af695b9f5933b3cb417fd2a0b97748e2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transfer a contiguous block of memory to SDRAM.  <a href="recording_8c.html#af695b9f5933b3cb417fd2a0b97748e2d">More...</a><br /></td></tr>
-<tr class="separator:af695b9f5933b3cb417fd2a0b97748e2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ccce811dde996328f9b7a6c01694c9c"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a0ccce811dde996328f9b7a6c01694c9c">recording_write_memory</a> (uint8_t channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, uint32_t length, <a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a> <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a7f4271a2bb359cefd04d8ca74346ca05">callback</a>)</td></tr>
-<tr class="memdesc:a0ccce811dde996328f9b7a6c01694c9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a recording to the SDRAM buffers.  <a href="recording_8c.html#a0ccce811dde996328f9b7a6c01694c9c">More...</a><br /></td></tr>
-<tr class="separator:a0ccce811dde996328f9b7a6c01694c9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acfdd3c9b063bc16f1199c9c8df20ff4b"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#acfdd3c9b063bc16f1199c9c8df20ff4b">create_buffer_message</a> (<a class="el" href="recording_8h.html#structread__request__packet__data">read_request_packet_data</a> *datum, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> channel, uint8_t *<a class="el" href="reverse__iptag__multicast__source_8c.html#aef1ab53109ddf408618b407c8fbb6e35">read_pointer</a>, uint32_t space_to_be_read)</td></tr>
-<tr class="memdesc:acfdd3c9b063bc16f1199c9c8df20ff4b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a buffer message component into the sequence to be sent to the host.  <a href="recording_8c.html#acfdd3c9b063bc16f1199c9c8df20ff4b">More...</a><br /></td></tr>
-<tr class="separator:acfdd3c9b063bc16f1199c9c8df20ff4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac320310c01dea5c0d14f69e80be0c328"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#ac320310c01dea5c0d14f69e80be0c328">recording_send_buffering_out_trigger_message</a> (bool flush_all)</td></tr>
-<tr class="memdesc:ac320310c01dea5c0d14f69e80be0c328"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a message to host ask for for our buffers to be flushed.  <a href="recording_8c.html#ac320310c01dea5c0d14f69e80be0c328">More...</a><br /></td></tr>
-<tr class="separator:ac320310c01dea5c0d14f69e80be0c328"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abad4c1a43ddb2eb8a503df45d5e9c9e5"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#abad4c1a43ddb2eb8a503df45d5e9c9e5">buffering_in_handler</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> mailbox, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> port)</td></tr>
-<tr class="memdesc:abad4c1a43ddb2eb8a503df45d5e9c9e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receives an SDP message intended for the recording code.  <a href="recording_8c.html#abad4c1a43ddb2eb8a503df45d5e9c9e5">More...</a><br /></td></tr>
-<tr class="separator:abad4c1a43ddb2eb8a503df45d5e9c9e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2d5af6f8f54d33cd27b8ca7e79a06e49"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a2d5af6f8f54d33cd27b8ca7e79a06e49">recording_do_record_and_notify</a> (uint8_t channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, uint32_t size_bytes, <a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a> <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a7f4271a2bb359cefd04d8ca74346ca05">callback</a>)</td></tr>
-<tr class="memdesc:a2d5af6f8f54d33cd27b8ca7e79a06e49"><td class="mdescLeft">&#160;</td><td class="mdescRight">records some data into a specific recording channel, calling a callback function once complete. DO NOT CALL THIS DIRECTLY. Use <a class="el" href="recording_8h.html#a222af7edbef5e36638e02c7292d69cbd" title="records some data into a specific recording channel.">recording_record()</a> or <a class="el" href="recording_8h.html#a1b14976af9b5980e3dbbc5c9b463f002" title="records some data into a specific recording channel, calling a callback function once complete">recording_record_and_notify()</a>.  <a href="recording_8c.html#a2d5af6f8f54d33cd27b8ca7e79a06e49">More...</a><br /></td></tr>
-<tr class="separator:a2d5af6f8f54d33cd27b8ca7e79a06e49"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aed39e1c2631fc1ede077efc548833728"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#aed39e1c2631fc1ede077efc548833728">recording_bad_offset</a> (void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, uint32_t size)</td></tr>
-<tr class="memdesc:aed39e1c2631fc1ede077efc548833728"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints an error about DMA API abuse and RTEs.  <a href="recording_8c.html#aed39e1c2631fc1ede077efc548833728">More...</a><br /></td></tr>
+<tr class="memitem:a3285f8112dffc5a2e4886de7fc6184c8"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a3285f8112dffc5a2e4886de7fc6184c8">has_been_initialised</a> (<a class="el" href="recording_8c.html#structrecording__channel__t">recording_channel_t</a> *rec)</td></tr>
+<tr class="memdesc:a3285f8112dffc5a2e4886de7fc6184c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">checks that a channel has been initialised  <a href="recording_8c.html#a3285f8112dffc5a2e4886de7fc6184c8">More...</a><br /></td></tr>
+<tr class="separator:a3285f8112dffc5a2e4886de7fc6184c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b27e05e8ad258a10978cd289399091d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a7b27e05e8ad258a10978cd289399091d">close_channel</a> (<a class="el" href="recording_8c.html#structrecording__channel__t">recording_channel_t</a> *rec)</td></tr>
+<tr class="memdesc:a7b27e05e8ad258a10978cd289399091d"><td class="mdescLeft">&#160;</td><td class="mdescRight">closes a channel  <a href="recording_8c.html#a7b27e05e8ad258a10978cd289399091d">More...</a><br /></td></tr>
+<tr class="separator:a7b27e05e8ad258a10978cd289399091d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82f78e19f3548fcbefd0283a03b0f0d1"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a82f78e19f3548fcbefd0283a03b0f0d1">copy_data</a> (void *restrict target, const void *source, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> n_words)</td></tr>
+<tr class="memdesc:a82f78e19f3548fcbefd0283a03b0f0d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">copy data in word-size chunks  <a href="recording_8c.html#a82f78e19f3548fcbefd0283a03b0f0d1">More...</a><br /></td></tr>
+<tr class="separator:a82f78e19f3548fcbefd0283a03b0f0d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad88856d359544e926c4b86451fb2901e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#ad88856d359544e926c4b86451fb2901e">recording_record</a> (uint8_t channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, uint32_t size_bytes)</td></tr>
+<tr class="memdesc:ad88856d359544e926c4b86451fb2901e"><td class="mdescLeft">&#160;</td><td class="mdescRight">records some data into a specific recording channel.  <a href="recording_8c.html#ad88856d359544e926c4b86451fb2901e">More...</a><br /></td></tr>
+<tr class="separator:ad88856d359544e926c4b86451fb2901e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed39e1c2631fc1ede077efc548833728"><td class="memItemLeft" align="right" valign="top"><a id="aed39e1c2631fc1ede077efc548833728"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>recording_bad_offset</b> (void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, uint32_t size)</td></tr>
 <tr class="separator:aed39e1c2631fc1ede077efc548833728"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6f40dbb460b832721f85f3d4add98bae"><td class="memItemLeft" align="right" valign="top"><a id="a6f40dbb460b832721f85f3d4add98bae"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a6f40dbb460b832721f85f3d4add98bae">recording_buffer_state_data_write</a> (void)</td></tr>
-<tr class="memdesc:a6f40dbb460b832721f85f3d4add98bae"><td class="mdescLeft">&#160;</td><td class="mdescRight">this writes the state data to the regions <br /></td></tr>
-<tr class="separator:a6f40dbb460b832721f85f3d4add98bae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a61f4d74e9f18ff231c0b3926cb144b3b"><td class="memItemLeft" align="right" valign="top"><a id="a61f4d74e9f18ff231c0b3926cb144b3b"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a61f4d74e9f18ff231c0b3926cb144b3b">recording_finalise</a> (void)</td></tr>
 <tr class="memdesc:a61f4d74e9f18ff231c0b3926cb144b3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finishes recording - should only be called if recording_flags is not 0. <br /></td></tr>
 <tr class="separator:a61f4d74e9f18ff231c0b3926cb144b3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a89e7759f30eca8e5ed7086c816ce8259"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a89e7759f30eca8e5ed7086c816ce8259">recording_dma_finished</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> tag)</td></tr>
-<tr class="memdesc:a89e7759f30eca8e5ed7086c816ce8259"><td class="mdescLeft">&#160;</td><td class="mdescRight">updates host read point as DMA has finished  <a href="recording_8c.html#a89e7759f30eca8e5ed7086c816ce8259">More...</a><br /></td></tr>
-<tr class="separator:a89e7759f30eca8e5ed7086c816ce8259"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ad0438aef1104ef15158add655a679c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a3ad0438aef1104ef15158add655a679c">recording_initialize</a> (void **recording_data_address, uint32_t *<a class="el" href="reverse__iptag__multicast__source_8c.html#a9a97f21dc7fccaac8071bcd29894bccb">recording_flags</a>)</td></tr>
 <tr class="memdesc:a3ad0438aef1104ef15158add655a679c"><td class="mdescLeft">&#160;</td><td class="mdescRight">initialises the recording of data  <a href="recording_8c.html#a3ad0438aef1104ef15158add655a679c">More...</a><br /></td></tr>
 <tr class="separator:a3ad0438aef1104ef15158add655a679c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -173,70 +129,17 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reco
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#addbda0e729aa7007221fce996022659e">recording_reset</a> (void)</td></tr>
 <tr class="memdesc:addbda0e729aa7007221fce996022659e"><td class="mdescLeft">&#160;</td><td class="mdescRight">resets recording to the state just after initialisation <br /></td></tr>
 <tr class="separator:addbda0e729aa7007221fce996022659e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4055e610fa315c45245500aab28dba19"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a4055e610fa315c45245500aab28dba19">recording_do_timestep_update</a> (uint32_t <a class="el" href="reverse__iptag__multicast__source_8c.html#ae73654f333e4363463ad8c594eca1905">time</a>)</td></tr>
-<tr class="memdesc:a4055e610fa315c45245500aab28dba19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Call once per timestep to ensure buffering is done - should only be called if recording flags is not 0.  <a href="recording_8c.html#a4055e610fa315c45245500aab28dba19">More...</a><br /></td></tr>
-<tr class="separator:a4055e610fa315c45245500aab28dba19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:ac7e39dd91ffdd9e5bcc83d0c9bc8bfb8"><td class="memItemLeft" align="right" valign="top"><a id="ac7e39dd91ffdd9e5bcc83d0c9bc8bfb8"></a>
-static <a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/circular__buffer_8h.html#a549d5bcaed4164249aee6a6828a51e6f">circular_buffer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#ac7e39dd91ffdd9e5bcc83d0c9bc8bfb8">dma_complete_buffer</a></td></tr>
-<tr class="memdesc:ac7e39dd91ffdd9e5bcc83d0c9bc8bfb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Circular queue for DMA complete addresses. <br /></td></tr>
-<tr class="separator:ac7e39dd91ffdd9e5bcc83d0c9bc8bfb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa60a1c8e869554e779c6c0f0ec1911da"><td class="memItemLeft" align="right" valign="top"><a id="aa60a1c8e869554e779c6c0f0ec1911da"></a>
-static <a class="el" href="recording_8c.html#structrecording__channel__t">recording_channel_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#aa60a1c8e869554e779c6c0f0ec1911da">g_recording_channels</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
-<tr class="memdesc:aa60a1c8e869554e779c6c0f0ec1911da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array containing all possible channels. In DTCM. <br /></td></tr>
-<tr class="separator:aa60a1c8e869554e779c6c0f0ec1911da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a809b66e68e928376d8dac65804b55cc3"><td class="memItemLeft" align="right" valign="top"><a id="a809b66e68e928376d8dac65804b55cc3"></a>
-static <a class="el" href="recording_8c.html#structrecording__channel__t">recording_channel_t</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a809b66e68e928376d8dac65804b55cc3">region_addresses</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
-<tr class="memdesc:a809b66e68e928376d8dac65804b55cc3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array containing all possible channels. In SDRAM. <br /></td></tr>
-<tr class="separator:a809b66e68e928376d8dac65804b55cc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8ecc84cb4f3c678a32f5a8f6c609d59d"><td class="memItemLeft" align="right" valign="top"><a id="a8ecc84cb4f3c678a32f5a8f6c609d59d"></a>
-static uint32_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a8ecc84cb4f3c678a32f5a8f6c609d59d">region_sizes</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
-<tr class="memdesc:a8ecc84cb4f3c678a32f5a8f6c609d59d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array containing the sizes of buffers. In DTCM. <br /></td></tr>
-<tr class="separator:a8ecc84cb4f3c678a32f5a8f6c609d59d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb1826b8e34ca738f009136c3e3be22d"><td class="memItemLeft" align="right" valign="top"><a id="abb1826b8e34ca738f009136c3e3be22d"></a>
-static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#abb1826b8e34ca738f009136c3e3be22d">n_recording_regions</a> = 0</td></tr>
-<tr class="memdesc:abb1826b8e34ca738f009136c3e3be22d"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of recording regions. <br /></td></tr>
-<tr class="separator:abb1826b8e34ca738f009136c3e3be22d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5408e7bf83ea6c8d55bc29559253558c"><td class="memItemLeft" align="right" valign="top"><a id="a5408e7bf83ea6c8d55bc29559253558c"></a>
-static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a5408e7bf83ea6c8d55bc29559253558c">sdp_port</a> = 0</td></tr>
-<tr class="memdesc:a5408e7bf83ea6c8d55bc29559253558c"><td class="mdescLeft">&#160;</td><td class="mdescRight">SDP port for communicating with host. <br /></td></tr>
-<tr class="separator:a5408e7bf83ea6c8d55bc29559253558c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8ba4f30c7f4dbe010e2be1b5f1d5977"><td class="memItemLeft" align="right" valign="top"><a id="ac8ba4f30c7f4dbe010e2be1b5f1d5977"></a>
-static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#ac8ba4f30c7f4dbe010e2be1b5f1d5977">sequence_number</a> = 0</td></tr>
-<tr class="memdesc:ac8ba4f30c7f4dbe010e2be1b5f1d5977"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sequence number for host communications. <br /></td></tr>
-<tr class="separator:ac8ba4f30c7f4dbe010e2be1b5f1d5977"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab68ccb0e8f558f3e26507de0d0d466e6"><td class="memItemLeft" align="right" valign="top"><a id="ab68ccb0e8f558f3e26507de0d0d466e6"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#ab68ccb0e8f558f3e26507de0d0d466e6">sequence_ack</a> = false</td></tr>
-<tr class="memdesc:ab68ccb0e8f558f3e26507de0d0d466e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether we've received a (valid) <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a9b2476cbb47aa712ee051c690774f254" title="Host confirming message received to read data.">HOST_DATA_READ_ACK</a>. <br /></td></tr>
-<tr class="separator:ab68ccb0e8f558f3e26507de0d0d466e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab7d32b18db0ea69a186a424a589b8842"><td class="memItemLeft" align="right" valign="top"><a id="ab7d32b18db0ea69a186a424a589b8842"></a>
-static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#ab7d32b18db0ea69a186a424a589b8842">last_time_buffering_trigger</a> = 0</td></tr>
-<tr class="memdesc:ab7d32b18db0ea69a186a424a589b8842"><td class="mdescLeft">&#160;</td><td class="mdescRight">The previous timestamp when <a class="el" href="recording_8c.html#a4055e610fa315c45245500aab28dba19" title="Call once per timestep to ensure buffering is done - should only be called if recording flags is not ...">recording_do_timestep_update()</a> was called. <br /></td></tr>
-<tr class="separator:ab7d32b18db0ea69a186a424a589b8842"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27b0d8fc0291bccff84639aeeccecb66"><td class="memItemLeft" align="right" valign="top"><a id="a27b0d8fc0291bccff84639aeeccecb66"></a>
-static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a27b0d8fc0291bccff84639aeeccecb66">buffer_size_before_trigger</a> = 0</td></tr>
-<tr class="memdesc:a27b0d8fc0291bccff84639aeeccecb66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Threshold on space remaining when a host offload is triggered. <br /></td></tr>
-<tr class="separator:a27b0d8fc0291bccff84639aeeccecb66"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae69aef11cf641eade0d19219a0772426"><td class="memItemLeft" align="right" valign="top">static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#ae69aef11cf641eade0d19219a0772426">time_between_triggers</a> = 0</td></tr>
-<tr class="separator:ae69aef11cf641eade0d19219a0772426"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a75bf91ef71d585b530c56c86fcf4813e"><td class="memItemLeft" align="right" valign="top"><a id="a75bf91ef71d585b530c56c86fcf4813e"></a>
-static uint32_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a75bf91ef71d585b530c56c86fcf4813e">last_sequence_number</a></td></tr>
-<tr class="memdesc:a75bf91ef71d585b530c56c86fcf4813e"><td class="mdescLeft">&#160;</td><td class="mdescRight">A pointer to the last sequence number to write once recording is complete. <br /></td></tr>
-<tr class="separator:a75bf91ef71d585b530c56c86fcf4813e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a649f52154c991448fc4dd7d770bcf124"><td class="memItemLeft" align="right" valign="top"><a id="a649f52154c991448fc4dd7d770bcf124"></a>
-static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html">sdp_msg_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a649f52154c991448fc4dd7d770bcf124">read_request_msg</a></td></tr>
-<tr class="memdesc:a649f52154c991448fc4dd7d770bcf124"><td class="mdescLeft">&#160;</td><td class="mdescRight">An SDP Message. <br /></td></tr>
-<tr class="separator:a649f52154c991448fc4dd7d770bcf124"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1da122ce6717d0e7bf607a4356e98277"><td class="memItemLeft" align="right" valign="top"><a id="a1da122ce6717d0e7bf607a4356e98277"></a>
-static <a class="el" href="recording_8h.html#structread__request__packet__header">read_request_packet_header</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a1da122ce6717d0e7bf607a4356e98277">read_request_hdr</a></td></tr>
-<tr class="memdesc:a1da122ce6717d0e7bf607a4356e98277"><td class="mdescLeft">&#160;</td><td class="mdescRight">The EIEIO request header inside <a class="el" href="recording_8c.html#a649f52154c991448fc4dd7d770bcf124" title="An SDP Message.">read_request_msg</a>. <br /></td></tr>
-<tr class="separator:a1da122ce6717d0e7bf607a4356e98277"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af6f29e31ec7306ef13eaa1e3c0c59812"><td class="memItemLeft" align="right" valign="top"><a id="af6f29e31ec7306ef13eaa1e3c0c59812"></a>
-static <a class="el" href="recording_8h.html#structread__request__packet__data">read_request_packet_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#af6f29e31ec7306ef13eaa1e3c0c59812">read_request_data</a></td></tr>
-<tr class="memdesc:af6f29e31ec7306ef13eaa1e3c0c59812"><td class="mdescLeft">&#160;</td><td class="mdescRight">The EIEIO request body inside <a class="el" href="recording_8c.html#a649f52154c991448fc4dd7d770bcf124" title="An SDP Message.">read_request_msg</a>. <br /></td></tr>
-<tr class="separator:af6f29e31ec7306ef13eaa1e3c0c59812"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46216ba0717d25a0fca16db57322f71f"><td class="memItemLeft" align="right" valign="top"><a id="a46216ba0717d25a0fca16db57322f71f"></a>
+static <a class="el" href="recording_8c.html#structrecording__channel__t">recording_channel_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a46216ba0717d25a0fca16db57322f71f">channels</a></td></tr>
+<tr class="memdesc:a46216ba0717d25a0fca16db57322f71f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array containing all possible channels. <br /></td></tr>
+<tr class="separator:a46216ba0717d25a0fca16db57322f71f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40f4da6bbf3e45ea263b4ca2a1c1ab13"><td class="memItemLeft" align="right" valign="top"><a id="a40f4da6bbf3e45ea263b4ca2a1c1ab13"></a>
+static <a class="el" href="recording_8c.html#structrecording__regions__t">recording_regions_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a40f4da6bbf3e45ea263b4ca2a1c1ab13">regions</a></td></tr>
+<tr class="memdesc:a40f4da6bbf3e45ea263b4ca2a1c1ab13"><td class="mdescLeft">&#160;</td><td class="mdescRight">The parameters of the recording. <br /></td></tr>
+<tr class="separator:a40f4da6bbf3e45ea263b4ca2a1c1ab13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>implementation of <a class="el" href="recording_8h.html" title="interface for recording data into &quot;channels&quot; on the SDRAM in a standard way, and storing buffers to b...">recording.h</a> </p>
@@ -267,118 +170,112 @@ start</td>
 <td class="fielddoc">
 The first byte of the buffer. </td></tr>
 <tr><td class="fieldtype">
-<a id="adb4ccfa8105a98bf728bd8e08b875ac0"></a>uint8_t *</td>
-<td class="fieldname">
-current_write</td>
-<td class="fielddoc">
-Where the next write to the buffer will go. </td></tr>
-<tr><td class="fieldtype">
-<a id="ab7fbf873b8290d44153f5dc12792eac1"></a>uint8_t *</td>
-<td class="fieldname">
-dma_current_write</td>
-<td class="fielddoc">
-Where DMAs into the buffer go. </td></tr>
-<tr><td class="fieldtype">
-<a id="ac9ed1527d0e20a17864a450518fa35b8"></a>uint8_t *</td>
-<td class="fieldname">
-current_read</td>
-<td class="fielddoc">
-Where we read from next. </td></tr>
-<tr><td class="fieldtype">
 <a id="aa28b3eb12ac2957b7e380a3a0d2bd473"></a>uint8_t *</td>
 <td class="fieldname">
 end</td>
 <td class="fielddoc">
 One byte past the end of the buffer. </td></tr>
 <tr><td class="fieldtype">
-<a id="a1b3af015c6d1696d4ef25ec8cb397388"></a>uint8_t</td>
+<a id="a0360df141974c7b16ce5099b8f4ae852"></a>uint8_t *</td>
 <td class="fieldname">
-region_id</td>
+write</td>
 <td class="fielddoc">
-<p>The recording region's ID </p>
-</td></tr>
+Where to write to next. </td></tr>
 <tr><td class="fieldtype">
-<a id="a147f24c39f53a2f892ef85fc3de13e4c"></a>uint8_t</td>
+<a id="a74384586d5922341abd02e842a42c09d"></a>uint32_t</td>
 <td class="fieldname">
-missing_info</td>
+space: 31</td>
 <td class="fielddoc">
-Flag to say if recordings were lost due to buffer overflow. </td></tr>
+The space remaining in the channel. </td></tr>
 <tr><td class="fieldtype">
-<a id="adb4aad06af3861fd4b0bd591bcfe843d"></a><a class="el" href="buffered__eieio__defs_8h.html#a4c002722a806304c7667c3272dd16afb">buffered_operations</a></td>
+<a id="a5c123ab374025bfbc3e5d9d0195ac334"></a>uint32_t</td>
 <td class="fieldname">
-last_buffer_operation</td>
+missing: 1</td>
 <td class="fielddoc">
-Whether the most recent operation on the buffer was a read or a write. <p>This allows the read and write pointer to overlap sensibly. </p>
-</td></tr>
+Flag indicating if recording missed data. </td></tr>
 </table>
 
 </div>
 </div>
-<a name="structrecording__data__t" id="structrecording__data__t"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#structrecording__data__t">&#9670;&nbsp;</a></span>recording_data_t</h2>
+<a name="structrecording__region__t" id="structrecording__region__t"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#structrecording__region__t">&#9670;&nbsp;</a></span>recording_region_t</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">struct recording_data_t</td>
+          <td class="memname">struct recording_region_t</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<div class="textblock"><p>Data for an individual region. </p>
+
+<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00048">48</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
+</div><table class="fieldtable">
+<tr><th colspan="3">Data Fields</th></tr>
+<tr><td class="fieldtype">
+<a id="a004ce0c7eec243f727549ff2a2941568"></a>uint32_t</td>
+<td class="fieldname">
+space</td>
+<td class="fielddoc">
+The size of the region to record into. </td></tr>
+<tr><td class="fieldtype">
+<a id="a2948a3de9d124f7e294d2e711aa426c6"></a>uint32_t</td>
+<td class="fieldname">
+size:31</td>
+<td class="fielddoc">
+The size of the region after recording. </td></tr>
+<tr><td class="fieldtype">
+<a id="a952308b63cbf9debeb26b15f8658bd6d"></a>uint32_t</td>
+<td class="fieldname">
+missing: 1</td>
+<td class="fielddoc">
+Flag indicating if any data is missing. </td></tr>
+<tr><td class="fieldtype">
+<a id="a72d4c56c9df09e7e08cdf1dd6df6811e"></a>uint8_t *</td>
+<td class="fieldname">
+data</td>
+<td class="fielddoc">
+Pointer to the recorded data. </td></tr>
+</table>
+
+</div>
+</div>
+<a name="structrecording__regions__t" id="structrecording__regions__t"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#structrecording__regions__t">&#9670;&nbsp;</a></span>recording_regions_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct recording_regions_t</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <div class="textblock"><p>header of general structure describing all recordings </p>
 
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00056">56</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00060">60</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
-<a id="a7ae72e88db328dda5d1f0160acabc4b2"></a>uint32_t</td>
+<a id="ac5ed7d13dc13bb89683b4b63bd042ac4"></a>uint32_t</td>
 <td class="fieldname">
 n_regions</td>
 <td class="fielddoc">
 The number of recording regions. </td></tr>
 <tr><td class="fieldtype">
-<a id="ab2f9f26a347b895f9ee611f4398c20aa"></a>uint32_t</td>
+<a id="a1f3aecb1b15e4d59f84def8f4eeda426"></a><a class="el" href="recording_8c.html#structrecording__region__t">recording_region_t</a></td>
 <td class="fieldname">
-tag</td>
+regions[]</td>
 <td class="fielddoc">
-The SDP tag to send messages to when sending to host. </td></tr>
-<tr><td class="fieldtype">
-<a id="a741a7b2f23b127a203f1bb6249c9c579"></a>uint32_t</td>
-<td class="fieldname">
-tag_destination</td>
-<td class="fielddoc">
-The SDP destination to use with the tag. </td></tr>
-<tr><td class="fieldtype">
-<a id="af070d61a2e388be08c8126bef2403a17"></a>uint32_t</td>
-<td class="fieldname">
-sdp_port</td>
-<td class="fielddoc">
-The SDP port number to use for receiving messages. </td></tr>
-<tr><td class="fieldtype">
-<a id="a85c4f257d220b3fdc78293b6de4de401"></a>uint32_t</td>
-<td class="fieldname">
-buffer_size_before_request</td>
-<td class="fielddoc">
-The threshold on remaining space in a channel when a read out should be triggered. </td></tr>
-<tr><td class="fieldtype">
-<a id="a749608777a97781d28bfbec946a48e17"></a>uint32_t</td>
-<td class="fieldname">
-time_between_triggers</td>
-<td class="fielddoc">
-The time between read outs when not triggered by sizes. </td></tr>
-<tr><td class="fieldtype">
-<a id="a94f33e059f1a40795f4dfe42fbeb491c"></a>uint32_t</td>
-<td class="fieldname">
-last_sequence_number</td>
-<td class="fielddoc">
-The last sequence number. </td></tr>
+Item for each region. </td></tr>
 </table>
 
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a135a6c8f1b18c8ff754202af47dd934c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a135a6c8f1b18c8ff754202af47dd934c">&#9670;&nbsp;</a></span>has_been_initialised()</h2>
+<a id="a3285f8112dffc5a2e4886de7fc6184c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3285f8112dffc5a2e4886de7fc6184c8">&#9670;&nbsp;</a></span>has_been_initialised()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -389,8 +286,8 @@ The last sequence number. </td></tr>
         <tr>
           <td class="memname">static bool has_been_initialised </td>
           <td>(</td>
-          <td class="paramtype">uint8_t&#160;</td>
-          <td class="paramname"><em>channel</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="recording_8c.html#structrecording__channel__t">recording_channel_t</a> *&#160;</td>
+          <td class="paramname"><em>rec</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -404,18 +301,18 @@ The last sequence number. </td></tr>
 <p>checks that a channel has been initialised </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">channel</td><td>the channel to check </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rec</td><td>the channel data to check </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the channel has been initialised or false otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00138">138</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00082">82</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
 
 </div>
 </div>
-<a id="a1e50ecd8c6d149b490f9dd17aff7ecd3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1e50ecd8c6d149b490f9dd17aff7ecd3">&#9670;&nbsp;</a></span>close_channel()</h2>
+<a id="a7b27e05e8ad258a10978cd289399091d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b27e05e8ad258a10978cd289399091d">&#9670;&nbsp;</a></span>close_channel()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -424,10 +321,10 @@ The last sequence number. </td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool close_channel </td>
+          <td class="memname">static void close_channel </td>
           <td>(</td>
-          <td class="paramtype">uint8_t&#160;</td>
-          <td class="paramname"><em>channel</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="recording_8c.html#structrecording__channel__t">recording_channel_t</a> *&#160;</td>
+          <td class="paramname"><em>rec</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -445,14 +342,13 @@ The last sequence number. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the channel was successfully closed and False otherwise. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00146">146</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00089">89</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
 
 </div>
 </div>
-<a id="a5cddb925e2ac18cdacd99ba0b1b00795"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5cddb925e2ac18cdacd99ba0b1b00795">&#9670;&nbsp;</a></span>recording_host_data_read()</h2>
+<a id="a82f78e19f3548fcbefd0283a03b0f0d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82f78e19f3548fcbefd0283a03b0f0d1">&#9670;&nbsp;</a></span>copy_data()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -461,88 +357,22 @@ The last sequence number. </td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void recording_host_data_read </td>
+          <td class="memname">static void copy_data </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="buffered__eieio__defs_8h.html#ab1cb4165aa150178971770a1a95d332d">eieio_msg_t</a>&#160;</td>
-          <td class="paramname"><em>msg</em></td><td>)</td>
-          <td></td>
+          <td class="paramtype">void *restrict&#160;</td>
+          <td class="paramname"><em>target</em>, </td>
         </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Handles a <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a78bd33182d3446399b98f456a154a626" title="Host confirming data being read form SpiNNaker memory.">HOST_DATA_READ</a> EIEIO message. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">msg</td><td>The message to handle. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00154">154</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
-
-</div>
-</div>
-<a id="aa2dc3adc7cf4f90d3012a88147080b5e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa2dc3adc7cf4f90d3012a88147080b5e">&#9670;&nbsp;</a></span>recording_host_data_read_ack()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
         <tr>
-          <td class="memname">static void recording_host_data_read_ack </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="buffered__eieio__defs_8h.html#ab1cb4165aa150178971770a1a95d332d">eieio_msg_t</a>&#160;</td>
-          <td class="paramname"><em>msg</em></td><td>)</td>
+          <td class="paramkey"></td>
           <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Handles a <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a9b2476cbb47aa712ee051c690774f254" title="Host confirming message received to read data.">HOST_DATA_READ_ACK</a> EIEIO message. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">msg</td><td>The message to handle. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00195">195</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
-
-</div>
-</div>
-<a id="a712522f1d0055e8c29f0eddb9e4ea374"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a712522f1d0055e8c29f0eddb9e4ea374">&#9670;&nbsp;</a></span>recording_eieio_packet_handler()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static void recording_eieio_packet_handler </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="buffered__eieio__defs_8h.html#ab1cb4165aa150178971770a1a95d332d">eieio_msg_t</a>&#160;</td>
-          <td class="paramname"><em>msg</em>, </td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
-          <td class="paramname"><em>length</em>&#160;</td>
+          <td class="paramname"><em>n_words</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -557,350 +387,28 @@ The last sequence number. </td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Receives an EIEIO message intended for the recording code. </p>
-<p>Delegates understood command messages to:</p><ul>
-<li><a class="el" href="recording_8c.html#a5cddb925e2ac18cdacd99ba0b1b00795" title="Handles a HOST_DATA_READ EIEIO message.">recording_host_data_read()</a> for <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a78bd33182d3446399b98f456a154a626" title="Host confirming data being read form SpiNNaker memory.">HOST_DATA_READ</a></li>
-<li><a class="el" href="recording_8c.html#aa2dc3adc7cf4f90d3012a88147080b5e" title="Handles a HOST_DATA_READ_ACK EIEIO message.">recording_host_data_read_ack()</a> for <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a9b2476cbb47aa712ee051c690774f254" title="Host confirming message received to read data.">HOST_DATA_READ_ACK</a></li>
-</ul>
+<p>copy data in word-size chunks </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">msg</td><td>Pointer to the message content </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Length of the message content, in bytes. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">target</td><td>where to write the data to </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">source</td><td>where to read the data from </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n_words</td><td>the number of words to copy </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00217">217</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00097">97</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
 
 </div>
 </div>
-<a id="ac2fbf08fec2d96c8c6e8e8a3a5144c7f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac2fbf08fec2d96c8c6e8e8a3a5144c7f">&#9670;&nbsp;</a></span>compute_available_space_in_channel()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static uint32_t compute_available_space_in_channel </td>
-          <td>(</td>
-          <td class="paramtype">uint8_t&#160;</td>
-          <td class="paramname"><em>channel</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Work out the space available in the given channel for recording. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">channel</td><td>Which channel is being recorded to. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The number of bytes available in the channel. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00250">250</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
-
-</div>
-</div>
-<a id="af695b9f5933b3cb417fd2a0b97748e2d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af695b9f5933b3cb417fd2a0b97748e2d">&#9670;&nbsp;</a></span>recording_write_one_chunk()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static void recording_write_one_chunk </td>
-          <td>(</td>
-          <td class="paramtype">uint8_t&#160;</td>
-          <td class="paramname"><em>channel</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>data</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>write_pointer</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>length</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>finished_write_pointer</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a>&#160;</td>
-          <td class="paramname"><em>callback</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Transfer a contiguous block of memory to SDRAM. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">channel</td><td>Which channel is being recorded to. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>Pointer to what is being recorded. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">write_pointer</td><td>Pointer to where to write to. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Length of data to record. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">finished_write_pointer</td><td>Where we will write to next after this write completes. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">callback</td><td>Optional callback. If not <code>NULL</code>, the recording will be done asynchronously by DMA and this callback will be called once the write is finished. If <code>NULL</code>, the recording will be done synchronously. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00286">286</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
-
-</div>
-</div>
-<a id="a0ccce811dde996328f9b7a6c01694c9c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0ccce811dde996328f9b7a6c01694c9c">&#9670;&nbsp;</a></span>recording_write_memory()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static bool recording_write_memory </td>
-          <td>(</td>
-          <td class="paramtype">uint8_t&#160;</td>
-          <td class="paramname"><em>channel</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>data</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>length</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a>&#160;</td>
-          <td class="paramname"><em>callback</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Add a recording to the SDRAM buffers. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">channel</td><td>Which channel is being recorded to. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>Pointer to what is being recorded. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Length of data to record. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">callback</td><td>Optional callback. If not <code>NULL</code>, the recording will be done asynchronously by DMA and this callback will be called once the write is finished. If <code>NULL</code>, the recording will be done synchronously. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the recording was successfully written or enqueued for writing. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00318">318</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
-
-</div>
-</div>
-<a id="acfdd3c9b063bc16f1199c9c8df20ff4b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acfdd3c9b063bc16f1199c9c8df20ff4b">&#9670;&nbsp;</a></span>create_buffer_message()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static void create_buffer_message </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="recording_8h.html#structread__request__packet__data">read_request_packet_data</a> *&#160;</td>
-          <td class="paramname"><em>datum</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
-          <td class="paramname"><em>channel</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint8_t *&#160;</td>
-          <td class="paramname"><em>read_pointer</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>space_to_be_read</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Writes a buffer message component into the sequence to be sent to the host. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">datum</td><td>Where we will write the message </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">channel</td><td>The recording channel for which this is a message </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">read_pointer</td><td>Where we want the read to happen from </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">space_to_be_read</td><td>How much we want to be read </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00407">407</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
-
-</div>
-</div>
-<a id="ac320310c01dea5c0d14f69e80be0c328"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac320310c01dea5c0d14f69e80be0c328">&#9670;&nbsp;</a></span>recording_send_buffering_out_trigger_message()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static void recording_send_buffering_out_trigger_message </td>
-          <td>(</td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>flush_all</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Send a message to host ask for for our buffers to be flushed. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">flush_all</td><td>If true, all buffers will be flushed, otherwise only sufficiently full ones will be </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00421">421</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
-
-</div>
-</div>
-<a id="abad4c1a43ddb2eb8a503df45d5e9c9e5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abad4c1a43ddb2eb8a503df45d5e9c9e5">&#9670;&nbsp;</a></span>buffering_in_handler()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static void buffering_in_handler </td>
-          <td>(</td>
-          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
-          <td class="paramname"><em>mailbox</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
-          <td class="paramname"><em>port</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Receives an SDP message intended for the recording code. </p>
-<p>Delegates most handling to <a class="el" href="recording_8c.html#a712522f1d0055e8c29f0eddb9e4ea374" title="Receives an EIEIO message intended for the recording code.">recording_eieio_packet_handler()</a></p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">mailbox</td><td>Pointer to the message to receive </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">port</td><td>The SDP port of the message. Constant. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00489">489</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
-
-</div>
-</div>
-<a id="a2d5af6f8f54d33cd27b8ca7e79a06e49"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2d5af6f8f54d33cd27b8ca7e79a06e49">&#9670;&nbsp;</a></span>recording_do_record_and_notify()</h2>
+<a id="ad88856d359544e926c4b86451fb2901e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad88856d359544e926c4b86451fb2901e">&#9670;&nbsp;</a></span>recording_record()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool recording_do_record_and_notify </td>
+          <td class="memname">bool recording_record </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="recording_8h.html#aac9b40b7ef0c537e17b658d18cb83ff6">channel_index_t</a>&#160;</td>
           <td class="paramname"><em>channel</em>, </td>
@@ -915,13 +423,7 @@ The last sequence number. </td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/bit__field_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a>&#160;</td>
-          <td class="paramname"><em>size_bytes</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a>&#160;</td>
-          <td class="paramname"><em>callback</em>&#160;</td>
+          <td class="paramname"><em>size_bytes</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -931,106 +433,18 @@ The last sequence number. </td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>records some data into a specific recording channel, calling a callback function once complete. DO NOT CALL THIS DIRECTLY. Use <a class="el" href="recording_8h.html#a222af7edbef5e36638e02c7292d69cbd" title="records some data into a specific recording channel.">recording_record()</a> or <a class="el" href="recording_8h.html#a1b14976af9b5980e3dbbc5c9b463f002" title="records some data into a specific recording channel, calling a callback function once complete">recording_record_and_notify()</a>. </p>
+<p>records some data into a specific recording channel. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">channel</td><td>the channel to store the data into. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>the data to store into the channel. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">size_bytes</td><td>the number of bytes that this data will take up. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">callback</td><td>callback to call when the recording has completed </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size_bytes</td><td>the number of bytes that this data will take up. This may be any number of bytes, not just whole words. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>boolean which is True if the data has been stored in the channel, False otherwise. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00501">501</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
-
-</div>
-</div>
-<a id="aed39e1c2631fc1ede077efc548833728"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aed39e1c2631fc1ede077efc548833728">&#9670;&nbsp;</a></span>recording_bad_offset()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void recording_bad_offset </td>
-          <td>(</td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>data</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/bit__field_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a>&#160;</td>
-          <td class="paramname"><em>size</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Prints an error about DMA API abuse and RTEs. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>the pointer to the data. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>the number of bytes in the data.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>Do not call directly. </p>
-
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00528">528</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
-
-</div>
-</div>
-<a id="a89e7759f30eca8e5ed7086c816ce8259"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a89e7759f30eca8e5ed7086c816ce8259">&#9670;&nbsp;</a></span>recording_dma_finished()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static void recording_dma_finished </td>
-          <td>(</td>
-          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
-          <td class="paramname"><em>unused</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
-          <td class="paramname"><em>tag</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>updates host read point as DMA has finished </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">unused</td><td>unused </td></tr>
-    <tr><td class="paramname">tag</td><td>unused </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00597">597</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00106">106</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
 
 </div>
 </div>
@@ -1067,28 +481,19 @@ The last sequence number. </td></tr>
 <div class="line">   <span class="comment">// number of potential recording regions</span></div>
 <div class="line">   uint32_t n_regions;</div>
 <div class="line"> </div>
-<div class="line">   <span class="comment">// tag for live buffer control messages</span></div>
-<div class="line">   uint32_t buffering_output_tag;</div>
+<div class="line">    <span class="comment">// one of these for each region</span></div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">// flag to indicate missing data</span></div>
+<div class="line">        uint32_t missing: 1;</div>
 <div class="line"> </div>
-<div class="line">   <span class="comment">// size of buffer before a read request is sent</span></div>
-<div class="line">   uint32_t buffer_size_before_request;</div>
+<div class="line">        <span class="comment">// size of region to be recorded</span></div>
+<div class="line">        uint32_t size_of_region: 31;</div>
 <div class="line"> </div>
-<div class="line">   <span class="comment">// minimum time between sending read requests</span></div>
-<div class="line">   uint32_t <a class="code" href="recording_8c.html#ae69aef11cf641eade0d19219a0772426">time_between_triggers</a>;</div>
-<div class="line"> </div>
-<div class="line">   <span class="comment">// space that will hold the last sequence number once</span></div>
-<div class="line">   <span class="comment">// recording is complete</span></div>
-<div class="line">   uint32_t <a class="code" href="recording_8c.html#a75bf91ef71d585b530c56c86fcf4813e">last_sequence_number</a></div>
-<div class="line"> </div>
-<div class="line">   <span class="comment">// pointer to each region to be filled in (can be read</span></div>
-<div class="line">   <span class="comment">// after recording is complete)</span></div>
-<div class="line">   uint32_t* pointer_to_address_of_region[n_regions]</div>
-<div class="line"> </div>
-<div class="line">   <span class="comment">// size of each region to be recorded</span></div>
-<div class="line">   uint32_t size_of_region[n_regions];</div>
+<div class="line">        <span class="comment">// pointer region to be filled in (can be read after recording is</span></div>
+<div class="line">        <span class="comment">// complete)</span></div>
+<div class="line">        uint8_t* pointer_to_address_of_region;</div>
+<div class="line">    }[n_regions]</div>
 <div class="line">}</div>
-<div class="ttc" id="arecording_8c_html_a75bf91ef71d585b530c56c86fcf4813e"><div class="ttname"><a href="recording_8c.html#a75bf91ef71d585b530c56c86fcf4813e">last_sequence_number</a></div><div class="ttdeci">static uint32_t * last_sequence_number</div><div class="ttdoc">A pointer to the last sequence number to write once recording is complete.</div><div class="ttdef"><b>Definition:</b> <a href="recording_8c_source.html#l00114">recording.c:114</a></div></div>
-<div class="ttc" id="arecording_8c_html_ae69aef11cf641eade0d19219a0772426"><div class="ttname"><a href="recording_8c.html#ae69aef11cf641eade0d19219a0772426">time_between_triggers</a></div><div class="ttdeci">static uint32_t time_between_triggers</div><div class="ttdef"><b>Definition:</b> <a href="recording_8c_source.html#l00111">recording.c:111</a></div></div>
 </div><!-- fragment --> </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">recording_flags</td><td>Output of flags which can be used to check if a channel is enabled for recording </td></tr>
   </table>
@@ -1096,62 +501,7 @@ The last sequence number. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the initialisation was successful, false otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00618">618</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
-
-</div>
-</div>
-<a id="a4055e610fa315c45245500aab28dba19"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4055e610fa315c45245500aab28dba19">&#9670;&nbsp;</a></span>recording_do_timestep_update()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void recording_do_timestep_update </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="common-typedefs_8h.html#a3b72c02431c8c631ab35793169a96ca0">timer_t</a>&#160;</td>
-          <td class="paramname"><em>time</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Call once per timestep to ensure buffering is done - should only be called if recording flags is not 0. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">time</td><td>the current simulation time </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00777">777</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
-
-</div>
-</div>
-<h2 class="groupheader">Variable Documentation</h2>
-<a id="ae69aef11cf641eade0d19219a0772426"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae69aef11cf641eade0d19219a0772426">&#9670;&nbsp;</a></span>time_between_triggers</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">uint32_t time_between_triggers = 0</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>Threshold on time when a host offload is triggered.</p>
-<p>Independent of <a class="el" href="recording_8c.html#a27b0d8fc0291bccff84639aeeccecb66" title="Threshold on space remaining when a host offload is triggered.">buffer_size_before_trigger</a> </p>
-
-<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00111">111</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="recording_8c_source.html#l00159">159</a> of file <a class="el" href="recording_8c_source.html">recording.c</a>.</p>
 
 </div>
 </div>

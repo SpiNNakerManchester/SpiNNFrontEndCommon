@@ -51,7 +51,6 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">.sqllite_database</span> <span class="kn">import</span> <span class="n">SqlLiteDatabase</span>
 
 <span class="c1">#: Name of the database in the data folder</span>
@@ -60,11 +59,7 @@
 
 <div class="viewcode-block" id="BufferedReceivingData"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData">[docs]</a><span class="k">class</span> <span class="nc">BufferedReceivingData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Stores the information received through the buffering output\</span>
-<span class="sd">        technique from the SpiNNaker system. The data kept includes the last\</span>
-<span class="sd">        sent packet and last received packet, their correspondent sequence\</span>
-<span class="sd">        numbers, the data retrieved, a flag to identify if the data from a\</span>
-<span class="sd">        core has been flushed and the final state of the buffering output\</span>
-<span class="sd">        state machine</span>
+<span class="sd">        from the SpiNNaker system.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
@@ -74,23 +69,11 @@
         <span class="c1">#: the path to the database</span>
         <span class="s2">&quot;_db_file&quot;</span><span class="p">,</span>
 
-        <span class="c1">#: dict of booleans indicating if a region on a core has been flushed</span>
-        <span class="s2">&quot;_is_flushed&quot;</span><span class="p">,</span>
+        <span class="c1">#: the (size, address) of each region</span>
+        <span class="s2">&quot;__sizes_and_addresses&quot;</span><span class="p">,</span>
 
-        <span class="c1">#: dict of last sequence number received by core</span>
-        <span class="s2">&quot;_sequence_no&quot;</span><span class="p">,</span>
-
-        <span class="c1">#: dict of last packet received by core</span>
-        <span class="s2">&quot;_last_packet_received&quot;</span><span class="p">,</span>
-
-        <span class="c1">#: dict of last packet sent by core</span>
-        <span class="s2">&quot;_last_packet_sent&quot;</span><span class="p">,</span>
-
-        <span class="c1">#: dict of end buffer sequence number</span>
-        <span class="s2">&quot;_end_buffering_sequence_no&quot;</span><span class="p">,</span>
-
-        <span class="c1">#: dict of end state by core</span>
-        <span class="s2">&quot;_end_buffering_state&quot;</span>
+        <span class="c1">#: whether data has been flushed for each region</span>
+        <span class="s2">&quot;__data_flushed&quot;</span>
     <span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">report_folder</span><span class="p">):</span>
@@ -103,19 +86,55 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 
 <div class="viewcode-block" id="BufferedReceivingData.reset"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Perform tasks to restart recording from time=0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_db_file</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_db_file</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="n">SqlLiteDatabase</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_db_file</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_flushed</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sequence_no</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="mh">0xFF</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_packet_received</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_packet_sent</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_end_buffering_sequence_no</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_end_buffering_state</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sizes_and_addresses</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__data_flushed</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="BufferedReceivingData.store_data_in_region_buffer"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_data_in_region_buffer">[docs]</a>    <span class="k">def</span> <span class="nf">store_data_in_region_buffer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="BufferedReceivingData.resume"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.resume">[docs]</a>    <span class="k">def</span> <span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Perform tasks that will continue running without resetting</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sizes_and_addresses</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__data_flushed</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="BufferedReceivingData.store_region_information"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_region_information">[docs]</a>    <span class="k">def</span> <span class="nf">store_region_information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">sizes_and_addresses</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Store the sizes, addresses and is_missing data of the regions</span>
+
+<span class="sd">        :param int x: The x-coordinate of the core whose data this is</span>
+<span class="sd">        :param int y: The y-coordinate of the core whose data this is</span>
+<span class="sd">        :param int p: The processor id of the core whose data this is</span>
+<span class="sd">        :param list(int,int,bool) sizes_and_addresses:</span>
+<span class="sd">            The size and address of each region</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sizes_and_addresses</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">sizes_and_addresses</span></div>
+
+<div class="viewcode-block" id="BufferedReceivingData.get_region_information"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_information">[docs]</a>    <span class="k">def</span> <span class="nf">get_region_information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the size, address and is_missing of the region</span>
+
+<span class="sd">        :param int x: The x-coordinate of the core whose data this is</span>
+<span class="sd">        :param int y: The y-coordinate of the core whose data this is</span>
+<span class="sd">        :param int p: The processor id of the core whose data this is</span>
+<span class="sd">        :param int region_id: The id of the region to get the data for</span>
+<span class="sd">        :rtype: tuple(int, int, bool)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sizes_and_addresses</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))[</span><span class="n">region_id</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="BufferedReceivingData.has_region_information"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.has_region_information">[docs]</a>    <span class="k">def</span> <span class="nf">has_region_information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Determine if region information has been stored for this core</span>
+
+<span class="sd">        :param int x: The x-coordinate of the core whose data this is</span>
+<span class="sd">        :param int y: The y-coordinate of the core whose data this is</span>
+<span class="sd">        :param int p: The processor id of the core whose data this is</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sizes_and_addresses</span></div>
+
+<div class="viewcode-block" id="BufferedReceivingData.store_data_in_region_buffer"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_data_in_region_buffer">[docs]</a>    <span class="k">def</span> <span class="nf">store_data_in_region_buffer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">missing</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Store some information in the correspondent buffer class for a\</span>
 <span class="sd">            specific chip, core and region.</span>
 
@@ -123,105 +142,22 @@
 <span class="sd">        :param int y: y coordinate of the chip</span>
 <span class="sd">        :param int p: Core within the specified chip</span>
 <span class="sd">        :param int region: Region containing the data to be stored</span>
+<span class="sd">        :param bool missing: Whether any data is missing</span>
 <span class="sd">        :param bytearray data: data to be stored</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">store_data_in_region_buffer</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">store_data_in_region_buffer</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">missing</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__data_flushed</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="BufferedReceivingData.is_data_from_region_flushed"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_data_from_region_flushed">[docs]</a>    <span class="k">def</span> <span class="nf">is_data_from_region_flushed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Check if the data region has been flushed.</span>
+        <span class="sd">&quot;&quot;&quot; Determine if data has been stored for this region</span>
 
 <span class="sd">        :param int x: x coordinate of the chip</span>
 <span class="sd">        :param int y: y coordinate of the chip</span>
 <span class="sd">        :param int p: Core within the specified chip</span>
 <span class="sd">        :param int region: Region containing the data</span>
-<span class="sd">        :return: True if the region has been flushed. False otherwise</span>
-<span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_flushed</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">]</span></div>
-
-<div class="viewcode-block" id="BufferedReceivingData.flushing_data_from_region"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.flushing_data_from_region">[docs]</a>    <span class="k">def</span> <span class="nf">flushing_data_from_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Store flushed data from a region of a core on a chip, and mark it\</span>
-<span class="sd">            as being flushed.</span>
-
-<span class="sd">        :param int x: x coordinate of the chip</span>
-<span class="sd">        :param int y: y coordinate of the chip</span>
-<span class="sd">        :param int p: Core within the specified chip</span>
-<span class="sd">        :param int region: Region containing the data to be stored</span>
-<span class="sd">        :param bytearray data: data to be stored</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">store_data_in_region_buffer</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_flushed</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span></div>
-
-<div class="viewcode-block" id="BufferedReceivingData.store_last_received_packet_from_core"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_last_received_packet_from_core">[docs]</a>    <span class="k">def</span> <span class="nf">store_last_received_packet_from_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">packet</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Store the most recent packet received from SpiNNaker for a given\</span>
-<span class="sd">            core.</span>
-
-<span class="sd">        :param int x: x coordinate of the chip</span>
-<span class="sd">        :param int y: y coordinate of the chip</span>
-<span class="sd">        :param int p: Core within the specified chip</span>
-<span class="sd">        :param packet: SpinnakerRequestReadData packet received</span>
-<span class="sd">        :type packet:</span>
-<span class="sd">            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_packet_received</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">packet</span></div>
-
-<div class="viewcode-block" id="BufferedReceivingData.last_received_packet_from_core"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.last_received_packet_from_core">[docs]</a>    <span class="k">def</span> <span class="nf">last_received_packet_from_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the last packet received for a given core.</span>
-
-<span class="sd">        :param int x: x coordinate of the chip</span>
-<span class="sd">        :param int y: y coordinate of the chip</span>
-<span class="sd">        :param int p: Core within the specified chip</span>
-<span class="sd">        :return: SpinnakerRequestReadData packet received</span>
-<span class="sd">        :rtype:</span>
-<span class="sd">            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_packet_received</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span></div>
-
-<div class="viewcode-block" id="BufferedReceivingData.store_last_sent_packet_to_core"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_last_sent_packet_to_core">[docs]</a>    <span class="k">def</span> <span class="nf">store_last_sent_packet_to_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">packet</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Store the last packet sent to the given core.</span>
-
-<span class="sd">        :param int x: x coordinate of the chip</span>
-<span class="sd">        :param int y: y coordinate of the chip</span>
-<span class="sd">        :param int p: Core within the specified chip</span>
-<span class="sd">        :param packet: last HostDataRead packet sent</span>
-<span class="sd">        :type packet: ~spinnman.messages.eieio.command_messages.HostDataRead</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_packet_sent</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">packet</span></div>
-
-<div class="viewcode-block" id="BufferedReceivingData.last_sent_packet_to_core"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.last_sent_packet_to_core">[docs]</a>    <span class="k">def</span> <span class="nf">last_sent_packet_to_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Retrieve the last packet sent to a core.</span>
-
-<span class="sd">        :param int x: x coordinate of the chip</span>
-<span class="sd">        :param int y: y coordinate of the chip</span>
-<span class="sd">        :param int p: Core within the specified chip</span>
-<span class="sd">        :return: last HostDataRead packet sent</span>
-<span class="sd">        :rtype: ~spinnman.messages.eieio.command_messages.HostDataRead</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_packet_sent</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span></div>
-
-<div class="viewcode-block" id="BufferedReceivingData.last_sequence_no_for_core"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.last_sequence_no_for_core">[docs]</a>    <span class="k">def</span> <span class="nf">last_sequence_no_for_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the last sequence number for a core.</span>
-
-<span class="sd">        :param int x: x coordinate of the chip</span>
-<span class="sd">        :param int y: y coordinate of the chip</span>
-<span class="sd">        :param int p: Core within the specified chip</span>
-<span class="sd">        :return: last sequence number used</span>
-<span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequence_no</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span></div>
-
-<div class="viewcode-block" id="BufferedReceivingData.update_sequence_no_for_core"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.update_sequence_no_for_core">[docs]</a>    <span class="k">def</span> <span class="nf">update_sequence_no_for_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">sequence_no</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Set the last sequence number used.</span>
-
-<span class="sd">        :param int x: x coordinate of the chip</span>
-<span class="sd">        :param int y: y coordinate of the chip</span>
-<span class="sd">        :param int p: Core within the specified chip</span>
-<span class="sd">        :param int sequence_no: last sequence number used</span>
-<span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sequence_no</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">sequence_no</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data_flushed</span></div>
 
 <div class="viewcode-block" id="BufferedReceivingData.get_region_data"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_region_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the data stored for a given region of a given core.</span>
@@ -236,90 +172,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">get_region_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BufferedReceivingData.get_region_data_pointer"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_data_pointer">[docs]</a>    <span class="k">def</span> <span class="nf">get_region_data_pointer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; It is no longer possible to get access to the data pointer.</span>
-
-<span class="sd">        Use :py:meth`get_region_data` to get the data and missing flag</span>
-<span class="sd">        directly.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Use get_region_data instead!.&quot;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="BufferedReceivingData.store_end_buffering_state"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_end_buffering_state">[docs]</a>    <span class="k">def</span> <span class="nf">store_end_buffering_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Store the end state of buffering.</span>
-
-<span class="sd">        :param int x: x coordinate of the chip</span>
-<span class="sd">        :param int y: y coordinate of the chip</span>
-<span class="sd">        :param int p: Core within the specified chip</span>
-<span class="sd">        :param int region: Region containing the data</span>
-<span class="sd">        :param state: The end state</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_end_buffering_state</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span></div>
-
-<div class="viewcode-block" id="BufferedReceivingData.is_end_buffering_state_recovered"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_end_buffering_state_recovered">[docs]</a>    <span class="k">def</span> <span class="nf">is_end_buffering_state_recovered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Determine if the end state has been stored.</span>
-
-<span class="sd">        :param int x: x coordinate of the chip</span>
-<span class="sd">        :param int y: y coordinate of the chip</span>
-<span class="sd">        :param int p: Core within the specified chip</span>
-<span class="sd">        :param int region: Region containing the data</span>
-<span class="sd">        :return: True if the state has been stored</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end_buffering_state</span></div>
-
-<div class="viewcode-block" id="BufferedReceivingData.get_end_buffering_state"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_end_buffering_state">[docs]</a>    <span class="k">def</span> <span class="nf">get_end_buffering_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the end state of the buffering.</span>
-
-<span class="sd">        :param int x: x coordinate of the chip</span>
-<span class="sd">        :param int y: y coordinate of the chip</span>
-<span class="sd">        :param int p: Core within the specified chip</span>
-<span class="sd">        :param int region:</span>
-<span class="sd">        :return: The end state</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end_buffering_state</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">]</span></div>
-
-<div class="viewcode-block" id="BufferedReceivingData.store_end_buffering_sequence_number"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_end_buffering_sequence_number">[docs]</a>    <span class="k">def</span> <span class="nf">store_end_buffering_sequence_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">sequence</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Store the last sequence number sent by the core.</span>
-
-<span class="sd">        :param int x: x coordinate of the chip</span>
-<span class="sd">        :param int y: y coordinate of the chip</span>
-<span class="sd">        :param int p: Core within the specified chip</span>
-<span class="sd">        :param int sequence: The last sequence number</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_end_buffering_sequence_no</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">sequence</span></div>
-
-<div class="viewcode-block" id="BufferedReceivingData.is_end_buffering_sequence_number_stored"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_end_buffering_sequence_number_stored">[docs]</a>    <span class="k">def</span> <span class="nf">is_end_buffering_sequence_number_stored</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Determine if the last sequence number has been retrieved.</span>
-
-<span class="sd">        :param int x: x coordinate of the chip</span>
-<span class="sd">        :param int y: y coordinate of the chip</span>
-<span class="sd">        :param int p: Core within the specified chip</span>
-<span class="sd">        :return: True if the number has been retrieved</span>
-<span class="sd">        :rtype: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end_buffering_sequence_no</span></div>
-
-<div class="viewcode-block" id="BufferedReceivingData.get_end_buffering_sequence_number"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_end_buffering_sequence_number">[docs]</a>    <span class="k">def</span> <span class="nf">get_end_buffering_sequence_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the last sequence number sent by the core.</span>
-
-<span class="sd">        :param int x: x coordinate of the chip</span>
-<span class="sd">        :param int y: y coordinate of the chip</span>
-<span class="sd">        :param int p: Core within the specified chip</span>
-<span class="sd">        :return: The last sequence number</span>
-<span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end_buffering_sequence_no</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span></div>
-
-<div class="viewcode-block" id="BufferedReceivingData.resume"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.resume">[docs]</a>    <span class="k">def</span> <span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Resets states so that it can behave in a resumed mode.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_end_buffering_state</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_flushed</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sequence_no</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="mh">0xFF</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_packet_received</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_packet_sent</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_end_buffering_sequence_no</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span></div>
-
 <div class="viewcode-block" id="BufferedReceivingData.clear"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Clears the data from a given data region (only clears things\</span>
 <span class="sd">            associated with a given data recording region).</span>
@@ -330,9 +182,7 @@
 <span class="sd">        :param int region_id: the recording region ID to clear data from</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">clear_region</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region_id</span><span class="p">):</span>
-            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end_buffering_state</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region_id</span><span class="p">]</span>
-            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_flushed</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region_id</span><span class="p">]</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">clear_region</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region_id</span><span class="p">)</span></div></div>
 </pre></div>
 
             <div class="clearer"></div>
@@ -371,7 +221,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
     </div>
   </body>
 </html>

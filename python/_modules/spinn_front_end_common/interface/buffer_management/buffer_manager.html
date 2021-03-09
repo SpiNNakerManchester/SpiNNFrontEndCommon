@@ -53,7 +53,7 @@
 
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">threading</span>
-<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
+<span class="kn">import</span> <span class="nn">ctypes</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.ordered_set</span> <span class="kn">import</span> <span class="n">OrderedSet</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
@@ -61,29 +61,24 @@
 <span class="kn">from</span> <span class="nn">spinnman.constants</span> <span class="kn">import</span> <span class="n">UDP_MESSAGE_MAX_SIZE</span>
 <span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">EIEIOConnection</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio.command_messages</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">EIEIOCommandMessage</span><span class="p">,</span> <span class="n">StopRequests</span><span class="p">,</span> <span class="n">SpinnakerRequestReadData</span><span class="p">,</span>
-    <span class="n">HostDataReadAck</span><span class="p">,</span> <span class="n">HostDataRead</span><span class="p">,</span> <span class="n">SpinnakerRequestBuffers</span><span class="p">,</span>
+    <span class="n">EIEIOCommandMessage</span><span class="p">,</span> <span class="n">StopRequests</span><span class="p">,</span> <span class="n">SpinnakerRequestBuffers</span><span class="p">,</span>
     <span class="n">HostSendSequencedData</span><span class="p">,</span> <span class="n">EventStopRequest</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinnman.utilities</span> <span class="kn">import</span> <span class="n">utility_functions</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.sdp</span> <span class="kn">import</span> <span class="n">SDPHeader</span><span class="p">,</span> <span class="n">SDPMessage</span><span class="p">,</span> <span class="n">SDPFlag</span>
-<span class="kn">from</span> <span class="nn">spinnman.messages.eieio</span> <span class="kn">import</span> <span class="n">EIEIOType</span><span class="p">,</span> <span class="n">create_eieio_command</span>
+<span class="kn">from</span> <span class="nn">spinnman.messages.eieio</span> <span class="kn">import</span> <span class="n">EIEIOType</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio.data_messages</span> <span class="kn">import</span> <span class="n">EIEIODataMessage</span>
 <span class="kn">from</span> <span class="nn">data_specification.constants</span> <span class="kn">import</span> <span class="n">BYTES_PER_WORD</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">SDP_PORTS</span><span class="p">,</span> <span class="n">BUFFERING_OPERATIONS</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">SDP_PORTS</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">BufferableRegionTooSmall</span><span class="p">,</span> <span class="n">ConfigurationException</span><span class="p">,</span> <span class="n">SpinnFrontEndException</span><span class="p">)</span>
+    <span class="n">BufferableRegionTooSmall</span><span class="p">,</span> <span class="n">SpinnFrontEndException</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">locate_memory_region_for_placement</span><span class="p">,</span> <span class="n">locate_extra_monitor_mc_receiver</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="n">get_simulator</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.storage_objects</span> \
-    <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">BuffersSentDeque</span><span class="p">,</span> <span class="n">BufferedReceivingData</span><span class="p">,</span> <span class="n">ChannelBufferState</span><span class="p">)</span>
+    <span class="kn">import</span> <span class="p">(</span><span class="n">BuffersSentDeque</span><span class="p">,</span> <span class="n">BufferedReceivingData</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.buffer_models</span> \
-    <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">AbstractReceiveBuffersToHost</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">.recording_utilities</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">TRAFFIC_IDENTIFIER</span><span class="p">,</span> <span class="n">get_last_sequence_number</span><span class="p">,</span> <span class="n">get_region_pointer</span><span class="p">)</span>
+    <span class="kn">import</span> <span class="nn">AbstractReceiveBuffersToHost</span>
+<span class="kn">from</span> <span class="nn">.recording_utilities</span> <span class="kn">import</span> <span class="n">get_recording_header_size</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -96,7 +91,24 @@
 
 <span class="n">_SDP_MAX_PACKAGE_SIZE</span> <span class="o">=</span> <span class="mi">272</span>
 
+<span class="n">TRAFFIC_IDENTIFIER</span> <span class="o">=</span> <span class="s2">&quot;BufferTraffic&quot;</span>
+
 <span class="n">VERIFY</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="k">class</span> <span class="nc">_RecordingRegion</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">LittleEndianStructure</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Recording Region data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_fields_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># Space available for recording</span>
+        <span class="p">(</span><span class="s2">&quot;space&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">),</span>
+        <span class="c1"># The size of the recording region</span>
+        <span class="p">(</span><span class="s2">&quot;size&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">,</span> <span class="mi">31</span><span class="p">),</span>
+        <span class="c1"># Whether any data is missing</span>
+        <span class="p">(</span><span class="s2">&quot;missing&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="c1"># The address of the data</span>
+        <span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">)</span>
+    <span class="p">]</span>
 
 
 <div class="viewcode-block" id="BufferManager"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager">[docs]</a><span class="k">class</span> <span class="nc">BufferManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -136,9 +148,6 @@
 
         <span class="c1"># listener port</span>
         <span class="s2">&quot;_listener_port&quot;</span><span class="p">,</span>
-
-        <span class="c1"># Buffering out thread pool</span>
-        <span class="s2">&quot;_buffering_out_thread_pool&quot;</span><span class="p">,</span>
 
         <span class="c1"># the extra monitor cores which support faster data extraction</span>
         <span class="s2">&quot;_extra_monitor_cores&quot;</span><span class="p">,</span>
@@ -218,7 +227,6 @@
         <span class="c1"># Lock to avoid multiple messages being processed at the same time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock_buffer_out</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock_buffer_in</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_buffering_out_thread_pool</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_finished</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_listener_port</span> <span class="o">=</span> <span class="kc">None</span>
@@ -301,11 +309,6 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">__request_buffers</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;problem when sending messages&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="n">SpinnakerRequestReadData</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__request_read_data</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;problem when handling data&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="n">EIEIOCommandMessage</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
                 <span class="s2">&quot;The command packet is invalid for buffer management: &quot;</span>
@@ -329,28 +332,6 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_send_messages</span><span class="p">(</span>
                         <span class="n">packet</span><span class="o">.</span><span class="n">space_available</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span>
                         <span class="n">packet</span><span class="o">.</span><span class="n">region_id</span><span class="p">,</span> <span class="n">packet</span><span class="o">.</span><span class="n">sequence_no</span><span class="p">)</span>
-
-    <span class="c1"># Factored out of receive_buffer_command_message to keep code readable</span>
-    <span class="k">def</span> <span class="nf">__request_read_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param packet: The EIEIO message received</span>
-<span class="sd">        :type packet:</span>
-<span class="sd">            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finished</span><span class="p">:</span>
-            <span class="c1"># Send an ACK message to stop the core sending more messages</span>
-            <span class="n">ack_message_header</span> <span class="o">=</span> <span class="n">SDPHeader</span><span class="p">(</span>
-                <span class="n">destination_port</span><span class="o">=</span><span class="p">(</span>
-                    <span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">OUTPUT_BUFFERING_SDP_PORT</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-                <span class="n">destination_cpu</span><span class="o">=</span><span class="n">packet</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">destination_chip_x</span><span class="o">=</span><span class="n">packet</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
-                <span class="n">destination_chip_y</span><span class="o">=</span><span class="n">packet</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
-                <span class="n">flags</span><span class="o">=</span><span class="n">SDPFlag</span><span class="o">.</span><span class="n">REPLY_NOT_EXPECTED</span><span class="p">)</span>
-            <span class="n">ack_message_data</span> <span class="o">=</span> <span class="n">HostDataReadAck</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">sequence_no</span><span class="p">)</span>
-            <span class="n">ack_message</span> <span class="o">=</span> <span class="n">SDPMessage</span><span class="p">(</span>
-                <span class="n">ack_message_header</span><span class="p">,</span> <span class="n">ack_message_data</span><span class="o">.</span><span class="n">bytestring</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">send_sdp_message</span><span class="p">(</span><span class="n">ack_message</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_buffering_out_thread_pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_process_buffered_in_packet</span><span class="p">,</span> <span class="n">packet</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_create_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -461,20 +442,6 @@
 <span class="sd">        :param int recording_region_id: the recording region ID</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">)</span></div>
-
-    <span class="k">def</span> <span class="nf">_generate_end_buffering_state_from_machine</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">state_region_base_address</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
-<span class="sd">        :param int state_region_base_address:</span>
-<span class="sd">        :rtype: ChannelBufferState</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># retrieve channel state memory area</span>
-        <span class="n">channel_state_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request_data</span><span class="p">(</span>
-            <span class="n">transceiver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span> <span class="n">placement_x</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
-            <span class="n">address</span><span class="o">=</span><span class="n">state_region_base_address</span><span class="p">,</span> <span class="n">placement_y</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
-            <span class="n">length</span><span class="o">=</span><span class="n">ChannelBufferState</span><span class="o">.</span><span class="n">size_of_channel_state</span><span class="p">())</span>
-        <span class="k">return</span> <span class="n">ChannelBufferState</span><span class="o">.</span><span class="n">create_from_bytearray</span><span class="p">(</span><span class="n">channel_state_data</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_create_message_to_send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Creates a single message to send with the given boundaries.</span>
@@ -733,17 +700,6 @@
                 <span class="k">if</span> <span class="n">progress</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 
-<div class="viewcode-block" id="BufferManager.get_data_for_vertex"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_for_vertex">[docs]</a>    <span class="k">def</span> <span class="nf">get_data_for_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; It is no longer possible to get access to the data pointer.</span>
-
-<span class="sd">        .. warning::</span>
-
-<span class="sd">            Use :py:meth:`get_data_by_vertex` instead which returns</span>
-<span class="sd">            the data that ``pointer.read_all()`` used to return</span>
-<span class="sd">            the missing flag as before.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Use get_data_by_placement instead!.&quot;</span><span class="p">)</span></div>
-
 <div class="viewcode-block" id="BufferManager.get_data_by_placement"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_by_placement">[docs]</a>    <span class="k">def</span> <span class="nf">get_data_by_placement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the data container for all the data retrieved\</span>
 <span class="sd">            during the simulation from a specific region area of a core.</span>
@@ -762,305 +718,55 @@
                 <span class="s2">&quot;so no data read&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">))</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock_buffer_out</span><span class="p">:</span>
             <span class="c1"># data flush has been completed - return appropriate data</span>
-            <span class="p">(</span><span class="n">byte_array</span><span class="p">,</span> <span class="n">missing</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">get_region_data</span><span class="p">(</span>
-                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">byte_array</span><span class="p">,</span> <span class="n">missing</span></div>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">get_region_data</span><span class="p">(</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_retreive_by_placement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_retreive_by_placement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Retrieve the data for a vertex; must be locked first.</span>
 
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
 <span class="sd">            the placement to get the data from</span>
 <span class="sd">        :param int recording_region_id: desired recording data region</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">recording_data_address</span> <span class="o">=</span> \
-            <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">get_recording_region_base_address</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
 
-        <span class="c1"># Ensure the last sequence number sent has been retrieved</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">is_end_buffering_sequence_number_stored</span><span class="p">(</span>
+        <span class="c1"># Has the region information been read</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">has_region_information</span><span class="p">(</span>
                 <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">store_end_buffering_sequence_number</span><span class="p">(</span>
-                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
-                <span class="n">get_last_sequence_number</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span> <span class="n">recording_data_address</span><span class="p">))</span>
+
+            <span class="n">addr</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">get_recording_region_base_address</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_region_information</span><span class="p">(</span>
+                <span class="n">addr</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
 
         <span class="c1"># Read the data if not already received</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">is_data_from_region_flushed</span><span class="p">(</span>
-                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
-                <span class="n">recording_region_id</span><span class="p">):</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
 
-            <span class="c1"># Read the end state of the recording for this region</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">is_end_buffering_state_recovered</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
-                    <span class="n">recording_region_id</span><span class="p">):</span>
-                <span class="n">end_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_end_buffering_state_from_machine</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="p">,</span> <span class="n">get_region_pointer</span><span class="p">(</span>
-                        <span class="n">placement</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span> <span class="n">recording_data_address</span><span class="p">,</span>
-                        <span class="n">recording_region_id</span><span class="p">))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">store_end_buffering_state</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">,</span>
-                    <span class="n">end_state</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">end_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">get_end_buffering_state</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">)</span>
-
-            <span class="c1"># current read needs to be adjusted in case the last portion of the</span>
-            <span class="c1"># memory has already been read, but the HostDataRead packet has not</span>
-            <span class="c1"># been processed by the chip before simulation finished.</span>
-            <span class="c1"># This situation is identified by the sequence number of the last</span>
-            <span class="c1"># packet sent to this core and the core internal state of the</span>
-            <span class="c1"># output buffering finite state machine</span>
-            <span class="n">seq_no_last_ack_packet</span> <span class="o">=</span> \
-                <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">last_sequence_no_for_core</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
-
-            <span class="c1"># get the sequence number the core was expecting to see next</span>
-            <span class="n">core_next_sequence_number</span> <span class="o">=</span> \
-                <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">get_end_buffering_sequence_number</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
-
-            <span class="c1"># if the core was expecting to see our last sent sequence,</span>
-            <span class="c1"># it must not have received it</span>
-            <span class="k">if</span> <span class="n">core_next_sequence_number</span> <span class="o">==</span> <span class="n">seq_no_last_ack_packet</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_process_last_ack</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">,</span>
-                                       <span class="n">end_state</span><span class="p">)</span>
-
-            <span class="c1"># now state is updated, read back values for read pointer and</span>
-            <span class="c1"># last operation performed</span>
-            <span class="n">last_operation</span> <span class="o">=</span> <span class="n">end_state</span><span class="o">.</span><span class="n">last_buffer_operation</span>
-            <span class="n">start_ptr</span> <span class="o">=</span> <span class="n">end_state</span><span class="o">.</span><span class="n">start_address</span>
-            <span class="n">end_ptr</span> <span class="o">=</span> <span class="n">end_state</span><span class="o">.</span><span class="n">end_address</span>
-            <span class="n">write_ptr</span> <span class="o">=</span> <span class="n">end_state</span><span class="o">.</span><span class="n">current_write</span>
-            <span class="n">read_ptr</span> <span class="o">=</span> <span class="n">end_state</span><span class="o">.</span><span class="n">current_read</span>
-
-            <span class="c1"># now read_ptr is updated, check memory to read</span>
-            <span class="k">if</span> <span class="n">read_ptr</span> <span class="o">&lt;</span> <span class="n">write_ptr</span><span class="p">:</span>
-                <span class="n">length</span> <span class="o">=</span> <span class="n">write_ptr</span> <span class="o">-</span> <span class="n">read_ptr</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                    <span class="s2">&quot;&lt; Reading </span><span class="si">{}</span><span class="s2"> bytes from </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2"> for region </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="n">length</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
-                    <span class="nb">hex</span><span class="p">(</span><span class="n">read_ptr</span><span class="p">),</span> <span class="n">recording_region_id</span><span class="p">)</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request_data</span><span class="p">(</span>
-                    <span class="n">transceiver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span> <span class="n">placement_x</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
-                    <span class="n">address</span><span class="o">=</span><span class="n">read_ptr</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span> <span class="n">placement_y</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">flushing_data_from_region</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">,</span>
-                    <span class="n">data</span><span class="p">)</span>
-
-            <span class="k">elif</span> <span class="n">read_ptr</span> <span class="o">&gt;</span> <span class="n">write_ptr</span><span class="p">:</span>
-                <span class="n">length</span> <span class="o">=</span> <span class="n">end_ptr</span> <span class="o">-</span> <span class="n">read_ptr</span>
-                <span class="k">if</span> <span class="n">length</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                        <span class="s2">&quot;The amount of data to read is negative!&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                    <span class="s2">&quot;&gt; Reading </span><span class="si">{}</span><span class="s2"> bytes from </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2"> for region </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="n">length</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
-                    <span class="nb">hex</span><span class="p">(</span><span class="n">read_ptr</span><span class="p">),</span> <span class="n">recording_region_id</span><span class="p">)</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request_data</span><span class="p">(</span>
-                    <span class="n">transceiver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span> <span class="n">placement_x</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
-                    <span class="n">address</span><span class="o">=</span><span class="n">read_ptr</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span> <span class="n">placement_y</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">store_data_in_region_buffer</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">,</span>
-                    <span class="n">data</span><span class="p">)</span>
-                <span class="n">read_ptr</span> <span class="o">=</span> <span class="n">start_ptr</span>
-                <span class="n">length</span> <span class="o">=</span> <span class="n">write_ptr</span> <span class="o">-</span> <span class="n">read_ptr</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                    <span class="s2">&quot;Reading </span><span class="si">{}</span><span class="s2"> bytes from </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2"> for region </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="n">length</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
-                    <span class="nb">hex</span><span class="p">(</span><span class="n">read_ptr</span><span class="p">),</span> <span class="n">recording_region_id</span><span class="p">)</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request_data</span><span class="p">(</span>
-                    <span class="n">transceiver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span> <span class="n">placement_x</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
-                    <span class="n">address</span><span class="o">=</span><span class="n">read_ptr</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span> <span class="n">placement_y</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">flushing_data_from_region</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">,</span>
-                    <span class="n">data</span><span class="p">)</span>
-
-            <span class="k">elif</span> <span class="p">(</span><span class="n">read_ptr</span> <span class="o">==</span> <span class="n">write_ptr</span> <span class="ow">and</span>
-                    <span class="n">last_operation</span> <span class="o">==</span> <span class="n">BUFFERING_OPERATIONS</span><span class="o">.</span><span class="n">BUFFER_WRITE</span><span class="o">.</span><span class="n">value</span><span class="p">):</span>
-                <span class="n">length</span> <span class="o">=</span> <span class="n">end_ptr</span> <span class="o">-</span> <span class="n">read_ptr</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                    <span class="s2">&quot;= Reading </span><span class="si">{}</span><span class="s2"> bytes from </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2"> for region </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="n">length</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
-                    <span class="nb">hex</span><span class="p">(</span><span class="n">read_ptr</span><span class="p">),</span> <span class="n">recording_region_id</span><span class="p">)</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request_data</span><span class="p">(</span>
-                    <span class="n">transceiver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span> <span class="n">placement_x</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
-                    <span class="n">address</span><span class="o">=</span><span class="n">read_ptr</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span> <span class="n">placement_y</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">store_data_in_region_buffer</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">,</span>
-                    <span class="n">data</span><span class="p">)</span>
-                <span class="n">read_ptr</span> <span class="o">=</span> <span class="n">start_ptr</span>
-                <span class="n">length</span> <span class="o">=</span> <span class="n">write_ptr</span> <span class="o">-</span> <span class="n">read_ptr</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                    <span class="s2">&quot;Reading </span><span class="si">{}</span><span class="s2"> bytes from </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2"> for region </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="n">length</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
-                    <span class="nb">hex</span><span class="p">(</span><span class="n">read_ptr</span><span class="p">),</span> <span class="n">recording_region_id</span><span class="p">)</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request_data</span><span class="p">(</span>
-                    <span class="n">transceiver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span> <span class="n">placement_x</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
-                    <span class="n">address</span><span class="o">=</span><span class="n">read_ptr</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span> <span class="n">placement_y</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">flushing_data_from_region</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">,</span>
-                    <span class="n">data</span><span class="p">)</span>
-
-            <span class="k">elif</span> <span class="p">(</span><span class="n">read_ptr</span> <span class="o">==</span> <span class="n">write_ptr</span> <span class="ow">and</span>
-                    <span class="n">last_operation</span> <span class="o">==</span> <span class="n">BUFFERING_OPERATIONS</span><span class="o">.</span><span class="n">BUFFER_READ</span><span class="o">.</span><span class="n">value</span><span class="p">):</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">flushing_data_from_region</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">,</span>
-                    <span class="n">data</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_process_last_ack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">region_id</span><span class="p">,</span> <span class="n">end_state</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
-<span class="sd">        :param int region_id:</span>
-<span class="sd">        :param ChannelBufferState end_state:</span>
-<span class="sd">        :raises Exception: when something bad happens</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># if the last ACK packet has not been processed on the chip,</span>
-        <span class="c1"># process it now</span>
-        <span class="n">last_sent_ack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">last_sent_packet_to_core</span><span class="p">(</span>
-            <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
-        <span class="n">last_sent_ack</span> <span class="o">=</span> <span class="n">create_eieio_command</span><span class="o">.</span><span class="n">read_eieio_command_message</span><span class="p">(</span>
-            <span class="n">last_sent_ack</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">last_sent_ack</span><span class="p">,</span> <span class="n">HostDataRead</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                <span class="s2">&quot;Something somewhere went terribly wrong; looking for a &quot;</span>
-                <span class="s2">&quot;HostDataRead packet, while I got </span><span class="si">{0:s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">last_sent_ack</span><span class="p">))</span>
-
-        <span class="n">start_ptr</span> <span class="o">=</span> <span class="n">end_state</span><span class="o">.</span><span class="n">start_address</span>
-        <span class="n">write_ptr</span> <span class="o">=</span> <span class="n">end_state</span><span class="o">.</span><span class="n">current_write</span>
-        <span class="n">end_ptr</span> <span class="o">=</span> <span class="n">end_state</span><span class="o">.</span><span class="n">end_address</span>
-        <span class="n">read_ptr</span> <span class="o">=</span> <span class="n">end_state</span><span class="o">.</span><span class="n">current_read</span>
-
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">last_sent_ack</span><span class="o">.</span><span class="n">n_requests</span><span class="p">):</span>
-            <span class="n">in_region</span> <span class="o">=</span> <span class="n">region_id</span> <span class="o">==</span> <span class="n">last_sent_ack</span><span class="o">.</span><span class="n">region_id</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">in_region</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">end_state</span><span class="o">.</span><span class="n">is_state_updated</span><span class="p">:</span>
-                <span class="n">read_ptr</span> <span class="o">+=</span> <span class="n">last_sent_ack</span><span class="o">.</span><span class="n">space_read</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">read_ptr</span> <span class="o">==</span> <span class="n">write_ptr</span> <span class="ow">or</span>
-                        <span class="p">(</span><span class="n">read_ptr</span> <span class="o">==</span> <span class="n">end_ptr</span> <span class="ow">and</span> <span class="n">write_ptr</span> <span class="o">==</span> <span class="n">start_ptr</span><span class="p">)):</span>
-                    <span class="n">end_state</span><span class="o">.</span><span class="n">update_last_operation</span><span class="p">(</span>
-                        <span class="n">BUFFERING_OPERATIONS</span><span class="o">.</span><span class="n">BUFFER_READ</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">read_ptr</span> <span class="o">==</span> <span class="n">end_ptr</span><span class="p">:</span>
-                    <span class="n">read_ptr</span> <span class="o">=</span> <span class="n">start_ptr</span>
-                <span class="k">elif</span> <span class="n">read_ptr</span> <span class="o">&gt;</span> <span class="n">end_ptr</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                        <span class="s2">&quot;Something somewhere went terribly wrong; I was &quot;</span>
-                        <span class="s2">&quot;reading beyond the region area&quot;</span><span class="p">)</span>
-        <span class="n">end_state</span><span class="o">.</span><span class="n">update_read_pointer</span><span class="p">(</span><span class="n">read_ptr</span><span class="p">)</span>
-        <span class="n">end_state</span><span class="o">.</span><span class="n">set_update_completed</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">_process_buffered_in_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param packet:</span>
-<span class="sd">        :type packet:</span>
-<span class="sd">            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData</span>
-<span class="sd">        :raises Exception:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=broad-except</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="s2">&quot;received </span><span class="si">{}</span><span class="s2"> read request(s) with sequence: </span><span class="si">{}</span><span class="s2">,&quot;</span>
-            <span class="s2">&quot; from chip (</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">, core </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="n">packet</span><span class="o">.</span><span class="n">n_requests</span><span class="p">,</span> <span class="n">packet</span><span class="o">.</span><span class="n">sequence_no</span><span class="p">,</span>
-            <span class="n">packet</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">packet</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">packet</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock_buffer_out</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finished</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_retrieve_and_store_data</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;problem when handling data&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_retrieve_and_store_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Following a SpinnakerRequestReadData packet, the data stored</span>
-<span class="sd">            during the simulation needs to be read by the host and stored in</span>
-<span class="sd">            a data structure, following the specifications of buffering out</span>
-<span class="sd">            technique.</span>
-
-<span class="sd">        :param packet: packet received from the SpiNNaker system</span>
-<span class="sd">        :type packet:</span>
-<span class="sd">            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">x</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">y</span>
-        <span class="n">p</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">p</span>
-
-        <span class="c1"># check packet sequence number</span>
-        <span class="n">pkt_seq</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">sequence_no</span>
-        <span class="n">last_pkt_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">last_sequence_no_for_core</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
-        <span class="n">next_pkt_seq</span> <span class="o">=</span> <span class="p">(</span><span class="n">last_pkt_seq</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">256</span>
-        <span class="k">if</span> <span class="n">pkt_seq</span> <span class="o">!=</span> <span class="n">next_pkt_seq</span><span class="p">:</span>
-            <span class="c1"># this sequence number is incorrect</span>
-            <span class="c1"># re-sent last HostDataRead packet sent</span>
-            <span class="n">last_packet_sent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">last_sent_packet_to_core</span><span class="p">(</span>
-                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">last_packet_sent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                    <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">: Something somewhere went terribly wrong - &quot;</span>
-                    <span class="s2">&quot;The packet sequence numbers have gone wrong somewhere: &quot;</span>
-                    <span class="s2">&quot;the packet sent from the board has incorrect sequence &quot;</span>
-                    <span class="s2">&quot;number, but the host never sent one acknowledge&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">send_sdp_message</span><span class="p">(</span><span class="n">last_packet_sent</span><span class="p">)</span>
-            <span class="k">return</span>
-
-        <span class="c1"># read data from memory, store it and create data for return ACK packet</span>
-        <span class="n">ack_packet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assemble_ack_packet</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="n">pkt_seq</span><span class="p">)</span>
-
-        <span class="c1"># create SDP header and message</span>
-        <span class="n">return_message</span> <span class="o">=</span> <span class="n">SDPMessage</span><span class="p">(</span><span class="n">SDPHeader</span><span class="p">(</span>
-            <span class="n">destination_port</span><span class="o">=</span><span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">OUTPUT_BUFFERING_SDP_PORT</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-            <span class="n">destination_cpu</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">destination_chip_x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">destination_chip_y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
-            <span class="n">flags</span><span class="o">=</span><span class="n">SDPFlag</span><span class="o">.</span><span class="n">REPLY_NOT_EXPECTED</span><span class="p">),</span>
-            <span class="n">ack_packet</span><span class="o">.</span><span class="n">bytestring</span><span class="p">)</span>
-
-        <span class="c1"># storage of last packet received</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">store_last_received_packet_from_core</span><span class="p">(</span>
-            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">packet</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">update_sequence_no_for_core</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">pkt_seq</span><span class="p">)</span>
-
-        <span class="c1"># store last sent message and send to the appropriate core</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">store_last_sent_packet_to_core</span><span class="p">(</span>
-            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">return_message</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">send_sdp_message</span><span class="p">(</span><span class="n">return_message</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_assemble_ack_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="n">pkt_seq</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param int x:</span>
-<span class="sd">        :param int y:</span>
-<span class="sd">        :param int p:</span>
-<span class="sd">        :param packet:</span>
-<span class="sd">        :type packet:</span>
-<span class="sd">            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData</span>
-<span class="sd">        :param int pkt_seq:</span>
-<span class="sd">        :rtype: ~spinnman.messages.eieio.command_messages.HostDataRead</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="n">channels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">region_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">space_read</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">n_requests</span><span class="p">):</span>
-            <span class="n">length</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">space_to_be_read</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">length</span><span class="p">:</span>
-                <span class="k">continue</span>
-            <span class="n">start_address</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">start_address</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-            <span class="n">region_id</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">region_id</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-            <span class="n">channel</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="s2">&quot;Buffer receive Reading </span><span class="si">{}</span><span class="s2"> bytes from </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">:&quot;</span>
-                <span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> for region </span><span class="si">{}</span><span class="s2">, channel </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
-                <span class="n">length</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="nb">hex</span><span class="p">(</span><span class="n">start_address</span><span class="p">),</span> <span class="n">region_id</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
-
-            <span class="c1"># Note this *always* uses the transceiver, as fast data transfer</span>
-            <span class="c1"># isn&#39;t guaranteed to work whilst a simulation is running!</span>
+            <span class="c1"># Now read the data and store it</span>
+            <span class="n">size</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">missing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">get_region_information</span><span class="p">(</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request_data</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">store_data_in_region_buffer</span><span class="p">(</span>
-                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
-                    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">start_address</span><span class="p">,</span> <span class="n">length</span><span class="p">))</span>
-            <span class="n">channels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
-            <span class="n">region_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">region_id</span><span class="p">)</span>
-            <span class="n">space_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">missing</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 
-        <span class="c1"># create return acknowledge packet with data stored</span>
-        <span class="k">return</span> <span class="n">HostDataRead</span><span class="p">(</span>
-            <span class="nb">len</span><span class="p">(</span><span class="n">channels</span><span class="p">),</span> <span class="n">pkt_seq</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">region_ids</span><span class="p">,</span> <span class="n">space_read</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_get_region_information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the recording information from all regions of a core</span>
+
+<span class="sd">        :param addr: The recording region base address</span>
+<span class="sd">        :param x: The x-coordinate of the chip containing the data</span>
+<span class="sd">        :param y: The y-coordinate of the chip containing the data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_regions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_word</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+        <span class="n">n_bytes</span> <span class="o">=</span> <span class="n">get_recording_header_size</span><span class="p">(</span><span class="n">n_regions</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">addr</span> <span class="o">+</span> <span class="n">BYTES_PER_WORD</span><span class="p">,</span> <span class="n">n_bytes</span> <span class="o">-</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
+        <span class="n">data_type</span> <span class="o">=</span> <span class="n">_RecordingRegion</span> <span class="o">*</span> <span class="n">n_regions</span>
+        <span class="n">regions</span> <span class="o">=</span> <span class="n">data_type</span><span class="o">.</span><span class="n">from_buffer_copy</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">sizes_and_addresses</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="nb">bool</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">missing</span><span class="p">))</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">regions</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">store_region_information</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">sizes_and_addresses</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">sender_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1107,7 +813,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
     </div>
   </body>
 </html>

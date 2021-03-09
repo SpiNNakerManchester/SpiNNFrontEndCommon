@@ -86,7 +86,7 @@
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="AbstractDatabase.store_data_in_region_buffer"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.store_data_in_region_buffer">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">store_data_in_region_buffer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">store_data_in_region_buffer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">missing</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Store some information in the corresponding buffer for a\</span>
 <span class="sd">            specific chip, core and recording region.</span>
 
@@ -94,6 +94,7 @@
 <span class="sd">        :param int y: y coordinate of the chip</span>
 <span class="sd">        :param int p: Core within the specified chip</span>
 <span class="sd">        :param int region: Region containing the data to be stored</span>
+<span class="sd">        :param bool missing: Whether any data is missing</span>
 <span class="sd">        :param bytearray data: data to be stored</span>
 
 <span class="sd">            .. note::</span>
@@ -181,7 +182,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
     </div>
   </body>
 </html>

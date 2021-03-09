@@ -2195,6 +2195,14 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;ApplicationRunner&quot;</span><span class="p">)</span>
 
+        <span class="c1"># add extractor of iobuf if needed</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf&quot;</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
+                    <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf_during_run&quot;</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span> <span class="ow">and</span>
+                <span class="n">n_machine_time_steps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;ChipIOBufExtractor&quot;</span><span class="p">)</span>
+
         <span class="c1"># ensure we exploit the parallel of data extraction by running it at\</span>
         <span class="c1"># end regardless of multirun, but only run if using a real machine</span>
         <span class="k">if</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_run_until_complete</span> <span class="ow">or</span> <span class="n">n_machine_time_steps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
@@ -2209,14 +2217,6 @@
         <span class="c1"># add any extra post algorithms as needed</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extra_post_run_algorithms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">algorithms</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extra_post_run_algorithms</span>
-
-        <span class="c1"># add extractor of iobuf if needed</span>
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf&quot;</span><span class="p">)</span> <span class="ow">and</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
-                    <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf_during_run&quot;</span><span class="p">)</span> <span class="ow">and</span>
-                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span> <span class="ow">and</span>
-                <span class="n">n_machine_time_steps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;ChipIOBufExtractor&quot;</span><span class="p">)</span>
 
         <span class="c1"># add in the timing finalisation</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
@@ -3158,7 +3158,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
     </div>
   </body>
 </html>

@@ -688,25 +688,6 @@
     <filename>recording_8h.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
     <includes id="buffered__eieio__defs_8h" name="buffered_eieio_defs.h" local="no" imported="no">buffered_eieio_defs.h</includes>
-    <class kind="struct">read_request_packet_header</class>
-    <class kind="struct">read_request_packet_data</class>
-    <class kind="struct">host_data_read_packet_header</class>
-    <class kind="struct">host_data_read_packet_data</class>
-    <class kind="struct">host_data_read_ack_packet_header</class>
-    <member kind="define">
-      <type>#define</type>
-      <name>RECORDING_DMA_COMPLETE_TAG_ID</name>
-      <anchorfile>recording_8h.html</anchorfile>
-      <anchor>abaa02d6ada968a176c91c8f1bc00775e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="typedef">
-      <type>void(*</type>
-      <name>recording_complete_callback_t</name>
-      <anchorfile>recording_8h.html</anchorfile>
-      <anchor>ab2be151e62f791d3873a01d47983e162</anchor>
-      <arglist>)(void)</arglist>
-    </member>
     <member kind="typedef">
       <type>uint8_t</type>
       <name>channel_index_t</name>
@@ -716,31 +697,10 @@
     </member>
     <member kind="function">
       <type>bool</type>
-      <name>recording_do_record_and_notify</name>
-      <anchorfile>recording_8h.html</anchorfile>
-      <anchor>ab68ebe7d072fc3565cfd411a12c79b6e</anchor>
-      <arglist>(channel_index_t channel, void *data, size_t size_bytes, recording_complete_callback_t callback)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static bool</type>
       <name>recording_record</name>
       <anchorfile>recording_8h.html</anchorfile>
-      <anchor>a222af7edbef5e36638e02c7292d69cbd</anchor>
+      <anchor>a6d4e5d138e1e7fc85bc343f20c23d193</anchor>
       <arglist>(channel_index_t channel, void *data, size_t size_bytes)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>recording_bad_offset</name>
-      <anchorfile>recording_8h.html</anchorfile>
-      <anchor>abcccef6af7f56edb46e1ea9f5f674ca2</anchor>
-      <arglist>(void *data, size_t size)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static bool</type>
-      <name>recording_record_and_notify</name>
-      <anchorfile>recording_8h.html</anchorfile>
-      <anchor>a1b14976af9b5980e3dbbc5c9b463f002</anchor>
-      <arglist>(channel_index_t channel, void *data, size_t size_bytes, recording_complete_callback_t callback)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -762,20 +722,6 @@
       <anchorfile>recording_8h.html</anchorfile>
       <anchor>addbda0e729aa7007221fce996022659e</anchor>
       <arglist>(void)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>recording_do_timestep_update</name>
-      <anchorfile>recording_8h.html</anchorfile>
-      <anchor>a9eedcafd60906e7f120ebe034678f3ee</anchor>
-      <arglist>(timer_t time)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>recording_do_step_update</name>
-      <anchorfile>recording_8h.html</anchorfile>
-      <anchor>a63e7a692a6afa6fad814394521af4c9a</anchor>
-      <arglist>(uint32_t step)</arglist>
     </member>
   </compound>
   <compound kind="file">
@@ -1862,125 +1808,35 @@
     <includes id="debug_8h" name="debug.h" local="no" imported="no">debug.h</includes>
     <includes id="wfi_8h" name="wfi.h" local="no" imported="no">wfi.h</includes>
     <class kind="struct">recording_channel_t</class>
-    <class kind="struct">recording_data_t</class>
-    <member kind="define">
-      <type>#define</type>
-      <name>MIN_TIME_BETWEEN_TRIGGERS</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a4f7e6fbaee184f1230151ef6282b6b74</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>N_WORDS_USED_OUTSIDE_STRUCT_PER_REGION</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a39db4f53b92f30d7e57a7daf601b033d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>WORD_TO_BYTE_CONVERSION</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a40f2b6d1be79264f430431197541e127</anchor>
-      <arglist></arglist>
-    </member>
+    <class kind="struct">recording_region_t</class>
+    <class kind="struct">recording_regions_t</class>
     <member kind="function" static="yes">
       <type>static bool</type>
       <name>has_been_initialised</name>
       <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a135a6c8f1b18c8ff754202af47dd934c</anchor>
-      <arglist>(uint8_t channel)</arglist>
+      <anchor>a3285f8112dffc5a2e4886de7fc6184c8</anchor>
+      <arglist>(recording_channel_t *rec)</arglist>
     </member>
     <member kind="function" static="yes">
-      <type>static bool</type>
+      <type>static void</type>
       <name>close_channel</name>
       <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a1e50ecd8c6d149b490f9dd17aff7ecd3</anchor>
-      <arglist>(uint8_t channel)</arglist>
+      <anchor>a7b27e05e8ad258a10978cd289399091d</anchor>
+      <arglist>(recording_channel_t *rec)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
-      <name>recording_host_data_read</name>
+      <name>copy_data</name>
       <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a5cddb925e2ac18cdacd99ba0b1b00795</anchor>
-      <arglist>(const eieio_msg_t msg)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>recording_host_data_read_ack</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>aa2dc3adc7cf4f90d3012a88147080b5e</anchor>
-      <arglist>(const eieio_msg_t msg)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>recording_eieio_packet_handler</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a712522f1d0055e8c29f0eddb9e4ea374</anchor>
-      <arglist>(const eieio_msg_t msg, uint length)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static uint32_t</type>
-      <name>compute_available_space_in_channel</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>ac2fbf08fec2d96c8c6e8e8a3a5144c7f</anchor>
-      <arglist>(uint8_t channel)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>recording_write_one_chunk</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>af695b9f5933b3cb417fd2a0b97748e2d</anchor>
-      <arglist>(uint8_t channel, void *data, void *write_pointer, uint32_t length, void *finished_write_pointer, recording_complete_callback_t callback)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static bool</type>
-      <name>recording_write_memory</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a0ccce811dde996328f9b7a6c01694c9c</anchor>
-      <arglist>(uint8_t channel, void *data, uint32_t length, recording_complete_callback_t callback)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>create_buffer_message</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>acfdd3c9b063bc16f1199c9c8df20ff4b</anchor>
-      <arglist>(read_request_packet_data *datum, uint channel, uint8_t *read_pointer, uint32_t space_to_be_read)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>recording_send_buffering_out_trigger_message</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>ac320310c01dea5c0d14f69e80be0c328</anchor>
-      <arglist>(bool flush_all)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>buffering_in_handler</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>abad4c1a43ddb2eb8a503df45d5e9c9e5</anchor>
-      <arglist>(uint mailbox, uint port)</arglist>
+      <anchor>a82f78e19f3548fcbefd0283a03b0f0d1</anchor>
+      <arglist>(void *restrict target, const void *source, uint n_words)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
-      <name>recording_do_record_and_notify</name>
+      <name>recording_record</name>
       <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a2d5af6f8f54d33cd27b8ca7e79a06e49</anchor>
-      <arglist>(uint8_t channel, void *data, uint32_t size_bytes, recording_complete_callback_t callback)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>recording_bad_offset</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>aed39e1c2631fc1ede077efc548833728</anchor>
-      <arglist>(void *data, uint32_t size)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>recording_buffer_state_data_write</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a6f40dbb460b832721f85f3d4add98bae</anchor>
-      <arglist>(void)</arglist>
+      <anchor>ad88856d359544e926c4b86451fb2901e</anchor>
+      <arglist>(uint8_t channel, void *data, uint32_t size_bytes)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -1988,13 +1844,6 @@
       <anchorfile>recording_8c.html</anchorfile>
       <anchor>a61f4d74e9f18ff231c0b3926cb144b3b</anchor>
       <arglist>(void)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>recording_dma_finished</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a89e7759f30eca8e5ed7086c816ce8259</anchor>
-      <arglist>(uint unused, uint tag)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
@@ -2010,116 +1859,18 @@
       <anchor>addbda0e729aa7007221fce996022659e</anchor>
       <arglist>(void)</arglist>
     </member>
-    <member kind="function">
-      <type>void</type>
-      <name>recording_do_timestep_update</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a4055e610fa315c45245500aab28dba19</anchor>
-      <arglist>(uint32_t time)</arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static circular_buffer</type>
-      <name>dma_complete_buffer</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>ac7e39dd91ffdd9e5bcc83d0c9bc8bfb8</anchor>
-      <arglist></arglist>
-    </member>
     <member kind="variable" static="yes">
       <type>static recording_channel_t *</type>
-      <name>g_recording_channels</name>
+      <name>channels</name>
       <anchorfile>recording_8c.html</anchorfile>
-      <anchor>aa60a1c8e869554e779c6c0f0ec1911da</anchor>
+      <anchor>a46216ba0717d25a0fca16db57322f71f</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" static="yes">
-      <type>static recording_channel_t **</type>
-      <name>region_addresses</name>
+      <type>static recording_regions_t *</type>
+      <name>regions</name>
       <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a809b66e68e928376d8dac65804b55cc3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static uint32_t *</type>
-      <name>region_sizes</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a8ecc84cb4f3c678a32f5a8f6c609d59d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static uint32_t</type>
-      <name>n_recording_regions</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>abb1826b8e34ca738f009136c3e3be22d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static uint32_t</type>
-      <name>sdp_port</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a5408e7bf83ea6c8d55bc29559253558c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static uint32_t</type>
-      <name>sequence_number</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>ac8ba4f30c7f4dbe010e2be1b5f1d5977</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static bool</type>
-      <name>sequence_ack</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>ab68ccb0e8f558f3e26507de0d0d466e6</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static uint32_t</type>
-      <name>last_time_buffering_trigger</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>ab7d32b18db0ea69a186a424a589b8842</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static uint32_t</type>
-      <name>buffer_size_before_trigger</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a27b0d8fc0291bccff84639aeeccecb66</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static uint32_t</type>
-      <name>time_between_triggers</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>ae69aef11cf641eade0d19219a0772426</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static uint32_t *</type>
-      <name>last_sequence_number</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a75bf91ef71d585b530c56c86fcf4813e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static sdp_msg_t</type>
-      <name>read_request_msg</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a649f52154c991448fc4dd7d770bcf124</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static read_request_packet_header *</type>
-      <name>read_request_hdr</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a1da122ce6717d0e7bf607a4356e98277</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static read_request_packet_data *</type>
-      <name>read_request_data</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>af6f29e31ec7306ef13eaa1e3c0c59812</anchor>
+      <anchor>a40f4da6bbf3e45ea263b4ca2a1c1ab13</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -5432,13 +5183,6 @@
       <name>stopped</name>
       <anchorfile>reverse__iptag__multicast__source_8c.html</anchorfile>
       <anchor>a4bbd5ff52abed3e07aa5205f1179d9d3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static bool</type>
-      <name>recording_in_progress</name>
-      <anchorfile>reverse__iptag__multicast__source_8c.html</anchorfile>
-      <anchor>a79737d2f85cf79db57370f7734c60bba</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" static="yes">
@@ -9259,21 +9003,6 @@
     </member>
   </compound>
   <compound kind="struct">
-    <name>host_data_read_ack_packet_header</name>
-    <filename>recording_8h.html</filename>
-    <anchor>structhost__data__read__ack__packet__header</anchor>
-  </compound>
-  <compound kind="struct">
-    <name>host_data_read_packet_data</name>
-    <filename>recording_8h.html</filename>
-    <anchor>structhost__data__read__packet__data</anchor>
-  </compound>
-  <compound kind="struct">
-    <name>host_data_read_packet_header</name>
-    <filename>recording_8h.html</filename>
-    <anchor>structhost__data__read__packet__header</anchor>
-  </compound>
-  <compound kind="struct">
     <name>vic_mask_t::interrupt_bits</name>
     <filename>spinn__extra_8h.html</filename>
     <anchor>structvic__mask__t_1_1interrupt__bits</anchor>
@@ -9935,16 +9664,6 @@
     </member>
   </compound>
   <compound kind="struct">
-    <name>read_request_packet_data</name>
-    <filename>recording_8h.html</filename>
-    <anchor>structread__request__packet__data</anchor>
-  </compound>
-  <compound kind="struct">
-    <name>read_request_packet_header</name>
-    <filename>recording_8h.html</filename>
-    <anchor>structread__request__packet__header</anchor>
-  </compound>
-  <compound kind="struct">
     <name>receive_data_to_location_msg_t</name>
     <filename>data__speed__up__packet__gatherer_8c.html</filename>
     <anchor>structreceive__data__to__location__msg__t</anchor>
@@ -10063,106 +9782,83 @@
     </member>
     <member kind="variable">
       <type>uint8_t *</type>
-      <name>current_write</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>adb4ccfa8105a98bf728bd8e08b875ac0</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint8_t *</type>
-      <name>dma_current_write</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>ab7fbf873b8290d44153f5dc12792eac1</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint8_t *</type>
-      <name>current_read</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>ac9ed1527d0e20a17864a450518fa35b8</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint8_t *</type>
       <name>end</name>
       <anchorfile>recording_8c.html</anchorfile>
       <anchor>aa28b3eb12ac2957b7e380a3a0d2bd473</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>uint8_t</type>
-      <name>region_id</name>
+      <type>uint8_t *</type>
+      <name>write</name>
       <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a1b3af015c6d1696d4ef25ec8cb397388</anchor>
+      <anchor>a0360df141974c7b16ce5099b8f4ae852</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>uint8_t</type>
-      <name>missing_info</name>
+      <type>uint32_t</type>
+      <name>space</name>
       <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a147f24c39f53a2f892ef85fc3de13e4c</anchor>
+      <anchor>a74384586d5922341abd02e842a42c09d</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>buffered_operations</type>
-      <name>last_buffer_operation</name>
+      <type>uint32_t</type>
+      <name>missing</name>
       <anchorfile>recording_8c.html</anchorfile>
-      <anchor>adb4aad06af3861fd4b0bd591bcfe843d</anchor>
+      <anchor>a5c123ab374025bfbc3e5d9d0195ac334</anchor>
       <arglist></arglist>
     </member>
   </compound>
   <compound kind="struct">
-    <name>recording_data_t</name>
+    <name>recording_region_t</name>
     <filename>recording_8c.html</filename>
-    <anchor>structrecording__data__t</anchor>
+    <anchor>structrecording__region__t</anchor>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>space</name>
+      <anchorfile>recording_8c.html</anchorfile>
+      <anchor>a004ce0c7eec243f727549ff2a2941568</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>size</name>
+      <anchorfile>recording_8c.html</anchorfile>
+      <anchor>a2948a3de9d124f7e294d2e711aa426c6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>missing</name>
+      <anchorfile>recording_8c.html</anchorfile>
+      <anchor>a952308b63cbf9debeb26b15f8658bd6d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint8_t *</type>
+      <name>data</name>
+      <anchorfile>recording_8c.html</anchorfile>
+      <anchor>a72d4c56c9df09e7e08cdf1dd6df6811e</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>recording_regions_t</name>
+    <filename>recording_8c.html</filename>
+    <anchor>structrecording__regions__t</anchor>
     <member kind="variable">
       <type>uint32_t</type>
       <name>n_regions</name>
       <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a7ae72e88db328dda5d1f0160acabc4b2</anchor>
+      <anchor>ac5ed7d13dc13bb89683b4b63bd042ac4</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>uint32_t</type>
-      <name>tag</name>
+      <type>recording_region_t</type>
+      <name>regions</name>
       <anchorfile>recording_8c.html</anchorfile>
-      <anchor>ab2f9f26a347b895f9ee611f4398c20aa</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>tag_destination</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a741a7b2f23b127a203f1bb6249c9c579</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>sdp_port</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>af070d61a2e388be08c8126bef2403a17</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>buffer_size_before_request</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a85c4f257d220b3fdc78293b6de4de401</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>time_between_triggers</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a749608777a97781d28bfbec946a48e17</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint32_t</type>
-      <name>last_sequence_number</name>
-      <anchorfile>recording_8c.html</anchorfile>
-      <anchor>a94f33e059f1a40795f4dfe42fbeb491c</anchor>
-      <arglist></arglist>
+      <anchor>a1f3aecb1b15e4d59f84def8f4eeda426</anchor>
+      <arglist>[]</arglist>
     </member>
   </compound>
   <compound kind="struct">
