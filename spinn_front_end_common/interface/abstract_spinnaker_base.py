@@ -2163,6 +2163,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         else:
             algorithms.append("ApplicationRunner")
 
+        # add extractor of iobuf if needed
+        if (self._config.getboolean("Reports", "extract_iobuf") and
+                self._config.getboolean(
+                    "Reports", "extract_iobuf_during_run") and
+                not self._use_virtual_board and
+                n_machine_time_steps is not None):
+            algorithms.append("ChipIOBufExtractor")
+
         # ensure we exploit the parallel of data extraction by running it at\
         # end regardless of multirun, but only run if using a real machine
         if ((self._run_until_complete or n_machine_time_steps is not None)
@@ -2177,14 +2185,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # add any extra post algorithms as needed
         if self._extra_post_run_algorithms is not None:
             algorithms += self._extra_post_run_algorithms
-
-        # add extractor of iobuf if needed
-        if (self._config.getboolean("Reports", "extract_iobuf") and
-                self._config.getboolean(
-                    "Reports", "extract_iobuf_during_run") and
-                not self._use_virtual_board and
-                n_machine_time_steps is not None):
-            algorithms.append("ChipIOBufExtractor")
 
         # add in the timing finalisation
         if not self._use_virtual_board:
@@ -3019,11 +3019,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @property
     def has_reset_last(self):
         return self._has_reset_last
-
-    @property
-    @overrides(SimulatorInterface.config)
-    def config(self):
-        return self._config
 
     @property
     def get_number_of_available_cores_on_machine(self):

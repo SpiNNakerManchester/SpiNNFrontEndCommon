@@ -48,7 +48,7 @@ class AbstractDatabase(object, metaclass=AbstractBase):
         """
 
     @abstractmethod
-    def store_data_in_region_buffer(self, x, y, p, region, data):
+    def store_data_in_region_buffer(self, x, y, p, region, missing, data):
         """ Store some information in the corresponding buffer for a\
             specific chip, core and recording region.
 
@@ -56,6 +56,7 @@ class AbstractDatabase(object, metaclass=AbstractBase):
         :param int y: y coordinate of the chip
         :param int p: Core within the specified chip
         :param int region: Region containing the data to be stored
+        :param bool missing: Whether any data is missing
         :param bytearray data: data to be stored
 
             .. note::
