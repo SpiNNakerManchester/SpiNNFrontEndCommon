@@ -176,9 +176,7 @@ bool recording_initialize(
         *recording_flags = 0;
     }
 
-    /* Reserve the actual recording regions.
-     *
-     */
+    // Reserve the actual recording regions.
     for (uint32_t i = 0; i < n_regions; i++) {
         recording_region_t *region = &regions->regions[i];
         uint32_t space = region->space;
