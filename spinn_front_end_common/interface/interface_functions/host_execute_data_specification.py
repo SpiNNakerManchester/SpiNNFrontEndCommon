@@ -29,6 +29,8 @@ from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, DataWritten)
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
+from spinn_front_end_common.utility_models import (
+    DataSpeedUpPacketGatherMachineVertex)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _MEM_REGIONS = range(MAX_MEM_REGIONS)
@@ -257,23 +259,8 @@ class HostExecuteDataSpecification(object):
                     self._txrx, self._app_id, executable_targets)
             raise
 
-    def __set_router_timeouts(self):
-        for receiver in self._core_to_conn_map.values():
-            receiver.load_system_routing_tables(
-                self._txrx, self._monitors, self._placements)
-            receiver.set_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements)
-
-    def __reset_router_timeouts(self):
-        # reset router timeouts
-        for receiver in self._core_to_conn_map.values():
-            receiver.unset_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements)
-            # reset router tables
-            receiver.load_application_routing_tables(
-                self._txrx, self._monitors, self._placements)
-
-    def __select_writer(self, x, y):
+    def __select_writer(self, core):
+        x, y, _p = core
         chip = self._machine.get_chip_at(x, y)
         ethernet_chip = self._machine.get_chip_at(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
@@ -294,33 +281,49 @@ class HostExecuteDataSpecification(object):
         dsg_targets = filter_out_system_executables(
             dsg_targets, executable_targets)
 
-        if use_monitors:
-            self.__set_router_timeouts()
-
         # create a progress bar for end users
         progress = ProgressBar(
             len(dsg_targets) * 2,
             "Executing data specifications and loading data for "
             "application vertices")
 
+        if use_monitors:
+            with DataSpeedUpPacketGatherMachineVertex.streaming(
+                    self._core_to_conn_map.values(), self._txrx,
+                    self._monitors, self._placements):
+                self.__python_app_base(
+                    dsg_targets, region_sizes, self.__select_writer, progress)
+        else:
+            self.__python_app_base(
+                dsg_targets, region_sizes, (lambda _: self._txrx.write_memory),
+                progress)
+
+        return self._write_info_map
+
+    def __python_app_base(
+            self, dsg_targets, region_sizes, writer_selector, progress):
+        """
+        :param DataSpecificationTargets dsg_targets:
+        :param dict(tuple(int,int,int),int) region_sizes:
+        :param writer_selector:
+        :type writer_selector:
+            ~collections.abc.Callable[
+                [tuple[int,int,int]],
+                ~collections.abc.Callable[
+                    [tuple[int,int,int,bytes]],
+                    None]]
+        :param ~.ProgressBar progress:
+        """
         # allocate and set user 0 before loading data
-        base_addresses = dict()
-        for core, _ in progress.over(dsg_targets.items(), finish_at_end=False):
-            base_addresses[core] = self.__malloc_region_storage(
-                core, region_sizes[core])
+        base_addresses = {
+            core : self.__malloc_region_storage(core, region_sizes[core])
+            for core in progress.over(dsg_targets.keys(), finish_at_end=False)}
 
         for core, reader in progress.over(dsg_targets.items()):
-            x, y, _p = core
             # write information for the memory map report
             self._write_info_map[core] = self.__python_execute(
-                core, reader,
-                self.__select_writer(x, y)
-                if use_monitors else self._txrx.write_memory,
+                core, reader, writer_selector(core),
                 base_addresses[core], region_sizes[core])
-
-        if use_monitors:
-            self.__reset_router_timeouts()
-        return self._write_info_map
 
     def __java_app(
             self, dsg_targets, executable_targets, use_monitors,
@@ -482,7 +485,9 @@ class HostExecuteDataSpecification(object):
         """
         :param tuple(int,int,int) core:
         :param ~.AbstractDataReader reader:
-        :param callable(tuple(int,int,int,bytearray),None) writer_func:
+        :param writer_func:
+        :type writer_func:
+            ~collections.abc.Callable[[tuple[int,int,int,bytes]],None]
         :param int base_address:
         :param int size_allocated:
         :rtype: DataWritten

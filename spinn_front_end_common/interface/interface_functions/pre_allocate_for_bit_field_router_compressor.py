@@ -16,9 +16,7 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.resources import (
     SpecificChipSDRAMResource, PreAllocatedResourceContainer)
-from spinn_front_end_common.interface.interface_functions. \
-    machine_bit_field_router_compressor import (
-        SIZE_OF_SDRAM_ADDRESS_IN_BYTES)
+from .machine_bit_field_router_compressor import SIZE_OF_SDRAM_ADDRESS_IN_BYTES
 
 
 class PreAllocateForBitFieldRouterCompressor(object):

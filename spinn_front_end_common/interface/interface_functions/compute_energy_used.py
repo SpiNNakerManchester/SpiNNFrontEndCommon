@@ -16,55 +16,29 @@
 import itertools
 import re
 from spinn_utilities.ordered_set import OrderedSet
+from spinn_machine import Machine
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
+from spinn_front_end_common.utilities.constants import (
+    MILLIS_PER_SECOND, MICRO_TO_MILLISECOND_CONVERSION)
+from spinn_front_end_common.utilities.energy_constants import (
+    MILLIWATTS_FOR_FRAME_IDLE_COST, MILLIWATTS_PER_IDLE_CHIP, JOULES_PER_SPIKE,
+    MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD, MILLIWATTS_PER_FPGA,
+    N_MONITORS_ACTIVE_DURING_COMMS, MILLIWATTS_PER_FRAME_ACTIVE_COST,
+    MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.globals_variables import get_simulator
 
-#: milliseconds per second
-_MS_PER_SECOND = 1000.0
+_CORES_PER_CHIP = Machine.DEFAULT_MAX_CORES_PER_CHIP
 
 
 class ComputeEnergyUsed(object):
     """ This algorithm does the actual work of computing energy used by a\
         simulation (or other application) running on SpiNNaker.
     """
-
-    #: given from Indar's measurements
-    MILLIWATTS_PER_FPGA = 0.000584635
-
-    #: stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
-    #: Massively-Parallel Neural Network Simulation)
-    JOULES_PER_SPIKE = 0.000000000800
-
-    #: stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
-    #: Massively-Parallel Neural Network Simulation)
-    MILLIWATTS_PER_IDLE_CHIP = 0.000360
-
-    #: stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
-    #: Massively-Parallel Neural Network Simulation)
-    MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD = 0.001 - MILLIWATTS_PER_IDLE_CHIP
-
-    #: measured from the real power meter and timing between
-    #: the photos for a days powered off
-    MILLIWATTS_FOR_FRAME_IDLE_COST = 0.117
-
-    #: measured from the loading of the column and extrapolated
-    MILLIWATTS_PER_FRAME_ACTIVE_COST = 0.154163558
-
-    #: measured from the real power meter and timing between the photos
-    #: for a day powered off
-    MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST = 0.0045833333
-
-    # TODO needs filling in
-    MILLIWATTS_PER_UNBOXED_48_CHIP_FRAME_IDLE_COST = 0.01666667
-
-    # TODO verify this is correct when doing multiboard comms
-    N_MONITORS_ACTIVE_DURING_COMMS = 2
-
     __slots__ = []
 
     def __call__(
@@ -114,11 +88,11 @@ class ComputeEnergyUsed(object):
         power_used.num_chips = machine.n_chips
         # One extra per chip for SCAMP
         power_used.num_cores = placements.n_placements + machine.n_chips
-        power_used.exec_time_secs = execute_time / _MS_PER_SECOND
-        power_used.loading_time_secs = load_time / _MS_PER_SECOND
-        power_used.saving_time_secs = extraction_time / _MS_PER_SECOND
-        power_used.data_gen_time_secs = dsg_time / _MS_PER_SECOND
-        power_used.mapping_time_secs = mapping_time / _MS_PER_SECOND
+        power_used.exec_time_secs = execute_time / MILLIS_PER_SECOND
+        power_used.loading_time_secs = load_time / MILLIS_PER_SECOND
+        power_used.saving_time_secs = extraction_time / MILLIS_PER_SECOND
+        power_used.data_gen_time_secs = dsg_time / MILLIS_PER_SECOND
+        power_used.mapping_time_secs = mapping_time / MILLIS_PER_SECOND
 
         using_spalloc = bool(spalloc_server or remote_spinnaker_url)
         self._compute_energy_consumption(
@@ -192,7 +166,7 @@ class ComputeEnergyUsed(object):
         # figure out cooling/internet router idle cost during runtime
         power_used.baseline_joules = (
             runtime_total_ms * power_used.num_frames *
-            self.MILLIWATTS_FOR_FRAME_IDLE_COST)
+            MILLIWATTS_FOR_FRAME_IDLE_COST)
 
     @staticmethod
     def __active_chips(machine, placements):
@@ -230,19 +204,19 @@ class ComputeEnergyUsed(object):
 
             # process MC packets
             if element.names[3] in self._MULTICAST_COUNTER_NAMES:
-                this_cost = float(element.value) * self.JOULES_PER_SPIKE
+                this_cost = float(element.value) * JOULES_PER_SPIKE
 
             # process p2p packets
             elif element.names[3] in self._PEER_TO_PEER_COUNTER_NAMES:
-                this_cost = float(element.value) * self.JOULES_PER_SPIKE * 2
+                this_cost = float(element.value) * JOULES_PER_SPIKE * 2
 
             # process NN packets
             elif element.names[3] in self._NEAREST_NEIGHBOUR_COUNTER_NAMES:
-                this_cost = float(element.value) * self.JOULES_PER_SPIKE
+                this_cost = float(element.value) * JOULES_PER_SPIKE
 
             # process FR packets
             elif element.names[3] in self._FIXED_ROUTE_COUNTER_NAMES:
-                this_cost = float(element.value) * self.JOULES_PER_SPIKE * 2
+                this_cost = float(element.value) * JOULES_PER_SPIKE * 2
 
             else:
                 # ???
@@ -284,24 +258,24 @@ class ComputeEnergyUsed(object):
         # deduce time in milliseconds per recording element
         time_for_recorded_sample = (
             chip_power_monitor.sampling_frequency *
-            chip_power_monitor.n_samples_per_recording) / 1000
-        cores_power_cost = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+            chip_power_monitor.n_samples_per_recording
+            ) / MICRO_TO_MILLISECOND_CONVERSION
+        cores_power_cost = [0.0] * _CORES_PER_CHIP
 
         # accumulate costs
         for recorded_measurement in recorded_measurements:
-            for core in range(0, 18):
+            for core in range(_CORES_PER_CHIP):
                 cores_power_cost[core] += (
                     recorded_measurement[core] * time_for_recorded_sample *
-                    self.MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD / 18)
+                    MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD / _CORES_PER_CHIP)
 
         # detailed report print out
-        for core in range(0, 18):
+        for core in range(_CORES_PER_CHIP):
             power_used.add_core_active_energy(
                 chip.x, chip.y, core, cores_power_cost[core])
 
         # TAKE INTO ACCOUNT IDLE COST
-        idle_cost = runtime_total_ms * self.MILLIWATTS_PER_IDLE_CHIP
+        idle_cost = runtime_total_ms * MILLIWATTS_PER_IDLE_CHIP
         return sum(cores_power_cost) + idle_cost
 
     def __get_chip_power_monitor(self, chip, placements):
@@ -369,10 +343,9 @@ class ComputeEnergyUsed(object):
         # Only need to update this here now that we've learned there are FPGAs
         # in use
         power_used.num_fpgas = total_fpgas
-        power_usage_total = (
-            total_runtime * self.MILLIWATTS_PER_FPGA * total_fpgas)
+        power_usage_total = total_runtime * MILLIWATTS_PER_FPGA * total_fpgas
         power_usage_runtime = (
-            runtime_total_ms * self.MILLIWATTS_PER_FPGA * total_fpgas)
+            runtime_total_ms * MILLIWATTS_PER_FPGA * total_fpgas)
         power_used.fpga_total_energy_joules = power_usage_total
         power_used.fpga_exec_energy_joules = power_usage_runtime
 
@@ -469,10 +442,10 @@ class ComputeEnergyUsed(object):
         # the ethernet connected chip and the monitor handling the read/write
         # this is checked by min
         n_monitors_active = min(
-            self.N_MONITORS_ACTIVE_DURING_COMMS, len(active_chips))
+            N_MONITORS_ACTIVE_DURING_COMMS, len(active_chips))
         energy_cost = (
             total_time_ms * n_monitors_active *
-            self.MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD /
+            MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD /
             machine.DEFAULT_MAX_CORES_PER_CHIP)
 
         # handle all idle cores
@@ -481,11 +454,11 @@ class ComputeEnergyUsed(object):
         # handle time diff between load time and total load phase of ASB
         energy_cost += (
             (load_time_ms - total_time_ms) *
-            machine.n_chips * self.MILLIWATTS_PER_IDLE_CHIP)
+            machine.n_chips * MILLIWATTS_PER_IDLE_CHIP)
 
         # handle active routers etc
         active_router_cost = (
-            load_time_ms * n_frames * self.MILLIWATTS_PER_FRAME_ACTIVE_COST)
+            load_time_ms * n_frames * MILLIWATTS_PER_FRAME_ACTIVE_COST)
 
         # accumulate
         energy_cost += active_router_cost
@@ -517,8 +490,8 @@ class ComputeEnergyUsed(object):
         # this is checked by min
         energy_cost = (
             total_time_ms *
-            min(self.N_MONITORS_ACTIVE_DURING_COMMS, len(active_chips)) *
-            self.MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD /
+            min(N_MONITORS_ACTIVE_DURING_COMMS, len(active_chips)) *
+            MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD /
             machine.DEFAULT_MAX_CORES_PER_CHIP)
 
         # add idle chip cost
@@ -526,12 +499,12 @@ class ComputeEnergyUsed(object):
 
         # handle active routers etc
         energy_cost_of_active_router = (
-            total_time_ms * n_frames * self.MILLIWATTS_PER_FRAME_ACTIVE_COST)
+            total_time_ms * n_frames * MILLIWATTS_PER_FRAME_ACTIVE_COST)
         energy_cost += energy_cost_of_active_router
         return energy_cost
 
-    @classmethod
-    def _calculate_idle_cost(cls, time, machine):
+    @staticmethod
+    def _calculate_idle_cost(time, machine):
         """ Calculate energy used by being idle.
 
         :param float time: time machine was idle, in milliseconds
@@ -540,12 +513,12 @@ class ComputeEnergyUsed(object):
         :rtype: float
         """
         return (time * machine.total_available_user_cores *
-                cls.MILLIWATTS_PER_IDLE_CHIP /
+                MILLIWATTS_PER_IDLE_CHIP /
                 machine.DEFAULT_MAX_CORES_PER_CHIP)
 
-    @classmethod
+    @staticmethod
     def _calculate_power_down_energy(
-            cls, time, machine, job, version, n_frames):
+            time, machine, job, version, n_frames):
         """ Calculate power down costs
 
         :param float time: time powered down, in milliseconds
@@ -561,13 +534,13 @@ class ComputeEnergyUsed(object):
 
         # if spalloc or hbp
         if job is not None:
-            return time * n_frames * cls.MILLIWATTS_FOR_FRAME_IDLE_COST
+            return time * n_frames * MILLIWATTS_FOR_FRAME_IDLE_COST
         # if 48 chip
         elif version == 5 or version == 4:
-            return time * cls.MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST
+            return time * MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST
         # if 4 chip
         elif version == 3 or version == 2:
-            return machine.n_chips * time * cls.MILLIWATTS_PER_IDLE_CHIP
+            return machine.n_chips * time * MILLIWATTS_PER_IDLE_CHIP
         # boom
         else:
             raise ConfigurationException("don't know what to do here")

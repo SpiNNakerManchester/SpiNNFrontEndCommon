@@ -44,7 +44,6 @@ from pacman.operations.router_compressors import PairCompressor
 
 
 class _BitFieldData(object):
-
     __slots__ = [
         # bit_field data
         "bit_field",
@@ -104,23 +103,9 @@ class HostBasedBitFieldRouterCompressor(object):
     # max entries that can be used by the application code
     _MAX_SUPPORTED_LENGTH = 1023
 
-    # the amount of time each attempt at router compression can be allowed to
-    #  take (in seconds)
-    # _DEFAULT_TIME_PER_ITERATION = 5 * 60
-    _DEFAULT_TIME_PER_ITERATION = 10
-
     # report name
     _REPORT_FOLDER_NAME = "router_compressor_with_bitfield"
     _REPORT_NAME = "router_{}_{}.rpt"
-
-    # key id for the initial entry
-    _ORIGINAL_ENTRY = 0
-
-    # key id for the bitfield entries
-    _ENTRIES = 1
-
-    # size of a filter info in bytes (key, n words, pointer)
-    _SIZE_OF_FILTER_INFO_IN_BYTES = 12
 
     # bit to mask a bit
     _BIT_MASK = 1
@@ -137,15 +122,6 @@ class HostBasedBitFieldRouterCompressor(object):
 
     # for router report
     _LOWER_16_BITS = 0xFFFF
-
-    # rob paul to pay sam threshold starting point at 1ms time step
-    _N_PACKETS_PER_SECOND = 100000
-
-    # convert between milliseconds and second
-    _MS_TO_SEC = 1000
-
-    # fraction effect for threshold
-    _THRESHOLD_FRACTION_EFFECT = 2
 
     # Number of bits per word as an int
     _BITS_PER_WORD = 32
@@ -401,10 +377,8 @@ class HostBasedBitFieldRouterCompressor(object):
         :param int neuron_id: the neuron id to find the bit in the bitfield
         :return: the bit
         """
-        word_id = int(neuron_id // self._BITS_PER_WORD)
-        bit_in_word = neuron_id % self._BITS_PER_WORD
-        flag = (bit_field[word_id] >> bit_in_word) & self._BIT_MASK
-        return flag
+        word_id, bit_in_word = divmod(neuron_id, self._BITS_PER_WORD)
+        return (bit_field[word_id] >> bit_in_word) & self._BIT_MASK
 
     def _read_in_bit_fields(
             self, transceiver, chip_x, chip_y, bit_field_chip_base_addresses,

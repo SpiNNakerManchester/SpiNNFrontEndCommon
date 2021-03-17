@@ -16,13 +16,15 @@
 import logging
 import os
 from spinn_utilities.log import FormatAdapter
+from spinn_machine.machine import Machine
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
+from spinn_front_end_common.utilities.constants import MILLIS_PER_SECOND
+from spinn_front_end_common.utilities.energy_constants import (
+    MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD, MILLIWATTS_PER_IDLE_CHIP,
+    JOULES_PER_SPIKE, MILLIWATTS_PER_FPGA, MILLIWATTS_PER_FRAME_ACTIVE_COST)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
-from spinn_front_end_common.interface.interface_functions import (
-    ComputeEnergyUsed)
-from spinn_machine.machine import Machine
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -106,49 +108,47 @@ class EnergyReport(object):
         # write summary data
         f.write("Summary energy file\n-------------------\n\n")
         f.write(
-            "Energy used by chips during runtime is {} Joules {}\n".format(
-                power_used.chip_energy_joules,
-                cls.__report_time(runtime_total_ms / 1000)))
+            "Energy used by chips during runtime is "
+            f"{power_used.chip_energy_joules} Joules "
+            f"{cls.__report_time(runtime_total_ms / MILLIS_PER_SECOND)}\n")
         f.write(
-            "Energy used by FPGAs is {} Joules over the entire time the "
-            "machine was booted {}\n".format(
-                power_used.fpga_total_energy_joules,
-                cls.__report_time(power_used.booted_time_secs)))
+            "Energy used by FPGAs is "
+            f"{power_used.fpga_total_energy_joules} Joules over the entire "
+            "time the machine was booted "
+            f"{cls.__report_time(power_used.booted_time_secs)}\n")
         f.write(
-            "Energy used by FPGAs is {} Joules over the runtime period {}\n"
-            .format(
-                power_used.fpga_exec_energy_joules,
-                cls.__report_time(runtime_total_ms / 1000)))
+            f"Energy used by FPGAs is {power_used.fpga_exec_energy_joules} "
+            "Joules over the runtime period "
+            f"{cls.__report_time(runtime_total_ms / MILLIS_PER_SECOND)}\n")
         f.write(
             "Energy used by outside router / cooling during the runtime "
-            "period is {} Joules\n".format(power_used.baseline_joules))
+            f"period is {power_used.baseline_joules} Joules\n")
         f.write(
-            "Energy used by packet transmissions is {} Joules {}\n".format(
-                power_used.packet_joules,
-                cls.__report_time(power_used.total_time_secs)))
+            "Energy used by packet transmissions is "
+            f"{power_used.packet_joules} Joules "
+            f"{cls.__report_time(power_used.total_time_secs)}\n")
         f.write(
-            "Energy used during the mapping process is {} Joules {}\n".format(
-                power_used.mapping_joules,
-                cls.__report_time(power_used.mapping_time_secs)))
+            "Energy used during the mapping process is "
+            f"{power_used.mapping_joules} Joules "
+            f"{cls.__report_time(power_used.mapping_time_secs)}\n")
         f.write(
-            "Energy used by the data generation process is {} Joules {}\n"
-            .format(
-                power_used.data_gen_joules,
-                cls.__report_time(power_used.data_gen_time_secs)))
+            "Energy used by the data generation process is "
+            f"{power_used.data_gen_joules} Joules "
+            f"{cls.__report_time(power_used.data_gen_time_secs)}\n")
         f.write(
-            "Energy used during the loading process is {} Joules {}\n".format(
-                power_used.loading_joules,
-                cls.__report_time(power_used.loading_time_secs)))
+            "Energy used during the loading process is "
+            f"{power_used.loading_joules} Joules "
+            f"{cls.__report_time(power_used.loading_time_secs)}\n")
         f.write(
-            "Energy used during the data extraction process is {} Joules {}\n"
-            .format(power_used.saving_joules, cls.__report_time(
-                power_used.saving_time_secs)))
+            "Energy used during the data extraction process is "
+            f"{power_used.saving_joules} Joules "
+            f"{cls.__report_time(power_used.saving_time_secs)}\n")
         f.write(
             "Total energy used by the simulation over {} milliseconds is:\n"
             "     {} Joules, or\n"
             "     {} estimated average Watts, or\n"
             "     {} kWh\n".format(
-                power_used.total_time_secs * 1000,
+                power_used.total_time_secs * MILLIS_PER_SECOND,
                 power_used.total_energy_joules,
                 power_used.total_energy_joules / power_used.total_time_secs,
                 power_used.total_energy_joules /
@@ -161,9 +161,9 @@ class EnergyReport(object):
         :rtype: str
         """
         if time < 1:
-            return "(over {} milliseconds)".format(time * 1000)
+            return f"(over {time * MILLIS_PER_SECOND} milliseconds)"
         else:
-            return "(over {} seconds)".format(time)
+            return f"(over {time} seconds)"
 
     def _write_detailed_report(
             self, placements, machine, power_used, f, runtime_total_ms):
@@ -182,8 +182,7 @@ class EnergyReport(object):
         self._write_warning(f)
 
         # figure out packet cost
-        f.write("The packet cost is {} Joules\n".format(
-            power_used.packet_joules))
+        f.write(f"The packet cost is {power_used.packet_joules} Joules\n")
 
         # figure FPGA cost over all booted and during runtime cost
         self._write_fpga_cost(power_used, f)
@@ -218,19 +217,14 @@ class EnergyReport(object):
             "be in the right ballpark.\n\n\n")
         f.write(
             "The energy components we use are as follows:\n\n"
-            "The energy usage for a chip when all cores are 100% active for "
-            "a millisecond is {} Joules.\n"
+            "The energy usage for a chip when all cores are 100% active for a "
+            f"millisecond is {MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD} Joules.\n"
             "The energy usage for a chip when all cores are not active for a "
-            "millisecond is {} Joules.\n"
-            "The energy used by the machine for firing a packet is {} "
-            "Joules.\n"
-            "The energy used by each active FPGA per millisecond is {} "
-            "Joules.\n\n\n"
-            .format(
-                ComputeEnergyUsed.MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD,
-                ComputeEnergyUsed.MILLIWATTS_PER_IDLE_CHIP,
-                ComputeEnergyUsed.JOULES_PER_SPIKE,
-                ComputeEnergyUsed.MILLIWATTS_PER_FPGA))
+            f"millisecond is {MILLIWATTS_PER_IDLE_CHIP} Joules.\n"
+            "The energy used by the machine for firing a packet is "
+            f"{JOULES_PER_SPIKE} Joules.\n"
+            "The energy used by each active FPGA per millisecond is "
+            f"{MILLIWATTS_PER_FPGA} Joules.\n\n\n")
 
     def _write_fpga_cost(self, power_used, f):
         """ FPGA cost calculation
@@ -238,14 +232,13 @@ class EnergyReport(object):
         :param PowerUsed power_used: the runtime
         :param ~io.TextIOBase f: the file writer
         """
-
         # if not spalloc, then could be any type of board
         if not self.__uses_spalloc:
             # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
             if int(self.__version) in (2, 3):
                 f.write(
-                    "A SpiNN-{} board does not contain any FPGA's, and so "
-                    "its energy cost is 0 \n".format(self.__version))
+                    f"A SpiNN-{self.__version} board does not contain any "
+                    "FPGAs, and so its energy cost is 0\n")
                 return
             elif int(self.__version) not in (4, 5):
                 # no idea where we are; version unrecognised
@@ -258,32 +251,30 @@ class EnergyReport(object):
             if power_used.num_fpgas == 0:
                 # no active fpgas
                 f.write(
-                    "The FPGA's on the SpiNN-{} board are turned off and "
-                    "therefore the energy used by the FPGA is 0\n".format(
-                        self.__version))
+                    f"The FPGAs on the SpiNN-{self.__version} board are "
+                    "turned off and therefore the energy used by the FPGA "
+                    "is 0\n")
                 return
             # active fpgas; fall through to shared main part report
 
         # print out as needed for spalloc and non-spalloc versions
         if self.__version is None:
             f.write(
-                "{} FPGAs on the Spalloc-ed boards are turned on and "
-                "therefore the energy used by the FPGA during the entire time "
-                "the machine was booted (which was {} ms) is {}. "
-                "The usage during execution was {}".format(
-                    power_used.num_fpgas, power_used.total_time_secs * 1000,
-                    power_used.fpga_total_energy_joules,
-                    power_used.fpga_exec_energy_joules))
+                f"{power_used.num_fpgas} FPGAs on the Spalloc-ed boards are "
+                "turned on and therefore the energy used by the FPGA during "
+                "the entire time the machine was booted (which was "
+                f"{power_used.total_time_secs * MILLIS_PER_SECOND} ms) is "
+                f"{power_used.fpga_total_energy_joules}. "
+                "The usage during execution was "
+                f"{power_used.fpga_exec_energy_joules}")
         else:
             f.write(
-                "{} FPGA's on the SpiNN-{} board are turned on and "
-                "therefore the energy used by the FPGA during the entire time "
-                "the machine was booted (which was {} ms) is {}. "
-                "The usage during execution was {}".format(
-                    power_used.num_fpgas, self.__version,
-                    power_used.total_time_secs * 1000,
-                    power_used.fpga_total_energy_joules,
-                    power_used.fpga_exec_energy_joules))
+                f"{power_used.num_fpgas} FPGA's on the SpiNN-{self.__version} "
+                "board are turned on and therefore the energy used by the "
+                "FPGA during the entire time the machine was booted (which "
+                f"was {power_used.total_time_secs * MILLIS_PER_SECOND} ms) is "
+                f"{power_used.fpga_total_energy_joules}. The usage during "
+                f"execution was {power_used.fpga_exec_energy_joules}")
 
     @staticmethod
     def _write_chips_active_cost(
@@ -305,24 +296,22 @@ class EnergyReport(object):
             if placements.is_processor_occupied(chip.x, chip.y, core):
                 vertex = placements.get_vertex_on_processor(
                     chip.x, chip.y, core)
-                label = " (running {})".format(vertex.label)
+                label = f" (running {vertex.label})"
             else:
                 label = ""
             energy = power_used.get_core_active_energy_joules(
                 chip.x, chip.y, core)
             f.write(
-                "processor {}:{}:{}{} used {} Joules of energy by "
-                "being active during the execution of the simulation\n".format(
-                    chip.x, chip.y, core, label, energy))
+                f"processor {chip.x}:{chip.y}:{core}{label} used {energy} "
+                "Joules of energy by being active during the execution of "
+                "the simulation\n")
 
         # TAKE INTO ACCOUNT IDLE COST
-        idle_cost = (
-            runtime_total_ms * ComputeEnergyUsed.MILLIWATTS_PER_IDLE_CHIP)
+        idle_cost = runtime_total_ms * MILLIWATTS_PER_IDLE_CHIP
 
         f.write(
-            "The chip at {},{} used {} Joules of energy for by being idle "
-            "during the execution of the simulation\n".format(
-                chip.x, chip.y, idle_cost))
+            f"The chip at {chip.x},{chip.y} used {idle_cost} Joules of energy "
+            "for by being idle during the execution of the simulation\n")
 
     @staticmethod
     def _write_load_time_cost(power_used, f):
@@ -341,18 +330,18 @@ class EnergyReport(object):
 
         # handle active routers etc
         active_router_cost = (
-            power_used.loading_time_secs * 1000 * power_used.num_frames *
-            ComputeEnergyUsed.MILLIWATTS_PER_FRAME_ACTIVE_COST)
+            power_used.loading_time_secs * MILLIS_PER_SECOND *
+            power_used.num_frames * MILLIWATTS_PER_FRAME_ACTIVE_COST)
 
         # detailed report write
         f.write(
-            "The amount of time used during the loading process is {} "
-            "milliseconds.\nAssumed only 2 monitor cores is executing that "
+            "The amount of time used during the loading process is "
+            f"{total_time_ms} milliseconds.\n"
+            "Assumed only 2 monitor cores is executing that "
             "this point. We also assume that there is a baseline active "
-            "router/cooling component that is using {} Joules. "
-            "Overall the energy usage is {} Joules.\n".format(
-                total_time_ms, active_router_cost,
-                power_used.loading_joules))
+            "router/cooling component that is using "
+            f"{active_router_cost} Joules. Overall the energy usage is "
+            f"{power_used.loading_joules} Joules.\n")
 
     @staticmethod
     def _write_data_extraction_time_cost(power_used, f):
@@ -373,14 +362,14 @@ class EnergyReport(object):
         # handle active routers etc
         energy_cost_of_active_router = (
             total_time_ms * power_used.num_frames *
-            ComputeEnergyUsed.MILLIWATTS_PER_FRAME_ACTIVE_COST)
+            MILLIWATTS_PER_FRAME_ACTIVE_COST)
 
         # detailed report
         f.write(
-            "The amount of time used during the data extraction process is {} "
-            "milliseconds.\nAssumed only 2 monitor cores is executing at "
+            "The amount of time used during the data extraction process is "
+            f"{total_time_ms} milliseconds.\n"
+            "Assumed only 2 monitor cores is executing at "
             "this point. We also assume that there is a baseline active "
-            "router/cooling component that is using {} Joules. Hence the "
-            "overall energy usage is {} Joules.\n".format(
-                total_time_ms, energy_cost_of_active_router,
-                power_used.saving_joules))
+            "router/cooling component that is using "
+            f"{energy_cost_of_active_router} Joules. Hence the overall "
+            f"energy usage is {power_used.saving_joules} Joules.\n")

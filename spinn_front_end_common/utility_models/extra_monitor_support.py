@@ -24,13 +24,15 @@ class ExtraMonitorSupport(AbstractOneAppOneMachineVertex):
     """
     __slots__ = []
 
-    def __init__(self, constraints):
+    def __init__(self, x, y, *, constraints=()):
         """
-        :param constraints: The constraints on the vertex
+        :param int x: The X coordinate of the vertex
+        :param int y: The Y coordinate of the vertex
+        :param constraints: The additional constraints on the vertex
         :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
         super().__init__(
             ExtraMonitorSupportMachineVertex(
-                constraints=constraints, app_vertex=self),
+                x, y, self, constraints=constraints),
             label="ExtraMonitorSupport", constraints=constraints)

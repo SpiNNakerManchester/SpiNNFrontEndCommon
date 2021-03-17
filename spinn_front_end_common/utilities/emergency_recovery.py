@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import contextlib
 import logging
 
 from spinn_utilities.log import FormatAdapter
@@ -38,28 +39,28 @@ def _emergency_state_check(txrx, app_id):
                 "unexpected core states (rte={}, wdog={})",
                 txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
                 txrx.get_cores_in_state(None, CPUState.WATCHDOG))
+        return
     except Exception:
         logger.exception(
             "Could not read the status count - going to individual cores")
-        machine = txrx.get_machine_details()
-        infos = CPUInfos()
-        errors = list()
-        for chip in machine.chips:
-            for p in chip.processors:
-                try:
-                    info = txrx.get_cpu_information_from_core(
-                        chip.x, chip.y, p)
-                    if info.state in (
-                            CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG):
-                        infos.add_processor(chip.x, chip.y, p, info)
-                except Exception:
-                    errors.append((chip.x, chip.y, p))
-        logger.warning(txrx.get_core_status_string(infos))
-        logger.warning("Could not read information from cores {}".format(
-            errors))
+
+    machine = txrx.get_machine_details()
+    infos = CPUInfos()
+    errors = list()
+    for chip in machine.chips:
+        for p in chip.processors:
+            try:
+                info = txrx.get_cpu_information_from_core(
+                    chip.x, chip.y, p)
+                if info.state in (
+                        CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG):
+                    infos.add_processor(chip.x, chip.y, p, info)
+            except Exception:
+                errors.append((chip.x, chip.y, p))
+    logger.warning("{}", txrx.get_core_status_string(infos))
+    logger.warning("Could not read information from cores {}", errors)
 
 
-# TRICKY POINT: Have to delay the import to here because of import circularity
 def _emergency_iobuf_extract(txrx, executable_targets):
     """
     :param ~.Transceiver txrx:
@@ -109,3 +110,31 @@ def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
     """
     _emergency_state_check(txrx, app_id)
     _emergency_iobuf_extract(txrx, executable_targets)
+
+
+class RecoverOnFailure(contextlib.AbstractContextManager):
+    """
+    A context manager that will call
+    :py:func:`~.emergency_recover_state_from_failure`
+    if its managed code throws an exception.
+    """
+
+    def __init__(self, txrx, app_id, vertex, placement):
+        """
+        :param ~spinnman.transceiver.Transceiver txrx:
+            The transceiver.
+        :param int app_id:
+            The ID of the application.
+        :param AbstractHasAssociatedBinary vertex:
+            The vertex to retrieve the IOBUF from if it is suspected as being
+            dead.
+        :param ~pacman.model.placements.Placement placement:
+            Where the vertex is located.
+        """
+        self.__args = (txrx, app_id, vertex, placement)
+        self._recoverer = emergency_recover_state_from_failure
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            self._recoverer(*self.__args)
+        return False

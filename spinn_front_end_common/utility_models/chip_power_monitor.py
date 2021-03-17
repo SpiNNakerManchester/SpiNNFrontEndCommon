@@ -27,7 +27,7 @@ class ChipPowerMonitor(ApplicationVertex, LegacyPartitionerAPI):
 
     def __init__(
             self, label, n_samples_per_recording, sampling_frequency,
-            constraints=None):
+            constraints=()):
         """
         :param str label: vertex label
         :param constraints: constraints for the vertex

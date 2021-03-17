@@ -18,13 +18,15 @@ from pacman.model.resources import (
     SpecificChipSDRAMResource, CoreResource,
     PreAllocatedResourceContainer, SpecificBoardIPtagResource)
 from spinn_front_end_common.utility_models import (
-    ExtraMonitorSupportMachineVertex)
+    ExtraMonitorSupportMachineVertex as
+    ExtraMonitor)
 from spinn_front_end_common.utility_models import (
-    DataSpeedUpPacketGatherMachineVertex)
+    DataSpeedUpPacketGatherMachineVertex as
+    Gatherer)
 
 
 class PreAllocateResourcesForExtraMonitorSupport(object):
-    """ Allocates resources for the extra monitors.
+    """ Reserves resources for the extra monitors.
     """
     def __call__(
             self, machine, pre_allocated_resources,
@@ -48,12 +50,12 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
 
         # add resource requirements for the gatherers on each Ethernet
         # connected chip. part of data extraction
-        self._handle_packet_gathering_support(
+        self._reserve_for_gatherers(
             sdrams, cores, tags, machine, progress, n_cores_to_allocate)
 
         # add resource requirements for re-injector and reader for data
         # extractor
-        self._handle_second_monitor_support(cores, sdrams, machine, progress)
+        self._reserve_for_monitors(cores, sdrams, machine, progress)
 
         # note what has been preallocated
         allocated = PreAllocatedResourceContainer(
@@ -63,7 +65,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         return allocated
 
     @staticmethod
-    def _handle_second_monitor_support(cores, sdrams, machine, progress):
+    def _reserve_for_monitors(cores, sdrams, machine, progress):
         """ Adds the second monitor preallocations, which reflect the\
             reinjector and data extractor support
 
@@ -71,15 +73,14 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         :param ~.Machine machine: the spinnMachine instance
         :param ~.ProgressBar progress: the progress bar to operate one
         """
-        extra_usage = \
-            ExtraMonitorSupportMachineVertex.static_resources_required()
+        resources = ExtraMonitor.static_resources_required()
         for chip in progress.over(machine.chips):
             cores.append(CoreResource(chip=chip, n_cores=1))
             sdrams.append(SpecificChipSDRAMResource(
-                chip=chip, sdram_usage=extra_usage.sdram))
+                chip=chip, sdram_usage=resources.sdram))
 
     @staticmethod
-    def _handle_packet_gathering_support(
+    def _reserve_for_gatherers(
             sdrams, cores, tags, machine, progress, n_cores_to_allocate):
         """ Adds the packet gathering functionality tied into the data\
             extractor within each chip
@@ -98,13 +99,12 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         # pylint: disable=too-many-arguments
 
         # get resources from packet gatherer
-        resources = DataSpeedUpPacketGatherMachineVertex.\
-            static_resources_required()
+        resources = Gatherer.static_resources_required()
+        iptag = resources.iptags[0]
 
         # locate Ethernet connected chips that the vertices reside on
-        for ethernet_connected_chip in \
-                progress.over(machine.ethernet_connected_chips,
-                              finish_at_end=False):
+        for ethernet_connected_chip in progress.over(
+                machine.ethernet_connected_chips, finish_at_end=False):
             # do resources. SDRAM, cores, tags
             sdrams.append(SpecificChipSDRAMResource(
                 chip=ethernet_connected_chip,
@@ -113,8 +113,6 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
                 chip=ethernet_connected_chip, n_cores=n_cores_to_allocate))
             tags.append(SpecificBoardIPtagResource(
                 board=ethernet_connected_chip.ip_address,
-                ip_address=resources.iptags[0].ip_address,
-                port=resources.iptags[0].port,
-                strip_sdp=resources.iptags[0].strip_sdp,
-                tag=resources.iptags[0].tag,
-                traffic_identifier=resources.iptags[0].traffic_identifier))
+                ip_address=iptag.ip_address, port=iptag.port,
+                strip_sdp=iptag.strip_sdp, tag=iptag.tag,
+                traffic_identifier=iptag.traffic_identifier))

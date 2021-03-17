@@ -23,7 +23,8 @@ from spinnman.messages.eieio.data_messages import (
 from spinnman.messages.eieio import EIEIOType
 from spinnman.connections import ConnectionListener
 from spinnman.connections.udp_packet_connections import EIEIOConnection
-from spinn_front_end_common.utilities.constants import NOTIFY_PORT
+from spinn_front_end_common.utilities.constants import (
+    NOTIFY_PORT, MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.database import DatabaseConnection
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.connections.udp_packet_connections.utils import (
@@ -234,7 +235,7 @@ class LiveEventConnection(DatabaseConnection):
         run_time_ms = db_reader.get_configuration_parameter_value(
             "runtime")
         machine_timestep_ms = db_reader.get_configuration_parameter_value(
-            "machine_time_step") / 1000.0
+            "machine_time_step") / MICRO_TO_MILLISECOND_CONVERSION
 
         if self.__send_labels is not None:
             self.__init_sender(db_reader, vertex_sizes)

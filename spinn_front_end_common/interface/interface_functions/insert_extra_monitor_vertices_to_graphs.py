@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGather, DataSpeedUpPacketGatherMachineVertex,
     ExtraMonitorSupport, ExtraMonitorSupportMachineVertex)
@@ -195,8 +194,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param ~.Chip chip:
         :rtype: ExtraMonitorSupport
         """
-        return ExtraMonitorSupport(constraints=[
-            ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+        return ExtraMonitorSupport(chip.x, chip.y)
 
     @staticmethod
     def __new_mach_monitor(chip):
@@ -204,9 +202,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param ~.Chip chip:
         :rtype: ExtraMonitorSupportMachineVertex
         """
-        return ExtraMonitorSupportMachineVertex(
-            constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)],
-            app_vertex=None)
+        return ExtraMonitorSupportMachineVertex(chip.x, chip.y, None)
 
     def __new_app_gatherer(self, ethernet_chip, vertex_to_chip_map):
         """
@@ -217,8 +213,6 @@ class InsertExtraMonitorVerticesToGraphs(object):
         return DataSpeedUpPacketGather(
             x=ethernet_chip.x, y=ethernet_chip.y,
             ip_address=ethernet_chip.ip_address,
-            constraints=[ChipAndCoreConstraint(
-                x=ethernet_chip.x, y=ethernet_chip.y)],
             extra_monitors_by_chip=vertex_to_chip_map,
             report_default_directory=self._report_dir,
             write_data_speed_up_reports=self._write_reports)
@@ -232,8 +226,6 @@ class InsertExtraMonitorVerticesToGraphs(object):
         return DataSpeedUpPacketGatherMachineVertex(
             x=ethernet_chip.x, y=ethernet_chip.y,
             ip_address=ethernet_chip.ip_address,
-            constraints=[ChipAndCoreConstraint(
-                x=ethernet_chip.x, y=ethernet_chip.y)],
             extra_monitors_by_chip=vertex_to_chip_map,
             report_default_directory=self._report_dir,
             write_data_speed_up_reports=self._write_reports)

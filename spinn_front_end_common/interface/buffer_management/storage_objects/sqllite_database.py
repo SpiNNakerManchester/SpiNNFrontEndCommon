@@ -18,14 +18,14 @@ import sqlite3
 import time
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.overrides import overrides
+from spinn_front_end_common.utilities.constants import MILLIS_PER_SECOND
 from .abstract_database import AbstractDatabase
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
-_SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
 
 
 def _timestamp():
-    return int(time.time() * _SECONDS_TO_MICRO_SECONDS_CONVERSION)
+    return int(time.time() * MILLIS_PER_SECOND)
 
 
 class SqlLiteDatabase(AbstractDatabase, AbstractContextManager):

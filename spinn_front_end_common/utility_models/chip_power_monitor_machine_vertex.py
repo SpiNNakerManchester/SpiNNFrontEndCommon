@@ -13,11 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from enum import IntEnum
 import math
 import logging
-from enum import IntEnum
 import numpy
-from data_specification.enums import DataType
+from spinn_machine import Machine
 from pacman.executor.injection_decorator import (
     inject_items, supports_injection)
 from pacman.model.graphs.machine import MachineVertex
@@ -43,7 +43,8 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
 
-RECORDING_SIZE_PER_ENTRY = 18 * BYTES_PER_WORD
+CORES_PER_CHIP = Machine.DEFAULT_MAX_CORES_PER_CHIP
+RECORDING_SIZE_PER_ENTRY = CORES_PER_CHIP * BYTES_PER_WORD
 DEFAULT_MALLOCS_USED = 3
 CONFIG_SIZE_IN_BYTES = 2 * BYTES_PER_WORD
 
@@ -173,7 +174,7 @@ class ChipPowerMonitorMachineVertex(
         :param int time_scale_factor: time scale factor
         :param int data_n_time_steps: timesteps to reserve data for
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, arguments-differ
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
@@ -192,9 +193,8 @@ class ChipPowerMonitorMachineVertex(
             spec object
         """
         spec.switch_write_focus(region=self._REGIONS.CONFIG)
-        spec.write_value(self._n_samples_per_recording,
-                         data_type=DataType.UINT32)
-        spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
+        spec.write_value(self._n_samples_per_recording)
+        spec.write_value(self._sampling_frequency)
 
     def _write_setup_info(
             self, spec, machine_time_step, time_scale_factor,
@@ -296,6 +296,6 @@ class ChipPowerMonitorMachineVertex(
                 placement.x, placement.y)
 
         results = (
-            numpy.frombuffer(record_raw, dtype="uint32").reshape(-1, 18) /
-            self.n_samples_per_recording)
+            numpy.frombuffer(record_raw, dtype="uint32")
+            .reshape(-1, CORES_PER_CHIP) / self.n_samples_per_recording)
         return results

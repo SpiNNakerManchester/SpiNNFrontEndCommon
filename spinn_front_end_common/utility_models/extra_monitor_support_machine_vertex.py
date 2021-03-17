@@ -21,6 +21,7 @@ from spinn_machine import CoreSubsets, Router
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
+from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
@@ -37,7 +38,7 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_vertices_to_core_subset)
 from spinn_front_end_common.utilities.emergency_recovery import (
-    emergency_recover_state_from_failure)
+    RecoverOnFailure)
 from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex as
     Gatherer)
@@ -105,13 +106,19 @@ class ExtraMonitorSupportMachineVertex(
     )
 
     def __init__(
-            self, constraints, app_vertex,
+            self, x, y, app_vertex, *, constraints=(),
             reinject_multicast=None, reinject_point_to_point=False,
             reinject_nearest_neighbour=False, reinject_fixed_route=False):
         """
-        :param constraints: constraints on this vertex
+        :param int x: The X coordinate of this vertex
+        :param int y: The Y coordinate of this vertex
+        :param ExtraMonitorSupport app_vertex:
+            The associated application vertex, or ``None`` for a node on a pure
+            machine graph
+        :param constraints: Additional constraints on this vertex
         :type constraints:
-            iterable(~pacman.model.constraints.AbstractConstraint)
+            ~collections.abc.Iterable(
+            ~pacman.model.constraints.AbstractConstraint)
         :param bool reinject_multicast:
             if we reinject multicast packets; defaults to value of
             `enable_reinjection` setting in configuration file
@@ -122,6 +129,7 @@ class ExtraMonitorSupportMachineVertex(
         :param bool reinject_fixed_route: if we reinject fixed route packets
         """
         # pylint: disable=too-many-arguments
+        constraints = list(constraints) + [ChipAndCoreConstraint(x, y)]
         super().__init__(
             label="SYSTEM:ExtraMonitor", constraints=constraints,
             app_vertex=app_vertex)
@@ -382,6 +390,10 @@ class ExtraMonitorSupportMachineVertex(
         route |= Router.convert_routing_table_entry_to_spinnaker_route(entry)
         return route
 
+    def _recovery_context(self, transceiver, placements):
+        placement = placements.get_placement_of_vertex(self)
+        return RecoverOnFailure(transceiver, self._app_id, self, placement)
+
     def set_router_wait1_timeout(
             self, timeout, transceiver, placements,
             extra_monitor_cores_to_set):
@@ -407,13 +419,8 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set, placements)
         process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
-        try:
+        with self._recovery_context(transceiver, placements):
             process.set_wait1_timeout(mantissa, exponent, core_subsets)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
-            raise
 
     def set_router_wait2_timeout(
             self, timeout, transceiver, placements,
@@ -440,13 +447,8 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set, placements)
         process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
-        try:
+        with self._recovery_context(transceiver, placements):
             process.set_wait2_timeout(mantissa, exponent, core_subsets)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
-            raise
 
     def reset_reinjection_counters(
             self, transceiver, placements, extra_monitor_cores_to_set):
@@ -464,13 +466,8 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = ResetCountersProcess(transceiver.scamp_connection_selector)
-        try:
+        with self._recovery_context(transceiver, placements):
             process.reset_counters(core_subsets)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
-            raise
 
     def clear_reinjection_queue(
             self, transceiver, placements, extra_monitor_cores_to_set):
@@ -488,13 +485,8 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = ClearQueueProcess(transceiver.scamp_connection_selector)
-        try:
+        with self._recovery_context(transceiver, placements):
             process.reset_counters(core_subsets)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
-            raise
 
     def get_reinjection_status(self, placements, transceiver):
         """ Get the reinjection status from this extra monitor vertex
@@ -508,13 +500,9 @@ class ExtraMonitorSupportMachineVertex(
         """
         placement = placements.get_placement_of_vertex(self)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
-        try:
+        with self._recovery_context(transceiver, placements):
             return process.get_reinjection_status(
                 placement.x, placement.y, placement.p)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                transceiver, self._app_id, self, placement)
-            raise
 
     def get_reinjection_status_for_vertices(
             self, placements, extra_monitor_cores_for_data, transceiver):
@@ -573,16 +561,11 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = SetPacketTypesProcess(transceiver.scamp_connection_selector)
-        try:
+        with self._recovery_context(transceiver, placements):
             process.set_packet_types(
                 core_subsets, self._reinject_point_to_point,
                 self._reinject_multicast, self._reinject_nearest_neighbour,
                 self._reinject_fixed_route)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
-            raise
 
     def load_system_mc_routes(
             self, placements, extra_monitor_cores_for_data, transceiver):
@@ -602,13 +585,8 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_for_data, placements)
         process = LoadSystemMCRoutesProcess(
             transceiver.scamp_connection_selector)
-        try:
+        with self._recovery_context(transceiver, placements):
             return process.load_system_mc_routes(core_subsets)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
-            raise
 
     def load_application_mc_routes(
             self, placements, extra_monitor_cores_for_data, transceiver):
@@ -628,13 +606,8 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_for_data, placements)
         process = LoadApplicationMCRoutesProcess(
             transceiver.scamp_connection_selector)
-        try:
+        with self._recovery_context(transceiver, placements):
             return process.load_application_mc_routes(core_subsets)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
-            raise
 
     @staticmethod
     def _convert_vertices_to_core_subset(extra_monitor_cores, placements):

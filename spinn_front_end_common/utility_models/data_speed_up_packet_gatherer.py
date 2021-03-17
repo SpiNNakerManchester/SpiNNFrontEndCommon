@@ -28,7 +28,7 @@ class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
     def __init__(
             self, x, y, ip_address, extra_monitors_by_chip,
             report_default_directory,
-            write_data_speed_up_reports, constraints=None):
+            write_data_speed_up_reports, constraints=()):
         """
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.
@@ -40,10 +40,12 @@ class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
         :param str report_default_directory: Where reporting is done.
         :param bool write_data_speed_up_reports:
             Whether to write low-level reports on data transfer speeds.
-        :param constraints:
+        :param constraints: Additional constraints
         :type constraints:
-            iterable(~pacman.model.constraints.AbstractConstraint)
+            ~collections.abc.Iterable(
+            ~pacman.model.constraints.AbstractConstraint)
         """
+        # We *have* to have the machine vertex on an explicit chip
         super().__init__(
             DataSpeedUpPacketGatherMachineVertex(
                 app_vertex=self,
@@ -51,5 +53,5 @@ class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
                 extra_monitors_by_chip=extra_monitors_by_chip,
                 report_default_directory=report_default_directory,
                 write_data_speed_up_reports=write_data_speed_up_reports),
-            "multicast speed up application vertex for {}, {}".format(
-                x, y), constraints)
+            f"multicast speed up application vertex for {x}, {y}",
+            constraints)

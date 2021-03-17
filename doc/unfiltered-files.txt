@@ -22,6 +22,7 @@ spinn_front_end_common/interface/java_caller.py
 spinn_front_end_common/interface/simulator_state.py
 spinn_front_end_common/utilities/class_utils.py
 spinn_front_end_common/utilities/constants.py
+spinn_front_end_common/utilities/energy_constants.py
 spinn_front_end_common/utilities/exceptions.py
 spinn_front_end_common/utilities/globals_variables.py
 spinn_front_end_common/utilities/helpful_functions.py
