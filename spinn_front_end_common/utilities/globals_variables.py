@@ -219,6 +219,17 @@ def run_report_directory():
         return simulator._report_default_directory
 
 
+def report_simulation_top_directory():
+    simulator = _last_simulator()
+    if simulator is None:
+        raise ValueError(
+            "You need to have setup a simulator before asking for its "
+            "run_report_directory.")
+    else:
+        # underscore param used avoid exposing a None PyNN parameter
+        return simulator._report_simulation_top_directory
+
+
 def config():
     """ Provides access to the configuration used or a best effort to the
     config to be used
