@@ -55,7 +55,7 @@ jobs:
         tests: unittests fec_integration_tests
         coverage: ${{ matrix.python-version == 3.8 }}
         cover-packages: spinn_front_end_common
-        coveralls-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        coveralls-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Lint with flake8
       run: flake8 spinn_front_end_common unittests fec_integration_tests
