@@ -42,54 +42,51 @@ class ApplicationFinisher(object):
         :type executable_types:
             dict(ExecutableType,~spinn_machine.CoreSubsets)
         :raises ExecutableFailedToStopException:
+            If any processor RTEs or WATCHDOGs
         """
 
-        total_processors = \
-            len(executable_types[ExecutableType.USES_SIMULATION_INTERFACE])
         all_core_subsets = \
             executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
+        total_processors = len(all_core_subsets)
 
-        progress = ProgressBar(
-            total_processors,
-            "Turning off all the cores within the simulation")
-
-        # check that the right number of processors are finished
-        processors_finished = txrx.get_core_state_count(
-            app_id, CPUState.FINISHED)
-        finished_cores = processors_finished
-
-        while processors_finished != total_processors:
-            if processors_finished > finished_cores:
-                progress.update(processors_finished - finished_cores)
-                finished_cores = processors_finished
-
-            processors_rte = txrx.get_core_state_count(
-                app_id, CPUState.RUN_TIME_EXCEPTION)
-            processors_watchdogged = txrx.get_core_state_count(
-                app_id, CPUState.WATCHDOG)
-
-            if processors_rte > 0 or processors_watchdogged > 0:
-                raise ExecutableFailedToStopException(
-                    "{} of {} processors went into an error state when"
-                    " shutting down".format(
-                        processors_rte + processors_watchdogged,
-                        total_processors))
-
-            successful_cores_finished = txrx.get_cores_in_state(
-                all_core_subsets, CPUState.FINISHED)
-
-            for core_subset in all_core_subsets:
-                for processor in core_subset.processor_ids:
-                    if not successful_cores_finished.is_core(
-                            core_subset.x, core_subset.y, processor):
-                        self._update_provenance_and_exit(
-                            txrx, app_id, processor, core_subset)
-            time.sleep(0.5)
-
+        with ProgressBar(
+                total_processors,
+                "Turning off all the cores within the simulation") as progress:
+            # check that the right number of processors are finished
             processors_finished = txrx.get_core_state_count(
                 app_id, CPUState.FINISHED)
+            finished_cores = processors_finished
 
-        progress.end()
+            while processors_finished != total_processors:
+                if processors_finished > finished_cores:
+                    progress.update(processors_finished - finished_cores)
+                    finished_cores = processors_finished
+
+                processors_rte = txrx.get_core_state_count(
+                    app_id, CPUState.RUN_TIME_EXCEPTION)
+                processors_watchdogged = txrx.get_core_state_count(
+                    app_id, CPUState.WATCHDOG)
+
+                if processors_rte > 0 or processors_watchdogged > 0:
+                    raise ExecutableFailedToStopException(
+                        "{} of {} processors went into an error state when"
+                        " shutting down".format(
+                            processors_rte + processors_watchdogged,
+                            total_processors))
+
+                successful_cores_finished = txrx.get_cores_in_state(
+                    all_core_subsets, CPUState.FINISHED)
+
+                for core_subset in all_core_subsets:
+                    for processor in core_subset.processor_ids:
+                        if not successful_cores_finished.is_core(
+                                core_subset.x, core_subset.y, processor):
+                            self._update_provenance_and_exit(
+                                txrx, app_id, processor, core_subset)
+                time.sleep(0.5)
+
+                processors_finished = txrx.get_core_state_count(
+                    app_id, CPUState.FINISHED)
 
     @staticmethod
     def _update_provenance_and_exit(txrx, app_id, processor, core_subset):

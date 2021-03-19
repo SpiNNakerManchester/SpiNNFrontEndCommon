@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+from collections.abc import Sequence, Sized
 
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from spinn_utilities.overrides import overrides
@@ -162,7 +163,7 @@ class ReverseIpTagMultiCastSource(
     def _validate_send_buffer_times(self, send_buffer_times):
         if send_buffer_times is None:
             return None
-        if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
+        if len(send_buffer_times) and isinstance(send_buffer_times[0], Sized):
             if len(send_buffer_times) != self._n_atoms:
                 raise ConfigurationException(
                     "The array or arrays of times {} does not have the "
@@ -179,13 +180,12 @@ class ReverseIpTagMultiCastSource(
     def get_resources_used_by_atoms(self, vertex_slice):
         send_buffer_times = self._send_buffer_times
         if send_buffer_times is not None and len(send_buffer_times):
-            if hasattr(send_buffer_times[0], "__len__"):
-                send_buffer_times = send_buffer_times[
-                    vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
+            if isinstance(send_buffer_times[0], Sequence):
+                send_buffer_times = send_buffer_times[vertex_slice.as_slice]
                 # Check the buffer times on the slice are not empty
                 n_buffer_times = 0
                 for i in send_buffer_times:
-                    if hasattr(i, "__len__"):
+                    if isinstance(i, Sized):
                         n_buffer_times += len(i)
                     else:
                         # assuming this must be a single integer
@@ -223,9 +223,9 @@ class ReverseIpTagMultiCastSource(
             # pylint: disable=len-as-condition
             if (self._send_buffer_times is not None and
                     len(self._send_buffer_times)):
-                if hasattr(self._send_buffer_times[0], "__len__"):
+                if isinstance(self._send_buffer_times[0], Sequence):
                     send_buffer_times_to_set = self._send_buffer_times[
-                        vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
+                        vertex_slice.as_slice]
             vertex.send_buffer_times = send_buffer_times_to_set
 
     def enable_recording(self, new_state=True):
@@ -244,9 +244,8 @@ class ReverseIpTagMultiCastSource(
             label=None, constraints=None):
         send_buffer_times = self._send_buffer_times
         if send_buffer_times is not None and len(send_buffer_times):
-            if hasattr(send_buffer_times[0], "__len__"):
-                send_buffer_times = send_buffer_times[
-                    vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
+            if isinstance(send_buffer_times[0], Sequence):
+                send_buffer_times = send_buffer_times[vertex_slice.as_slice]
         machine_vertex = ReverseIPTagMulticastSourceMachineVertex(
             vertex_slice=vertex_slice,
             label=label, constraints=constraints, app_vertex=self,

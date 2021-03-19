@@ -39,7 +39,8 @@ from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (BuffersSentDeque, BufferedReceivingData)
 from spinn_front_end_common.interface.buffer_management.buffer_models \
-    import AbstractReceiveBuffersToHost
+    import (
+        AbstractReceiveBuffersToHost)
 from .recording_utilities import get_recording_header_size
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -54,7 +55,8 @@ _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
 _SDP_MAX_PACKAGE_SIZE = 272
 
 TRAFFIC_IDENTIFIER = "BufferTraffic"
-
+#: Whether to verify data transferred by the fast data out protocol.
+#: Very slow!
 VERIFY = False
 
 
@@ -598,7 +600,7 @@ class BufferManager(object):
                 self._finished = True
 
     def get_data_for_placements(self, placements, progress=None):
-        """
+        """ Retrieve the recorded data from
         :param ~pacman.model.placements.Placements placements:
             Where to get the data from.
         :param progress: How to measure/display the progress.
@@ -607,13 +609,10 @@ class BufferManager(object):
         if self._java_caller is not None:
             self._java_caller.set_placements(placements, self._transceiver)
 
-        timer = Timer()
-        with timer:
+        with Timer() as timer:
             with self._thread_lock_buffer_out:
                 if self._java_caller is not None:
                     self._java_caller.get_all_data()
-                    if progress:
-                        progress.end()
                 elif self._uses_advanced_monitors:
                     self.__old_get_data_for_placements_with_monitors(
                         placements, progress)
@@ -657,9 +656,12 @@ class BufferManager(object):
         # get data
         for placement in placements:
             vertex = placement.vertex
+            if not isinstance(vertex, AbstractReceiveBuffersToHost):
+                # Skip vertices that can't describe their recording regions
+                continue
             for recording_region_id in vertex.get_recorded_region_ids():
                 self._retreive_by_placement(placement, recording_region_id)
-                if progress is not None:
+                if progress:
                     progress.update()
 
     def get_data_by_placement(self, placement, recording_region_id):

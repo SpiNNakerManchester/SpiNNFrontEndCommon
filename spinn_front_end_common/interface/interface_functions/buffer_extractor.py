@@ -36,20 +36,17 @@ class BufferExtractor(object):
         :param BufferManager buffer_manager:
         """
         # Count the regions to be read
-        n_regions_to_read, recording_placements = self._count_regions(
+        n_regions, recording_placements = self._count_regions(
             machine_graph, placements)
-        if not n_regions_to_read:
+        if not n_regions:
             logger.info("No recorded data to extract")
             return
 
         # Read back the regions
-        progress = ProgressBar(
-            n_regions_to_read, "Extracting buffers from the last run")
-        try:
+        with ProgressBar(n_regions,
+                         "Extracting buffers from the last run") as progress:
             buffer_manager.get_data_for_placements(
                 recording_placements, progress)
-        finally:
-            progress.end()
 
     @staticmethod
     def _count_regions(machine_graph, placements):

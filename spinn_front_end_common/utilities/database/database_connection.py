@@ -103,8 +103,7 @@ class DatabaseConnection(UDPConnection):
                 if self.__pause_and_stop_callback is not None:
                     self.__pause_stop()
         except Exception as e:
-            logger.error("Failure processing database callback",
-                         exc_info=True)
+            logger.exception("Failure processing database callback")
             raise SpinnmanIOException(str(e)) from e
         finally:
             self.__running = False

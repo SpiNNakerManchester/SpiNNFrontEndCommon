@@ -47,29 +47,28 @@ class ChipProvenanceUpdater(object):
         total_processors = len(all_core_subsets)
         left_to_do_cores = total_processors - processors_completed
 
-        progress = ProgressBar(
-            left_to_do_cores,
-            "Forcing error cores to generate provenance data")
+        with ProgressBar(
+                left_to_do_cores,
+                "Forcing error cores to generate provenance data") as progress:
+            error_cores = txrx.get_cores_in_state(
+                all_core_subsets, CPUState.RUN_TIME_EXCEPTION)
+            watchdog_cores = txrx.get_cores_in_state(
+                all_core_subsets, CPUState.WATCHDOG)
+            idle_cores = txrx.get_cores_in_state(
+                all_core_subsets, CPUState.IDLE)
 
-        error_cores = txrx.get_cores_in_state(
-            all_core_subsets, CPUState.RUN_TIME_EXCEPTION)
-        watchdog_cores = txrx.get_cores_in_state(
-            all_core_subsets, CPUState.WATCHDOG)
-        idle_cores = txrx.get_cores_in_state(
-            all_core_subsets, CPUState.IDLE)
+            if error_cores or watchdog_cores or idle_cores:
+                raise ConfigurationException(
+                    "Some cores have crashed. "
+                    f"RTE cores {error_cores.values()}, "
+                    f"watch-dogged cores {watchdog_cores.values()}, "
+                    f"idle cores {idle_cores.values()}")
 
-        if error_cores or watchdog_cores or idle_cores:
-            raise ConfigurationException(
-                "Some cores have crashed. RTE cores {}, watch-dogged cores {},"
-                " idle cores {}".format(
-                    error_cores.values(), watchdog_cores.values(),
-                    idle_cores.values()))
-
-        # check that all cores are in the state FINISHED which shows that
-        # the core has received the message and done provenance updating
-        self._update_provenance(txrx, total_processors, processors_completed,
-                                all_core_subsets, app_id, progress)
-        progress.end()
+            # check that all cores are in the state FINISHED which shows that
+            # the core has received the message and done provenance updating
+            self._update_provenance(
+                txrx, total_processors, processors_completed,
+                all_core_subsets, app_id, progress)
 
     def _update_provenance(self, txrx, total_processors, processors_completed,
                            all_core_subsets, app_id, progress):

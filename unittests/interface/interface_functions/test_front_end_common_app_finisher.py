@@ -13,12 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections.abc import Container
 from spinn_machine import CoreSubsets
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinnman.model.enums.cpu_state import CPUState
+from spinnman.model.cpu_infos import CPUInfos
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.interface.interface_functions import (
     ApplicationFinisher)
-from spinnman.model.cpu_infos import CPUInfos
 
 
 class _MockTransceiver(object):
@@ -45,7 +46,7 @@ class _MockTransceiver(object):
 
             for p in core_subset.processor_ids:
                 if (x, y, p) in core_states:
-                    if hasattr(states, "__iter__"):
+                    if isinstance(states, Container):
                         if core_states[x, y, p] in states:
                             cores_in_state.add_processor(x, y, p, None)
                     elif core_states[x, y, p] == states:

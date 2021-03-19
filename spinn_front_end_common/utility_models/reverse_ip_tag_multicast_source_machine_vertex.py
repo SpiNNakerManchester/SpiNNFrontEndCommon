@@ -12,12 +12,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from collections.abc import Sequence, Sized
+from enum import IntEnum
 import logging
 import math
 import struct
 import numpy
-from enum import IntEnum
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
@@ -215,7 +215,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         n_buffer_times = 0
         if send_buffer_times is not None:
             for i in send_buffer_times:
-                if hasattr(i, "__len__"):
+                if isinstance(i, Sized):
                     n_buffer_times += len(i)
                 else:
                     # assuming this must be a single integer
@@ -269,7 +269,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int n_keys:
         :rtype: int
         """
-        if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
+        if len(send_buffer_times) and \
+                isinstance(send_buffer_times[0], Sequence):
             counts = numpy.bincount(numpy.concatenate(send_buffer_times))
             if len(counts):
                 return max(counts)
@@ -336,7 +337,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         :param ~numpy.ndarray send_buffer_times:
         """
-        if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
+        if len(send_buffer_times) and \
+                isinstance(send_buffer_times[0], Sequence):
             # Working with a list of lists so check length
             if len(send_buffer_times) != self._n_keys:
                 raise ConfigurationException(
@@ -499,7 +501,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._send_buffer.clear()
         if (self._send_buffer_times is not None and
                 len(self._send_buffer_times)):
-            if hasattr(self._send_buffer_times[0], "__len__"):
+            if isinstance(self._send_buffer_times[0], Sequence):
                 # Works with a list-of-lists
                 self.__fill_send_buffer_2d(
                     key_to_send, first_machine_time_step, run_until_timesteps)
