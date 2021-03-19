@@ -49,6 +49,7 @@ struct simulation_provenance {
     uint32_t transmission_event_overflow;
     uint32_t callback_queue_overloads;
     uint32_t dma_queue_overloads;
+    uint32_t user_queue_overloads;
     uint32_t timer_tic_has_overrun;
     uint32_t max_num_timer_tic_overrun;
     uint32_t provenance_data_elements[];

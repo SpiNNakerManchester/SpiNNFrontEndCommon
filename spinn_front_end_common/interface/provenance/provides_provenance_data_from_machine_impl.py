@@ -53,16 +53,19 @@ class ProvidesProvenanceDataFromMachineImpl(
         CALLBACK_QUEUE_OVERLOADED = 1
         #: The counter of the number of times the DMA queue was overloaded
         DMA_QUEUE_OVERLOADED = 2
+        #: The counter of the number of times the user event queue overloaded
+        USER_QUEUE_OVERLOADED = 3
         #: Whether the timer tick has overrun at all at any point
-        TIMER_TIC_HAS_OVERRUN = 3
+        TIMER_TIC_HAS_OVERRUN = 4
         #: The counter of the number of times the timer tick overran
-        MAX_NUMBER_OF_TIMER_TIC_OVERRUN = 4
+        MAX_NUMBER_OF_TIMER_TIC_OVERRUN = 5
 
     NUM_PROVENANCE_DATA_ENTRIES = len(PROVENANCE_DATA_ENTRIES)
 
     _TIMER_TICK_OVERRUN = "Times_the_timer_tic_over_ran"
     _MAX_TIMER_TICK_OVERRUN = "max_number_of_times_timer_tic_over_ran"
     _TIMES_DMA_QUEUE_OVERLOADED = "Times_the_dma_queue_was_overloaded"
+    _TIMES_USER_QUEUE_OVERLOADED = "Times_the_user_queue_was_overloaded"
     _TIMES_TRANSMISSION_SPIKES_OVERRAN = \
         "Times_the_transmission_of_spikes_overran"
     _TIMES_CALLBACK_QUEUE_OVERLOADED = \
@@ -86,6 +89,13 @@ class ProvidesProvenanceDataFromMachineImpl(
 
     _TIMES_DMA_QUEUE_OVERLOADED_MESSAGE = (
         "The DMA queue for {} on {}, {}, {} overloaded on {} "
+        "occasions. This is often a sign that the system is running "
+        "too quickly for the number of neurons per core.  Please "
+        "increase the machine time step or time_scale_factor or "
+        "decrease the number of neurons per core.")
+
+    _TIMES_USER_QUEUE_OVERLOADED_MESSAGE = (
+        "The USER queue for {} on {}, {}, {} overloaded on {} "
         "occasions. This is often a sign that the system is running "
         "too quickly for the number of neurons per core.  Please "
         "increase the machine time step or time_scale_factor or "
@@ -216,6 +226,8 @@ class ProvidesProvenanceDataFromMachineImpl(
             self.PROVENANCE_DATA_ENTRIES.CALLBACK_QUEUE_OVERLOADED.value]
         dma_queue_overloaded = provenance_data[
             self.PROVENANCE_DATA_ENTRIES.DMA_QUEUE_OVERLOADED.value]
+        user_queue_overloaded = provenance_data[
+            self.PROVENANCE_DATA_ENTRIES.USER_QUEUE_OVERLOADED.value]
         number_of_times_timer_tic_over_ran = provenance_data[
             self.PROVENANCE_DATA_ENTRIES.TIMER_TIC_HAS_OVERRUN.value]
         max_number_of_times_timer_tic_over_ran = provenance_data[
@@ -244,6 +256,13 @@ class ProvidesProvenanceDataFromMachineImpl(
             report=dma_queue_overloaded != 0,
             message=self._TIMES_DMA_QUEUE_OVERLOADED_MESSAGE.format(
                 label, x, y, p, dma_queue_overloaded)))
+
+        data_items.append(ProvenanceDataItem(
+            self._add_name(names, self._TIMES_USER_QUEUE_OVERLOADED),
+            user_queue_overloaded,
+            report=user_queue_overloaded != 0,
+            message=self._TIMES_USER_QUEUE_OVERLOADED_MESSAGE.format(
+                label, x, y, p, user_queue_overloaded)))
 
         data_items.append(ProvenanceDataItem(
             self._add_name(names, self._TIMER_TICK_OVERRUN),

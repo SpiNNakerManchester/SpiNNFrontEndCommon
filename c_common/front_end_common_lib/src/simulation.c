@@ -83,6 +83,7 @@ static void *simulation_store_provenance_data(void) {
     prov->transmission_event_overflow = diagnostics.tx_packet_queue_full;
     prov->callback_queue_overloads = diagnostics.task_queue_full;
     prov->dma_queue_overloads = diagnostics.dma_queue_full;
+    prov->user_queue_overloads = diagnostics.user_event_queue_full;
     prov->timer_tic_has_overrun =
             diagnostics.total_times_tick_tic_callback_overran;
     prov->max_num_timer_tic_overrun =
