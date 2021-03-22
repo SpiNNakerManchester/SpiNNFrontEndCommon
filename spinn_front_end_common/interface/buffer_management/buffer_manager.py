@@ -318,7 +318,6 @@ class BufferManager(object):
 
         :param ~pacman.model.graphs.machine.MachineVertex vertex:
         """
-
         # Find a tag for receiving buffer data
         tags = self._tags.get_ip_tags_for_vertex(vertex)
 
@@ -392,7 +391,6 @@ class BufferManager(object):
     def resume(self):
         """ Resets any data structures needed before starting running again.
         """
-
         # update the received data items
         self._received_data.resume()
         self._finished = False
@@ -417,7 +415,6 @@ class BufferManager(object):
         :return: A new message, or None if no keys can be added
         :rtype: None or ~spinnman.messages.eieio.data_messages.EIEIODataMessage
         """
-
         # If there are no more messages to send, return None
         if not vertex.is_next_timestamp(region):
             return None
@@ -451,7 +448,6 @@ class BufferManager(object):
         :return: A list of messages
         :rtype: list(~spinnman.messages.eieio.data_messages.EIEIODataMessage)
         """
-
         # Get the vertex load details
         # region_base_address = self._locate_region_address(region, vertex)
         placement = self._placements.get_placement_of_vertex(vertex)
@@ -580,7 +576,6 @@ class BufferManager(object):
         :type message:
             ~spinman.messages.eieio.command_messages.EIEIOCommandMessage
         """
-
         placement = self._placements.get_placement_of_vertex(vertex)
         sdp_header = SDPHeader(
             destination_chip_x=placement.x, destination_chip_y=placement.y,
@@ -598,7 +593,9 @@ class BufferManager(object):
                 self._finished = True
 
     def get_data_for_placements(self, placements, progress=None):
-        """ Retrieve the recorded data from
+        """ Retrieve the recorded data from the machine and store it in a\
+            database managed by this class.
+
         :param ~pacman.model.placements.Placements placements:
             Where to get the data from.
         :param progress: How to measure/display the progress.
@@ -690,7 +687,6 @@ class BufferManager(object):
             the placement to get the data from
         :param int recording_region_id: desired recording data region
         """
-
         # Has the region information been read
         if not self._received_data.has_region_information(
                 placement.x, placement.y, placement.p):
