@@ -28,7 +28,7 @@ def _timestamp():
     return int(time.time() * MILLIS_PER_SECOND)
 
 
-class SqlLiteDatabase(AbstractDatabase, SQLiteDB):
+class SqlLiteDatabase(SQLiteDB, AbstractDatabase):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::
