@@ -2333,7 +2333,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     non_rte_core_subsets, CPUState.FINISHED)
                 finished_placements = Placements()
                 for (x, y, p) in finished_cores:
-                    finished_placements.app_placement(
+                    finished_placements.add_placement(
                         self._placements.get_placement_on_processor(x, y, p))
                 extractor = PlacementsProvenanceGatherer()
                 prov_item = extractor(self._txrx, finished_placements)
