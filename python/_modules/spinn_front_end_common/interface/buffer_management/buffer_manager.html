@@ -240,12 +240,9 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_cores_by_chip</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_packet_gather_cores_to_ethernet_connection_map</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_request_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span>
-                      <span class="n">length</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_request_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Uses the extra monitor cores for data extraction.</span>
 
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
-<span class="sd">            the spinnman interface</span>
 <span class="sd">        :param int placement_x:</span>
 <span class="sd">            the placement x coord where data is to be extracted from</span>
 <span class="sd">        :param int placement_y:</span>
@@ -257,7 +254,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_advanced_monitors</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
                 <span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
 
         <span class="c1"># Round to word boundaries</span>
@@ -275,7 +272,7 @@
             <span class="n">sender</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">sender</span><span class="p">),</span>
             <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">VERIFY</span><span class="p">:</span>
-            <span class="n">txrx_data</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+            <span class="n">txrx_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
                 <span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_verify_data</span><span class="p">(</span><span class="n">extra_mon_data</span><span class="p">,</span> <span class="n">txrx_data</span><span class="p">)</span>
 
@@ -746,7 +743,7 @@
             <span class="n">size</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">missing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">get_region_information</span><span class="p">(</span>
                 <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request_data</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span><span class="o">.</span><span class="n">store_data_in_region_buffer</span><span class="p">(</span>
                 <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">missing</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 
