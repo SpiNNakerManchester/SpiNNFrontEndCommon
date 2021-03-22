@@ -204,12 +204,9 @@ class BufferManager(object):
                     self._extra_monitor_cores_by_chip,
                     self._packet_gather_cores_to_ethernet_connection_map)
 
-    def _request_data(self, transceiver, placement_x, placement_y, address,
-                      length):
+    def _request_data(self, placement_x, placement_y, address, length):
         """ Uses the extra monitor cores for data extraction.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnman interface
         :param int placement_x:
             the placement x coord where data is to be extracted from
         :param int placement_y:
@@ -221,7 +218,7 @@ class BufferManager(object):
         """
         # pylint: disable=too-many-arguments
         if not self._uses_advanced_monitors:
-            return transceiver.read_memory(
+            return self._transceiver.read_memory(
                 placement_x, placement_y, address, length)
 
         # Round to word boundaries
@@ -239,7 +236,7 @@ class BufferManager(object):
             sender, self._placements.get_placement_of_vertex(sender),
             address, length, self._fixed_routes)
         if VERIFY:
-            txrx_data = transceiver.read_memory(
+            txrx_data = self._transceiver.read_memory(
                 placement_x, placement_y, address, length)
             self._verify_data(extra_mon_data, txrx_data)
 
@@ -704,7 +701,7 @@ class BufferManager(object):
             size, addr, missing = self._received_data.get_region_information(
                 placement.x, placement.y, placement.p, region)
             data = self._request_data(
-                self._transceiver, placement.x, placement.y, addr, size)
+                placement.x, placement.y, addr, size)
             self._received_data.store_data_in_region_buffer(
                 placement.x, placement.y, placement.p, region, missing, data)
 
