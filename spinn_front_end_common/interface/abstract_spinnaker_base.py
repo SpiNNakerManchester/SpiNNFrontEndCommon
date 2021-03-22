@@ -1180,11 +1180,18 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
             report_folder = executor.get_item("ReportFolder")
-            TagsFromMachineReport()(report_folder, self._txrx)
+            try:
+                if report_folder:
+                    TagsFromMachineReport()(report_folder, self._txrx)
+            except Exception as e2:
+                logger.warning(
+                    "problem with TagsFromMachineReport {}".format(e2),
+                    exc_info=True)
             try:
                 self._shutdown()
-            except Exception:
-                logger.warning("problem when shutting down", exc_info=True)
+            except Exception as e3:
+                logger.warning("problem when shutting down {}".format(e3),
+                               exc_info=True)
             raise e
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
