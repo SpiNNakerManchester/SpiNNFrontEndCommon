@@ -316,7 +316,7 @@ class HostExecuteDataSpecification(object):
         """
         # allocate and set user 0 before loading data
         base_addresses = {
-            core : self.__malloc_region_storage(core, region_sizes[core])
+            core: self.__malloc_region_storage(core, region_sizes[core])
             for core in progress.over(dsg_targets.keys(), finish_at_end=False)}
 
         for core, reader in progress.over(dsg_targets.items()):
