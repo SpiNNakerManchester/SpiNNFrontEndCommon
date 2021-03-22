@@ -15,14 +15,12 @@
 
 import logging
 import os
-import sqlite3
-from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.log import FormatAdapter
-from spinn_utilities.overrides import overrides
 from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesKeyToAtomMapping,
     AbstractSupportsDatabaseInjection)
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.db"
@@ -33,24 +31,18 @@ def _extract_int(x):
     return None if x is None else int(x)
 
 
-class DatabaseWriter(AbstractContextManager):
+class DatabaseWriter(SQLiteDB):
     """ The interface for the database system for main front ends.\
         Any special tables needed from a front end should be done\
         by sub classes of this interface.
     """
 
     __slots__ = [
-        # boolean flag for when the database writer has finished
-        "_done",
-
         # the path of the database
         "_database_path",
 
         # the identifier for the SpiNNaker machine
         "_machine_id",
-
-        # the database connection itself
-        "_connection",
 
         # Mappings used to accelerate inserts
         "__machine_to_id", "__vertex_to_id", "__edge_to_id"
@@ -60,29 +52,17 @@ class DatabaseWriter(AbstractContextManager):
         """
         :param str database_directory: Where the database will be written
         """
-        self._done = False
         self._database_path = os.path.join(database_directory, DB_NAME)
-        self._connection = None
-        self.__machine_to_id = dict()
-        self.__vertex_to_id = dict()
-        self.__edge_to_id = dict()
-
+        ddl = os.path.join(os.path.dirname(__file__), INIT_SQL)
         # delete any old database
         if os.path.isfile(self._database_path):
             os.remove(self._database_path)
-
+        super().__init__(self._database_path, ddl_file=ddl)
+        self.__machine_to_id = dict()
+        self.__vertex_to_id = dict()
+        self.__edge_to_id = dict()
         # set up checks
         self._machine_id = 0
-
-    @overrides(AbstractContextManager._context_entered)
-    def _context_entered(self):
-        self._connection = sqlite3.connect(self._database_path)
-        self.__create_schema()
-
-    @overrides(AbstractContextManager.close)
-    def close(self):
-        self._connection.close()
-        self._connection = None
 
     @staticmethod
     def auto_detect_database(machine_graph):
@@ -104,39 +84,32 @@ class DatabaseWriter(AbstractContextManager):
         """
         return self._database_path
 
-    def __insert(self, sql, *args):
+    def __insert(self, conn, sql, *args):
         """
         :param str sql:
         :rtype: int
         """
-        c = self._connection.cursor()
         try:
-            c.execute(sql, args)
-            return c.lastrowid
+            conn.execute(sql, args)
+            return conn.lastrowid
         except Exception:
             logger.exception("problem with insertion; argument types are {}",
                              str(map(type, args)))
             raise
-
-    def __create_schema(self):
-        init_sql_path = os.path.join(os.path.dirname(__file__), INIT_SQL)
-        with self._connection, open(init_sql_path) as f:
-            sql = f.read()
-            self._connection.executescript(sql)
 
     def add_machine_objects(self, machine):
         """ Store the machine object into the database
 
         :param ~spinn_machine.Machine machine: the machine object.
         """
-        with self._connection:
+        with self.transaction() as c:
             self.__machine_to_id[machine] = self._machine_id = self.__insert(
-                """
+                c, """
                 INSERT INTO Machine_layout(
                     x_dimension, y_dimension)
                 VALUES(?, ?)
                 """, machine.width, machine.height)
-            self._connection.executemany(
+            c.executemany(
                 """
                 INSERT INTO Machine_chip(
                     no_processors, chip_x, chip_y, machine_id)
@@ -144,7 +117,7 @@ class DatabaseWriter(AbstractContextManager):
                 """, (
                     (chip.n_processors, chip.x, chip.y, self._machine_id)
                     for chip in machine.chips if chip.virtual))
-            self._connection.executemany(
+            c.executemany(
                 """
                 INSERT INTO Machine_chip(
                     no_processors, chip_x, chip_y, machine_id,
@@ -155,7 +128,7 @@ class DatabaseWriter(AbstractContextManager):
                      chip.ip_address,
                      chip.nearest_ethernet_x, chip.nearest_ethernet_y)
                     for chip in machine.chips if not chip.virtual))
-            self._connection.executemany(
+            c.executemany(
                 """
                 INSERT INTO Processor(
                     chip_x, chip_y, machine_id, available_DTCM,
@@ -174,11 +147,11 @@ class DatabaseWriter(AbstractContextManager):
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph
         """
-        with self._connection:
+        with self.transaction() as c:
             # add vertices
             for vertex in application_graph.vertices:
                 self.__vertex_to_id[vertex] = self.__insert(
-                    """
+                    c, """
                     INSERT INTO Application_vertices(
                         vertex_label, vertex_class, no_atoms,
                         max_atom_constrant)
@@ -190,7 +163,7 @@ class DatabaseWriter(AbstractContextManager):
             # add edges
             for edge in application_graph.edges:
                 self.__edge_to_id[edge] = self.__insert(
-                    """
+                    c, """
                     INSERT INTO Application_edges (
                         pre_vertex, post_vertex, edge_label, edge_class)
                     VALUES(?, ?, ?, ?)
@@ -200,7 +173,7 @@ class DatabaseWriter(AbstractContextManager):
                     edge.label, edge.__class__.__name__)
 
             # update graph
-            self._connection.executemany(
+            c.executemany(
                 """
                 INSERT INTO Application_graph (
                     vertex_id, edge_id)
@@ -218,8 +191,8 @@ class DatabaseWriter(AbstractContextManager):
         :param int machine_time_step: the machine time step used in timing
         :param int runtime: the amount of time the application is to run for
         """
-        with self._connection:
-            self._connection.executemany(
+        with self.transaction() as c:
+            c.executemany(
                 """
                 INSERT INTO configuration_parameters (
                     parameter_id, value)
@@ -241,11 +214,11 @@ class DatabaseWriter(AbstractContextManager):
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph
         """
-        with self._connection:
+        with self.transaction() as c:
             for vertex in machine_graph.vertices:
                 req = vertex.resources_required
                 self.__vertex_to_id[vertex] = self.__insert(
-                    """
+                    c, """
                     INSERT INTO Machine_vertices (
                         label, class, cpu_used, sdram_used, dtcm_used)
                     VALUES(?, ?, ?, ?, ?)
@@ -258,7 +231,7 @@ class DatabaseWriter(AbstractContextManager):
             # add machine edges
             for edge in machine_graph.edges:
                 self.__edge_to_id[edge] = self.__insert(
-                    """
+                    c, """
                     INSERT INTO Machine_edges (
                         pre_vertex, post_vertex, label, class)
                     VALUES(?, ?, ?, ?)
@@ -268,7 +241,7 @@ class DatabaseWriter(AbstractContextManager):
                     edge.label, edge.__class__.__name__)
 
             # add to machine graph
-            self._connection.executemany(
+            c.executemany(
                 """
                 INSERT INTO Machine_graph (
                     vertex_id, edge_id)
@@ -280,7 +253,7 @@ class DatabaseWriter(AbstractContextManager):
                         vertex)))
 
             if application_graph is not None:
-                self._connection.executemany(
+                c.executemany(
                     """
                     INSERT INTO graph_mapper_vertex (
                         application_vertex_id, machine_vertex_id, lo_atom,
@@ -294,7 +267,7 @@ class DatabaseWriter(AbstractContextManager):
                         for vertex in machine_graph.vertices))
 
                 # add graph_mapper edges
-                self._connection.executemany(
+                c.executemany(
                     """
                     INSERT INTO graph_mapper_edges (
                         application_edge_id, machine_edge_id)
@@ -310,9 +283,9 @@ class DatabaseWriter(AbstractContextManager):
         :param ~pacman.model.placements.Placements placements:
             the placements object
         """
-        with self._connection:
+        with self.transaction() as c:
             # add records
-            self._connection.executemany(
+            c.executemany(
                 """
                 INSERT INTO Placements(
                     vertex_id, chip_x, chip_y, chip_p, machine_id)
@@ -336,8 +309,8 @@ class DatabaseWriter(AbstractContextManager):
                 partition))
             for partition in machine_graph.outgoing_edge_partitions
             if partition.traffic_type == EdgeTrafficType.MULTICAST)
-        with self._connection:
-            self._connection.executemany(
+        with self.transaction() as c:
+            c.executemany(
                 """
                 INSERT INTO Routing_info(
                     edge_id, "key", mask)
@@ -355,8 +328,8 @@ class DatabaseWriter(AbstractContextManager):
         :type routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
         """
-        with self._connection:
-            self._connection.executemany(
+        with self.transaction() as c:
+            c.executemany(
                 """
                 INSERT INTO Routing_table(
                     chip_x, chip_y, position, key_combo, mask, route)
@@ -376,10 +349,10 @@ class DatabaseWriter(AbstractContextManager):
             the machine graph object
         :param ~pacman.model.tags.Tags tags: the tags object
         """
-        with self._connection:
+        with self.transaction() as c:
             for vertex in machine_graph.vertices:
                 v_id = self.__vertex_to_id[vertex]
-                self._connection.executemany(
+                c.executemany(
                     """
                     INSERT INTO IP_tags(
                         vertex_id, tag, board_address, ip_address, port,
@@ -389,7 +362,7 @@ class DatabaseWriter(AbstractContextManager):
                         (v_id, ipt.tag, ipt.board_address, ipt.ip_address,
                          ipt.port or 0, 1 if ipt.strip_sdp else 0)
                         for ipt in tags.get_ip_tags_for_vertex(vertex) or []))
-                self._connection.executemany(
+                c.executemany(
                     """
                     INSERT INTO Reverse_IP_tags(
                         vertex_id, tag, board_address, port)
@@ -423,8 +396,8 @@ class DatabaseWriter(AbstractContextManager):
                 for partition in machine_graph.
                 get_outgoing_edge_partitions_starting_at_vertex(vertex))
 
-        with self._connection:
-            self._connection.executemany(
+        with self.transaction() as c:
+            c.executemany(
                 """
                 INSERT INTO event_to_atom_mapping(
                     vertex_id, event_id, atom_id)

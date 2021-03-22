@@ -346,10 +346,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._app_id = None
 
         # create report if it doesn't already exist
-        self._out_report_path = \
-            os.path.join(report_default_directory, self.OUT_REPORT_NAME)
-        self._in_report_path = \
-            os.path.join(report_default_directory, self.IN_REPORT_NAME)
+        self._out_report_path = os.path.join(
+            report_default_directory, self.OUT_REPORT_NAME)
+        self._in_report_path = os.path.join(
+            report_default_directory, self.IN_REPORT_NAME)
         self._write_data_speed_up_reports = write_data_speed_up_reports
 
         # Stored reinjection status for resetting timeouts
@@ -611,29 +611,25 @@ class DataSpeedUpPacketGatherMachineVertex(
             the set of missing sequence numbers per data transmission attempt
         :rtype: None
         """
-        if not os.path.isfile(self._in_report_path):
-            with open(self._in_report_path, "w") as writer:
-                writer.write(
-                    "x\t\t y\t\t SDRAM address\t\t size in bytes\t\t\t"
-                    " time took \t\t\t Mb/s \t\t\t missing sequence numbers\n")
-                writer.write(
-                    "------------------------------------------------"
-                    "------------------------------------------------"
-                    "-------------------------------------------------\n")
-
-        time_took_ms = float(time_diff.microseconds +
-                             time_diff.total_seconds() * 1000000)
+        time_took_ms = time_diff.total_seconds() * 1000000
         megabits = (data_size * 8.0) / (1024 * BYTES_PER_KB)
-        if time_took_ms == 0:
+        if time_took_ms < 1.0:
             mbs = "unknown, below threshold"
         else:
-            mbs = megabits / (float(time_took_ms) / 100000.0)
+            mbs = megabits / (time_took_ms / 100000.0)
 
-        with open(self._in_report_path, "a") as writer:
-            writer.write(
-                "{}\t\t {}\t\t {}\t\t {}\t\t\t\t {}\t\t\t {}\t\t {}\n".format(
-                    x, y, address_written_to, data_size, time_took_ms,
-                    mbs, missing_seq_nums))
+        TEMPLATE = "{:>3}\t{:>3}\t{:>13}\t{:>13}\t{:>13}\t{:>13}\t{}\n"
+        with open(self._in_report_path, "a") as f:
+            if not f.tell():
+                # First time for this file; add the header lines
+                header = TEMPLATE.format(
+                    "x", "y", "SDRAM address", "size in bytes",
+                    "time took", "Mb/s", "missing sequence numbers")
+                f.write(header)
+                f.write(("-" * len(header.rstrip("\n").expandtabs())) + "\n")
+            f.write(TEMPLATE.format(
+                x, y, address_written_to, data_size, time_took_ms,
+                mbs, missing_seq_nums))
 
     def send_data_into_spinnaker(
             self, x, y, base_address, data, n_bytes=None, offset=0,
@@ -698,7 +694,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             log.error("verified:{}", verified_data.hex())
             for i, (a, b) in enumerate(zip(original_data, verified_data)):
                 if a != b:
-                    raise Exception(f"damn at {i}")
+                    raise Exception(f"not equal at byte #{i}")
 
     @staticmethod
     def __make_sdp_message(placement, port, payload):
@@ -1356,13 +1352,10 @@ class DataSpeedUpPacketGatherMachineVertex(
             the routers been in use
         :param ~.Placement placement: the first placement used
         """
-        writer_behaviour = "w"
-        if os.path.isfile(report_path):
-            writer_behaviour = "a"
-
-        with open(report_path, writer_behaviour) as writer:
-            writer.write("[{}:{}:{}] = {}\n".format(
-                placement.x, placement.y, placement.p, routers_been_in_use))
+        with open(report_path, "a") as f:
+            f.write(
+                f"[{placement.x}:{placement.y}:{placement.p}] = "
+                f"{routers_been_in_use}\n")
 
     def _calculate_missing_seq_nums(self, seq_nums):
         """ Determine which sequence numbers we've missed

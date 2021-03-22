@@ -250,7 +250,7 @@ class RouterProvenanceGatherer(object):
             names.append("expected_routers")
         else:
             names.append("unexpected_routers")
-        names.append("router_at_chip_{}_{}".format(x, y))
+        names.append(f"router_at_chip_{x}_{y}")
 
         items.append(ProvenanceDataItem(
             self.__add_name(names, "Local_Multicast_Packets"),
@@ -280,8 +280,8 @@ class RouterProvenanceGatherer(object):
             message=(
                 "The router on {}, {} has dropped {} multicast route packets. "
                 "Try increasing the machine_time_step and/or the time scale "
-                "factor or reducing the number of atoms per core."
-                .format(x, y, router_diagnostic.n_dropped_multicast_packets))))
+                "factor or reducing the number of atoms per core.".format(
+                    x, y, router_diagnostic.n_dropped_multicast_packets))))
         items.append(ProvenanceDataItem(
             self.__add_name(
                 names, "Dropped_Multicast_Packets_via_local_transmission"),

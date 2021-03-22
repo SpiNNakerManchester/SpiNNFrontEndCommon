@@ -12,18 +12,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import logging
-import os
 import sys
 from collections import defaultdict
-from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from .bit_field_summary import BitFieldSummary
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
+from .utils import ReportFile
 
-logger = FormatAdapter(logging.getLogger(__name__))
 _FILE_NAME = "bit_field_compressed_summary.rpt"
 # provenance data item names
 PROV_TOP_NAME = "bit_field_router_provenance"
@@ -35,6 +31,7 @@ NOT_APPLICABLE = "N/A"
 def generate_provenance_item(x, y, bit_fields_merged):
     """
     Generates a provenance item in the format BitFieldCompressorReport expects
+
     :param x:
     :param y:
     :param bit_fields_merged:
@@ -54,28 +51,21 @@ class BitFieldCompressorReport(object):
     """
     def __call__(
             self, report_default_directory, machine_graph, placements,
-            provenance_items=None):
+            provenance_items=()):
         """
         :param str report_default_directory: report folder
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph
         :param ~pacman.model.placements.Placements placements: the placements
         :param list(ProvenanceDataItem) provenance_items: prov items
-        :type provenance_items: list(ProvenanceDataItem) or None
         :return: a summary, or `None` if the report file can't be written
         :rtype: BitFieldSummary
         """
-        file_name = os.path.join(report_default_directory, _FILE_NAME)
         if provenance_items is None:
             provenance_items = []
-        try:
-            with open(file_name, "w") as f:
-                return self._write_report(
-                    f, provenance_items, machine_graph, placements)
-        except IOError:
-            logger.exception("Generate_placement_reports: Can't open file"
-                             " {} for writing.", _FILE_NAME)
-            return None
+        with ReportFile(report_default_directory, _FILE_NAME) as f:
+            return self._write_report(
+                f, provenance_items, machine_graph, placements)
 
     @staticmethod
     def _merged_component(provenance_items, to_merge_per_chip, writer):
@@ -111,9 +101,8 @@ class BitFieldCompressorReport(object):
                 merged = int(prov_item.value)
                 found = True
                 writer.write(
-                    "Chip {}:{} has {} bitfields out of {} merged into it."
-                    " Which is {:.2%}\n".format(
-                        x, y, merged, to_merge, merged / to_merge))
+                    f"Chip {x}:{y} has {merged} bitfields out of {to_merge} "
+                    f"merged into it. Which is {merged / to_merge:.2%}\n")
                 total_bit_fields_merged += int(prov_item.value)
                 if merged > top_bit_field:
                     top_bit_field = merged
@@ -123,8 +112,7 @@ class BitFieldCompressorReport(object):
                 n_chips += 1
 
         if found:
-            average_per_chip_merged = (
-                float(average_per_chip_merged) / float(n_chips))
+            average_per_chip_merged = average_per_chip_merged / n_chips
         else:
             min_bit_field = NOT_APPLICABLE
             top_bit_field = NOT_APPLICABLE
@@ -133,9 +121,8 @@ class BitFieldCompressorReport(object):
 
         if len(to_merge_chips) > 0:
             writer.write(
-                "The Chips {} had bitfields. \n"
-                "But no record was found of any attepmt to merge them \n"
-                "".format(to_merge_chips))
+                f"The Chips {to_merge_chips} had bitfields.\n"
+                "But no record was found of any attempt to merge them\n")
 
         return (min_bit_field, top_bit_field, total_bit_fields_merged,
                 average_per_chip_merged)
@@ -208,25 +195,22 @@ class BitFieldCompressorReport(object):
          average_per_chip_merged) = self._merged_component(
             provenance_items, to_merge_per_chip, writer)
         writer.write(
-            "\n\nBefore merge there where {} bitfields on {} Chips "
-            "ranging from {} to {} bitfields per chip with an average of {}"
-            "".format(
-                total_to_merge, len(to_merge_per_chip), max_to_merge_per_chip,
-                low_to_merge_per_chip, average_per_chip_to_merge))
+            f"\n\nBefore merge there were {total_to_merge} bitfields on "
+            f"{len(to_merge_per_chip)} Chips ranging from "
+            f"{max_to_merge_per_chip} to {low_to_merge_per_chip} bitfields "
+            f"per chip with an average of {average_per_chip_to_merge}\n")
         writer.write(
-            "\nSuccessfully merged {} bitfields ranging from {} to {} "
-            "bitfields per chip with an average of {}".format(
-                total_bit_fields_merged, top_bit_field, min_bit_field,
-                average_per_chip_merged))
+            f"Successfully merged {total_bit_fields_merged} bitfields, "
+            f"ranging from {top_bit_field} to {min_bit_field} bitfields per "
+            f"chip with an average of {average_per_chip_merged}")
         if total_to_merge:
             if total_bit_fields_merged == NOT_APPLICABLE:
                 writer.write(
-                    "\nNone of the {} bitfields merged".format(
-                        total_to_merge))
+                    f"\nNone of the {total_to_merge} bitfields merged")
             else:
+                ratio = total_bit_fields_merged / total_to_merge
                 writer.write(
-                    "\nIn total {:.2%} of the bitfields merged".format(
-                        total_bit_fields_merged / total_to_merge))
+                    f"\nIn total {ratio:.2%} of the bitfields merged")
 
         return BitFieldSummary(
             lowest_per_chip=min_bit_field, max_per_chip=top_bit_field,

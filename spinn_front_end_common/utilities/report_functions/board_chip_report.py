@@ -12,38 +12,33 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import os
 from spinn_utilities.progress_bar import ProgressBar
+from .utils import ReportFile
 
 
 class BoardChipReport(object):
-    """ Report on memory usage
+    """ Report on what chips are on the machine.
     """
 
     AREA_CODE_REPORT_NAME = "board_chip_report.txt"
 
     def __call__(self, report_default_directory, machine):
-        """ Creates a report that states where in SDRAM each region is.
+        """ Creates a report that states where the chips are on the actual \
+            board we ran on.
 
         :param str report_default_directory:
             the folder where reports are written
         :param ~spinn_machine.Machine machine:
             python representation of the machine
-        :rtype: None
         """
-
-        # create file path
-        directory_name = os.path.join(
-            report_default_directory, self.AREA_CODE_REPORT_NAME)
-
         # create the progress bar for end users
         progress_bar = ProgressBar(
             len(machine.ethernet_connected_chips),
             "Writing the board chip report")
 
         # iterate over ethernet chips and then the chips on that board
-        with open(directory_name, "w") as writer:
+        with ReportFile(report_default_directory,
+                        self.AREA_CODE_REPORT_NAME) as writer:
             self._write_report(writer, machine, progress_bar)
 
     @staticmethod
@@ -54,7 +49,6 @@ class BoardChipReport(object):
         :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
         """
         for chip in progress_bar.over(machine.ethernet_connected_chips):
-            xys = machine.get_existing_xys_on_board(chip)
             writer.write(
-                "board with IP address : {} : has chips {}\n".format(
-                    chip.ip_address, list(xys)))
+                f"board with IP address : {chip.ip_address} : has "
+                f"chips {list(machine.get_existing_xys_on_board(chip))}\n")

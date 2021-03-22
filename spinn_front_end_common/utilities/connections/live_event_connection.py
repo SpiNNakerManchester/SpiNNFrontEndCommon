@@ -180,8 +180,9 @@ class LiveEventConnection(DatabaseConnection):
             key should stay a key
         """
         label_id = self.__receive_labels.index(label)
-        logger.info("Receive callback {} registered to label {}".format(
-            live_event_callback, label))
+        logger.info(
+            "Receive callback {} registered to label {}",
+            live_event_callback, label)
         self.__live_event_callbacks[label_id].append(
             (live_event_callback, translate_key))
 
@@ -321,16 +322,16 @@ class LiveEventConnection(DatabaseConnection):
                     receive_label, self.__live_packet_gather_label)
             if host is None:
                 raise Exception(
-                    "no live output tag found for {} in machine graph".
-                    format(receive_label))
+                    f"no live output tag found for {receive_label} in "
+                    "machine graph")
         else:
             host, port, strip_sdp, board_address, tag = \
                 db_reader.get_live_output_details(
                     receive_label, self.__live_packet_gather_label)
             if host is None:
                 raise Exception(
-                    "no live output tag found for {} in app graph".format(
-                        receive_label))
+                    f"no live output tag found for {receive_label} in "
+                    "app graph")
         if not strip_sdp:
             raise Exception("Currently, only IP tags which strip the SDP "
                             "headers are supported")
@@ -339,7 +340,7 @@ class LiveEventConnection(DatabaseConnection):
     def __update_tag(self, connection, board_address, tag):
         # Update an IP Tag with the sender's address and port
         # This avoids issues with NAT firewalls
-        logger.debug("Updating tag for {}".format(board_address))
+        logger.debug("Updating tag for {}", board_address)
         request = IPTagSet(
             0, 0, [0, 0, 0, 0], 0, tag, strip=True, use_sender=True)
         request.sdp_header.flags = SDPFlag.REPLY_EXPECTED_NO_P2P
@@ -361,7 +362,7 @@ class LiveEventConnection(DatabaseConnection):
 
                 logger.info("Timeout, retrying")
                 tries_to_go -= 1
-        logger.debug("Done updating tag for {}".format(board_address))
+        logger.debug("Done updating tag for {}", board_address)
 
     def __handle_possible_rerun_state(self):
         # reset from possible previous calls
@@ -378,8 +379,8 @@ class LiveEventConnection(DatabaseConnection):
     def __launch_thread(self, kind, label, callback):
         thread = Thread(
             target=callback, args=(label, self),
-            name="{} callback thread for live_event_connection {}:{}".format(
-                kind, self._local_port, self._local_ip_address))
+            name=(f"{kind} callback thread for live_event_connection "
+                  f"{self._local_port}:{self._local_ip_address}"))
         thread.start()
 
     def __do_start_resume(self):
@@ -456,7 +457,7 @@ class LiveEventConnection(DatabaseConnection):
     def __handle_unknown_key(self, key):
         if key not in self.__error_keys:
             self.__error_keys.add(key)
-            logger.warning("Received unexpected key {}".format(key))
+            logger.warning("Received unexpected key {}", key)
 
     def send_event(self, label, atom_id, send_full_keys=False):
         """ Send an event from a single atom

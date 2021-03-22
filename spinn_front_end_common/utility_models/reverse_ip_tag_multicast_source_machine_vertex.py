@@ -342,9 +342,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             # Working with a list of lists so check length
             if len(send_buffer_times) != self._n_keys:
                 raise ConfigurationException(
-                    "The array or arrays of times {} does not have the "
-                    "expected length of {}".format(
-                        send_buffer_times, self._n_keys))
+                    f"The array or arrays of times {send_buffer_times} does "
+                    f"not have the expected length of {self._n_keys}")
 
         self._send_buffer = BufferedSendingRegion()
         self._send_buffer_times = send_buffer_times
@@ -850,40 +849,39 @@ class ReverseIPTagMulticastSourceMachineVertex(
                     self._PROVENANCE_ITEMS.N_RECEIVED_PACKETS] == 0 and
                 self._send_buffer_times is None),
             message=(
-                "No SDP packets were received by {}.  If you expected packets"
-                " to be injected, this could indicate an error".format(
-                    self._label))))
+                f"No SDP packets were received by {self._label}.  "
+                "If you expected packets to be injected, this could "
+                "indicate an error")))
         provenance_items.append(ProvenanceDataItem(
             self._add_name(names, "send_multicast_packets"),
             provenance_data[self._PROVENANCE_ITEMS.N_SENT_PACKETS],
             report=provenance_data[self._PROVENANCE_ITEMS.N_SENT_PACKETS] == 0,
             message=(
-                "No multicast packets were sent by {}.  If you expected"
-                " packets to be sent this could indicate an error".format(
-                    self._label))))
+                f"No multicast packets were sent by {self._label}.  "
+                "If you expected packets to be sent, this could indicate "
+                "an error")))
         provenance_items.append(ProvenanceDataItem(
             self._add_name(names, "incorrect_keys"),
             provenance_data[self._PROVENANCE_ITEMS.INCORRECT_KEYS],
             report=provenance_data[self._PROVENANCE_ITEMS.INCORRECT_KEYS] > 0,
             message=(
-                "Keys were received by {} that did not match the key {} and"
-                " mask {}".format(
-                    self._label, self._virtual_key, self._mask))))
+                f"Keys were received by {self._label} that did not match the "
+                f"key {self._virtual_key} and mask {self._mask}")))
         provenance_items.append(ProvenanceDataItem(
             self._add_name(names, "incorrect_packets"),
             provenance_data[self._PROVENANCE_ITEMS.INCORRECT_PACKETS],
             report=provenance_data[
                 self._PROVENANCE_ITEMS.INCORRECT_PACKETS] > 0,
             message=(
-                "SDP Packets were received by {} that were not correct".format(
-                    self._label))))
+                f"SDP Packets were received by {self._label} that were not "
+                "correct")))
         provenance_items.append(ProvenanceDataItem(
             self._add_name(names, "late_packets"),
             provenance_data[self._PROVENANCE_ITEMS.LATE_PACKETS],
             report=provenance_data[self._PROVENANCE_ITEMS.LATE_PACKETS] > 0,
             message=(
-                "SDP Packets were received by {} that were too late to be"
-                " transmitted in the simulation".format(self._label))))
+                f"SDP Packets were received by {self._label} that were too "
+                "late to be transmitted in the simulation")))
 
         return provenance_items
 

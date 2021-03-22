@@ -17,10 +17,11 @@ import argparse
 import os
 import sqlite3
 import numpy
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 # import matplotlib.pyplot as plot
 # import seaborn
 
-# The types of router provenance that we'll plot
+#: The types of router provenance that we'll plot
 ROUTER_PLOTTABLES = (
     "Default_Routed_External_Multicast_Packets",
     "Dropped_FR_Packets",
@@ -43,6 +44,7 @@ ROUTER_PLOTTABLES = (
     "Received_for_Reinjection",
     "Reinjected",
     "Reinjection_Overflows")
+#: The name of output file when producing just one image
 SINGLE_PLOTNAME = "Plot.png"
 
 
@@ -60,56 +62,54 @@ class Plotter(object):
             raise Exception("no such DB: " + db_filename)
         # TODO: use magic to open a read-only connection once we're Py3 only
         # See: https://stackoverflow.com/a/21794758/301832
-        self._db = sqlite3.connect(db_filename)
-        self._db.row_factory = sqlite3.Row
+
+        self._db = SQLiteDB(db_filename, read_only=True, text_factory=str)
         # Force case-insensitive matching of provenance names
-        self._db.execute("""
+        self._db.db.execute("""
             PRAGMA case_sensitive_like=OFF;
             """)
         self.__have_insertion_order = True
         self.__verbose = verbose
+        #: The colour map used for plotting. See the seaborn docs for details.
         self.cmap = "plasma"
 
-    def __enter__(self):
-        return self._db.__enter__()
-
-    def __exit__(self, *args):
-        return self._db.__exit__(*args)
-
     def __do_chip_query(self, description):
-        # Does the query in one of two ways, depending on schema version
-        if self.__have_insertion_order:
-            try:
-                return self._db.execute("""
-                    SELECT source_name AS "source", x, y,
-                        description_name AS "description",
-                        the_value AS "value"
-                    FROM provenance_view
-                    WHERE description LIKE ?
-                    GROUP BY x, y, p
-                    HAVING insertion_order = MAX(insertion_order)
-                    """, (description, ))
-            except sqlite3.OperationalError as e:
-                if "no such column: insertion_order" != str(e):
-                    raise
-                self.__have_insertion_order = 0
-        return self._db.execute("""
-            SELECT source_name AS "source", x, y,
-                description_name AS "description",
-                MAX(the_value) AS "value"
-            FROM provenance_view
-            WHERE description LIKE ?
-            GROUP BY x, y, p
-            """, (description, ))
+        with self._db.transaction() as cur:
+            # Does the query in one of two ways, depending on schema version
+            if self.__have_insertion_order:
+                try:
+                    return cur.execute("""
+                        SELECT source_name AS "source", x, y,
+                            description_name AS "description",
+                            the_value AS "value"
+                        FROM provenance_view
+                        WHERE description LIKE ?
+                        GROUP BY x, y, p
+                        HAVING insertion_order = MAX(insertion_order)
+                        """, (description, ))
+                except sqlite3.OperationalError as e:
+                    if "no such column: insertion_order" != str(e):
+                        raise
+                    self.__have_insertion_order = 0
+            return cur.execute("""
+                SELECT source_name AS "source", x, y,
+                    description_name AS "description",
+                    MAX(the_value) AS "value"
+                FROM provenance_view
+                WHERE description LIKE ?
+                GROUP BY x, y, p
+                """, (description, ))
 
     def get_per_chip_prov_types(self):
         names = list()
-        for row in self._db.execute("""
-                SELECT DISTINCT description_name AS "description"
-                FROM provenance_view
-                WHERE x IS NOT NULL AND p IS NULL AND "description" IS NOT NULL
-                """):
-            names.append(row["description"])
+        with self._db.transaction() as cur:
+            for row in cur.execute("""
+                    SELECT DISTINCT description_name AS "description"
+                    FROM provenance_view
+                    WHERE x IS NOT NULL AND p IS NULL
+                    AND "description" IS NOT NULL
+                    """):
+                names.append(row["description"])
         return frozenset(names)
 
     def get_per_chip_prov_details(self, info):
@@ -133,48 +133,50 @@ class Plotter(object):
                 max(xs) + 1, max(ys) + 1, ary)
 
     def __do_sum_query(self, description):
-        # Does the query in one of two ways, depending on schema version
-        if self.__have_insertion_order:
-            try:
-                return self._db.execute("""
-                    SELECT "source", x, y, "description",
-                        SUM("value") AS "value"
-                    FROM (
-                        SELECT source_name AS "source", x, y, p,
-                            description_name AS "description",
-                            the_value AS "value"
-                        FROM provenance_view
-                        WHERE description LIKE ? AND p IS NOT NULL
-                        GROUP BY x, y, p
-                        HAVING insertion_order = MAX(insertion_order))
-                    GROUP BY x, y
-                    """, (description, ))
-            except sqlite3.OperationalError as e:
-                if "no such column: insertion_order" != str(e):
-                    raise
-                self.__have_insertion_order = 0
-        return self._db.execute("""
-            SELECT "source", x, y, "description",
-                SUM("value") AS "value"
-            FROM (
-                SELECT source_name AS "source", x, y,
-                    description_name AS "description",
-                    MAX(the_value) AS "value"
-                FROM provenance_view
-                WHERE description LIKE ? AND p IS NOT NULL
-                GROUP BY x, y, p)
-            GROUP BY x, y
-            """, (description, ))
+        with self._db.transaction() as cur:
+            # Does the query in one of two ways, depending on schema version
+            if self.__have_insertion_order:
+                try:
+                    return cur.execute("""
+                        SELECT "source", x, y, "description",
+                            SUM("value") AS "value"
+                        FROM (
+                            SELECT source_name AS "source", x, y, p,
+                                description_name AS "description",
+                                the_value AS "value"
+                            FROM provenance_view
+                            WHERE description LIKE ? AND p IS NOT NULL
+                            GROUP BY x, y, p
+                            HAVING insertion_order = MAX(insertion_order))
+                        GROUP BY x, y
+                        """, (description, ))
+                except sqlite3.OperationalError as e:
+                    if "no such column: insertion_order" != str(e):
+                        raise
+                    self.__have_insertion_order = 0
+            return cur.execute("""
+                SELECT "source", x, y, "description",
+                    SUM("value") AS "value"
+                FROM (
+                    SELECT source_name AS "source", x, y,
+                        description_name AS "description",
+                        MAX(the_value) AS "value"
+                    FROM provenance_view
+                    WHERE description LIKE ? AND p IS NOT NULL
+                    GROUP BY x, y, p)
+                GROUP BY x, y
+                """, (description, ))
 
     def get_per_core_prov_types(self):
-        names = list()
-        for row in self._db.execute("""
-                SELECT DISTINCT description_name AS "description"
-                FROM provenance_view
-                WHERE x IS NOT NULL AND p IS NOT NULL
-                    AND "description" IS NOT NULL
-                """):
-            names.append(row["description"])
+        names = []
+        with self._db.transaction() as cur:
+            for row in cur.execute("""
+                    SELECT DISTINCT description_name AS "description"
+                    FROM provenance_view
+                    WHERE x IS NOT NULL AND p IS NOT NULL
+                        AND "description" IS NOT NULL
+                    """):
+                names.append(row["description"])
         return frozenset(names)
 
     def get_sum_chip_prov_details(self, info):
@@ -267,28 +269,26 @@ def main():
 
     plotter = Plotter(args.dbfile, not args.quiet)
     plotter.cmap = args.colourmap
-    with plotter:
-        if args.list:
-            if args.sumcores:
-                for term in plotter.get_per_core_prov_types():
-                    print(term)
-            else:
-                for term in plotter.get_per_chip_prov_types():
-                    print(term)
-        elif args.term:
-            if args.sumcores:
-                plotter.plot_per_core_data(
-                    args.term, os.path.abspath(SINGLE_PLOTNAME))
-            else:
-                plotter.plot_per_chip_data(
-                    args.term, os.path.abspath(SINGLE_PLOTNAME))
+    if args.list:
+        if args.sumcores:
+            for term in plotter.get_per_core_prov_types():
+                print(term)
         else:
-            if args.sumcores:
-                raise Exception(
-                    "cannot use --sumcores with default router provenance")
-            for term in ROUTER_PLOTTABLES:
-                plotter.plot_per_chip_data(
-                    term, os.path.abspath(term + ".png"))
+            for term in plotter.get_per_chip_prov_types():
+                print(term)
+    elif args.term:
+        output = os.path.abspath(SINGLE_PLOTNAME)
+        if args.sumcores:
+            plotter.plot_per_core_data(args.term, output)
+        else:
+            plotter.plot_per_chip_data(args.term, output)
+    else:
+        if args.sumcores:
+            raise Exception(
+                "cannot use --sumcores with default router provenance")
+        for term in ROUTER_PLOTTABLES:
+            plotter.plot_per_chip_data(
+                term, os.path.abspath(term + ".png"))
 
 
 if __name__ == "__main__":

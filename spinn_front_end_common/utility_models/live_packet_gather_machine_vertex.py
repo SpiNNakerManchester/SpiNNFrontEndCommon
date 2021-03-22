@@ -108,32 +108,32 @@ class LivePacketGatherMachineVertex(
         provenance_data = self._read_provenance_data(transceiver, placement)
         provenance_items = self._read_basic_provenance_items(
             provenance_data, placement)
-        provenance_data = self._get_remaining_provenance_data_items(
+        lost_without, lost_with = self._get_remaining_provenance_data_items(
             provenance_data)
         _, _, _, _, names = self._get_placement_details(placement)
 
         provenance_items.append(ProvenanceDataItem(
             self._add_name(names, "lost_packets_without_payload"),
-            provenance_data[0],
-            report=provenance_data[0] > 0,
+            lost_without,
+            report=(lost_without > 0),
             message=(
                 "The live packet gatherer has lost {} packets which have "
                 "payloads during its execution. Try increasing the machine "
                 "time step or increasing the time scale factor. If you are "
                 "running in real time, try reducing the number of vertices "
                 "which are feeding this live packet gatherer".format(
-                    provenance_data[0]))))
+                    lost_without))))
         provenance_items.append(ProvenanceDataItem(
             self._add_name(names, "lost_packets_with_payload"),
-            provenance_data[1],
-            report=provenance_data[1] > 0,
+            lost_with,
+            report=(lost_with > 0),
             message=(
                 "The live packet gatherer has lost {} packets which do not "
                 "have payloads during its execution. Try increasing the "
                 "machine time step or increasing the time scale factor. If "
                 "you are running in real time, try reducing the number of "
                 "vertices which are feeding this live packet gatherer".format(
-                    provenance_data[1]))))
+                    lost_with))))
 
         return provenance_items
 

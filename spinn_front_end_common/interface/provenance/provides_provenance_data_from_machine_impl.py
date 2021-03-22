@@ -181,7 +181,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         x = placement.x
         y = placement.y
         p = placement.p
-        names = ["vertex_{}_{}_{}_{}".format(x, y, p, label)]
+        names = [f"vertex_{x}_{y}_{p}_{label}"]
         return label, x, y, p, names
 
     @staticmethod

@@ -195,6 +195,5 @@ class InsertEdgesToLivePacketGatherers(object):
 
         # if got through all LPG vertices and not found the right one. go BOOM
         raise ConfigurationException(
-            "Cannot find a Live Packet Gatherer from {} for the vertex {}"
-            " located on {}:{}".format(
-                machine_lpgs, m_vertex, chip.x, chip.y))
+            f"Cannot find a Live Packet Gatherer from {machine_lpgs} for the "
+            f"vertex {m_vertex} located on {chip.x}:{chip.y}")

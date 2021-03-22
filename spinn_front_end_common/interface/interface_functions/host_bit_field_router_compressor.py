@@ -40,6 +40,7 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.report_functions.\
     bit_field_compressor_report import (
         generate_provenance_item)
+from spinn_front_end_common.utilities.report_functions.utils import ReportFile
 from pacman.operations.router_compressors import PairCompressor
 
 
@@ -69,8 +70,7 @@ class _BitFieldData(object):
         self.sort_index = None
 
     def __str__(self):
-        return "{} {} {}".format(
-            self.processor_id, self.master_pop_key, self.bit_field)
+        return f"{self.processor_id} {self.master_pop_key} {self.bit_field}"
 
     def bit_field_as_bit_array(self):
         """
@@ -273,6 +273,7 @@ class HostBasedBitFieldRouterCompressor(object):
             ~pacman.model.routing_tables.MulticastRoutingTables
         :param dict(int,int) key_atom_map: key to atoms map
             should be allowed to handle per time step
+        :rtype: ProvenanceDataItem
         """
         # Reset all the self values as they change for each routing table
         self._best_routing_entries = None
@@ -315,10 +316,8 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # create report file if required
         if produce_report:
-            report_file_path = os.path.join(
-                report_folder_path,
-                self._REPORT_NAME.format(router_table.x, router_table.y))
-            with open(report_file_path, "w") as report_out:
+            with ReportFile(report_folder_path, self._REPORT_NAME.format(
+                    router_table.x, router_table.y)) as report_out:
                 self._create_table_report(router_table, report_out)
 
         return generate_provenance_item(
@@ -543,7 +542,7 @@ class HostBasedBitFieldRouterCompressor(object):
             self._best_routing_entries = self._run_algorithm(
                 router_table, target_length)
             self._best_midpoint = 0
-            self._compression_attempts[0] = "succcess"
+            self._compression_attempts[0] = "success"
         except MinimisationFailedError as e:
             raise PacmanAlgorithmFailedToGenerateOutputsException(
                 "host bitfield router compressor can't compress the "
@@ -567,7 +566,6 @@ class HostBasedBitFieldRouterCompressor(object):
         :return: true if it compresses
         :rtype: bool
         """
-
         # convert bitfields into router tables
         bit_field_router_table = self._convert_bitfields_into_router_table(
             routing_table, mid_point, key_to_n_atoms_map)
@@ -577,7 +575,7 @@ class HostBasedBitFieldRouterCompressor(object):
             self._best_routing_entries = self._run_algorithm(
                 bit_field_router_table, target_length)
             self._best_midpoint = mid_point
-            self._compression_attempts[mid_point] = "succcess"
+            self._compression_attempts[mid_point] = "success"
             return True
         except MinimisationFailedError:
             self._compression_attempts[mid_point] = "fail"
@@ -602,8 +600,8 @@ class HostBasedBitFieldRouterCompressor(object):
         compressor = PairCompressor(ordered=True)
         compressed_entries = compressor.compress_table(router_table)
         if len(compressed_entries) > target_length:
-            raise MinimisationFailedError("{} > {}".format(
-                len(compressed_entries), target_length))
+            raise MinimisationFailedError(
+                f"{len(compressed_entries)} > {target_length}")
         return compressed_entries
 
     def _run_mundy_algorithm(
@@ -623,10 +621,9 @@ class HostBasedBitFieldRouterCompressor(object):
         :throws MinimisationFailedError: If compression fails
         """
         # convert to rig format
-        entries = list()
-        for router_entry in router_table.multicast_routing_entries:
-            # Add the new entry
-            entries.append(Entry.from_MulticastRoutingEntry(router_entry))
+        entries = [
+            Entry.from_MulticastRoutingEntry(router_entry)
+            for router_entry in router_table.multicast_routing_entries]
 
         # compress the router entries using rigs compressor
         return minimise(entries, target_length)
@@ -647,12 +644,12 @@ class HostBasedBitFieldRouterCompressor(object):
                     transceiver.write_memory(
                         chip_x, chip_y, entry.n_atoms_address, n_atoms_word)
 
-    def _create_table_report(self, router_table, report_out):
+    def _create_table_report(self, router_table, f):
         """ creates the report entry
 
         :param ~.AbsractMulticastRoutingTable router_table:
             the uncompressed router table to process
-        :param ~io.TextIOBase report_out: the report writer
+        :param ~io.TextIOBase f: the report writer
         """
         n_bit_fields_merged = 0
         n_packets_filtered = 0
@@ -675,14 +672,14 @@ class HostBasedBitFieldRouterCompressor(object):
                 (100.0 / float(n_possible_bit_fields)) *
                 float(n_bit_fields_merged))
 
-        report_out.write(
+        f.write(
             "\nTable {}:{} has integrated {} out of {} available chip level "
             "bitfields into the routing table. There by producing a "
             "compression of {}%.\n\n".format(
                 router_table.x, router_table.y, n_bit_fields_merged,
                 n_possible_bit_fields, percentage_done))
 
-        report_out.write(
+        f.write(
             "The uncompressed routing table had {} entries, the compressed "
             "one with {} integrated bitfields has {} entries. \n\n".format(
                 router_table.number_of_entries,
@@ -690,43 +687,40 @@ class HostBasedBitFieldRouterCompressor(object):
                 # Note: _best_routing_table is a list(), router_table is not
                 len(self._best_routing_entries)))
 
-        report_out.write(
+        f.write(
             "The integration of {} bitfields removes up to {} MC packets "
             "that otherwise would be being processed by the cores on the "
             "chip, just to be dropped as they do not target anything.\n\n"
             "".format(n_bit_fields_merged, n_packets_filtered))
 
-        report_out.write("The compression attempts are as follows:\n\n")
+        f.write("The compression attempts are as follows:\n\n")
         for mid_point, result in self._compression_attempts.items():
-            report_out.write("Midpoint {}: {}\n".format(mid_point, result))
+            f.write(f"Midpoint {mid_point}: {result}\n")
 
-        report_out.write("\nThe bit_fields merged are as follows:\n\n")
+        f.write("\nThe bit_fields merged are as follows:\n\n")
 
         for core in merged_by_core:
             for bf_data in merged_by_core[core]:
-                report_out.write("bitfield on core {} for key {} \n".format(
-                    core, bf_data.master_pop_key))
+                f.write(
+                    f"bitfield on core {core} for "
+                    f"key {bf_data.master_pop_key}\n")
 
-        report_out.write("\n\n\n")
-        report_out.write("The final routing table entries are as follows:\n\n")
+        f.write("\n\n\n")
+        f.write("The final routing table entries are as follows:\n\n")
 
-        report_out.write(
-            "{: <5s} {: <10s} {: <10s} {: <10s} {: <7s} {}\n".format(
-                "Index", "Key", "Mask", "Route", "Default", "[Cores][Links]"))
-        report_out.write(
-            "{:-<5s} {:-<10s} {:-<10s} {:-<10s} {:-<7s} {:-<14s}\n".format(
-                "", "", "", "", "", ""))
-        line_format = "{: >5d} {}\n"
+        f.write("{: <5s} {: <10s} {: <10s} {: <10s} {: <7s} {}\n".format(
+            "Index", "Key", "Mask", "Route", "Default", "[Cores][Links]"))
+        f.write("{:-<5s} {:-<10s} {:-<10s} {:-<10s} {:-<7s} {:-<14s}\n".format(
+            "", "", "", "", "", ""))
 
         entry_count = 0
         n_defaultable = 0
         # Note: _best_routing_table is a list(), router_table is not
         for entry in self._best_routing_entries:
             index = entry_count & self._LOWER_16_BITS
-            entry_str = line_format.format(index, format_route(
-                entry.to_MulticastRoutingEntry()))
+            f.write("{: >5d} {}\n".format(index, format_route(
+                entry.to_MulticastRoutingEntry())))
             entry_count += 1
             if entry.defaultable:
                 n_defaultable += 1
-            report_out.write(entry_str)
-        report_out.write("{} Defaultable entries\n".format(n_defaultable))
+        f.write(f"{n_defaultable} Defaultable entries\n")

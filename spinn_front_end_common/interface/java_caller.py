@@ -94,9 +94,9 @@ class JavaCaller(object):
         result = subprocess.call([self._java_call, '-version'])
         if result != 0:
             raise ConfigurationException(
-                " {} -version failed. "
+                f"{self._java_call} -version failed. "
                 "Please set [Java] java_call to the absolute path "
-                "to start java. (in config file)".format(self._java_call))
+                "to start java. (in config file)")
 
         if java_spinnaker_path is None:
             interface = os.path.dirname(os.path.realpath(__file__))
@@ -115,7 +115,7 @@ class JavaCaller(object):
                 self._java_spinnaker_path = java_spinnaker_path
         if not os.path.isdir(self._java_spinnaker_path):
             raise ConfigurationException(
-                "No Java code found at {}".format(self._java_spinnaker_path))
+                f"No Java code found at {self._java_spinnaker_path}")
 
         self._machine = None
         self._machine_json_path = None
@@ -128,10 +128,10 @@ class JavaCaller(object):
         if self._java_properties is not None:
             self._java_properties = self._java_properties.split()
             for _property in self._java_properties:
-                if _property[:2] != "-D":
+                if not _property.startswith("-D"):
                     raise ConfigurationException(
-                        "Java Properties must start with -D found at {}".
-                        format(_property))
+                        "Java Properties must start with -D "
+                        f" - found at {_property}")
 
     def set_machine(self, machine):
         """ Passes the machine in leaving this class to decide pass it to Java.

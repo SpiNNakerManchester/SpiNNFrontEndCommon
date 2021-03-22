@@ -167,6 +167,6 @@ class GraphDataSpecificationWriter(object):
             for vert in self._vertices_by_chip[pl.x, pl.y]))
 
         raise ConfigurationException(
-            "Too much SDRAM has been used on {}, {}.  Vertices and"
-            " their usage on that chip is as follows:\n{}".format(
-                pl.x, pl.y, memory_usage))
+            f"Too much SDRAM has been used on {pl.x}, {pl.y}.  "
+            "Vertices and their usage on that chip is as follows:\n"
+            f"{memory_usage}")

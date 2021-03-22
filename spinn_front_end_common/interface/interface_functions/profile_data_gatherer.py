@@ -70,8 +70,7 @@ class ProfileDataGatherer(object):
         :param str directory:
         """
         max_tag_len = max(len(tag) for tag in profile_data.tags)
-        file_name = os.path.join(
-            directory, "{}_{}_{}_profile.txt".format(p.x, p.y, p.p))
+        file_name = os.path.join(directory, f"{p.x}_{p.y}_{p.p}_profile.txt")
 
         # write profile data to file, creating if necessary
         with open(file_name, "a") as f:

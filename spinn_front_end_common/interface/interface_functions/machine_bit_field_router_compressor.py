@@ -180,7 +180,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
 
         text = self._PROGRESS_BAR_TEXT.format(self.compressor_type)
         if retry_count is not None:
-            text += " capped at {} retries".format(retry_count)
+            text += f" capped at {retry_count} retries"
         progress_bar = ProgressBar(
             total_number_of_things_to_do=(
                 len(machine_graph.vertices) +
@@ -274,16 +274,15 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
     @abstractproperty
     def compressor_aplx(self):
         """
-
-        :return: The name of the compressor aplx file to use
+        :return: The name of the compressor APLX file to use
         """
 
     @abstractproperty
     def compressor_type(self):
         """
-
         :return: The name of the compressor (excluding bitfields) being used
         """
+
     def _generate_core_subsets(
             self, routing_tables, executable_finder, machine, progress_bar,
             system_executable_targets):

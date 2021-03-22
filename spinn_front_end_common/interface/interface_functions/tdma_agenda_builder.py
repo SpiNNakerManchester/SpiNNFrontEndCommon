@@ -120,7 +120,7 @@ class TDMAAgendaBuilder(object):
         :rtype: dict(~.MachineVertex, int)
         """
         time_offset = dict()
-        colours = list(range(0, max_in_edges + 1))  # plus 1 to include myself
+        colours = range(0, max_in_edges + 1)  # plus 1 to include myself
         # use greedy colouring algorithm to colour graph
         for vertex in machine_graph.vertices:
             self._colour_vertex(vertex, machine_graph, colours, time_offset)
@@ -133,7 +133,7 @@ class TDMAAgendaBuilder(object):
         :param ~.MachineVertex vertex: the vertex to be coloured
         :param ~.MachineGraph machine_graph:
             the machine graph representation of the application
-        :param list(int) colours:
+        :param ~collections.abc.Container(int) colours:
             the available colours for the graph colouring
         :param dict(~.MachineVertex,int) colour_mapping:
             the mapping between vertex and colour
@@ -200,6 +200,6 @@ class TDMAAgendaBuilder(object):
                 "or increasing the machine time step or the time scale "
                 "factor.\n\n"
                 "Assuming same connectivity, the best current available "
-                "would be {} machine_time_steps with a timescale factor of "
-                "1".format(time_needed_per_epoch))
+                f"would be {time_needed_per_epoch} machine_time_steps with "
+                "a timescale factor of 1")
         return cpu_cycles_needed_per_window

@@ -13,11 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-import os
-from spinn_utilities.log import FormatAdapter
-
-logger = FormatAdapter(logging.getLogger(__name__))
+from .utils import ReportFile
 
 _FOLDER_NAME = "memory_map_from_processor_to_address_space"
 
@@ -36,28 +32,20 @@ class MemoryMapOnHostReport(object):
             dict(tuple(int,int,int),DataWritten)
         """
 
-        file_name = os.path.join(report_default_directory, _FOLDER_NAME)
-        try:
-            with open(file_name, "w") as f:
-                self._describe_mem_map(f, processor_to_app_data_base_address)
-        except IOError:
-            logger.exception("Generate_placement_reports: Can't open file"
-                             " {} for writing.", file_name)
-
-    def _describe_mem_map(self, f, memory_map):
-        f.write("On host data specification executor\n")
-        for key, data in memory_map.items():
-            self._describe_map_entry(f, key, data)
+        with ReportFile(report_default_directory, _FOLDER_NAME) as f:
+            f.write("On host data specification executor\n")
+            for key, data in processor_to_app_data_base_address.items():
+                self._describe_map_entry(f, key, data)
 
     @staticmethod
     def _describe_map_entry(f, key, data):
         """
-        :param f:
+        :param io.TextIOBase f:
         :param tuple(int,int,int) key:
         :param DataWritten data:
         """
         f.write(
-            "{}: ('start_address': {}, hex:{}), "
-            "'memory_used': {}, 'memory_written': {} \n".format(
-                key, data.start_address, hex(data.start_address),
-                data.memory_used, data.memory_written))
+            f"{key}: ('start_address': {data.start_address}, "
+            f"hex: {hex(data.start_address)}), "
+            f"'memory_used': {data.memory_used}, "
+            f"'memory_written': {data.memory_written})\n")

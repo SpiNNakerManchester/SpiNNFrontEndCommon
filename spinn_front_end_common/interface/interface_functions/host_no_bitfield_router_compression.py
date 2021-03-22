@@ -261,7 +261,7 @@ class Compression(object):
             [self._binary_path], progress_bar)
         if self.__failures:
             raise SpinnFrontEndException(
-                "The router compressor failed on {}".format(self.__failures))
+                f"The router compressor failed on {self.__failures}")
 
     def _load_routing_table(self, table):
         """

@@ -17,9 +17,10 @@ import os
 import sqlite3
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 
-class ProvenanceReader(object):
+class ProvenanceReader:
     """
     Provides a connection to an sqlite3 database and some provenance
     convenience methods
@@ -90,19 +91,16 @@ class ProvenanceReader(object):
             If ``False`` the results of :py:meth:`run_query` will be
             :py:class:`tuple`\\ s.
         :return: an open sqlite3 connection
-        :rtype: ~sqlite3.Connection
+        :rtype: SQLiteDB
         """
         if not os.path.exists(self._provenance_data_path):
             raise Exception("no such DB: " + self._provenance_data_path)
-        if read_only:
-            db_path = os.path.abspath(self._provenance_data_path)
-            db = sqlite3.connect("file:{}?mode=ro".format(db_path), uri=True)
-        else:
-            db = sqlite3.connect(self._provenance_data_path)
+        db = SQLiteDB(self._provenance_data_path, read_only=read_only,
+                      row_factory=(sqlite3.Row if use_sqlite_rows else None),
+                      text_factory=None)
         # Force case-insensitive matching of provenance names
-        db.execute("PRAGMA case_sensitive_like=OFF;")
-        if use_sqlite_rows:
-            db.row_factory = sqlite3.Row
+        with db.transaction() as cur:
+            cur.execute("PRAGMA case_sensitive_like=OFF;")
         return db
 
     def run_query(
@@ -134,12 +132,11 @@ class ProvenanceReader(object):
             statement
         :rtype: tuple or ~sqlite3.Row
         """
-        if not os.path.exists(self._provenance_data_path):
-            raise Exception("no such DB: " + self._provenance_data_path)
+        results = []
         with self.get_database_handle(read_only, use_sqlite_rows) as db:
-            results = []
-            for row in db.execute(query, params):
-                results.append(row)
+            with db.transaction() as cur:
+                for row in cur.execute(query, params):
+                    results.append(row)
         return results
 
     def cores_with_late_spikes(self):
@@ -178,10 +175,9 @@ class ProvenanceReader(object):
             WHERE description LIKE ?
             ORDER BY description
             """
-        results = []
-        for row in self.run_query(query, [description_name]):
-            results.append("{}: {}".format(row[0], row[1]))
-        return "\n".join(results)
+        return "\n".join(
+            f"{row[0]}: {row[1]}"
+            for row in self.run_query(query, [description_name]))
 
     def get_run_times(self):
         """
@@ -203,10 +199,9 @@ class ProvenanceReader(object):
             GROUP BY description_name
             ORDER BY the_value
             """
-        results = []
-        for row in self.run_query(query):
-            results.append("{}: {} s".format(row[0].replace("_", " "), row[1]))
-        return "\n".join(results)
+        return "\n".join(
+            f"{row[0].replace('_', ' ')}: {row[1]} s"
+            for row in self.run_query(query))
 
     def get_run_time_of_BufferExtractor(self):
         """
@@ -239,10 +234,9 @@ class ProvenanceReader(object):
             GROUP BY description
             ORDER BY description
             """
-        results = []
-        for row in self.run_query(query, [int(x), int(y)]):
-            results.append("{}: {}".format(row[0], row[1]))
-        return "\n".join(results)
+        return "\n".join(
+            f"{row[0]}: {row[1]}"
+            for row in self.run_query(query, [int(x), int(y)]))
 
     @staticmethod
     def _demo():

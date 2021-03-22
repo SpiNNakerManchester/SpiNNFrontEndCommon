@@ -19,8 +19,7 @@ from lxml import etree
 from spinn_front_end_common.utilities.helpful_functions import (
     generate_unique_folder_name)
 
-_VALID_CHARS = frozenset(
-    "-_.() {}{}".format(string.ascii_letters, string.digits))
+_VALID_CHARS = frozenset(f"-_.() {string.ascii_letters}{string.digits}")
 _XML_BRANCH_NAME = "provenance_data_items"
 _XML_LEAF_NAME = "provenance_data_item"
 

@@ -129,8 +129,7 @@ class CommandSenderMachineVertex(
 
         # create mapping between keys and partitions via partition constraint
         for key in command_keys:
-
-            partition_id = "COMMANDS{}".format(self._edge_partition_id_counter)
+            partition_id = f"COMMANDS{self._edge_partition_id_counter}"
             self._keys_to_partition_id[key] = partition_id
             self._partition_id_to_keys[partition_id] = key
             self._edge_partition_id_counter += 1

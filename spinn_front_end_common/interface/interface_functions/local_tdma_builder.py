@@ -145,12 +145,12 @@ class LocalTDMABuilder(object):
         time_scale_factor_needed = time_scale_factor * max_fraction_of_sending
         if max_fraction_of_sending > 1:
             logger.warning(
-                "A time scale factor of {} may be needed to run correctly"
-                .format(time_scale_factor_needed))
+                "A time scale factor of {} may be needed to run correctly",
+                time_scale_factor_needed)
         elif max_fraction_of_sending < 1:
             logger.info(
-                "The time scale factor could be reduced to {}"
-                .format(time_scale_factor_needed))
+                "The time scale factor could be reduced to {}",
+                time_scale_factor_needed)
 
         # get initial offset for each app vertex.
         for app_vertex in application_graph.vertices:
@@ -188,8 +188,9 @@ class LocalTDMABuilder(object):
             # Note: The plus 1 ensures the last core finishes, if it's the
             # worst in terms of n keys to transmit
             clocks_between_cores = clocks_per_phase / (n_slots + 1)
-            logger.debug("adjusted clocks between cores is {}".format(
-                clocks_between_cores))
+            logger.debug(
+                "adjusted clocks between cores is {}",
+                clocks_between_cores)
 
         # Adjust cores at same time to fit time between cores.
         if core_set and not app_set:
@@ -200,8 +201,8 @@ class LocalTDMABuilder(object):
             app_machine_quantity = int(math.ceil(n_cores / max_slots))
             logger.debug(
                 "Adjusted the number of cores of a app vertex that "
-                "can fire at the same time to {}".format(
-                    app_machine_quantity))
+                "can fire at the same time to {}",
+                app_machine_quantity)
 
         return app_machine_quantity, clocks_between_cores
 
@@ -249,7 +250,6 @@ class LocalTDMABuilder(object):
         :return: (n_phases, n_slots, time_between_phases) for this app vertex
         :rtype: tuple(int, int, int)
         """
-
         # Figure total T2s
         n_phases = app_vertex.find_n_phases_for(machine_graph, n_keys_map)
 
@@ -274,7 +274,6 @@ class LocalTDMABuilder(object):
         :param str label: the app vertex we're considering at this point
         :return:
         """
-
         # figure how much time this TDMA needs
         total_clocks_needed = n_phases * clocks_between_phases
         return total_clocks_needed / clocks_for_sending
@@ -282,8 +281,8 @@ class LocalTDMABuilder(object):
     def __check_at_most_one(self, name_1, value_1, name_2, value_2):
         if value_1 is not None and value_2 is not None:
             raise ConfigurationException(
-                "Both {} and {} have been specified; please choose just one"
-                .format(name_1, name_2))
+                f"Both {name_1} and {name_2} have been specified; "
+                "please choose just one")
 
     def __check_only_one(self, name_1, value_1, name_2, value_2):
         """ Checks that exactly one of the values is not None
@@ -291,8 +290,7 @@ class LocalTDMABuilder(object):
         self.__check_at_most_one(name_1, value_1, name_2, value_2)
         if value_1 is None and value_2 is None:
             raise ConfigurationException(
-                "Exactly one of {} and {} must be specified".format(
-                    name_1, name_2))
+                f"Exactly one of {name_1} and {name_2} must be specified")
 
     def config_values(self, clocks_per_cycle):
         """ Read the config for the right parameters and combinations.
@@ -302,7 +300,6 @@ class LocalTDMABuilder(object):
                 clocks_for_sending, clocks_waiting, initial_clocks)
         :rtype: tuple(int, int, int, int. int)
         """
-
         # get config
         config = get_simulator().config
 

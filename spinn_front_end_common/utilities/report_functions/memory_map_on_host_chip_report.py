@@ -13,16 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-import os
-import struct
-from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from data_specification.constants import MAX_MEM_REGIONS
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
+from spinn_front_end_common.utilities.helpful_functions import n_word_struct
+from .utils import ReportDir
 
-logger = FormatAdapter(logging.getLogger(__name__))
-_ONE_WORD = struct.Struct("<I")
 MEM_MAP_SUBDIR_NAME = "memory_map_reports"
 MEM_MAP_FILENAME = "memory_map_from_processor_{0:d}_{1:d}_{2:d}.txt"
 REGION_HEADER_SIZE = 2 * BYTES_PER_WORD
@@ -42,41 +38,31 @@ class MemoryMapOnHostChipReport(object):
         :param ~spinnman.transceiver.Transceiver transceiver:
             the spinnMan instance
         """
-        directory_name = os.path.join(
-            report_default_directory, MEM_MAP_SUBDIR_NAME)
-        if not os.path.exists(directory_name):
-            os.makedirs(directory_name)
-
+        rpt_dir = ReportDir(report_default_directory, MEM_MAP_SUBDIR_NAME)
         progress = ProgressBar(dsg_targets, "Writing memory map reports")
         for (x, y, p) in progress.over(dsg_targets):
-            file_name = os.path.join(
-                directory_name, MEM_MAP_FILENAME.format(x, y, p))
-            try:
-                with open(file_name, "w") as f:
-                    self._describe_mem_map(f, transceiver, x, y, p)
-            except IOError:
-                logger.exception("Generate_placement_reports: Can't open file"
-                                 " {} for writing.", file_name)
+            with rpt_dir.file(MEM_MAP_FILENAME.format(x, y, p)) as f:
+                self._describe_mem_map(f, transceiver, x, y, p)
 
     def _describe_mem_map(self, f, txrx, x, y, p):
         """
+        :param ~io.TextIOBase f:
         :param ~spinnman.transceiver.Transceiver txrx:
         """
         # pylint: disable=too-many-arguments
         # Read the memory map data from the given core
         region_table_addr = self._get_region_table_addr(txrx, x, y, p)
-        memmap_data = txrx.read_memory(
-            x, y, region_table_addr, BYTES_PER_WORD * MAX_MEM_REGIONS)
+        memmap_data = n_word_struct(MAX_MEM_REGIONS).unpack(txrx.read_memory(
+            x, y, region_table_addr, BYTES_PER_WORD * MAX_MEM_REGIONS))
 
         # Convert the map to a human-readable description
         f.write("On chip data specification executor\n\n")
-        for i in range(MAX_MEM_REGIONS):
-            region_address, = _ONE_WORD.unpack_from(
-                memmap_data, i * BYTES_PER_WORD)
-            f.write("Region {0:d}:\n\t start address: 0x{1:x}\n\n".format(
-                i, region_address))
+        for i, region_address in enumerate(memmap_data):
+            f.write(
+                f"Region {i:d}:\n\tstart address: 0x{region_address:x}\n\n")
 
-    def _get_region_table_addr(self, txrx, x, y, p):
+    @staticmethod
+    def _get_region_table_addr(txrx, x, y, p):
         """
         :param ~spinnman.transceiver.Transceiver txrx:
         """

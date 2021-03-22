@@ -288,8 +288,7 @@ class ConfigHandler(object):
         # create sub folder within reports for sub runs
         # (where changes need to be recorded)
         self._report_default_directory = self.child_folder(
-            self._report_simulation_top_directory, "run_{}".format(
-                n_calls_to_run))
+            self._report_simulation_top_directory, f"run_{n_calls_to_run}")
 
         # store timestamp in latest/time_stamp for provenance reasons
         time_of_run_file_name = os.path.join(
@@ -412,8 +411,8 @@ class ConfigHandler(object):
 
         if self.machine_time_step <= 0:
             raise ConfigurationException(
-                "invalid machine_time_step {}: must greater than zero".format(
-                    self.machine_time_step))
+                f"invalid machine_time_step {self.machine_time_step}: "
+                "must greater than zero")
 
         if time_scale_factor is not None:
             self.time_scale_factor = time_scale_factor

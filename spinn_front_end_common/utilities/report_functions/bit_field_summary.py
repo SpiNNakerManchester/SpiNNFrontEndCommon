@@ -17,6 +17,10 @@
 class BitFieldSummary(object):
     """ Summary description of generated bitfields.
     """
+    __slots__ = ("_total_merged", "_max_per_chip", "_lowest_per_chip",
+                 "_total_to_merge", "_max_to_merge_per_chip",
+                 "_low_to_merge_per_chip", "_average_per_chip_merged",
+                 "_average_per_chip_to_merge")
 
     def __init__(
             self, total_merged, max_per_chip, lowest_per_chip, total_to_merge,

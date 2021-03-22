@@ -505,8 +505,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._provenance_format = self._config.get(
             "Reports", "provenance_format")
         if self._provenance_format not in ["xml", "json", "sql", "auto"]:
-            raise Exception("Unknown provenance format: {}".format(
-                self._provenance_format))
+            raise Exception(
+                f"Unknown provenance format: {self._provenance_format}")
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
@@ -960,9 +960,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         n_machine_time_steps is None)):
                 self._state = Simulator_State.FINISHED
                 raise ConfigurationException(
-                    "The SDRAM required by one or more vertices is based on"
-                    " the run time, so the run time is limited to"
-                    " {} time steps".format(self._max_run_time_steps))
+                    "The SDRAM required by one or more vertices is based "
+                    "on the run time, so the run time is limited to "
+                    f"{self._max_run_time_steps} time steps")
 
             steps = [n_machine_time_steps]
         elif run_time is not None:
@@ -1002,11 +1002,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 while self._state != Simulator_State.STOP_REQUESTED:
                     self._state_condition.wait()
         else:
-            logger.info("Running forever in steps of {}ms".format(
-                self._max_run_time_steps))
+            logger.info("Running forever in steps of {}ms",
+                        self._max_run_time_steps)
             i = 0
             while self._state != Simulator_State.STOP_REQUESTED:
-                logger.info("Run {}".format(i + 1))
+                logger.info("Run {}", i + 1)
                 self._do_run(
                     self._max_run_time_steps, graph_changed, n_sync_steps)
                 i += 1
@@ -1220,16 +1220,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._n_chips_required:
             if self._machine.n_chips < self._n_chips_required:
                 raise ConfigurationException(
-                    "Failure to detect machine of with {} chips as requested. "
-                    "Only found {}".format(self._n_chips_required,
-                                           self._machine))
+                    "Failure to detect machine of with "
+                    f"{self._n_chips_required} chips as requested. "
+                    f"Only found {self._machine}")
         if self._n_boards_required:
             if len(self._machine.ethernet_connected_chips) \
                     < self._n_boards_required:
                 raise ConfigurationException(
-                    "Failure to detect machine with {} boards as requested. "
-                    "Only found {}".format(self._n_boards_required,
-                                           self._machine))
+                    f"Failure to detect machine with {self._n_boards_required}"
+                    f" boards as requested. Only found {self._machine}")
 
         return self._machine
 
@@ -2288,21 +2287,23 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             state = core_info.state
             rte_state = ""
             if state == CPUState.RUN_TIME_EXCEPTION:
-                rte_state = " ({})".format(core_info.run_time_error.name)
-            logger.error("{}, {}, {}: {}{} {}".format(
-                x, y, p, state.name, rte_state, core_info.application_name))
+                rte_state = f" ({core_info.run_time_error.name})"
+            logger.error("{}, {}, {}: {}{} {}",
+                         x, y, p, state.name, rte_state,
+                         core_info.application_name)
             if core_info.state == CPUState.RUN_TIME_EXCEPTION:
                 logger.error(
-                    "r0=0x{:08X} r1=0x{:08X} r2=0x{:08X} r3=0x{:08X}".format(
-                        core_info.registers[0], core_info.registers[1],
-                        core_info.registers[2], core_info.registers[3]))
+                    "r0=0x{:08X} r1=0x{:08X} r2=0x{:08X} r3=0x{:08X}",
+                    core_info.registers[0], core_info.registers[1],
+                    core_info.registers[2], core_info.registers[3])
                 logger.error(
-                    "r4=0x{:08X} r5=0x{:08X} r6=0x{:08X} r7=0x{:08X}".format(
-                        core_info.registers[4], core_info.registers[5],
-                        core_info.registers[6], core_info.registers[7]))
-                logger.error("PSR=0x{:08X} SR=0x{:08X} LR=0x{:08X}".format(
+                    "r4=0x{:08X} r5=0x{:08X} r6=0x{:08X} r7=0x{:08X}",
+                    core_info.registers[4], core_info.registers[5],
+                    core_info.registers[6], core_info.registers[7])
+                logger.error(
+                    "PSR=0x{:08X} SR=0x{:08X} LR=0x{:08X}",
                     core_info.processor_state_register,
-                    core_info.stack_pointer, core_info.link_register))
+                    core_info.stack_pointer, core_info.link_register)
 
         # Find the cores that are not in RTE i.e. that can still be read
         non_rte_cores = [
@@ -2614,8 +2615,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Cannot call this function until after a simulation has ran.")
 
     def __repr__(self):
-        return "general front end instance for machine {}".format(
-            self._hostname)
+        return f"general front end instance for machine {self._hostname}"
 
     def add_application_vertex(self, vertex):
         """
@@ -2830,7 +2830,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         for i, provenance_items in enumerate(self._all_provenance_items):
             message = None
             if len(self._all_provenance_items) > 1:
-                message = "Provenance from run {}".format(i)
+                message = f"Provenance from run {i}"
             self._check_provenance(provenance_items, message)
 
             # Reset provenance
@@ -2996,7 +2996,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             logger.warning(
                 "Delaying turning machine back on for {} seconds. Consider "
                 "disabling turn_off_board_after_discovery for scripts that "
-                "have short preparation time.".format(delay))
+                "have short preparation time.", delay)
             time.sleep(delay)
 
         if self._machine_allocation_controller is not None:

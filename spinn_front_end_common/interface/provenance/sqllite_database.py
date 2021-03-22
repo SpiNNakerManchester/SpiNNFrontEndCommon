@@ -16,15 +16,14 @@
 import datetime
 import os
 import re
-import sqlite3
 from spinn_utilities.ordered_set import OrderedSet
-from spinn_utilities.abstract_context_manager import AbstractContextManager
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 _RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
 
 
-class SqlLiteDatabase(AbstractContextManager):
+class SqlLiteDatabase(SQLiteDB):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::
@@ -37,8 +36,6 @@ class SqlLiteDatabase(AbstractContextManager):
     """
 
     __slots__ = [
-        # the database holding the data to store
-        "_db",
     ]
 
     def __init__(self, database_file=None):
@@ -49,48 +46,26 @@ class SqlLiteDatabase(AbstractContextManager):
             database will be used (suitable only for testing).
         :type database_file: str
         """
-        if database_file is None:
-            database_file = ":memory:"  # Magic name!
-        self._db = sqlite3.connect(database_file)
-        self.__init_db()
-
-    def __del__(self):
-        self.close()
-
-    def close(self):
-        """ Finalises and closes the database.
-        """
-        if self._db is not None:
-            self._db.close()
-            self._db = None
-
-    def __init_db(self):
-        """ Set up the database if required.
-        """
-        self._db.row_factory = sqlite3.Row
-        self._db.text_factory = memoryview
-        with open(_DDL_FILE) as f:
-            sql = f.read()
-        self._db.executescript(sql)
+        super().__init__(database_file, ddl_file=_DDL_FILE)
 
     def insert_items(self, items):
         """ Does a bulk insert of the items into the database.
 
         :param list(ProvenanceDataItem) items: The items to insert
         """
-        with self._db:
-            self._db.executemany(
+        with self.transaction() as cur:
+            cur.executemany(
                 """
                 INSERT OR IGNORE INTO source(
                     source_name, source_short_name, x, y, p)
                 VALUES(?, ?, ?, ?, ?)
                 """, self.__unique_sources(items, slice(None, -1), "/"))
-            self._db.executemany(
+            cur.executemany(
                 """
                 INSERT OR IGNORE INTO description(description_name)
                 VALUES(?)
                 """, self.__unique_names(items, -1))
-            self._db.executemany(
+            cur.executemany(
                 """
                 INSERT INTO provenance(
                     source_id, description_id, the_value)

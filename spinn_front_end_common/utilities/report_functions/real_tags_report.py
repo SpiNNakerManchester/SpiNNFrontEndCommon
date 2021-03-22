@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
+from spinn_front_end_common.utilities.report_functions.utils import ReportFile
 
 _REPORT_FILENAME = "tags_on_machine.txt"
 
@@ -27,13 +27,12 @@ class TagsFromMachineReport(object):
         :param str report_default_directory:
         :param ~spinnman.transceiver.Transceiver transceiver:
         """
-        filename = os.path.join(report_default_directory, _REPORT_FILENAME)
         tags = self._get_tags(transceiver)
-        with open(filename, "w") as f:
+        with ReportFile(report_default_directory, _REPORT_FILENAME) as f:
             f.write("Tags actually read off the machine\n")
             f.write("==================================\n")
             for tag in tags:
-                f.write("{}\n".format(self._render_tag(tag)))
+                f.write(f"{repr(tag)}\n")
 
     @staticmethod
     def _get_tags(txrx):
@@ -41,7 +40,3 @@ class TagsFromMachineReport(object):
             return txrx.get_tags()
         except Exception as e:  # pylint: disable=broad-except
             return [e]
-
-    @staticmethod
-    def _render_tag(tag):
-        return repr(tag)

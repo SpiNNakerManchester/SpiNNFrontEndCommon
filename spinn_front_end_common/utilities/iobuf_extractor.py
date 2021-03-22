@@ -233,11 +233,8 @@ class IOBufExtractor(object):
             file_path, self._filename_template.format(
                 iobuf.x, iobuf.y, iobuf.p))
 
-        # set mode of the file based off if the file already exists
-        mode = "a" if os.path.exists(file_name) else "w"
-
         # write iobuf to file and call out errors and warnings.
-        with open(file_name, mode) as f:
+        with open(file_name, "a") as f:
             for line in iobuf.iobuf.split("\n"):
                 replaced = replacer.replace(line)
                 f.write(replaced)
@@ -250,21 +247,20 @@ class IOBufExtractor(object):
     def __recover_iobufs(self, core_subsets):
         """
         :param ~.CoreSubsets core_subsets:
-        :rtype: list(~.IOBuffer)
+        :rtype: ~collections.abc.Iterable(~.IOBuffer)
         """
-        io_buffers = []
         for core_subset in core_subsets:
             for p in core_subset.processor_ids:
                 cs = CoreSubsets()
                 cs.add_processor(core_subset.x, core_subset.y, p)
                 try:
-                    io_buffers.extend(self.__transceiver.get_iobuf(cs))
+                    yield from self.__transceiver.get_iobuf(cs)
                 except Exception as e:  # pylint: disable=broad-except
-                    io_buffers.append(IOBuffer(
+                    yield IOBuffer(
                         core_subset.x, core_subset.y, p,
-                        "failed to retrieve iobufs from {},{},{}; {}".format(
-                            core_subset.x, core_subset.y, p, str(e))))
-        return io_buffers
+                        "failed to retrieve iobufs from "
+                        f"{core_subset.x},{core_subset.y},{p}; "
+                        f"{str(e)}")
 
     @staticmethod
     def __add_value_if_match(regex, line, entries, iobuf):
@@ -276,6 +272,6 @@ class IOBufExtractor(object):
         """
         match = regex.match(line)
         if match:
-            entries.append("{}, {}, {}: {} ({})".format(
-                iobuf.x, iobuf.y, iobuf.p, match.group(ENTRY_TEXT),
-                match.group(ENTRY_FILE)))
+            entries.append(
+                f"{iobuf.x}, {iobuf.y}, {iobuf.p}: "
+                f"{match.group(ENTRY_TEXT)} ({match.group(ENTRY_FILE)})")

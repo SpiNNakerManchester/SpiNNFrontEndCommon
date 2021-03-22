@@ -36,7 +36,7 @@ class PacmanProvenanceExtractor(object):
         :rtype: None
         """
         for (algorithm, run_time, exec_names) in executor.algorithm_timings:
-            key = "run_time_of_{}".format(algorithm)
+            key = f"run_time_of_{algorithm}"
             if key not in self.__already_done:
                 names = [self.TOP_NAME, exec_names, key]
                 self.__data_items.append(ProvenanceDataItem(names, run_time))

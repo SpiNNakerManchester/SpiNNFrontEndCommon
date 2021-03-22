@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import os
 from spinn_utilities.log import FormatAdapter
 from spinn_machine.machine import Machine
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
@@ -25,6 +24,7 @@ from spinn_front_end_common.utilities.energy_constants import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
+from .utils import ReportFile
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -67,31 +67,22 @@ class EnergyReport(object):
         :param int runtime:
         :param BufferManager buffer_manager:
         :param PowerUsed power_used:
-        :rtype: None
         """
         # pylint: disable=too-many-arguments, too-many-locals
         if buffer_manager is None:
             logger.info("Skipping Energy report as no buffer_manager set")
             return
 
-        # detailed report path
-        detailed_report = os.path.join(
-            self.__report_dir, self._DETAILED_FILENAME)
-
-        # summary report path
-        summary_report = os.path.join(
-            self.__report_dir, self._SUMMARY_FILENAME)
-
         # figure runtime in milliseconds with time scale factor
         runtime_total_ms = runtime * self.__time_scale_factor
 
         # create detailed report
-        with open(detailed_report, "w") as f:
+        with ReportFile(self.__report_dir, self._DETAILED_FILENAME) as f:
             self._write_detailed_report(
                 placements, machine, power_used, f, runtime_total_ms)
 
         # create summary report
-        with open(summary_report, "w") as f:
+        with ReportFile(self.__report_dir, self._SUMMARY_FILENAME) as f:
             self._write_summary_report(runtime_total_ms, f, power_used)
 
     @classmethod
@@ -206,9 +197,7 @@ class EnergyReport(object):
         """ Writes the warning about this being only an estimate
 
         :param ~io.TextIOBase f: the writer
-        :rtype: None
         """
-
         f.write(
             "This report is based off energy estimates for individual "
             "components of the SpiNNaker machine. It is not meant to be "
@@ -286,9 +275,7 @@ class EnergyReport(object):
         :param float runtime_total_ms:
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
-        :return: energy cost
         """
-
         f.write("\n")
 
         # detailed report print out
@@ -320,7 +307,6 @@ class EnergyReport(object):
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         """
-
         # find time in milliseconds
         total_time_ms = 0.0
         for element in power_used._algorithm_timing_provenance:
@@ -350,7 +336,6 @@ class EnergyReport(object):
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         """
-
         # find time
         total_time_ms = 0.0
         for element in power_used._algorithm_timing_provenance:

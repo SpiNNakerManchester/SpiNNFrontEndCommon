@@ -27,6 +27,7 @@ N_KEYS_PER_PARTITION_ID = 8
 N_KEYS_PER_REINJECTION_PARTITION = 3
 KEY_START_VALUE = 8
 ROUTING_MASK = 0xFFFFFFF8
+_LINK_IDS = (1, 0, 2, 5, 3, 4)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -95,7 +96,7 @@ class SystemMulticastRoutingGenerator(object):
             found = set()
             for x, y in just_reached:
                 # Check links starting with the most direct from 0,0
-                for link_id in [1, 0, 2, 5, 3, 4]:
+                for link_id in _LINK_IDS:
                     # Get protential destination
                     destination = self._machine.xy_over_link(x, y, link_id)
                     # If it is useful
@@ -123,20 +124,20 @@ class SystemMulticastRoutingGenerator(object):
         found.add((eth_x, eth_y))
         logger.warning("In _logging_retry")
         for x, y in to_reach:
-            logger.warning("Still need to reach {}:{}".format(x, y))
+            logger.warning("Still need to reach {}:{}", x, y)
         while len(to_reach) > 0:
             just_reached = found
             found = set()
             for x, y in just_reached:
-                logger.warning("Trying from {}:{}".format(x, y))
+                logger.warning("Trying from {}:{}", x, y)
                 # Check links starting with the most direct from 0,0
-                for link_id in [1, 0, 2, 5, 3, 4]:
+                for link_id in _LINK_IDS:
                     # Get protential destination
                     destination = self._machine.xy_over_link(x, y, link_id)
                     # If it is useful
                     if destination in to_reach:
-                        logger.warning("Could reach {} over {}".format(
-                            destination, link_id))
+                        logger.warning(
+                            "Could reach {} over {}", destination, link_id)
                         # check it actually exits
                         if self._machine.is_link_at(x, y, link_id):
                             # Add to tree and record chip reachable
@@ -145,11 +146,11 @@ class SystemMulticastRoutingGenerator(object):
                             found.add(destination)
                         else:
                             logger.error("Link down")
-            logger.warning("Found {}".format(len(found)))
+            logger.warning("Found {}", len(found))
             if len(found) == 0:
                 raise PacmanRoutingException(
-                    "Unable to do data in routing on {}.".format(
-                        ethernet_chip.ip_address))
+                    "Unable to do data in routing on "
+                    f"{ethernet_chip.ip_address}.")
         return tree
 
     def _add_routing_entry(self, x, y, key, processor_id=None, link_ids=None):
@@ -193,14 +194,13 @@ class SystemMulticastRoutingGenerator(object):
         eth_x = ethernet_chip.x
         eth_y = ethernet_chip.y
         key = KEY_START_VALUE
-        for (x, y) in self._machine.get_existing_xys_by_ethernet(
-                eth_x, eth_y):
+        for (x, y) in self._machine.get_existing_xys_by_ethernet(eth_x, eth_y):
             self._key_to_destination_map[x, y] = key
             placement = self._placements.get_placement_of_vertex(
                 self._monitors[x, y])
             self._add_routing_entry(x, y, key, processor_id=placement.p)
             while (x, y) in tree:
-                x, y, link = tree[(x, y)]
+                x, y, link = tree[x, y]
                 self._add_routing_entry(x, y, key, link_ids=[link])
             key += N_KEYS_PER_PARTITION_ID
 
@@ -212,13 +212,12 @@ class SystemMulticastRoutingGenerator(object):
 
         # add broadcast router timeout keys
         time_out_key = key
-        for (x, y) in self._machine.get_existing_xys_by_ethernet(
-                eth_x, eth_y):
+        for (x, y) in self._machine.get_existing_xys_by_ethernet(eth_x, eth_y):
             placement = self._placements.get_placement_of_vertex(
                 self._monitors[x, y])
             self._add_routing_entry(
                 x, y, time_out_key, processor_id=placement.p,
                 link_ids=links_per_chip[x, y])
             # update tracker
-            self._time_out_keys_by_board[(eth_x, eth_y)] = key
+            self._time_out_keys_by_board[eth_x, eth_y] = key
         key += N_KEYS_PER_REINJECTION_PARTITION

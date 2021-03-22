@@ -12,9 +12,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import os
 from spinn_utilities.progress_bar import ProgressBar
+from .utils import ReportFile
 
 
 class FixedRouteFromMachineReport(object):
@@ -30,11 +29,8 @@ class FixedRouteFromMachineReport(object):
         :param str report_default_directory: folder where reports reside
         :param int app_id: the application ID the fixed routes were loaded with
         """
-        file_name = os.path.join(
-            report_default_directory, "fixed_route_routers")
-
-        with open(file_name, "w") as output:
-            self._write_fixed_routers(output, transceiver, machine, app_id)
+        with ReportFile(report_default_directory, "fixed_route_routers") as f:
+            self._write_fixed_routers(f, transceiver, machine, app_id)
 
     def _write_fixed_routers(self, f, txrx, machine, app_id):
         """ How to actually describe the fixed routes

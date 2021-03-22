@@ -77,12 +77,12 @@ class EnergyProvenanceReporter(object):
         """
         if p == 0:
             # SCAMP always runs on virtual core zero, by definition
-            return "SCAMP(OS)@{},{},{} energy (Joules)".format(x, y, p)
+            return f"SCAMP(OS)@{x},{y},{p} energy (Joules)"
         if placements.is_processor_occupied(x, y, p):
             vtx = placements.get_vertex_on_processor(x, y, p)
-            return "{} energy (Joules)".format(vtx.label)
-        return "core@{},{},{} energy (Joules)".format(x, y, p)
+            return f"{vtx.label} energy (Joules)"
+        return f"core@{x},{y},{p} energy (Joules)"
 
     @staticmethod
     def __router_name(x, y):
-        return "router@{},{} energy (Joules)".format(x, y)
+        return f"router@{x},{y} energy (Joules)"

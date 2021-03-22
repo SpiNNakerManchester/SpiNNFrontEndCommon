@@ -34,12 +34,12 @@ class DatabaseReader(AbstractContextManager):
         """
         :param str database_path: The path to the database
         """
-        # Ugly: must ensure database exists ourselves because Python doesn't
+        # Ugly: must ensure database exists ourselves because Python 2 doesn't
         # have option to open read-only (in the real SQLite API!) exposed
         if not os.path.exists(database_path):
             raise FileNotFoundError(
-                "[Errno 2] No such file or directory: '{}'".format(
-                    database_path))
+                f"[Errno 2] No such file or directory: '{database_path}'")
+        # TODO: Use RO database trick from elsewhere in codebase
         self._connection = sqlite3.connect(database_path)
         self._connection.row_factory = sqlite3.Row
         self._cursor = self._connection.cursor()

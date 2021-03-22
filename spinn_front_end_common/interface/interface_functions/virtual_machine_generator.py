@@ -53,7 +53,7 @@ class VirtualMachineGenerator(object):
         """
         # For backward compatibility support version in csf files for now
         if version is not None:
-            if version in [2, 3]:
+            if version in (2, 3):
                 if height is None:
                     height = 2
                 else:
@@ -64,7 +64,7 @@ class VirtualMachineGenerator(object):
                     assert width == 2
                 logger.warning("For virtual Machines version is deprecated."
                                "use width=2, height=2 instead")
-            elif version in [4, 5]:
+            elif version in (4, 5):
                 if height is None:
                     height = 8
                 else:
@@ -76,7 +76,7 @@ class VirtualMachineGenerator(object):
                 logger.warning("For virtual Machines version is deprecated."
                                "use width=8, height=8 instead")
             else:
-                raise Exception("Unknown version {}".format(version))
+                raise Exception(f"Unknown version {version}")
 
         if json_path is None:
             # pylint: disable=too-many-arguments
@@ -99,7 +99,7 @@ class VirtualMachineGenerator(object):
         machine.add_fpga_links()
 
         logger.info(
-            "Created a virtual machine which has {}".format(
-                machine.cores_and_link_output_string()))
+            "Created a virtual machine which has {}",
+            machine.cores_and_link_output_string())
 
         return machine

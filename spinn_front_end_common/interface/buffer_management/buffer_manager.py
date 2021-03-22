@@ -257,7 +257,7 @@ class BufferManager(object):
         for index, (extra_mon_element, txrx_element) in enumerate(
                 zip(extra_mon_data, txrx_data)):
             if extra_mon_element != txrx_element:
-                raise Exception("WRONG (at index {})".format(index))
+                raise ValueError(f"WRONG (at index {index})")
 
     def _receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers.
@@ -463,8 +463,7 @@ class BufferManager(object):
         bytes_to_go = vertex.get_region_buffer_size(region)
         if bytes_to_go % 2 != 0:
             raise SpinnFrontEndException(
-                "The buffer region of {} must be divisible by 2".format(
-                    vertex))
+                f"The buffer region of {vertex} must be divisible by 2")
         all_data = b""
         if vertex.is_empty(region):
             sent_message = True
@@ -489,8 +488,8 @@ class BufferManager(object):
 
         if not sent_message:
             raise BufferableRegionTooSmall(
-                "The buffer size {} is too small for any data to be added for"
-                " region {} of vertex {}".format(bytes_to_go, region, vertex))
+                f"The buffer size {bytes_to_go} is too small for any data to "
+                f"be added for region {region} of vertex {vertex}")
 
         # If there are no more messages and there is space, add a stop request
         if (not vertex.is_next_timestamp(region) and
@@ -545,17 +544,16 @@ class BufferManager(object):
                 bytes_to_go,
                 UDP_MESSAGE_MAX_SIZE -
                 HostSendSequencedData.get_min_packet_length())
-            # logger.debug(
-            #     "Bytes to go {}, space available {}".format(
-            #         bytes_to_go, space_available))
+            # logger.debug("Bytes to go {}, space available {}",
+            #              bytes_to_go, space_available)
             next_message = self._create_message_to_send(
                 space_available, vertex, region)
             if next_message is None:
                 break
             sent_messages.add_message_to_send(next_message)
             bytes_to_go -= next_message.size
-            # logger.debug("Adding additional buffer of {} bytes".format(
-            #     next_message.size))
+            # logger.debug("Adding additional buffer of {} bytes",
+            #              next_message.size)
 
         # If the vertex is empty, send the stop messages if there is space
         if (not sent_messages.is_full and
@@ -570,8 +568,8 @@ class BufferManager(object):
 
         # Send the messages
         for message in sent_messages.messages:
-            # logger.debug("Sending message with sequence {}".format(
-            #     message.sequence_no))
+            # logger.debug("Sending message with sequence {}",
+            #              message.sequence_no)
             self._send_request(vertex, message)
 
     def _send_request(self, vertex, message):
@@ -678,8 +676,8 @@ class BufferManager(object):
         # Ensure that any transfers in progress are complete first
         if not isinstance(placement.vertex, AbstractReceiveBuffersToHost):
             raise NotImplementedError(
-                "vertex {} does not implement AbstractReceiveBuffersToHost "
-                "so no data read".format(placement.vertex))
+                f"vertex {placement.vertex} does not implement "
+                "AbstractReceiveBuffersToHost so no data read")
         with self._thread_lock_buffer_out:
             # data flush has been completed - return appropriate data
             return self._received_data.get_region_data(

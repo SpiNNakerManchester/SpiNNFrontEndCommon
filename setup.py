@@ -20,37 +20,45 @@ try:
 except ImportError:
     from distutils.core import setup
 
-__version__ = None
-exec(open("spinn_front_end_common/_version.py").read())
-assert __version__
-
-# Build a list of all project modules, as well as supplementary files
 main_package = "spinn_front_end_common"
-extensions = {".aplx", ".boot", ".cfg", ".json", ".sql", ".template", ".xml",
-              ".xsd", ".dict"}
-main_package_dir = os.path.join(os.path.dirname(__file__), main_package)
-start = len(main_package_dir)
-packages = []
-package_data = defaultdict(list)
-for dirname, dirnames, filenames in os.walk(main_package_dir):
-    if '__init__.py' in filenames:
-        package = "{}{}".format(
-            main_package, dirname[start:].replace(os.sep, '.'))
-        packages.append(package)
-    for filename in filenames:
-        _, ext = os.path.splitext(filename)
-        if ext in extensions:
+
+__version__ = None
+__development_status_classifier__ = None
+exec(open(os.path.join(main_package, "_version.py")).read())
+assert __version__
+assert __development_status_classifier__
+
+
+def _discover_contents(extensions):
+    # Build a list of all project modules, as well as supplementary files
+    main_package_dir = os.path.join(os.path.dirname(__file__), main_package)
+    start = len(main_package_dir)
+    packages = []
+    package_data = defaultdict(list)
+    for dirname, _dirnames, filenames in os.walk(main_package_dir):
+        if '__init__.py' in filenames:
             package = "{}{}".format(
                 main_package, dirname[start:].replace(os.sep, '.'))
-            package_data[package].append(filename)
+            packages.append(package)
+        for filename in filenames:
+            _, ext = os.path.splitext(filename)
+            if ext in extensions:
+                package = "{}{}".format(
+                    main_package, dirname[start:].replace(os.sep, '.'))
+                package_data[package].append(filename)
+    return packages, package_data
 
+
+_packages, _data = _discover_contents({
+    ".aplx", ".boot", ".cfg", ".json", ".sql", ".template", ".xml",
+    ".xsd", ".dict"})
 setup(
     name="SpiNNFrontEndCommon",
     version=__version__,
     description="Common SpiNNaker Front end functions",
     url="https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        __development_status_classifier__,
 
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
@@ -70,8 +78,8 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
-    packages=packages,
-    package_data=package_data,
+    packages=_packages,
+    package_data=_data,
     install_requires=['SpiNNUtilities >= 1!5.1.1, < 1!6.0.0',
                       'SpiNNMachine >= 1!5.1.1, < 1!6.0.0',
                       'SpiNNMan >= 1!5.1.1, < 1!6.0.0',

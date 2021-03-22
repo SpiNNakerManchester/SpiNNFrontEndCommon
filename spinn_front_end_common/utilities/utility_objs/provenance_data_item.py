@@ -71,10 +71,9 @@ class ProvenanceDataItem(object):
         return self._value
 
     def __repr__(self):
-        return "{}:{}:{}:{}".format(
-            self._names, self._value, self._report, self._message)
+        return f"{self._names}:{self._value}:{self._report}:{self._message}"
 
     def __str__(self):
         if self._report:
             return self._message
-        return "{}: {}".format(self._names, self._value)
+        return f"{self._names}: {self._value}"

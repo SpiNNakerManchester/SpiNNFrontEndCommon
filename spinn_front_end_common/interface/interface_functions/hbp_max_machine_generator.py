@@ -56,7 +56,7 @@ class HBPMaxMachineGenerator(object):
         """
         if url.endswith("/"):
             url = url[:-1]
-        r = requests.get("{}/max".format(url), params={
+        r = requests.get(f"{url}/max", params={
             'runTime': total_run_time})
         r.raise_for_status()
         return r.json()

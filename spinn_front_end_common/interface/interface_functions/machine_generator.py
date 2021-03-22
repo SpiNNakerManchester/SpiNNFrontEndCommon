@@ -207,7 +207,7 @@ class MachineGenerator(object):
         """ Parses one item of BMP connection data. Maximal format:\
             `cabinet;frame;host,port/boards`
 
-        All parts except host can be omitted. Boards can be a \
+        All parts except host can be omitted. Boards can be a
         hyphen-separated range or a comma-separated list.
 
         :param str bmp_detail:

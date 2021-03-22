@@ -202,8 +202,8 @@ def read_config_boolean(config, section, item):
         return value
     if value.lower() in _BOOLEAN_STATES:
         return _BOOLEAN_STATES[value.lower()]
-    raise ValueError("Unknown boolean value {} in configuration {}:{}".format(
-        value, section, item))
+    raise ValueError(
+        f"Unknown boolean value {value} in configuration {section}:{item}")
 
 
 def generate_unique_folder_name(folder, filename, extension):
@@ -216,11 +216,10 @@ def generate_unique_folder_name(folder, filename, extension):
     :return: file path with a unique addition
     :rtype: str
     """
-    new_file_path = os.path.join(folder, "{}{}".format(filename, extension))
+    new_file_path = os.path.join(folder, f"{filename}{extension}")
     count = 2
     while os.path.exists(new_file_path):
-        new_file_path = os.path.join(
-            folder, "{}_{}{}".format(filename, count, extension))
+        new_file_path = os.path.join(folder, f"{filename}_{count}{extension}")
         count += 1
     return new_file_path
 
@@ -239,8 +238,8 @@ def get_ethernet_chip(machine, board_address):
         if chip.ip_address == board_address:
             return chip
     raise ConfigurationException(
-        "cannot find the Ethernet connected chip with the board address {}"
-        .format(board_address))
+        "cannot find the Ethernet connected chip with the "
+        f"board address {board_address}")
 
 
 def convert_time_diff_to_total_milliseconds(sample):
@@ -291,7 +290,7 @@ def determine_flow_states(executable_types, no_sync_changes):
     # if no states, go boom.
     if not expected_start_states:
         raise ConfigurationException(
-            "Unknown executable start types {}".format(executable_types))
+            f"Unknown executable start types {executable_types}")
     return expected_start_states, expected_end_states
 
 
@@ -320,7 +319,7 @@ def n_word_struct(n_words):
 
     Is much like doing this::
 
-        data = struct.unpack("<{}I".format(n_words), data_blob)
+        data = struct.unpack(f"<{n_words}I", data_blob)
 
     except quite a bit more efficient because things are shared including the
     cost of parsing the format.
@@ -335,7 +334,7 @@ def n_word_struct(n_words):
     s = _n_word_structs[n_words]
     if s is not None:
         return s
-    new_struct = struct.Struct("<{}I".format(n_words))
+    new_struct = struct.Struct(f"<{n_words}I")
     _n_word_structs[n_words] = new_struct
     return new_struct
 
