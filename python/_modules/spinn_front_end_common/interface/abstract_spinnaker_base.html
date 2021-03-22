@@ -1218,11 +1218,18 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span>
                 <span class="s2">&quot;MachineAllocationController&quot;</span><span class="p">)</span>
             <span class="n">report_folder</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;ReportFolder&quot;</span><span class="p">)</span>
-            <span class="n">TagsFromMachineReport</span><span class="p">()(</span><span class="n">report_folder</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">report_folder</span><span class="p">:</span>
+                    <span class="n">TagsFromMachineReport</span><span class="p">()(</span><span class="n">report_folder</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e2</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;problem with TagsFromMachineReport </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e2</span><span class="p">),</span>
+                    <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span><span class="p">()</span>
-            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;problem when shutting down&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e3</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;problem when shutting down </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e3</span><span class="p">),</span>
+                               <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">e</span>
 
     <span class="k">def</span> <span class="nf">_get_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total_run_time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -3158,7 +3165,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
     </div>
   </body>
 </html>
