@@ -2316,11 +2316,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if (non_rte_cores and
                 ExecutableType.USES_SIMULATION_INTERFACE in
                 self._executable_types):
-            placements = Placements()
             non_rte_core_subsets = CoreSubsets()
             for (x, y, p) in non_rte_cores:
-                placements.add_placement(
-                    self._placements.get_placement_on_processor(x, y, p))
                 non_rte_core_subsets.add_processor(x, y, p)
 
             # Attempt to force the cores to write provenance and exit
@@ -2332,8 +2329,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
             # Extract any written provenance data
             try:
+                finished_cores = self._txrx.get_cores_in_state(
+                    non_rte_core_subsets, CPUState.FINISHED)
+                finished_placements = Placements()
+                for (x, y, p) in finished_cores:
+                    finished_placements.app_placement(
+                        self._placements.get_placement_on_processor(x, y, p))
                 extractor = PlacementsProvenanceGatherer()
-                prov_item = extractor(self._txrx, placements)
+                prov_item = extractor(self._txrx, finished_placements)
                 if prov_item is not None:
                     prov_items.extend(prov_item)
             except Exception:
