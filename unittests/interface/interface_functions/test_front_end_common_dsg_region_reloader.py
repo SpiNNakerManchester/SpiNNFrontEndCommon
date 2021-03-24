@@ -39,7 +39,7 @@ regenerate_call_count = 0
 
 
 class _TestMachineVertex(
-    SimpleMachineVertex, AbstractRewritesDataSpecification):
+        SimpleMachineVertex, AbstractRewritesDataSpecification):
     """ A simple machine vertex for testing
     """
 
