@@ -29,6 +29,7 @@ from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 from pacman.model.graphs.machine import (SimpleMachineVertex)
 from spinnman.transceiver import Transceiver
+from spinnman.model import CPUInfo
 
 # test specific stuff
 reload_region_data = [
@@ -74,6 +75,7 @@ class _MockCPUInfo(object):
         self._user_0 = user_0
 
     @property
+    @overrides(CPUInfo.user)
     def user(self):
         return [self._user_0]
 
