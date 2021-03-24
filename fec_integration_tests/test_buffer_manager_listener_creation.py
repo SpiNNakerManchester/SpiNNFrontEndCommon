@@ -16,7 +16,6 @@
 import tempfile
 import unittest
 
-from spinn_utilities.overrides import overrides
 from pacman.model.placements import Placement, Placements
 from pacman.model.tags import Tags
 from spinn_machine.tags import IPTag
