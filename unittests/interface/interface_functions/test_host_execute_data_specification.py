@@ -16,7 +16,9 @@
 import struct
 import tempfile
 import unittest
+from spinn_utilities.overrides import overrides
 from spinn_machine.virtual_machine import virtual_machine
+from spinnman.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
 from data_specification.constants import (
     MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
@@ -29,49 +31,31 @@ from spinn_front_end_common.interface.ds import DataSpecificationTargets
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 
-class _MockCPUInfo(object):
-    """ Pretend CPU Info object
-    """
-
-    def __init__(self, user_0):
-        self._user_0 = user_0
-
-    @property
-    def user(self):
-        return [self._user_0]
-
-
 class _MockTransceiver(object):
     """ Pretend transceiver
     """
     # pylint: disable=unused-argument
 
-    def __init__(self, user_0_addresses):
+    def __init__(self):
         """
 
         :param user_0_addresses: dict of (x, y, p) to user_0_address
         """
         self._regions_written = list()
-        self._user_0_addresses = user_0_addresses
         self._next_address = 0
 
-    @property
-    def regions_written(self):
-        """ A list of tuples of (base_address, data) which has been written
-        """
-        return self._regions_written
-
-    def malloc_sdram(self, x, y, size, app_id):
+    @overrides(Transceiver.malloc_sdram)
+    def malloc_sdram(self,  x, y, size, app_id, tag=None):
         address = self._next_address
         self._next_address += size
         return address
 
-    def get_user_0_register_address_from_core(self, p):
-        return self._user_0_addresses[p]
+    @staticmethod
+    @overrides(Transceiver.get_user_0_register_address_from_core)
+    def get_user_0_register_address_from_core(p):
+        return {0: 1000}[p]
 
-    def get_cpu_information_from_core(self, x, y, p):
-        return _MockCPUInfo(self._user_0_addresses[(x, y, p)])
-
+    @overrides(Transceiver.write_memory)
     def write_memory(
             self, x, y, base_address, data, n_bytes=None, offset=0,
             cpu=0, is_filename=False):
@@ -84,7 +68,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
     def test_call(self):
         executor = HostExecuteDataSpecification()
-        transceiver = _MockTransceiver(user_0_addresses={0: 1000})
+        transceiver = _MockTransceiver()
         machine = virtual_machine(2, 2)
         tempdir = tempfile.mkdtemp()
 
@@ -119,7 +103,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # The space between regions should be as allocated regardless of
         # how much data is written
         header_and_table_size = (MAX_MEM_REGIONS + 2) * BYTES_PER_WORD
-        regions = transceiver.regions_written
+        regions = transceiver._regions_written
         self.assertEqual(len(regions), 4)
 
         # Base address for header and table
