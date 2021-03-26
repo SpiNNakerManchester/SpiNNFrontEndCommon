@@ -118,7 +118,7 @@ class SQLiteDB(AbstractContextManager):
             #
             # The application_id pragma would be used within the DDL schema.
             ddl_hash, = struct.unpack_from(
-                ">I", hashlib.md5(sql.encode()).digest)
+                ">I", hashlib.md5(sql.encode()).digest())
             self.pragma("user_version", ddl_hash)
         if case_insensitive_like:
             self.pragma("case_sensitive_like", False)
