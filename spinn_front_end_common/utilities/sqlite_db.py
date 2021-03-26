@@ -16,11 +16,14 @@
 from contextlib import AbstractContextManager as ACMBase
 import enum
 import hashlib
+import logging
 import os
 import pathlib
 import sqlite3
 import struct
 from spinn_utilities.abstract_context_manager import AbstractContextManager
+from spinn_utilities.logger_utils import warn_once
+logger = logging.getLogger(__name__)
 
 
 class Isolation(enum.Enum):
@@ -174,6 +177,11 @@ class SQLiteDB(AbstractContextManager):
         :rtype: ~sqlite3.Connection
         :raises AttributeError: if the database connection has been closed
         """
+        warn_once(
+            logger,
+            "Low-level connection used instead of transaction() context. "
+            "Please contact SpiNNaker Software Team with your use-case for "
+            "assistance.")
         if not self.__db:
             raise AttributeError("database has been closed")
         return self.__db
