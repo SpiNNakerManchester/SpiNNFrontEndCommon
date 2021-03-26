@@ -22,10 +22,11 @@ def get_simulation_header_array(
         binary_file_name, machine_time_step, time_scale_factor):
     """ Get data to be written to the simulation header
 
-    :param binary_file_name: The name of the binary of the application
-    :param machine_time_step: The time step of the simulation
-    :param time_scale_factor: The time scaling of the simulation
+    :param str binary_file_name: The name of the binary of the application
+    :param int machine_time_step: The time step of the simulation
+    :param int time_scale_factor: The time scaling of the simulation
     :return: An array of values to be written as the simulation header
+    :rtype: list(int)
     """
     # Get first 32-bits of the md5 hash of the application name
     application_name_hash = md5(os.path.splitext(binary_file_name)[0])[:8]

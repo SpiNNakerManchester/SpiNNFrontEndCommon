@@ -14,87 +14,66 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.overrides import overrides
+from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.application import ApplicationVertex
-from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 
 
-class ChipPowerMonitor(
-        ApplicationVertex, AbstractHasAssociatedBinary,
-        AbstractGeneratesDataSpecification):
+class ChipPowerMonitor(ApplicationVertex, LegacyPartitionerAPI):
     """ Represents idle time recording code in a application graph.
     """
     __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
 
     def __init__(
-            self, label, constraints, n_samples_per_recording,
-            sampling_frequency):
+            self, label, n_samples_per_recording, sampling_frequency,
+            constraints=None):
         """
-        :param label: vertex label
-        :type label: str
+        :param str label: vertex label
         :param constraints: constraints for the vertex
-        :type constraints: \
+        :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
-        :param n_samples_per_recording: \
+        :param int n_samples_per_recording:
             how many samples to take before recording to SDRAM the total
-        :type n_samples_per_recording: int
-        :param sampling_frequency: how many microseconds between sampling
-        :type sampling_frequency: int
+        :param int sampling_frequency: how many microseconds between sampling
         """
-        super(ChipPowerMonitor, self).__init__(label, constraints, 1)
+        super().__init__(label, constraints, 1)
         self._n_samples_per_recording = n_samples_per_recording
         self._sampling_frequency = sampling_frequency
 
     @property
-    @overrides(ApplicationVertex.n_atoms)
+    @overrides(LegacyPartitionerAPI.n_atoms)
     def n_atoms(self):
         return 1
 
-    @overrides(ApplicationVertex.create_machine_vertex)
+    @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
             self,
             vertex_slice, resources_required,  # @UnusedVariable
             label=None, constraints=None):
-        return ChipPowerMonitorMachineVertex(
+        machine_vertex = ChipPowerMonitorMachineVertex(
             constraints=constraints, label=label,
             n_samples_per_recording=self._n_samples_per_recording,
-            sampling_frequency=self._sampling_frequency)
-
-    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
-        return ChipPowerMonitorMachineVertex.binary_file_name()
-
-    @inject_items({"time_scale_factor": "TimeScaleFactor",
-                   "machine_time_step": "MachineTimeStep",
-                   "n_machine_time_steps": "PlanNTimeSteps"})
-    @overrides(
-        AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "machine_time_step", "time_scale_factor", "n_machine_time_steps"})
-    def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor,
-            n_machine_time_steps):
-        # pylint: disable=too-many-arguments, arguments-differ
-        # pylint: disable=protected-access
-
-        # generate spec for the machine vertex
-        placement.vertex._generate_data_specification(
-            spec, machine_time_step, time_scale_factor, n_machine_time_steps)
-
-    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
-        return ChipPowerMonitorMachineVertex.binary_start_type()
+            sampling_frequency=self._sampling_frequency,  app_vertex=self)
+        if vertex_slice:
+            assert (vertex_slice == machine_vertex.vertex_slice)
+        if resources_required:
+            assert (resources_required ==
+                    machine_vertex.resources_required)
+        return machine_vertex
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"})
-    @overrides(ApplicationVertex.get_resources_used_by_atoms,
+    @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms,
                additional_arguments={"machine_time_step", "time_scale_factor"})
     def get_resources_used_by_atoms(
             self, vertex_slice,  # @UnusedVariable
             machine_time_step, time_scale_factor):
+        """
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        """
         # pylint: disable=arguments-differ
         return ChipPowerMonitorMachineVertex.get_resources(
             machine_time_step, time_scale_factor,

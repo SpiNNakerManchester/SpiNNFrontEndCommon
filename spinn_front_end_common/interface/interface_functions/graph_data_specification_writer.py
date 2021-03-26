@@ -55,22 +55,25 @@ class GraphDataSpecificationWriter(object):
     def __call__(
             self, placements, hostname,
             report_default_directory, write_text_specs,
-            machine, data_n_timesteps, graph_mapper=None,
-            placement_order=None):
+            machine, data_n_timesteps, placement_order=None):
         """
-        :param placements: placements of machine graph to cores
-        :param hostname: SpiNNaker machine name
-        :param report_default_directory: the location where reports are stored
-        :param write_text_specs:\
+        :param ~pacman.model.placements.Placements placements:
+            placements of machine graph to cores
+        :param str hostname: SpiNNaker machine name
+        :param str report_default_directory:
+            the location where reports are stored
+        :param bool write_text_specs:
             True if the textual version of the specification is to be written
-        :param machine: the python representation of the SpiNNaker machine
-        :param data_n_timesteps: The number of timesteps for which data space\
-            will been reserved
-        :param graph_mapper:\
-            the mapping between application and machine graph
-        :param placement:\
+        :param ~spinn_machine.Machine machine:
+            the python representation of the SpiNNaker machine
+        :param int data_n_timesteps:
+            The number of timesteps for which data space will been reserved
+        :param list(~pacman.model.placements.Placement) placement_order:
             the optional order in which placements should be examined
         :return: DSG targets (map of placement tuple and filename)
+        :rtype: tuple(DataSpecificationTargets, dict(tuple(int,int,int), int))
+        :raises ConfigurationException:
+            If the DSG asks to use more SDRAM than is available.
         """
         # pylint: disable=too-many-arguments, too-many-locals
         # pylint: disable=attribute-defined-outside-init
@@ -91,38 +94,38 @@ class GraphDataSpecificationWriter(object):
         vertices_to_reset = list()
         for placement in progress.over(placement_order):
             # Try to generate the data spec for the placement
+            vertex = placement.vertex
             generated = self.__generate_data_spec_for_vertices(
-                placement, placement.vertex, targets, data_n_timesteps)
+                placement, vertex, targets, data_n_timesteps)
 
             if generated and isinstance(
-                    placement.vertex, AbstractRewritesDataSpecification):
-                vertices_to_reset.append(placement.vertex)
+                    vertex, AbstractRewritesDataSpecification):
+                vertices_to_reset.append(vertex)
 
             # If the spec wasn't generated directly, and there is an
             # application vertex, try with that
-            if not generated and graph_mapper is not None:
-                associated_vertex = graph_mapper.get_application_vertex(
-                    placement.vertex)
+            if not generated and vertex.app_vertex is not None:
                 generated = self.__generate_data_spec_for_vertices(
-                    placement, associated_vertex, targets, data_n_timesteps)
+                    placement, vertex.app_vertex, targets, data_n_timesteps)
                 if generated and isinstance(
-                        associated_vertex, AbstractRewritesDataSpecification):
-                    vertices_to_reset.append(associated_vertex)
+                        vertex.app_vertex, AbstractRewritesDataSpecification):
+                    vertices_to_reset.append(vertex.app_vertex)
 
         # Ensure that the vertices know their regions have been reloaded
         for vertex in vertices_to_reset:
-            vertex.mark_regions_reloaded()
+            vertex.set_reload_required(False)
 
         return targets, self._region_sizes
 
     def __generate_data_spec_for_vertices(
             self, pl, vertex, targets, data_n_timesteps):
         """
-        :param pl: placement of machine graph to cores
-        :param vertex: the specific vertex to write DSG for.
-        :param targets: DataSpecificationTargets
+        :param ~.Placement pl: placement of machine graph to cores
+        :param ~.AbstractVertex vertex: the specific vertex to write DSG for.
+        :param DataSpecificationTargets targets:
         :return: True if the vertex was data spec-able, False otherwise
         :rtype: bool
+        :raises ConfigurationException: if things don't fit
         """
         # if the vertex can generate a DSG, call it
         if not isinstance(vertex, AbstractGeneratesDataSpecification):

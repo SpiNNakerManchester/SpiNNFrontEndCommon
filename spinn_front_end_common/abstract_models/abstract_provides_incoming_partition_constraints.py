@@ -13,12 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_utilities.require_subclass import require_subclass
+from pacman.model.graphs import AbstractVertex
 
 
-@add_metaclass(AbstractBase)
-class AbstractProvidesIncomingPartitionConstraints(object):
+@require_subclass(AbstractVertex)
+class AbstractProvidesIncomingPartitionConstraints(
+        object, metaclass=AbstractBase):
     """ A vertex that can provide constraints for its incoming edge partitions.
     """
 
@@ -26,12 +28,11 @@ class AbstractProvidesIncomingPartitionConstraints(object):
 
     @abstractmethod
     def get_incoming_partition_constraints(self, partition):
-        """ Get constraints to be added to the given edge that goes in to\
-            a vertex of this vertex.
+        """ Get constraints to be added to the given edge partition that goes\
+            into a vertex of this vertex.
 
-        :param partition: An partition that goes in to this vertex
-        :type partition:\
-            ~pacman.model.graphs.AbstractOutgoingEdgePartition
+        :param ~pacman.model.graphs.AbstractOutgoingEdgePartition partition:
+            An partition that goes in to this vertex
         :return: A list of constraints
         :rtype: list(~pacman.model.constraints.AbstractConstraint)
         """

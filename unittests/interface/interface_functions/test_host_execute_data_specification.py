@@ -13,17 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import struct
 import tempfile
 import unittest
 from spinn_machine.virtual_machine import virtual_machine
-from data_specification.constants import MAX_MEM_REGIONS, \
-    APP_PTR_TABLE_BYTE_SIZE
+from spinnman.model import ExecutableTargets
+from data_specification.constants import (
+    MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
 from spinn_front_end_common.interface.interface_functions import (
     HostExecuteDataSpecification)
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableTargets, ExecutableType)
+from spinn_front_end_common.utilities.utility_objs import (ExecutableType)
 from spinn_front_end_common.interface.ds import DataSpecificationTargets
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
@@ -74,6 +75,8 @@ class _MockTransceiver(object):
     def write_memory(
             self, x, y, base_address, data, n_bytes=None, offset=0,
             cpu=0, is_filename=False):
+        if isinstance(data, int):
+            data = struct.pack("<I", data)
         self._regions_written.append((base_address, data))
 
 
@@ -105,8 +108,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         # Execute the spec
         targets = ExecutableTargets()
-        targets.add_processor("text.aplx", 0, 0, 0,
-                              ExecutableType.USES_SIMULATION_INTERFACE)
+        targets.add_processor(
+            "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         infos = executor.execute_application_data_specs(
             transceiver, machine, 30, dsg_targets, False, targets,
             report_folder=tempdir, region_sizes=region_sizes)

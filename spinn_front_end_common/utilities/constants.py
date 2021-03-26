@@ -18,6 +18,7 @@ from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 
 # conversion from words to bytes
 BYTES_PER_WORD = 4
+BYTES_PER_3_WORDS = 12
 BYTES_PER_SHORT = 2
 BYTES_PER_KB = 1024
 
@@ -25,47 +26,56 @@ LIVE_GATHERER_CORE_APPLICATION_ID = 0xAC0
 COMMAND_SENDER_CORE_APPLICATION_ID = 0xAC6
 SPIKE_INJECTOR_CORE_APPLICATION_ID = 0xAC9
 
+# how many bits there are in a word
 BITS_PER_WORD = 32.0
+
+#: start of where SDRAM starts (either unbuffered or buffered)
 SDRAM_BASE_ADDR = 0x70000000
+
+#: the ITCM max safe limit for a binary
 MAX_SAFE_BINARY_SIZE = 32 * BYTES_PER_KB
+
+#: the ITCM max limit for a binary
 MAX_POSSIBLE_BINARY_SIZE = 33 * BYTES_PER_KB
 
 # converts between micro and milli seconds
-MICRO_TO_MILLISECOND_CONVERSION = 1000
+MICRO_TO_MILLISECOND_CONVERSION = 1000.0
+MICRO_TO_SECOND_CONVERSION = 1000000.0  # (1e6)
 
-# max size expected to be used by the reverse ip_tag multicast source
-# during buffered operations
+#: max size expected to be used by the reverse ip_tag multicast source
+#: during buffered operations.
 MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP = 1 * 1024 * BYTES_PER_KB
 
-# The default size of a recording buffer before receive request is sent
+#: The default size of a recording buffer before receive request is sent
 DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE = 16 * BYTES_PER_KB
 
-# The number of bytes used by SARK per memory allocation
+#: The number of bytes used by SARK per memory allocation
 SARK_PER_MALLOC_SDRAM_USAGE = 2 * BYTES_PER_WORD
 
-# The number of words in the AbstractDataSpecable basic setup information
-# This is the amount required by the pointer table plus a SARK allocation
+#: The number of words in the AbstractDataSpecable basic setup information.
+#: This is the amount required by the pointer table plus a SARK allocation.
 DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES = (
     APP_PTR_TABLE_BYTE_SIZE + SARK_PER_MALLOC_SDRAM_USAGE)
 
-# The number of words used by the simulation interface
-# 4 for machine_time_step,
-# 4 for SDP port
-# 4 for application hash
+#: The number of bytes used by the simulation interface.
+#: This is one word for the machine_time_step, one for the SDP port, and one
+#: for the application hash.
 SIMULATION_N_BYTES = 3 * BYTES_PER_WORD
 
-# the number of words used by the multicast data speed up interface
+#: the number of bytes used by the multicast data speed up interface
 # 4 for the first key used by multicast protocol
 MULTICAST_SPEEDUP_N_BYTES = BYTES_PER_WORD
 
-# The number of bytes used by the DSG and simulation interfaces
+#: The number of bytes used by the DSG and simulation interfaces
 SYSTEM_BYTES_REQUIREMENT = (
     DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES + SIMULATION_N_BYTES)
 
-# database cap file path
+#: Database file path maximum length for database notification messages.
+#: Note that this is *not* sent to SpiNNaker and so is not subject to the
+#: usual SDP limit.
 MAX_DATABASE_PATH_LENGTH = 50000
 
-# size of the on-chip DSE data structure required in bytes
+#: size of the on-chip DSE data structure required, in bytes
 DSE_DATA_STRUCT_SIZE = 4 * BYTES_PER_WORD
 
 
@@ -103,9 +113,14 @@ class BUFFERING_OPERATIONS(Enum):
     BUFFER_WRITE = 1
 
 
-# partition IDs preallocated to functionality
+#: partition IDs preallocated to functionality
 PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP = "DATA_SPEED_UP_ROAD"
 
-# The default local port that the toolchain listens on for the notification
-# protocol.
+#: The default local port that the toolchain listens on for the notification
+#: protocol.
 NOTIFY_PORT = 19999
+
+#: The number of clock cycles per micro-second (at 200Mhz)
+CLOCKS_PER_US = 200
+
+PROVENANCE_DB = "provenance.sqlite3"

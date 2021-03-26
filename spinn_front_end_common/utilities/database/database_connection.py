@@ -15,7 +15,6 @@
 
 import logging
 from threading import Thread
-from six import raise_from
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import (
     SpinnmanIOException, SpinnmanInvalidPacketException,
@@ -46,19 +45,18 @@ class DatabaseConnection(UDPConnection):
                  stop_pause_callback_function=None, local_host=None,
                  local_port=NOTIFY_PORT):
         """
-        :param start_resume_callback_function: A function to be called when \
-            the start message has been received.  This function should not \
-            take any parameters or return anything.
-        :type start_resume_callback_function: function() -> None
-        :param local_host: Optional specification of the local hostname or\
-            IP address of the interface to listen on
-        :type local_host: str
-        :param local_port: Optional specification of the local port to listen \
-            on.  Must match the port that the toolchain will send the \
-            notification on (19999 by default)
-        :type local_port: int
+        :param callable start_resume_callback_function:
+            A function to be called when the start message has been received.
+            This function should not take any parameters or return anything.
+        :param str local_host:
+            Optional specification of the local hostname or IP address of the
+            interface to listen on
+        :param int local_port:
+            Optional specification of the local port to listen on. Must match
+            the port that the toolchain will send the notification on (19999
+            by default)
         """
-        super(DatabaseConnection, self).__init__(
+        super().__init__(
             local_host=local_host, local_port=local_port,
             remote_host=None, remote_port=None)
         thread = Thread(name="SpyNNakerDatabaseConnection:{}:{}".format(
@@ -73,14 +71,12 @@ class DatabaseConnection(UDPConnection):
     def add_database_callback(self, database_callback_function):
         """ Add a database callback to be called when the database is ready.
 
-        :param database_callback_function: A function to be called when the\
-            database message has been received.  This function should take \
-            a single parameter, which will be a DatabaseReader object. \
-            Once the function returns, it will be assumed that the database \
-            has been read, and the return response will be sent.
-        :type database_callback_function: function(\
-            :py:class:`spinn_front_end_common.utilities.database.database_reader.DatabaseReader`)\
-            -> None
+        :param callable(DatabaseReader,None) database_callback_function:
+            A function to be called when the database message has been
+            received.  This function should take a single parameter, which
+            will be a DatabaseReader object. Once the function returns, it
+            will be assumed that the database has been read, and the return
+            response will be sent.
         :raises SpinnmanIOException: If anything goes wrong
         """
         self.__database_callbacks.append(database_callback_function)
@@ -109,7 +105,7 @@ class DatabaseConnection(UDPConnection):
         except Exception as e:
             logger.error("Failure processing database callback",
                          exc_info=True)
-            raise_from(SpinnmanIOException(str(e)), e)
+            raise SpinnmanIOException(str(e)) from e
         finally:
             self.__running = False
 
@@ -166,4 +162,4 @@ class DatabaseConnection(UDPConnection):
 
     def close(self):
         self.__running = False
-        UDPConnection.close(self)
+        super().close()

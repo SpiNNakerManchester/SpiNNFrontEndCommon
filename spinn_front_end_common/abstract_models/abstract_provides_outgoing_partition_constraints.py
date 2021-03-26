@@ -13,24 +13,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_utilities.require_subclass import require_subclass
+from pacman.model.graphs import AbstractVertex
 
 
-@add_metaclass(AbstractBase)
-class AbstractProvidesOutgoingPartitionConstraints(object):
+@require_subclass(AbstractVertex)
+class AbstractProvidesOutgoingPartitionConstraints(
+        object, metaclass=AbstractBase):
     """ A vertex that can provide constraints for its outgoing edge partitions.
+
+    If a Machine_vertex is an instance the Application vertex will not be
+    checked. However if the MachineVertex does not implement this API
+    ProcessPartitionConstraint will then check the ApplicationVertex
     """
 
     __slots__ = ()
 
     @abstractmethod
     def get_outgoing_partition_constraints(self, partition):
-        """ Get constraints to be added to the given edge that comes out of\
-            this vertex.
+        """ Get constraints to be added to the given edge partition that comes\
+            out of this vertex.
 
-        :param partition: An edge that comes out of this vertex
-        :type partition: ~pacman.model.graphs.AbstractOutgoingEdgePartition
+        :param ~pacman.model.graphs.AbstractOutgoingEdgePartition partition:
+            An edge that comes out of this vertex
         :return: A list of constraints
         :rtype: list(~pacman.model.constraints.AbstractConstraint)
         """

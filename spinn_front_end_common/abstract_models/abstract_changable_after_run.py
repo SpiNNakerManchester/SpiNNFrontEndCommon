@@ -13,13 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
-from spinn_utilities.abstract_base import (
-    AbstractBase, abstractmethod)
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
-@add_metaclass(AbstractBase)
-class AbstractChangableAfterRun(object):
+class AbstractChangableAfterRun(object, metaclass=AbstractBase):
     """ An item that can be changed after a call to run, the changes to which\
         might or might not require mapping or data generation.
     """

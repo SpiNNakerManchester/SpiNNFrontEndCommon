@@ -15,5 +15,6 @@
 
 from .failed_state import FailedState
 from .simulator_interface import SimulatorInterface
+from .iobuf_extractor import IOBufExtractor
 
-__all__ = ["FailedState", "SimulatorInterface"]
+__all__ = ["FailedState", "SimulatorInterface", "IOBufExtractor"]

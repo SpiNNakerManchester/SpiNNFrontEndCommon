@@ -44,11 +44,8 @@ class FailedState(SimulatorInterface):
     @property
     @overrides(SimulatorInterface.config)
     def config(self):
-        raise ConfigurationException(FAILED_STATE_MSG)
-
-    @property
-    def graph_mapper(self):
-        raise ConfigurationException(FAILED_STATE_MSG)
+        # Not left abstract to allow unitests with FailedState
+        raise NotImplementedError("This method is expected to be overriden")
 
     @property
     @overrides(SimulatorInterface.has_ran)
@@ -81,12 +78,20 @@ class FailedState(SimulatorInterface):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @overrides(SimulatorInterface.run)
-    def run(self, run_time):
+    def run(self, run_time, sync_time=0.0):
+        raise ConfigurationException(FAILED_STATE_MSG)
+
+    @overrides(SimulatorInterface.continue_simulation)
+    def continue_simulation(self):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @overrides(SimulatorInterface.stop)
     def stop(self):
         logger.error("Ignoring call to stop/end as no simulator running")
+
+    @overrides(SimulatorInterface.stop_run)
+    def stop_run(self):
+        raise ConfigurationException(FAILED_STATE_MSG)
 
     @property
     @overrides(SimulatorInterface.transceiver)

@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinn_utilities.overrides import overrides
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.sdp import SDPFlag, SDPHeader
@@ -23,39 +24,39 @@ from .reinjector_scp_commands import ReinjectorSCPCommands
 
 class SetRouterTimeoutMessage(AbstractSCPRequest):
     """ An SCP Request to the extra monitor core to set the router timeout\
-    for dropped packet reinjection
+        for dropped packet reinjection.
     """
 
     __slots__ = []
 
-    def __init__(self, x, y, p, timeout_mantissa, timeout_exponent):
+    def __init__(self, x, y, p, timeout_mantissa, timeout_exponent, wait=1):
         """
-        :param x: The x-coordinate of a chip, between 0 and 255
-        :type x: int
-        :param y: The y-coordinate of a chip, between 0 and 255
-        :type y: int
-        :param p: \
+        :param int x: The x-coordinate of a chip, between 0 and 255
+        :param int y: The y-coordinate of a chip, between 0 and 255
+        :param int p:
             The processor running the extra monitor vertex, between 0 and 17
-        :type p: int
-        :param timeout_mantissa: \
+        :param int timeout_mantissa:
             The mantissa of the timeout value, between 0 and 15
-        :type timeout_mantissa: int
-        :param timeout_exponent: \
+        :param int timeout_exponent:
             The exponent of the timeout value, between 0 and 15
-        :type timeout_exponent: int
+        :param int wait:
+            Which wait to set. Should be 1 or 2.
         """
         # pylint: disable=too-many-arguments
-        super(SetRouterTimeoutMessage, self).__init__(
+        cmd = ReinjectorSCPCommands.SET_ROUTER_WAIT1_TIMEOUT if wait == 1 \
+            else ReinjectorSCPCommands.SET_ROUTER_WAIT2_TIMEOUT
+        super().__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(
                     SDP_PORTS.EXTRA_MONITOR_CORE_REINJECTION.value),
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
-            SCPRequestHeader(command=ReinjectorSCPCommands.SET_ROUTER_TIMEOUT),
+            SCPRequestHeader(command=cmd),
             argument_1=(timeout_mantissa & 0xF) |
                        ((timeout_exponent & 0xF) << 4))
 
+    @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self):
-        return CheckOKResponse(
-            "Set router timeout", ReinjectorSCPCommands.SET_ROUTER_TIMEOUT)
+        return CheckOKResponse("Set router timeout",
+                               self.scp_request_header.command)

@@ -13,20 +13,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
-@add_metaclass(AbstractBase)
-class AbstractProvidesLocalProvenanceData(object):
-    """ Indicates an object that provides locally obtained provenance data
+class AbstractProvidesLocalProvenanceData(object, metaclass=AbstractBase):
+    """ Indicates an object that provides locally obtained provenance data.
+
+    GraphProvenanceGatherer will check all Vertices and all Edges in both the
+    MachineGraph and if it exists the ApplicationGraph
     """
 
     __slots__ = ()
 
     @abstractmethod
     def get_local_provenance_data(self):
-        """ Get an iterable of provenance data items
+        """ Get an iterable of provenance data items.
 
-        :return: iterable of :py:class:`ProvenanceDataItem`
+        :return: the provenance items
+        :rtype:
+            iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
         """

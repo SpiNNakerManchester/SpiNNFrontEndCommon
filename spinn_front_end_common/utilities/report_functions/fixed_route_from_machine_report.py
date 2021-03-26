@@ -25,15 +25,11 @@ class FixedRouteFromMachineReport(object):
                  app_id):
         """ Writes the fixed routes from the machine
 
-        :param transceiver: spinnMan instance
-        :param machine: SpiNNMachine instance
-        :param report_default_directory: folder where reports reside
-        :param loaded_fixed_routes_on_machine_token: \
-            Token that states fixed routes have been loaded
-        :param app_id: the application ID the fixed routes were loaded with
-        :rtype: None
+        :param ~spinnman.transceiver.Transceiver transceiver: spinnMan instance
+        :param ~spinn_machine.Machine machine: SpiNNMachine instance
+        :param str report_default_directory: folder where reports reside
+        :param int app_id: the application ID the fixed routes were loaded with
         """
-
         file_name = os.path.join(
             report_default_directory, "fixed_route_routers")
 
@@ -44,11 +40,9 @@ class FixedRouteFromMachineReport(object):
         """ How to actually describe the fixed routes
 
         :param f: Where we are writing
-        :param txrx: The spinnman transceiver instance
-        :type txrx: ~spinnman.transceiver.Transceiver
-        :param machine: The spinn_machine machine instance
-        :type txrx: ~spinn_machine.Machine
-        :param app_id: Which application is running on the machine
+        :param ~spinnman.transceiver.Transceiver txrx:
+        :param ~spinn_machine.Machine machine:
+        :param int app_id: Which application is running on the machine
         :rtype: None
         """
         progress = ProgressBar(machine.n_chips, "Writing fixed route report")

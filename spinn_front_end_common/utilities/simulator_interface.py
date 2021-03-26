@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import (
     AbstractBase, abstractproperty, abstractmethod)
 
 
-@add_metaclass(AbstractBase)
-class SimulatorInterface(object):
+class SimulatorInterface(object, metaclass=AbstractBase):
 
     __slots__ = ()
 
@@ -27,24 +25,25 @@ class SimulatorInterface(object):
     def add_socket_address(self, socket_address):
         """ Add the address of a socket used in the run notification protocol.
 
-        :param socket_address: The address of the socket
-        :type socket_address: ~spinn_utilities.socket_address.SocketAddress
+        :param ~spinn_utilities.socket_address.SocketAddress socket_address:
+            The address of the socket
         :rtype: None
         """
 
     @abstractproperty
     def buffer_manager(self):
         """ The buffer manager being used for loading/extracting buffers
+
+        :rtype:
+            ~spinn_front_end_common.interface.buffer_management.BufferManager
         """
 
     @abstractproperty
     def config(self):
         """ Provides access to the configuration for front end interfaces.
-        """
 
-    @abstractproperty
-    def graph_mapper(self):
-        pass
+        :rtype: ~spinn_front_end_common.interface.config_handler.ConfigHandler
+        """
 
     @abstractproperty
     def has_ran(self):
@@ -67,7 +66,10 @@ class SimulatorInterface(object):
 
     @abstractproperty
     def machine_time_step(self):
-        pass
+        """ The machine timestep, in microseconds.
+
+        :rtype: int
+        """
 
     @abstractproperty
     def no_machine_time_steps(self):
@@ -85,22 +87,41 @@ class SimulatorInterface(object):
 
     @abstractproperty
     def tags(self):
-        pass
+        """
+        :rtype: ~pacman.model.tags.Tags
+        """
 
     @abstractproperty
     def time_scale_factor(self):
-        pass
+        """
+        :rtype: int
+        """
 
     @abstractmethod
-    def run(self, run_time):
+    def run(self, run_time, sync_time=0.0):
         """ Run a simulation for a fixed amount of time
 
-        :param run_time: the run duration in milliseconds.
+        :param int run_time: the run duration in milliseconds.
+        :param float sync_time:
+            If not 0, this specifies that the simulation should pause after
+            this duration.  The continue_simulation() method must then be
+            called for the simulation to continue.
         """
 
     @abstractmethod
     def stop(self):
         """ End running of the simulation.
+        """
+
+    @abstractmethod
+    def stop_run(self):
+        """ End the running of a simulation that has been started with
+            run_forever
+        """
+
+    @abstractmethod
+    def continue_simulation(self):
+        """ Continue a simulation that has been started in stepped mode
         """
 
     @abstractproperty
@@ -112,4 +133,6 @@ class SimulatorInterface(object):
 
     @abstractproperty
     def use_virtual_board(self):
-        pass
+        """
+        :rtype: bool
+        """

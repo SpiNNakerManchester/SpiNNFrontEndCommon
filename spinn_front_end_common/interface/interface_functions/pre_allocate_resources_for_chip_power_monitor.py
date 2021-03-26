@@ -21,21 +21,26 @@ from spinn_front_end_common.utility_models import (
 
 
 class PreAllocateResourcesForChipPowerMonitor(object):
-    """ Adds chip power monitor resources as required for a machine
+    """ Adds chip power monitor resources as required for a machine.
     """
 
     def __call__(
             self, machine, n_samples_per_recording,
             sampling_frequency, time_scale_factor, machine_time_step,
-            pre_allocated_resources=None):
+            pre_allocated_resources):
         """
+        :param ~spinn_machine.Machine machine:
+            the SpiNNaker machine as discovered
+        :param int n_samples_per_recording:
+            how many samples between record entries
+        :param int sampling_frequency: the frequency of sampling
+        :param int time_scale_factor: the time scale factor
+        :param int machine_time_step: the machine time step
         :param pre_allocated_resources: other preallocated resources
-        :param machine: the SpiNNaker machine as discovered
-        :param n_samples_per_recording: how many samples between record entries
-        :param sampling_frequency: the frequency of sampling
-        :param time_scale_factor: the time scale factor
-        :param machine_time_step: the machine time step
+        :type pre_allocated_resources:
+            ~pacman.model.resources.PreAllocatedResourceContainer
         :return: preallocated resources
+        :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
         # pylint: disable=too-many-arguments
 
@@ -58,14 +63,8 @@ class PreAllocateResourcesForChipPowerMonitor(object):
                 SpecificChipSDRAMResource(chip, resources.sdram))
             cores.append(CoreResource(chip, 1))
 
-        # create preallocated resource container
-        cpm_pre_allocated_resource_container = PreAllocatedResourceContainer(
+        # note what has been preallocated
+        allocated = PreAllocatedResourceContainer(
             specific_sdram_usage=sdrams, core_resources=cores)
-
-        # add other preallocated resources
-        if pre_allocated_resources is not None:
-            cpm_pre_allocated_resource_container.extend(
-                pre_allocated_resources)
-
-        # return preallocated resources
-        return cpm_pre_allocated_resource_container
+        allocated.extend(pre_allocated_resources)
+        return allocated

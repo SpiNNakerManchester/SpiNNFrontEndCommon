@@ -14,12 +14,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-import struct
 import shutil
 import numpy
 from spinn_machine import SDRAM
 from pacman.model.resources import ResourceContainer
-from pacman.model.graphs.common import Slice, GraphMapper
+from pacman.model.graphs.common import Slice
 from pacman.model.placements import Placements, Placement
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineVertex
@@ -30,35 +29,37 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.interface.interface_functions import (
     DSGRegionReloader)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
+from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 
 
-class _TestMachineVertex(MachineVertex):
+class _TestMachineVertex(MachineVertex, AbstractRewritesDataSpecification):
     """ A simple machine vertex for testing
     """
+
+    def __init__(self, label, constraints, app_vertex, vertex_slice):
+        super().__init__(
+            label=label, constraints=constraints, app_vertex=app_vertex,
+            vertex_slice=vertex_slice)
+        self._requires_regions_to_be_reloaded = True
+        self._regenerate_call_count = 0
 
     def resources_required(self):
         return ResourceContainer()
 
+    def reload_required(self):
+        return self._requires_regions_to_be_reloaded
 
-class _TestApplicationVertex(
-        ApplicationVertex, AbstractRewritesDataSpecification):
-    """ An application vertex that can rewrite data spec
-    """
+    def set_reload_required(self, new_value):
+        self._requires_regions_to_be_reloaded = new_value
 
-    def __init__(self, n_atoms, reload_region_data):
-        """
-        :param n_atoms: The number of atoms in the vertex
-        :param reload_region_data: list of tuples of (region_id, data to write)
-        """
-        super(_TestApplicationVertex, self).__init__()
-        self._n_atoms = n_atoms
-        self._regenerate_call_count = 0
-        self._requires_regions_to_be_reloaded = True
-        self._reload_region_data = reload_region_data
-
-    @property
-    def n_atoms(self):
-        return self._n_atoms
+    def regenerate_data_specification(self, spec, placement):
+        for region_id, data in self._app_vertex.reload_region_data:
+            spec.reserve_memory_region(region_id, len(data) * BYTES_PER_WORD)
+            spec.switch_write_focus(region_id)
+            spec.write_array(data)
+        spec.end_specification()
+        self._app_vertex.add_to_count()
+        self._regenerate_call_count += 1
 
     @property
     def regenerate_call_count(self):
@@ -67,27 +68,46 @@ class _TestApplicationVertex(
         """
         return self._regenerate_call_count
 
+
+class _TestApplicationVertex(ApplicationVertex):
+    """ An application vertex that can rewrite data spec
+    """
+
+    def __init__(self, n_atoms, reload_region_data):
+        """
+        :param n_atoms: The number of atoms in the vertex
+        :param reload_region_data: list of tuples of (region_id, data to write)
+        """
+        super().__init__()
+        self._n_atoms = n_atoms
+        self._reload_region_data = reload_region_data
+        self._regenerate_call_count = 0
+
+    @property
+    def regenerate_call_count(self):
+        """ Indicates the number of times regenerate_data_specification\
+            has been called
+        """
+        return self._regenerate_call_count
+
+    def add_to_count(self):
+        self._regenerate_call_count += 1
+
+    @property
+    def reload_region_data(self):
+        return self._reload_region_data
+
+    @property
+    def n_atoms(self):
+        return self._n_atoms
+
     def get_resources_used_by_atoms(self, vertex_slice):
         return ResourceContainer()
 
     def create_machine_vertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
-        return _TestMachineVertex()
-
-    def requires_memory_regions_to_be_reloaded(self):
-        return self._requires_regions_to_be_reloaded
-
-    def mark_regions_reloaded(self):
-        self._requires_regions_to_be_reloaded = False
-
-    def regenerate_data_specification(self, spec, placement):
-        for region_id, data in self._reload_region_data:
-            spec.reserve_memory_region(region_id, len(data) * BYTES_PER_WORD)
-            spec.switch_write_focus(region_id)
-            spec.write_array(data)
-        spec.end_specification()
-        self._regenerate_call_count += 1
+        return _TestMachineVertex(label, constraints, self, vertex_slice)
 
 
 class _MockCPUInfo(object):
@@ -105,13 +125,13 @@ class _MockCPUInfo(object):
 class _MockTransceiver(object):
     """ Pretend transceiver
     """
+    # pylint: disable=unused-argument
 
     def __init__(self, user_0_addresses, region_addresses):
         """
-
         :param user_0_addresses: dict of (x, y, p) to user_0_address
-        :param region_addresses:\
-            list of constants.MAX_MEM_REGIONS addresses to which the\
+        :param region_addresses:
+            list of constants.MAX_MEM_REGIONS addresses to which the
             base address will be added to each
         """
         self._regions_rewritten = list()
@@ -129,8 +149,7 @@ class _MockTransceiver(object):
 
     def read_memory(self, x, y, base_address, length, cpu=0):
         addresses = [i + base_address for i in self._region_addresses]
-        return struct.pack(
-            "<{}I".format(MAX_MEM_REGIONS), *addresses)
+        return n_word_struct(MAX_MEM_REGIONS).pack(*addresses)
 
     def write_memory(
             self, x, y, base_address, data, n_bytes=None, offset=0,
@@ -155,26 +174,20 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         m_vertex_1 = vertex.create_machine_vertex(m_slice_1, None, None, None)
         m_vertex_2 = vertex.create_machine_vertex(m_slice_2, None, None, None)
 
-        graph_mapper = GraphMapper()
-        graph_mapper.add_vertex_mapping(m_vertex_1, m_slice_1, vertex)
-        graph_mapper.add_vertex_mapping(m_vertex_2, m_slice_2, vertex)
-
         placements = Placements([
             Placement(m_vertex_1, 0, 0, 1),
             Placement(m_vertex_2, 0, 0, 2)
         ])
 
         user_0_addresses = {
-            (placement.x, placement.y, placement.p): i * 1000
+            placement.location: i * 1000
             for i, placement in enumerate(placements.placements)
         }
         region_addresses = [i for i in range(MAX_MEM_REGIONS)]
         transceiver = _MockTransceiver(user_0_addresses, region_addresses)
 
         reloader = DSGRegionReloader()
-        reloader.__call__(
-            transceiver, placements, "localhost", "test", False, "test",
-            graph_mapper)
+        reloader.__call__(transceiver, placements, "localhost", "test", False)
 
         regions_rewritten = transceiver.regions_rewritten
 
@@ -189,8 +202,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
         # Check that the data rewritten is correct
         for i, placement in enumerate(placements.placements):
-            user_0_address = user_0_addresses[
-                placement.x, placement.y, placement.p]
+            user_0_address = user_0_addresses[placement.location]
             for j in range(len(reload_region_data)):
                 pos = (i * len(reload_region_data)) + j
                 region, data = reload_region_data[j]

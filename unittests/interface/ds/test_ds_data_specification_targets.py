@@ -15,9 +15,7 @@
 
 import tempfile
 import unittest
-from six import iteritems
-from spinn_front_end_common.interface.ds import (
-    DataSpecificationTargets, DataRowReader)
+from spinn_front_end_common.interface.ds import DataSpecificationTargets
 from spinn_machine.virtual_machine import virtual_machine
 
 
@@ -33,27 +31,27 @@ class TestDataSpecificationTargets(unittest.TestCase):
         foo = bytearray(b"foo")
         with asDict.create_data_spec(0, 0, 0) as writer:
             writer.write(foo)
-        check[c1] = DataRowReader(foo)
-        self.assertEqual(check[c1], asDict[c1])
+        check[c1] = foo
+        self.assertEqual(check[c1], asDict[c1].getvalue())
 
         c2 = (0, 1, 2)
         bar = bytearray(b"bar")
         with asDict.create_data_spec(0, 1, 2) as writer:
             writer.write(bar)
-        check[c2] = DataRowReader(bar)
-        self.assertEqual(check[c2], asDict[c2])
+        check[c2] = bar
+        self.assertEqual(check[c2], asDict[c2].getvalue())
 
         self.assertEqual(2, len(asDict))
 
         asDict.set_app_id(12)
 
         for key in asDict:
-            self.assertEqual(check[key], asDict[key])
+            self.assertEqual(check[key], asDict[key].getvalue())
             (x, y, p) = key
             self.assertEqual(12, asDict.get_app_id(x, y, p))
 
-        for key, value in iteritems(asDict):
-            self.assertEqual(check[key], value)
+        for key, value in asDict.items():
+            self.assertEqual(check[key], value.getvalue())
 
 
 if __name__ == "__main__":

@@ -26,6 +26,13 @@
 #include <debug.h>
 #include <spin1_api_params.h>
 #include <spin1_api.h>
+#include <wfi.h>
+
+// Import things from spin1_api that are not explicitly exposed //
+
+//! \brief Indicate whether the SYNC signal has been received.
+//! \return 0 (false) if not received and 1 (true) if received.
+extern uint resume_wait(void);
 
 //! the pointer to the simulation time used by application models
 static uint32_t *pointer_to_simulation_time;
@@ -45,6 +52,9 @@ static exit_callback_t stored_exit_function = NULL;
 //! the function call to run just before resuming a simulation
 static resume_callback_t stored_resume_function = NULL;
 
+//! the function call to run at the start of simulation
+static start_callback_t stored_start_function = NULL;
+
 //! the region ID for storing provenance data from the chip
 static struct simulation_provenance *prov = NULL;
 
@@ -54,7 +64,16 @@ static callback_t sdp_callback[NUM_SDP_PORTS];
 //! the list of DMA callbacks for DMA complete callbacks
 static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
 
-//! \brief handles the storing of basic provenance data
+//! Whether the simulation uses the timer or not (default true)
+static bool uses_timer = true;
+
+//! The number of steps to run before synchronization
+static uint32_t n_sync_steps;
+
+//! The number simulation timestep at the next synchronization
+static uint32_t next_sync_step;
+
+//! \brief Store basic provenance data
 //! \return the address after which new provenance data can be stored
 static void *simulation_store_provenance_data(void) {
     //! gets access to the diagnostics object from SARK
@@ -71,7 +90,7 @@ static void *simulation_store_provenance_data(void) {
     return prov->provenance_data_elements;
 }
 
-//! \brief helper private method for running provenance data storage
+//! \brief Run the provenance data storage
 static void execute_provenance_storage(void) {
     if (prov != NULL) {
         log_info("Starting basic provenance gathering");
@@ -88,13 +107,11 @@ void simulation_run(void) {
     spin1_start_paused();
 }
 
-//! \brief cleans up the house keeping, falls into a sync state and handles
-//!        the resetting up of states as required to resume.
-//! \param[in] resume_function The function to call just before the simulation
-//!            is resumed (to allow the resetting of the simulation)
 void simulation_handle_pause_resume(resume_callback_t callback) {
     // Pause the simulation
-    spin1_pause();
+    if (uses_timer) {
+        spin1_pause();
+    }
 
     stored_resume_function = callback;
 
@@ -102,8 +119,8 @@ void simulation_handle_pause_resume(resume_callback_t callback) {
     execute_provenance_storage();
 }
 
-//! \brief a helper method for people not using the auto pause and
-//! resume functionality
+//! \brief Exit the application.
+//! \details Helper when not using the auto pause and resume functionality
 void simulation_exit(void) {
     simulation_handle_pause_resume(NULL);
 }
@@ -112,8 +129,7 @@ void simulation_ready_to_read(void) {
     sark_cpu_state(CPU_STATE_WAIT);
 }
 
-//! \brief method for sending OK response to the host when a command message
-//! is received.
+//! \brief Send an OK response to the host when a command message is received.
 //! \param[in] msg: the message object to send to the host.
 static void send_ok_response(sdp_msg_t *msg) {
     msg->cmd_rc = RC_OK;
@@ -127,14 +143,45 @@ static void send_ok_response(sdp_msg_t *msg) {
     spin1_send_sdp_msg(msg, 10);
 }
 
-//! \brief handles the new commands needed to resume the binary with a new
-//! runtime counter, as well as switching off the binary when it truly needs
-//! to be stopped.
-//! \param[in] mailbox The mailbox containing the SDP packet received
-//! \param[in] port The port on which the packet was received
-//! \return does not return anything
-static void simulation_control_scp_callback(uint mailbox, uint port) {
-    use(port);
+//! \brief wait for a signal before running
+//! \param reset_event: If true, the event is reset after the event has been
+//!                     received
+static inline void wait_before_run(bool reset_event) {
+    while (resume_wait()) {
+        wait_for_interrupt();
+    }
+    if (reset_event) {
+        event.wait ^= 1;
+    }
+    sark_cpu_state(CPU_STATE_RUN);
+}
+
+//! \brief Callback when starting after synchronise
+//! \param unused0: unused
+//! \param unused1: unused
+static void synchronise_start(uint unused0, uint unused1) {
+    // If we are not using the timer, no-one else resets the event, so do it now
+    // (event comes from sark.h - this is how SARK knows whether to wait for a
+    //  SYNC0 or SYNC1 message)
+    wait_before_run(!uses_timer);
+    stored_start_function();
+}
+
+//! \brief Set the CPU state depending on the event wait state
+static inline void set_cpu_wait_state() {
+    if (event.wait) {
+        sark_cpu_state(CPU_STATE_SYNC1);
+    } else {
+        sark_cpu_state(CPU_STATE_SYNC0);
+    }
+}
+
+//! \brief Handle the new commands needed to resume the binary with a new
+//!     runtime counter, as well as switching off the binary when it truly
+//!     needs to be stopped.
+//! \param[in] mailbox: The mailbox containing the SDP packet received
+//! \param[in] port: The port on which the packet was received
+static void simulation_control_scp_callback(uint mailbox, UNUSED uint port) {
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
 
@@ -166,19 +213,31 @@ static void simulation_control_scp_callback(uint mailbox, uint port) {
         // We start at time - 1 because the first thing models do is
         // increment a time counter
         *pointer_to_current_time = (msg->arg3 - 1);
+        uint32_t *data = (uint32_t *) msg->data;
+        n_sync_steps = data[0];
+        if (n_sync_steps > 0) {
+            // Add one to make the sync happen *after* n_sync_steps
+            next_sync_step = *pointer_to_current_time + n_sync_steps + 1;
+        } else {
+            next_sync_step = 0;
+        }
 
         if (stored_resume_function != NULL) {
             log_info("Calling pre-resume function");
             stored_resume_function();
             stored_resume_function = NULL;
         }
-        log_info("Resuming");
-        spin1_resume(SYNC_WAIT);
 
-        // If we are told to send a response, send it now
-        if (msg->data[0] == 1) {
-            send_ok_response(msg);
+        if (stored_start_function != NULL) {
+            spin1_schedule_callback(synchronise_start, 0, 0, 1);
         }
+        if (uses_timer) {
+            log_info("Resuming");
+            spin1_resume(SYNC_WAIT);
+        } else {
+            set_cpu_wait_state();
+        }
+        send_ok_response(msg);
 
         // free the message to stop overload
         spin1_msg_free(msg);
@@ -221,6 +280,8 @@ static void simulation_control_scp_callback(uint mailbox, uint port) {
 }
 
 //! \brief handles the SDP callbacks interface.
+//! \param[in,out] mailbox: The pointer to the received message
+//! \param[in] port: What port the message was received on
 static void simulation_sdp_callback_handler(uint mailbox, uint port) {
     if (sdp_callback[port] != NULL) {
         // if a callback is associated with the port, process it
@@ -247,6 +308,8 @@ void simulation_sdp_callback_off(uint sdp_port) {
 }
 
 //! \brief handles the DMA transfer done callbacks interface.
+//! \param[in] unused: unused
+//! \param[in] tag: the tag of the DMA that completed
 static void simulation_dma_transfer_done_callback(uint unused, uint tag) {
     if (tag < MAX_DMA_CALLBACK_TAG && dma_complete_callbacks[tag] != NULL) {
         dma_complete_callbacks[tag](unused, tag);
@@ -332,4 +395,51 @@ void simulation_set_provenance_function(
 
 void simulation_set_exit_function(exit_callback_t exit_function) {
     stored_exit_function = exit_function;
+}
+
+void simulation_set_start_function(start_callback_t start_function) {
+    stored_start_function = start_function;
+}
+
+void simulation_set_uses_timer(bool sim_uses_timer) {
+    uses_timer = sim_uses_timer;
+}
+
+void simulation_set_sync_steps(uint32_t n_steps) {
+    n_sync_steps = n_steps;
+    if (n_steps > 0) {
+        next_sync_step = *pointer_to_current_time + n_steps + 1;
+    }
+}
+
+bool simulation_is_finished(void) {
+    bool finished = ((*pointer_to_infinite_run != TRUE) &&
+            (*pointer_to_current_time >= *pointer_to_simulation_time));
+    // If we are finished, or not running synchronized, return finished
+    if (finished || !n_sync_steps) {
+        return finished;
+    }
+    // If we are synchronized, check if this is a sync step (or should have been)
+    if (*pointer_to_current_time >= next_sync_step) {
+        log_debug("Sync at %d", next_sync_step);
+
+        // If using the timer, pause the timer
+        if (uses_timer) {
+            log_debug("Pausing");
+            spin1_pause();
+        }
+
+        // Wait for synchronisation to happen
+        log_debug("Waiting for sync");
+        set_cpu_wait_state();
+        wait_before_run(true);
+        next_sync_step += n_sync_steps;
+        log_debug("Sync done, next sync at %d", next_sync_step);
+
+        // If using the timer, start it again
+        if (uses_timer) {
+            spin1_resume(SYNC_NOWAIT);
+        }
+    }
+    return false;
 }

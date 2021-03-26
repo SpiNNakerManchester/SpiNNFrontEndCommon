@@ -13,13 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_utilities.require_subclass import require_subclass
+from pacman.model.graphs.machine import MachineVertex
 
 
-@add_metaclass(AbstractBase)
-class AbstractReceiveBuffersToHost(object):
-    """ Indicates that this object can receive buffers.
+@require_subclass(MachineVertex)
+class AbstractReceiveBuffersToHost(object, metaclass=AbstractBase):
+    """ Indicates that this MachineVertex can receive buffers.
     """
 
     __slots__ = ()
@@ -36,11 +37,9 @@ class AbstractReceiveBuffersToHost(object):
     def get_recording_region_base_address(self, txrx, placement):
         """ Get the recording region base address
 
-        :param txrx: the SpiNNMan instance
-        :type txrx: ~spinnman.transceiver.Transceiver
-        :param placement:\
+        :param ~spinnman.transceiver.Transceiver txrx: the SpiNNMan instance
+        :param ~pacman.model.placements.Placement placement:
             the placement object of the core to find the address of
-        :type placement: ~pacman.model.placements.Placement
         :return: the base address of the recording region
         :rtype: int
         """

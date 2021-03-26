@@ -26,8 +26,10 @@ class BoardChipReport(object):
     def __call__(self, report_default_directory, machine):
         """ Creates a report that states where in SDRAM each region is.
 
-        :param report_default_directory: the folder where reports are written
-        :param machine: python representation of the machine
+        :param str report_default_directory:
+            the folder where reports are written
+        :param ~spinn_machine.Machine machine:
+            python representation of the machine
         :rtype: None
         """
 
@@ -42,10 +44,17 @@ class BoardChipReport(object):
 
         # iterate over ethernet chips and then the chips on that board
         with open(directory_name, "w") as writer:
-            for ethernet_connected_chip in \
-                    progress_bar.over(machine.ethernet_connected_chips):
-                xys = machine.get_existing_xys_on_board(
-                    ethernet_connected_chip)
-                writer.write(
-                    "board with IP address : {} : has chips {}\n".format(
-                        ethernet_connected_chip.ip_address, list(xys)))
+            self._write_report(writer, machine, progress_bar)
+
+    @staticmethod
+    def _write_report(writer, machine, progress_bar):
+        """
+        :param ~io.FileIO writer:
+        :param ~spinn_machine.Machine machine:
+        :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
+        """
+        for chip in progress_bar.over(machine.ethernet_connected_chips):
+            xys = machine.get_existing_xys_on_board(chip)
+            writer.write(
+                "board with IP address : {} : has chips {}\n".format(
+                    chip.ip_address, list(xys)))

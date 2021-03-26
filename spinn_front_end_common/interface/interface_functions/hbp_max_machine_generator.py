@@ -19,8 +19,8 @@ from spinn_machine.virtual_machine import virtual_machine
 
 
 class HBPMaxMachineGenerator(object):
-    """ Generates the width and height of the maximum machine a given\
-        HBP server can generate.
+    """ Generates a virtual machine of the width and height of the maximum\
+        machine a given HBP server can generate.
     """
 
     __slots__ = []
@@ -28,11 +28,14 @@ class HBPMaxMachineGenerator(object):
     def __call__(self, hbp_server_url, total_run_time,
                  max_machine_core_reduction=0):
         """
-        :param hbp_server_url: \
+        :param str hbp_server_url:
             The URL of the HBP server from which to get the machine
-        :param total_run_time: The total run time to request
-        :param max_machine_core_reduction: the number of cores less than
-            Machine.MAX_CORES_PER_CHIP that each chip should have
+        :param int total_run_time: The total run time to request
+        :param int max_machine_core_reduction:
+            the number of cores less than
+            :py:const:`~spinn_machine.Machine.DEFAULT_MAX_CORES_PER_CHIP`
+            that each chip should have
+        :rtype: ~spinn_machine.Machine
         """
 
         max_machine = self._max_machine_request(hbp_server_url, total_run_time)
@@ -46,6 +49,11 @@ class HBPMaxMachineGenerator(object):
             n_cpus_per_chip=n_cpus_per_chip, validate=False)
 
     def _max_machine_request(self, url, total_run_time):
+        """
+        :param str url:
+        :param int total_run_time:
+        :rtype: dict
+        """
         if url.endswith("/"):
             url = url[:-1]
         r = requests.get("{}/max".format(url), params={

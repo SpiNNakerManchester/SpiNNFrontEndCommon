@@ -15,27 +15,32 @@
 
 import struct
 import logging
-from six import iterkeys
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
 
 _LIMIT = 10
 
 
 class ChipProvenanceUpdater(object):
-    """ Forces all cores to generate provenance data, and then exit
+    """ Forces all cores to generate provenance data, and then exit.
     """
 
     __slots__ = []
 
     def __call__(self, txrx, app_id, all_core_subsets):
+        """
+        :param ~spinnman.transceiver.Transceiver txrx:
+        :param int app_id:
+        :param ~spinn_machine.CoreSubsets all_core_subsets:
+        """
         # check that the right number of processors are in sync
         processors_completed = txrx.get_core_state_count(
             app_id, CPUState.FINISHED)
@@ -68,6 +73,14 @@ class ChipProvenanceUpdater(object):
 
     def _update_provenance(self, txrx, total_processors, processors_completed,
                            all_core_subsets, app_id, progress):
+        """
+        :param ~.Transceiver txrx:
+        :param int total_processors:
+        :param int processors_completed:
+        :param ~.CoreSubsets all_core_subsets:
+        :param int app_id:
+        :param ~.ProgressBar progress:
+        """
         # pylint: disable=too-many-arguments
         left_to_do_cores = total_processors - processors_completed
         attempts = 0
@@ -76,7 +89,7 @@ class ChipProvenanceUpdater(object):
             unsuccessful_cores = txrx.get_cores_not_in_state(
                 all_core_subsets, CPUState.FINISHED)
 
-            for (x, y, p) in iterkeys(unsuccessful_cores):
+            for (x, y, p) in unsuccessful_cores.keys():
                 self._send_chip_update_provenance_and_exit(txrx, x, y, p)
 
             processors_completed = txrx.get_core_state_count(
@@ -94,6 +107,12 @@ class ChipProvenanceUpdater(object):
 
     @staticmethod
     def _send_chip_update_provenance_and_exit(txrx, x, y, p):
+        """
+        :param ~.Transceiver txrx:
+        :param int x:
+        :param int y:
+        :param int p:
+        """
         cmd = SDP_RUNNING_MESSAGE_CODES.SDP_UPDATE_PROVENCE_REGION_AND_EXIT
         port = SDP_PORTS.RUNNING_COMMAND_SDP_PORT
 
