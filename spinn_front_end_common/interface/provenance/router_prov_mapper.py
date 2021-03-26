@@ -54,8 +54,6 @@ class Plotter(object):
     __seaborn = None
 
     def __init__(self, db_filename, verbose=False):
-        # TODO: use magic to open a read-only connection once we're Py3 only
-        # See: https://stackoverflow.com/a/21794758/301832
         self._db = SQLiteDB(db_filename, read_only=True, text_factory=str)
         self.__have_insertion_order = True
         self.__verbose = verbose
