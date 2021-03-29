@@ -84,7 +84,7 @@ __RegionToFill = namedtuple(
                        "base_address"])
 
 
-class __ExecutionContext(object):
+class _ExecutionContext(object):
     """ A context for executing multiple data specifications with
         cross-references
     """
@@ -96,8 +96,7 @@ class __ExecutionContext(object):
         self.__references_to_use = dict()
 
     def __enter__(self):
-        # Nothing special required on entry
-        pass
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Only do the close bit if nothing has gone wrong
@@ -337,7 +336,7 @@ class HostExecuteDataSpecification(object):
             base_addresses[core] = self.__malloc_region_storage(
                 core, region_sizes[core])
 
-        with __ExecutionContext(self._txrx, self._machine) as context:
+        with _ExecutionContext(self._txrx, self._machine) as context:
             for core, reader in progress.over(dsg_targets.items()):
                 results[core] = context.execute(
                     core, reader, self._txrx.write_memory,
@@ -465,7 +464,7 @@ class HostExecuteDataSpecification(object):
             base_addresses[core] = self.__malloc_region_storage(
                 core, region_sizes[core])
 
-        with __ExecutionContext(self._txrx, self._machine) as context:
+        with _ExecutionContext(self._txrx, self._machine) as context:
             for core, reader in progress.over(dsg_targets.items()):
                 x, y, _p = core
                 # write information for the memory map report
@@ -605,7 +604,7 @@ class HostExecuteDataSpecification(object):
             base_addresses[core] = self.__malloc_region_storage(
                 core, region_sizes[core])
 
-        with __ExecutionContext(self._txrx, self._machine) as context:
+        with _ExecutionContext(self._txrx, self._machine) as context:
             for core, reader in progress.over(sys_targets.items()):
                 self._write_info_map[core] = context.execute(
                     core, reader, self._txrx.write_memory,
