@@ -49,6 +49,14 @@ spinn\_front\_end\_common.utilities.helpful\_functions module
    :undoc-members:
    :show-inheritance:
 
+spinn\_front\_end\_common.utilities.sqlite\_db module
+-----------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.sqlite_db
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 spinn\_front\_end\_common.utilities.system\_control\_logic module
 -----------------------------------------------------------------
 

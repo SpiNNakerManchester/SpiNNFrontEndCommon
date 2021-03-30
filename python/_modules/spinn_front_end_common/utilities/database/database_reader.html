@@ -50,53 +50,24 @@
 <span class="c1">#</span>
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sqlite3</span>
-<span class="kn">from</span> <span class="nn">spinn_utilities.abstract_context_manager</span> <span class="kn">import</span> <span class="n">AbstractContextManager</span>
-<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.sqlite_db</span> <span class="kn">import</span> <span class="n">SQLiteDB</span>
 
 
-<div class="viewcode-block" id="DatabaseReader"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader">[docs]</a><span class="k">class</span> <span class="nc">DatabaseReader</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="p">):</span>
+<div class="viewcode-block" id="DatabaseReader"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader">[docs]</a><span class="k">class</span> <span class="nc">DatabaseReader</span><span class="p">(</span><span class="n">SQLiteDB</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A reader for the database.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="c1"># the database connection (is basically a lock on the database)</span>
-        <span class="s2">&quot;_connection&quot;</span><span class="p">,</span>
-
-        <span class="c1"># the handle for working on the DB</span>
-        <span class="s2">&quot;_cursor&quot;</span>
-    <span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_path</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str database_path: The path to the database</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Ugly: must ensure database exists ourselves because Python doesn&#39;t</span>
-        <span class="c1"># have option to open read-only (in the real SQLite API!) exposed</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">database_path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
-                <span class="s2">&quot;[Errno 2] No such file or directory: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">database_path</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">database_path</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">row_factory</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Row</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">cursor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The database cursor. Allows custom SQL queries to be performed.</span>
-
-<span class="sd">        :rtype: ~sqlite3.Cursor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">database_path</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__exec_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span> <span class="o">+</span> <span class="s2">&quot; LIMIT 1&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">__exec_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span> <span class="o">+</span> <span class="s2">&quot; LIMIT 1&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__r2t</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
@@ -109,12 +80,14 @@
 <span class="sd">        :return: dictionary of atom IDs indexed by event key</span>
 <span class="sd">        :rtype: dict(int, int)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;atom&quot;</span><span class="p">]</span>
-                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_all</span><span class="p">(</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="n">row</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;atom&quot;</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
                     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                    SELECT * FROM label_event_atom_view</span>
 <span class="sd">                    WHERE label = ?</span>
-<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">)}</span></div>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">))}</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_atom_id_to_key_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_atom_id_to_key_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">get_atom_id_to_key_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get a mapping of atom ID to event key for a given vertex</span>
@@ -123,12 +96,14 @@
 <span class="sd">        :return: dictionary of event keys indexed by atom ID</span>
 <span class="sd">        :rtype: dict(int, int)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;atom&quot;</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]</span>
-                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_all</span><span class="p">(</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="n">row</span><span class="p">[</span><span class="s2">&quot;atom&quot;</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
                     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                    SELECT * FROM label_event_atom_view</span>
 <span class="sd">                    WHERE label = ?</span>
-<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">)}</span></div>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">))}</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_live_output_details"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_live_output_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_live_output_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">receiver_label</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the IP address, port and whether the SDP headers are to be\</span>
@@ -278,12 +253,13 @@
 <span class="sd">        :return: A list of x, y, p coordinates of the vertices</span>
 <span class="sd">        :rtype: list(tuple(int, int, int))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__xyp</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_all</span><span class="p">(</span>
-            <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            SELECT x, y, p FROM application_vertex_placements</span>
-<span class="sd">            WHERE vertex_label = ?</span>
-<span class="sd">            &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">)]</span></div>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__xyp</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT x, y, p FROM application_vertex_placements</span>
+<span class="sd">                    WHERE vertex_label = ?</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">))]</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_ip_address"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_ip_address">[docs]</a>    <span class="k">def</span> <span class="nf">get_ip_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get an IP address to contact a chip</span>
@@ -300,11 +276,7 @@
 <span class="sd">            ORDER BY x DESC</span>
 <span class="sd">            &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
         <span class="c1"># Should only fail if no machine is present!</span>
-        <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;eth_ip_address&quot;</span><span class="p">]</span></div>
-
-<div class="viewcode-block" id="DatabaseReader.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.close">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="o">.</span><span class="n">close</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+        <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;eth_ip_address&quot;</span><span class="p">]</span></div></div>
 </pre></div>
 
             <div class="clearer"></div>

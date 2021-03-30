@@ -154,23 +154,23 @@ MachineGraph and if it exists the ApplicationGraph</p>
 <dt id="spinn_front_end_common.interface.provenance.ProvenanceReader">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></code><code class="sig-name descname"><span class="pre">ProvenanceReader</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provenance_data_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Provides a connection to an sqlite3 database and some provenance
-convenience methods</p>
+<p>Provides a connection to a database containing provenance for the current
+run and some convenience methods for extracting provenance data from it.</p>
 <p>By default this will wrap around the database used to store the
 provenance of the last run. The path is not updated so this reader is
-not effected by a reset or an end</p>
+not effected by a reset or an end.</p>
 <p>The assumption is that the database is in the current provenance format.
 This includes both that DDL statements used to create the database but
-also the underlying database structure. Currently sqlite3</p>
+also the underlying database structure (currently sqlite3)</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>This class is only a wrapper around the database file so if the file
 is deleted the class will no longer work.</p>
 </div>
 <p>Create a wrapper around the database.</p>
-<p>The suggested way to call this is without the
+<p>The suggested way to call this is <em>without</em> the
 <code class="docutils literal notranslate"><span class="pre">provenance_data_path</span></code> parameter, allowing
-<a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path" title="spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_last_run_database_path()</span></code></a> to find the correct path</p>
+<a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path" title="spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_last_run_database_path()</span></code></a> to find the correct path.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>provenance_data_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Path to the provenance database to wrap</p>
@@ -196,6 +196,14 @@ where their where late arriving spikes.</p>
 <dt id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle">
 <code class="sig-name descname"><span class="pre">get_database_handle</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">read_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_sqlite_rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_database_handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a handle to the open database.</p>
+<p>You <em>should</em> use this as a Python context handler. A typical usage
+pattern is this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_database_handler</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+            <span class="c1"># process row</span>
+</pre></div>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This method is mainly provided as a support method for the later
@@ -221,7 +229,7 @@ If <code class="docutils literal notranslate"><span class="pre">False</span></co
 <dd class="field-even"><p>an open sqlite3 connection</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/sqlite3.html#sqlite3.Connection" title="(in Python v3.6)">Connection</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB">SQLiteDB</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -322,7 +330,9 @@ like a line <code class="docutils literal notranslate"><span class="pre">descrip
 <dd><p>Opens a connection to the database, runs a query, extracts the results
 and closes the connection</p>
 <p>The return type depends on the use_sqlite_rows param.
-By default this method returns tuples</p>
+By default this method returns tuples (lookup by index) but the
+advanced tuple type can be used instead, which supports lookup by name
+used in the query (use <code class="docutils literal notranslate"><span class="pre">AS</span> <span class="pre">name</span></code> in the query to set).</p>
 <p>This method will not allow queries that change the database unless the
 read_only flag is set to False.</p>
 <div class="admonition note">
@@ -348,7 +358,7 @@ where the number and type of the values corresponds to the where
 statement</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a> or <a class="reference external" href="https://docs.python.org/3.6/library/sqlite3.html#sqlite3.Row" title="(in Python v3.6)">Row</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a> or <a class="reference external" href="https://docs.python.org/3.6/library/sqlite3.html#sqlite3.Row" title="(in Python v3.6)">Row</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -447,7 +457,7 @@ statement</p>
 <dl class="py class">
 <dt id="spinn_front_end_common.interface.provenance.SqlLiteDatabase">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></code><code class="sig-name descname"><span class="pre">SqlLiteDatabase</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/sqllite_database.html#SqlLiteDatabase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.SqlLiteDatabase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils)"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_utilities.abstract_context_manager.AbstractContextManager</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.utilities.sqlite_db.SQLiteDB</span></code></a></p>
 <p>Specific implementation of the Database for SQLite 3.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -466,12 +476,6 @@ database holding the data. If omitted, an unshared in-memory
 database will be used (suitable only for testing).</p>
 </dd>
 </dl>
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.provenance.SqlLiteDatabase.close">
-<code class="sig-name descname"><span class="pre">close</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/sqllite_database.html#SqlLiteDatabase.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.SqlLiteDatabase.close" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finalises and closes the database.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt id="spinn_front_end_common.interface.provenance.SqlLiteDatabase.insert_items">
 <code class="sig-name descname"><span class="pre">insert_items</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/sqllite_database.html#SqlLiteDatabase.insert_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.SqlLiteDatabase.insert_items" title="Permalink to this definition">¶</a></dt>

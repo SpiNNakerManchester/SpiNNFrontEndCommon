@@ -533,7 +533,7 @@ simulation, and a flag indicating if any data was missing</p>
 <dl class="py class">
 <dt id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></code><code class="sig-name descname"><span class="pre">SqlLiteDatabase</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.abstract_database.AbstractDatabase</span></code>, <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils)"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_utilities.abstract_context_manager.AbstractContextManager</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.utilities.sqlite_db.SQLiteDB</span></code></a>, <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils)"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_utilities.abstract_context_manager.AbstractContextManager</span></code></a></p>
 <p>Specific implementation of the Database for SQLite 3.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -587,13 +587,6 @@ keeping data after reset.</p>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.close">
-<code class="sig-name descname"><span class="pre">close</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.close" title="Permalink to this definition">¶</a></dt>
-<dd><p>Signals that the database can be closed and will not be reused.</p>
-<p>Once this is called any other method in this API is allowed to        raise any kind of exception.</p>
 </dd></dl>
 
 <dl class="py method">

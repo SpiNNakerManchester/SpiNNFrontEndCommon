@@ -831,6 +831,139 @@ cost of parsing the format.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-spinn_front_end_common.utilities.sqlite_db">
+<span id="spinn-front-end-common-utilities-sqlite-db-module"></span><h2>spinn_front_end_common.utilities.sqlite_db module<a class="headerlink" href="#module-spinn_front_end_common.utilities.sqlite_db" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="spinn_front_end_common.utilities.sqlite_db.Isolation">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.sqlite_db.</span></code><code class="sig-name descname"><span class="pre">Isolation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/sqlite_db.html#Isolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.sqlite_db.Isolation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/enum.html#enum.Enum" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<p>Transaction isolation levels for <a class="reference internal" href="#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.transaction" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB.transaction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SQLiteDB.transaction()</span></code></a>.</p>
+<dl class="py attribute">
+<dt id="spinn_front_end_common.utilities.sqlite_db.Isolation.DEFERRED">
+<code class="sig-name descname"><span class="pre">DEFERRED</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'DEFERRED'</span></em><a class="headerlink" href="#spinn_front_end_common.utilities.sqlite_db.Isolation.DEFERRED" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard transaction type; postpones holding a lock until required.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="spinn_front_end_common.utilities.sqlite_db.Isolation.EXCLUSIVE">
+<code class="sig-name descname"><span class="pre">EXCLUSIVE</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'EXCLUSIVE'</span></em><a class="headerlink" href="#spinn_front_end_common.utilities.sqlite_db.Isolation.EXCLUSIVE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take a write lock immediately. This is the strongest lock type.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="spinn_front_end_common.utilities.sqlite_db.Isolation.IMMEDIATE">
+<code class="sig-name descname"><span class="pre">IMMEDIATE</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'IMMEDIATE'</span></em><a class="headerlink" href="#spinn_front_end_common.utilities.sqlite_db.Isolation.IMMEDIATE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take the lock immediately; this may be a read-lock that gets upgraded.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="spinn_front_end_common.utilities.sqlite_db.SQLiteDB">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.sqlite_db.</span></code><code class="sig-name descname"><span class="pre">SQLiteDB</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">database_file=None</span></em>, <em class="sig-param"><span class="pre">*</span></em>, <em class="sig-param"><span class="pre">read_only=False</span></em>, <em class="sig-param"><span class="pre">ddl_file=None</span></em>, <em class="sig-param"><span class="pre">row_factory=&lt;class</span> <span class="pre">'sqlite3.Row'&gt;</span></em>, <em class="sig-param"><span class="pre">text_factory=&lt;class</span> <span class="pre">'memoryview'&gt;</span></em>, <em class="sig-param"><span class="pre">case_insensitive_like=True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/sqlite_db.html#SQLiteDB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils)"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_utilities.abstract_context_manager.AbstractContextManager</span></code></a></p>
+<p>General support class for SQLite databases. This handles a lot of the
+low-level detail of setting up a connection.</p>
+<p>Basic usage (with the default row type):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">SQLiteDB</span><span class="p">(</span><span class="s2">&quot;db_file.sqlite3&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT thing FROM ...&quot;</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;thing&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>This class is designed to be either used as above or by subclassing.
+See the <a class="reference external" href="https://www.sqlite.org/lang.html">SQLite SQL documentation</a> for
+details of how to write queries, and the Python <a class="reference external" href="https://docs.python.org/3.6/library/sqlite3.html#module-sqlite3" title="(in Python v3.6)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sqlite3</span></code></a> module
+for how to do parameter binding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>database_file</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The name of a file that contains (or will contain) an SQLite
+database holding the data. If omitted, an unshared in-memory
+database will be used (suitable only for testing).</p></li>
+<li><p><strong>read_only</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Whether the database is in read-only mode. When the database is in
+read-only mode, it <em>must</em> already exist.</p></li>
+<li><p><strong>ddl_file</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – The name of a file (typically containing SQL DDL commands used to
+create the tables) to be evaluated against the database before this
+object completes construction. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, nothing will be
+evaluated. You probably don’t want to specify a DDL file at the
+same time as setting <code class="docutils literal notranslate"><span class="pre">read_only=True</span></code>.</p></li>
+<li><p><strong>row_factory</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.6)"><em>Callable</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – Callable used to create the rows of result sets.
+Either <code class="docutils literal notranslate"><span class="pre">tuple</span></code> or <code class="docutils literal notranslate"><span class="pre">sqlite3.Row</span></code> (default);
+can be <code class="docutils literal notranslate"><span class="pre">None</span></code> to use the DB driver default.</p></li>
+<li><p><strong>text_factory</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.6)"><em>Callable</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – Callable used to create the Python values of non-numeric columns
+in result sets. Usually <code class="docutils literal notranslate"><span class="pre">memoryview</span></code> (default) but should be
+<code class="docutils literal notranslate"><span class="pre">str</span></code> when you’re expecting string results;
+can be <code class="docutils literal notranslate"><span class="pre">None</span></code> to use the DB driver default.</p></li>
+<li><p><strong>case_insensitive_like</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Whether we want the <code class="docutils literal notranslate"><span class="pre">LIKE</span></code> matching operator to be case-sensitive
+or case-insensitive (default).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.sqlite_db.SQLiteDB.close">
+<code class="sig-name descname"><span class="pre">close</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/sqlite_db.html#SQLiteDB.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalises and closes the database.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.sqlite_db.SQLiteDB.connection">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">connection</span></code><a class="headerlink" href="#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>The underlying SQLite database connection.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If you’re using this a lot, consider contacting the SpiNNaker
+Software Team with details of your use case so we can extend the
+relevant core class to support you. <em>Normally</em> it is better to use
+<a class="reference internal" href="#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.transaction" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB.transaction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">transaction()</span></code></a> to obtain a cursor with appropriate
+transactional guards.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/sqlite3.html#sqlite3.Connection" title="(in Python v3.6)">Connection</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#AttributeError" title="(in Python v3.6)"><strong>AttributeError</strong></a> – if the database connection has been closed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.sqlite_db.SQLiteDB.pragma">
+<code class="sig-name descname"><span class="pre">pragma</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pragma_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/sqlite_db.html#SQLiteDB.pragma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.pragma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a database <code class="docutils literal notranslate"><span class="pre">PRAGMA</span></code>. See the <a class="reference external" href="https://www.sqlite.org/pragma.html">SQLite PRAGMA documentation</a> for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pragma_name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The name of the pragma to set.</p></li>
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The value to set the pragma to.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.utilities.sqlite_db.SQLiteDB.transaction">
+<code class="sig-name descname"><span class="pre">transaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">isolation_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/sqlite_db.html#SQLiteDB.transaction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a context manager that manages a transaction on the database.        The value of the context manager is a <a class="reference external" href="https://docs.python.org/3.6/library/sqlite3.html#sqlite3.Cursor" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>.        This means you can do this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>isolation_level</strong> (<a class="reference internal" href="#spinn_front_end_common.utilities.sqlite_db.Isolation" title="spinn_front_end_common.utilities.sqlite_db.Isolation"><em>Isolation</em></a>) – The transaction isolation level; note that this sets it for the
+connection! Can usually be <em>not</em> specified.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.ContextManager" title="(in Python v3.6)">ContextManager</a>(<a class="reference external" href="https://docs.python.org/3.6/library/sqlite3.html#sqlite3.Cursor" title="(in Python v3.6)">Cursor</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="module-spinn_front_end_common.utilities.system_control_logic">
 <span id="spinn-front-end-common-utilities-system-control-logic-module"></span><h2>spinn_front_end_common.utilities.system_control_logic module<a class="headerlink" href="#module-spinn_front_end_common.utilities.system_control_logic" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
@@ -1287,6 +1420,7 @@ run_forever</p>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.exceptions">spinn_front_end_common.utilities.exceptions module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.globals_variables">spinn_front_end_common.utilities.globals_variables module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.helpful_functions">spinn_front_end_common.utilities.helpful_functions module</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.sqlite_db">spinn_front_end_common.utilities.sqlite_db module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.system_control_logic">spinn_front_end_common.utilities.system_control_logic module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities">Module contents</a></li>
 </ul>

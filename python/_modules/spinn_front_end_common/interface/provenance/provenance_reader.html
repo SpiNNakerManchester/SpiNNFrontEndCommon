@@ -55,20 +55,21 @@
 <span class="kn">import</span> <span class="nn">sqlite3</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities</span> <span class="kn">import</span> <span class="n">globals_variables</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">PROVENANCE_DB</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.sqlite_db</span> <span class="kn">import</span> <span class="n">SQLiteDB</span>
 
 
 <div class="viewcode-block" id="ProvenanceReader"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader">[docs]</a><span class="k">class</span> <span class="nc">ProvenanceReader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Provides a connection to an sqlite3 database and some provenance</span>
-<span class="sd">    convenience methods</span>
+<span class="sd">    Provides a connection to a database containing provenance for the current</span>
+<span class="sd">    run and some convenience methods for extracting provenance data from it.</span>
 
 <span class="sd">    By default this will wrap around the database used to store the</span>
 <span class="sd">    provenance of the last run. The path is not updated so this reader is</span>
-<span class="sd">    not effected by a reset or an end</span>
+<span class="sd">    not effected by a reset or an end.</span>
 
 <span class="sd">    The assumption is that the database is in the current provenance format.</span>
 <span class="sd">    This includes both that DDL statements used to create the database but</span>
-<span class="sd">    also the underlying database structure. Currently sqlite3</span>
+<span class="sd">    also the underlying database structure (currently sqlite3)</span>
 
 <span class="sd">    .. warning::</span>
 <span class="sd">        This class is only a wrapper around the database file so if the file</span>
@@ -96,9 +97,9 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a wrapper around the database.</span>
 
-<span class="sd">        The suggested way to call this is without the</span>
+<span class="sd">        The suggested way to call this is *without* the</span>
 <span class="sd">        ``provenance_data_path`` parameter, allowing</span>
-<span class="sd">        :py:meth:`get_last_run_database_path` to find the correct path</span>
+<span class="sd">        :py:meth:`get_last_run_database_path` to find the correct path.</span>
 
 <span class="sd">        :param provenance_data_path: Path to the provenance database to wrap</span>
 <span class="sd">        :type provenance_data_path: None or str</span>
@@ -111,6 +112,14 @@
 <div class="viewcode-block" id="ProvenanceReader.get_database_handle"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle">[docs]</a>    <span class="k">def</span> <span class="nf">get_database_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_sqlite_rows</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets a handle to the open database.</span>
+
+<span class="sd">        You *should* use this as a Python context handler. A typical usage</span>
+<span class="sd">        pattern is this::</span>
+
+<span class="sd">            with reader.get_database_handler() as db:</span>
+<span class="sd">                with db.transaction() as cursor:</span>
+<span class="sd">                    for row in cursor.execute(...):</span>
+<span class="sd">                        # process row</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This method is mainly provided as a support method for the later</span>
@@ -128,19 +137,13 @@
 <span class="sd">            If ``False`` the results of :py:meth:`run_query` will be</span>
 <span class="sd">            :py:class:`tuple`\\ s.</span>
 <span class="sd">        :return: an open sqlite3 connection</span>
-<span class="sd">        :rtype: ~sqlite3.Connection</span>
+<span class="sd">        :rtype: SQLiteDB</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_provenance_data_path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;no such DB: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_data_path</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">read_only</span><span class="p">:</span>
-            <span class="n">db_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_provenance_data_path</span><span class="p">)</span>
-            <span class="n">db</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;file:</span><span class="si">{}</span><span class="s2">?mode=ro&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db_path</span><span class="p">),</span> <span class="n">uri</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">db</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_provenance_data_path</span><span class="p">)</span>
-        <span class="c1"># Force case-insensitive matching of provenance names</span>
-        <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;PRAGMA case_sensitive_like=OFF;&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">use_sqlite_rows</span><span class="p">:</span>
-            <span class="n">db</span><span class="o">.</span><span class="n">row_factory</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Row</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no such DB: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_provenance_data_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">SQLiteDB</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_provenance_data_path</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="n">read_only</span><span class="p">,</span>
+                      <span class="n">row_factory</span><span class="o">=</span><span class="p">(</span><span class="n">sqlite3</span><span class="o">.</span><span class="n">Row</span> <span class="k">if</span> <span class="n">use_sqlite_rows</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+                      <span class="n">text_factory</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">db</span></div>
 
 <div class="viewcode-block" id="ProvenanceReader.run_query"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.run_query">[docs]</a>    <span class="k">def</span> <span class="nf">run_query</span><span class="p">(</span>
@@ -150,7 +153,9 @@
 <span class="sd">        and closes the connection</span>
 
 <span class="sd">        The return type depends on the use_sqlite_rows param.</span>
-<span class="sd">        By default this method returns tuples</span>
+<span class="sd">        By default this method returns tuples (lookup by index) but the</span>
+<span class="sd">        advanced tuple type can be used instead, which supports lookup by name</span>
+<span class="sd">        used in the query (use ``AS name`` in the query to set).</span>
 
 <span class="sd">        This method will not allow queries that change the database unless the</span>
 <span class="sd">        read_only flag is set to False.</span>
@@ -170,14 +175,15 @@
 <span class="sd">            (one for each row in the database)</span>
 <span class="sd">            where the number and type of the values corresponds to the where</span>
 <span class="sd">            statement</span>
-<span class="sd">        :rtype: tuple or ~sqlite3.Row</span>
+<span class="sd">        :rtype: list(tuple or ~sqlite3.Row)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_provenance_data_path</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;no such DB: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_data_path</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_database_handle</span><span class="p">(</span><span class="n">read_only</span><span class="p">,</span> <span class="n">use_sqlite_rows</span><span class="p">)</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-            <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
-                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
 <div class="viewcode-block" id="ProvenanceReader.cores_with_late_spikes"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.cores_with_late_spikes">[docs]</a>    <span class="k">def</span> <span class="nf">cores_with_late_spikes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -216,10 +222,9 @@
 <span class="s2">            WHERE description LIKE ?</span>
 <span class="s2">            ORDER BY description</span>
 <span class="s2">            &quot;&quot;&quot;</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">description_name</span><span class="p">]):</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">description_name</span><span class="p">]))</span></div>
 
 <div class="viewcode-block" id="ProvenanceReader.get_run_times"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_times">[docs]</a>    <span class="k">def</span> <span class="nf">get_run_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -241,10 +246,9 @@
 <span class="s2">            GROUP BY description_name</span>
 <span class="s2">            ORDER BY the_value</span>
 <span class="s2">            &quot;&quot;&quot;</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2"> s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">),</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> s&quot;</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="ProvenanceReader.get_run_time_of_BufferExtractor"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_time_of_BufferExtractor">[docs]</a>    <span class="k">def</span> <span class="nf">get_run_time_of_BufferExtractor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -271,16 +275,18 @@
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">            SELECT description_name AS description, sum(the_value) AS &quot;value&quot;</span>
+<span class="s2">            SELECT</span>
+<span class="s2">                description_name AS description,</span>
+<span class="s2">                sum(the_value) AS &quot;value&quot;</span>
 <span class="s2">            FROM provenance_view</span>
 <span class="s2">            WHERE x = ? and y = ?</span>
 <span class="s2">            GROUP BY description</span>
 <span class="s2">            ORDER BY description</span>
 <span class="s2">            &quot;&quot;&quot;</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">)]):</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="si">}</span><span class="s2">: </span><span class="si">{</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">)],</span>
+                                      <span class="n">use_sqlite_rows</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_demo</span><span class="p">():</span>
@@ -289,6 +295,7 @@
         <span class="c1"># This uses the example file in the same directory as this script</span>
         <span class="n">pr</span> <span class="o">=</span> <span class="n">ProvenanceReader</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;provenance.sqlite3&quot;</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DIRECT QUERY:&quot;</span><span class="p">)</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">            SELECT x, y, the_value</span>
 <span class="s2">            FROM provenance_view</span>
@@ -297,8 +304,12 @@
         <span class="n">results</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">CORES WITH LATE SPIKES:&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">cores_with_late_spikes</span><span class="p">())</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">get_run_time_of_BufferExtractor</span><span class="p">())</span></div>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">RUN TIME OF BUFFER EXTRACTOR:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">get_run_time_of_BufferExtractor</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">CHIP (0,0) PROVENANCE:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">get_provenance_for_chip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>

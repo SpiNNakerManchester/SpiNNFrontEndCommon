@@ -54,15 +54,14 @@
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">sqlite3</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.ordered_set</span> <span class="kn">import</span> <span class="n">OrderedSet</span>
-<span class="kn">from</span> <span class="nn">spinn_utilities.abstract_context_manager</span> <span class="kn">import</span> <span class="n">AbstractContextManager</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.sqlite_db</span> <span class="kn">import</span> <span class="n">SQLiteDB</span>
 
 <span class="n">_DDL_FILE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;db.sql&quot;</span><span class="p">)</span>
 <span class="n">_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+)([_,:])(\d+)(?:\2(\d+))?&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="SqlLiteDatabase"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.SqlLiteDatabase">[docs]</a><span class="k">class</span> <span class="nc">SqlLiteDatabase</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="p">):</span>
+<div class="viewcode-block" id="SqlLiteDatabase"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.SqlLiteDatabase">[docs]</a><span class="k">class</span> <span class="nc">SqlLiteDatabase</span><span class="p">(</span><span class="n">SQLiteDB</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Specific implementation of the Database for SQLite 3.</span>
 
 <span class="sd">    .. note::</span>
@@ -74,10 +73,7 @@
 <span class="sd">        You can&#39;t port to a different database engine without a lot of work.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="c1"># the database holding the data to store</span>
-        <span class="s2">&quot;_db&quot;</span><span class="p">,</span>
-    <span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -87,48 +83,26 @@
 <span class="sd">            database will be used (suitable only for testing).</span>
 <span class="sd">        :type database_file: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">database_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">database_file</span> <span class="o">=</span> <span class="s2">&quot;:memory:&quot;</span>  <span class="c1"># Magic name!</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__init_db</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-
-<div class="viewcode-block" id="SqlLiteDatabase.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.SqlLiteDatabase.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Finalises and closes the database.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="kc">None</span></div>
-
-    <span class="k">def</span> <span class="nf">__init_db</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Set up the database if required.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">row_factory</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Row</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">text_factory</span> <span class="o">=</span> <span class="nb">memoryview</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">_DDL_FILE</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">sql</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">executescript</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">database_file</span><span class="p">,</span> <span class="n">ddl_file</span><span class="o">=</span><span class="n">_DDL_FILE</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SqlLiteDatabase.insert_items"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.SqlLiteDatabase.insert_items">[docs]</a>    <span class="k">def</span> <span class="nf">insert_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Does a bulk insert of the items into the database.</span>
 
 <span class="sd">        :param list(ProvenanceDataItem) items: The items to insert</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
                 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                INSERT OR IGNORE INTO source(</span>
 <span class="sd">                    source_name, source_short_name, x, y, p)</span>
 <span class="sd">                VALUES(?, ?, ?, ?, ?)</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__unique_sources</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;/&quot;</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
                 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                INSERT OR IGNORE INTO description(description_name)</span>
 <span class="sd">                VALUES(?)</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__unique_names</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
                 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                INSERT INTO provenance(</span>
 <span class="sd">                    source_id, description_id, the_value)</span>

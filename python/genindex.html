@@ -485,21 +485,15 @@
 </li>
         <li><a href="spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.close">(spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase method)</a>
 </li>
-        <li><a href="spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.close">(spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase method)</a>
-</li>
         <li><a href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataRowWriter.close">(spinn_front_end_common.interface.ds.DataRowWriter method)</a>
-</li>
-        <li><a href="spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.SqlLiteDatabase.close">(spinn_front_end_common.interface.provenance.SqlLiteDatabase method)</a>
 </li>
         <li><a href="spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.close">(spinn_front_end_common.utilities.connections.LiveEventConnection method)</a>
 </li>
         <li><a href="spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseConnection.close">(spinn_front_end_common.utilities.database.DatabaseConnection method)</a>
 </li>
-        <li><a href="spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.close">(spinn_front_end_common.utilities.database.DatabaseReader method)</a>
-</li>
-        <li><a href="spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.close">(spinn_front_end_common.utilities.database.DatabaseWriter method)</a>
-</li>
         <li><a href="spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.close">(spinn_front_end_common.utilities.notification_protocol.NotificationProtocol method)</a>
+</li>
+        <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.close">(spinn_front_end_common.utilities.sqlite_db.SQLiteDB method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -538,6 +532,8 @@
 </li>
       <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ConfigurationException">ConfigurationException</a>
 </li>
+      <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.connection">connection() (spinn_front_end_common.utilities.sqlite_db.SQLiteDB property)</a>
+</li>
       <li><a href="spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.continue_simulation">continue_simulation() (spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase method)</a>
 
       <ul>
@@ -569,8 +565,6 @@
       <li><a href="spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.CreateNotificationProtocol">CreateNotificationProtocol (class in spinn_front_end_common.interface.interface_functions)</a>
 </li>
       <li><a href="spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.current_timestamp">current_timestamp() (spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion property)</a>
-</li>
-      <li><a href="spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.cursor">cursor() (spinn_front_end_common.utilities.database.DatabaseReader property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -604,15 +598,17 @@
 </li>
       <li><a href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGather">DataSpeedUpPacketGather (class in spinn_front_end_common.utility_models)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex">DataSpeedUpPacketGatherMachineVertex (class in spinn_front_end_common.utility_models)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.DataWritten">DataWritten (class in spinn_front_end_common.utilities.utility_objs)</a>
 </li>
       <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.constants.DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE">DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE (in module spinn_front_end_common.utilities.constants)</a>
 </li>
       <li><a href="spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.DEFAULT_N_VIRTUAL_CORES">DEFAULT_N_VIRTUAL_CORES (in module spinn_front_end_common.interface.abstract_spinnaker_base)</a>
+</li>
+      <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.Isolation.DEFERRED">DEFERRED (spinn_front_end_common.utilities.sqlite_db.Isolation attribute)</a>
 </li>
       <li><a href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.MultiCastCommand.delay_between_repeats">delay_between_repeats() (spinn_front_end_common.utility_models.MultiCastCommand property)</a>
 </li>
@@ -674,16 +670,18 @@
 </li>
       <li><a href="spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.exception_handler">exception_handler() (spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase method)</a>
 </li>
+      <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.Isolation.EXCLUSIVE">EXCLUSIVE (spinn_front_end_common.utilities.sqlite_db.Isolation attribute)</a>
+</li>
       <li><a href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed.exec_time_secs">exec_time_secs() (spinn_front_end_common.utilities.utility_objs.PowerUsed property)</a>
 </li>
       <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ExecutableFailedToStartException">ExecutableFailedToStartException</a>
 </li>
       <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ExecutableFailedToStopException">ExecutableFailedToStopException</a>
 </li>
-      <li><a href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableFinder">ExecutableFinder (class in spinn_front_end_common.utilities.utility_objs)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableFinder">ExecutableFinder (class in spinn_front_end_common.utilities.utility_objs)</a>
+</li>
       <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ExecutableNotFoundException">ExecutableNotFoundException</a>
 </li>
       <li><a href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType (class in spinn_front_end_common.utilities.utility_objs)</a>
@@ -1120,6 +1118,8 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.Isolation.IMMEDIATE">IMMEDIATE (spinn_front_end_common.utilities.sqlite_db.Isolation attribute)</a>
+</li>
       <li><a href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.IN_REPORT_NAME">IN_REPORT_NAME (spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex attribute)</a>
 </li>
       <li><a href="spinn_front_end_common.interface.html#spinn_front_end_common.interface.simulator_state.Simulator_State.IN_RUN">IN_RUN (spinn_front_end_common.interface.simulator_state.Simulator_State attribute)</a>
@@ -1195,6 +1195,8 @@
       <li><a href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.is_reinjecting_point_to_point">is_reinjecting_point_to_point() (spinn_front_end_common.utilities.utility_objs.ReInjectionStatus property)</a>
 </li>
       <li><a href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.MultiCastCommand.is_timed">is_timed() (spinn_front_end_common.utility_models.MultiCastCommand property)</a>
+</li>
+      <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.Isolation">Isolation (class in spinn_front_end_common.utilities.sqlite_db)</a>
 </li>
       <li><a href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DataSpecificationTargets.items">items() (spinn_front_end_common.interface.ds.DataSpecificationTargets method)</a>
 
@@ -1468,6 +1470,8 @@
 </li>
         <li><a href="spinn_front_end_common.utilities.scp.html#module-spinn_front_end_common.utilities.scp">spinn_front_end_common.utilities.scp</a>
 </li>
+        <li><a href="spinn_front_end_common.utilities.html#module-spinn_front_end_common.utilities.sqlite_db">spinn_front_end_common.utilities.sqlite_db</a>
+</li>
         <li><a href="spinn_front_end_common.utilities.html#module-spinn_front_end_common.utilities.system_control_logic">spinn_front_end_common.utilities.system_control_logic</a>
 </li>
         <li><a href="spinn_front_end_common.utilities.utility_objs.html#module-spinn_front_end_common.utilities.utility_objs">spinn_front_end_common.utilities.utility_objs</a>
@@ -1629,10 +1633,12 @@
 </li>
       <li><a href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed">PowerUsed (class in spinn_front_end_common.utilities.utility_objs)</a>
 </li>
-      <li><a href="spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.PreAllocateForBitFieldRouterCompressor">PreAllocateForBitFieldRouterCompressor (class in spinn_front_end_common.interface.interface_functions)</a>
+      <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.pragma">pragma() (spinn_front_end_common.utilities.sqlite_db.SQLiteDB method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.PreAllocateForBitFieldRouterCompressor">PreAllocateForBitFieldRouterCompressor (class in spinn_front_end_common.interface.interface_functions)</a>
+</li>
       <li><a href="spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.PreAllocateResourcesForChipPowerMonitor">PreAllocateResourcesForChipPowerMonitor (class in spinn_front_end_common.interface.interface_functions)</a>
 </li>
       <li><a href="spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.PreAllocateResourcesForExtraMonitorSupport">PreAllocateResourcesForExtraMonitorSupport (class in spinn_front_end_common.interface.interface_functions)</a>
@@ -2038,8 +2044,6 @@
         <li><a href="spinn_front_end_common.interface.buffer_management.storage_objects.html#module-spinn_front_end_common.interface.buffer_management.storage_objects">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     spinn_front_end_common.interface.config_handler
 
@@ -2047,6 +2051,8 @@
         <li><a href="spinn_front_end_common.interface.html#module-spinn_front_end_common.interface.config_handler">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     spinn_front_end_common.interface.ds
 
@@ -2181,6 +2187,13 @@
 </li>
       </ul></li>
       <li>
+    spinn_front_end_common.utilities.sqlite_db
+
+      <ul>
+        <li><a href="spinn_front_end_common.utilities.html#module-spinn_front_end_common.utilities.sqlite_db">module</a>
+</li>
+      </ul></li>
+      <li>
     spinn_front_end_common.utilities.system_control_logic
 
       <ul>
@@ -2218,6 +2231,8 @@
       <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException">SpinnFrontEndException</a>
 </li>
       <li><a href="spinn_front_end_common.interface.splitter_selectors.html#spinn_front_end_common.interface.splitter_selectors.SplitterSelector">SplitterSelector (class in spinn_front_end_common.interface.splitter_selectors)</a>
+</li>
+      <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB">SQLiteDB (class in spinn_front_end_common.utilities.sqlite_db)</a>
 </li>
       <li><a href="spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase">SqlLiteDatabase (class in spinn_front_end_common.interface.buffer_management.storage_objects)</a>
 
@@ -2333,10 +2348,10 @@
 </li>
       <li><a href="spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.TIMER_TIC_HAS_OVERRUN">TIMER_TIC_HAS_OVERRUN (spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.MachineBitFieldRouterCompressor.TIMES_CYCLED_ROUTING_TABLES">TIMES_CYCLED_ROUTING_TABLES (spinn_front_end_common.interface.interface_functions.MachineBitFieldRouterCompressor attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.timestamps">timestamps() (spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion property)</a>
 </li>
       <li><a href="spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.PacmanProvenanceExtractor.TOP_NAME">TOP_NAME (spinn_front_end_common.interface.provenance.PacmanProvenanceExtractor attribute)</a>
@@ -2352,6 +2367,8 @@
       <li><a href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER">TRAFFIC_IDENTIFIER (spinn_front_end_common.utility_models.LivePacketGatherMachineVertex attribute)</a>
 </li>
       <li><a href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.TRAFFIC_TYPE">TRAFFIC_TYPE (spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex attribute)</a>
+</li>
+      <li><a href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.transaction">transaction() (spinn_front_end_common.utilities.sqlite_db.SQLiteDB method)</a>
 </li>
       <li><a href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.transaction_id">transaction_id() (spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex property)</a>
 </li>

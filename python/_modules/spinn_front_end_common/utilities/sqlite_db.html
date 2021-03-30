@@ -1,0 +1,299 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.utilities.sqlite_db &#8212; SpiNNFrontEndCommon  documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.sqlite_db</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utilities.sqlite_db</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2021 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">AbstractContextManager</span> <span class="k">as</span> <span class="n">ACMBase</span>
+<span class="kn">import</span> <span class="nn">enum</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.abstract_context_manager</span> <span class="kn">import</span> <span class="n">AbstractContextManager</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.logger_utils</span> <span class="kn">import</span> <span class="n">warn_once</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Isolation"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.Isolation">[docs]</a><span class="k">class</span> <span class="nc">Isolation</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transaction isolation levels for :py:meth:`SQLiteDB.transaction`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#: Standard transaction type; postpones holding a lock until required.</span>
+    <span class="n">DEFERRED</span> <span class="o">=</span> <span class="s2">&quot;DEFERRED&quot;</span>
+    <span class="c1">#: Take the lock immediately; this may be a read-lock that gets upgraded.</span>
+    <span class="n">IMMEDIATE</span> <span class="o">=</span> <span class="s2">&quot;IMMEDIATE&quot;</span>
+    <span class="c1">#: Take a write lock immediately. This is the strongest lock type.</span>
+    <span class="n">EXCLUSIVE</span> <span class="o">=</span> <span class="s2">&quot;EXCLUSIVE&quot;</span></div>
+
+
+<div class="viewcode-block" id="SQLiteDB"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB">[docs]</a><span class="k">class</span> <span class="nc">SQLiteDB</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    General support class for SQLite databases. This handles a lot of the</span>
+<span class="sd">    low-level detail of setting up a connection.</span>
+
+<span class="sd">    Basic usage (with the default row type)::</span>
+
+<span class="sd">        with SQLiteDB(&quot;db_file.sqlite3&quot;) as db:</span>
+<span class="sd">            with db.transaction() as cursor:</span>
+<span class="sd">                for row in cursor.execute(&quot;SELECT thing FROM ...&quot;):</span>
+<span class="sd">                    print(row[&quot;thing&quot;])</span>
+
+<span class="sd">    This class is designed to be either used as above or by subclassing.</span>
+<span class="sd">    See the `SQLite SQL documentation &lt;https://www.sqlite.org/lang.html&gt;`_ for</span>
+<span class="sd">    details of how to write queries, and the Python :py:mod:`sqlite3` module</span>
+<span class="sd">    for how to do parameter binding.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># the database holding the data to store</span>
+        <span class="s2">&quot;__db&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ddl_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">row_factory</span><span class="o">=</span><span class="n">sqlite3</span><span class="o">.</span><span class="n">Row</span><span class="p">,</span> <span class="n">text_factory</span><span class="o">=</span><span class="nb">memoryview</span><span class="p">,</span>
+                 <span class="n">case_insensitive_like</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str database_file:</span>
+<span class="sd">            The name of a file that contains (or will contain) an SQLite</span>
+<span class="sd">            database holding the data. If omitted, an unshared in-memory</span>
+<span class="sd">            database will be used (suitable only for testing).</span>
+<span class="sd">        :param bool read_only:</span>
+<span class="sd">            Whether the database is in read-only mode. When the database is in</span>
+<span class="sd">            read-only mode, it *must* already exist.</span>
+<span class="sd">        :param ddl_file:</span>
+<span class="sd">            The name of a file (typically containing SQL DDL commands used to</span>
+<span class="sd">            create the tables) to be evaluated against the database before this</span>
+<span class="sd">            object completes construction. If ``None``, nothing will be</span>
+<span class="sd">            evaluated. You probably don&#39;t want to specify a DDL file at the</span>
+<span class="sd">            same time as setting ``read_only=True``.</span>
+<span class="sd">        :type ddl_file: str or None</span>
+<span class="sd">        :param row_factory:</span>
+<span class="sd">            Callable used to create the rows of result sets.</span>
+<span class="sd">            Either ``tuple`` or ``sqlite3.Row`` (default);</span>
+<span class="sd">            can be ``None`` to use the DB driver default.</span>
+<span class="sd">        :type row_factory: ~collections.abc.Callable or None</span>
+<span class="sd">        :param text_factory:</span>
+<span class="sd">            Callable used to create the Python values of non-numeric columns</span>
+<span class="sd">            in result sets. Usually ``memoryview`` (default) but should be</span>
+<span class="sd">            ``str`` when you&#39;re expecting string results;</span>
+<span class="sd">            can be ``None`` to use the DB driver default.</span>
+<span class="sd">        :type text_factory: ~collections.abc.Callable or None</span>
+<span class="sd">        :param bool case_insensitive_like:</span>
+<span class="sd">            Whether we want the ``LIKE`` matching operator to be case-sensitive</span>
+<span class="sd">            or case-insensitive (default).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">database_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__db</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>  <span class="c1"># Magic name!</span>
+            <span class="c1"># in-memory DB is never read-only</span>
+        <span class="k">elif</span> <span class="n">read_only</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">database_file</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no such DB: </span><span class="si">{</span><span class="n">database_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">db_uri</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">database_file</span><span class="p">))</span><span class="o">.</span><span class="n">as_uri</span><span class="p">()</span>
+            <span class="c1"># https://stackoverflow.com/a/21794758/301832</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__db</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">db_uri</span><span class="si">}</span><span class="s2">?mode=ro&quot;</span><span class="p">,</span> <span class="n">uri</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__db</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">row_factory</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="o">.</span><span class="n">row_factory</span> <span class="o">=</span> <span class="n">row_factory</span>
+        <span class="k">if</span> <span class="n">text_factory</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="o">.</span><span class="n">text_factory</span> <span class="o">=</span> <span class="n">text_factory</span>
+
+        <span class="k">if</span> <span class="n">ddl_file</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ddl_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">sql</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="o">.</span><span class="n">executescript</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+            <span class="c1"># Stamp the DB with a schema version, which is the first four</span>
+            <span class="c1"># bytes of the MD5 hash of the content of the schema file used to</span>
+            <span class="c1"># set it up. We don&#39;t currently validate this at all.</span>
+            <span class="c1">#</span>
+            <span class="c1"># The application_id pragma would be used within the DDL schema.</span>
+            <span class="n">ddl_hash</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span>
+                <span class="s2">&quot;&gt;I&quot;</span><span class="p">,</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">digest</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;user_version&quot;</span><span class="p">,</span> <span class="n">ddl_hash</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">case_insensitive_like</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;case_sensitive_like&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># Official recommendations!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;foreign_keys&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;recursive_triggers&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;trusted_schema&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SQLiteDB.close"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Finalises and closes the database.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__db</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__db</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="SQLiteDB.pragma"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.pragma">[docs]</a>    <span class="k">def</span> <span class="nf">pragma</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pragma_name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set a database ``PRAGMA``. See the `SQLite PRAGMA documentation</span>
+<span class="sd">        &lt;https://www.sqlite.org/pragma.html&gt;`_ for details.</span>
+
+<span class="sd">        :param str pragma_name:</span>
+<span class="sd">            The name of the pragma to set.</span>
+<span class="sd">        :param value:</span>
+<span class="sd">            The value to set the pragma to.</span>
+<span class="sd">        :type value: bool or int or str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="o">.</span><span class="n">executescript</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PRAGMA </span><span class="si">{</span><span class="n">pragma_name</span><span class="si">}</span><span class="s2">=ON;&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="o">.</span><span class="n">executescript</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PRAGMA </span><span class="si">{</span><span class="n">pragma_name</span><span class="si">}</span><span class="s2">=OFF;&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="o">.</span><span class="n">executescript</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PRAGMA </span><span class="si">{</span><span class="n">pragma_name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">;&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="o">.</span><span class="n">executescript</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PRAGMA </span><span class="si">{</span><span class="n">pragma_name</span><span class="si">}</span><span class="s2">=&#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39;;&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;can only set pragmas to bool, int or str&quot;</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">connection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The underlying SQLite database connection.</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">            If you&#39;re using this a lot, consider contacting the SpiNNaker</span>
+<span class="sd">            Software Team with details of your use case so we can extend the</span>
+<span class="sd">            relevant core class to support you. *Normally* it is better to use</span>
+<span class="sd">            :py:meth:`transaction` to obtain a cursor with appropriate</span>
+<span class="sd">            transactional guards.</span>
+
+<span class="sd">        :rtype: ~sqlite3.Connection</span>
+<span class="sd">        :raises AttributeError: if the database connection has been closed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warn_once</span><span class="p">(</span>
+            <span class="n">logger</span><span class="p">,</span>
+            <span class="s2">&quot;Low-level connection used instead of transaction() context. &quot;</span>
+            <span class="s2">&quot;Please contact SpiNNaker Software Team with your use-case for &quot;</span>
+            <span class="s2">&quot;assistance.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;database has been closed&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__db</span>
+
+<div class="viewcode-block" id="SQLiteDB.transaction"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.transaction">[docs]</a>    <span class="k">def</span> <span class="nf">transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isolation_level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get a context manager that manages a transaction on the database.\</span>
+<span class="sd">        The value of the context manager is a :py:class:`~sqlite3.Cursor`.\</span>
+<span class="sd">        This means you can do this::</span>
+
+<span class="sd">            with db.transaction() as cursor:</span>
+<span class="sd">                cursor.execute(...)</span>
+
+<span class="sd">        :param Isolation isolation_level:</span>
+<span class="sd">            The transaction isolation level; note that this sets it for the</span>
+<span class="sd">            connection! Can usually be *not* specified.</span>
+<span class="sd">        :rtype: ~typing.ContextManager(~sqlite3.Cursor)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;database has been closed&quot;</span><span class="p">)</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__db</span>
+        <span class="k">if</span> <span class="n">isolation_level</span><span class="p">:</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">isolation_level</span> <span class="o">=</span> <span class="n">isolation_level</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">return</span> <span class="n">_DbWrapper</span><span class="p">(</span><span class="n">db</span><span class="p">)</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">_DbWrapper</span><span class="p">(</span><span class="n">ACMBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__d</span> <span class="o">=</span> <span class="n">db</span>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__d</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__d</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__d</span><span class="o">.</span><span class="fm">__exit__</span><span class="p">(</span><span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">)</span>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.sqlite_db</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
+    </div>
+  </body>
+</html>
