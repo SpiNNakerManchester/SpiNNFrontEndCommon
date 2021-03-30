@@ -43,9 +43,6 @@ class DatabaseWriter(SQLiteDB):
 
         # the identifier for the SpiNNaker machine
         "_machine_id",
-
-        # Mappings used to accelerate inserts
-        "__machine_to_id", "__vertex_to_id", "__edge_to_id"
     ]
 
     def __init__(self, database_directory):
@@ -60,9 +57,26 @@ class DatabaseWriter(SQLiteDB):
             os.remove(self._database_path)
 
         super().__init__(self._database_path, ddl_file=init_sql_path)
-        self.__machine_to_id = dict()
-        self.__vertex_to_id = dict()
-        self.__edge_to_id = dict()
+        with self.transaction() as cur:
+            # Define our temp tables; these map hashes (results of id(thing))
+            # to database IDs, and are temporary as they're only valid for
+            # this process for now; consumers of the DB can't use the
+            # information as they don't have access to the objects in question.
+            #
+            # However, hoisting the information into the DB allows us to use
+            # bulk operations for all insertions.
+            cur.executescript(
+                """
+                CREATE TEMP TABLE vertex_to_id (
+                    ident INTEGER PRIMARY KEY AUTOINCREMENT,
+                    hash INTEGER UNIQUE NOT NULL);
+                CREATE INDEX temp.vertex_to_id_idx ON temp.vertex_to_id(hash);
+
+                CREATE TEMP TABLE edge_to_id (
+                    ident INTEGER PRIMARY KEY AUTOINCREMENT,
+                    hash INTEGER UNIQUE NOT NULL);
+                CREATE INDEX temp.edge_to_id_idx ON temp.edge_to_id(hash);
+                """)
 
         # set up checks
         self._machine_id = 0
@@ -87,33 +101,19 @@ class DatabaseWriter(SQLiteDB):
         """
         return self._database_path
 
-    def __insert(self, cur, sql, *args):
-        """
-        :param ~sqlite3.Cursor cur:
-        :param str sql:
-        :rtype: int
-        """
-        try:
-            cur.execute(sql, args)
-            return cur.lastrowid
-        except Exception:
-            logger.exception("problem with insertion; argument types are {}",
-                             str(map(type, args)))
-            raise
-
     def add_machine_objects(self, machine):
         """ Store the machine object into the database
 
         :param ~spinn_machine.Machine machine: the machine object.
         """
         with self.transaction() as cur:
-            self.__machine_to_id[machine] = self._machine_id = self.__insert(
-                cur,
+            cur.execute(
                 """
                 INSERT INTO Machine_layout(
                     x_dimension, y_dimension)
                 VALUES(?, ?)
-                """, machine.width, machine.height)
+                """, (machine.width, machine.height))
+            self._machine_id = cur.lastrowid
             cur.executemany(
                 """
                 INSERT INTO Machine_chip(
@@ -154,39 +154,54 @@ class DatabaseWriter(SQLiteDB):
         """
         with self.transaction() as cur:
             # add vertices
-            for vertex in application_graph.vertices:
-                self.__vertex_to_id[vertex] = self.__insert(
-                    cur,
-                    """
-                    INSERT INTO Application_vertices(
-                        vertex_label, vertex_class, no_atoms,
-                        max_atom_constrant)
-                    VALUES(?, ?, ?, ?)
-                    """,
-                    vertex.label, vertex.__class__.__name__, vertex.n_atoms,
-                    vertex.get_max_atoms_per_core())
+            cur.executemany(
+                """
+                INSERT INTO temp.vertex_to_id(hash) VALUES(?)
+                """, (
+                    (id(vertex), ) for vertex in application_graph.vertices))
+            cur.executemany(
+                """
+                INSERT INTO Application_vertices(
+                    vertex_id, vertex_label, vertex_class, no_atoms,
+                    max_atom_constrant)
+                VALUES(
+                    (SELECT ident FROM temp.vertex_to_id WHERE hash = ?),
+                    ?, ?, ?, ?)
+                """, (
+                    (id(vertex), vertex.label, vertex.__class__.__name__,
+                     vertex.n_atoms, vertex.get_max_atoms_per_core())
+                    for vertex in application_graph.vertices))
 
             # add edges
-            for edge in application_graph.edges:
-                self.__edge_to_id[edge] = self.__insert(
-                    cur,
-                    """
-                    INSERT INTO Application_edges (
-                        pre_vertex, post_vertex, edge_label, edge_class)
-                    VALUES(?, ?, ?, ?)
-                    """,
-                    self.__vertex_to_id[edge.pre_vertex],
-                    self.__vertex_to_id[edge.post_vertex],
-                    edge.label, edge.__class__.__name__)
+            cur.executemany(
+                """
+                INSERT INTO temp.edge_to_id(hash) VALUES(?)
+                """, (
+                    id(edge) for edge in application_graph.edges))
+            cur.executemany(
+                """
+                INSERT INTO Application_edges (
+                    edge_id, pre_vertex, post_vertex, edge_label, edge_class)
+                VALUES(
+                    (SELECT ident FROM temp.edge_to_id WHERE hash = ?),
+                    (SELECT ident FROM temp.vertex_to_id WHERE hash = ?),
+                    (SELECT ident FROM temp.vertex_to_id WHERE hash = ?),
+                    ?, ?)
+                """, (
+                    (id(edge), id(edge.pre_vertex), id(edge.post_vertex),
+                     edge.label, edge.__class__.__name__)
+                    for edge in application_graph.edges))
 
             # update graph
             cur.executemany(
                 """
                 INSERT INTO Application_graph (
                     vertex_id, edge_id)
-                VALUES(?, ?)
+                VALUES(
+                    (SELECT ident FROM temp.vertex_to_id WHERE hash = ?),
+                    (SELECT ident FROM temp.edge_to_id WHERE hash = ?))
                 """, (
-                    (self.__vertex_to_id[vertex], self.__edge_to_id[edge])
+                    (id(vertex), id(edge))
                     for vertex in application_graph.vertices
                     for edge in application_graph.get_edges_starting_at_vertex(
                         vertex)))
@@ -222,41 +237,59 @@ class DatabaseWriter(SQLiteDB):
             ~pacman.model.graphs.application.ApplicationGraph
         """
         with self.transaction() as cur:
-            for vertex in machine_graph.vertices:
-                req = vertex.resources_required
-                self.__vertex_to_id[vertex] = self.__insert(
-                    cur,
-                    """
-                    INSERT INTO Machine_vertices (
-                        label, class, cpu_used, sdram_used, dtcm_used)
-                    VALUES(?, ?, ?, ?, ?)
-                    """,
-                    str(vertex.label), vertex.__class__.__name__,
-                    _extract_int(req.cpu_cycles.get_value()),
-                    _extract_int(req.sdram.get_total_sdram(data_n_timesteps)),
-                    _extract_int(req.dtcm.get_value()))
+            # add machine vertices
+            cur.executemany(
+                """
+                INSERT INTO temp.vertex_to_id(hash) VALUES(?)
+                """, (
+                    (id(vertex), ) for vertex in machine_graph.vertices))
+            cur.executemany(
+                """
+                INSERT INTO Machine_vertices (
+                    vertex_id, label, class, cpu_used, sdram_used, dtcm_used)
+                VALUES(
+                    (SELECT ident FROM temp.vertex_to_id WHERE hash = ?),
+                    ?, ?, ?, ?, ?)
+                """, (
+                    (id(vertex), str(vertex.label), vertex.__class__.__name__,
+                     _extract_int(
+                         vertex.resources_required.cpu_cycles.get_value()),
+                     _extract_int(
+                         vertex.resources_required.sdram.get_total_sdram(
+                             data_n_timesteps)),
+                     _extract_int(vertex.resources_required.dtcm.get_value()))
+                    for vertex in machine_graph.vertices))
 
             # add machine edges
-            for edge in machine_graph.edges:
-                self.__edge_to_id[edge] = self.__insert(
-                    cur,
-                    """
-                    INSERT INTO Machine_edges (
-                        pre_vertex, post_vertex, label, class)
-                    VALUES(?, ?, ?, ?)
-                    """,
-                    self.__vertex_to_id[edge.pre_vertex],
-                    self.__vertex_to_id[edge.post_vertex],
-                    edge.label, edge.__class__.__name__)
+            cur.executemany(
+                """
+                INSERT INTO temp.edge_to_id(hash) VALUES(?)
+                """, (
+                    id(edge) for edge in machine_graph.edges))
+            cur.executemany(
+                """
+                INSERT INTO Machine_edges (
+                    edge_id, pre_vertex, post_vertex, label, class)
+                VALUES(
+                    (SELECT ident FROM temp.edge_to_id WHERE hash = ?),
+                    (SELECT ident FROM temp.vertex_to_id WHERE hash = ?),
+                    (SELECT ident FROM temp.vertex_to_id WHERE hash = ?),
+                    ?, ?)
+                """, (
+                    (id(edge), id(edge.pre_vertex), id(edge.post_vertex),
+                     edge.label, edge.__class__.__name__)
+                    for edge in machine_graph.edges))
 
             # add to machine graph
             cur.executemany(
                 """
                 INSERT INTO Machine_graph (
                     vertex_id, edge_id)
-                VALUES(?, ?)
+                VALUES(
+                    (SELECT ident FROM temp.vertex_to_id WHERE hash = ?),
+                    (SELECT ident FROM temp.edge_to_id WHERE hash = ?))
                 """, (
-                    (self.__vertex_to_id[vertex], self.__edge_to_id[edge])
+                    (id(vertex), id(edge))
                     for vertex in machine_graph.vertices
                     for edge in machine_graph.get_edges_starting_at_vertex(
                         vertex)))
@@ -267,10 +300,12 @@ class DatabaseWriter(SQLiteDB):
                     INSERT INTO graph_mapper_vertex (
                         application_vertex_id, machine_vertex_id, lo_atom,
                         hi_atom)
-                    VALUES(?, ?, ?, ?)
+                    VALUES(
+                        (SELECT ident FROM temp.vertex_to_id WHERE hash = ?),
+                        (SELECT ident FROM temp.vertex_to_id WHERE hash = ?),
+                        ?, ?)
                     """, (
-                        (self.__vertex_to_id[vertex.app_vertex],
-                         self.__vertex_to_id[vertex],
+                        (id(vertex.app_vertex), id(vertex),
                          vertex.vertex_slice.lo_atom,
                          vertex.vertex_slice.hi_atom)
                         for vertex in machine_graph.vertices))
@@ -280,10 +315,11 @@ class DatabaseWriter(SQLiteDB):
                     """
                     INSERT INTO graph_mapper_edges (
                         application_edge_id, machine_edge_id)
-                    VALUES(?, ?)
+                    VALUES(
+                        (SELECT ident FROM temp.edge_to_id WHERE hash = ?),
+                        (SELECT ident FROM temp.edge_to_id WHERE hash = ?))
                     """, (
-                        (self.__edge_to_id[edge.app_edge],
-                         self.__edge_to_id[edge])
+                        (id(edge.app_edge), id(edge))
                         for edge in machine_graph.edges))
 
     def add_placements(self, placements):
@@ -298,9 +334,11 @@ class DatabaseWriter(SQLiteDB):
                 """
                 INSERT INTO Placements(
                     vertex_id, chip_x, chip_y, chip_p, machine_id)
-                VALUES(?, ?, ?, ?, ?)
+                VALUES(
+                    (SELECT ident FROM temp.vertex_to_id WHERE hash = ?),
+                    ?, ?, ?, ?)
                 """, (
-                    (self.__vertex_to_id[placement.vertex],
+                    (id(placement.vertex),
                      placement.x, placement.y, placement.p, self._machine_id)
                     for placement in placements.placements))
 
@@ -323,9 +361,10 @@ class DatabaseWriter(SQLiteDB):
                 """
                 INSERT INTO Routing_info(
                     edge_id, "key", mask)
-                VALUES(?, ?, ?)
+                VALUES(
+                    (SELECT ident FROM temp.edge_to_id WHERE hash = ?), ?, ?)
                 """, (
-                    (self.__edge_to_id[edge], key_mask.key, key_mask.mask)
+                    (id(edge), key_mask.key, key_mask.mask)
                     for partition, rinfo in partitions_and_routing_info
                     for edge in partition.edges
                     for key_mask in rinfo.keys_and_masks))
@@ -348,8 +387,8 @@ class DatabaseWriter(SQLiteDB):
                      entry.routing_entry_key, entry.mask,
                      entry.spinnaker_route)
                     for routing_table in routing_tables.routing_tables
-                    for counter, entry in
-                    enumerate(routing_table.multicast_routing_entries)))
+                    for counter, entry in (
+                        enumerate(routing_table.multicast_routing_entries))))
 
     def add_tags(self, machine_graph, tags):
         """ Adds the tags into the database
@@ -359,27 +398,33 @@ class DatabaseWriter(SQLiteDB):
         :param ~pacman.model.tags.Tags tags: the tags object
         """
         with self.transaction() as cur:
-            for vertex in machine_graph.vertices:
-                v_id = self.__vertex_to_id[vertex]
-                cur.executemany(
-                    """
-                    INSERT INTO IP_tags(
-                        vertex_id, tag, board_address, ip_address, port,
-                        strip_sdp)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    """, (
-                        (v_id, ipt.tag, ipt.board_address, ipt.ip_address,
-                         ipt.port or 0, 1 if ipt.strip_sdp else 0)
-                        for ipt in tags.get_ip_tags_for_vertex(vertex) or []))
-                cur.executemany(
-                    """
-                    INSERT INTO Reverse_IP_tags(
-                        vertex_id, tag, board_address, port)
-                    VALUES (?, ?, ?, ?)
-                    """, (
-                        (v_id, ript.tag, ript.board_address, ript.port or 0)
-                        for ript in tags.get_reverse_ip_tags_for_vertex(
-                            vertex) or ()))
+            cur.executemany(
+                """
+                INSERT INTO IP_tags(
+                    vertex_id, tag, board_address, ip_address, port,
+                    strip_sdp)
+                VALUES (
+                    (SELECT ident FROM temp.vertex_to_id WHERE hash = ?),
+                    ?, ?, ?, ?, ?)
+                """, (
+                    (id(vertex), ipt.tag, ipt.board_address,
+                     ipt.ip_address, ipt.port or 0,
+                     1 if ipt.strip_sdp else 0)
+                    for vertex in machine_graph.vertices
+                    for ipt in (tags.get_ip_tags_for_vertex(vertex) or ())))
+            cur.executemany(
+                """
+                INSERT INTO Reverse_IP_tags(
+                    vertex_id, tag, board_address, port)
+                VALUES (
+                    (SELECT ident FROM temp.vertex_to_id WHERE hash = ?),
+                    ?, ?, ?)
+                """, (
+                    (id(vertex), ript.tag, ript.board_address,
+                     ript.port or 0)
+                    for vertex in machine_graph.vertices
+                    for ript in (
+                        tags.get_reverse_ip_tags_for_vertex(vertex) or ())))
 
     def create_atom_to_event_id_mapping(
             self, application_graph, machine_graph, routing_infos):
@@ -395,24 +440,28 @@ class DatabaseWriter(SQLiteDB):
             vertices_and_partitions = (
                 (vertex.app_vertex, partition)
                 for vertex in machine_graph.vertices
-                for partition in machine_graph.
-                get_outgoing_edge_partitions_starting_at_vertex(vertex))
+                for partition in (
+                    machine_graph.
+                    get_outgoing_edge_partitions_starting_at_vertex(vertex)))
         else:
             # We will be asking machine vertices for key/atom mappings
             vertices_and_partitions = (
                 (vertex, partition)
                 for vertex in machine_graph.vertices
-                for partition in machine_graph.
-                get_outgoing_edge_partitions_starting_at_vertex(vertex))
+                for partition in (
+                    machine_graph.
+                    get_outgoing_edge_partitions_starting_at_vertex(vertex)))
 
         with self.transaction() as cur:
             cur.executemany(
                 """
                 INSERT INTO event_to_atom_mapping(
                     vertex_id, event_id, atom_id)
-                VALUES (?, ?, ?)
+                VALUES (
+                    (SELECT ident FROM temp.vertex_to_id WHERE hash = ?),
+                    ?, ?)
                 """, (
-                    (self.__vertex_to_id[vtx], int(key), int(a_id))
+                    (id(vtx), int(key), int(a_id))
                     for vtx, prtn in vertices_and_partitions
                     if isinstance(vtx, AbstractProvidesKeyToAtomMapping)
                     for a_id, key in vtx.routing_key_partition_atom_mapping(

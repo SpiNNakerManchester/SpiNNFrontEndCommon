@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS Processor(
 
 -- One unit of computation at the application level
 CREATE TABLE IF NOT EXISTS Application_vertices(
-    vertex_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vertex_id INTEGER PRIMARY KEY,
     vertex_label TEXT,
     vertex_class TEXT,
     no_atoms INTEGER,
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS Application_vertices(
 
 -- A communication link between two application vertices
 CREATE TABLE IF NOT EXISTS Application_edges(
-    edge_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    edge_id INTEGER PRIMARY KEY,
     pre_vertex INTEGER,
     post_vertex INTEGER,
     edge_label TEXT,
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS Application_graph(
 
 -- One unit of computation at the system level; deploys to one processor
 CREATE TABLE IF NOT EXISTS Machine_vertices(
-    vertex_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vertex_id INTEGER PRIMARY KEY,
     label TEXT,
     class TEXT,
     cpu_used INTEGER,
@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS Machine_vertices(
 
 -- A communication link between two machine vertices
 CREATE TABLE IF NOT EXISTS Machine_edges(
-    edge_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    edge_id INTEGER PRIMARY KEY,
     pre_vertex INTEGER,
     post_vertex INTEGER,
     label TEXT,

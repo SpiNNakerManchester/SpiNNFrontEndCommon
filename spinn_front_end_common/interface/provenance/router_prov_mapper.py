@@ -56,37 +56,47 @@ class Plotter(object):
 
     def __init__(self, db_filename, verbose=False):
         self._db = SQLiteDB(db_filename, read_only=True, text_factory=str)
-        self.__have_insertion_order = True
+        self.__have_insertion_order = self.__detect_insertion_order_field()
+        if verbose:
+            print(
+                f"Detected schema version: {self.__have_insertion_order + 1}")
         self.__verbose = verbose
         #: The colour map used for plotting. See the seaborn docs for details.
         self.cmap = "plasma"
 
+    def __detect_insertion_order_field(self):
+        with self._db.transaction() as cur:
+            try:
+                list(cur.execute("""
+                    SELECT insertion_order FROM provenance_view LIMIT 1
+                    """))
+                return True
+            except sqlite3.OperationalError as e:
+                return "no such column: insertion_order" != str(e)
+
     def __do_chip_query(self, description):
         # Does the query in one of two ways, depending on schema version
-        with self._db.transaction() as cur:
-            if self.__have_insertion_order:
-                try:
-                    return cur.execute("""
-                        SELECT source_name AS "source", x, y,
-                            description_name AS "description",
-                            the_value AS "value"
-                        FROM provenance_view
-                        WHERE description LIKE ?
-                        GROUP BY x, y, p
-                        HAVING insertion_order = MAX(insertion_order)
-                        """, (description, ))
-                except sqlite3.OperationalError as e:
-                    if "no such column: insertion_order" != str(e):
-                        raise
-                    self.__have_insertion_order = False
-            return cur.execute("""
+        if self.__have_insertion_order:
+            query = """
+                SELECT source_name AS "source", x, y,
+                    description_name AS "description",
+                    the_value AS "value"
+                FROM provenance_view
+                WHERE description LIKE ?
+                GROUP BY x, y, p
+                HAVING insertion_order = MAX(insertion_order)
+                """
+        else:
+            query = """
                 SELECT source_name AS "source", x, y,
                     description_name AS "description",
                     MAX(the_value) AS "value"
                 FROM provenance_view
                 WHERE description LIKE ?
                 GROUP BY x, y, p
-                """, (description, ))
+                """
+        with self._db.transaction() as cur:
+            return cur.execute(query, (description, ))
 
     def get_per_chip_prov_types(self):
         query = """
@@ -119,27 +129,22 @@ class Plotter(object):
 
     def __do_sum_query(self, description):
         # Does the query in one of two ways, depending on schema version
-        with self._db.transaction() as cur:
-            if self.__have_insertion_order:
-                try:
-                    return cur.execute("""
-                        SELECT "source", x, y, "description",
-                            SUM("value") AS "value"
-                        FROM (
-                            SELECT source_name AS "source", x, y, p,
-                                description_name AS "description",
-                                the_value AS "value"
-                            FROM provenance_view
-                            WHERE description LIKE ? AND p IS NOT NULL
-                            GROUP BY x, y, p
-                            HAVING insertion_order = MAX(insertion_order))
-                        GROUP BY x, y
-                        """, (description, ))
-                except sqlite3.OperationalError as e:
-                    if "no such column: insertion_order" != str(e):
-                        raise
-                    self.__have_insertion_order = False
-            return cur.execute("""
+        if self.__have_insertion_order:
+            query = """
+                SELECT "source", x, y, "description",
+                    SUM("value") AS "value"
+                FROM (
+                    SELECT source_name AS "source", x, y, p,
+                        description_name AS "description",
+                        the_value AS "value"
+                    FROM provenance_view
+                    WHERE description LIKE ? AND p IS NOT NULL
+                    GROUP BY x, y, p
+                    HAVING insertion_order = MAX(insertion_order))
+                GROUP BY x, y
+                """
+        else:
+            query = """
                 SELECT "source", x, y, "description",
                     SUM("value") AS "value"
                 FROM (
@@ -150,7 +155,9 @@ class Plotter(object):
                     WHERE description LIKE ? AND p IS NOT NULL
                     GROUP BY x, y, p)
                 GROUP BY x, y
-                """, (description, ))
+                """
+        with self._db.transaction() as cur:
+            return cur.execute(query, (description, ))
 
     def get_per_core_prov_types(self):
         query = """
