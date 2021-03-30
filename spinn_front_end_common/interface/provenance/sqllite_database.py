@@ -35,8 +35,7 @@ class SqlLiteDatabase(SQLiteDB):
         You can't port to a different database engine without a lot of work.
     """
 
-    __slots__ = [
-    ]
+    __slots__ = []
 
     def __init__(self, database_file=None):
         """

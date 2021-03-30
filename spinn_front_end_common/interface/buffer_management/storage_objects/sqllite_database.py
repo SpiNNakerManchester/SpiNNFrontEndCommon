@@ -18,8 +18,8 @@ import sqlite3
 import time
 from spinn_utilities.overrides import overrides
 from spinn_front_end_common.utilities.constants import MILLIS_PER_SECOND
-from .abstract_database import AbstractDatabase
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from .abstract_database import AbstractDatabase
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 
@@ -36,8 +36,7 @@ class SqlLiteDatabase(SQLiteDB, AbstractDatabase):
         Threads can access different DBs just fine.
     """
 
-    __slots__ = [
-    ]
+    __slots__ = []
 
     def __init__(self, database_file=None):
         """
@@ -229,8 +228,8 @@ class SqlLiteDatabase(SQLiteDB, AbstractDatabase):
     @overrides(AbstractDatabase.get_region_data)
     def get_region_data(self, x, y, p, region):
         try:
-            with self.transaction() as c:
-                data = self.__read_contents(c, x, y, p, region)
+            with self.transaction() as cursor:
+                data = self.__read_contents(cursor, x, y, p, region)
                 # TODO missing data
                 return data, False
         except LookupError:

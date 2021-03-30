@@ -33,6 +33,10 @@ class DatabaseConnection(UDPConnection):
         database has been written, and can then respond when the database \
         has been read, and further wait for notification that the simulation \
         has started.
+
+    .. note::
+        The machine description database reader can only be used while the
+        registered database callbacks are running.
     """
 
     __slots__ = [
@@ -76,9 +80,8 @@ class DatabaseConnection(UDPConnection):
             A function to be called when the database message has been
             received.  This function should take a single parameter, which
             will be a DatabaseReader object. Once the function returns, it
-            will be assumed that the database has been read, and the return
-            response will be sent.
-        :raises SpinnmanIOException: If anything goes wrong
+            will be assumed that the database has been read and will not be
+            needed further, and the return response will be sent.
         """
         self.__database_callbacks.append(database_callback_function)
 

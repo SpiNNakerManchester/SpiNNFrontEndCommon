@@ -22,16 +22,16 @@ from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 class ProvenanceReader:
     """
-    Provides a connection to an sqlite3 database and some provenance
-    convenience methods
+    Provides a connection to a database containing provenance for the current
+    run and some convenience methods for extracting provenance data from it.
 
     By default this will wrap around the database used to store the
     provenance of the last run. The path is not updated so this reader is
-    not effected by a reset or an end
+    not effected by a reset or an end.
 
     The assumption is that the database is in the current provenance format.
     This includes both that DDL statements used to create the database but
-    also the underlying database structure. Currently sqlite3
+    also the underlying database structure (currently sqlite3)
 
     .. warning::
         This class is only a wrapper around the database file so if the file
@@ -59,9 +59,9 @@ class ProvenanceReader:
         """
         Create a wrapper around the database.
 
-        The suggested way to call this is without the
+        The suggested way to call this is *without* the
         ``provenance_data_path`` parameter, allowing
-        :py:meth:`get_last_run_database_path` to find the correct path
+        :py:meth:`get_last_run_database_path` to find the correct path.
 
         :param provenance_data_path: Path to the provenance database to wrap
         :type provenance_data_path: None or str
@@ -74,6 +74,14 @@ class ProvenanceReader:
     def get_database_handle(self, read_only=True, use_sqlite_rows=False):
         """
         Gets a handle to the open database.
+
+        You *should* use this as a Python context handler. A typical usage
+        pattern is this::
+
+            with reader.get_database_handler() as db:
+                with db.transaction() as cursor:
+                    for row in cursor.execute(...):
+                        # process row
 
         .. note::
             This method is mainly provided as a support method for the later
@@ -94,13 +102,10 @@ class ProvenanceReader:
         :rtype: SQLiteDB
         """
         if not os.path.exists(self._provenance_data_path):
-            raise Exception("no such DB: " + self._provenance_data_path)
+            raise Exception(f"no such DB: {self._provenance_data_path}")
         db = SQLiteDB(self._provenance_data_path, read_only=read_only,
                       row_factory=(sqlite3.Row if use_sqlite_rows else None),
                       text_factory=None)
-        # Force case-insensitive matching of provenance names
-        with db.transaction() as cur:
-            cur.execute("PRAGMA case_sensitive_like=OFF;")
         return db
 
     def run_query(
@@ -110,7 +115,9 @@ class ProvenanceReader:
         and closes the connection
 
         The return type depends on the use_sqlite_rows param.
-        By default this method returns tuples
+        By default this method returns tuples (lookup by index) but the
+        advanced tuple type can be used instead, which supports lookup by name
+        used in the query (use ``AS name`` in the query to set).
 
         This method will not allow queries that change the database unless the
         read_only flag is set to False.
@@ -130,7 +137,7 @@ class ProvenanceReader:
             (one for each row in the database)
             where the number and type of the values corresponds to the where
             statement
-        :rtype: tuple or ~sqlite3.Row
+        :rtype: list(tuple or ~sqlite3.Row)
         """
         results = []
         with self.get_database_handle(read_only, use_sqlite_rows) as db:
@@ -228,15 +235,18 @@ class ProvenanceReader:
         :rtype: str
         """
         query = """
-            SELECT description_name AS description, sum(the_value) AS "value"
+            SELECT
+                description_name AS description,
+                sum(the_value) AS "value"
             FROM provenance_view
             WHERE x = ? and y = ?
             GROUP BY description
             ORDER BY description
             """
         return "\n".join(
-            f"{row[0]}: {row[1]}"
-            for row in self.run_query(query, [int(x), int(y)]))
+            f"{ row['description'] }: { row['value'] }"
+            for row in self.run_query(query, [int(x), int(y)],
+                                      use_sqlite_rows=True))
 
     @staticmethod
     def _demo():
@@ -245,6 +255,7 @@ class ProvenanceReader:
         # This uses the example file in the same directory as this script
         pr = ProvenanceReader(os.path.join(
             os.path.dirname(__file__), "provenance.sqlite3"))
+        print("DIRECT QUERY:")
         query = """
             SELECT x, y, the_value
             FROM provenance_view
@@ -253,8 +264,12 @@ class ProvenanceReader:
         results = pr.run_query(query)
         for row in results:
             print(row)
+        print("\nCORES WITH LATE SPIKES:")
         print(pr.cores_with_late_spikes())
+        print("\nRUN TIME OF BUFFER EXTRACTOR:")
         print(pr.get_run_time_of_BufferExtractor())
+        print("\nCHIP (0,0) PROVENANCE:")
+        print(pr.get_provenance_for_chip(0, 0))
 
 
 if __name__ == '__main__':

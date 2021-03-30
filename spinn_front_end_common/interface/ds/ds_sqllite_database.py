@@ -17,8 +17,8 @@ import logging
 import os
 import sqlite3
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities.utility_objs import DataWritten
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from spinn_front_end_common.utilities.utility_objs import DataWritten
 
 DB_NAME = "ds.sqlite3"
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")

@@ -17,10 +17,10 @@ import logging
 import os
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs.common import EdgeTrafficType
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesKeyToAtomMapping,
     AbstractSupportsDatabaseInjection)
-from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.db"
@@ -53,14 +53,17 @@ class DatabaseWriter(SQLiteDB):
         :param str database_directory: Where the database will be written
         """
         self._database_path = os.path.join(database_directory, DB_NAME)
-        ddl = os.path.join(os.path.dirname(__file__), INIT_SQL)
+        init_sql_path = os.path.join(os.path.dirname(__file__), INIT_SQL)
+
         # delete any old database
         if os.path.isfile(self._database_path):
             os.remove(self._database_path)
-        super().__init__(self._database_path, ddl_file=ddl)
+
+        super().__init__(self._database_path, ddl_file=init_sql_path)
         self.__machine_to_id = dict()
         self.__vertex_to_id = dict()
         self.__edge_to_id = dict()
+
         # set up checks
         self._machine_id = 0
 
@@ -84,14 +87,15 @@ class DatabaseWriter(SQLiteDB):
         """
         return self._database_path
 
-    def __insert(self, conn, sql, *args):
+    def __insert(self, cur, sql, *args):
         """
+        :param ~sqlite3.Cursor cur:
         :param str sql:
         :rtype: int
         """
         try:
-            conn.execute(sql, args)
-            return conn.lastrowid
+            cur.execute(sql, args)
+            return cur.lastrowid
         except Exception:
             logger.exception("problem with insertion; argument types are {}",
                              str(map(type, args)))
@@ -102,14 +106,15 @@ class DatabaseWriter(SQLiteDB):
 
         :param ~spinn_machine.Machine machine: the machine object.
         """
-        with self.transaction() as c:
+        with self.transaction() as cur:
             self.__machine_to_id[machine] = self._machine_id = self.__insert(
-                c, """
+                cur,
+                """
                 INSERT INTO Machine_layout(
                     x_dimension, y_dimension)
                 VALUES(?, ?)
                 """, machine.width, machine.height)
-            c.executemany(
+            cur.executemany(
                 """
                 INSERT INTO Machine_chip(
                     no_processors, chip_x, chip_y, machine_id)
@@ -117,7 +122,7 @@ class DatabaseWriter(SQLiteDB):
                 """, (
                     (chip.n_processors, chip.x, chip.y, self._machine_id)
                     for chip in machine.chips if chip.virtual))
-            c.executemany(
+            cur.executemany(
                 """
                 INSERT INTO Machine_chip(
                     no_processors, chip_x, chip_y, machine_id,
@@ -128,7 +133,7 @@ class DatabaseWriter(SQLiteDB):
                      chip.ip_address,
                      chip.nearest_ethernet_x, chip.nearest_ethernet_y)
                     for chip in machine.chips if not chip.virtual))
-            c.executemany(
+            cur.executemany(
                 """
                 INSERT INTO Processor(
                     chip_x, chip_y, machine_id, available_DTCM,
@@ -147,11 +152,12 @@ class DatabaseWriter(SQLiteDB):
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph
         """
-        with self.transaction() as c:
+        with self.transaction() as cur:
             # add vertices
             for vertex in application_graph.vertices:
                 self.__vertex_to_id[vertex] = self.__insert(
-                    c, """
+                    cur,
+                    """
                     INSERT INTO Application_vertices(
                         vertex_label, vertex_class, no_atoms,
                         max_atom_constrant)
@@ -163,7 +169,8 @@ class DatabaseWriter(SQLiteDB):
             # add edges
             for edge in application_graph.edges:
                 self.__edge_to_id[edge] = self.__insert(
-                    c, """
+                    cur,
+                    """
                     INSERT INTO Application_edges (
                         pre_vertex, post_vertex, edge_label, edge_class)
                     VALUES(?, ?, ?, ?)
@@ -173,7 +180,7 @@ class DatabaseWriter(SQLiteDB):
                     edge.label, edge.__class__.__name__)
 
             # update graph
-            c.executemany(
+            cur.executemany(
                 """
                 INSERT INTO Application_graph (
                     vertex_id, edge_id)
@@ -191,8 +198,8 @@ class DatabaseWriter(SQLiteDB):
         :param int machine_time_step: the machine time step used in timing
         :param int runtime: the amount of time the application is to run for
         """
-        with self.transaction() as c:
-            c.executemany(
+        with self.transaction() as cur:
+            cur.executemany(
                 """
                 INSERT INTO configuration_parameters (
                     parameter_id, value)
@@ -214,11 +221,12 @@ class DatabaseWriter(SQLiteDB):
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph
         """
-        with self.transaction() as c:
+        with self.transaction() as cur:
             for vertex in machine_graph.vertices:
                 req = vertex.resources_required
                 self.__vertex_to_id[vertex] = self.__insert(
-                    c, """
+                    cur,
+                    """
                     INSERT INTO Machine_vertices (
                         label, class, cpu_used, sdram_used, dtcm_used)
                     VALUES(?, ?, ?, ?, ?)
@@ -231,7 +239,8 @@ class DatabaseWriter(SQLiteDB):
             # add machine edges
             for edge in machine_graph.edges:
                 self.__edge_to_id[edge] = self.__insert(
-                    c, """
+                    cur,
+                    """
                     INSERT INTO Machine_edges (
                         pre_vertex, post_vertex, label, class)
                     VALUES(?, ?, ?, ?)
@@ -241,7 +250,7 @@ class DatabaseWriter(SQLiteDB):
                     edge.label, edge.__class__.__name__)
 
             # add to machine graph
-            c.executemany(
+            cur.executemany(
                 """
                 INSERT INTO Machine_graph (
                     vertex_id, edge_id)
@@ -253,7 +262,7 @@ class DatabaseWriter(SQLiteDB):
                         vertex)))
 
             if application_graph is not None:
-                c.executemany(
+                cur.executemany(
                     """
                     INSERT INTO graph_mapper_vertex (
                         application_vertex_id, machine_vertex_id, lo_atom,
@@ -267,7 +276,7 @@ class DatabaseWriter(SQLiteDB):
                         for vertex in machine_graph.vertices))
 
                 # add graph_mapper edges
-                c.executemany(
+                cur.executemany(
                     """
                     INSERT INTO graph_mapper_edges (
                         application_edge_id, machine_edge_id)
@@ -283,9 +292,9 @@ class DatabaseWriter(SQLiteDB):
         :param ~pacman.model.placements.Placements placements:
             the placements object
         """
-        with self.transaction() as c:
+        with self.transaction() as cur:
             # add records
-            c.executemany(
+            cur.executemany(
                 """
                 INSERT INTO Placements(
                     vertex_id, chip_x, chip_y, chip_p, machine_id)
@@ -309,8 +318,8 @@ class DatabaseWriter(SQLiteDB):
                 partition))
             for partition in machine_graph.outgoing_edge_partitions
             if partition.traffic_type == EdgeTrafficType.MULTICAST)
-        with self.transaction() as c:
-            c.executemany(
+        with self.transaction() as cur:
+            cur.executemany(
                 """
                 INSERT INTO Routing_info(
                     edge_id, "key", mask)
@@ -328,8 +337,8 @@ class DatabaseWriter(SQLiteDB):
         :type routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
         """
-        with self.transaction() as c:
-            c.executemany(
+        with self.transaction() as cur:
+            cur.executemany(
                 """
                 INSERT INTO Routing_table(
                     chip_x, chip_y, position, key_combo, mask, route)
@@ -349,10 +358,10 @@ class DatabaseWriter(SQLiteDB):
             the machine graph object
         :param ~pacman.model.tags.Tags tags: the tags object
         """
-        with self.transaction() as c:
+        with self.transaction() as cur:
             for vertex in machine_graph.vertices:
                 v_id = self.__vertex_to_id[vertex]
-                c.executemany(
+                cur.executemany(
                     """
                     INSERT INTO IP_tags(
                         vertex_id, tag, board_address, ip_address, port,
@@ -362,7 +371,7 @@ class DatabaseWriter(SQLiteDB):
                         (v_id, ipt.tag, ipt.board_address, ipt.ip_address,
                          ipt.port or 0, 1 if ipt.strip_sdp else 0)
                         for ipt in tags.get_ip_tags_for_vertex(vertex) or []))
-                c.executemany(
+                cur.executemany(
                     """
                     INSERT INTO Reverse_IP_tags(
                         vertex_id, tag, board_address, port)
@@ -396,8 +405,8 @@ class DatabaseWriter(SQLiteDB):
                 for partition in machine_graph.
                 get_outgoing_edge_partitions_starting_at_vertex(vertex))
 
-        with self.transaction() as c:
-            c.executemany(
+        with self.transaction() as cur:
+            cur.executemany(
                 """
                 INSERT INTO event_to_atom_mapping(
                     vertex_id, event_id, atom_id)

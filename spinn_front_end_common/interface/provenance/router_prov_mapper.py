@@ -55,27 +55,15 @@ class Plotter(object):
     __seaborn = None
 
     def __init__(self, db_filename, verbose=False):
-        # Check the existence of the database here
-        # if the DB isn't there, the errors are otherwise *weird* if we don't
-        # check...
-        if not os.path.exists(db_filename):
-            raise Exception("no such DB: " + db_filename)
-        # TODO: use magic to open a read-only connection once we're Py3 only
-        # See: https://stackoverflow.com/a/21794758/301832
-
         self._db = SQLiteDB(db_filename, read_only=True, text_factory=str)
-        # Force case-insensitive matching of provenance names
-        self._db.db.execute("""
-            PRAGMA case_sensitive_like=OFF;
-            """)
         self.__have_insertion_order = True
         self.__verbose = verbose
         #: The colour map used for plotting. See the seaborn docs for details.
         self.cmap = "plasma"
 
     def __do_chip_query(self, description):
+        # Does the query in one of two ways, depending on schema version
         with self._db.transaction() as cur:
-            # Does the query in one of two ways, depending on schema version
             if self.__have_insertion_order:
                 try:
                     return cur.execute("""
@@ -90,7 +78,7 @@ class Plotter(object):
                 except sqlite3.OperationalError as e:
                     if "no such column: insertion_order" != str(e):
                         raise
-                    self.__have_insertion_order = 0
+                    self.__have_insertion_order = False
             return cur.execute("""
                 SELECT source_name AS "source", x, y,
                     description_name AS "description",
@@ -101,16 +89,13 @@ class Plotter(object):
                 """, (description, ))
 
     def get_per_chip_prov_types(self):
-        names = list()
+        query = """
+            SELECT DISTINCT description_name AS "description"
+            FROM provenance_view
+            WHERE x IS NOT NULL AND p IS NULL AND "description" IS NOT NULL
+            """
         with self._db.transaction() as cur:
-            for row in cur.execute("""
-                    SELECT DISTINCT description_name AS "description"
-                    FROM provenance_view
-                    WHERE x IS NOT NULL AND p IS NULL
-                    AND "description" IS NOT NULL
-                    """):
-                names.append(row["description"])
-        return frozenset(names)
+            return frozenset(row["description"] for row in cur.execute(query))
 
     def get_per_chip_prov_details(self, info):
         data = []
@@ -133,8 +118,8 @@ class Plotter(object):
                 max(xs) + 1, max(ys) + 1, ary)
 
     def __do_sum_query(self, description):
+        # Does the query in one of two ways, depending on schema version
         with self._db.transaction() as cur:
-            # Does the query in one of two ways, depending on schema version
             if self.__have_insertion_order:
                 try:
                     return cur.execute("""
@@ -153,7 +138,7 @@ class Plotter(object):
                 except sqlite3.OperationalError as e:
                     if "no such column: insertion_order" != str(e):
                         raise
-                    self.__have_insertion_order = 0
+                    self.__have_insertion_order = False
             return cur.execute("""
                 SELECT "source", x, y, "description",
                     SUM("value") AS "value"
@@ -168,16 +153,14 @@ class Plotter(object):
                 """, (description, ))
 
     def get_per_core_prov_types(self):
-        names = []
+        query = """
+            SELECT DISTINCT description_name AS "description"
+            FROM provenance_view
+            WHERE x IS NOT NULL AND p IS NOT NULL
+                AND "description" IS NOT NULL
+            """
         with self._db.transaction() as cur:
-            for row in cur.execute("""
-                    SELECT DISTINCT description_name AS "description"
-                    FROM provenance_view
-                    WHERE x IS NOT NULL AND p IS NOT NULL
-                        AND "description" IS NOT NULL
-                    """):
-                names.append(row["description"])
-        return frozenset(names)
+            return frozenset(row["description"] for row in cur.execute(query))
 
     def get_sum_chip_prov_details(self, info):
         data = []
