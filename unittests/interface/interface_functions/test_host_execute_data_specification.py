@@ -228,6 +228,150 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(header_data[0][2], header_data[1][2])
         self.assertEqual(header_data[2][2], header_data[1][2])
 
+    def test_multispec_with_reference_error(self):
+        executor = HostExecuteDataSpecification()
+        transceiver = _MockTransceiver(
+            user_0_addresses={0: 1000, 1: 2000})
+        machine = virtual_machine(2, 2)
+        tempdir = tempfile.mkdtemp()
+        region_sizes = dict()
+
+        dsg_targets = DataSpecificationTargets(machine, tempdir)
+
+        with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
+            spec = DataSpecificationGenerator(spec_writer)
+            spec.reference_memory_region(0, 2)
+            spec.end_specification()
+            region_sizes[0, 0, 0] = (
+                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+
+        with dsg_targets.create_data_spec(0, 0, 1) as spec_writer:
+            spec = DataSpecificationGenerator(spec_writer)
+            spec.reserve_memory_region(0, 12, reference=1)
+            spec.switch_write_focus(0)
+            spec.write_value(0)
+            spec.end_specification()
+            region_sizes[0, 0, 1] = (
+                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+
+        targets = ExecutableTargets()
+        targets.add_processor(
+            "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
+        targets.add_processor(
+            "text.aplx", 0, 0, 1, ExecutableType.USES_SIMULATION_INTERFACE)
+
+        # ValueError because one of the regions can't be found
+        with self.assertRaises(ValueError):
+            executor.execute_application_data_specs(
+                transceiver, machine, 30, dsg_targets, False, targets,
+                report_folder=tempdir, region_sizes=region_sizes)
+
+    def test_multispec_with_double_reference(self):
+        executor = HostExecuteDataSpecification()
+        transceiver = _MockTransceiver(
+            user_0_addresses={0: 1000, 1: 2000})
+        machine = virtual_machine(2, 2)
+        tempdir = tempfile.mkdtemp()
+        region_sizes = dict()
+
+        dsg_targets = DataSpecificationTargets(machine, tempdir)
+
+        with dsg_targets.create_data_spec(0, 0, 1) as spec_writer:
+            spec = DataSpecificationGenerator(spec_writer)
+            spec.reserve_memory_region(0, 12, reference=1)
+            spec.reserve_memory_region(1, 12, reference=1)
+            spec.switch_write_focus(0)
+            spec.write_value(0)
+            spec.end_specification()
+            region_sizes[0, 0, 1] = (
+                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+
+        targets = ExecutableTargets()
+        targets.add_processor(
+            "text.aplx", 0, 0, 1, ExecutableType.USES_SIMULATION_INTERFACE)
+
+        # ValueError because regions have same reference
+        with self.assertRaises(ValueError):
+            executor.execute_application_data_specs(
+                transceiver, machine, 30, dsg_targets, False, targets,
+                report_folder=tempdir, region_sizes=region_sizes)
+
+    def test_multispec_with_wrong_chip_reference(self):
+        executor = HostExecuteDataSpecification()
+        transceiver = _MockTransceiver(
+            user_0_addresses={0: 1000})
+        machine = virtual_machine(2, 2)
+        tempdir = tempfile.mkdtemp()
+        region_sizes = dict()
+
+        dsg_targets = DataSpecificationTargets(machine, tempdir)
+
+        with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
+            spec = DataSpecificationGenerator(spec_writer)
+            spec.reserve_memory_region(0, 12, reference=1)
+            spec.switch_write_focus(0)
+            spec.write_value(0)
+            spec.end_specification()
+            region_sizes[0, 0, 0] = (
+                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+
+        with dsg_targets.create_data_spec(1, 1, 0) as spec_writer:
+            spec = DataSpecificationGenerator(spec_writer)
+            spec.reference_memory_region(0, 1)
+            spec.end_specification()
+            region_sizes[1, 1, 0] = (
+                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+
+        targets = ExecutableTargets()
+        targets.add_processor(
+            "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
+        targets.add_processor(
+            "text.aplx", 1, 1, 0, ExecutableType.USES_SIMULATION_INTERFACE)
+
+        # ValueError because the reference is on a different chip
+        with self.assertRaises(ValueError):
+            executor.execute_application_data_specs(
+                transceiver, machine, 30, dsg_targets, False, targets,
+                report_folder=tempdir, region_sizes=region_sizes)
+
+    def test_multispec_with_wrong_chip_reference_on_close(self):
+        executor = HostExecuteDataSpecification()
+        transceiver = _MockTransceiver(
+            user_0_addresses={0: 1000})
+        machine = virtual_machine(2, 2)
+        tempdir = tempfile.mkdtemp()
+        region_sizes = dict()
+
+        dsg_targets = DataSpecificationTargets(machine, tempdir)
+
+        with dsg_targets.create_data_spec(1, 1, 0) as spec_writer:
+            spec = DataSpecificationGenerator(spec_writer)
+            spec.reference_memory_region(0, 1)
+            spec.end_specification()
+            region_sizes[1, 1, 0] = (
+                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+
+        with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
+            spec = DataSpecificationGenerator(spec_writer)
+            spec.reserve_memory_region(0, 12, reference=1)
+            spec.switch_write_focus(0)
+            spec.write_value(0)
+            spec.end_specification()
+            region_sizes[0, 0, 0] = (
+                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+
+        targets = ExecutableTargets()
+        targets.add_processor(
+            "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
+        targets.add_processor(
+            "text.aplx", 1, 1, 0, ExecutableType.USES_SIMULATION_INTERFACE)
+
+        # ValueError because the reference is on a different chip
+        with self.assertRaises(ValueError):
+            executor.execute_application_data_specs(
+                transceiver, machine, 30, dsg_targets, False, targets,
+                report_folder=tempdir, region_sizes=region_sizes)
+
 
 if __name__ == "__main__":
     unittest.main()
