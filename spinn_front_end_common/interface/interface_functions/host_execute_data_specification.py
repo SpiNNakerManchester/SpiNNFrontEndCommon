@@ -19,7 +19,7 @@ import numpy
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
-from data_specification import DataSpecificationExecutor
+from data_specification import DataSpecificationExecutor, MemoryRegionReal
 from data_specification.constants import (
     MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
 from data_specification.exceptions import DataSpecificationException
@@ -75,7 +75,7 @@ def filter_out_app_executables(dsg_targets, executable_targets):
 
 
 #: A named tuple for a region that can be referenced
-__RegionToRef = namedtuple(
+_RegionToRef = namedtuple(
     "__RegionToUse", ["x", "y", "p", "region", "pointer"])
 
 
@@ -157,14 +157,14 @@ class _ExecutionContext(object):
         # We don't have to write this bit now; we can still to the rest
         if write_header_now:
             # NB: DSE meta-block is always small (i.e., one SDP write)
-            to_write = numpy.concatenate((header, pointer_table)).tostring()
+            to_write = numpy.concatenate((header, pointer_table)).tobytes()
             self.__txrx.write_memory(x, y, base_address, to_write)
 
         # Write each region
         bytes_written = APP_PTR_TABLE_BYTE_SIZE
         for region_id in _MEM_REGIONS:
             region = executor.get_region(region_id)
-            if region is None:
+            if not isinstance(region, MemoryRegionReal):
                 continue
             max_pointer = region.max_write_pointer
             if region.unfilled or max_pointer == 0:
@@ -191,16 +191,15 @@ class _ExecutionContext(object):
                     ref, core_to_fill.x, core_to_fill.y, core_to_fill.p,
                     ref_region)
             to_write = numpy.concatenate(
-                (core_to_fill.header, pointer_table)).tostring()
+                (core_to_fill.header, pointer_table)).tobytes()
             self.__txrx.write_memory(core_to_fill.x, core_to_fill.y,
                                      core_to_fill.base_address, to_write)
 
     def __handle_new_references(self, x, y, p, executor, pointer_table):
         """ Get references that can be used later
         """
-        regions = executor.mem_regions
         for ref_region in executor.referenceable_regions:
-            ref = regions[ref_region].reference
+            ref = executor.get_region(ref_region).reference
             if ref in self.__references_to_use:
                 ref_to_use = self.__references_to_use[ref]
                 raise ValueError(
@@ -208,25 +207,24 @@ class _ExecutionContext(object):
                     " {}, {}, {}, {}".format(
                         ref, ref_to_use, x, y, p, ref_region))
             ptr = pointer_table[ref_region]
-            self.__references_to_use[ref] = __RegionToRef(
+            self.__references_to_use[ref] = _RegionToRef(
                 x, y, p, ref_region, ptr)
 
     def __handle_references_to_fill(
             self, x, y, p, executor, pointer_table, header, base_address):
         # Resolve any references now
-        regions = executor.mem_regions
         coreToFill = _CoreToFill(x, y, p, header, pointer_table, base_address)
         for ref_region in executor.references_to_fill:
-            ref = regions[ref_region].ref
+            ref = executor.get_region(ref_region).ref
             # If already been created, use directly
             if ref in self.__references_to_use:
                 pointer_table[ref_region] = self.__get_reference(
                     ref, x, y, p, ref_region)
             else:
-                coreToFill.regions.append(ref_region, ref)
+                coreToFill.regions.append((ref_region, ref))
         if coreToFill.regions:
             self.__references_to_fill.append(coreToFill)
-        return bool(coreToFill.regions)
+        return not bool(coreToFill.regions)
 
     def __get_reference(self, ref, x, y, p, ref_region):
         ref_to_use = self.__references_to_use[ref]
