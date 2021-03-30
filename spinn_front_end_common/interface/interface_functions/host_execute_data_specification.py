@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import OrderedDict, defaultdict, namedtuple
+from collections import OrderedDict, namedtuple
 import logging
 import numpy
 from spinn_utilities.progress_bar import ProgressBar
@@ -78,10 +78,20 @@ def filter_out_app_executables(dsg_targets, executable_targets):
 __RegionToRef = namedtuple(
     "__RegionToUse", ["x", "y", "p", "region", "pointer"])
 
-#: A named tuple for a reference to a region yet to be filled
-__RegionToFill = namedtuple(
-    "__RegionToFill", ["x", "y", "p", "region", "header", "pointer_table",
-                       "base_address"])
+
+#: A class for regions to be filled in
+class _CoreToFill(object):
+    __slots__ = [
+        "x", "y", "p", "header", "pointer_table", "base_address", "regions"]
+
+    def __init__(self, x, y, p, header, pointer_table, base_address):
+        self.x = x
+        self.y = y
+        self.p = p
+        self.header = header
+        self.pointer_table = pointer_table
+        self.base_address = base_address
+        self.regions = []
 
 
 class _ExecutionContext(object):
@@ -92,7 +102,7 @@ class _ExecutionContext(object):
     def __init__(self, txrx, machine):
         self.__txrx = txrx
         self.__machine = machine
-        self.__references_to_fill = defaultdict(list)
+        self.__references_to_fill = list()
         self.__references_to_use = dict()
 
     def __enter__(self):
@@ -170,19 +180,20 @@ class _ExecutionContext(object):
         return DataWritten(base_address, size_allocated, bytes_written)
 
     def close(self):
-        for ref, refs_to_fill in self.__references_to_fill.items():
-            if ref not in self.__references_to_use:
-                raise ValueError("Reference {} requested from {} but not found"
-                                 .format(ref, refs_to_fill))
-            for ref_to_fill in refs_to_fill:
-                pointer_table = ref_to_fill.pointer_table
-                pointer_table[ref_to_fill] = self.__get_reference(
-                    ref, ref_to_fill.x, ref_to_fill.y, ref_to_fill.p,
-                    ref_to_fill.region)
-                to_write = numpy.concatenate(
-                    (ref_to_fill.header, pointer_table)).tostring()
-                self.__txrx.write_memory(ref_to_fill.x, ref_to_fill.y,
-                                         ref_to_fill.base_address, to_write)
+        for core_to_fill in self.__references_to_fill:
+            pointer_table = core_to_fill.pointer_table
+            for ref_region, ref in core_to_fill.regions:
+                if ref not in self.__references_to_use:
+                    raise ValueError(
+                        "Reference {} requested from {} but not found"
+                        .format(ref, core_to_fill))
+                pointer_table[ref_region] = self.__get_reference(
+                    ref, core_to_fill.x, core_to_fill.y, core_to_fill.p,
+                    ref_region)
+            to_write = numpy.concatenate(
+                (core_to_fill.header, pointer_table)).tostring()
+            self.__txrx.write_memory(core_to_fill.x, core_to_fill.y,
+                                     core_to_fill.base_address, to_write)
 
     def __handle_new_references(self, x, y, p, executor, pointer_table):
         """ Get references that can be used later
@@ -203,8 +214,8 @@ class _ExecutionContext(object):
     def __handle_references_to_fill(
             self, x, y, p, executor, pointer_table, header, base_address):
         # Resolve any references now
-        write_header = True
         regions = executor.mem_regions
+        coreToFill = _CoreToFill(x, y, p, header, pointer_table, base_address)
         for ref_region in executor.references_to_fill:
             ref = regions[ref_region].ref
             # If already been created, use directly
@@ -212,10 +223,10 @@ class _ExecutionContext(object):
                 pointer_table[ref_region] = self.__get_reference(
                     ref, x, y, p, ref_region)
             else:
-                write_header = False
-                self.__references_to_fill[ref].append(__RegionToFill(
-                    x, y, p, ref_region, header, pointer_table, base_address))
-        return write_header
+                coreToFill.regions.append(ref_region, ref)
+        if coreToFill.regions:
+            self.__references_to_fill.append(coreToFill)
+        return bool(coreToFill.regions)
 
     def __get_reference(self, ref, x, y, p, ref_region):
         ref_to_use = self.__references_to_use[ref]
