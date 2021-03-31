@@ -63,7 +63,7 @@ class SQLiteDB(AbstractContextManager):
 
     def __init__(self, database_file=None, *, read_only=False, ddl_file=None,
                  row_factory=sqlite3.Row, text_factory=memoryview,
-                 case_insensitive_like=True):
+                 case_insensitive_like=True, detect_types=0):
         """
         :param str database_file:
             The name of a file that contains (or will contain) an SQLite
@@ -93,18 +93,24 @@ class SQLiteDB(AbstractContextManager):
         :param bool case_insensitive_like:
             Whether we want the ``LIKE`` matching operator to be case-sensitive
             or case-insensitive (default).
+        :param int detect_types: allows turning on of type detection
+
         """
         if database_file is None:
-            self.__db = sqlite3.connect(":memory:")  # Magic name!
+            self.__db = sqlite3.connect(
+                ":memory:",  # Magic name!
+                detect_types=detect_types)
             # in-memory DB is never read-only
         elif read_only:
             if not os.path.exists(database_file):
                 raise FileNotFoundError(f"no such DB: {database_file}")
             db_uri = pathlib.Path(os.path.abspath(database_file)).as_uri()
             # https://stackoverflow.com/a/21794758/301832
-            self.__db = sqlite3.connect(f"{db_uri}?mode=ro", uri=True)
+            self.__db = sqlite3.connect(
+                f"{db_uri}?mode=ro", detect_types=detect_types, uri=True)
         else:
-            self.__db = sqlite3.connect(database_file)
+            self.__db = sqlite3.connect(
+                database_file, detect_types=detect_types)
 
         if row_factory:
             self.__db.row_factory = row_factory
