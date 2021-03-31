@@ -24,7 +24,7 @@ class DatabaseReader(SQLiteDB):
         """
         :param str database_path: The path to the database
         """
-        super().__init__(database_path, read_only=True)
+        super().__init__(database_path, read_only=True, text_factory=str)
 
     def __exec_one(self, query, *args):
         with self.transaction() as cur:
