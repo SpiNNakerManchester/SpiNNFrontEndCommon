@@ -311,7 +311,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             ~pacman.model.graphs.application.ApplicationVertex or None
         """
         super().__init__(
-            label="SYSTEM:PacketGatherer({},{})".format(x, y),
+            label=f"SYSTEM:PacketGatherer({x},{y})",
             constraints=constraints, app_vertex=app_vertex)
 
         # data holders for the output, and sequence numbers
@@ -506,7 +506,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._run += 1
         prov_items = list()
         significant_losses = defaultdict(list)
-        top_level_name = "Provenance_for_{}".format(self._label)
+        top_level_name = f"Provenance_for_{self._label}"
         for (placement, memory_address, length_in_bytes) in \
                 self._provenance_data_items.keys():
 
@@ -515,12 +515,11 @@ class DataSpeedUpPacketGatherMachineVertex(
             for time_taken, lost_seq_nums in self._provenance_data_items[
                     placement, memory_address, length_in_bytes]:
                 # handle time
-                chip_name = "chip{}:{}".format(placement.x, placement.y)
+                chip_name = f"chip{placement.x}:{placement.y}"
                 last_name = "Memory_address:{}:Length_in_bytes:{}"\
                     .format(memory_address, length_in_bytes)
                 if times_extracted_the_same_thing == 0:
-                    iteration_name = "run{}".format(
-                        self._run)
+                    iteration_name = f"run{self._run}"
                 else:
                     iteration_name = "run{}iteration{}".format(
                         self._run, times_extracted_the_same_thing)
@@ -536,8 +535,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     if n_lost_seq_nums:
                         prov_items.append(ProvenanceDataItem(
                             [top_level_name, "lost_seq_nums", chip_name,
-                             last_name, iteration_name,
-                             "iteration_{}".format(i)],
+                             last_name, iteration_name, f"iteration_{i}"],
                             n_lost_seq_nums, report=(
                                 n_lost_seq_nums > _MINOR_LOSS_THRESHOLD),
                             message=_MINOR_LOSS_MESSAGE.format(

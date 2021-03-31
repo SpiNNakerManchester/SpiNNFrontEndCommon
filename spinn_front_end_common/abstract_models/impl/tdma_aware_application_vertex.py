@@ -34,9 +34,6 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
     _TDMA_N_ELEMENTS = 3
 
     _TDMA_MISSED_SLOTS_NAME = "Number_of_times_the_tdma_fell_behind"
-    _TDMA_MISSED_SLOTS_MESSAGE = (
-        "The TDMA fell behind by {} times on core {}, {}, {}. "
-        "try increasing the time_between_cores in the corresponding .cfg")
 
     def __init__(self, label, constraints, max_atoms_per_core, splitter=None):
         """
@@ -153,5 +150,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         return ProvenanceDataItem(
             names + [self._TDMA_MISSED_SLOTS_NAME], tdma_slots_missed,
             report=(tdma_slots_missed > 0),
-            message=self._TDMA_MISSED_SLOTS_MESSAGE.format(
-                tdma_slots_missed, x, y, p))
+            message=(
+                f"The TDMA fell behind by {tdma_slots_missed} times on "
+                f"core {x}, {y}, {p}. Try increasing the time_between_cores "
+                "in the corresponding .cfg"))

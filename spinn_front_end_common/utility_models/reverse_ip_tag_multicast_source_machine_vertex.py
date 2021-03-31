@@ -840,35 +840,31 @@ class ReverseIPTagMulticastSourceMachineVertex(
             names + ["received_sdp_packets"], n_rcv,
             report=(n_rcv == 0 and self._send_buffer_times is None),
             message=(
-                "No SDP packets were received by {}. If you expected "
-                "packets to be injected, this could indicate an error".format(
-                    label)))
+                f"No SDP packets were received by {label}. If you expected "
+                "packets to be injected, this could indicate an error"))
         yield ProvenanceDataItem(
             names + ["send_multicast_packets"], n_snt,
             report=(n_snt == 0),
             message=(
-                "No multicast packets were sent by {}. If you expected "
-                "packets to be sent this could indicate an error".format(
-                    label)))
+                f"No multicast packets were sent by {label}. If you expected "
+                "packets to be sent this could indicate an error"))
         yield ProvenanceDataItem(
             names + ["incorrect_keys"], bad_key,
             report=(bad_key > 0),
             message=(
-                "Keys were received by {} that did not match the key {} and "
-                "mask {}".format(
-                    label, self._virtual_key, self._mask)))
+                f"Keys were received by {label} that did not match the key "
+                f"{self._virtual_key} and mask {self._mask}"))
         yield ProvenanceDataItem(
             names + ["incorrect_packets"], bad_pkt,
             report=(bad_pkt > 0),
             message=(
-                "SDP Packets were received by {} that were not correct".format(
-                    label)))
+                f"SDP Packets were received by {label} that were not correct"))
         yield ProvenanceDataItem(
             names + ["late_packets"], late,
             report=(late > 0),
             message=(
-                "SDP Packets were received by {} that were too late to be "
-                "transmitted in the simulation".format(label)))
+                f"SDP Packets were received by {label} that were too late "
+                "to be transmitted in the simulation"))
 
     def __repr__(self):
         return self._label

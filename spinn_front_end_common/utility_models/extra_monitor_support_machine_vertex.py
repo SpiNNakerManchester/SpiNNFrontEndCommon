@@ -434,7 +434,7 @@ class ExtraMonitorSupportMachineVertex(
             _PROVENANCE_FORMAT.size)
         (n_sdp_packets, n_in_streams, n_out_streams) = \
             _PROVENANCE_FORMAT.unpack_from(data)
-        root_name = "monitor for {},{}".format(placement.x, placement.y)
+        root_name = f"monitor for {placement.x},{placement.y}"
         return [
             ProvenanceDataItem(
                 [root_name, "Number_of_Relevant_SDP_Messages"], n_sdp_packets),

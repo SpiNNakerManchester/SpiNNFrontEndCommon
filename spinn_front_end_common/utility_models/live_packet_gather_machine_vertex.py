@@ -111,21 +111,20 @@ class LivePacketGatherMachineVertex(
             names + ["lost_packets_without_payload"], lost,
             report=(lost > 0),
             message=(
-                "The live packet gatherer has lost {} packets which have "
-                "payloads during its execution. Try increasing the machine "
-                "time step or increasing the time scale factor. If you are "
-                "running in real time, try reducing the number of vertices "
-                "which are feeding this live packet gatherer".format(lost)))
+                f"The live packet gatherer has lost {lost} packets which do "
+                "not have payloads during its execution. Try increasing the "
+                "machine time step or increasing the time scale factor. If "
+                "you are running in real time, try reducing the number of "
+                "vertices which are feeding this live packet gatherer"))
         yield ProvenanceDataItem(
             names + ["lost_packets_with_payload"], lost_payload,
             report=(lost_payload > 0),
             message=(
-                "The live packet gatherer has lost {} packets which do not "
-                "have payloads during its execution. Try increasing the "
-                "machine time step or increasing the time scale factor. If "
-                "you are running in real time, try reducing the number of "
-                "vertices which are feeding this live packet gatherer".format(
-                    lost_payload)))
+                f"The live packet gatherer has lost {lost_payload} packets "
+                "which have payloads during its execution. Try increasing "
+                "the machine time step or increasing the time scale factor. "
+                "If you are running in real time, try reducing the number of "
+                "vertices which are feeding this live packet gatherer"))
         yield ProvenanceDataItem(names + ["gathered_events"], events)
         yield ProvenanceDataItem(names + ["messages_sent_to_host"], messages)
 

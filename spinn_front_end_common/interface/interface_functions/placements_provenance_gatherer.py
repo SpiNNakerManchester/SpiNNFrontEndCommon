@@ -44,8 +44,8 @@ class PlacementsProvenanceGatherer(object):
 
         # retrieve provenance data from any cores that provide data
         for placement in progress.over(placements.placements):
-            self._add_placement_provenance(
-                placement, transceiver, prov_items, errors)
+            prov_items.extend(
+                self._add_placement_provenance(placement, transceiver, errors))
         if errors:
             logger.warning("Errors found during provenance gathering:")
             for error in errors:
@@ -54,20 +54,19 @@ class PlacementsProvenanceGatherer(object):
         return prov_items
 
     @staticmethod
-    def _add_placement_provenance(placement, txrx, prov_items, errors):
+    def _add_placement_provenance(placement, txrx, errors):
         """
         :param ~.Placement placement:
         :param ~.Transceiver txrx:
-        :param list(ProvenanceDataItem) prov_items:
         :param list(str) errors:
+        :rtype: ~collections.abc.Iterable(ProvenanceDataItem)
         """
         # retrieve provenance data from any cores that provide data
         if isinstance(
                 placement.vertex, AbstractProvidesProvenanceDataFromMachine):
             # get data
             try:
-                prov_items.extend(
-                    placement.vertex.get_provenance_data_from_machine(
-                        txrx, placement))
+                yield from placement.vertex.get_provenance_data_from_machine(
+                    txrx, placement)
             except Exception:  # pylint: disable=broad-except
                 errors.append(traceback.format_exc())

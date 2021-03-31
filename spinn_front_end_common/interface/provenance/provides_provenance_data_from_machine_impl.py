@@ -68,44 +68,6 @@ class ProvidesProvenanceDataFromMachineImpl(
     _TIMES_CALLBACK_QUEUE_OVERLOADED = \
         "Times_the_callback_queue_was_overloaded"
 
-    _TIMES_TRANSMISSION_SPIKES_OVERRAN_MESSAGE = (
-        "The transmission buffer for {} on {}, {}, {} was blocked "
-        "on {} occasions. This is often a sign that the system is "
-        "experiencing back pressure from the communication fabric. "
-        "Please either: "
-        "1. spread the load over more cores, "
-        "2. reduce your peak transmission load,"
-        "3. adjust your mapping algorithm.")
-
-    _TIMES_CALLBACK_QUEUE_OVERLOADED_MESSAGE = (
-        "The callback queue for {} on {}, {}, {} overloaded on {} "
-        "occasions. This is often a sign that the system is running "
-        "too quickly for the number of neurons per core.  Please "
-        "increase the machine time step or time_scale_factor or "
-        "decrease the number of neurons per core.")
-
-    _TIMES_DMA_QUEUE_OVERLOADED_MESSAGE = (
-        "The DMA queue for {} on {}, {}, {} overloaded on {} "
-        "occasions. This is often a sign that the system is running "
-        "too quickly for the number of neurons per core.  Please "
-        "increase the machine time step or time_scale_factor or "
-        "decrease the number of neurons per core.")
-
-    _TIMER_TICK_OVERRUN_MESSAGE = (
-        "A Timer tick callback was still executing when the next "
-        "timer tick callback was fired off for {} on {}, {}, {}, {} "
-        "times. This is a sign of the system being overloaded and "
-        "therefore the results are likely incorrect.  Please increase "
-        "the machine time step or time_scale_factor or decrease the "
-        "number of neurons per core")
-
-    _MAX_TIMER_TICK_OVERRUN_MESSAGE = (
-        "The timer for {} on {}, {}, {} fell behind by up to {} "
-        "ticks. This is a sign of the system being overloaded and "
-        "therefore the results are likely incorrect. Please increase "
-        "the machine time step or time_scale_factor or decrease the "
-        "number of neurons per core")
-
     @abstractproperty
     def _provenance_region_id(self):
         """ The index of the provenance region.
@@ -209,40 +171,66 @@ class ProvidesProvenanceDataFromMachineImpl(
         """
         :param iterable(int) provenance_data:
         :param ~pacman.model.placements.Placement placement:
-        :rtype: list(ProvenanceDataItem)
+        :rtype: ~collections.abc.Iterable(ProvenanceDataItem)
         """
         (tx_overflow, callback_overload, dma_overload, tic_overrun_count,
          tic_overrun_max) = provenance_data[:self.NUM_PROVENANCE_DATA_ENTRIES]
 
         # create provenance data items for returning
         label, x, y, p, names = self._get_placement_details(placement)
-        return [
-            ProvenanceDataItem(
-                names + [self._TIMES_TRANSMISSION_SPIKES_OVERRAN], tx_overflow,
-                report=(tx_overflow != 0),
-                message=self._TIMES_TRANSMISSION_SPIKES_OVERRAN_MESSAGE.format(
-                    label, x, y, p, tx_overflow)),
-            ProvenanceDataItem(
-                names + [self._TIMES_CALLBACK_QUEUE_OVERLOADED],
-                callback_overload,
-                report=(callback_overload != 0),
-                message=self._TIMES_CALLBACK_QUEUE_OVERLOADED_MESSAGE.format(
-                    label, x, y, p, callback_overload)),
-            ProvenanceDataItem(
-                names + [self._TIMES_DMA_QUEUE_OVERLOADED], dma_overload,
-                report=(dma_overload != 0),
-                message=self._TIMES_DMA_QUEUE_OVERLOADED_MESSAGE.format(
-                    label, x, y, p, dma_overload)),
-            ProvenanceDataItem(
-                names + [self._TIMER_TICK_OVERRUN], tic_overrun_count,
-                report=(tic_overrun_count != 0),
-                message=self._TIMER_TICK_OVERRUN_MESSAGE.format(
-                    label, x, y, p, tic_overrun_count)),
-            ProvenanceDataItem(
-                names + [self._MAX_TIMER_TICK_OVERRUN], tic_overrun_max,
-                report=(tic_overrun_max > 0),
-                message=self._MAX_TIMER_TICK_OVERRUN_MESSAGE.format(
-                    label, x, y, p, tic_overrun_max))]
+        yield ProvenanceDataItem(
+            names + [self._TIMES_TRANSMISSION_SPIKES_OVERRAN], tx_overflow,
+            report=(tx_overflow != 0),
+            message=(
+                f"The transmission buffer for {label} on {x}, {y}, {p} "
+                f"was blocked on {tx_overflow} occasions. "
+                "This is often a sign that the system is experiencing back "
+                "pressure from the communication fabric. Please either: "
+                "1. spread the load over more cores, "
+                "2. reduce your peak transmission load, or "
+                "3. adjust your mapping algorithm."))
+        yield ProvenanceDataItem(
+            names + [self._TIMES_CALLBACK_QUEUE_OVERLOADED],
+            callback_overload,
+            report=(callback_overload != 0),
+            message=(
+                f"The callback queue for {label} on {x}, {y}, {p} "
+                f"overloaded on {callback_overload} occasions. "
+                "This is often a sign that the system is running too quickly "
+                "for the number of neurons per core.  Please increase the "
+                "machine time step or time_scale_factor or decrease the "
+                "number of neurons per core."))
+        yield ProvenanceDataItem(
+            names + [self._TIMES_DMA_QUEUE_OVERLOADED], dma_overload,
+            report=(dma_overload != 0),
+            message=(
+                f"The DMA queue for {label} on {x}, {y}, {p} overloaded "
+                f"on {dma_overload} occasions. "
+                "This is often a sign that the system is running "
+                "too quickly for the number of neurons per core.  Please "
+                "increase the machine time step or time_scale_factor or "
+                "decrease the number of neurons per core."))
+        yield ProvenanceDataItem(
+            names + [self._TIMER_TICK_OVERRUN], tic_overrun_count,
+            report=(tic_overrun_count != 0),
+            message=(
+                "A Timer tick callback was still executing when the next "
+                f"timer tick callback was fired off for {label} (on "
+                f"{x}, {y}, {p}) {tic_overrun_count} times. "
+                "This is a sign of the system being overloaded and therefore "
+                "the results are likely incorrect.  Please increase the "
+                "machine time step or time_scale_factor or decrease the "
+                "number of neurons per core"))
+        yield ProvenanceDataItem(
+            names + [self._MAX_TIMER_TICK_OVERRUN], tic_overrun_max,
+            report=(tic_overrun_max > 0),
+            message=(
+                f"The timer for {label} on {x}, {y}, {p} fell behind by "
+                f"up to {tic_overrun_max} ticks. "
+                "This is a sign of the system being overloaded and "
+                "therefore the results are likely incorrect. Please increase "
+                "the machine time step or time_scale_factor or decrease the "
+                "number of neurons per core"))
 
     def _get_remaining_provenance_data_items(self, provenance_data):
         """
@@ -286,7 +274,8 @@ class ProvidesProvenanceDataFromMachineImpl(
         """
         provenance_data = self._read_provenance_data(
             transceiver, placement)
-        items = self._read_basic_provenance_items(provenance_data, placement)
+        items = list(
+            self._read_basic_provenance_items(provenance_data, placement))
         label, x, y, p, names = self._get_placement_details(placement)
         items.extend(self._get_extra_provenance_items(
             label, (x, y, p), names,
