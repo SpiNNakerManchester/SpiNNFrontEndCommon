@@ -17,20 +17,21 @@ import os
 import sqlite3
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 
 class ProvenanceReader(object):
     """
-    Provides a connection to an sqlite3 database and some provenance
-    convenience methods
+    Provides a connection to a database containing provenance for the current
+    run and some convenience methods for extracting provenance data from it.
 
     By default this will wrap around the database used to store the
     provenance of the last run. The path is not updated so this reader is
-    not effected by a reset or an end
+    not effected by a reset or an end.
 
     The assumption is that the database is in the current provenance format.
     This includes both that DDL statements used to create the database but
-    also the underlying database structure. Currently sqlite3
+    also the underlying database structure (currently sqlite3)
 
     .. warning::
         This class is only a wrapper around the database file so if the file
@@ -58,9 +59,9 @@ class ProvenanceReader(object):
         """
         Create a wrapper around the database.
 
-        The suggested way to call this is without the
+        The suggested way to call this is *without* the
         ``provenance_data_path`` parameter, allowing
-        :py:meth:`get_last_run_database_path` to find the correct path
+        :py:meth:`get_last_run_database_path` to find the correct path.
 
         :param provenance_data_path: Path to the provenance database to wrap
         :type provenance_data_path: None or str
@@ -73,6 +74,14 @@ class ProvenanceReader(object):
     def get_database_handle(self, read_only=True, use_sqlite_rows=False):
         """
         Gets a handle to the open database.
+
+        You *should* use this as a Python context handler. A typical usage
+        pattern is this::
+
+            with reader.get_database_handler() as db:
+                with db.transaction() as cursor:
+                    for row in cursor.execute(...):
+                        # process row
 
         .. note::
             This method is mainly provided as a support method for the later
@@ -90,19 +99,13 @@ class ProvenanceReader(object):
             If ``False`` the results of :py:meth:`run_query` will be
             :py:class:`tuple`\\ s.
         :return: an open sqlite3 connection
-        :rtype: ~sqlite3.Connection
+        :rtype: SQLiteDB
         """
         if not os.path.exists(self._provenance_data_path):
-            raise Exception("no such DB: " + self._provenance_data_path)
-        if read_only:
-            db_path = os.path.abspath(self._provenance_data_path)
-            db = sqlite3.connect("file:{}?mode=ro".format(db_path), uri=True)
-        else:
-            db = sqlite3.connect(self._provenance_data_path)
-        # Force case-insensitive matching of provenance names
-        db.execute("PRAGMA case_sensitive_like=OFF;")
-        if use_sqlite_rows:
-            db.row_factory = sqlite3.Row
+            raise Exception(f"no such DB: {self._provenance_data_path}")
+        db = SQLiteDB(self._provenance_data_path, read_only=read_only,
+                      row_factory=(sqlite3.Row if use_sqlite_rows else None),
+                      text_factory=None)
         return db
 
     def run_query(
@@ -112,7 +115,9 @@ class ProvenanceReader(object):
         and closes the connection
 
         The return type depends on the use_sqlite_rows param.
-        By default this method returns tuples
+        By default this method returns tuples (lookup by index) but the
+        advanced tuple type can be used instead, which supports lookup by name
+        used in the query (use ``AS name`` in the query to set).
 
         This method will not allow queries that change the database unless the
         read_only flag is set to False.
@@ -132,14 +137,15 @@ class ProvenanceReader(object):
             (one for each row in the database)
             where the number and type of the values corresponds to the where
             statement
-        :rtype: tuple or ~sqlite3.Row
+        :rtype: list(tuple or ~sqlite3.Row)
         """
         if not os.path.exists(self._provenance_data_path):
             raise Exception("no such DB: " + self._provenance_data_path)
+        results = []
         with self.get_database_handle(read_only, use_sqlite_rows) as db:
-            results = []
-            for row in db.execute(query, params):
-                results.append(row)
+            with db.transaction() as cur:
+                for row in cur.execute(query, params):
+                    results.append(row)
         return results
 
     def cores_with_late_spikes(self):
@@ -178,10 +184,9 @@ class ProvenanceReader(object):
             WHERE description LIKE ?
             ORDER BY description
             """
-        results = []
-        for row in self.run_query(query, [description_name]):
-            results.append("{}: {}".format(row[0], row[1]))
-        return "\n".join(results)
+        return "\n".join(
+            f"{row[0]}: {row[1]}"
+            for row in self.run_query(query, [description_name]))
 
     def get_run_times(self):
         """
@@ -203,10 +208,9 @@ class ProvenanceReader(object):
             GROUP BY description_name
             ORDER BY the_value
             """
-        results = []
-        for row in self.run_query(query):
-            results.append("{}: {} s".format(row[0].replace("_", " "), row[1]))
-        return "\n".join(results)
+        return "\n".join(
+            f"{row[0].replace('_', ' ')}: {row[1]} s"
+            for row in self.run_query(query))
 
     def get_run_time_of_BufferExtractor(self):
         """
@@ -233,16 +237,18 @@ class ProvenanceReader(object):
         :rtype: str
         """
         query = """
-            SELECT description_name AS description, sum(the_value) AS "value"
+            SELECT
+                description_name AS description,
+                sum(the_value) AS "value"
             FROM provenance_view
             WHERE x = ? and y = ?
             GROUP BY description
             ORDER BY description
             """
-        results = []
-        for row in self.run_query(query, [int(x), int(y)]):
-            results.append("{}: {}".format(row[0], row[1]))
-        return "\n".join(results)
+        return "\n".join(
+            f"{ row['description'] }: { row['value'] }"
+            for row in self.run_query(query, [int(x), int(y)],
+                                      use_sqlite_rows=True))
 
     @staticmethod
     def _demo():
@@ -251,6 +257,7 @@ class ProvenanceReader(object):
         # This uses the example file in the same directory as this script
         pr = ProvenanceReader(os.path.join(
             os.path.dirname(__file__), "provenance.sqlite3"))
+        print("DIRECT QUERY:")
         query = """
             SELECT x, y, the_value
             FROM provenance_view
@@ -259,8 +266,12 @@ class ProvenanceReader(object):
         results = pr.run_query(query)
         for row in results:
             print(row)
+        print("\nCORES WITH LATE SPIKES:")
         print(pr.cores_with_late_spikes())
+        print("\nRUN TIME OF BUFFER EXTRACTOR:")
         print(pr.get_run_time_of_BufferExtractor())
+        print("\nCHIP (0,0) PROVENANCE:")
+        print(pr.get_provenance_for_chip(0, 0))
 
 
 if __name__ == '__main__':
