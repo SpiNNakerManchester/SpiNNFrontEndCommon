@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "1!5.1.1"
-__version_month__ = "November"
-__version_year__ = "2019"
-__version_day__ = "15"
-__version_name__ = "Liveware Problem"
+__version__ = "1!6.0.0"
+__version_month__ = "April"
+__version_year__ = "2021"
+__version_day__ = "9"
+__version_name__ = "Now We Try It My Way"
