@@ -25,5 +25,6 @@ spinn_front_end_common/utilities/constants.py
 spinn_front_end_common/utilities/exceptions.py
 spinn_front_end_common/utilities/globals_variables.py
 spinn_front_end_common/utilities/helpful_functions.py
+spinn_front_end_common/utilities/sqlite_db.py
 spinn_front_end_common/utilities/system_control_logic.py
 spinn_front_end_common/utilities/report_functions/energy_report.py
