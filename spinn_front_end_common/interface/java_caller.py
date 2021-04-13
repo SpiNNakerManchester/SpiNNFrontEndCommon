@@ -44,8 +44,8 @@ class JavaCaller(object):
         "_report_folder",
         # The call to get java to work. Including the path if required.
         "_java_call",
-        # The local https://github.com/SpiNNakerManchester/JavaSpiNNaker
-        "_java_spinnaker_path",
+        # The location of the java jar file
+        "_jar_file",
         # the folder to write the any json files into
         "_json_folder",
         # The machine
@@ -67,7 +67,7 @@ class JavaCaller(object):
     ]
 
     def __init__(self, json_folder, java_call, java_spinnaker_path=None,
-                 java_properties=None):
+                 java_properties=None, java_jar_path=None):
         """ Creates a java caller and checks the user/config parameters.
 
         :param str json_folder: The location where the machine JSON is written.
@@ -98,24 +98,7 @@ class JavaCaller(object):
                 "Please set [Java] java_call to the absolute path "
                 "to start java. (in config file)".format(self._java_call))
 
-        if java_spinnaker_path is None:
-            interface = os.path.dirname(os.path.realpath(__file__))
-            spinn_front_end_common = os.path.dirname(interface)
-            github_checkout_dir = os.path.dirname(spinn_front_end_common)
-            parent = os.path.dirname(github_checkout_dir)
-            self._java_spinnaker_path = os.path.join(
-                parent, "JavaSpiNNaker")
-        else:
-            # As I don't know how to write pwd and /JavaSpiNNaker to one line
-            indirect_path = os.path.join(
-                java_spinnaker_path, "JavaSpiNNaker")
-            if os.path.isdir(indirect_path):
-                self._java_spinnaker_path = indirect_path
-            else:
-                self._java_spinnaker_path = java_spinnaker_path
-        if not os.path.isdir(self._java_spinnaker_path):
-            raise ConfigurationException(
-                "No Java code found at {}".format(self._java_spinnaker_path))
+        self._find_java_jar(java_spinnaker_path, java_jar_path)
 
         self._machine = None
         self._machine_json_path = None
@@ -132,6 +115,48 @@ class JavaCaller(object):
                     raise ConfigurationException(
                         "Java Properties must start with -D found at {}".
                         format(_property))
+
+    def _find_java_jar(self, java_spinnaker_path, java_jar_path):
+        if java_spinnaker_path is None:
+            interface = os.path.dirname(os.path.realpath(__file__))
+            spinn_front_end_common = os.path.dirname(interface)
+            github_checkout_dir = os.path.dirname(spinn_front_end_common)
+            parent = os.path.dirname(github_checkout_dir)
+            java_spinnaker_path = os.path.join(parent, "JavaSpiNNaker")
+        else:
+            # As I don't know how to write pwd and /JavaSpiNNaker to one line
+            indirect_path = os.path.join(
+                java_spinnaker_path, "JavaSpiNNaker")
+            if os.path.isdir(indirect_path):
+                java_spinnaker_path = indirect_path
+            else:
+                java_spinnaker_path = java_spinnaker_path
+        auto_jar_file = os.path.join(
+            java_spinnaker_path, "SpiNNaker-front-end",
+            "target", "spinnaker-exe.jar")
+        if os.path.exists(auto_jar_file):
+            if (java_jar_path is None) or (java_jar_path == auto_jar_file):
+                self._jar_file = auto_jar_file
+            else:
+                raise ConfigurationException(
+                    f"Found a jar file at {auto_jar_file} "
+                    f"while java_jar_path as set. "
+                    f"Please delete on of the two.")
+        else:
+            if (java_jar_path is None):
+                if not os.path.isdir(java_spinnaker_path):
+                    raise ConfigurationException(
+                        f"No Java code found at {java_spinnaker_path} "
+                        f"Nor is java_jar_path set.")
+                else:
+                    raise ConfigurationException(
+                        f"No jar file at {auto_jar_file} "
+                        f"Nor is java_jar_path set.")
+            elif os.path.exists(java_jar_path):
+                self._jar_file = auto_jar_file
+            else:
+                raise ConfigurationException(
+                    f"No file found at java_jar_path: {java_jar_path}")
 
     def set_machine(self, machine):
         """ Passes the machine in leaving this class to decide pass it to Java.
@@ -339,19 +364,6 @@ class JavaCaller(object):
             json.dump(json_obj, f)
 
         return path
-
-    @property
-    def _jar_file(self):
-        """ The fully qualified name of the JavaSpiNNaker executable JAR.
-
-        :rtype: str
-        """
-        f = os.path.join(
-            self._java_spinnaker_path, "SpiNNaker-front-end",
-            "target", "spinnaker-exe.jar")
-        if not os.path.exists(f):
-            logger.warning("no Java build in file {}; failure expected", f)
-        return f
 
     def _run_java(self, *args):
         """ Does the actual running of JavaSpiNNaker. Arguments are those that
