@@ -45,16 +45,16 @@ class TestJavaCaller(unittest.TestCase):
 
     def test_creation_different(self):
         with self.assertRaises(ConfigurationException):
-           JavaCaller(
+            JavaCaller(
                 "somepath", "java", java_spinnaker_path=self.mock,
                 java_jar_path=self.mock_jar)
 
     def test_creation_wrong_java_spinnaker_path(self):
-       with self.assertRaises(ConfigurationException):
-           JavaCaller(
+        with self.assertRaises(ConfigurationException):
+            JavaCaller(
                 "somepath", "java", java_spinnaker_path=self.interface)
 
     def test_creation_bad_java_spinnaker_path(self):
         with self.assertRaises(ConfigurationException):
-           JavaCaller(
+            JavaCaller(
                 "somepath", "java", java_spinnaker_path=self.mock_jar)
