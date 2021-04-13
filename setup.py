@@ -50,7 +50,7 @@ setup(
     description="Common SpiNNaker Front end functions",
     url="https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production/Stable",
 
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
