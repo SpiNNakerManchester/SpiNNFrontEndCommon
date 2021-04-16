@@ -1720,11 +1720,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     java_call = self._config.get("Java", "java_call")
                     java_spinnaker_path = self._config.get_str(
                         "Java", "java_spinnaker_path")
+                    java_jar_path = self._config.get_str(
+                        "Java", "java_jar_path")
                     java_properties = self._config.get_str(
                         "Java", "java_properties")
                     self._java_caller = JavaCaller(
                         self._json_folder, java_call, java_spinnaker_path,
-                        java_properties)
+                        java_properties, java_jar_path)
             inputs["JavaCaller"] = self._java_caller
 
             # add the sdram allocator to ensure the sdram is allocated before
