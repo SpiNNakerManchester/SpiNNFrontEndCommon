@@ -82,8 +82,8 @@
         <span class="s2">&quot;_report_folder&quot;</span><span class="p">,</span>
         <span class="c1"># The call to get java to work. Including the path if required.</span>
         <span class="s2">&quot;_java_call&quot;</span><span class="p">,</span>
-        <span class="c1"># The local https://github.com/SpiNNakerManchester/JavaSpiNNaker</span>
-        <span class="s2">&quot;_java_spinnaker_path&quot;</span><span class="p">,</span>
+        <span class="c1"># The location of the java jar file</span>
+        <span class="s2">&quot;_jar_file&quot;</span><span class="p">,</span>
         <span class="c1"># the folder to write the any json files into</span>
         <span class="s2">&quot;_json_folder&quot;</span><span class="p">,</span>
         <span class="c1"># The machine</span>
@@ -105,7 +105,7 @@
     <span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_folder</span><span class="p">,</span> <span class="n">java_call</span><span class="p">,</span> <span class="n">java_spinnaker_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">java_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                 <span class="n">java_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">java_jar_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Creates a java caller and checks the user/config parameters.</span>
 
 <span class="sd">        :param str json_folder: The location where the machine JSON is written.</span>
@@ -136,24 +136,7 @@
                 <span class="s2">&quot;Please set [Java] java_call to the absolute path &quot;</span>
                 <span class="s2">&quot;to start java. (in config file)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_java_call</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="n">java_spinnaker_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">interface</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
-            <span class="n">spinn_front_end_common</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
-            <span class="n">github_checkout_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">spinn_front_end_common</span><span class="p">)</span>
-            <span class="n">parent</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">github_checkout_dir</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_java_spinnaker_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="n">parent</span><span class="p">,</span> <span class="s2">&quot;JavaSpiNNaker&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># As I don&#39;t know how to write pwd and /JavaSpiNNaker to one line</span>
-            <span class="n">indirect_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="n">java_spinnaker_path</span><span class="p">,</span> <span class="s2">&quot;JavaSpiNNaker&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">indirect_path</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_java_spinnaker_path</span> <span class="o">=</span> <span class="n">indirect_path</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_java_spinnaker_path</span> <span class="o">=</span> <span class="n">java_spinnaker_path</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_java_spinnaker_path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                <span class="s2">&quot;No Java code found at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_java_spinnaker_path</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_find_java_jar</span><span class="p">(</span><span class="n">java_spinnaker_path</span><span class="p">,</span> <span class="n">java_jar_path</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json_path</span> <span class="o">=</span> <span class="kc">None</span>
@@ -170,6 +153,48 @@
                     <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                         <span class="s2">&quot;Java Properties must start with -D found at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span>
                         <span class="nb">format</span><span class="p">(</span><span class="n">_property</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_find_java_jar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">java_spinnaker_path</span><span class="p">,</span> <span class="n">java_jar_path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">java_spinnaker_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">interface</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+            <span class="n">spinn_front_end_common</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+            <span class="n">github_checkout_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">spinn_front_end_common</span><span class="p">)</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">github_checkout_dir</span><span class="p">)</span>
+            <span class="n">java_spinnaker_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="s2">&quot;JavaSpiNNaker&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># As I don&#39;t know how to write pwd and /JavaSpiNNaker to one line</span>
+            <span class="n">indirect_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">java_spinnaker_path</span><span class="p">,</span> <span class="s2">&quot;JavaSpiNNaker&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">indirect_path</span><span class="p">):</span>
+                <span class="n">java_spinnaker_path</span> <span class="o">=</span> <span class="n">indirect_path</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">java_spinnaker_path</span> <span class="o">=</span> <span class="n">java_spinnaker_path</span>
+        <span class="n">auto_jar_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">java_spinnaker_path</span><span class="p">,</span> <span class="s2">&quot;SpiNNaker-front-end&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="s2">&quot;spinnaker-exe.jar&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">auto_jar_file</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">java_jar_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">java_jar_path</span> <span class="o">==</span> <span class="n">auto_jar_file</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_jar_file</span> <span class="o">=</span> <span class="n">auto_jar_file</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Found a jar file at </span><span class="si">{</span><span class="n">auto_jar_file</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;while java_jar_path as set. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Please delete on of the two.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">java_jar_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">java_spinnaker_path</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;No Java code found at </span><span class="si">{</span><span class="n">java_spinnaker_path</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;Nor is java_jar_path set.&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;No jar file at </span><span class="si">{</span><span class="n">auto_jar_file</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;Nor is java_jar_path set.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">java_jar_path</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_jar_file</span> <span class="o">=</span> <span class="n">auto_jar_file</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;No file found at java_jar_path: </span><span class="si">{</span><span class="n">java_jar_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="JavaCaller.set_machine"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.set_machine">[docs]</a>    <span class="k">def</span> <span class="nf">set_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Passes the machine in leaving this class to decide pass it to Java.</span>
@@ -377,19 +402,6 @@
             <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">json_obj</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">path</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_jar_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The fully qualified name of the JavaSpiNNaker executable JAR.</span>
-
-<span class="sd">        :rtype: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_java_spinnaker_path</span><span class="p">,</span> <span class="s2">&quot;SpiNNaker-front-end&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="s2">&quot;spinnaker-exe.jar&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;no Java build in file </span><span class="si">{}</span><span class="s2">; failure expected&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">f</span>
 
     <span class="k">def</span> <span class="nf">_run_java</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Does the actual running of JavaSpiNNaker. Arguments are those that</span>

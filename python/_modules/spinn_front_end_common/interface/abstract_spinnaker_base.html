@@ -1758,11 +1758,13 @@
                     <span class="n">java_call</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Java&quot;</span><span class="p">,</span> <span class="s2">&quot;java_call&quot;</span><span class="p">)</span>
                     <span class="n">java_spinnaker_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_str</span><span class="p">(</span>
                         <span class="s2">&quot;Java&quot;</span><span class="p">,</span> <span class="s2">&quot;java_spinnaker_path&quot;</span><span class="p">)</span>
+                    <span class="n">java_jar_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_str</span><span class="p">(</span>
+                        <span class="s2">&quot;Java&quot;</span><span class="p">,</span> <span class="s2">&quot;java_jar_path&quot;</span><span class="p">)</span>
                     <span class="n">java_properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_str</span><span class="p">(</span>
                         <span class="s2">&quot;Java&quot;</span><span class="p">,</span> <span class="s2">&quot;java_properties&quot;</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="o">=</span> <span class="n">JavaCaller</span><span class="p">(</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">,</span> <span class="n">java_call</span><span class="p">,</span> <span class="n">java_spinnaker_path</span><span class="p">,</span>
-                        <span class="n">java_properties</span><span class="p">)</span>
+                        <span class="n">java_properties</span><span class="p">,</span> <span class="n">java_jar_path</span><span class="p">)</span>
             <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;JavaCaller&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span>
 
             <span class="c1"># add the sdram allocator to ensure the sdram is allocated before</span>
