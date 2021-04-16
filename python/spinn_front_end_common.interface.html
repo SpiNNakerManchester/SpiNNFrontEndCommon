@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>spinn_front_end_common.interface package &#8212; SpiNNFrontEndCommon  documentation</title>
+    <title>spinn_front_end_common.interface package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="spinn_front_end_common.common_model_binaries.html" title="spinn_front_end_common.common_model_binaries package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" accesskey="U">spinn_front_end_common package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface package</a></li> 
@@ -107,9 +107,9 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>configfile</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – What the configuration file is called</p></li>
-<li><p><strong>executable_finder</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.executable_finder.ExecutableFinder" title="(in SpiNNUtils)"><em>ExecutableFinder</em></a>) – How to find APLX files to deploy to SpiNNaker</p></li>
+<li><p><strong>executable_finder</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.executable_finder.ExecutableFinder" title="(in SpiNNUtils v6.0)"><em>ExecutableFinder</em></a>) – How to find APLX files to deploy to SpiNNaker</p></li>
 <li><p><strong>graph_label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – A label for the overall application graph</p></li>
-<li><p><strong>database_socket_addresses</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils)"><em>SocketAddress</em></a><em>) or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – How to talk to notification databases</p></li>
+<li><p><strong>database_socket_addresses</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils v6.0)"><em>SocketAddress</em></a><em>) or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – How to talk to notification databases</p></li>
 <li><p><strong>extra_algorithm_xml_paths</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em>) – Where to load definitions of extra algorithms from</p></li>
 <li><p><strong>n_chips_required</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Overrides the number of chips to allocate from spalloc</p></li>
 <li><p><strong>n_boards_required</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Overrides the number of boards to allocate from spalloc</p></li>
@@ -209,7 +209,7 @@
 <dd><p>Add the address of a socket used in the run notification protocol.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>socket_address</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils)"><em>SocketAddress</em></a>) – The address of the database socket</p>
+<dd class="field-odd"><p><strong>socket_address</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils v6.0)"><em>SocketAddress</em></a>) – The address of the database socket</p>
 </dd>
 </dl>
 </dd></dl>
@@ -309,7 +309,7 @@
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">fixed_routes</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.fixed_routes" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.FixedRouteEntry" title="(in SpiNNMachine)">FixedRouteEntry</a>)</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.FixedRouteEntry" title="(in SpiNNMachine v6.0)">FixedRouteEntry</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -385,7 +385,7 @@ not found.</p>
 <dd><p>The python machine description object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine)">Machine</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)">Machine</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -582,7 +582,7 @@ tags off the machine at stop</p></li>
 <dd><p>How to talk to the machine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan)">Transceiver</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)">Transceiver</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -850,7 +850,7 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 <dd><p>Passes the machine in leaving this class to decide pass it to Java.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine)"><em>Machine</em></a>) – A machine Object</p>
+<dd class="field-odd"><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – A machine Object</p>
 </dd>
 </dl>
 </dd></dl>
@@ -873,7 +873,7 @@ database.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN)"><em>Placements</em></a>) – The Placements Object</p></li>
-<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan)"><em>Transceiver</em></a>) – The Transceiver</p></li>
+<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – The Transceiver</p></li>
 </ul>
 </dd>
 </dl>
@@ -1008,15 +1008,15 @@ write.</p>
         <li class="right" >
           <a href="spinn_front_end_common.common_model_binaries.html" title="spinn_front_end_common.common_model_binaries package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" >spinn_front_end_common package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2014-2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
+        &#169; Copyright 2014-2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
   </body>
 </html>
