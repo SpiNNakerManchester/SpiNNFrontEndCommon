@@ -1857,41 +1857,6 @@ board-locn-to-timeout-key map</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.interface.interface_functions.TDMAAgendaBuilder">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></code><code class="sig-name descname"><span class="pre">TDMAAgendaBuilder</span></code><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/tdma_agenda_builder.html#TDMAAgendaBuilder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.TDMAAgendaBuilder" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Algorithm that builds an agenda for transmissions. It uses a TDMA        (time-division multiple access) system and graph colouring to deduce        the agenda set up. Ensures parallel transmissions so that the        destination should never be overloaded.</p>
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.interface_functions.TDMAAgendaBuilder.__call__">
-<code class="sig-name descname"><span class="pre">__call__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_cpu_cycles_per_receive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_cpu_demands_in_cpu_cycles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_packets_per_time_window</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_time_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_scale_factor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safety_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/tdma_agenda_builder.html#TDMAAgendaBuilder.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.TDMAAgendaBuilder.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – the graph for which we are planning an agenda</p></li>
-<li><p><strong>number_of_cpu_cycles_per_receive</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – how long the packet reception callback takes in CPU cycles</p></li>
-<li><p><strong>other_cpu_demands_in_cpu_cycles</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – extra costs (e.g. timer tick callback etc.)</p></li>
-<li><p><strong>n_packets_per_time_window</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – how many packets are to be sent per time window</p></li>
-<li><p><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the timer tick in microseconds</p></li>
-<li><p><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the multiplicative factor on the machine time step.</p></li>
-<li><p><strong>safety_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – the end user safety factor</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the agenda for each vertex on its time window and its offset
-between spike transmissions</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)">MachineVertex</a>,<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>))</p>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> – If colouring fails</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt id="spinn_front_end_common.interface.interface_functions.TagsLoader">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></code><code class="sig-name descname"><span class="pre">TagsLoader</span></code><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/tags_loader.html#TagsLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.TagsLoader" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
