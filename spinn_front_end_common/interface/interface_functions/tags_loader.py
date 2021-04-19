@@ -24,17 +24,13 @@ class TagsLoader(object):
     __slots__ = []
 
     def __call__(
-            self, transceiver, tags=None, iptags=None, reverse_iptags=None):
+            self, transceiver, tags):
         """
         :param ~spinnman.transceiver.Transceiver transceiver:
             the transceiver object
         :param ~pacman.model.tags.Tags tags:
             the tags object which contains IP and reverse IP tags;
             could be ``None`` if these are being given in separate lists
-        :param list(~spinn_machine.tags.IPTag) iptags:
-            a list of IP tags, given when tags is ``None``
-        :param list(~spinn_machine.tags.ReverseIPTag) reverse_iptags:
-            a list of reverse IP tags when tags is ``None``
         """
         # clear all the tags from the Ethernet connection, as nothing should
         # be allowed to use it (no two apps should use the same Ethernet
@@ -44,9 +40,8 @@ class TagsLoader(object):
             transceiver.clear_ip_tag(tag_id)
 
         # Use tags object to supply tag info if it is supplied
-        if tags is not None:
-            iptags = list(tags.ip_tags)
-            reverse_iptags = list(tags.reverse_ip_tags)
+        iptags = list(tags.ip_tags)
+        reverse_iptags = list(tags.reverse_ip_tags)
 
         # Load the IP tags and the Reverse IP tags
         progress = ProgressBar(
