@@ -50,7 +50,7 @@ from pacman.model.graphs.machine import MachineGraph, MachineVertex
 from pacman.model.resources import (
     PreAllocatedResourceContainer, ConstantSDRAM)
 from pacman import __version__ as pacman_version
-from pacman.utilities.config_holder import (
+from pacman.config_holder import (
     get_config_bool, get_config_int, get_config_str, get_config_str_list,
     set_config)
 from spinn_front_end_common.abstract_models import (

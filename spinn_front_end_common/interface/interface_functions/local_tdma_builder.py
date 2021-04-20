@@ -16,7 +16,7 @@
 import logging
 import math
 from spinn_utilities.log import FormatAdapter
-from pacman.utilities.config_holder import get_config_float, get_config_int
+from pacman.config_holder import get_config_float, get_config_int
 from spinn_front_end_common.abstract_models.impl.\
     tdma_aware_application_vertex import (
         TDMAAwareApplicationVertex)

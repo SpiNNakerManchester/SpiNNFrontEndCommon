@@ -21,7 +21,7 @@ import shutil
 import time
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
-from pacman.utilities.config_holder import (
+from pacman.config_holder import (
     config_options, load_cfgs, get_config_bool, get_config_int,
     get_config_str, set_config)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
