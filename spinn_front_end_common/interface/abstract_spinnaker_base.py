@@ -358,7 +358,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self, configfile, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             n_chips_required=None, n_boards_required=None,
-            default_config_paths=None,
             validation_cfg=None, front_end_versions=None):
         """
         :param str configfile: What the configuration file is called
@@ -375,14 +374,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             Overrides the number of chips to allocate from spalloc
         :param int n_boards_required:
             Overrides the number of boards to allocate from spalloc
-        :param list(str) default_config_paths:
-            Directories to load configurations from
         :param str validation_cfg: How to validate configuration files
         :param list(tuple(str,str)) front_end_versions:
             Information about what software is in use
         """
         # pylint: disable=too-many-arguments
-        super().__init__(configfile, default_config_paths, validation_cfg)
+        super().__init__(configfile, validation_cfg)
 
         # timings
         self._mapping_time = 0.0

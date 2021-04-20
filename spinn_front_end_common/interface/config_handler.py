@@ -29,7 +29,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 logger = FormatAdapter(logging.getLogger(__name__))
 
 APP_DIRNAME = 'application_generated_data_files'
-CONFIG_FILE = "spinnaker.cfg"
+CONFIG_FILE = "../../../PACMAN/pacman/spinnaker.cfg"
 FINISHED_FILENAME = "finished"
 REPORTS_DIRNAME = "reports"
 TIMESTAMP_FILENAME = "time_stamp"
@@ -70,28 +70,19 @@ class ConfigHandler(object):
         "_pacman_executor_provenance_path",
     ]
 
-    def __init__(self, configfile, default_config_paths, validation_cfg):
+    def __init__(self, configfile, validation_cfg):
         """
         :param str configfile:
             The base name of the configuration file(s).
             Should not include any path components.
-        :param list(str) default_config_paths:
-            The list of files to get default configurations from.
-        :type default_config_paths: list(str) or None
         :param validation_cfg:
             The list of files to read a validation configuration from.
             If None, no such validation is performed.
         :type validation_cfg: list(str) or None
         """
         # global params
-        if default_config_paths is None:
-            default_config_paths = []
-        default_config_paths.insert(0, os.path.join(
-            os.path.dirname(__file__), CONFIG_FILE))
 
-        load_cfgs(configfile=configfile,
-                  default_config_paths=default_config_paths,
-                  validation_cfg=validation_cfg)
+        load_cfgs(configfile=configfile, validation_cfg=validation_cfg)
 
         # set up machine targeted data
         self._use_virtual_board = get_config_bool("Machine", "virtual_board")
