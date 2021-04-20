@@ -29,7 +29,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 logger = FormatAdapter(logging.getLogger(__name__))
 
 APP_DIRNAME = 'application_generated_data_files'
-CONFIG_FILE = "../../../PACMAN/pacman/spinnaker.cfg"
+CONFIG_FILE = "spinnaker.cfg"
 FINISHED_FILENAME = "finished"
 REPORTS_DIRNAME = "reports"
 TIMESTAMP_FILENAME = "time_stamp"
