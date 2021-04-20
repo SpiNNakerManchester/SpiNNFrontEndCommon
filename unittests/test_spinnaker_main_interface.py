@@ -17,7 +17,6 @@ import os
 import sys
 import unittest
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-import spinn_front_end_common.interface.config_handler as config_handler
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
 from spinn_front_end_common.utilities.utility_objs import ExecutableFinder
