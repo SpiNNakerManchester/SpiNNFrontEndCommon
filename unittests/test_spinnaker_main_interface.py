@@ -39,8 +39,7 @@ class Close_Once(object):
 class MainInterfaceTimingImpl(AbstractSpinnakerBase):
 
     def __init__(self, machine_time_step=None, time_scale_factor=None):
-        super().__init__(
-            config_handler.CONFIG_FILE, ExecutableFinder())
+        super().__init__(ExecutableFinder())
         self.set_up_timings(machine_time_step, time_scale_factor)
 
 
@@ -53,8 +52,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
-        interface = AbstractSpinnakerBase(
-            config_handler.CONFIG_FILE, ExecutableFinder())
+        interface = AbstractSpinnakerBase(ExecutableFinder())
         mock_contoller = Close_Once()
         interface._machine_allocation_controller = mock_contoller
         self.assertFalse(mock_contoller.closed)
@@ -69,7 +67,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
-        AbstractSpinnakerBase(config_handler.CONFIG_FILE, ExecutableFinder())
+        AbstractSpinnakerBase(ExecutableFinder())
 
     def test_timings(self):
 

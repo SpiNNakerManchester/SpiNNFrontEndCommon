@@ -22,14 +22,13 @@ import time
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
 from pacman.config_holder import (
-    config_options, load_cfgs, get_config_bool, get_config_int,
+    config_options, load_config_cfgs, get_config_bool, get_config_int,
     get_config_str, set_config)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 APP_DIRNAME = 'application_generated_data_files'
-CONFIG_FILE = "spinnaker.cfg"
 FINISHED_FILENAME = "finished"
 REPORTS_DIRNAME = "reports"
 TIMESTAMP_FILENAME = "time_stamp"
@@ -70,19 +69,8 @@ class ConfigHandler(object):
         "_pacman_executor_provenance_path",
     ]
 
-    def __init__(self, configfile, validation_cfg):
-        """
-        :param str configfile:
-            The base name of the configuration file(s).
-            Should not include any path components.
-        :param validation_cfg:
-            The list of files to read a validation configuration from.
-            If None, no such validation is performed.
-        :type validation_cfg: list(str) or None
-        """
-        # global params
-
-        load_cfgs(configfile=configfile, validation_cfg=validation_cfg)
+    def __init__(self):
+        load_config_cfgs()
 
         # set up machine targeted data
         self._use_virtual_board = get_config_bool("Machine", "virtual_board")
