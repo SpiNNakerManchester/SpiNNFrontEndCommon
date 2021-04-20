@@ -19,12 +19,12 @@ import os
 import errno
 import shutil
 import time
-import spinn_utilities.conf_loader as conf_loader
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
+from pacman.utilities.config_holder import (
+    config_options, load_cfgs, get_config_bool, get_config_int,
+    get_config_str, set_config)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.helpful_functions import (
-    read_config, read_config_boolean, read_config_int)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -42,10 +42,6 @@ class ConfigHandler(object):
     """
 
     __slots__ = [
-
-        # the interface to the cfg files. supports get get_int etc
-        "_config",
-
         #
         "_json_folder",
 
@@ -93,16 +89,15 @@ class ConfigHandler(object):
         default_config_paths.insert(0, os.path.join(
             os.path.dirname(__file__), CONFIG_FILE))
 
-        self._config = conf_loader.load_config(
-            filename=configfile, defaults=default_config_paths,
-            validation_cfg=validation_cfg)
+        load_cfgs(configfile=configfile,
+                  default_config_paths=default_config_paths,
+                  validation_cfg=validation_cfg)
 
         # set up machine targeted data
-        self._use_virtual_board = self._config.getboolean(
-            "Machine", "virtual_board")
+        self._use_virtual_board = get_config_bool("Machine", "virtual_board")
 
         # Pass max_machine_cores to Machine so if effects everything!
-        max_machine_core = self._read_config_int("Machine", "max_machine_core")
+        max_machine_core = get_config_int("Machine", "max_machine_core")
         if max_machine_core is not None:
             Machine.set_max_cores_per_chip(max_machine_core)
 
@@ -125,24 +120,24 @@ class ConfigHandler(object):
         :param frozenset(str) report_disable_opts:
         :raises ConfigurationException:
         """
-        if self._config.get("Mode", "mode") == "Debug":
-            for option in self._config.options("Reports"):
+        if get_config_str("Mode", "mode") == "Debug":
+            for option in config_options("Reports"):
                 # options names are all lower without _ inside config
                 if option in debug_enable_opts or option[:5] == "write":
                     try:
-                        if not self._config.get_bool("Reports", option):
-                            self._config.set("Reports", option, "True")
+                        if not get_config_bool("Reports", option):
+                            set_config("Reports", option, "True")
                             logger.info("As mode == \"Debug\", [Reports] {} "
                                         "has been set to True", option)
                     except ValueError:
                         pass
-        elif not self._config.getboolean("Reports", "reportsEnabled"):
-            for option in self._config.options("Reports"):
+        elif not get_config_bool("Reports", "reportsEnabled"):
+            for option in config_options("Reports"):
                 # options names are all lower without _ inside config
                 if option in report_disable_opts or option[:5] == "write":
                     try:
-                        if not self._config.get_bool("Reports", option):
-                            self._config.set("Reports", option, "False")
+                        if not get_config_bool("Reports", option):
+                            set_config("Reports", option, "False")
                             logger.info(
                                 "As reportsEnabled == \"False\", [Reports] {} "
                                 "has been set to False", option)
@@ -150,33 +145,30 @@ class ConfigHandler(object):
                         pass
 
         if runtime is None:
-            if self._config.getboolean(
-                    "Reports", "write_energy_report") is True:
-                self._config.set("Reports", "write_energy_report", "False")
+            if get_config_bool("Reports", "write_energy_report"):
+                set_config("Reports", "write_energy_report", "False")
                 logger.info("[Reports]write_energy_report has been set to "
                             "False as runtime is set to forever")
-            if self._config.get_bool(
-                    "EnergySavings", "turn_off_board_after_discovery") is True:
-                self._config.set(
+            if get_config_bool(
+                    "EnergySavings", "turn_off_board_after_discovery"):
+                set_config(
                     "EnergySavings", "turn_off_board_after_discovery", "False")
                 logger.info("[EnergySavings]turn_off_board_after_discovery has"
                             " been set to False as runtime is set to forever")
 
         if self._use_virtual_board:
-            if self._config.getboolean(
-                    "Reports", "write_energy_report") is True:
-                self._config.set("Reports", "write_energy_report", "False")
+            if get_config_bool("Reports", "write_energy_report"):
+                set_config("Reports", "write_energy_report", "False")
                 logger.info("[Reports]write_energy_report has been set to "
                             "False as using virtual boards")
-            if self._config.get_bool(
-                    "EnergySavings", "turn_off_board_after_discovery") is True:
-                self._config.set(
+            if get_config_bool(
+                    "EnergySavings", "turn_off_board_after_discovery"):
+                set_config(
                     "EnergySavings", "turn_off_board_after_discovery", "False")
                 logger.info("[EnergySavings]turn_off_board_after_discovery has"
                             " been set to False as s using virtual boards")
-            if self._config.getboolean(
-                    "Reports", "write_board_chip_report") is True:
-                self._config.set("Reports", "write_board_chip_report", "False")
+            if get_config_bool("Reports", "write_board_chip_report"):
+                set_config("Reports", "write_board_chip_report", "False")
                 logger.info("[Reports]write_board_chip_report has been set to"
                             " False as using virtual boards")
 
@@ -247,7 +239,7 @@ class ConfigHandler(object):
             the counter of how many times run has been called.
         """
 
-        default_report_file_path = self._config.get_str(
+        default_report_file_path = get_config_str(
             "Reports", "default_report_file_path")
         # determine common report folder
         if default_report_file_path == "DEFAULT":
@@ -267,7 +259,7 @@ class ConfigHandler(object):
         # clear and clean out folders considered not useful anymore
         if os.listdir(report_default_directory):
             self._remove_excess_folders(
-                self._config.getint("Reports", "max_reports_kept"),
+                get_config_int("Reports", "max_reports_kept"),
                 report_default_directory)
 
         # determine the time slot for later while also making the report folder
@@ -297,8 +289,7 @@ class ConfigHandler(object):
         with open(time_of_run_file_name, "w") as f:
             f.writelines(self._this_run_time_string)
 
-        if self._read_config_boolean("Logging",
-                                     "warnings_at_end_to_file"):
+        if get_config_bool("Logging", "warnings_at_end_to_file"):
             log_report_file = os.path.join(
                 self._report_default_directory, WARNING_LOGS_FILENAME)
             logger.set_report_File(log_report_file)
@@ -322,7 +313,7 @@ class ConfigHandler(object):
         # set up reports default folder
         self._set_up_report_specifics(n_calls_to_run)
 
-        if self._read_config_boolean("Reports",
+        if get_config_bool("Reports",
                                      "writePacmanExecutorProvenance"):
             self._pacman_executor_provenance_path = os.path.join(
                 self._report_default_directory,
@@ -360,26 +351,17 @@ class ConfigHandler(object):
         with open(report_file_name, "w") as f:
             f.writelines("finished")
 
-    def _read_config(self, section, item):
-        return read_config(self._config, section, item)
-
-    def _read_config_int(self, section, item):
-        return read_config_int(self._config, section, item)
-
-    def _read_config_boolean(self, section, item):
-        return read_config_boolean(self._config, section, item)
-
     @property
     def machine_time_step(self):
         """ The machine timestep, in microseconds
 
         :rtype: int
         """
-        return self._read_config_int("Machine", "machine_time_step")
+        return get_config_int("Machine", "machine_time_step")
 
     @machine_time_step.setter
     def machine_time_step(self, new_value):
-        self._config.set("Machine", "machine_time_step", new_value)
+        set_config("Machine", "machine_time_step", new_value)
 
     @property
     def time_scale_factor(self):
@@ -387,11 +369,11 @@ class ConfigHandler(object):
 
         :rtype: int
         """
-        return self._read_config_int("Machine", "time_scale_factor")
+        return get_config_int("Machine", "time_scale_factor")
 
     @time_scale_factor.setter
     def time_scale_factor(self, new_value):
-        self._config.set("Machine", "time_scale_factor", new_value)
+        set_config("Machine", "time_scale_factor", new_value)
 
     def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
         """ Set up timings of the machine
