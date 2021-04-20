@@ -51,7 +51,8 @@ from pacman.model.resources import (
     PreAllocatedResourceContainer, ConstantSDRAM)
 from pacman import __version__ as pacman_version
 from pacman.utilities.config_holder import (
-    get_config_bool, get_config_int, get_config_str, get_config_str_list)
+    get_config_bool, get_config_int, get_config_str, get_config_str_list,
+    set_config)
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
@@ -942,8 +943,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if not self._use_virtual_board:
             for executable_type in self._executable_types:
                 if not executable_type.supports_auto_pause_and_resume:
-                    self._config.set("Buffers",
-                                     "use_auto_pause_and_resume", "False")
+                    set_config(
+                        "Buffers", "use_auto_pause_and_resume", "False")
 
         # Work out the maximum run duration given all recordings
         if self._max_run_time_steps is None:

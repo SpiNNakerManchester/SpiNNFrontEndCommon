@@ -107,10 +107,6 @@ class ConfigHandler(object):
         self._report_simulation_top_directory = None
         self._this_run_time_string = None
 
-    @property
-    def config(self):
-        return self._config
-
     def _adjust_config(self, runtime, debug_enable_opts, report_disable_opts):
         """ Adjust and checks config based on runtime and mode
 
