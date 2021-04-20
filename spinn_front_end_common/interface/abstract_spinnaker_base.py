@@ -1470,15 +1470,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         if get_config_bool("Reports", "write_energy_report"):
             algorithms.append("PreAllocateResourcesForChipPowerMonitor")
-            inputs['MemorySamplingFrequency'] = get_config_strint(
+            inputs['MemorySamplingFrequency'] = get_config_int(
                 "EnergyMonitor", "sampling_frequency")
             inputs['MemoryNumberSamplesPerRecordingEntry'] = \
                 get_config_int(
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # add algorithms for handling extra monitor code
-        if (get_config_bool("Machine",
-                                    "enable_advanced_monitor_support") or
+        if (get_config_bool("Machine", "enable_advanced_monitor_support") or
                 get_config_bool("Machine", "enable_reinjection")):
             algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
 
@@ -2259,9 +2258,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         extra_monitor_vertices = None
         prov_items = list()
         try:
-            if (get_config_bool("Machine",
-                                        "enable_advanced_monitor_support") or
-                    get_config_bool("Machine", "enable_reinjection")):
+            if (get_config_bool("Machine", "enable_advanced_monitor_support")
+                    or get_config_bool("Machine", "enable_reinjection")):
                 extra_monitor_vertices = self._last_run_outputs[
                     "MemoryExtraMonitorVertices"]
             router_provenance = RouterProvenanceGatherer()
@@ -2959,7 +2957,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :param str config_flag: Flag read from the configuration file
         """
         # check if machine should be turned off
-        turn_off =  get_config_bool("EnergySavings", config_flag)
+        turn_off = get_config_bool("EnergySavings", config_flag)
         if turn_off is None:
             return
 
