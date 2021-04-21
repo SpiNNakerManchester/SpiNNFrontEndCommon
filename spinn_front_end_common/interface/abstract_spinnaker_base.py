@@ -1569,8 +1569,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Mapping", "router_table_compression_target_length")
         inputs["CompressionAsNeeded"] = get_config_bool(
             "Mapping", "router_table_compress_as_needed")
-        inputs["CompressionAsFarAsPos"] = get_config_bool(
-            "Mapping", "router_table_compress_as_far_as_possible")
         inputs["WriteCompressorIobuf"] = get_config_bool(
             "Reports", "write_compressor_iobuf")
 
