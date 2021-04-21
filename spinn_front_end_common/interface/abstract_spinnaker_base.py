@@ -1555,7 +1555,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["WriteTextSpecsFlag"] = get_config_bool(
             "Reports", "write_text_specs")
         inputs["ExecutableFinder"] = self._executable_finder
-        inputs["UserCreateDatabaseFlag"] = get_config_str(
+        inputs["UserCreateDatabaseFlag"] = get_config_bool(
             "Database", "create_database")
         inputs["SendStartNotifications"] = True
         inputs["SendStopNotifications"] = True
