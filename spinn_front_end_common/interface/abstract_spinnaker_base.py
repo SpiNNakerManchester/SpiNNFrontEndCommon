@@ -1553,8 +1553,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
         inputs["DatabaseWaitOnConfirmationFlag"] = self._config.getboolean(
             "Database", "wait_on_confirmation")
-        inputs["WriteCheckerFlag"] = self._config.getboolean(
-            "Mode", "verify_writes")
         inputs["WriteTextSpecsFlag"] = self._config.getboolean(
             "Reports", "write_text_specs")
         inputs["ExecutableFinder"] = self._executable_finder
