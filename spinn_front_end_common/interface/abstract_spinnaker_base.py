@@ -1836,10 +1836,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
-        inputs["WriteMemoryMapReportFlag"] = (
-            self._config.getboolean("Reports", "write_memory_map_report") and
-            graph_changed
-        )
         inputs["NoSyncChanges"] = self._no_sync_changes
         self._add_router_compressor_bit_field_inputs(inputs)
 
