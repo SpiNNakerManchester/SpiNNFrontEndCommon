@@ -2078,7 +2078,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs = dict(self._mapping_outputs)
             tokens = list(self._mapping_tokens)
 
-        inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
         inputs["RunUntilTimeSteps"] = run_until_timesteps
