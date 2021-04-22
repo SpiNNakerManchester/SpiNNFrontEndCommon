@@ -221,4 +221,3 @@ class SystemMulticastRoutingGenerator(object):
                 link_ids=links_per_chip[x, y])
             # update tracker
             self._time_out_keys_by_board[(eth_x, eth_y)] = key
-        key += N_KEYS_PER_REINJECTION_PARTITION
