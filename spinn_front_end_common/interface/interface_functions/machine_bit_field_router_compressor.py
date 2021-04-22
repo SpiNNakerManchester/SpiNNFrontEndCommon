@@ -790,7 +790,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         :return: the byte array
         :rtype: bytes
         """
-        threshold_percentage =get_config_int(
+        threshold_percentage = get_config_int(
             "Mapping",
             "router_table_compression_with_bit_field_acceptance_threshold")
 
