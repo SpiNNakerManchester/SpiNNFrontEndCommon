@@ -1591,15 +1591,11 @@
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;DatabaseSocketAddresses&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database_socket_addresses</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;DatabaseWaitOnConfirmationFlag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
             <span class="s2">&quot;Database&quot;</span><span class="p">,</span> <span class="s2">&quot;wait_on_confirmation&quot;</span><span class="p">)</span>
-        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;WriteCheckerFlag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
-            <span class="s2">&quot;Mode&quot;</span><span class="p">,</span> <span class="s2">&quot;verify_writes&quot;</span><span class="p">)</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;WriteTextSpecsFlag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
             <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_text_specs&quot;</span><span class="p">)</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;ExecutableFinder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;UserCreateDatabaseFlag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
             <span class="s2">&quot;Database&quot;</span><span class="p">,</span> <span class="s2">&quot;create_database&quot;</span><span class="p">)</span>
-        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;SendStartNotifications&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;SendStopNotifications&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;WriteDataSpeedUpReportsFlag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
             <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_data_speed_up_reports&quot;</span><span class="p">)</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;UsingReinjection&quot;</span><span class="p">]</span> <span class="o">=</span> \
@@ -1814,11 +1810,6 @@
 
         <span class="c1"># This is done twice to make things nicer for things which don&#39;t have</span>
         <span class="c1"># time steps without breaking existing code; it is purely aesthetic</span>
-        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;RunTimeMachineTimeSteps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_machine_time_steps</span>
-        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;RunTimeSteps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_machine_time_steps</span>
-
-        <span class="c1"># This is done twice to make things nicer for things which don&#39;t have</span>
-        <span class="c1"># time steps without breaking existing code; it is purely aesthetic</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;DataNTimeSteps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_run_time_steps</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;DataNSteps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_run_time_steps</span>
 
@@ -1883,10 +1874,6 @@
         <span class="c1"># The initial inputs are the mapping outputs</span>
         <span class="n">inputs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_outputs</span><span class="p">)</span>
         <span class="n">tokens</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_tokens</span><span class="p">)</span>
-        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;WriteMemoryMapReportFlag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_memory_map_report&quot;</span><span class="p">)</span> <span class="ow">and</span>
-            <span class="n">graph_changed</span>
-        <span class="p">)</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;NoSyncChanges&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_no_sync_changes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_add_router_compressor_bit_field_inputs</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 
@@ -2129,7 +2116,6 @@
             <span class="n">inputs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_outputs</span><span class="p">)</span>
             <span class="n">tokens</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_tokens</span><span class="p">)</span>
 
-        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;RanToken&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_ran</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;NoSyncChanges&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_no_sync_changes</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;RunTimeMachineTimeSteps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_machine_time_steps</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;RunUntilTimeSteps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">run_until_timesteps</span>
