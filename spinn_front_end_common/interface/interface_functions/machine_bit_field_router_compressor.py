@@ -124,7 +124,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             write_compressor_iobuf, produce_report, default_report_folder,
             target_length, routing_infos, time_to_try_for_each_iteration,
             use_timer_cut_off, machine_time_step, time_scale_factor,
-            retry_count, executable_targets,
+            executable_targets,
             compress_as_much_as_possible=False, provenance_data_objects=None):
         """ entrance for routing table compression with bit field
 
@@ -150,9 +150,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         :param bool use_timer_cut_off:
         :param int machine_time_step:
         :param int time_scale_factor:
-        :param int retry_count:
-            Number of times that the sorters should set of the compressions
-            again
         :param ~spinnman.model.ExecutableTargets executable_targets:
             the set of targets and executables
         :param bool compress_as_much_as_possible:
@@ -177,6 +174,9 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             transceiver.app_id_tracker.get_new_id()
 
         text = self._PROGRESS_BAR_TEXT.format(self.compressor_type)
+        retry_count = get_config_int(
+            "Mapping",
+            "router_table_compression_with_bit_field_retry_count")
         if retry_count is not None:
             text += " capped at {} retries".format(retry_count)
         progress_bar = ProgressBar(
