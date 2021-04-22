@@ -1553,15 +1553,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
         inputs["DatabaseWaitOnConfirmationFlag"] = self._config.getboolean(
             "Database", "wait_on_confirmation")
-        inputs["WriteCheckerFlag"] = self._config.getboolean(
-            "Mode", "verify_writes")
         inputs["WriteTextSpecsFlag"] = self._config.getboolean(
             "Reports", "write_text_specs")
         inputs["ExecutableFinder"] = self._executable_finder
         inputs["UserCreateDatabaseFlag"] = self._config.get(
             "Database", "create_database")
-        inputs["SendStartNotifications"] = True
-        inputs["SendStopNotifications"] = True
         inputs["WriteDataSpeedUpReportsFlag"] = self._config.getboolean(
             "Reports", "write_data_speed_up_reports")
         inputs["UsingReinjection"] = \
@@ -1776,11 +1772,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # This is done twice to make things nicer for things which don't have
         # time steps without breaking existing code; it is purely aesthetic
-        inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
-        inputs["RunTimeSteps"] = n_machine_time_steps
-
-        # This is done twice to make things nicer for things which don't have
-        # time steps without breaking existing code; it is purely aesthetic
         inputs["DataNTimeSteps"] = self._max_run_time_steps
         inputs["DataNSteps"] = self._max_run_time_steps
 
@@ -1845,10 +1836,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
-        inputs["WriteMemoryMapReportFlag"] = (
-            self._config.getboolean("Reports", "write_memory_map_report") and
-            graph_changed
-        )
         inputs["NoSyncChanges"] = self._no_sync_changes
         self._add_router_compressor_bit_field_inputs(inputs)
 
@@ -2091,7 +2078,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs = dict(self._mapping_outputs)
             tokens = list(self._mapping_tokens)
 
-        inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
         inputs["RunUntilTimeSteps"] = run_until_timesteps
