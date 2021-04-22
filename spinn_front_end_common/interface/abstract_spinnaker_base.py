@@ -1816,10 +1816,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             get_config_int(
                 "Mapping",
                 "router_table_compression_with_bit_field_pre_alloced_sdram")
-        inputs["RouterCompressorBitFieldPercentageThreshold"] = \
-            get_config_int(
-                "Mapping",
-                "router_table_compression_with_bit_field_acceptance_threshold")
         inputs["RouterCompressorBitFieldRetryCount"] = \
             get_config_int(
                 "Mapping",
