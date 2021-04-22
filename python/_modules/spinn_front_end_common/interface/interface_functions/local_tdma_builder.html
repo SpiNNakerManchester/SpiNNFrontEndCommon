@@ -55,13 +55,11 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">pacman.config_holder</span> <span class="kn">import</span> <span class="n">get_config_float</span><span class="p">,</span> <span class="n">get_config_int</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models.impl.</span>\
     <span class="n">tdma_aware_application_vertex</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">TDMAAwareApplicationVertex</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">read_config_int</span><span class="p">,</span> <span class="n">read_config_float</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="n">get_simulator</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">CLOCKS_PER_US</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
@@ -342,18 +340,15 @@
 <span class="sd">        :rtype: tuple(int, int, int, int. int)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># get config</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="n">get_simulator</span><span class="p">()</span><span class="o">.</span><span class="n">config</span>
-
         <span class="c1"># set the number of cores expected to fire at any given time</span>
-        <span class="n">app_machine_quantity</span> <span class="o">=</span> <span class="n">read_config_int</span><span class="p">(</span>
-            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;app_machine_quantity&quot;</span><span class="p">)</span>
+        <span class="n">app_machine_quantity</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
+            <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;app_machine_quantity&quot;</span><span class="p">)</span>
 
         <span class="c1"># set the time between cores to fire</span>
-        <span class="n">time_between_cores</span> <span class="o">=</span> <span class="n">read_config_float</span><span class="p">(</span>
-            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;time_between_cores&quot;</span><span class="p">)</span>
-        <span class="n">clocks_between_cores</span> <span class="o">=</span> <span class="n">read_config_int</span><span class="p">(</span>
-            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;clock_cycles_between_cores&quot;</span><span class="p">)</span>
+        <span class="n">time_between_cores</span> <span class="o">=</span> <span class="n">get_config_float</span><span class="p">(</span>
+            <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;time_between_cores&quot;</span><span class="p">)</span>
+        <span class="n">clocks_between_cores</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
+            <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;clock_cycles_between_cores&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__check_at_most_one</span><span class="p">(</span>
             <span class="s2">&quot;time_between_cores&quot;</span><span class="p">,</span> <span class="n">time_between_cores</span><span class="p">,</span>
             <span class="s2">&quot;clock_cycles_betwen_cores&quot;</span><span class="p">,</span> <span class="n">clocks_between_cores</span><span class="p">)</span>
@@ -367,10 +362,10 @@
             <span class="n">clocks_between_cores</span> <span class="o">=</span> <span class="n">time_between_cores</span> <span class="o">*</span> <span class="n">CLOCKS_PER_US</span>
 
         <span class="c1"># time spend sending</span>
-        <span class="n">fraction_of_sending</span> <span class="o">=</span> <span class="n">read_config_float</span><span class="p">(</span>
-            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;fraction_of_time_spike_sending&quot;</span><span class="p">)</span>
-        <span class="n">clocks_for_sending</span> <span class="o">=</span> <span class="n">read_config_int</span><span class="p">(</span>
-            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;clock_cycles_sending&quot;</span><span class="p">)</span>
+        <span class="n">fraction_of_sending</span> <span class="o">=</span> <span class="n">get_config_float</span><span class="p">(</span>
+            <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;fraction_of_time_spike_sending&quot;</span><span class="p">)</span>
+        <span class="n">clocks_for_sending</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
+            <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;clock_cycles_sending&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__check_only_one</span><span class="p">(</span>
             <span class="s2">&quot;fraction_of_time_spike_sending&quot;</span><span class="p">,</span> <span class="n">fraction_of_sending</span><span class="p">,</span>
             <span class="s2">&quot;clock_cycles_sending&quot;</span><span class="p">,</span> <span class="n">clocks_for_sending</span><span class="p">)</span>
@@ -379,10 +374,10 @@
                 <span class="n">clocks_per_cycle</span> <span class="o">*</span> <span class="n">fraction_of_sending</span><span class="p">))</span>
 
         <span class="c1"># time waiting before sending</span>
-        <span class="n">fraction_of_waiting</span> <span class="o">=</span> <span class="n">read_config_float</span><span class="p">(</span>
-            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;fraction_of_time_before_sending&quot;</span><span class="p">)</span>
-        <span class="n">clocks_waiting</span> <span class="o">=</span> <span class="n">read_config_int</span><span class="p">(</span>
-            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;clock_cycles_before_sending&quot;</span><span class="p">)</span>
+        <span class="n">fraction_of_waiting</span> <span class="o">=</span> <span class="n">get_config_float</span><span class="p">(</span>
+            <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;fraction_of_time_before_sending&quot;</span><span class="p">)</span>
+        <span class="n">clocks_waiting</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
+            <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;clock_cycles_before_sending&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__check_only_one</span><span class="p">(</span>
             <span class="s2">&quot;fraction_of_time_before_sending&quot;</span><span class="p">,</span> <span class="n">fraction_of_waiting</span><span class="p">,</span>
             <span class="s2">&quot;clock_cycles_before_sending&quot;</span><span class="p">,</span> <span class="n">clocks_waiting</span><span class="p">)</span>
@@ -390,10 +385,10 @@
             <span class="n">clocks_waiting</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">clocks_per_cycle</span> <span class="o">*</span> <span class="n">fraction_of_waiting</span><span class="p">))</span>
 
         <span class="c1"># time to offset app vertices between each other</span>
-        <span class="n">fraction_initial</span> <span class="o">=</span> <span class="n">read_config_float</span><span class="p">(</span>
-            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;fraction_of_time_for_offset&quot;</span><span class="p">)</span>
-        <span class="n">clocks_initial</span> <span class="o">=</span> <span class="n">read_config_int</span><span class="p">(</span>
-            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;clock_cycles_for_offset&quot;</span><span class="p">)</span>
+        <span class="n">fraction_initial</span> <span class="o">=</span> <span class="n">get_config_float</span><span class="p">(</span>
+            <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;fraction_of_time_for_offset&quot;</span><span class="p">)</span>
+        <span class="n">clocks_initial</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
+            <span class="s2">&quot;Simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;clock_cycles_for_offset&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__check_only_one</span><span class="p">(</span>
             <span class="s2">&quot;fraction_of_time_for_offset&quot;</span><span class="p">,</span> <span class="n">fraction_initial</span><span class="p">,</span>
             <span class="s2">&quot;clock_cycles_for_offset&quot;</span><span class="p">,</span> <span class="n">clocks_initial</span><span class="p">)</span>

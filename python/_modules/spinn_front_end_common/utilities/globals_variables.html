@@ -255,25 +255,6 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># underscore param used avoid exposing a None PyNN parameter</span>
         <span class="k">return</span> <span class="n">simulator</span><span class="o">.</span><span class="n">_report_default_directory</span></div>
-
-
-<div class="viewcode-block" id="config"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.config">[docs]</a><span class="k">def</span> <span class="nf">config</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot; Provides access to the configuration used or a best effort to the</span>
-<span class="sd">    config to be used</span>
-
-<span class="sd">    If called before setup will return the values found in the config file</span>
-<span class="sd">    BEFORE any cleanup alterations that setup could do.</span>
-
-<span class="sd">    After setup will return the simulation config even if end has been called</span>
-
-<span class="sd">    :rtype: ~spinn_front_end_common.interface.config_handler.ConfigHandler</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">global</span> <span class="n">_failed_state</span>
-    <span class="n">simulator</span> <span class="o">=</span> <span class="n">_last_simulator</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_failed_state</span><span class="o">.</span><span class="n">config</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">simulator</span><span class="o">.</span><span class="n">config</span></div>
 </pre></div>
 
             <div class="clearer"></div>

@@ -353,21 +353,6 @@ the next run if it has not yet been called.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="spinn_front_end_common.utilities.globals_variables.config">
-<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></code><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.config" title="Permalink to this definition">¶</a></dt>
-<dd><p>Provides access to the configuration used or a best effort to the
-config to be used</p>
-<p>If called before setup will return the values found in the config file
-BEFORE any cleanup alterations that setup could do.</p>
-<p>After setup will return the simulation config even if end has been called</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler" title="spinn_front_end_common.interface.config_handler.ConfigHandler">ConfigHandler</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt id="spinn_front_end_common.utilities.globals_variables.get_generated_output">
 <code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></code><code class="sig-name descname"><span class="pre">get_generated_output</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#get_generated_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.get_generated_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get one of the simulator outputs by name.</p>
@@ -724,78 +709,6 @@ cost of parsing the format.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="spinn_front_end_common.utilities.helpful_functions.read_config">
-<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.helpful_functions.</span></code><code class="sig-name descname"><span class="pre">read_config</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#read_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.read_config" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the string value of a config item, returning None if the value        is “None”</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/configparser.html#configparser.ConfigParser" title="(in Python v3.6)"><em>ConfigParser</em></a>) – The configuration to look things up in.</p></li>
-<li><p><strong>section</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The section name</p></li>
-<li><p><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The item name.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="spinn_front_end_common.utilities.helpful_functions.read_config_boolean">
-<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.helpful_functions.</span></code><code class="sig-name descname"><span class="pre">read_config_boolean</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#read_config_boolean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.read_config_boolean" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the boolean value of a config item, returning None if the value        is “None”</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/configparser.html#configparser.ConfigParser" title="(in Python v3.6)"><em>ConfigParser</em></a>) – The configuration to look things up in.</p></li>
-<li><p><strong>section</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The section name</p></li>
-<li><p><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The item name.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="spinn_front_end_common.utilities.helpful_functions.read_config_float">
-<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.helpful_functions.</span></code><code class="sig-name descname"><span class="pre">read_config_float</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#read_config_float"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.read_config_float" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the float value of a config item, returning None if the value        is “None”</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/configparser.html#configparser.ConfigParser" title="(in Python v3.6)"><em>ConfigParser</em></a>) – The configuration to look things up in.</p></li>
-<li><p><strong>section</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The section name</p></li>
-<li><p><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The item name.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="spinn_front_end_common.utilities.helpful_functions.read_config_int">
-<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.helpful_functions.</span></code><code class="sig-name descname"><span class="pre">read_config_int</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#read_config_int"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.read_config_int" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the integer value of a config item, returning None if the value        is “None”</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/configparser.html#configparser.ConfigParser" title="(in Python v3.6)"><em>ConfigParser</em></a>) – The configuration to look things up in.</p></li>
-<li><p><strong>section</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The section name</p></li>
-<li><p><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The item name.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt id="spinn_front_end_common.utilities.helpful_functions.read_data">
 <code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.helpful_functions.</span></code><code class="sig-name descname"><span class="pre">read_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#read_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.read_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads and converts a single data item from memory.</p>
@@ -1036,17 +949,6 @@ warnings</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.FailedState.config">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">config</span></code><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.config" title="Permalink to this definition">¶</a></dt>
-<dd><p>Provides access to the configuration for front end interfaces.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler" title="spinn_front_end_common.interface.config_handler.ConfigHandler">ConfigHandler</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt id="spinn_front_end_common.utilities.FailedState.continue_simulation">
 <code class="sig-name descname"><span class="pre">continue_simulation</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/failed_state.html#FailedState.continue_simulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.continue_simulation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Continue a simulation that has been started in stepped mode</p>
@@ -1247,17 +1149,6 @@ run_forever</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager" title="spinn_front_end_common.interface.buffer_management.BufferManager">BufferManager</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="spinn_front_end_common.utilities.SimulatorInterface.config">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">config</span></code><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.config" title="Permalink to this definition">¶</a></dt>
-<dd><p>Provides access to the configuration for front end interfaces.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler" title="spinn_front_end_common.interface.config_handler.ConfigHandler">ConfigHandler</a></p>
 </dd>
 </dl>
 </dd></dl>

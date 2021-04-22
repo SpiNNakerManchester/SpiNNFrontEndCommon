@@ -88,7 +88,8 @@
             <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
-<span class="sd">        :param str user_create_database:</span>
+<span class="sd">        :param user_create_database:</span>
+<span class="sd">        :type user_create_database: bool or None</span>
 <span class="sd">        :param ~pacman.model.tags.Tags tags:</span>
 <span class="sd">        :param int runtime:</span>
 <span class="sd">        :param ~spinn_machine.Machine machine:</span>
@@ -131,9 +132,9 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_create_database</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_create_database</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_needs_db</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_create_database</span> <span class="o">==</span> <span class="s2">&quot;True&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_create_database</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">database_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

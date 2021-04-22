@@ -80,12 +80,6 @@
         <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span><span class="n">FAILED_STATE_MSG</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Not left abstract to allow unitests with FailedState</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This method is expected to be overriden&quot;</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">has_ran</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">has_ran</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span><span class="n">FAILED_STATE_MSG</span><span class="p">)</span>
