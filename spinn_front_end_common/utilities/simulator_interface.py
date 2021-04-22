@@ -39,13 +39,6 @@ class SimulatorInterface(object, metaclass=AbstractBase):
         """
 
     @abstractproperty
-    def config(self):
-        """ Provides access to the configuration for front end interfaces.
-
-        :rtype: ~spinn_front_end_common.interface.config_handler.ConfigHandler
-        """
-
-    @abstractproperty
     def has_ran(self):
         """ Whether the simulation has executed anything at all.
 

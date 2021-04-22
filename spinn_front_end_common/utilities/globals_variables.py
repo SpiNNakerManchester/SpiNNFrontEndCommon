@@ -217,22 +217,3 @@ def run_report_directory():
     else:
         # underscore param used avoid exposing a None PyNN parameter
         return simulator._report_default_directory
-
-
-def config():
-    """ Provides access to the configuration used or a best effort to the
-    config to be used
-
-    If called before setup will return the values found in the config file
-    BEFORE any cleanup alterations that setup could do.
-
-    After setup will return the simulation config even if end has been called
-
-    :rtype: ~spinn_front_end_common.interface.config_handler.ConfigHandler
-    """
-    global _failed_state
-    simulator = _last_simulator()
-    if simulator is None:
-        return _failed_state.config
-    else:
-        return simulator.config
