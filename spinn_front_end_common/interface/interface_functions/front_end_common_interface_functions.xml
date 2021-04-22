@@ -254,10 +254,6 @@
                 <param_type>ExecutableFinder</param_type>
             </parameter>
             <parameter>
-                <param_name>write_compressor_iobuf</param_name>
-                <param_type>WriteCompressorIobuf</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
@@ -304,7 +300,6 @@
         </input_definitions>
         <required_inputs>
             <param_name>executable_finder</param_name>
-            <param_name>write_compressor_iobuf</param_name>
             <param_name>routing_tables</param_name>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
@@ -366,10 +361,6 @@
                 <param_type>ExecutableFinder</param_type>
             </parameter>
             <parameter>
-                <param_name>write_compressor_iobuf</param_name>
-                <param_type>WriteCompressorIobuf</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
@@ -416,7 +407,6 @@
         </input_definitions>
         <required_inputs>
             <param_name>executable_finder</param_name>
-            <param_name>write_compressor_iobuf</param_name>
             <param_name>routing_tables</param_name>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
@@ -477,10 +467,6 @@
                 <param_type>ExecutableFinder</param_type>
             </parameter>
             <parameter>
-                <param_name>write_compressor_iobuf</param_name>
-                <param_type>WriteCompressorIobuf</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
@@ -527,7 +513,6 @@
         </input_definitions>
         <required_inputs>
             <param_name>executable_finder</param_name>
-            <param_name>write_compressor_iobuf</param_name>
             <param_name>routing_tables</param_name>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
@@ -2457,10 +2442,6 @@
                 <param_name>system_provenance_folder</param_name>
                 <param_type>SystemProvenanceFilePath</param_type>
             </parameter>
-            <parameter>
-                <param_name>write_compressor_iobuf</param_name>
-                <param_type>WriteCompressorIobuf</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2469,9 +2450,6 @@
             <param_name>app_id</param_name>
             <param_name>system_provenance_folder</param_name>
         </required_inputs>
-        <optional_inputs>
-                <param_name>write_compressor_iobuf</param_name>
-        </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
         </outputs>
@@ -2503,10 +2481,6 @@
                 <param_name>provenance_file_path</param_name>
                 <param_type>SystemProvenanceFilePath</param_type>
             </parameter>
-            <parameter>
-                <param_name>write_compressor_iobuf</param_name>
-                <param_type>WriteCompressorIobuf</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2516,9 +2490,6 @@
             <param_name>app_id</param_name>
             <param_name>provenance_file_path</param_name>
         </required_inputs>
-        <optional_inputs>
-                <param_name>write_compressor_iobuf</param_name>
-        </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
         </outputs>
@@ -2551,10 +2522,6 @@
                 <param_name>provenance_file_path</param_name>
                 <param_type>SystemProvenanceFilePath</param_type>
             </parameter>
-            <parameter>
-                <param_name>write_compressor_iobuf</param_name>
-                <param_type>WriteCompressorIobuf</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2564,9 +2531,6 @@
             <param_name>app_id</param_name>
             <param_name>provenance_file_path</param_name>
         </required_inputs>
-        <optional_inputs>
-                <param_name>write_compressor_iobuf</param_name>
-        </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
         </outputs>
@@ -2600,10 +2564,6 @@
                 <param_name>provenance_file_path</param_name>
                 <param_type>SystemProvenanceFilePath</param_type>
             </parameter>
-            <parameter>
-                <param_name>write_compressor_iobuf</param_name>
-                <param_type>WriteCompressorIobuf</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2613,9 +2573,6 @@
             <param_name>app_id</param_name>
             <param_name>provenance_file_path</param_name>
         </required_inputs>
-        <optional_inputs>
-                <param_name>write_compressor_iobuf</param_name>
-        </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
         </outputs>

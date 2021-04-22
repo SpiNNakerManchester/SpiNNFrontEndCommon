@@ -27,7 +27,7 @@ from spinnman.exceptions import (
     SpinnmanUnexpectedResponseCodeException, SpiNNManCoresNotInStateException)
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
-from pacman.config_holder import get_config_int
+from pacman.config_holder import get_config_bool, get_config_int
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.router_compressors.ordered_covering_router_compressor\
     import (
@@ -121,7 +121,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
     def __call__(
             self, routing_tables, transceiver, machine, app_id,
             provenance_file_path, machine_graph, placements, executable_finder,
-            write_compressor_iobuf, produce_report, default_report_folder,
+            produce_report, default_report_folder,
             target_length, routing_infos, time_to_try_for_each_iteration,
             use_timer_cut_off, machine_time_step, time_scale_factor,
             executable_targets,
@@ -141,7 +141,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             placements on machine
         :param ExecutableFinder executable_finder:
             where are binaries are located
-        :param bool write_compressor_iobuf: flag saying if read IOBUF
         :param bool produce_report:
         :param str default_report_folder:
         :param int target_length:
@@ -212,7 +211,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
                 compressor_executable_targets,
                 routing_table_compressor_app_id, transceiver,
                 provenance_file_path, executable_finder,
-                write_compressor_iobuf,
+                get_config_bool("Reports", "write_compressor_iobuf"),
                 functools.partial(
                     self._check_bit_field_router_compressor_for_success,
                     host_chips=on_host_chips,
