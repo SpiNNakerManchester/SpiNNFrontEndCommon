@@ -121,7 +121,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
     def __call__(
             self, routing_tables, transceiver, machine, app_id,
             provenance_file_path, machine_graph, placements, executable_finder,
-            produce_report, default_report_folder,
+            default_report_folder,
             target_length, routing_infos, time_to_try_for_each_iteration,
             use_timer_cut_off, machine_time_step, time_scale_factor,
             executable_targets,
@@ -141,7 +141,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             placements on machine
         :param ExecutableFinder executable_finder:
             where are binaries are located
-        :param bool produce_report:
         :param str default_report_folder:
         :param int target_length:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
@@ -239,13 +238,18 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
                 machine_graph, routing_infos)
 
             for (chip_x, chip_y) in progress_bar.over(on_host_chips, False):
-                report_folder_path = host_compressor.generate_report_path(
-                    default_report_folder)
+                if get_config_bool(
+                        "Reports",
+                        "write_router_compression_with_bitfield_report"):
+                    report_folder_path = host_compressor.generate_report_path(
+                        default_report_folder)
+                else:
+                    report_folder_path = None
+
                 prov_items.append(
                     host_compressor.start_compression_selection_process(
                         router_table=routing_tables.get_routing_table_for_chip(
                             chip_x, chip_y),
-                        produce_report=produce_report,
                         report_folder_path=report_folder_path,
                         transceiver=transceiver, machine_graph=machine_graph,
                         placements=placements, machine=machine,

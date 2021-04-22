@@ -21,6 +21,7 @@ from collections import defaultdict
 from spinn_utilities.find_max_success import find_max_success
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import MulticastRoutingEntry
+from pacman.config_holder import get_config_bool
 from pacman.exceptions import (
     PacmanAlgorithmFailedToGenerateOutputsException,
     PacmanElementAllocationException, MinimisationFailedError)
@@ -158,7 +159,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
     def __call__(
             self, router_tables, machine, placements, transceiver,
-            default_report_folder, produce_report, machine_graph,
+            default_report_folder, machine_graph,
             routing_infos,  machine_time_step, time_scale_factor,
             target_length=None):
         """
@@ -171,7 +172,6 @@ class HostBasedBitFieldRouterCompressor(object):
         :param ~pacman.model.placements.Placements placements: placements
         :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
         :param str default_report_folder: report folder
-        :param bool produce_report: flag for producing report
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph level
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
@@ -192,10 +192,12 @@ class HostBasedBitFieldRouterCompressor(object):
             "Compressing routing Tables with bitfields in host")
 
         # create report
-        report_folder_path = None
-        if produce_report:
+        if get_config_bool(
+                "Reports", "write_router_compression_with_bitfield_report"):
             report_folder_path = self.generate_report_path(
                 default_report_folder)
+        else:
+            report_folder_path = None
 
         # compressed router table
         compressed_pacman_router_tables = MulticastRoutingTables()
@@ -208,7 +210,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # start the routing table choice conversion
         for router_table in progress.over(router_tables.routing_tables):
             prov_items.append(self.start_compression_selection_process(
-                router_table, produce_report, report_folder_path,
+                router_table, report_folder_path,
                 transceiver, machine_graph, placements, machine, target_length,
                 compressed_pacman_router_tables, key_atom_map))
 
@@ -273,7 +275,7 @@ class HostBasedBitFieldRouterCompressor(object):
         return report_folder_path
 
     def start_compression_selection_process(
-            self, router_table, produce_report, report_folder_path,
+            self, router_table, report_folder_path,
             transceiver, machine_graph, placements, machine, target_length,
             compressed_pacman_router_tables, key_atom_map):
         """ Entrance method for doing on host compression. Can be used as a \
@@ -282,8 +284,8 @@ class HostBasedBitFieldRouterCompressor(object):
         :param router_table: the routing table in question to compress
         :type router_table:
             ~pacman.model.routing_tables.UnCompressedMulticastRoutingTable
-        :param bool produce_report: whether the report should be generated
-        :param str report_folder_path: the report folder base address
+        :param report_folder_path: the report folder base address
+        :type report_folder_path: str or None
         :param ~spinnman.transceiver.Transceiver transceiver:
             spinnMan instance
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
@@ -338,7 +340,7 @@ class HostBasedBitFieldRouterCompressor(object):
             router_table.x, router_table.y, transceiver)
 
         # create report file if required
-        if produce_report:
+        if report_folder_path:
             report_file_path = os.path.join(
                 report_folder_path,
                 self._REPORT_NAME.format(router_table.x, router_table.y))

@@ -1787,10 +1787,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :return:
         """
         # bitfield inputs
-        inputs['RouterBitfieldCompressionReport'] = \
-            get_config_bool(
-                "Reports", "generate_router_compression_with_bitfield_report")
-
         inputs['RouterCompressorBitFieldUseCutOff'] = \
             get_config_bool(
                 "Mapping",
