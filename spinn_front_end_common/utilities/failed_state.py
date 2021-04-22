@@ -42,12 +42,6 @@ class FailedState(SimulatorInterface):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @property
-    @overrides(SimulatorInterface.config)
-    def config(self):
-        # Not left abstract to allow unitests with FailedState
-        raise NotImplementedError("This method is expected to be overriden")
-
-    @property
     @overrides(SimulatorInterface.has_ran)
     def has_ran(self):
         raise ConfigurationException(FAILED_STATE_MSG)
