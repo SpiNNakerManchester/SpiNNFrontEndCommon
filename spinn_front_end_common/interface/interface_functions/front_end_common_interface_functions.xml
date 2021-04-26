@@ -1767,10 +1767,6 @@
                 <param_type>MemoryCompressedRoutingTables</param_type>
             </parameter>
             <parameter>
-                <param_name>create_atom_to_event_id_mapping</param_name>
-                <param_type>CreateAtomToEventIdMapping</param_type>
-            </parameter>
-            <parameter>
                 <param_name>application_graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
@@ -1790,10 +1786,7 @@
             <param_name>router_tables</param_name>
         </required_inputs>
         <optional_inputs>
-            <all_of>
-                <param_name>create_atom_to_event_id_mapping</param_name>
-                <param_name>application_graph</param_name>
-            </all_of>
+            <param_name>application_graph</param_name>
         </optional_inputs>
         <outputs>
             <param_type>DatabaseInterface</param_type>

@@ -16,6 +16,7 @@
 import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
+from pacman.config_holder import get_config_bool
 from spinn_front_end_common.utilities.database import DatabaseWriter
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -45,8 +46,7 @@ class DatabaseInterface(object):
             self, machine_graph, user_create_database, tags,
             runtime, machine, data_n_timesteps, time_scale_factor,
             machine_time_step, placements, routing_infos, router_tables,
-            report_folder, create_atom_to_event_id_mapping=False,
-            application_graph=None):
+            report_folder, application_graph=None):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param user_create_database:
@@ -63,7 +63,6 @@ class DatabaseInterface(object):
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
         :param str report_folder: Where the database will be put.
-        :param bool create_atom_to_event_id_mapping:
         :param application_graph:
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph
@@ -83,8 +82,7 @@ class DatabaseInterface(object):
             self._write_to_db(machine, time_scale_factor, machine_time_step,
                               runtime, application_graph, machine_graph,
                               data_n_timesteps, placements,
-                              routing_infos, router_tables, tags,
-                              create_atom_to_event_id_mapping)
+                              routing_infos, router_tables, tags)
 
         return self, self.database_file_path
 
@@ -109,7 +107,7 @@ class DatabaseInterface(object):
     def _write_to_db(
             self, machine, time_scale_factor, machine_time_step,
             runtime, app_graph, machine_graph, data_n_timesteps,
-            placements, routing_infos, router_tables, tags, create_mapping):
+            placements, routing_infos, router_tables, tags):
         """
         :param ~.Machine machine:
         :param int time_scale_factor:
@@ -123,7 +121,6 @@ class DatabaseInterface(object):
         :param ~.RoutingInfo routing_infos:
         :param ~.MulticastRoutingTables router_tables:
         :param ~.Tags tags:
-        :param bool create_mapping:
         """
         # pylint: disable=too-many-arguments
 
@@ -146,8 +143,12 @@ class DatabaseInterface(object):
             p.update()
             w.add_tags(machine_graph, tags)
             p.update()
-            if app_graph is not None and create_mapping:
-                w.create_atom_to_event_id_mapping(
-                    application_graph=app_graph, machine_graph=machine_graph,
-                    routing_infos=routing_infos)
+            if app_graph is not None:
+                if get_config_bool(
+                        "Database",
+                        "create_routing_info_to_neuron_id_mapping"):
+                    w.create_atom_to_event_id_mapping(
+                        application_graph=app_graph,
+                        machine_graph=machine_graph,
+                        routing_infos=routing_infos)
             p.update()
