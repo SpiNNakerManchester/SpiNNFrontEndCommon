@@ -1797,11 +1797,7 @@
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
         <python_class>CreateNotificationProtocol</python_class>
         <input_definitions>
-            <parameter>
-                <param_name>wait_for_read_confirmation</param_name>
-                <param_type>DatabaseWaitOnConfirmationFlag</param_type>
-            </parameter>
-            <parameter>
+             <parameter>
                 <param_name>socket_addresses</param_name>
                 <param_type>DatabaseSocketAddresses</param_type>
             </parameter>
@@ -1811,7 +1807,6 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>wait_for_read_confirmation</param_name>
             <param_name>socket_addresses</param_name>
             <param_name>database_file_path</param_name>
         </required_inputs>

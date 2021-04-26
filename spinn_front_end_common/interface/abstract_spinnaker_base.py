@@ -1548,8 +1548,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["TimeScaleFactor"] = self.time_scale_factor
         inputs["MachineTimeStep"] = self.machine_time_step
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
-        inputs["DatabaseWaitOnConfirmationFlag"] = get_config_bool(
-            "Database", "wait_on_confirmation")
         inputs["WriteTextSpecsFlag"] = get_config_bool(
             "Reports", "write_text_specs")
         inputs["ExecutableFinder"] = self._executable_finder
