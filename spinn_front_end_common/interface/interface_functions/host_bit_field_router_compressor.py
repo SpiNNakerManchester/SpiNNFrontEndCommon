@@ -21,6 +21,7 @@ from collections import defaultdict
 from spinn_utilities.find_max_success import find_max_success
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import MulticastRoutingEntry
+from pacman.config_holder import get_config_int
 from pacman.exceptions import (
     PacmanAlgorithmFailedToGenerateOutputsException,
     PacmanElementAllocationException, MinimisationFailedError)
@@ -155,8 +156,7 @@ class HostBasedBitFieldRouterCompressor(object):
     def __call__(
             self, router_tables, machine, placements, transceiver,
             default_report_folder, produce_report, machine_graph,
-            routing_infos,  machine_time_step, time_scale_factor,
-            target_length=None):
+            routing_infos,  machine_time_step, time_scale_factor,):
         """
         Entry point when using the PACMANAlgorithmExecutor
 
@@ -174,11 +174,11 @@ class HostBasedBitFieldRouterCompressor(object):
             routing information
         :param int machine_time_step: time step
         :param int time_scale_factor: time scale factor
-        :param target_length: length of table entries to get to.
-        :type target_length: int or None
         :return: compressed routing table entries
         :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
+        target_length = get_config_int(
+            "Mapping", "router_table_compression_target_length")
         if target_length is None:
             target_length = self._MAX_SUPPORTED_LENGTH
 
