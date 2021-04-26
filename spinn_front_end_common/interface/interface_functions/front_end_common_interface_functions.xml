@@ -176,14 +176,6 @@
                 <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
-                <param_name>target_length</param_name>
-                <param_type>RouterCompressorBitFieldTargetLength</param_type>
-            </parameter>
-            <parameter>
-                <param_name>produce_report</param_name>
-                <param_type>RouterBitfieldCompressionReport</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
