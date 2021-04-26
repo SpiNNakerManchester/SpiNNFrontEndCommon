@@ -21,7 +21,7 @@ from collections import defaultdict
 from spinn_utilities.find_max_success import find_max_success
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import MulticastRoutingEntry
-from pacman.config_holder import get_config_bool
+from pacman.config_holder import get_config_bool, get_config_int
 from pacman.exceptions import (
     PacmanAlgorithmFailedToGenerateOutputsException,
     PacmanElementAllocationException, MinimisationFailedError)
@@ -29,10 +29,6 @@ from pacman.model.routing_tables import (
     MulticastRoutingTables, UnCompressedMulticastRoutingTable,
     CompressedMulticastRoutingTable)
 from pacman.operations.algorithm_reports.reports import format_route
-from pacman.operations.router_compressors import Entry
-from pacman.operations.router_compressors.ordered_covering_router_compressor\
-    import (
-        minimise)
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsBitFieldRoutingCompression)
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
@@ -160,8 +156,7 @@ class HostBasedBitFieldRouterCompressor(object):
     def __call__(
             self, router_tables, machine, placements, transceiver,
             default_report_folder, machine_graph,
-            routing_infos,  machine_time_step, time_scale_factor,
-            target_length=None):
+            routing_infos,  machine_time_step, time_scale_factor):
         """
         Entry point when using the PACMANAlgorithmExecutor
 
@@ -178,11 +173,11 @@ class HostBasedBitFieldRouterCompressor(object):
             routing information
         :param int machine_time_step: time step
         :param int time_scale_factor: time scale factor
-        :param target_length: length of table entries to get to.
-        :type target_length: int or None
         :return: compressed routing table entries
         :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
+        target_length = get_config_int(
+            "Mapping", "router_table_compression_target_length")
         if target_length is None:
             target_length = self._MAX_SUPPORTED_LENGTH
 
@@ -633,31 +628,6 @@ class HostBasedBitFieldRouterCompressor(object):
             raise MinimisationFailedError("{} > {}".format(
                 len(compressed_entries), target_length))
         return compressed_entries
-
-    def _run_mundy_algorithm(
-            self, router_table, target_length):
-        """ Attempts to covert the mega router tables into 1 router table.\
-            Will raise a MinimisationFailedError exception if it fails to\
-            compress to the correct length.
-
-        Note: This method is uncurrently unused
-
-        :param list(~.AbsractMulticastRoutingTable) router_table:
-            the set of router tables that together need to
-            be merged into 1 router table
-        :param int target_length: the number
-        :return: compressor router table
-        :rtype: list(RoutingTableEntry)
-        :throws MinimisationFailedError: If compression fails
-        """
-        # convert to rig format
-        entries = list()
-        for router_entry in router_table.multicast_routing_entries:
-            # Add the new entry
-            entries.append(Entry.from_MulticastRoutingEntry(router_entry))
-
-        # compress the router entries using rigs compressor
-        return minimise(entries, target_length)
 
     def _remove_merged_bitfields_from_cores(self, chip_x, chip_y, transceiver):
         """ Goes to SDRAM and removes said merged entries from the cores' \

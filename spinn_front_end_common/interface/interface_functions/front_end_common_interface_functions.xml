@@ -180,6 +180,10 @@
                 <param_type>RouterCompressorBitFieldTargetLength</param_type>
             </parameter>
             <parameter>
+                <param_name>produce_report</param_name>
+                <param_type>RouterBitfieldCompressionReport</param_type>
+            </parameter>
+            <parameter>
                 <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
@@ -208,9 +212,6 @@
             <param_name>routing_infos</param_name>
             <token part="BitFieldData">DataLoaded</token>
         </required_inputs>
-        <optional_inputs>
-            <param_name>target_length</param_name>
-        </optional_inputs>
         <outputs>
             <param_type>MemoryCompressedRoutingTables</param_type>
             <param_type>RouterCompressorProvenanceItems</param_type>
@@ -261,10 +262,6 @@
                 <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
-                <param_name>target_length</param_name>
-                <param_type>CompressionTargetSize</param_type>
-            </parameter>
-            <parameter>
                 <param_name>routing_infos</param_name>
                 <param_type>MemoryRoutingInfos</param_type>
             </parameter>
@@ -299,7 +296,6 @@
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
             <param_name>default_report_folder</param_name>
-            <param_name>target_length</param_name>
             <param_name>routing_infos</param_name>
             <param_name>time_to_try_for_each_iteration</param_name>
             <param_name>use_timer_cut_off</param_name>
@@ -363,10 +359,6 @@
                 <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
-                <param_name>target_length</param_name>
-                <param_type>CompressionTargetSize</param_type>
-            </parameter>
-            <parameter>
                 <param_name>routing_infos</param_name>
                 <param_type>MemoryRoutingInfos</param_type>
             </parameter>
@@ -401,7 +393,6 @@
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
             <param_name>default_report_folder</param_name>
-            <param_name>target_length</param_name>
             <param_name>routing_infos</param_name>
             <param_name>time_to_try_for_each_iteration</param_name>
             <param_name>use_timer_cut_off</param_name>
@@ -464,10 +455,6 @@
                 <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
-                <param_name>target_length</param_name>
-                <param_type>CompressionTargetSize</param_type>
-            </parameter>
-            <parameter>
                 <param_name>routing_infos</param_name>
                 <param_type>MemoryRoutingInfos</param_type>
             </parameter>
@@ -502,7 +489,6 @@
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
             <param_name>default_report_folder</param_name>
-            <param_name>target_length</param_name>
             <param_name>routing_infos</param_name>
             <param_name>time_to_try_for_each_iteration</param_name>
             <param_name>use_timer_cut_off</param_name>

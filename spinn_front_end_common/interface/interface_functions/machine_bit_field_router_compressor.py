@@ -122,7 +122,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             self, routing_tables, transceiver, machine, app_id,
             provenance_file_path, machine_graph, placements, executable_finder,
             default_report_folder,
-            target_length, routing_infos, time_to_try_for_each_iteration,
+            routing_infos, time_to_try_for_each_iteration,
             use_timer_cut_off, machine_time_step, time_scale_factor,
             executable_targets,
             compress_as_much_as_possible=False, provenance_data_objects=None):
@@ -141,8 +141,9 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             placements on machine
         :param ExecutableFinder executable_finder:
             where are binaries are located
+        :param bool write_compressor_iobuf: flag saying if read IOBUF
+        :param bool produce_report:
         :param str default_report_folder:
-        :param int target_length:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         :param int time_to_try_for_each_iteration:
         :param bool use_timer_cut_off:
@@ -246,6 +247,12 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
                 else:
                     report_folder_path = None
 
+                target_length = get_config_int(
+                    "Mapping", "router_table_compression_target_length")
+                if target_length is None:
+                    target_length = self._MAX_SUPPORTED_LENGTH
+                report_folder_path = host_compressor.generate_report_path(
+                    default_report_folder)
                 prov_items.append(
                     host_compressor.start_compression_selection_process(
                         router_table=routing_tables.get_routing_table_for_chip(
