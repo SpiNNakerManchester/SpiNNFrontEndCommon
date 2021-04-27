@@ -1910,7 +1910,9 @@ void __wrap_sark_int(void *pc) {
         return;
     }
 
+#if 0
     io_printf(IO_BUF, "received sdp message\n");
+#endif
 
     switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
     case REINJECTION_PORT:
