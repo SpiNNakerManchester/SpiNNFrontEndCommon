@@ -122,7 +122,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             self, routing_tables, transceiver, machine, app_id,
             provenance_file_path, machine_graph, placements, executable_finder,
             default_report_folder,
-            routing_infos, time_to_try_for_each_iteration,
+            routing_infos,
             use_timer_cut_off, machine_time_step, time_scale_factor,
             executable_targets,
             compress_as_much_as_possible=False, provenance_data_objects=None):
@@ -145,7 +145,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         :param bool produce_report:
         :param str default_report_folder:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-        :param int time_to_try_for_each_iteration:
         :param bool use_timer_cut_off:
         :param int machine_time_step:
         :param int time_scale_factor:
@@ -201,8 +200,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             routing_tables, app_id, machine,
             compress_as_much_as_possible, progress_bar,
             compressor_executable_targets,
-            matrix_addresses_and_size, time_to_try_for_each_iteration,
-            bit_field_compressor_executable_path,
+            matrix_addresses_and_size, bit_field_compressor_executable_path,
             bit_field_sorter_executable_path, retry_count)
 
         # load and run binaries
@@ -399,7 +397,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             self, addresses, transceiver, routing_table_compressor_app_id,
             routing_tables, app_id, machine,
             compress_as_much_as_possible, progress_bar, cores,
-            matrix_addresses_and_size, time_per_iteration,
+            matrix_addresses_and_size,
             bit_field_compressor_executable_path,
             bit_field_sorter_executable_path, retry_count):
         """ load all data onto the chip
@@ -458,7 +456,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
                         cores)
 
                     self._load_compressor_data(
-                        table.x, table.y, time_per_iteration, transceiver,
+                        table.x, table.y, transceiver,
                         bit_field_compressor_executable_path, cores,
                         compress_as_much_as_possible, comms_sdram)
                 except CantFindSDRAMToUseException:
@@ -467,7 +465,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         return run_by_host
 
     def _load_compressor_data(
-            self, chip_x, chip_y, time_per_iteration, transceiver,
+            self, chip_x, chip_y, transceiver,
             bit_field_compressor_executable_path, cores,
             compress_as_much_as_possible, comms_sdram):
         """ Updates the user addresses for the compressor cores with the
@@ -475,7 +473,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
 
         :param int chip_x: chip x coord
         :param int chip_y: chip y coord
-        :param int time_per_iteration: time per attempt of compression
         :param ~.Transceiver transceiver: SpiNNMan instance
         :param str bit_field_compressor_executable_path:
             path for the compressor binary
@@ -495,6 +492,9 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             user3_address = \
                 transceiver.get_user_3_register_address_from_core(processor_id)
             # user 1 the time per compression attempt
+            time_per_iteration = get_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_iteration_time")
             transceiver.write_memory(
                 chip_x, chip_y, user1_address,
                 int(time_per_iteration * SECOND_TO_MICRO_SECOND))
