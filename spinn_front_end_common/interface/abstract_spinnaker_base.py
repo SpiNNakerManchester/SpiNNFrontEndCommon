@@ -2062,9 +2062,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._run_until_complete:
             inputs["RunUntilCompleteFlag"] = True
 
-        inputs["ExtractIobufFromCores"] = get_config_str(
-            "Reports", "extract_iobuf_from_cores")
-
         # Don't timeout if a stepped mode is in operation
         if n_sync_steps:
             inputs["PostSimulationOverrunBeforeError"] = None
@@ -2314,9 +2311,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Read IOBUF where possible (that should be everywhere)
         iobuf = IOBufExtractor(
             self._txrx, executable_targets, self._executable_finder,
-            self._app_provenance_file_path, self._system_provenance_file_path,
-            get_config_str("Reports", "extract_iobuf_from_cores"),
-            get_config_str("Reports", "extract_iobuf_from_binary_types"))
+            self._app_provenance_file_path, self._system_provenance_file_path)
         try:
             errors, warnings = iobuf.extract_iobuf()
         except Exception:
