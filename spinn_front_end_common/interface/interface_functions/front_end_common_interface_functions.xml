@@ -1132,10 +1132,6 @@
                 <param_type>BootPortNum</param_type>
             </parameter>
             <parameter>
-                <param_name>repair_machine</param_name>
-                <param_type>RepairMachine</param_type>
-            </parameter>
-            <parameter>
                 <param_name>default_report_directory</param_name>
                 <param_type>ReportFolder</param_type>
             </parameter>
@@ -1156,7 +1152,6 @@
             <param_name>auto_detect_bmp</param_name>
             <param_name>scamp_connection_data</param_name>
             <param_name>boot_port_num</param_name>
-            <param_name>repair_machine</param_name>
             <param_name>default_report_directory</param_name>
         </required_inputs>
         <outputs>

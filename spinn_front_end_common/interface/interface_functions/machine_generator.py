@@ -55,8 +55,7 @@ class MachineGenerator(object):
             self, hostname, bmp_details, downed_chips, downed_cores,
             downed_links, board_version, auto_detect_bmp,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
-            report_waiting_logs, repair_machine=False,
-            default_report_directory=None):
+            report_waiting_logs, default_report_directory=None):
         """
         :param str hostname:
             the hostname or IP address of the SpiNNaker machine
@@ -78,13 +77,6 @@ class MachineGenerator(object):
             list(~spinnman.connections.SocketAddressWithChip)
         :param int boot_port_num: the port number used for the boot connection
         :param bool reset_machine_on_start_up:
-        :param bool repair_machine:
-            Flag to set the behaviour if a repairable error is found on the
-            machine.
-            If `True` will create a machine without the problematic bits.
-            (See machine_factory.machine_repair)
-            If `False`, get machine will raise an Exception if a problematic
-            machine is discovered.
         :param str default_report_directory:
             Directory to write any reports too.
             If None the current directory will be used.
@@ -105,9 +97,9 @@ class MachineGenerator(object):
 
         ignore_bad_ethernets = get_config_bool(
             "Machine", "ignore_bad_ethernets")
-
         max_sdram_size = get_config_int(
             "Machine", "max_sdram_allowed_per_chip")
+        repair_machine = get_config_bool("Machine", "repair_machine")
 
         txrx = create_transceiver_from_hostname(
             hostname=hostname,

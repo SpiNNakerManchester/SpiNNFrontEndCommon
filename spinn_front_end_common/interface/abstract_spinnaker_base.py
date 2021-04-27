@@ -1440,8 +1440,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "reset_machine_on_startup")
         inputs["BootPortNum"] = get_config_int(
             "Machine", "boot_connection_port_num")
-        inputs["RepairMachine"] = get_config_bool(
-            "Machine", "repair_machine")
 
         # add algorithms for handling LPG placement and edge insertion
         if self._live_packet_recorder_params:
