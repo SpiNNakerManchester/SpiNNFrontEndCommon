@@ -1768,10 +1768,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Mapping",
                 "router_table_compression_with_bit_field_iteration_time")
 
-        inputs["RouterCompressorBitFieldPreAllocSize"] = \
-            get_config_int(
-                "Mapping",
-                "router_table_compression_with_bit_field_pre_alloced_sdram")
 
     def _do_load(self, graph_changed, data_changed):
         """
