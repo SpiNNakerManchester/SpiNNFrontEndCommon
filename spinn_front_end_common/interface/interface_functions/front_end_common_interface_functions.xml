@@ -1277,7 +1277,6 @@
             <param_name>down_cores</param_name>
             <param_name>down_links</param_name>
             <param_name>router_entries_per_chip</param_name>
-            <param_name>json_path</param_name>
         </optional_inputs>
         <outputs>
             <param_type>MemoryMachine</param_type>
