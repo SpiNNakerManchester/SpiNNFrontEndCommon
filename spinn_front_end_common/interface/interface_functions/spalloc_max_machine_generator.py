@@ -16,6 +16,7 @@
 from spalloc import ProtocolClient
 from spinn_machine.virtual_machine import virtual_machine
 from spinn_machine.machine import Machine
+from pacman.config_holder import get_config_int
 
 
 class SpallocMaxMachineGenerator(object):
@@ -27,12 +28,11 @@ class SpallocMaxMachineGenerator(object):
 
     def __call__(
             self, spalloc_server, spalloc_port=22244, spalloc_machine=None,
-            max_sdram_size=None, max_machine_core_reduction=0):
+            max_machine_core_reduction=0):
         """
         :param str spalloc_server:
         :param int spalloc_port:
         :param str spalloc_machine:
-        :param int max_sdram_size:
         :param int max_machine_core_reduction: the number of cores less than
             :py:const:`~spinn_machine.Machine.DEFAULT_MAX_CORES_PER_CHIP`
             that each chip should have
@@ -64,6 +64,9 @@ class SpallocMaxMachineGenerator(object):
 
         n_cpus_per_chip = (Machine.max_cores_per_chip() -
                            max_machine_core_reduction)
+
+        max_sdram_size = get_config_int(
+            "Machine", "max_sdram_allowed_per_chip")
 
         # Return the width and height, and make no assumption about wrap-
         # arounds or version.

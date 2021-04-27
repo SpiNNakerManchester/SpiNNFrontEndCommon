@@ -1421,10 +1421,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         else:
             inputs["PlanNTimeSteps"] = n_machine_time_steps
 
-        # add max SDRAM size and n_cores which we're going to allow
-        # (debug purposes)
-        inputs["MaxSDRAMSize"] = get_config_int(
-            "Machine", "max_sdram_allowed_per_chip")
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
         inputs["MaxMachineCoreReduction"] = get_config_int(

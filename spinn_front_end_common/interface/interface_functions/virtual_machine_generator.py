@@ -29,7 +29,6 @@ class VirtualMachineGenerator(object):
     def __call__(
             self, version=None,
             down_chips=None, down_cores=None, down_links=None,
-            max_sdram_size=None,
             router_entries_per_chip=Router.ROUTER_DEFAULT_AVAILABLE_ENTRIES):
         """
         :param int version: The version of board to create
@@ -39,7 +38,6 @@ class VirtualMachineGenerator(object):
             The set of cores that should be considered broken
         :param list(tuple(int,int,int)) down_links:
             The set of links that should be considered broken
-        :param int max_sdram_size: The SDRAM that should be given to each chip
         :param int router_entries_per_chip:
             The number of router entries to allocate.
         :return: The virtual machine.
@@ -50,6 +48,9 @@ class VirtualMachineGenerator(object):
         height = get_config_int("Machine", "height")
         width = get_config_int("Machine", "width")
         json_path = get_config_str("Machine", "json_path")
+        max_sdram_size = get_config_int(
+            "Machine", "max_sdram_allowed_per_chip")
+
         if version is not None:
             if version in [2, 3]:
                 if height is None:

@@ -20,7 +20,7 @@ from spinnman.connections import SocketAddressWithChip
 from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
-from pacman.config_holder import get_config_bool
+from pacman.config_holder import get_config_bool, get_config_int
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 import time
 import logging
@@ -55,7 +55,7 @@ class MachineGenerator(object):
             self, hostname, bmp_details, downed_chips, downed_cores,
             downed_links, board_version, auto_detect_bmp,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
-            report_waiting_logs, max_sdram_size=None, repair_machine=False,
+            report_waiting_logs, repair_machine=False,
             default_report_directory=None):
         """
         :param str hostname:
@@ -78,9 +78,6 @@ class MachineGenerator(object):
             list(~spinnman.connections.SocketAddressWithChip)
         :param int boot_port_num: the port number used for the boot connection
         :param bool reset_machine_on_start_up:
-        :param max_sdram_size: the maximum SDRAM each chip can say it has
-            (mainly used in debugging purposes)
-        :type max_sdram_size: int or None
         :param bool repair_machine:
             Flag to set the behaviour if a repairable error is found on the
             machine.
@@ -108,6 +105,9 @@ class MachineGenerator(object):
 
         ignore_bad_ethernets = get_config_bool(
             "Machine", "ignore_bad_ethernets")
+
+        max_sdram_size = get_config_int(
+            "Machine", "max_sdram_allowed_per_chip")
 
         txrx = create_transceiver_from_hostname(
             hostname=hostname,
