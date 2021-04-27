@@ -1751,19 +1751,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             data_gen_timer.take_sample())
         self._mapping_outputs["DSGTimeMs"] = self._dsg_time
 
-    def _add_router_compressor_bit_field_inputs(self, inputs):
-        """
-
-        :param dict(str, object) inputs:
-        :return:
-        """
-        # bitfield inputs
-        inputs['RouterCompressorBitFieldUseCutOff'] = \
-            get_config_bool(
-                "Mapping",
-                "router_table_compression_with_bit_field_use_time_cutoff")
-
-
     def _do_load(self, graph_changed, data_changed):
         """
         :param bool graph_changed:
@@ -1779,7 +1766,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
         inputs["NoSyncChanges"] = self._no_sync_changes
-        self._add_router_compressor_bit_field_inputs(inputs)
 
         if not graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[

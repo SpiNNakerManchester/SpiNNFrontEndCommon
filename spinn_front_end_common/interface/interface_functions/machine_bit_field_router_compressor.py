@@ -121,10 +121,8 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
     def __call__(
             self, routing_tables, transceiver, machine, app_id,
             provenance_file_path, machine_graph, placements, executable_finder,
-            default_report_folder,
-            routing_infos,
-            use_timer_cut_off, machine_time_step, time_scale_factor,
-            executable_targets,
+            default_report_folder, routing_infos, machine_time_step,
+            time_scale_factor, executable_targets,
             compress_as_much_as_possible=False, provenance_data_objects=None):
         """ entrance for routing table compression with bit field
 
@@ -145,7 +143,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         :param bool produce_report:
         :param str default_report_folder:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-        :param bool use_timer_cut_off:
         :param int machine_time_step:
         :param int time_scale_factor:
         :param ~spinnman.model.ExecutableTargets executable_targets:
