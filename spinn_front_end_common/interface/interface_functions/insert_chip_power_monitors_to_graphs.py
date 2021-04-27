@@ -26,7 +26,7 @@ class InsertChipPowerMonitorsToGraphs(object):
     """
 
     def __call__(
-            self, machine, machine_graph, n_samples_per_recording,
+            self, machine, machine_graph,
             sampling_frequency, application_graph=None):
         """ Adds chip power monitor vertices on Ethernet connected chips as\
             required.
@@ -35,7 +35,6 @@ class InsertChipPowerMonitorsToGraphs(object):
             the SpiNNaker machine as discovered
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph
-        :param int n_samples_per_recording:
         :param int sampling_frequency:
         :param application_graph: the application graph
         :type application_graph:
@@ -50,20 +49,18 @@ class InsertChipPowerMonitorsToGraphs(object):
         if application_graph is not None:
             self.__add_app(
                 application_graph, machine_graph, machine,
-                n_samples_per_recording, sampling_frequency, progress)
+                sampling_frequency, progress)
         else:
             self.__add_mach_only(
-                machine_graph, machine,
-                n_samples_per_recording, sampling_frequency, progress)
+                machine_graph, machine, sampling_frequency, progress)
 
     @staticmethod
     def __add_app(
-            application_graph, machine_graph, machine, n_samples_per_recording,
-            sampling_frequency, progress):
+            application_graph, machine_graph, machine, sampling_frequency,
+            progress):
         app_vertex = ChipPowerMonitor(
             label="ChipPowerMonitor",
-            sampling_frequency=sampling_frequency,
-            n_samples_per_recording=n_samples_per_recording)
+            sampling_frequency=sampling_frequency)
         application_graph.add_vertex(app_vertex)
         for chip in progress.over(machine.chips):
             if not chip.virtual:
@@ -74,13 +71,11 @@ class InsertChipPowerMonitorsToGraphs(object):
 
     @staticmethod
     def __add_mach_only(
-            machine_graph, machine, n_samples_per_recording,
-            sampling_frequency, progress):
+            machine_graph, machine, sampling_frequency, progress):
         for chip in progress.over(machine.chips):
             if not chip.virtual:
                 machine_graph.add_vertex(ChipPowerMonitorMachineVertex(
                     label=_LABEL.format("machine", chip.x, chip.y),
                     constraints=[ChipAndCoreConstraint(chip.x, chip.y)],
                     app_vertex=None,
-                    sampling_frequency=sampling_frequency,
-                    n_samples_per_recording=n_samples_per_recording))
+                    sampling_frequency=sampling_frequency))

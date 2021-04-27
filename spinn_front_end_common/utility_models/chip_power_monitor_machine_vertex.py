@@ -20,6 +20,7 @@ import numpy
 from data_specification.enums import DataType
 from pacman.executor.injection_decorator import (
     inject_items, supports_injection)
+from pacman.config_holder import get_config_int
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource, ResourceContainer, VariableSDRAM)
@@ -55,7 +56,7 @@ class ChipPowerMonitorMachineVertex(
     """ Machine vertex for C code representing functionality to record\
         idle times in a machine graph.
     """
-    __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
+    __slots__ = ["_sampling_frequency"]
 
     class _REGIONS(IntEnum):
         # data regions
@@ -67,15 +68,13 @@ class ChipPowerMonitorMachineVertex(
     _SAMPLE_RECORDING_CHANNEL = 0
 
     def __init__(
-            self, label, constraints, n_samples_per_recording,
+            self, label, constraints,
             sampling_frequency, app_vertex=None, vertex_slice=None):
         """
         :param str label: vertex label
         :param constraints: constraints on this vertex
         :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
-        :param int n_samples_per_recording:
-            how may samples between recording entry
         :param int sampling_frequency: how often to sample, in microseconds
         :param ChipPowerMonitor app_vertex: associated application vertex
         :param ~pacman.model.graphs.common.Slice vertex_slice:
@@ -83,7 +82,6 @@ class ChipPowerMonitorMachineVertex(
         super().__init__(
             label=label, constraints=constraints, app_vertex=app_vertex,
             vertex_slice=vertex_slice)
-        self._n_samples_per_recording = n_samples_per_recording
         self._sampling_frequency = sampling_frequency
 
     @property
@@ -95,38 +93,31 @@ class ChipPowerMonitorMachineVertex(
         return self._sampling_frequency
 
     @property
-    def n_samples_per_recording(self):
-        """ how may samples to take between making recording entries
-
-        :rtype: int
-        """
-        return self._n_samples_per_recording
-
-    @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         # pylint: disable=arguments-differ
         sim = globals_variables.get_simulator()
         return self.get_resources(
             sim.machine_time_step, sim.time_scale_factor,
-            self._n_samples_per_recording, self._sampling_frequency)
+            self._sampling_frequency)
 
     @staticmethod
     def get_resources(
             time_step, time_scale_factor,
-            n_samples_per_recording, sampling_frequency):
+            sampling_frequency):
         """ Get the resources used by this vertex
 
         :param int time_step:
         :param int time_scale_factor:
-        :param int n_samples_per_recording:
-        :param float sampling_frequency:
+         :param float sampling_frequency:
         :rtype: ~pacman.model.resources.ResourceContainer
         """
         # pylint: disable=too-many-locals
         step_in_microseconds = (time_step * time_scale_factor)
         # The number of sample per step CB believes does not have to be an int
         samples_per_step = (step_in_microseconds / sampling_frequency)
+        n_samples_per_recording = get_config_int(
+            "EnergyMonitor", "n_samples_per_recording_entry")
         recording_per_step = (samples_per_step / n_samples_per_recording)
         max_recording_per_step = math.ceil(recording_per_step)
         overflow_recordings = max_recording_per_step - recording_per_step
@@ -192,8 +183,9 @@ class ChipPowerMonitorMachineVertex(
             spec object
         """
         spec.switch_write_focus(region=self._REGIONS.CONFIG)
-        spec.write_value(self._n_samples_per_recording,
-                         data_type=DataType.UINT32)
+        n_samples_per_recording = get_config_int(
+            "EnergyMonitor", "n_samples_per_recording_entry")
+        spec.write_value(n_samples_per_recording, data_type=DataType.UINT32)
         spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
 
     def _write_setup_info(
@@ -271,8 +263,10 @@ class ChipPowerMonitorMachineVertex(
         :rtype: int
         """
         timer_tick_in_micro_seconds = machine_time_step * time_scale_factor
+
         recording_time = \
-            self._sampling_frequency * self._n_samples_per_recording
+            self._sampling_frequency * get_config_int(
+                "EnergyMonitor", "n_samples_per_recording_entry")
         n_entries = math.floor(timer_tick_in_micro_seconds / recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
@@ -295,7 +289,9 @@ class ChipPowerMonitorMachineVertex(
                 "Chip Power monitor has lost data on chip({}, {})",
                 placement.x, placement.y)
 
+        n_samples_per_recording = get_config_int(
+            "EnergyMonitor", "n_samples_per_recording_entry")
         results = (
             numpy.frombuffer(record_raw, dtype="uint32").reshape(-1, 18) /
-            self.n_samples_per_recording)
+            n_samples_per_recording)
         return results

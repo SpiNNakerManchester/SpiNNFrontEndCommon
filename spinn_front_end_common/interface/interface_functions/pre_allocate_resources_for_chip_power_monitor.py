@@ -25,14 +25,11 @@ class PreAllocateResourcesForChipPowerMonitor(object):
     """
 
     def __call__(
-            self, machine, n_samples_per_recording,
-            sampling_frequency, time_scale_factor, machine_time_step,
-            pre_allocated_resources):
+            self, machine,  sampling_frequency, time_scale_factor,
+            machine_time_step,  pre_allocated_resources):
         """
         :param ~spinn_machine.Machine machine:
             the SpiNNaker machine as discovered
-        :param int n_samples_per_recording:
-            how many samples between record entries
         :param int sampling_frequency: the frequency of sampling
         :param int time_scale_factor: the time scale factor
         :param int machine_time_step: the machine time step
@@ -49,7 +46,6 @@ class PreAllocateResourcesForChipPowerMonitor(object):
 
         # store how much SDRAM the power monitor uses per core
         resources = ChipPowerMonitorMachineVertex.get_resources(
-            n_samples_per_recording=n_samples_per_recording,
             sampling_frequency=sampling_frequency,
             time_scale_factor=time_scale_factor,
             time_step=machine_time_step)

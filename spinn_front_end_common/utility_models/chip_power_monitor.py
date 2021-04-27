@@ -23,22 +23,18 @@ from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 class ChipPowerMonitor(ApplicationVertex, LegacyPartitionerAPI):
     """ Represents idle time recording code in a application graph.
     """
-    __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
+    __slots__ = ["_sampling_frequency"]
 
     def __init__(
-            self, label, n_samples_per_recording, sampling_frequency,
-            constraints=None):
+            self, label, sampling_frequency, constraints=None):
         """
         :param str label: vertex label
         :param constraints: constraints for the vertex
         :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
-        :param int n_samples_per_recording:
-            how many samples to take before recording to SDRAM the total
         :param int sampling_frequency: how many microseconds between sampling
         """
         super().__init__(label, constraints, 1)
-        self._n_samples_per_recording = n_samples_per_recording
         self._sampling_frequency = sampling_frequency
 
     @property
@@ -53,7 +49,6 @@ class ChipPowerMonitor(ApplicationVertex, LegacyPartitionerAPI):
             label=None, constraints=None):
         machine_vertex = ChipPowerMonitorMachineVertex(
             constraints=constraints, label=label,
-            n_samples_per_recording=self._n_samples_per_recording,
             sampling_frequency=self._sampling_frequency,  app_vertex=self)
         if vertex_slice:
             assert (vertex_slice == machine_vertex.vertex_slice)
@@ -76,5 +71,4 @@ class ChipPowerMonitor(ApplicationVertex, LegacyPartitionerAPI):
         """
         # pylint: disable=arguments-differ
         return ChipPowerMonitorMachineVertex.get_resources(
-            machine_time_step, time_scale_factor,
-            self._n_samples_per_recording, self._sampling_frequency)
+            machine_time_step, time_scale_factor, self._sampling_frequency)

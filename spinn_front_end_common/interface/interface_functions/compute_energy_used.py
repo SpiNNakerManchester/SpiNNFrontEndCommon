@@ -16,6 +16,7 @@
 import itertools
 import re
 from spinn_utilities.ordered_set import OrderedSet
+from pacman.config_holder import get_config_int
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
@@ -282,9 +283,11 @@ class ComputeEnergyUsed(object):
             buffer_manager=buffer_manager)
 
         # deduce time in milliseconds per recording element
+        n_samples_per_recording = get_config_int(
+            "EnergyMonitor", "n_samples_per_recording_entry")
         time_for_recorded_sample = (
             chip_power_monitor.sampling_frequency *
-            chip_power_monitor.n_samples_per_recording) / 1000
+            n_samples_per_recording) / 1000
         cores_power_cost = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 

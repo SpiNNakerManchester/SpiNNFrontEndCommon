@@ -1453,9 +1453,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.append("PreAllocateResourcesForChipPowerMonitor")
             inputs['MemorySamplingFrequency'] = get_config_int(
                 "EnergyMonitor", "sampling_frequency")
-            inputs['MemoryNumberSamplesPerRecordingEntry'] = \
-                get_config_int(
-                    "EnergyMonitor", "n_samples_per_recording_entry")
 
         # add algorithms for handling extra monitor code
         if (get_config_bool("Machine", "enable_advanced_monitor_support") or
@@ -1566,9 +1563,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "InsertChipPowerMonitorsToGraphs")
             inputs['MemorySamplingFrequency'] = get_config_int(
                 "EnergyMonitor", "sampling_frequency")
-            inputs['MemoryNumberSamplesPerRecordingEntry'] = \
-                get_config_int(
-                    "EnergyMonitor", "n_samples_per_recording_entry")
 
         # handle extra monitor functionality
         add_data_speed_up = (get_config_bool(
