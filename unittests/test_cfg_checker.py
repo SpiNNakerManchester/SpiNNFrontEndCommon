@@ -20,7 +20,7 @@ from pacman.config_holder import check_python_file
 
 class TestCfgChecker(unittest.TestCase):
 
-    def test_import_all(self):
+    def test_cfg_check(self):
         module = __import__("spinn_front_end_common")
         path = module.__file__
         directory = os.path.dirname(path)
