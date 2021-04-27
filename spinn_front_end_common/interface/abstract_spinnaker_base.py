@@ -1254,8 +1254,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ScampConnectionData"] = get_config_str(
             "Machine", "scamp_connections_data")
         inputs['ReportFolder'] = self._report_default_directory
-        inputs['ReportWaitingLogsFlag'] = get_config_bool(
-            "Machine", "report_waiting_logs")
         inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
         algorithms.append("MachineGenerator")
 
@@ -1313,8 +1311,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         do_partitioning = self._machine_by_size(inputs, algorithms, outputs)
         inputs['ReportFolder'] = self._report_default_directory
-        inputs['ReportWaitingLogsFlag'] = get_config_bool(
-            "Machine", "report_waiting_logs")
         inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
 
         # if using spalloc system

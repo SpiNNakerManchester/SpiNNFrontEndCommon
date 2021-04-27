@@ -55,7 +55,7 @@ class MachineGenerator(object):
             self, hostname, bmp_details, downed_chips, downed_cores,
             downed_links, board_version, auto_detect_bmp,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
-            report_waiting_logs, default_report_directory=None):
+            default_report_directory=None):
         """
         :param str hostname:
             the hostname or IP address of the SpiNNaker machine
@@ -80,9 +80,6 @@ class MachineGenerator(object):
         :param str default_report_directory:
             Directory to write any reports too.
             If None the current directory will be used.
-        :param report_waiting_logs:
-            flag for the txrx to report when waiting on busy cores.
-        :type report_waiting_logs: bool
         :return: Transceiver, and description of machine it is connected to
         :rtype: tuple(~spinnman.transceiver.Transceiver,
             ~spinn_machine.Machine)
@@ -100,6 +97,8 @@ class MachineGenerator(object):
         max_sdram_size = get_config_int(
             "Machine", "max_sdram_allowed_per_chip")
         repair_machine = get_config_bool("Machine", "repair_machine")
+        report_waiting_logs = get_config_bool(
+            "Machine", "report_waiting_logs")
 
         txrx = create_transceiver_from_hostname(
             hostname=hostname,
