@@ -2064,8 +2064,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         inputs["ExtractIobufFromCores"] = get_config_str(
             "Reports", "extract_iobuf_from_cores")
-        inputs["ExtractIobufFromBinaryTypes"] = get_config_str(
-            "Reports", "extract_iobuf_from_binary_types")
 
         # Don't timeout if a stepped mode is in operation
         if n_sync_steps:

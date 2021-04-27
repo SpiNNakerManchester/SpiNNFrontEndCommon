@@ -26,7 +26,7 @@ class ChipIOBufExtractor(object):
     def __call__(
             self, transceiver, executable_targets, executable_finder,
             app_provenance_file_path=None, system_provenance_file_path=None,
-            from_cores="ALL", binary_types=None):
+            from_cores="ALL"):
         """
         :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~spinnman.model.ExecutableTargets executable_targets:
@@ -36,12 +36,10 @@ class ChipIOBufExtractor(object):
         :param system_provenance_file_path:
         :type system_provenance_file_path: str or None
         :param str from_cores:
-        :param str binary_types:
         :return: error_entries, warn_entries
         :rtype: tuple(list(str),list(str))
         """
         extractor = IOBufExtractor(
             transceiver, executable_targets, executable_finder,
-            app_provenance_file_path, system_provenance_file_path, from_cores,
-            binary_types)
+            app_provenance_file_path, system_provenance_file_path, from_cores)
         return extractor.extract_iobuf()
