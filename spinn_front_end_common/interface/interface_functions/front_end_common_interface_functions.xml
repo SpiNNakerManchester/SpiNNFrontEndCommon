@@ -951,11 +951,7 @@
                 <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
                 <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
             </parameter>
-            <parameter>
-                <param_name>disable_advanced_monitor_usage</param_name>
-                <param_type>DisableAdvancedMonitorUsageForDataIn</param_type>
-            </parameter>
-            <parameter>
+           <parameter>
                 <param_name>region_sizes</param_name>
                 <param_type>RegionSizes</param_type>
             </parameter>
@@ -976,7 +972,6 @@
             <param_name>placements</param_name>
             <param_name>extra_monitor_cores</param_name>
             <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
-            <param_name>disable_advanced_monitor_usage</param_name>
             <token part="DSGSystemDataLoaded">DataLoaded</token>
             <token part="SystemBinariesLoaded">DataLoaded</token>
         </optional_inputs>

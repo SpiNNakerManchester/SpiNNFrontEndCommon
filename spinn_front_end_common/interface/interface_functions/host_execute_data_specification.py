@@ -22,6 +22,7 @@ from spinn_machine import CoreSubsets
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
 from data_specification.exceptions import DataSpecificationException
+from pacman.config_holder import get_config_bool
 from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
@@ -195,8 +196,7 @@ class HostExecuteDataSpecification(object):
             placements=None, extra_monitor_cores=None,
             extra_monitor_cores_to_ethernet_connection_map=None,
             report_folder=None, java_caller=None,
-            processor_to_app_data_base_address=None,
-            disable_advanced_monitor_usage=False):
+            processor_to_app_data_base_address=None):
         """ Execute the data specs for all non-system targets.
 
         :param ~spinn_machine.Machine machine:
@@ -224,8 +224,6 @@ class HostExecuteDataSpecification(object):
             map of placement and DSG data
         :type processor_to_app_data_base_address:
             dict(tuple(int,int,int), DsWriteInfo)
-        :param bool disable_advanced_monitor_usage:
-            whether to avoid using advanced monitors even if they're available
         :return: map of placement and DSG data
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
@@ -242,8 +240,9 @@ class HostExecuteDataSpecification(object):
         self._placements = placements
         self._core_to_conn_map = extra_monitor_cores_to_ethernet_connection_map
 
-        # Allow override to disable
-        if disable_advanced_monitor_usage:
+        # Allow config to override
+        if get_config_bool(
+                "Machine", "disable_advanced_monitor_usage_for_data_in"):
             uses_advanced_monitors = False
 
         impl_method = self.__java_app if java_caller else self.__python_app
