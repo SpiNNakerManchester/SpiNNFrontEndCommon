@@ -1150,10 +1150,6 @@
                 <param_type>RepairMachine</param_type>
             </parameter>
             <parameter>
-                <param_name>ignore_bad_ethernets</param_name>
-                <param_type>IgnoreBadEthernets</param_type>
-            </parameter>
-            <parameter>
                 <param_name>default_report_directory</param_name>
                 <param_type>ReportFolder</param_type>
             </parameter>
@@ -1176,7 +1172,6 @@
             <param_name>boot_port_num</param_name>
             <param_name>max_sdram_size</param_name>
             <param_name>repair_machine</param_name>
-            <param_name>ignore_bad_ethernets</param_name>
             <param_name>default_report_directory</param_name>
         </required_inputs>
         <outputs>

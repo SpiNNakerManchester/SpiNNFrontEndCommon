@@ -20,6 +20,7 @@ from spinnman.connections import SocketAddressWithChip
 from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
+from pacman.config_holder import get_config_bool
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 import time
 import logging
@@ -55,7 +56,7 @@ class MachineGenerator(object):
             downed_links, board_version, auto_detect_bmp,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
             report_waiting_logs, max_sdram_size=None, repair_machine=False,
-            ignore_bad_ethernets=True, default_report_directory=None):
+            default_report_directory=None):
         """
         :param str hostname:
             the hostname or IP address of the SpiNNaker machine
@@ -87,14 +88,6 @@ class MachineGenerator(object):
             (See machine_factory.machine_repair)
             If `False`, get machine will raise an Exception if a problematic
             machine is discovered.
-        :param bool ignore_bad_ethernets:
-            Flag to say that ip_address information
-            on non-ethernet chips should be ignored.
-            Non-ethernet chips are defined here as ones that do not report
-            themselves their nearest ethernet.
-            The bad IP address is always logged.
-            If True, the IP address is ignored.
-            If False, the chip with the bad IP address is removed.
         :param str default_report_directory:
             Directory to write any reports too.
             If None the current directory will be used.
@@ -112,6 +105,9 @@ class MachineGenerator(object):
             scamp_connection_data = [
                 self._parse_scamp_connection(piece)
                 for piece in scamp_connection_data.split(":")]
+
+        ignore_bad_ethernets = get_config_bool(
+            "Machine", "ignore_bad_ethernets")
 
         txrx = create_transceiver_from_hostname(
             hostname=hostname,

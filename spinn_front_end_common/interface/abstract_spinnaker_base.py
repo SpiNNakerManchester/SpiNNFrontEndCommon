@@ -1452,8 +1452,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "boot_connection_port_num")
         inputs["RepairMachine"] = get_config_bool(
             "Machine", "repair_machine")
-        inputs["IgnoreBadEthernets"] = get_config_bool(
-            "Machine", "ignore_bad_ethernets")
 
         # add algorithms for handling LPG placement and edge insertion
         if self._live_packet_recorder_params:
