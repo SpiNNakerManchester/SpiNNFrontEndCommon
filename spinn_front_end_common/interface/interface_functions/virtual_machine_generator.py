@@ -15,7 +15,7 @@
 
 import logging
 from spinn_utilities.log import FormatAdapter
-from spinn_machine import json_machine, virtual_machine, Machine, Router
+from spinn_machine import json_machine, virtual_machine, Machine
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
