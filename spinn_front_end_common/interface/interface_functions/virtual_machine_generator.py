@@ -16,7 +16,7 @@
 import logging
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import json_machine, virtual_machine, Machine, Router
-
+from pacman.config_holder import  get_config_int, get_config_str
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
@@ -27,14 +27,11 @@ class VirtualMachineGenerator(object):
     __slots__ = []
 
     def __call__(
-            self, width=None, height=None, version=None,
+            self, version=None,
             down_chips=None, down_cores=None, down_links=None,
             max_sdram_size=None,
-            router_entries_per_chip=Router.ROUTER_DEFAULT_AVAILABLE_ENTRIES,
-            json_path=None):
+            router_entries_per_chip=Router.ROUTER_DEFAULT_AVAILABLE_ENTRIES):
         """
-        :param int width: The width of the machine in chips
-        :param int height: The height of the machine in chips
         :param int version: The version of board to create
         :param list(tuple(int,int)) down_chips:
             The set of chips that should be considered broken
@@ -45,13 +42,14 @@ class VirtualMachineGenerator(object):
         :param int max_sdram_size: The SDRAM that should be given to each chip
         :param int router_entries_per_chip:
             The number of router entries to allocate.
-        :param str json_path:
-            Where to load a JSON description of the machine from, if anywhere.
         :return: The virtual machine.
         :rtype: ~spinn_machine.Machine
         :raises Exception: If given bad arguments
         """
         # For backward compatibility support version in csf files for now
+        height = get_config_int("Machine", "height")
+        width = get_config_int("Machine", "width")
+        json_path = get_config_str("Machine", "json_path")
         if version is not None:
             if version in [2, 3]:
                 if height is None:

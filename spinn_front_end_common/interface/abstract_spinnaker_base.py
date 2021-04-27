@@ -1282,12 +1282,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["IPAddress"] = "virtual"
         inputs["NumberOfBoards"] = get_config_int(
             "Machine", "number_of_boards")
-        inputs["MachineWidth"] = get_config_int(
-            "Machine", "width")
-        inputs["MachineHeight"] = get_config_int(
-            "Machine", "height")
-        inputs["MachineJsonPath"] = get_config_str(
-            "Machine", "json_path")
         inputs["BMPDetails"] = None
         inputs["AutoDetectBMPFlag"] = False
         inputs["ScampConnectionData"] = None

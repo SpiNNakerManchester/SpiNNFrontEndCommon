@@ -1266,14 +1266,6 @@
         <python_class>VirtualMachineGenerator</python_class>
         <input_definitions>
             <parameter>
-                <param_name>width</param_name>
-                <param_type>MachineWidth</param_type>
-            </parameter>
-            <parameter>
-                <param_name>height</param_name>
-                <param_type>MachineHeight</param_type>
-            </parameter>
-            <parameter>
                 <param_name>version</param_name>
                 <param_type>BoardVersion</param_type>
             </parameter>
@@ -1297,20 +1289,7 @@
                 <param_name>router_entries_per_chip</param_name>
                 <param_type>RouterTableEntriesPerRouter</param_type>
             </parameter>
-            <parameter>
-                <param_name>json_path</param_name>
-                <param_type>MachineJsonPath</param_type>
-            </parameter>
         </input_definitions>
-        <required_inputs>
-            <one_of>
-                <all_of>
-                    <param_name>width</param_name>
-                    <param_name>height</param_name>
-                </all_of>
-                <param_name>json_path</param_name>
-            </one_of>
-        </required_inputs>
         <optional_inputs>
             <param_name>version</param_name>
             <param_name>down_chips</param_name>
