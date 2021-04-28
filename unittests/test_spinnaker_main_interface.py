@@ -16,6 +16,7 @@
 import os
 import sys
 import unittest
+from spinn_front_end_common.config_setup import reset_configs
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
@@ -43,6 +44,10 @@ class MainInterfaceTimingImpl(AbstractSpinnakerBase):
 
 
 class TestSpinnakerMainInterface(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        reset_configs()
 
     def setUp(self):
         globals_variables.set_failed_state(FailedState())

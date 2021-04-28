@@ -16,9 +16,14 @@
 import os
 import unittest
 from spinn_utilities.config_holder import check_python_file
+from spinn_front_end_common.config_setup import reset_configs
 
 
 class TestCfgChecker(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        reset_configs()
 
     def test_import_all(self):
         module = __import__("spinn_front_end_common")
