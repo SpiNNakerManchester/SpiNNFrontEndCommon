@@ -15,8 +15,8 @@
 
 import logging
 from spinn_utilities.log import FormatAdapter
-from spinn_machine import json_machine, virtual_machine, Machine, Router
-from pacman.config_holder import  get_config_int, get_config_str
+from spinn_machine import json_machine, virtual_machine, Machine
+from pacman.config_holder import get_config_int, get_config_str
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
@@ -29,7 +29,8 @@ class VirtualMachineGenerator(object):
     def __call__(
             self, version=None,
             down_chips=None, down_cores=None, down_links=None,
-            router_entries_per_chip=Router.ROUTER_DEFAULT_AVAILABLE_ENTRIES):
+            max_sdram_size=None,
+            json_path=None):
         """
         :param int version: The version of board to create
         :param list(tuple(int,int)) down_chips:
@@ -38,8 +39,6 @@ class VirtualMachineGenerator(object):
             The set of cores that should be considered broken
         :param list(tuple(int,int,int)) down_links:
             The set of links that should be considered broken
-        :param int router_entries_per_chip:
-            The number of router entries to allocate.
         :return: The virtual machine.
         :rtype: ~spinn_machine.Machine
         :raises Exception: If given bad arguments
@@ -84,7 +83,7 @@ class VirtualMachineGenerator(object):
                 n_cpus_per_chip=Machine.max_cores_per_chip(),
                 down_chips=down_chips, down_cores=down_cores,
                 down_links=down_links, sdram_per_chip=max_sdram_size,
-                router_entries_per_chip=router_entries_per_chip, validate=True)
+                validate=True)
         else:
             if (height is not None or width is not None or
                     version is not None or down_chips is not None or
