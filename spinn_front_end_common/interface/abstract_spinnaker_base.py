@@ -1291,8 +1291,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["BMPDetails"] = None
         inputs["AutoDetectBMPFlag"] = False
         inputs["ScampConnectionData"] = None
-        inputs["RouterTableEntriesPerRouter"] = \
-            get_config_int("Machine", "RouterTableEntriesPerRouter")
         inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
 
         algorithms.append("VirtualMachineGenerator")
