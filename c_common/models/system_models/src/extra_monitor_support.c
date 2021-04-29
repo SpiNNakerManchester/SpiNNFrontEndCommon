@@ -874,8 +874,8 @@ static void reinjection_read_packet_types(const reinject_config_t *config) {
 
     io_printf(
         IO_BUF,
-        "Setting reinject mc to %d\n Setting reinject pp to %d\n"
-        "Setting reinject fr to %d\n Setting reinject nn to %d\n",
+        "Setting reinject mc to %d\nSetting reinject pp to %d\n"
+        "Setting reinject fr to %d\nSetting reinject nn to %d\n",
         reinject_mc, reinject_pp, reinject_fr, reinject_nn);
 
     // set the reinjection mc api
@@ -903,7 +903,9 @@ static inline void reinjection_set_wait2_timeout(uint payload) {
 //! response
 //! \return The payload size of the response message.
 static inline int reinjection_set_timeout_sdp(sdp_msg_t *msg) {
+#if 0
     io_printf(IO_BUF, "setting router timeouts via sdp\n");
+#endif
     if (msg->arg1 > ROUTER_TIMEOUT_MAX) {
         msg->cmd_rc = RC_ARG;
         return 0;
@@ -924,7 +926,9 @@ static inline int reinjection_set_timeout_sdp(sdp_msg_t *msg) {
 //! response
 //! \return The payload size of the response message.
 static inline int reinjection_set_emergency_timeout_sdp(sdp_msg_t *msg) {
+#if 0
     io_printf(IO_BUF, "setting router emergency timeouts via sdp\n");
+#endif
     if (msg->arg1 > ROUTER_TIMEOUT_MAX) {
         msg->cmd_rc = RC_ARG;
         return 0;
@@ -949,8 +953,8 @@ static inline int reinjection_set_packet_types(sdp_msg_t *msg) {
 
     io_printf(
         IO_BUF,
-        "Setting reinject mc to %d\n Setting reinject pp to %d\n"
-        "Setting reinject fr to %d\n Setting reinject nn to %d\n",
+        "Setting reinject mc to %d\nSetting reinject pp to %d\n"
+        "Setting reinject fr to %d\nSetting reinject nn to %d\n",
         reinject_mc, reinject_pp, reinject_fr, reinject_nn);
 
     // set SCP command to OK, as successfully completed
@@ -978,8 +982,6 @@ static inline int reinjection_get_status(sdp_msg_t *msg) {
     data->n_reinjected_packets = reinject_n_reinjected_packets;
     data->n_link_dumped_packets = reinject_n_link_dumped_packets;
     data->n_processor_dumped_packets = reinject_n_processor_dumped_packets;
-
-    io_printf(IO_BUF, "dropped packets %d\n", reinject_n_dropped_packets);
 
     // Put the current services enabled in the packet
     data->packet_types_reinjected = 0;
@@ -1609,7 +1611,7 @@ static void data_out_store_missing_seq_nums(
                 rt_error(RTE_SWERR);
             }
 
-            io_printf(IO_BUF, "Activate bacon protocol!");
+            io_printf(IO_BUF, "Activate bacon protocol!\n");
 
             // allocate biggest block
             data_out_missing_seq_num_sdram_address = sdram_alloc(max_bytes);
@@ -1680,7 +1682,10 @@ static void data_out_dma_complete_read_missing_seqeuence_nums(void) {
     } else {        // finished data send, tell host its done
         data_out_send_end_flag();
         data_out_in_retransmission_mode = false;
-        data_out_missing_seq_num_sdram_address = NULL;
+        if (data_out_missing_seq_num_sdram_address != NULL) {
+            sdram_free(data_out_missing_seq_num_sdram_address);
+            data_out_missing_seq_num_sdram_address = NULL;
+        }
         data_out_read_data_position = 0;
         data_out_position_for_retransmission = 0;
         data_out_n_missing_seq_nums_in_sdram = 0;
@@ -1835,7 +1840,9 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
                     data_out_transaction_id, message->transaction_id);
             return;
         }
+#if 0
         io_printf(IO_BUF, "data out clear\n");
+#endif
         data_out_stop = true;
         break;
     default:
@@ -1927,7 +1934,9 @@ void __wrap_sark_int(void *pc) {
         return;
     }
 
+#if 0
     io_printf(IO_BUF, "received sdp message\n");
+#endif
 
     switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
     case REINJECTION_PORT:
@@ -2009,11 +2018,13 @@ static void data_out_initialise(void) {
     data_out_transaction_id_key = config->transaction_id_key;
     data_out_end_flag_key = config->end_flag_key;
 
+#if 0
     io_printf(IO_BUF,
             "new seq key = %d, first data key = %d, transaction id key = %d, "
             "end flag key = %d, basic_data_key = %d\n",
             data_out_new_sequence_key, data_out_first_data_key, data_out_transaction_id_key,
             data_out_end_flag_key, data_out_basic_data_key);
+#endif
 
     // Various DMA callbacks
     set_vic_callback(DMA_SLOT, DMA_DONE_INT, data_out_dma_complete);

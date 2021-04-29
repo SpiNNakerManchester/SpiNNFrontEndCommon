@@ -24,9 +24,9 @@ from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM, ResourceContainer
+from pacman.config_holder import get_config_bool
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
-from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utilities.utility_objs.\
@@ -144,8 +144,7 @@ class ExtraMonitorSupportMachineVertex(
             app_vertex=app_vertex)
 
         if reinject_multicast is None:
-            config = get_simulator().config
-            self._reinject_multicast = config.getboolean(
+            self._reinject_multicast = get_config_bool(
                 "Machine", "enable_reinjection")
         else:
             self._reinject_multicast = reinject_multicast
