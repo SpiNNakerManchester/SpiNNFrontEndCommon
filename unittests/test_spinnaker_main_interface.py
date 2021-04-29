@@ -16,7 +16,7 @@
 import os
 import sys
 import unittest
-from spinn_front_end_common.config_setup import reset_configs
+from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
