@@ -16,7 +16,7 @@
 import os
 from spinn_utilities.config_holder import (
     add_default_cfg, clear_cfg_files)
-from spinn_machine.config_setup import add_spinn_machine_cfg
+from spinnman.config_setup import add_spinnman_cfg
 from pacman.config_setup import add_pacman_cfg
 
 BASE_CONFIG_FILE = "spinnaker.cfg"
@@ -39,5 +39,5 @@ def add_spinnaker_cfg():
     Add the local cfg and all dependent cfg files.
     """
     add_pacman_cfg()  # This add its dependencies too
-    add_spinn_machine_cfg()  # double adds of dependencuies ignored
+    add_spinnman_cfg()  # double adds of dependencies ignored
     add_default_cfg(os.path.join(os.path.dirname(__file__), BASE_CONFIG_FILE))
