@@ -33,7 +33,7 @@
 #include <eieio.h>
 
 //! Provenance data store
-typedef struct provenance_data_struct {
+typedef struct lpg_provenance_data_t {
     //! Count of overflows when no payload was sent
     uint32_t number_of_overflows_no_payload;
     //! Count of overflows when a payload was sent
@@ -42,7 +42,7 @@ typedef struct provenance_data_struct {
     uint32_t number_of_gathered_events;
     //! Number of messages sent to host
     uint32_t number_of_sent_messages;
-} provenance_data_struct;
+} lpg_provenance_data_t;
 
 //! \brief Definitions of each element in the configuration.
 //!
@@ -146,7 +146,7 @@ static circular_buffer with_payload_buffer;
 static bool processing_events = false;
 
 //! The provenance information that we are collecting.
-static provenance_data_struct provenance_data;
+static lpg_provenance_data_t provenance_data;
 
 //! The configuration data of the application.
 static struct lpg_config config;
@@ -241,7 +241,7 @@ static void flush_events(void) {
 //! \param[out] provenance_region_address:
 //!     Where the provenance data will be written
 static void record_provenance_data(address_t provenance_region_address) {
-    provenance_data_struct *sdram = (void *) provenance_region_address;
+    lpg_provenance_data_t *sdram = (void *) provenance_region_address;
     // Copy provenance data into SDRAM region
     *sdram = provenance_data;
 }
