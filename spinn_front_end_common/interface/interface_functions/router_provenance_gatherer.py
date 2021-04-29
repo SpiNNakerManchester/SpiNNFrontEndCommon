@@ -203,10 +203,7 @@ class RouterProvenanceGatherer(object):
         :param int y:
         :rtype: ReInjectionStatus or None
         """
-        status = None
-        if reinjection_data is not None:
-            status = reinjection_data[x, y]
-        return status
+        return reinjection_data[x, y] if reinjection_data else None
 
     def __add_totals(self, diagnostics, status):
         """
@@ -241,12 +238,9 @@ class RouterProvenanceGatherer(object):
         :rtype: iterable(ProvenanceDataItem)
         """
         # pylint: disable=too-many-arguments
-        names = ["router_provenance"]
-        if expected:
-            names.append("expected_routers")
-        else:
-            names.append("unexpected_routers")
-        names.append(f"router_at_chip_{x}_{y}")
+        names = ["router_provenance",
+                 f"{'' if expected else 'un'}expected_routers",
+                 f"router_at_chip_{x}_{y}"]
 
         yield ProvenanceDataItem(
             names + ["Local_Multicast_Packets"],
@@ -269,35 +263,31 @@ class RouterProvenanceGatherer(object):
         yield ProvenanceDataItem(
             names + ["Dropped_Multicast_Packets"],
             diagnostics.n_dropped_multicast_packets,
-            report=((has_dropped and not has_reinjection) or (
-                has_dropped and has_reinjection and missing_stuff)),
-            message=(
-                f"The router on {x}, {y} has dropped "
-                f"{diagnostics.n_dropped_multicast_packets} multicast route "
-                "packets. Try increasing the machine_time_step and/or the "
-                "time scale factor or reducing the number of atoms per core."))
+            (has_dropped and not has_reinjection) or (
+                has_dropped and has_reinjection and missing_stuff),
+            f"The router on {x}, {y} has dropped "
+            f"{diagnostics.n_dropped_multicast_packets} multicast route "
+            "packets. Try increasing the machine_time_step and/or the time "
+            "scale factor or reducing the number of atoms per core.")
         yield ProvenanceDataItem(
             names + ["Dropped_Multicast_Packets_via_local_transmission"],
-            diagnostics.user_3,
-            report=(diagnostics.user_3 > 0),
-            message=(
-                f"The router on {x}, {y} has dropped {diagnostics.user_3} "
-                "multicast packets that were transmitted by local cores. "
-                "This occurs where the router has no entry associated with "
-                "the multicast key. Try investigating the keys allocated to "
-                "the vertices and the router table entries for this chip."))
+            diagnostics.user_3, (diagnostics.user_3 > 0),
+            f"The router on {x}, {y} has dropped {diagnostics.user_3} "
+            "multicast packets that were transmitted by local cores. This "
+            "occurs where the router has no entry associated with the "
+            "multicast key. Try investigating the keys allocated to the "
+            "vertices and the router table entries for this chip.")
         yield ProvenanceDataItem(
             names + ["default_routed_external_multicast_packets"],
             diagnostics.user_2,
-            report=(diagnostics.user_2 > 0 and not (
+            (diagnostics.user_2 > 0 and not (
                 table and table.number_of_defaultable_entries)),
-            message=(
-                f"The router on {x}, {y} has default routed "
-                f"{diagnostics.user_2} multicast packets, but the router "
-                "table did not expect any default routed packets. This occurs "
-                "where the router has no entry associated with the multi-cast "
-                "key. Try investigating the keys allocated to the vertices "
-                "and the router table entries for this chip."))
+            f"The router on {x}, {y} has default routed {diagnostics.user_2} "
+            "multicast packets, but the router table did not expect any "
+            "default routed packets. This occurs where the router has no "
+            "entry associated with the multicast key. Try investigating the "
+            "keys allocated to the vertices and the router table entries for "
+            "this chip.")
 
         if table:
             yield ProvenanceDataItem(
@@ -335,13 +325,12 @@ class RouterProvenanceGatherer(object):
         yield ProvenanceDataItem(
             names + ["Dropped_FR_Packets"],
             diagnostics.n_dropped_fixed_route_packets,
-            report=(diagnostics.n_dropped_fixed_route_packets > 0),
-            message=(
-                f"The router on chip {x}:{y} dropped "
-                f"{diagnostics.n_dropped_fixed_route_packets} fixed route "
-                "packets. This is indicative of an error within the data "
-                "extraction process as this is the only expected user of "
-                "fixed route packets."))
+            (diagnostics.n_dropped_fixed_route_packets > 0),
+            f"The router on chip {x}:{y} dropped "
+            f"{diagnostics.n_dropped_fixed_route_packets} fixed route "
+            "packets. This is indicative of an error within the data "
+            "extraction process as this is the only expected user of fixed "
+            "route packets.")
 
         if status is not None:
             yield ProvenanceDataItem(
@@ -349,53 +338,47 @@ class RouterProvenanceGatherer(object):
             yield ProvenanceDataItem(
                 names + ["Missed_For_Reinjection"],
                 status.n_missed_dropped_packets,
-                report=(status.n_missed_dropped_packets > 0),
-                message=(
-                    f"The extra monitor on {x}, {y} has missed "
-                    f"{status.n_missed_dropped_packets} packets."))
+                (status.n_missed_dropped_packets > 0),
+                f"The extra monitor on {x}, {y} has missed "
+                f"{status.n_missed_dropped_packets} packets.")
             yield ProvenanceDataItem(
                 names + ["Reinjection_Overflows"],
                 status.n_dropped_packet_overflows,
-                report=(status.n_dropped_packet_overflows > 0),
-                message=(
-                    f"The extra monitor on {x}, {y} has dropped "
-                    f"{status.n_dropped_packet_overflows} packets."))
+                (status.n_dropped_packet_overflows > 0),
+                f"The extra monitor on {x}, {y} has dropped "
+                f"{status.n_dropped_packet_overflows} packets.")
             yield ProvenanceDataItem(
                 names + ["Reinjected"], status.n_reinjected_packets)
             yield ProvenanceDataItem(
                 names + ["Dumped_from_a_Link"], status.n_link_dumps,
-                report=(
-                    status.n_link_dumps > 0 and
-                    self.__has_virtual_chip_connected(x, y)),
-                message=(
-                    f"The extra monitor on {x}, {y} has detected that "
-                    f"{status.n_link_dumps} packets were dumped from an "
-                    "outgoing link of this chip's router. This often occurs "
-                    "when external devices are used in the script but not "
-                    "connected to the communication fabric correctly. These "
-                    "packets may have been reinjected multiple times and so "
-                    "this number may be an overestimate."))
+                (status.n_link_dumps > 0 and (
+                    self.__has_virtual_chip_connected(x, y))),
+                f"The extra monitor on {x}, {y} has detected that "
+                f"{status.n_link_dumps} packets were dumped from an outgoing "
+                "link of this chip's router. This often occurs when external "
+                "devices are used in the script but not connected to the "
+                "communication fabric correctly. These packets may have been "
+                "reinjected multiple times and so this number may be an "
+                "overestimate.")
             yield ProvenanceDataItem(
                 names + ["Dumped_from_a_processor"], status.n_processor_dumps,
-                report=(status.n_processor_dumps > 0),
-                message=(
-                    f"The extra monitor on {x}, {y} has detected that "
-                    f"{status.n_processor_dumps} packets were dumped from a "
-                    "core failing to take the packet. This often occurs when "
-                    "the executable has crashed or has not been given a "
-                    "multicast packet callback. It can also result from the "
-                    "core taking too long to process each packet. These "
-                    "packets were reinjected and so this number is likely an "
-                    "overestimate."))
+                (status.n_processor_dumps > 0),
+                f"The extra monitor on {x}, {y} has detected that "
+                f"{status.n_processor_dumps} packets were dumped from a "
+                "core failing to take the packet. This often occurs when "
+                "the executable has crashed or has not been given a "
+                "multicast packet callback. It can also result from the "
+                "core taking too long to process each packet. These "
+                "packets were reinjected and so this number is likely an "
+                "overestimate.")
 
         yield ProvenanceDataItem(
             names + ["Error status"], diagnostics.error_status,
-            report=(diagnostics.error_status > 0),
-            message=(
-                f"The router on {x}, {y} has a non-zero error status. "
-                "This could indicate a hardware fault. The errors set are "
-                f"{diagnostics.errors_set}, and the error count is "
-                f"{diagnostics.error_count}"))
+            (diagnostics.error_status > 0),
+            f"The router on {x}, {y} has a non-zero error status. This could "
+            "indicate a hardware fault. The errors set are "
+            f"{diagnostics.errors_set}, and the error count is "
+            f"{diagnostics.error_count}")
 
     def __has_virtual_chip_connected(self, x, y):
         """
