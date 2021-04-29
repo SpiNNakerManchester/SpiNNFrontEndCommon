@@ -103,15 +103,13 @@ class LivePacketGatherMachineVertex(
 
     @overrides(
         ProvidesProvenanceDataFromMachineImpl._get_extra_provenance_items)
-    def _get_extra_provenance_items(
-            self, label, location, names, provenance_data):
-        # pylint: disable=unused-argument
+    def _get_extra_provenance_items(self, label, names, provenance_data):
         (lost, lost_payload, events, messages) = provenance_data
         yield ProvenanceDataItem(
             names + ["lost_packets_without_payload"], lost,
             report=(lost > 0),
             message=(
-                f"The live packet gatherer has lost {lost} packets which do "
+                f"The {label} has lost {lost} packets which do "
                 "not have payloads during its execution. Try increasing the "
                 "machine time step or increasing the time scale factor. If "
                 "you are running in real time, try reducing the number of "
@@ -120,7 +118,7 @@ class LivePacketGatherMachineVertex(
             names + ["lost_packets_with_payload"], lost_payload,
             report=(lost_payload > 0),
             message=(
-                f"The live packet gatherer has lost {lost_payload} packets "
+                f"The {label} has lost {lost_payload} packets "
                 "which have payloads during its execution. Try increasing "
                 "the machine time step or increasing the time scale factor. "
                 "If you are running in real time, try reducing the number of "

@@ -342,6 +342,8 @@ typedef struct extra_monitor_provenance_t {
     uint n_in_streams;
     //! The number of times we've streamed data out
     uint n_out_streams;
+    //! The number of times we've modified the router
+    uint n_router_changes;
 } extra_monitor_provenance_t;
 
 //! values for the priority for each callback
@@ -887,12 +889,14 @@ static void reinjection_read_packet_types(const reinject_config_t *config) {
 //! \param[in] payload: The encoded value to set. Must be in legal range.
 static inline void reinjection_set_wait1_timeout(uint payload) {
     router_control->control.begin_emergency_wait_time = payload;
+    prov->n_router_changes++;
 }
 
 //! \brief Set the wait2 router timeout.
 //! \param[in] payload: The encoded value to set. Must be in legal range.
 static inline void reinjection_set_wait2_timeout(uint payload) {
     router_control->control.drop_wait_time = payload;
+    prov->n_router_changes++;
 }
 
 //! \brief Set the router wait1 timeout.
@@ -912,8 +916,9 @@ static inline int reinjection_set_timeout_sdp(sdp_msg_t *msg) {
     }
 
     router_control->control.begin_emergency_wait_time = msg->arg1;
+    prov->n_router_changes++;
 
-    // set SCP command to OK , as successfully completed
+    // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
 }
@@ -935,6 +940,7 @@ static inline int reinjection_set_emergency_timeout_sdp(sdp_msg_t *msg) {
     }
 
     router_control->control.drop_wait_time = msg->arg1;
+    prov->n_router_changes++;
 
     // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
@@ -950,6 +956,7 @@ static inline int reinjection_set_packet_types(sdp_msg_t *msg) {
     reinject_pp = msg->arg2;
     reinject_fr = msg->arg3;
     reinject_nn = msg->data[0];
+    prov->n_router_changes++;
 
     io_printf(
         IO_BUF,
@@ -1054,6 +1061,7 @@ static void reinjection_clear(void) {
 //! \return The payload size of the response message.
 static inline int reinjection_clear_message(sdp_msg_t *msg) {
     reinjection_clear();
+    prov->n_router_changes++;
     // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
@@ -1284,6 +1292,7 @@ static void data_in_load_router(
             }
         }
     }
+    prov->n_router_changes++;
 }
 
 //! \brief reads in routers entries and places in application sdram location
@@ -1345,7 +1354,8 @@ static void data_in_speed_up_load_in_application_routes(void) {
     io_printf(IO_BUF, "Loading application routes\n");
 #endif
     data_in_load_router(
-            data_in_saved_application_router_table, data_in_application_table_n_valid_entries);
+            data_in_saved_application_router_table,
+            data_in_application_table_n_valid_entries);
 }
 
 //! \brief The handler for all control messages coming in for data in speed up
@@ -2088,11 +2098,12 @@ static void data_in_initialise(void) {
 }
 
 //! Set up where we collect provenance
-static void provenance_initialise(void) {//FIXME
+static void provenance_initialise(void) {
     prov = dse_block(PROVENANCE_REGION);
     prov->n_sdp_packets = 0;
     prov->n_in_streams = 0;
     prov->n_out_streams = 0;
+    prov->n_router_changes = 0;
 }
 
 //-----------------------------------------------------------------------------

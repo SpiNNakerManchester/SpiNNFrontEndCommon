@@ -832,9 +832,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @overrides(
         ProvidesProvenanceDataFromMachineImpl._get_extra_provenance_items)
-    def _get_extra_provenance_items(
-            self, label, location, names, provenance_data):
-        # pylint: disable=unused-argument
+    def _get_extra_provenance_items(self, label, names, provenance_data):
         n_rcv, n_snt, bad_key, bad_pkt, late = provenance_data
         yield ProvenanceDataItem(
             names + ["received_sdp_packets"], n_rcv,

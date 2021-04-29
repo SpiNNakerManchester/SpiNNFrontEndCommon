@@ -372,8 +372,7 @@ class CommandSenderMachineVertex(
 
     @overrides(ProvidesProvenanceDataFromMachineImpl.
                _get_extra_provenance_items)
-    def _get_extra_provenance_items(
-            self, label, location, names, provenance_data):
+    def _get_extra_provenance_items(self, label, names, provenance_data):
         # pylint: disable=unused-argument
         n_commands_sent, = provenance_data
         yield ProvenanceDataItem(names + ["Sent_Commands"], n_commands_sent)

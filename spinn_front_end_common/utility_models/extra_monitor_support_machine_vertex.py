@@ -63,8 +63,9 @@ _ONE_WORD = struct.Struct("<I")
 #     uint n_sdp_packets;
 #     uint n_in_streams;
 #     uint n_out_streams;
+#     uint n_router_changes;
 # } extra_monitor_provenance_t;
-_PROVENANCE_FORMAT = struct.Struct("<III")
+_PROVENANCE_FORMAT = struct.Struct("<IIII")
 
 # cap for stopping wrap arounds
 TRANSACTION_ID_CAP = 0xFFFFFFFF
@@ -426,15 +427,20 @@ class ExtraMonitorSupportMachineVertex(
     @overrides(AbstractProvidesProvenanceDataFromMachine.
                get_provenance_data_from_machine)
     def get_provenance_data_from_machine(self, transceiver, placement):
+        # No standard provenance region, so no standard provenance data
+        # But we do have our own.
         provenance_address = self.__get_provenance_region_address(
             transceiver, placement)
         data = transceiver.read_memory(
             placement.x, placement.y, provenance_address,
             _PROVENANCE_FORMAT.size)
-        (n_sdp_packets, n_in_streams, n_out_streams) = \
+        (n_sdp_packets, n_in_streams, n_out_streams, n_router_changes) = \
             _PROVENANCE_FORMAT.unpack_from(data)
         root_name = f"monitor for {placement.x},{placement.y}"
         return [
+            ProvenanceDataItem(
+                [root_name, "Number_of_Router_Configuration_Changes"],
+                n_router_changes),
             ProvenanceDataItem(
                 [root_name, "Number_of_Relevant_SDP_Messages"], n_sdp_packets),
             ProvenanceDataItem(
