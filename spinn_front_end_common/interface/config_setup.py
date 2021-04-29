@@ -14,27 +14,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import unittest
 from spinn_utilities.config_holder import (
-    check_python_file, find_double_defaults)
-from spinn_front_end_common.interface.config_setup import reset_configs
+    add_default_cfg, clear_cfg_files)
+from spinnman.config_setup import add_spinnman_cfg
+from pacman.config_setup import add_pacman_cfg
+
+BASE_CONFIG_FILE = "spinnaker.cfg"
 
 
-class TestCfgChecker(unittest.TestCase):
+def reset_configs():
+    """
+    Resets the configs so only the local default config is included.
 
-    @classmethod
-    def setUpClass(cls):
-        reset_configs()
+    .. note::
+        This file should only be called from PACMAN/unittests
 
-    def test_cfg_checker(self):
-        module = __import__("spinn_front_end_common")
-        path = module.__file__
-        directory = os.path.dirname(path)
-        for root, dirs, files in os.walk(directory):
-            for file_name in files:
-                if file_name.endswith(".py"):
-                    py_path = os.path.join(root, file_name)
-                    check_python_file(py_path)
+    """
+    clear_cfg_files()
+    add_spinnaker_cfg()
 
-    def test_double_defaults(self):
-        find_double_defaults()
+
+def add_spinnaker_cfg():
+    """
+    Add the local cfg and all dependent cfg files.
+    """
+    add_pacman_cfg()  # This add its dependencies too
+    add_spinnman_cfg()  # double adds of dependencies ignored
+    add_default_cfg(os.path.join(os.path.dirname(__file__), BASE_CONFIG_FILE))
