@@ -102,8 +102,8 @@ class LivePacketGatherMachineVertex(
         return True
 
     @overrides(
-        ProvidesProvenanceDataFromMachineImpl._get_extra_provenance_items)
-    def _get_extra_provenance_items(self, label, names, provenance_data):
+        ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items)
+    def parse_extra_provenance_items(self, label, names, provenance_data):
         (lost, lost_payload, events, messages) = provenance_data
         yield ProvenanceDataItem(
             names + ["lost_packets_without_payload"], lost,

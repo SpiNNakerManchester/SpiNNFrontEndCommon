@@ -371,8 +371,8 @@ class CommandSenderMachineVertex(
         return self._get_edges_and_partitions(self, MachineVertex, MachineEdge)
 
     @overrides(ProvidesProvenanceDataFromMachineImpl.
-               _get_extra_provenance_items)
-    def _get_extra_provenance_items(self, label, names, provenance_data):
+               parse_extra_provenance_items)
+    def parse_extra_provenance_items(self, label, names, provenance_data):
         # pylint: disable=unused-argument
         n_commands_sent, = provenance_data
         yield ProvenanceDataItem(names + ["Sent_Commands"], n_commands_sent)

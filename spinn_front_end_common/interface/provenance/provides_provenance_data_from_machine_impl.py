@@ -58,7 +58,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         #: The counter of the number of times the timer tick overran
         MAX_NUMBER_OF_TIMER_TIC_OVERRUN = 4
 
-    NUM_PROVENANCE_DATA_ENTRIES = len(PROVENANCE_DATA_ENTRIES)
+    N_SYSTEM_PROVENANCE_WORDS = len(PROVENANCE_DATA_ENTRIES)
 
     _TIMER_TICK_OVERRUN = "Times_the_timer_tic_over_ran"
     _MAX_TIMER_TICK_OVERRUN = "max_number_of_times_timer_tic_over_ran"
@@ -100,7 +100,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         :rtype: int
         """
         return (
-            (cls.NUM_PROVENANCE_DATA_ENTRIES + n_additional_data_items)
+            (cls.N_SYSTEM_PROVENANCE_WORDS + n_additional_data_items)
             * BYTES_PER_WORD)
 
     def _get_provenance_region_address(self, transceiver, placement):
@@ -131,13 +131,16 @@ class ProvidesProvenanceDataFromMachineImpl(
             placement.x, placement.y, provenance_address,
             self.get_provenance_data_size(self._n_additional_data_items))
         return n_word_struct(
-            self.NUM_PROVENANCE_DATA_ENTRIES +
+            self.N_SYSTEM_PROVENANCE_WORDS +
             self._n_additional_data_items).unpack_from(data)
 
     @staticmethod
-    def _get_placement_details(placement):
+    def _get_provenance_placement_description(placement):
         """
         :param ~pacman.model.placements.Placement placement:
+        :returns:
+            A descriptive (human-readable) label and a mechanical label
+            (or prefix of one) for provenance items from the given placement.
         :rtype: tuple(str,list(str))
         """
         label = placement.vertex.label
@@ -148,102 +151,92 @@ class ProvidesProvenanceDataFromMachineImpl(
         desc_label = f"{label} on {x},{y},{p}"
         return desc_label, names
 
-    @staticmethod
-    def _add_name(names, name):
+    def parse_system_provenance_items(self, label, names, provenance_data):
         """
-        :param iterable(str) names:
-        :param str name:
-        :rtype: list(str)
-        """
-        return add_name(names, name)
+        Given some words of provenance data, convert the portion of them that
+        describes the system provenance into proper provenance items.
 
-    @staticmethod
-    def _add_names(names, extra_names):
-        """
-        :param iterable(str) names:
-        :param iterable(str) extra_names:
-        :rtype: list(str)
-        """
-        new_names = list(names)
-        new_names.extend(extra_names)
-        return new_names
+        Called by
+        :py:meth:`~spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items.get_provenance_data_from_machine`
 
-    def _read_basic_provenance_items(self, provenance_data, placement):
-        """
-        :param iterable(int) provenance_data:
-        :param ~pacman.model.placements.Placement placement:
+        :param str label:
+            A descriptive label for the vertex (derived from label and placed
+            position) to be used for provenance error reporting to the user.
+        :param list(str) names:
+            The base names describing the location of the machine vertex
+            producing the provenance.
+        :param list(int) provenance_data:
         :rtype: ~collections.abc.Iterable(ProvenanceDataItem)
         """
-        (tx_overflow, callback_overload, dma_overload, tic_overrun_count,
-         tic_overrun_max) = provenance_data[:self.NUM_PROVENANCE_DATA_ENTRIES]
+        (tx_overflow, cb_overload, dma_overload, tic_overruns,
+         tic_overrun_max) = provenance_data[:self.N_SYSTEM_PROVENANCE_WORDS]
 
         # create provenance data items for returning
-        label, names = self._get_placement_details(placement)
         yield ProvenanceDataItem(
             names + [self._TIMES_TRANSMISSION_SPIKES_OVERRAN], tx_overflow,
-            report=(tx_overflow != 0),
-            message=(
-                f"The transmission buffer for {label} was blocked on "
-                f"{tx_overflow} occasions. "
-                "This is often a sign that the system is experiencing back "
-                "pressure from the communication fabric. Please either: "
-                "1. spread the load over more cores, "
-                "2. reduce your peak transmission load, or "
-                "3. adjust your mapping algorithm."))
+            (tx_overflow != 0),
+            f"The transmission buffer for {label} was blocked on "
+            f"{tx_overflow} occasions.  This is often a sign that the system "
+            "is experiencing back pressure from the communication fabric. "
+            "Please either: "
+            "1. spread the load over more cores, "
+            "2. reduce your peak transmission load, or "
+            "3. adjust your mapping algorithm.")
         yield ProvenanceDataItem(
             names + [self._TIMES_CALLBACK_QUEUE_OVERLOADED],
-            callback_overload,
-            report=(callback_overload != 0),
-            message=(
-                f"The callback queue for {label} overloaded on "
-                f"{callback_overload} occasions. "
-                "This is often a sign that the system is running too quickly "
-                "for the number of neurons per core.  Please increase the "
-                "machine time step or time_scale_factor or decrease the "
-                "number of neurons per core."))
+            cb_overload, (cb_overload != 0),
+            f"The callback queue for {label} overloaded on {cb_overload} "
+            "occasions.  This is often a sign that the system is running too "
+            "quickly for the number of neurons per core.  Please increase the "
+            "machine time step or time_scale_factor or decrease the number of "
+            "neurons per core.")
         yield ProvenanceDataItem(
             names + [self._TIMES_DMA_QUEUE_OVERLOADED], dma_overload,
-            report=(dma_overload != 0),
-            message=(
-                f"The DMA queue for {label} overloaded on {dma_overload} "
-                "occasions.  This is often a sign that the system is running "
-                "too quickly for the number of neurons per core.  Please "
-                "increase the machine time step or time_scale_factor or "
-                "decrease the number of neurons per core."))
+            (dma_overload != 0),
+            f"The DMA queue for {label} overloaded on {dma_overload} "
+            "occasions.  This is often a sign that the system is running too "
+            "quickly for the number of neurons per core.  Please increase the "
+            "machine time step or time_scale_factor or decrease the number of "
+            "neurons per core.")
         yield ProvenanceDataItem(
-            names + [self._TIMER_TICK_OVERRUN], tic_overrun_count,
-            report=(tic_overrun_count != 0),
-            message=(
-                "A Timer tick callback was still executing when the next "
-                f"timer tick callback was fired off for {label} "
-                f"{tic_overrun_count} times. "
-                "This is a sign of the system being overloaded and therefore "
-                "the results are likely incorrect.  Please increase the "
-                "machine time step or time_scale_factor or decrease the "
-                "number of neurons per core"))
+            names + [self._TIMER_TICK_OVERRUN], tic_overruns,
+            (tic_overruns != 0),
+            f"A Timer tick callback in {label} was still executing when the "
+            f"next timer tick callback was fired off {tic_overruns} times.  "
+            "This is a sign of the system being overloaded and therefore the "
+            "results are likely incorrect.  Please increase the machine time "
+            "step or time_scale_factor or decrease the number of neurons per "
+            "core")
         yield ProvenanceDataItem(
             names + [self._MAX_TIMER_TICK_OVERRUN], tic_overrun_max,
-            report=(tic_overrun_max > 0),
-            message=(
-                f"The timer for {label} fell behind by up to {tic_overrun_max}"
-                " ticks. This is a sign of the system being overloaded and "
-                "therefore the results are likely incorrect. Please increase "
-                "the machine time step or time_scale_factor or decrease the "
-                "number of neurons per core"))
+            (tic_overrun_max > 0),
+            f"The timer for {label} fell behind by up to {tic_overrun_max} "
+            "ticks.  This is a sign of the system being overloaded and "
+            "therefore the results are likely incorrect. Please increase the "
+            "machine time step or time_scale_factor or decrease the number "
+            "of neurons per core")
 
-    def _get_remaining_provenance_data_items(self, provenance_data):
+    def _get_extra_provenance_words(self, provenance_data):
         """
+        Gets the words of provenance data not used for system provenance.
+
         :param list(int) provenance_data:
         :rtype: list(int)
         """
-        return provenance_data[self.NUM_PROVENANCE_DATA_ENTRIES:]
+        return provenance_data[self.N_SYSTEM_PROVENANCE_WORDS:]
 
-    def _get_extra_provenance_items(self, label, names, provenance_data):
+    def parse_extra_provenance_items(self, label, names, provenance_data):
         # pylint: disable=unused-argument
-        """ Convert the remaining provenance data (not in the standard set) \
-            into provenance items.
+        """
+        Convert the remaining provenance words (those not in the standard set)
+        into provenance items.
 
-        :param str label: A descriptive label for the vertex
+        Called by
+        :py:meth:`~spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items.get_provenance_data_from_machine`
+
+        :param str label:
+            A descriptive label for the vertex (derived from label and placed
+            position) to be used for provenance error reporting to the user.
         :param list(str) names:
             The base names describing the location of the machine vertex
             producing the provenance.
@@ -267,13 +260,11 @@ class ProvidesProvenanceDataFromMachineImpl(
         :param ~pacman.model.placements.Placement placement:
             Which vertex are we retrieving from, and where was it
         :rtype:
-            list(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
+            ~collections.abc.Iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
         """
         provenance_data = self._read_provenance_data(transceiver, placement)
-        items = list(self._read_basic_provenance_items(
-            provenance_data, placement))
-        label, names = self._get_placement_details(placement)
-        items.extend(self._get_extra_provenance_items(
-            label, names, self._get_remaining_provenance_data_items(
-                provenance_data)))
-        return items
+        label, names = self._get_provenance_placement_description(placement)
+        yield from self.parse_system_provenance_items(
+            label, names, provenance_data)
+        yield from self.parse_extra_provenance_items(
+            label, names, self._get_extra_provenance_words(provenance_data))
