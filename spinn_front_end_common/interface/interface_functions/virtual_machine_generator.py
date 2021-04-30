@@ -14,9 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import json_machine, virtual_machine, Machine
-from pacman.config_holder import get_config_int, get_config_str
 logger = FormatAdapter(logging.getLogger(__name__))
 
 

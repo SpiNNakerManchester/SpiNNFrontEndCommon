@@ -17,10 +17,10 @@ import math
 import logging
 from enum import IntEnum
 import numpy
+from spinn_utilities.config_holder import get_config_int
 from data_specification.enums import DataType
 from pacman.executor.injection_decorator import (
     inject_items, supports_injection)
-from pacman.config_holder import get_config_int
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource, ResourceContainer, VariableSDRAM)

@@ -18,10 +18,10 @@ import math
 import os
 import struct
 from collections import defaultdict
+from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.find_max_success import find_max_success
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import MulticastRoutingEntry
-from pacman.config_holder import get_config_bool, get_config_int
 from pacman.exceptions import (
     PacmanAlgorithmFailedToGenerateOutputsException,
     PacmanElementAllocationException, MinimisationFailedError)

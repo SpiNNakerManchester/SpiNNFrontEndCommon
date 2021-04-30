@@ -15,8 +15,8 @@
 
 import itertools
 import re
+from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.ordered_set import OrderedSet
-from pacman.config_holder import get_config_int
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)

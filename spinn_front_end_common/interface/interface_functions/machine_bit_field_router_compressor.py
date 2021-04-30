@@ -18,6 +18,7 @@ import logging
 import struct
 from collections import defaultdict
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
+from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.progress_bar import ProgressBar
@@ -27,7 +28,6 @@ from spinnman.exceptions import (
     SpinnmanUnexpectedResponseCodeException, SpiNNManCoresNotInStateException)
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
-from pacman.config_holder import get_config_bool, get_config_int
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.router_compressors.ordered_covering_router_compressor\
     import (

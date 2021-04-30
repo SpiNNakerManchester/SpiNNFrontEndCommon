@@ -13,10 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinn_utilities.config_holder import get_config_int
 from spalloc import ProtocolClient
 from spinn_machine.virtual_machine import virtual_machine
 from spinn_machine.machine import Machine
-from pacman.config_holder import get_config_int
 
 
 class SpallocMaxMachineGenerator(object):

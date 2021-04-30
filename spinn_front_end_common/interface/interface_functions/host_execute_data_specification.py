@@ -16,13 +16,13 @@
 from collections import OrderedDict
 import logging
 import numpy
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
 from data_specification.exceptions import DataSpecificationException
-from pacman.config_holder import get_config_bool
 from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)

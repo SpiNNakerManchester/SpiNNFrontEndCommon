@@ -15,12 +15,12 @@
 
 import re
 
+from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinnman.connections import SocketAddressWithChip
 from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
-from pacman.config_holder import get_config_bool, get_config_int
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 import time
 import logging

@@ -15,13 +15,13 @@
 
 import logging
 import struct
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, Router
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
-from pacman.config_holder import get_config_bool
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.system_control_logic import (
     run_system_application)

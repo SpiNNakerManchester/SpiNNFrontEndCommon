@@ -16,10 +16,10 @@
 import os
 import tempfile
 import unittest
+from spinn_utilities.config_holder import load_config, set_config
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
-from pacman.config_holder import load_config_cfgs, set_config
 from spinn_front_end_common.interface.interface_functions import (
     ChipIOBufExtractor)
 from spinnman.model import ExecutableTargets
@@ -85,11 +85,11 @@ executable_targets.add_subsets(alphaaplx, core_subsets)
 class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
     def setUp(self):
-        load_config_cfgs()
+        load_config()
 
     @classmethod
     def tearDownClass(cls):
-        load_config_cfgs()
+        load_config()
 
     def testExectuableFinder(self):
         self.assertIn(fooaplx, executableFinder.get_executable_path(fooaplx))

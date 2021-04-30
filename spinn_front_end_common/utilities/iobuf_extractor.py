@@ -21,7 +21,7 @@ from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.core_subsets import CoreSubsets
 from spinnman.model.io_buffer import IOBuffer
-from pacman.config_holder import get_config_str
+from spinn_utilities.config_holder import get_config_str
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_string_into_chip_and_core_subset)
