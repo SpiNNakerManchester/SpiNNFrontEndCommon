@@ -1,0 +1,34 @@
+[Machine]
+#-------
+# Information about the target SpiNNaker board or machine:
+# machineName: The name or IP address or the target board
+
+# One and only one of the three machineName, spalloc_server or virtual_board = True must be set
+
+# machine name is typically a URL and then version is required
+machineName = None
+version = None
+
+# spalloc_server is typically a URL and then port and user are required
+spalloc_server = None
+spalloc_port = 22244
+spalloc_user = None
+
+# If using virtual_board both width and height must be set
+virtual_board = False
+# Allowed values pairs are (2,2)  (8,8)   (n*12,m*12)  and (n*12+4, m*12+4)
+width = None
+height = None
+
+# Time scale factor allows the slowing down of the simulation
+time_scale_factor = None
+
+[Reports]
+# options are DEFAULT or a file path
+# In all cases oldest folders are automatically deleted to max_reports_kept=
+default_report_file_path = DEFAULT
+
+[Mode]
+# mode = Production or Debug
+# In Debug mode all report boolean config values are automatically overwritten to True
+mode = Production
