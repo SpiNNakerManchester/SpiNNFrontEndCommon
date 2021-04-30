@@ -21,8 +21,8 @@ import shutil
 import time
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
-from pacman.config_holder import (
-    config_options, load_config_cfgs, get_config_bool, get_config_int,
+from spinn_utilities.config_holder import (
+    config_options, load_config, get_config_bool, get_config_int,
     get_config_str, set_config)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
@@ -70,7 +70,7 @@ class ConfigHandler(object):
     ]
 
     def __init__(self):
-        load_config_cfgs()
+        load_config()
 
         # set up machine targeted data
         self._use_virtual_board = get_config_bool("Machine", "virtual_board")
