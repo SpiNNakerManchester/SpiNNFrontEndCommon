@@ -88,23 +88,28 @@ class RouterProvenanceGatherer(object):
         self._add_router_provenance_data(
             router_tables, extra_monitor_vertices, prov_items)
 
-        prov_items.append(ProvenanceDataItem(
-            ["router_provenance", "total_multi_cast_sent_packets"],
-            self._total_sent_packets))
-        prov_items.append(ProvenanceDataItem(
-            ["router_provenance", "total_created_packets"],
-            self._total_new_packets))
-        prov_items.append(ProvenanceDataItem(
-            ["router_provenance", "total_dropped_packets"],
-            self._total_dropped_packets))
-        prov_items.append(ProvenanceDataItem(
-            ["router_provenance", "total_missed_dropped_packets"],
-            self._total_missed_dropped_packets))
-        prov_items.append(ProvenanceDataItem(
-            ["router_provenance", "total_lost_dropped_packets"],
-            self._total_lost_dropped_packets))
-
+        prov_items.extend(self.__summary_items())
         return prov_items
+
+    def __summary_items(self):
+        """
+        :rtype: iterable(ProvenanceDataItem)
+        """
+        yield ProvenanceDataItem(
+            ["router_provenance", "total_multi_cast_sent_packets"],
+            self._total_sent_packets)
+        yield ProvenanceDataItem(
+            ["router_provenance", "total_created_packets"],
+            self._total_new_packets)
+        yield ProvenanceDataItem(
+            ["router_provenance", "total_dropped_packets"],
+            self._total_dropped_packets)
+        yield ProvenanceDataItem(
+            ["router_provenance", "total_missed_dropped_packets"],
+            self._total_missed_dropped_packets)
+        yield ProvenanceDataItem(
+            ["router_provenance", "total_lost_dropped_packets"],
+            self._total_lost_dropped_packets)
 
     def _add_router_provenance_data(
             self, router_tables, extra_monitor_vertices, items):
@@ -116,7 +121,6 @@ class RouterProvenanceGatherer(object):
             list of extra monitor vertices
         :param list(ProvenanceDataItem) items:
         """
-        # pylint: disable=too-many-arguments
         progress = ProgressBar(self._machine.n_chips*2,
                                "Getting Router Provenance")
 
@@ -135,43 +139,42 @@ class RouterProvenanceGatherer(object):
                 router_tables.routing_tables,
                 key=lambda table: (table.x, table.y)), False):
             self._add_router_table_diagnostic(
-                router_table.x, router_table.y, seen_chips,
-                router_table, items, reinjection_data)
+                router_table, seen_chips, items, reinjection_data)
 
+        # Get what info we can for chips where there are problems or no table
         for chip in progress.over(sorted(
                 self._machine.chips, key=lambda c: (c.x, c.y))):
-            self._add_router_chip_diagnostic(
-                chip, seen_chips, items, reinjection_data)
+            if not chip.virtual and (chip.x, chip.y) not in seen_chips:
+                self._add_unseen_router_chip_diagnostic(
+                    chip, items, reinjection_data)
 
     def _add_router_table_diagnostic(
-            self, x, y, seen_chips, router_table, items, reinjection_data):
+            self, table, seen_chips, items, reinjection_data):
         """
-        :param int x:
-        :param int y:
+        :param ~.MulticastRoutingTable table:
         :param set(tuple(int,int)) seen_chips:
-        :param ~.MulticastRoutingTable router_table:
         :param list(ProvenanceDataItem) items:
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
         """
         # pylint: disable=too-many-arguments, bare-except
+        x = table.x
+        y = table.y
         if not self._machine.get_chip_at(x, y).virtual:
             try:
-                router_diagnostic = self._txrx.get_router_diagnostics(x, y)
-                seen_chips.add((x, y))
-                reinjection_status = None
-                if reinjection_data is not None:
-                    reinjection_status = reinjection_data[x, y]
-                self.__add_router_diagnostics(
-                    items, x, y, router_diagnostic, reinjection_status, True,
-                    router_table)
-                self._add_totals(router_diagnostic, reinjection_status)
+                diagnostics = self._txrx.get_router_diagnostics(x, y)
             except:  # noqa: E722
                 logger.warning(
                     "Could not read routing diagnostics from {}, {}",
                     x, y, exc_info=True)
+                return
+            seen_chips.add((x, y))
+            status = self.__get_status(reinjection_data, x, y)
+            items.extend(self.__router_diagnostics(
+                x, y, diagnostics, status, True, table))
+            self.__add_totals(diagnostics, status)
 
-    def _add_router_chip_diagnostic(
-            self, chip, seen_chips, items, reinjection_data):
+    def _add_unseen_router_chip_diagnostic(
+            self, chip, items, reinjection_data):
         """
         :param ~.Chip chip:
         :param set(tuple(int,int)) seen_chips:
@@ -179,244 +182,211 @@ class RouterProvenanceGatherer(object):
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
         """
         # pylint: disable=bare-except
-        if not chip.virtual and (chip.x, chip.y) not in seen_chips:
-            try:
-                diagnostic = self._txrx.get_router_diagnostics(chip.x, chip.y)
+        try:
+            diagnostics = self._txrx.get_router_diagnostics(chip.x, chip.y)
+        except:  # noqa: E722
+            # There could be issues with unused chips - don't worry!
+            return
+        if (diagnostics.n_dropped_multicast_packets or
+                diagnostics.n_local_multicast_packets or
+                diagnostics.n_external_multicast_packets):
+            status = self.__get_status(reinjection_data, chip.x, chip.y)
+            items.extend(self.__router_diagnostics(
+                chip.x, chip.y, diagnostics, status, False, None))
+            self.__add_totals(diagnostics, status)
 
-                if (diagnostic.n_dropped_multicast_packets or
-                        diagnostic.n_local_multicast_packets or
-                        diagnostic.n_external_multicast_packets):
-                    reinjection_status = None
-                    if reinjection_data is not None:
-                        reinjection_status = reinjection_data[chip.x, chip.y]
-                    self.__add_router_diagnostics(
-                        items, chip.x, chip.y, diagnostic, reinjection_status,
-                        False, None)
-                    self._add_totals(diagnostic, reinjection_status)
-            except:  # noqa: E722
-                # There could be issues with unused chips - don't worry!
-                pass
-
-    def _add_totals(self, router_diagnostic, reinjection_status):
+    @staticmethod
+    def __get_status(reinjection_data, x, y):
         """
-        :param ~.RouterDiagnostics router_diagnostic:
-        :param ReInjectionStatus reinjection_status:
+        :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
+        :param int x:
+        :param int y:
+        :rtype: ReInjectionStatus or None
+        """
+        return reinjection_data[x, y] if reinjection_data else None
+
+    def __add_totals(self, diagnostics, status):
+        """
+        :param ~.RouterDiagnostics diagnostics:
+        :param ReInjectionStatus status:
         """
         self._total_sent_packets += (
-            router_diagnostic.n_local_multicast_packets +
-            router_diagnostic.n_external_multicast_packets)
-        self._total_new_packets += router_diagnostic.n_local_multicast_packets
-        self._total_dropped_packets += (
-            router_diagnostic.n_dropped_multicast_packets)
-        if reinjection_status is not None:
+            diagnostics.n_local_multicast_packets +
+            diagnostics.n_external_multicast_packets)
+        self._total_new_packets += diagnostics.n_local_multicast_packets
+        self._total_dropped_packets += diagnostics.n_dropped_multicast_packets
+        if status is not None:
             self._total_missed_dropped_packets += (
-                reinjection_status.n_missed_dropped_packets)
+                status.n_missed_dropped_packets)
             self._total_lost_dropped_packets += (
-                reinjection_status.n_dropped_packet_overflows)
+                status.n_dropped_packet_overflows)
         else:
             self._total_lost_dropped_packets += (
-                router_diagnostic.n_dropped_multicast_packets)
+                diagnostics.n_dropped_multicast_packets)
 
-    @staticmethod
-    def __add_name(names, name):
-        """
-        :param list(str) names:
-        :param str name:
-        :rtype: list(str)
-        """
-        new_names = list(names)
-        new_names.append(name)
-        return new_names
+    def __router_diagnostics(self, x, y, diagnostics, status, expected, table):
+        """ Describes the router diagnostics for one router.
 
-    def __add_router_diagnostics(
-            self, items, x, y, router_diagnostic, reinjection_status,
-            expected, router_table):
-        """ Stores router diagnostics as a set of provenance data items.
-
-        :param list(ProvenanceDataItem) items: the list to append to
         :param int x: x coordinate of the router in question
         :param int y: y coordinate of the router in question
-        :param ~.RouterDiagnostics router_diagnostic:
-            the router diagnostic object
-        :param ReInjectionStatus reinjection_status:
+        :param ~.RouterDiagnostics diagnostics: the router diagnostics object
+        :param ReInjectionStatus status:
             the data gained from the extra monitor re-injection subsystem
-        :param ~.MulticastRoutingTable router_table:
+        :param bool expected:
+        :param ~.AbstractMulticastRoutingTable table:
             the router table generated by the PACMAN tools
+        :rtype: iterable(ProvenanceDataItem)
         """
         # pylint: disable=too-many-arguments
-        names = list()
-        names.append("router_provenance")
-        if expected:
-            names.append("expected_routers")
-        else:
-            names.append("unexpected_routers")
-        names.append("router_at_chip_{}_{}".format(x, y))
+        names = ["router_provenance",
+                 f"{'' if expected else 'un'}expected_routers",
+                 f"router_at_chip_{x}_{y}"]
 
-        items.append(ProvenanceDataItem(
-            self.__add_name(names, "Local_Multicast_Packets"),
-            str(router_diagnostic.n_local_multicast_packets)))
-        items.append(ProvenanceDataItem(
-            self.__add_name(names, "External_Multicast_Packets"),
-            str(router_diagnostic.n_external_multicast_packets)))
+        yield ProvenanceDataItem(
+            names + ["Local_Multicast_Packets"],
+            diagnostics.n_local_multicast_packets)
+        yield ProvenanceDataItem(
+            names + ["External_Multicast_Packets"],
+            diagnostics.n_external_multicast_packets)
 
         # simplify the if by making components of it outside.
-        has_dropped = router_diagnostic.n_dropped_multicast_packets > 0
-        missing_stuff = None
-        has_reinjection = reinjection_status is not None
+        has_dropped = (diagnostics.n_dropped_multicast_packets > 0)
+        missing_stuff = False
+        has_reinjection = status is not None
         if has_reinjection:
-            missing_stuff = (
-                (reinjection_status.n_dropped_packets +
-                 reinjection_status.n_missed_dropped_packets +
-                 reinjection_status.n_dropped_packet_overflows +
-                 reinjection_status.n_reinjected_packets +
-                 reinjection_status.n_link_dumps +
-                 reinjection_status.n_processor_dumps) <
-                router_diagnostic.n_dropped_multicast_packets)
-        items.append(ProvenanceDataItem(
-            self.__add_name(names, "Dropped_Multicast_Packets"),
-            str(router_diagnostic.n_dropped_multicast_packets),
-            report=((has_dropped and not has_reinjection) or (
-                has_dropped and has_reinjection and missing_stuff)),
-            message=(
-                "The router on {}, {} has dropped {} multicast route packets. "
-                "Try increasing the machine_time_step and/or the time scale "
-                "factor or reducing the number of atoms per core."
-                .format(x, y, router_diagnostic.n_dropped_multicast_packets))))
-        items.append(ProvenanceDataItem(
-            self.__add_name(
-                names, "Dropped_Multicast_Packets_via_local_transmission"),
-            str(router_diagnostic.user_3),
-            report=(router_diagnostic.user_3 > 0),
-            message=(
-                "The router on {}, {} has dropped {} multicast packets that"
-                " were transmitted by local cores. This occurs where the "
-                "router has no entry associated with the multi-cast key. "
-                "Try investigating the keys allocated to the vertices and "
-                "the router table entries for this chip.".format(
-                    x, y, router_diagnostic.user_3))))
-        items.append(ProvenanceDataItem(
-            self.__add_name(
-                names, "default_routed_external_multicast_packets"),
-            str(router_diagnostic.user_2),
-            report=(router_diagnostic.user_2 > 0 and
-                    ((router_table is not None and
-                      router_table.number_of_defaultable_entries == 0) or
-                     router_table is None)),
-            message=(
-                "The router on {}, {} has default routed {} multicast packets,"
-                " but the router table did not expect any default routed "
-                "packets. This occurs where the router has no entry"
-                " associated with the multi-cast key. "
-                "Try investigating the keys allocated to the vertices and "
-                "the router table entries for this chip.".format(
-                    x, y, router_diagnostic.user_2))))
+            missing_stuff = ((
+                status.n_dropped_packets + status.n_missed_dropped_packets +
+                status.n_dropped_packet_overflows +
+                status.n_reinjected_packets + status.n_processor_dumps +
+                status.n_link_dumps) < diagnostics.n_dropped_multicast_packets)
 
-        items.append(ProvenanceDataItem(
-            self.__add_name(names, "Local_P2P_Packets"),
-            str(router_diagnostic.n_local_peer_to_peer_packets)))
-        items.append(ProvenanceDataItem(
-            self.__add_name(names, "External_P2P_Packets"),
-            str(router_diagnostic.n_external_peer_to_peer_packets)))
-        items.append(ProvenanceDataItem(
-            self.__add_name(names, "Dropped_P2P_Packets"),
-            str(router_diagnostic.n_dropped_peer_to_peer_packets)))
-        items.append(ProvenanceDataItem(
-            self.__add_name(names, "Local_NN_Packets"),
-            str(router_diagnostic.n_local_nearest_neighbour_packets)))
-        items.append(ProvenanceDataItem(
-            self.__add_name(names, "External_NN_Packets"),
-            str(router_diagnostic.n_external_nearest_neighbour_packets)))
-        items.append(ProvenanceDataItem(
-            self.__add_name(names, "Dropped_NN_Packets"),
-            str(router_diagnostic.n_dropped_nearest_neighbour_packets)))
-        items.append(ProvenanceDataItem(
-            self.__add_name(names, "Local_FR_Packets"),
-            str(router_diagnostic.n_local_fixed_route_packets)))
-        items.append(ProvenanceDataItem(
-            self.__add_name(names, "External_FR_Packets"),
-            str(router_diagnostic.n_external_fixed_route_packets)))
-        items.append(ProvenanceDataItem(
-            self.__add_name(names, "Dropped_FR_Packets"),
-            str(router_diagnostic.n_dropped_fixed_route_packets),
-            report=router_diagnostic.n_dropped_fixed_route_packets > 0,
-            message=(
-                "The router on chip {}:{} dropped {} Fixed route packets. "
-                "This is indicative of a error within the data extraction "
-                "process as this is the only expected user of fixed route "
-                "packets.".format(
-                    x, y, router_diagnostic.n_dropped_fixed_route_packets))))
-        if reinjection_status is not None:
-            items.append(ProvenanceDataItem(
-                self.__add_name(names, "Received_For_Reinjection"),
-                reinjection_status.n_dropped_packets))
-            items.append(ProvenanceDataItem(
-                self.__add_name(names, "Missed_For_Reinjection"),
-                reinjection_status.n_missed_dropped_packets,
-                report=reinjection_status.n_missed_dropped_packets > 0,
-                message=(
-                    "The extra monitor on {}, {} has missed {} "
-                    "packets.".format(
-                        x, y, reinjection_status.n_missed_dropped_packets))))
-            items.append(ProvenanceDataItem(
-                self.__add_name(names, "Reinjection_Overflows"),
-                reinjection_status.n_dropped_packet_overflows,
-                report=reinjection_status.n_dropped_packet_overflows > 0,
-                message=(
-                    "The extra monitor on {}, {} has dropped {} "
-                    "packets.".format(
-                        x, y,
-                        reinjection_status.n_dropped_packet_overflows))))
-            items.append(ProvenanceDataItem(
-                self.__add_name(names, "Reinjected"),
-                reinjection_status.n_reinjected_packets))
-            items.append(ProvenanceDataItem(
-                self.__add_name(names, "Dumped_from_a_Link"),
-                str(reinjection_status.n_link_dumps),
-                report=(reinjection_status.n_link_dumps > 0 and
-                        self._has_virtual_chip_connected(self._machine, x, y)),
-                message=(
-                    "The extra monitor on {}, {} has detected that {} packets "
-                    "were dumped from a outgoing link of this chip's router."
-                    " This often occurs when external devices are used in the "
-                    "script but not connected to the communication fabric "
-                    "correctly. These packets may have been reinjected "
-                    "multiple times and so this number may be a overestimate."
-                    .format(x, y, reinjection_status.n_link_dumps))))
-            items.append(ProvenanceDataItem(
-                self.__add_name(names, "Dumped_from_a_processor"),
-                str(reinjection_status.n_processor_dumps),
-                report=reinjection_status.n_processor_dumps > 0,
-                message=(
-                    "The extra monitor on {}, {} has detected that {} packets "
-                    "were dumped from a core failing to take the packet."
-                    " This often occurs when the executable has crashed or"
-                    " has not been given a multicast packet callback. It can"
-                    " also result from the core taking too long to process"
-                    " each packet. These packets were reinjected and so this"
-                    " number is likely a overestimate.".format(
-                        x, y, reinjection_status.n_processor_dumps))))
+        yield ProvenanceDataItem(
+            names + ["Dropped_Multicast_Packets"],
+            diagnostics.n_dropped_multicast_packets,
+            (has_dropped and not has_reinjection) or (
+                has_dropped and has_reinjection and missing_stuff),
+            f"The router on {x}, {y} has dropped "
+            f"{diagnostics.n_dropped_multicast_packets} multicast route "
+            "packets. Try increasing the machine_time_step and/or the time "
+            "scale factor or reducing the number of atoms per core.")
+        yield ProvenanceDataItem(
+            names + ["Dropped_Multicast_Packets_via_local_transmission"],
+            diagnostics.user_3, (diagnostics.user_3 > 0),
+            f"The router on {x}, {y} has dropped {diagnostics.user_3} "
+            "multicast packets that were transmitted by local cores. This "
+            "occurs where the router has no entry associated with the "
+            "multicast key. Try investigating the keys allocated to the "
+            "vertices and the router table entries for this chip.")
+        yield ProvenanceDataItem(
+            names + ["default_routed_external_multicast_packets"],
+            diagnostics.user_2,
+            (diagnostics.user_2 > 0 and not (
+                table and table.number_of_defaultable_entries)),
+            f"The router on {x}, {y} has default routed {diagnostics.user_2} "
+            "multicast packets, but the router table did not expect any "
+            "default routed packets. This occurs where the router has no "
+            "entry associated with the multicast key. Try investigating the "
+            "keys allocated to the vertices and the router table entries for "
+            "this chip.")
 
-        items.append(ProvenanceDataItem(
-            self.__add_name(names, "Error status"),
-            str(router_diagnostic.error_status),
-            report=router_diagnostic.error_status > 0,
-            message=(
-                "The router on {}, {} has a non-zero error status.  This could"
-                " indicate a hardware fault.  The errors set are {}, and the"
-                " error count is {}".format(
-                    x, y, router_diagnostic.errors_set,
-                    router_diagnostic.error_count))))
+        if table:
+            yield ProvenanceDataItem(
+                names + ["Entries"], table.number_of_entries)
+            routes = set()
+            for ent in table.multicast_routing_entries:
+                routes.add(ent.spinnaker_route)
+            yield ProvenanceDataItem(
+                names + ["Unique_Routes"], len(routes))
 
-    @staticmethod
-    def _has_virtual_chip_connected(machine, x, y):
+        yield ProvenanceDataItem(
+            names + ["Local_P2P_Packets"],
+            diagnostics.n_local_peer_to_peer_packets)
+        yield ProvenanceDataItem(
+            names + ["External_P2P_Packets"],
+            diagnostics.n_external_peer_to_peer_packets)
+        yield ProvenanceDataItem(
+            names + ["Dropped_P2P_Packets"],
+            diagnostics.n_dropped_peer_to_peer_packets)
+        yield ProvenanceDataItem(
+            names + ["Local_NN_Packets"],
+            diagnostics.n_local_nearest_neighbour_packets)
+        yield ProvenanceDataItem(
+            names + ["External_NN_Packets"],
+            diagnostics.n_external_nearest_neighbour_packets)
+        yield ProvenanceDataItem(
+            names + ["Dropped_NN_Packets"],
+            diagnostics.n_dropped_nearest_neighbour_packets)
+        yield ProvenanceDataItem(
+            names + ["Local_FR_Packets"],
+            diagnostics.n_local_fixed_route_packets)
+        yield ProvenanceDataItem(
+            names + ["External_FR_Packets"],
+            diagnostics.n_external_fixed_route_packets)
+        yield ProvenanceDataItem(
+            names + ["Dropped_FR_Packets"],
+            diagnostics.n_dropped_fixed_route_packets,
+            (diagnostics.n_dropped_fixed_route_packets > 0),
+            f"The router on chip {x}:{y} dropped "
+            f"{diagnostics.n_dropped_fixed_route_packets} fixed route "
+            "packets. This is indicative of an error within the data "
+            "extraction process as this is the only expected user of fixed "
+            "route packets.")
+
+        if status is not None:
+            yield ProvenanceDataItem(
+                names + ["Received_For_Reinjection"], status.n_dropped_packets)
+            yield ProvenanceDataItem(
+                names + ["Missed_For_Reinjection"],
+                status.n_missed_dropped_packets,
+                (status.n_missed_dropped_packets > 0),
+                f"The extra monitor on {x}, {y} has missed "
+                f"{status.n_missed_dropped_packets} packets.")
+            yield ProvenanceDataItem(
+                names + ["Reinjection_Overflows"],
+                status.n_dropped_packet_overflows,
+                (status.n_dropped_packet_overflows > 0),
+                f"The extra monitor on {x}, {y} has dropped "
+                f"{status.n_dropped_packet_overflows} packets.")
+            yield ProvenanceDataItem(
+                names + ["Reinjected"], status.n_reinjected_packets)
+            yield ProvenanceDataItem(
+                names + ["Dumped_from_a_Link"], status.n_link_dumps,
+                (status.n_link_dumps > 0 and (
+                    self.__has_virtual_chip_connected(x, y))),
+                f"The extra monitor on {x}, {y} has detected that "
+                f"{status.n_link_dumps} packets were dumped from an outgoing "
+                "link of this chip's router. This often occurs when external "
+                "devices are used in the script but not connected to the "
+                "communication fabric correctly. These packets may have been "
+                "reinjected multiple times and so this number may be an "
+                "overestimate.")
+            yield ProvenanceDataItem(
+                names + ["Dumped_from_a_processor"], status.n_processor_dumps,
+                (status.n_processor_dumps > 0),
+                f"The extra monitor on {x}, {y} has detected that "
+                f"{status.n_processor_dumps} packets were dumped from a "
+                "core failing to take the packet. This often occurs when "
+                "the executable has crashed or has not been given a "
+                "multicast packet callback. It can also result from the "
+                "core taking too long to process each packet. These "
+                "packets were reinjected and so this number is likely an "
+                "overestimate.")
+
+        yield ProvenanceDataItem(
+            names + ["Error status"], diagnostics.error_status,
+            (diagnostics.error_status > 0),
+            f"The router on {x}, {y} has a non-zero error status. This could "
+            "indicate a hardware fault. The errors set are "
+            f"{diagnostics.errors_set}, and the error count is "
+            f"{diagnostics.error_count}")
+
+    def __has_virtual_chip_connected(self, x, y):
         """
-        :param ~.Machine machine:
         :param int x:
         :param int y:
         :rtype: bool
         """
-        for link in machine.get_chip_at(x, y).router.links:
-            if machine.get_chip_at(
-                    link.destination_x, link.destination_y).virtual:
-                return True
-        return False
+        return any(
+            self._machine.get_chip_at(
+                link.destination_x, link.destination_y).virtual
+            for link in self._machine.get_chip_at(x, y).router.links)

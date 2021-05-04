@@ -97,13 +97,13 @@ enum region_ids {
 };
 
 //! The provenance data items
-struct provenance_t {
+typedef struct ripmcs_provenance_t {
     uint32_t received_packets;  //!< How many EIEIO packets were received
     uint32_t sent_packets;      //!< How many MC packets were sent
     uint32_t incorrect_keys;    //!< Number of bad keys
     uint32_t incorrect_packets; //!< Number of bad packets (in non-debug mode)
     uint32_t late_packets;      //!< Number of packets dropped for being late
-};
+} ripmcs_provenance_t;
 
 //! The number of regions that can be recorded
 #define NUMBER_OF_REGIONS_TO_RECORD 1
@@ -196,7 +196,7 @@ static uint32_t buffer_region_size;
 static uint32_t space_before_data_request;
 
 //! The provenance information that we're collecting
-static struct provenance_t provenance = {0};
+static ripmcs_provenance_t provenance = {0};
 
 //! Keeps track of which types of recording should be done to this model.
 static uint32_t recording_flags = 0;
@@ -1183,7 +1183,7 @@ static bool initialise_recording(void) {
 //! \brief Writes our provenance data into the provenance region.
 //! \param[in] address: Where to write
 static void provenance_callback(address_t address) {
-    struct provenance_t *prov = (void *) address;
+    ripmcs_provenance_t *prov = (void *) address;
 
     prov->received_packets = provenance.received_packets;
     prov->sent_packets = provenance.sent_packets;

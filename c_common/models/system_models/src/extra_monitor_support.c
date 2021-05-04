@@ -305,7 +305,9 @@ enum data_spec_regions {
     //! Data Speed Up (Outbound) configuration
     CONFIG_DATA_SPEED_UP_OUT = 1,
     //! Data Speed Up (Inbound) configuration
-    CONFIG_DATA_SPEED_UP_IN = 2
+    CONFIG_DATA_SPEED_UP_IN = 2,
+    //! Provenance collection region (format: ::extra_monitor_provenance_t)
+    PROVENANCE_REGION = 3
 };
 
 //! Commands for supporting Data In routing
@@ -331,6 +333,18 @@ typedef struct data_speed_out_config_t {
     //! The key to say that we've finished transmitting data
     uint end_flag_key;
 } data_speed_out_config_t;
+
+//! The information in the provenance region
+typedef struct extra_monitor_provenance_t {
+    //! The total number of relevant SDP packets processed
+    uint n_sdp_packets;
+    //! The number of times we've streamed data in
+    uint n_in_streams;
+    //! The number of times we've streamed data out
+    uint n_out_streams;
+    //! The number of times we've modified the router
+    uint n_router_changes;
+} extra_monitor_provenance_t;
 
 //! values for the priority for each callback
 enum callback_priorities {
@@ -527,6 +541,9 @@ static ushort my_addr;
 
 //! The SARK virtual processor information table in SRAM.
 static vcpu_t *const _sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
+
+//! Where we collect provenance in SDRAM.
+static extra_monitor_provenance_t *prov;
 
 //! The magic number that marks a valid DSE metadata descriptor
 #define DSE_MAGIC       0xAD130AD6
@@ -859,8 +876,8 @@ static void reinjection_read_packet_types(const reinject_config_t *config) {
 
     io_printf(
         IO_BUF,
-        "Setting reinject mc to %d\n Setting reinject pp to %d\n"
-        "Setting reinject fr to %d\n Setting reinject nn to %d\n",
+        "Setting reinject mc to %d\nSetting reinject pp to %d\n"
+        "Setting reinject fr to %d\nSetting reinject nn to %d\n",
         reinject_mc, reinject_pp, reinject_fr, reinject_nn);
 
     // set the reinjection mc api
@@ -872,12 +889,14 @@ static void reinjection_read_packet_types(const reinject_config_t *config) {
 //! \param[in] payload: The encoded value to set. Must be in legal range.
 static inline void reinjection_set_wait1_timeout(uint payload) {
     router_control->control.begin_emergency_wait_time = payload;
+    prov->n_router_changes++;
 }
 
 //! \brief Set the wait2 router timeout.
 //! \param[in] payload: The encoded value to set. Must be in legal range.
 static inline void reinjection_set_wait2_timeout(uint payload) {
     router_control->control.drop_wait_time = payload;
+    prov->n_router_changes++;
 }
 
 //! \brief Set the router wait1 timeout.
@@ -888,15 +907,18 @@ static inline void reinjection_set_wait2_timeout(uint payload) {
 //! response
 //! \return The payload size of the response message.
 static inline int reinjection_set_timeout_sdp(sdp_msg_t *msg) {
+#if 0
     io_printf(IO_BUF, "setting router timeouts via sdp\n");
+#endif
     if (msg->arg1 > ROUTER_TIMEOUT_MAX) {
         msg->cmd_rc = RC_ARG;
         return 0;
     }
 
     router_control->control.begin_emergency_wait_time = msg->arg1;
+    prov->n_router_changes++;
 
-    // set SCP command to OK , as successfully completed
+    // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
 }
@@ -909,13 +931,16 @@ static inline int reinjection_set_timeout_sdp(sdp_msg_t *msg) {
 //! response
 //! \return The payload size of the response message.
 static inline int reinjection_set_emergency_timeout_sdp(sdp_msg_t *msg) {
+#if 0
     io_printf(IO_BUF, "setting router emergency timeouts via sdp\n");
+#endif
     if (msg->arg1 > ROUTER_TIMEOUT_MAX) {
         msg->cmd_rc = RC_ARG;
         return 0;
     }
 
     router_control->control.drop_wait_time = msg->arg1;
+    prov->n_router_changes++;
 
     // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
@@ -931,11 +956,12 @@ static inline int reinjection_set_packet_types(sdp_msg_t *msg) {
     reinject_pp = msg->arg2;
     reinject_fr = msg->arg3;
     reinject_nn = msg->data[0];
+    prov->n_router_changes++;
 
     io_printf(
         IO_BUF,
-        "Setting reinject mc to %d\n Setting reinject pp to %d\n"
-        "Setting reinject fr to %d\n Setting reinject nn to %d\n",
+        "Setting reinject mc to %d\nSetting reinject pp to %d\n"
+        "Setting reinject fr to %d\nSetting reinject nn to %d\n",
         reinject_mc, reinject_pp, reinject_fr, reinject_nn);
 
     // set SCP command to OK, as successfully completed
@@ -963,8 +989,6 @@ static inline int reinjection_get_status(sdp_msg_t *msg) {
     data->n_reinjected_packets = reinject_n_reinjected_packets;
     data->n_link_dumped_packets = reinject_n_link_dumped_packets;
     data->n_processor_dumped_packets = reinject_n_processor_dumped_packets;
-
-    io_printf(IO_BUF, "dropped packets %d\n", reinject_n_dropped_packets);
 
     // Put the current services enabled in the packet
     data->packet_types_reinjected = 0;
@@ -1037,6 +1061,7 @@ static void reinjection_clear(void) {
 //! \return The payload size of the response message.
 static inline int reinjection_clear_message(sdp_msg_t *msg) {
     reinjection_clear();
+    prov->n_router_changes++;
     // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
@@ -1214,6 +1239,7 @@ static INT_HANDLER process_mc_payload_packet(void) {
     } else if (key == data_in_data_key) {
         data_in_process_data(data);
     } else if (key == data_in_boundary_key) {
+        prov->n_in_streams++;
         data_in_process_boundary();
     } else {
         io_printf(IO_BUF,
@@ -1266,6 +1292,7 @@ static void data_in_load_router(
             }
         }
     }
+    prov->n_router_changes++;
 }
 
 //! \brief reads in routers entries and places in application sdram location
@@ -1327,7 +1354,8 @@ static void data_in_speed_up_load_in_application_routes(void) {
     io_printf(IO_BUF, "Loading application routes\n");
 #endif
     data_in_load_router(
-            data_in_saved_application_router_table, data_in_application_table_n_valid_entries);
+            data_in_saved_application_router_table,
+            data_in_application_table_n_valid_entries);
 }
 
 //! \brief The handler for all control messages coming in for data in speed up
@@ -1593,7 +1621,7 @@ static void data_out_store_missing_seq_nums(
                 rt_error(RTE_SWERR);
             }
 
-            io_printf(IO_BUF, "Activate bacon protocol!");
+            io_printf(IO_BUF, "Activate bacon protocol!\n");
 
             // allocate biggest block
             data_out_missing_seq_num_sdram_address = sdram_alloc(max_bytes);
@@ -1664,7 +1692,10 @@ static void data_out_dma_complete_read_missing_seqeuence_nums(void) {
     } else {        // finished data send, tell host its done
         data_out_send_end_flag();
         data_out_in_retransmission_mode = false;
-        data_out_missing_seq_num_sdram_address = NULL;
+        if (data_out_missing_seq_num_sdram_address != NULL) {
+            sdram_free(data_out_missing_seq_num_sdram_address);
+            data_out_missing_seq_num_sdram_address = NULL;
+        }
         data_out_read_data_position = 0;
         data_out_position_for_retransmission = 0;
         data_out_n_missing_seq_nums_in_sdram = 0;
@@ -1752,6 +1783,7 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         } else {
             data_out_read(DMA_TAG_READ_FOR_TRANSMISSION, 2, SDP_PAYLOAD_WORDS);
         }
+        prov->n_out_streams++;
         return;
     }
     case SDP_CMD_START_OF_MISSING_SDP_PACKETS:
@@ -1818,7 +1850,9 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
                     data_out_transaction_id, message->transaction_id);
             return;
         }
+#if 0
         io_printf(IO_BUF, "data out clear\n");
+#endif
         data_out_stop = true;
         break;
     default:
@@ -1910,7 +1944,9 @@ void __wrap_sark_int(void *pc) {
         return;
     }
 
+#if 0
     io_printf(IO_BUF, "received sdp message\n");
+#endif
 
     switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
     case REINJECTION_PORT:
@@ -1921,6 +1957,7 @@ void __wrap_sark_int(void *pc) {
         while (!sark_msg_send(msg, 10)) {
             io_printf(IO_BUF, "timeout when sending reinjection reply\n");
         }
+        prov->n_sdp_packets++;
         break;
     case DATA_SPEED_UP_OUT_PORT:
         // These are all one-way messages; replies are out of band
@@ -1928,6 +1965,7 @@ void __wrap_sark_int(void *pc) {
         io_printf(IO_BUF, "out port\n");
 #endif
         data_out_speed_up_command((sdp_msg_pure_data *) msg);
+        prov->n_sdp_packets++;
         break;
     case DATA_SPEED_UP_IN_PORT:
 #if 0
@@ -1937,6 +1975,7 @@ void __wrap_sark_int(void *pc) {
         while (!sark_msg_send(msg, 10)) {
             io_printf(IO_BUF, "timeout when sending speedup ctl reply\n");
         }
+        prov->n_sdp_packets++;
         break;
     default:
         io_printf(IO_BUF, "unexpected port %d\n",
@@ -1989,11 +2028,13 @@ static void data_out_initialise(void) {
     data_out_transaction_id_key = config->transaction_id_key;
     data_out_end_flag_key = config->end_flag_key;
 
+#if 0
     io_printf(IO_BUF,
             "new seq key = %d, first data key = %d, transaction id key = %d, "
             "end flag key = %d, basic_data_key = %d\n",
             data_out_new_sequence_key, data_out_first_data_key, data_out_transaction_id_key,
             data_out_end_flag_key, data_out_basic_data_key);
+#endif
 
     // Various DMA callbacks
     set_vic_callback(DMA_SLOT, DMA_DONE_INT, data_out_dma_complete);
@@ -2056,6 +2097,15 @@ static void data_in_initialise(void) {
         MC_PAYLOAD_SLOT, CC_MC_INT, process_mc_payload_packet);
 }
 
+//! Set up where we collect provenance
+static void provenance_initialise(void) {
+    prov = dse_block(PROVENANCE_REGION);
+    prov->n_sdp_packets = 0;
+    prov->n_in_streams = 0;
+    prov->n_out_streams = 0;
+    prov->n_router_changes = 0;
+}
+
 //-----------------------------------------------------------------------------
 //! main entry point
 //-----------------------------------------------------------------------------
@@ -2088,6 +2138,9 @@ void c_main(void) {
     };
     vic_control->int_disable = int_select;
     reinjection_disable_comms_interrupt();
+
+    // set up provenance area
+    provenance_initialise();
 
     // set up reinjection functionality
     reinjection_initialise();

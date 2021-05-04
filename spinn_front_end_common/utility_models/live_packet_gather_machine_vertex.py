@@ -21,7 +21,6 @@ from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
 from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine,
     ProvidesProvenanceDataFromMachineImpl)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
@@ -54,7 +53,7 @@ class LivePacketGatherMachineVertex(
     #: Used to identify tags involved with the live packet gatherer.
     TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
 
-    _N_ADDITIONAL_PROVENANCE_ITEMS = 2
+    _N_ADDITIONAL_PROVENANCE_ITEMS = 4
     _CONFIG_SIZE = 12 * BYTES_PER_WORD
     _PROVENANCE_REGION_SIZE = 2 * BYTES_PER_WORD
 
@@ -102,40 +101,30 @@ class LivePacketGatherMachineVertex(
     def is_in_injection_mode(self):
         return True
 
-    @overrides(AbstractProvidesProvenanceDataFromMachine.
-               get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, transceiver, placement):
-        provenance_data = self._read_provenance_data(transceiver, placement)
-        provenance_items = self._read_basic_provenance_items(
-            provenance_data, placement)
-        provenance_data = self._get_remaining_provenance_data_items(
-            provenance_data)
-        _, _, _, _, names = self._get_placement_details(placement)
-
-        provenance_items.append(ProvenanceDataItem(
-            self._add_name(names, "lost_packets_without_payload"),
-            provenance_data[0],
-            report=provenance_data[0] > 0,
+    @overrides(
+        ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items)
+    def parse_extra_provenance_items(self, label, names, provenance_data):
+        (lost, lost_payload, events, messages) = provenance_data
+        yield ProvenanceDataItem(
+            names + ["lost_packets_without_payload"], lost,
+            report=(lost > 0),
             message=(
-                "The live packet gatherer has lost {} packets which have "
-                "payloads during its execution. Try increasing the machine "
-                "time step or increasing the time scale factor. If you are "
-                "running in real time, try reducing the number of vertices "
-                "which are feeding this live packet gatherer".format(
-                    provenance_data[0]))))
-        provenance_items.append(ProvenanceDataItem(
-            self._add_name(names, "lost_packets_with_payload"),
-            provenance_data[1],
-            report=provenance_data[1] > 0,
-            message=(
-                "The live packet gatherer has lost {} packets which do not "
-                "have payloads during its execution. Try increasing the "
+                f"The {label} has lost {lost} packets which do "
+                "not have payloads during its execution. Try increasing the "
                 "machine time step or increasing the time scale factor. If "
                 "you are running in real time, try reducing the number of "
-                "vertices which are feeding this live packet gatherer".format(
-                    provenance_data[1]))))
-
-        return provenance_items
+                "vertices which are feeding this live packet gatherer"))
+        yield ProvenanceDataItem(
+            names + ["lost_packets_with_payload"], lost_payload,
+            report=(lost_payload > 0),
+            message=(
+                f"The {label} has lost {lost_payload} packets "
+                "which have payloads during its execution. Try increasing "
+                "the machine time step or increasing the time scale factor. "
+                "If you are running in real time, try reducing the number of "
+                "vertices which are feeding this live packet gatherer"))
+        yield ProvenanceDataItem(names + ["gathered_events"], events)
+        yield ProvenanceDataItem(names + ["messages_sent_to_host"], messages)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):

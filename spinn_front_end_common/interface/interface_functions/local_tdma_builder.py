@@ -16,13 +16,11 @@
 import logging
 import math
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.config_holder import get_config_float, get_config_int
 from spinn_front_end_common.abstract_models.impl.\
     tdma_aware_application_vertex import (
         TDMAAwareApplicationVertex)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.helpful_functions import (
-    read_config_int, read_config_float)
-from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utilities.constants import CLOCKS_PER_US
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -303,18 +301,15 @@ class LocalTDMABuilder(object):
         :rtype: tuple(int, int, int, int. int)
         """
 
-        # get config
-        config = get_simulator().config
-
         # set the number of cores expected to fire at any given time
-        app_machine_quantity = read_config_int(
-            config, "Simulation", "app_machine_quantity")
+        app_machine_quantity = get_config_int(
+            "Simulation", "app_machine_quantity")
 
         # set the time between cores to fire
-        time_between_cores = read_config_float(
-            config, "Simulation", "time_between_cores")
-        clocks_between_cores = read_config_int(
-            config, "Simulation", "clock_cycles_between_cores")
+        time_between_cores = get_config_float(
+            "Simulation", "time_between_cores")
+        clocks_between_cores = get_config_int(
+            "Simulation", "clock_cycles_between_cores")
         self.__check_at_most_one(
             "time_between_cores", time_between_cores,
             "clock_cycles_betwen_cores", clocks_between_cores)
@@ -328,10 +323,10 @@ class LocalTDMABuilder(object):
             clocks_between_cores = time_between_cores * CLOCKS_PER_US
 
         # time spend sending
-        fraction_of_sending = read_config_float(
-            config, "Simulation", "fraction_of_time_spike_sending")
-        clocks_for_sending = read_config_int(
-            config, "Simulation", "clock_cycles_sending")
+        fraction_of_sending = get_config_float(
+            "Simulation", "fraction_of_time_spike_sending")
+        clocks_for_sending = get_config_int(
+            "Simulation", "clock_cycles_sending")
         self.__check_only_one(
             "fraction_of_time_spike_sending", fraction_of_sending,
             "clock_cycles_sending", clocks_for_sending)
@@ -340,10 +335,10 @@ class LocalTDMABuilder(object):
                 clocks_per_cycle * fraction_of_sending))
 
         # time waiting before sending
-        fraction_of_waiting = read_config_float(
-            config, "Simulation", "fraction_of_time_before_sending")
-        clocks_waiting = read_config_int(
-            config, "Simulation", "clock_cycles_before_sending")
+        fraction_of_waiting = get_config_float(
+            "Simulation", "fraction_of_time_before_sending")
+        clocks_waiting = get_config_int(
+            "Simulation", "clock_cycles_before_sending")
         self.__check_only_one(
             "fraction_of_time_before_sending", fraction_of_waiting,
             "clock_cycles_before_sending", clocks_waiting)
@@ -351,10 +346,10 @@ class LocalTDMABuilder(object):
             clocks_waiting = int(round(clocks_per_cycle * fraction_of_waiting))
 
         # time to offset app vertices between each other
-        fraction_initial = read_config_float(
-            config, "Simulation", "fraction_of_time_for_offset")
-        clocks_initial = read_config_int(
-            config, "Simulation", "clock_cycles_for_offset")
+        fraction_initial = get_config_float(
+            "Simulation", "fraction_of_time_for_offset")
+        clocks_initial = get_config_int(
+            "Simulation", "clock_cycles_for_offset")
         self.__check_only_one(
             "fraction_of_time_for_offset", fraction_initial,
             "clock_cycles_for_offset", clocks_initial)

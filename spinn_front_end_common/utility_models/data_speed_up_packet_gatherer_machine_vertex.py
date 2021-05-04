@@ -19,7 +19,7 @@ import datetime
 import logging
 import time
 import struct
-from enum import Enum
+from enum import Enum, IntEnum
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -40,7 +40,7 @@ from spinn_front_end_common.utilities.emergency_recovery import (
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesLocalProvenanceData)
+    AbstractProvidesLocalProvenanceData, ProvidesProvenanceDataFromMachineImpl)
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utilities.constants import (
@@ -132,10 +132,11 @@ BYTES_IN_FULL_PACKET_WITH_KEY = (
 SIZE_DATA_IN_CHIP_TO_KEY_SPACE = ((3 * 48) + 2) * BYTES_PER_WORD
 
 
-class _DATA_REGIONS(Enum):
+class _DATA_REGIONS(IntEnum):
     """DSG data regions"""
     CONFIG = 0
     CHIP_TO_KEY_SPACE = 1
+    PROVENANCE_REGION = 2
 
 
 class DATA_OUT_COMMANDS(Enum):
@@ -162,6 +163,7 @@ _THREE_WORDS = struct.Struct("<III")
 _FOUR_WORDS = struct.Struct("<IIII")
 _FIVE_WORDS = struct.Struct("<IIIII")
 
+
 # Set to true to check that the data is correct after it has been sent in.
 # This is expensive, and only works in Python 3.5 or later.
 VERIFY_SENT_DATA = False
@@ -183,7 +185,8 @@ SDRAM_FOR_MISSING_SDP_SEQ_NUMS = ceildiv(
 
 class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData):
+        AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData,
+        ProvidesProvenanceDataFromMachineImpl):
     """ Machine vertex for handling fast data transfer between host and \
         SpiNNaker. This machine vertex is only ever placed on chips with a \
         working Ethernet connection; it collaborates with the \
@@ -308,7 +311,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             ~pacman.model.graphs.application.ApplicationVertex or None
         """
         super().__init__(
-            label="SYSTEM:PacketGatherer({},{})".format(x, y),
+            label=f"SYSTEM:PacketGatherer({x},{y})",
             constraints=constraints, app_vertex=app_vertex)
 
         # data holders for the output, and sequence numbers
@@ -439,7 +442,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             base_key = self.BASE_KEY
             transaction_id_key = self.TRANSACTION_ID_KEY
 
-        spec.switch_write_focus(_DATA_REGIONS.CONFIG.value)
+        spec.switch_write_focus(_DATA_REGIONS.CONFIG)
         spec.write_value(new_seq_key)
         spec.write_value(first_data_key)
         spec.write_value(transaction_id_key)
@@ -454,7 +457,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._remote_tag = iptag.tag
 
         # write mc chip key map
-        spec.switch_write_focus(_DATA_REGIONS.CHIP_TO_KEY_SPACE.value)
+        spec.switch_write_focus(_DATA_REGIONS.CHIP_TO_KEY_SPACE)
         chips_on_board = list(machine.get_existing_xys_on_board(
             machine.get_chip_at(placement.x, placement.y)))
 
@@ -478,21 +481,21 @@ class DataSpeedUpPacketGatherMachineVertex(
         # End-of-Spec:
         spec.end_specification()
 
-    @staticmethod
-    def _reserve_memory_regions(spec):
+    def _reserve_memory_regions(self, spec):
         """ Writes the DSG regions memory sizes. Static so that it can be used\
             by the application vertex.
 
         :param ~.DataSpecificationGenerator spec: spec file
         """
         spec.reserve_memory_region(
-            region=_DATA_REGIONS.CONFIG.value,
+            region=_DATA_REGIONS.CONFIG,
             size=CONFIG_SIZE,
             label="config")
         spec.reserve_memory_region(
-            region=_DATA_REGIONS.CHIP_TO_KEY_SPACE.value,
+            region=_DATA_REGIONS.CHIP_TO_KEY_SPACE,
             size=SIZE_DATA_IN_CHIP_TO_KEY_SPACE,
             label="mc_key_map")
+        self.reserve_provenance_data_region(spec)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
@@ -503,7 +506,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._run += 1
         prov_items = list()
         significant_losses = defaultdict(list)
-        top_level_name = "Provenance_for_{}".format(self._label)
+        top_level_name = f"Provenance_for_{self._label}"
         for (placement, memory_address, length_in_bytes) in \
                 self._provenance_data_items.keys():
 
@@ -512,12 +515,11 @@ class DataSpeedUpPacketGatherMachineVertex(
             for time_taken, lost_seq_nums in self._provenance_data_items[
                     placement, memory_address, length_in_bytes]:
                 # handle time
-                chip_name = "chip{}:{}".format(placement.x, placement.y)
+                chip_name = f"chip{placement.x}:{placement.y}"
                 last_name = "Memory_address:{}:Length_in_bytes:{}"\
                     .format(memory_address, length_in_bytes)
                 if times_extracted_the_same_thing == 0:
-                    iteration_name = "run{}".format(
-                        self._run)
+                    iteration_name = f"run{self._run}"
                 else:
                     iteration_name = "run{}iteration{}".format(
                         self._run, times_extracted_the_same_thing)
@@ -533,8 +535,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     if n_lost_seq_nums:
                         prov_items.append(ProvenanceDataItem(
                             [top_level_name, "lost_seq_nums", chip_name,
-                             last_name, iteration_name,
-                             "iteration_{}".format(i)],
+                             last_name, iteration_name, f"iteration_{i}"],
                             n_lost_seq_nums, report=(
                                 n_lost_seq_nums > _MINOR_LOSS_THRESHOLD),
                             message=_MINOR_LOSS_MESSAGE.format(
@@ -1648,6 +1649,30 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         log.debug("send SDP packet with missing sequence numbers: {} of {}",
                   packet_count + 1, n_packets)
+
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
+    def _provenance_region_id(self):
+        return _DATA_REGIONS.PROVENANCE_REGION
+
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
+    def _n_additional_data_items(self):
+        # n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams
+        return 4
+
+    @overrides(ProvidesProvenanceDataFromMachineImpl.
+               parse_extra_provenance_items)
+    def parse_extra_provenance_items(self, label, names, provenance_data):
+        # pylint: disable=unused-argument
+        n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams = provenance_data
+
+        yield ProvenanceDataItem(names + ["Sent_SDP_Packets"], n_sdp_sent)
+        yield ProvenanceDataItem(names + ["Received_SDP_Packets"], n_sdp_recvd)
+        yield ProvenanceDataItem(
+            names + ["Speed_Up_Input_Streams"], n_in_streams)
+        yield ProvenanceDataItem(
+            names + ["Speed_Up_Output_Streams"], n_out_streams)
 
 
 class _StreamingContextManager(object):
