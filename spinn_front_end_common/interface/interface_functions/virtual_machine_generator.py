@@ -15,7 +15,7 @@
 
 import logging
 from spinn_utilities.log import FormatAdapter
-from spinn_machine import json_machine, virtual_machine, Machine, Router
+from spinn_machine import json_machine, virtual_machine, Machine
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -30,7 +30,6 @@ class VirtualMachineGenerator(object):
             self, width=None, height=None, version=None,
             down_chips=None, down_cores=None, down_links=None,
             max_sdram_size=None,
-            router_entries_per_chip=Router.ROUTER_DEFAULT_AVAILABLE_ENTRIES,
             json_path=None):
         """
         :param int width: The width of the machine in chips
@@ -43,8 +42,6 @@ class VirtualMachineGenerator(object):
         :param list(tuple(int,int,int)) down_links:
             The set of links that should be considered broken
         :param int max_sdram_size: The SDRAM that should be given to each chip
-        :param int router_entries_per_chip:
-            The number of router entries to allocate.
         :param str json_path:
             Where to load a JSON description of the machine from, if anywhere.
         :return: The virtual machine.
@@ -85,7 +82,7 @@ class VirtualMachineGenerator(object):
                 n_cpus_per_chip=Machine.max_cores_per_chip(),
                 down_chips=down_chips, down_cores=down_cores,
                 down_links=down_links, sdram_per_chip=max_sdram_size,
-                router_entries_per_chip=router_entries_per_chip, validate=True)
+                validate=True)
         else:
             if (height is not None or width is not None or
                     version is not None or down_chips is not None or
