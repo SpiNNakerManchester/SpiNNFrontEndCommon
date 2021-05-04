@@ -1525,29 +1525,32 @@
     <span class="k">def</span> <span class="nf">_create_version_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Add the version information to the provenance data at the start.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">version_provenance</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">version_provenance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;spinn_utilities_version&quot;</span><span class="p">],</span> <span class="n">spinn_utils_version</span><span class="p">))</span>
-        <span class="n">version_provenance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;spinn_machine_version&quot;</span><span class="p">],</span> <span class="n">spinn_machine_version</span><span class="p">))</span>
-        <span class="n">version_provenance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;spalloc_version&quot;</span><span class="p">],</span> <span class="n">spalloc_version</span><span class="p">))</span>
-        <span class="n">version_provenance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;spinnman_version&quot;</span><span class="p">],</span> <span class="n">spinnman_version</span><span class="p">))</span>
-        <span class="n">version_provenance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;pacman_version&quot;</span><span class="p">],</span> <span class="n">pacman_version</span><span class="p">))</span>
-        <span class="n">version_provenance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;data_specification_version&quot;</span><span class="p">],</span> <span class="n">data_spec_version</span><span class="p">))</span>
-        <span class="n">version_provenance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;front_end_common_version&quot;</span><span class="p">],</span> <span class="n">fec_version</span><span class="p">))</span>
-        <span class="n">version_provenance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;numpy_version&quot;</span><span class="p">],</span> <span class="n">numpy_version</span><span class="p">))</span>
-        <span class="n">version_provenance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;scipy_version&quot;</span><span class="p">],</span> <span class="n">scipy_version</span><span class="p">))</span>
+        <span class="n">version_provenance</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;spinn_utilities_version&quot;</span><span class="p">],</span>
+                <span class="n">spinn_utils_version</span><span class="p">),</span>
+            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;spinn_machine_version&quot;</span><span class="p">],</span>
+                <span class="n">spinn_machine_version</span><span class="p">),</span>
+            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;spalloc_version&quot;</span><span class="p">],</span> <span class="n">spalloc_version</span><span class="p">),</span>
+            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;spinnman_version&quot;</span><span class="p">],</span> <span class="n">spinnman_version</span><span class="p">),</span>
+            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;pacman_version&quot;</span><span class="p">],</span> <span class="n">pacman_version</span><span class="p">),</span>
+            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;data_specification_version&quot;</span><span class="p">],</span>
+                <span class="n">data_spec_version</span><span class="p">),</span>
+            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;front_end_common_version&quot;</span><span class="p">],</span> <span class="n">fec_version</span><span class="p">),</span>
+            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;numpy_version&quot;</span><span class="p">],</span> <span class="n">numpy_version</span><span class="p">),</span>
+            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;scipy_version&quot;</span><span class="p">],</span> <span class="n">scipy_version</span><span class="p">)]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_front_end_versions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_front_end_versions</span><span class="p">:</span>
-                <span class="n">version_provenance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">],</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">))</span>
+            <span class="n">version_provenance</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="n">ProvenanceDataItem</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">],</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_front_end_versions</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_version_provenance</span> <span class="o">=</span> <span class="n">version_provenance</span>
 
     <span class="k">def</span> <span class="nf">_do_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_time</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>

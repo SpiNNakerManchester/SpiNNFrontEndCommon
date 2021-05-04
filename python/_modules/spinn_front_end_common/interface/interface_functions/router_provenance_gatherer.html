@@ -127,23 +127,28 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_add_router_provenance_data</span><span class="p">(</span>
             <span class="n">router_tables</span><span class="p">,</span> <span class="n">extra_monitor_vertices</span><span class="p">,</span> <span class="n">prov_items</span><span class="p">)</span>
 
-        <span class="n">prov_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;router_provenance&quot;</span><span class="p">,</span> <span class="s2">&quot;total_multi_cast_sent_packets&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_total_sent_packets</span><span class="p">))</span>
-        <span class="n">prov_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;router_provenance&quot;</span><span class="p">,</span> <span class="s2">&quot;total_created_packets&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_total_new_packets</span><span class="p">))</span>
-        <span class="n">prov_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;router_provenance&quot;</span><span class="p">,</span> <span class="s2">&quot;total_dropped_packets&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_total_dropped_packets</span><span class="p">))</span>
-        <span class="n">prov_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;router_provenance&quot;</span><span class="p">,</span> <span class="s2">&quot;total_missed_dropped_packets&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_total_missed_dropped_packets</span><span class="p">))</span>
-        <span class="n">prov_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;router_provenance&quot;</span><span class="p">,</span> <span class="s2">&quot;total_lost_dropped_packets&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_total_lost_dropped_packets</span><span class="p">))</span>
-
+        <span class="n">prov_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__summary_items</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">prov_items</span></div>
+
+    <span class="k">def</span> <span class="nf">__summary_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: iterable(ProvenanceDataItem)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;router_provenance&quot;</span><span class="p">,</span> <span class="s2">&quot;total_multi_cast_sent_packets&quot;</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_total_sent_packets</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;router_provenance&quot;</span><span class="p">,</span> <span class="s2">&quot;total_created_packets&quot;</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_total_new_packets</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;router_provenance&quot;</span><span class="p">,</span> <span class="s2">&quot;total_dropped_packets&quot;</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_total_dropped_packets</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;router_provenance&quot;</span><span class="p">,</span> <span class="s2">&quot;total_missed_dropped_packets&quot;</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_total_missed_dropped_packets</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;router_provenance&quot;</span><span class="p">,</span> <span class="s2">&quot;total_lost_dropped_packets&quot;</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_total_lost_dropped_packets</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_add_router_provenance_data</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">router_tables</span><span class="p">,</span> <span class="n">extra_monitor_vertices</span><span class="p">,</span> <span class="n">items</span><span class="p">):</span>
@@ -155,7 +160,6 @@
 <span class="sd">            list of extra monitor vertices</span>
 <span class="sd">        :param list(ProvenanceDataItem) items:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">n_chips</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span>
                                <span class="s2">&quot;Getting Router Provenance&quot;</span><span class="p">)</span>
 
@@ -174,43 +178,42 @@
                 <span class="n">router_tables</span><span class="o">.</span><span class="n">routing_tables</span><span class="p">,</span>
                 <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">table</span><span class="p">:</span> <span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">table</span><span class="o">.</span><span class="n">y</span><span class="p">)),</span> <span class="kc">False</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_router_table_diagnostic</span><span class="p">(</span>
-                <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">seen_chips</span><span class="p">,</span>
-                <span class="n">router_table</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">reinjection_data</span><span class="p">)</span>
+                <span class="n">router_table</span><span class="p">,</span> <span class="n">seen_chips</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">reinjection_data</span><span class="p">)</span>
 
+        <span class="c1"># Get what info we can for chips where there are problems or no table</span>
         <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">chips</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">y</span><span class="p">))):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_router_chip_diagnostic</span><span class="p">(</span>
-                <span class="n">chip</span><span class="p">,</span> <span class="n">seen_chips</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">reinjection_data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">chip</span><span class="o">.</span><span class="n">virtual</span> <span class="ow">and</span> <span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_chips</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_add_unseen_router_chip_diagnostic</span><span class="p">(</span>
+                    <span class="n">chip</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">reinjection_data</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_add_router_table_diagnostic</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">seen_chips</span><span class="p">,</span> <span class="n">router_table</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">reinjection_data</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">seen_chips</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">reinjection_data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param int x:</span>
-<span class="sd">        :param int y:</span>
+<span class="sd">        :param ~.MulticastRoutingTable table:</span>
 <span class="sd">        :param set(tuple(int,int)) seen_chips:</span>
-<span class="sd">        :param ~.MulticastRoutingTable router_table:</span>
 <span class="sd">        :param list(ProvenanceDataItem) items:</span>
 <span class="sd">        :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments, bare-except</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">y</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">virtual</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">router_diagnostic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">get_router_diagnostics</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-                <span class="n">seen_chips</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
-                <span class="n">reinjection_status</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="k">if</span> <span class="n">reinjection_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">reinjection_status</span> <span class="o">=</span> <span class="n">reinjection_data</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__add_router_diagnostics</span><span class="p">(</span>
-                    <span class="n">items</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">router_diagnostic</span><span class="p">,</span> <span class="n">reinjection_status</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span>
-                    <span class="n">router_table</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_add_totals</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="p">,</span> <span class="n">reinjection_status</span><span class="p">)</span>
+                <span class="n">diagnostics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">get_router_diagnostics</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
             <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                     <span class="s2">&quot;Could not read routing diagnostics from </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
                     <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="n">seen_chips</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_status</span><span class="p">(</span><span class="n">reinjection_data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="n">items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__router_diagnostics</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">diagnostics</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">table</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__add_totals</span><span class="p">(</span><span class="n">diagnostics</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_add_router_chip_diagnostic</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">chip</span><span class="p">,</span> <span class="n">seen_chips</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">reinjection_data</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_add_unseen_router_chip_diagnostic</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">chip</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">reinjection_data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~.Chip chip:</span>
 <span class="sd">        :param set(tuple(int,int)) seen_chips:</span>
@@ -218,247 +221,214 @@
 <span class="sd">        :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=bare-except</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">chip</span><span class="o">.</span><span class="n">virtual</span> <span class="ow">and</span> <span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_chips</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">diagnostic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">get_router_diagnostics</span><span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">diagnostics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">get_router_diagnostics</span><span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+            <span class="c1"># There could be issues with unused chips - don&#39;t worry!</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span> <span class="ow">or</span>
+                <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_local_multicast_packets</span> <span class="ow">or</span>
+                <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_external_multicast_packets</span><span class="p">):</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_status</span><span class="p">(</span><span class="n">reinjection_data</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__router_diagnostics</span><span class="p">(</span>
+                <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">diagnostics</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__add_totals</span><span class="p">(</span><span class="n">diagnostics</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="p">(</span><span class="n">diagnostic</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span> <span class="ow">or</span>
-                        <span class="n">diagnostic</span><span class="o">.</span><span class="n">n_local_multicast_packets</span> <span class="ow">or</span>
-                        <span class="n">diagnostic</span><span class="o">.</span><span class="n">n_external_multicast_packets</span><span class="p">):</span>
-                    <span class="n">reinjection_status</span> <span class="o">=</span> <span class="kc">None</span>
-                    <span class="k">if</span> <span class="n">reinjection_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">reinjection_status</span> <span class="o">=</span> <span class="n">reinjection_data</span><span class="p">[</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__add_router_diagnostics</span><span class="p">(</span>
-                        <span class="n">items</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">diagnostic</span><span class="p">,</span> <span class="n">reinjection_status</span><span class="p">,</span>
-                        <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_add_totals</span><span class="p">(</span><span class="n">diagnostic</span><span class="p">,</span> <span class="n">reinjection_status</span><span class="p">)</span>
-            <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
-                <span class="c1"># There could be issues with unused chips - don&#39;t worry!</span>
-                <span class="k">pass</span>
-
-    <span class="k">def</span> <span class="nf">_add_totals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">router_diagnostic</span><span class="p">,</span> <span class="n">reinjection_status</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__get_status</span><span class="p">(</span><span class="n">reinjection_data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~.RouterDiagnostics router_diagnostic:</span>
-<span class="sd">        :param ReInjectionStatus reinjection_status:</span>
+<span class="sd">        :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:</span>
+<span class="sd">        :param int x:</span>
+<span class="sd">        :param int y:</span>
+<span class="sd">        :rtype: ReInjectionStatus or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">reinjection_data</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="k">if</span> <span class="n">reinjection_data</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__add_totals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diagnostics</span><span class="p">,</span> <span class="n">status</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.RouterDiagnostics diagnostics:</span>
+<span class="sd">        :param ReInjectionStatus status:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_total_sent_packets</span> <span class="o">+=</span> <span class="p">(</span>
-            <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_local_multicast_packets</span> <span class="o">+</span>
-            <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_external_multicast_packets</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_total_new_packets</span> <span class="o">+=</span> <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_local_multicast_packets</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_total_dropped_packets</span> <span class="o">+=</span> <span class="p">(</span>
-            <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">reinjection_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_local_multicast_packets</span> <span class="o">+</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_external_multicast_packets</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_total_new_packets</span> <span class="o">+=</span> <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_local_multicast_packets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_total_dropped_packets</span> <span class="o">+=</span> <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_total_missed_dropped_packets</span> <span class="o">+=</span> <span class="p">(</span>
-                <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_missed_dropped_packets</span><span class="p">)</span>
+                <span class="n">status</span><span class="o">.</span><span class="n">n_missed_dropped_packets</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_total_lost_dropped_packets</span> <span class="o">+=</span> <span class="p">(</span>
-                <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_dropped_packet_overflows</span><span class="p">)</span>
+                <span class="n">status</span><span class="o">.</span><span class="n">n_dropped_packet_overflows</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_total_lost_dropped_packets</span> <span class="o">+=</span> <span class="p">(</span>
-                <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span><span class="p">)</span>
+                <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span><span class="p">)</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param list(str) names:</span>
-<span class="sd">        :param str name:</span>
-<span class="sd">        :rtype: list(str)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">new_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
-        <span class="n">new_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">new_names</span>
+    <span class="k">def</span> <span class="nf">__router_diagnostics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">diagnostics</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Describes the router diagnostics for one router.</span>
 
-    <span class="k">def</span> <span class="nf">__add_router_diagnostics</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">router_diagnostic</span><span class="p">,</span> <span class="n">reinjection_status</span><span class="p">,</span>
-            <span class="n">expected</span><span class="p">,</span> <span class="n">router_table</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Stores router diagnostics as a set of provenance data items.</span>
-
-<span class="sd">        :param list(ProvenanceDataItem) items: the list to append to</span>
 <span class="sd">        :param int x: x coordinate of the router in question</span>
 <span class="sd">        :param int y: y coordinate of the router in question</span>
-<span class="sd">        :param ~.RouterDiagnostics router_diagnostic:</span>
-<span class="sd">            the router diagnostic object</span>
-<span class="sd">        :param ReInjectionStatus reinjection_status:</span>
+<span class="sd">        :param ~.RouterDiagnostics diagnostics: the router diagnostics object</span>
+<span class="sd">        :param ReInjectionStatus status:</span>
 <span class="sd">            the data gained from the extra monitor re-injection subsystem</span>
-<span class="sd">        :param ~.MulticastRoutingTable router_table:</span>
+<span class="sd">        :param bool expected:</span>
+<span class="sd">        :param ~.AbstractMulticastRoutingTable table:</span>
 <span class="sd">            the router table generated by the PACMAN tools</span>
+<span class="sd">        :rtype: iterable(ProvenanceDataItem)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="n">names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;router_provenance&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">expected</span><span class="p">:</span>
-            <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;expected_routers&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;unexpected_routers&quot;</span><span class="p">)</span>
-        <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;router_at_chip_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;router_provenance&quot;</span><span class="p">,</span>
+                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">expected</span> <span class="k">else</span> <span class="s1">&#39;un&#39;</span><span class="si">}</span><span class="s2">expected_routers&quot;</span><span class="p">,</span>
+                 <span class="sa">f</span><span class="s2">&quot;router_at_chip_</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
 
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Local_Multicast_Packets&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_local_multicast_packets</span><span class="p">)))</span>
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;External_Multicast_Packets&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_external_multicast_packets</span><span class="p">)))</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Local_Multicast_Packets&quot;</span><span class="p">],</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_local_multicast_packets</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;External_Multicast_Packets&quot;</span><span class="p">],</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_external_multicast_packets</span><span class="p">)</span>
 
         <span class="c1"># simplify the if by making components of it outside.</span>
-        <span class="n">has_dropped</span> <span class="o">=</span> <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span> <span class="o">&gt;</span> <span class="mi">0</span>
-        <span class="n">missing_stuff</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">has_reinjection</span> <span class="o">=</span> <span class="n">reinjection_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">has_dropped</span> <span class="o">=</span> <span class="p">(</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">missing_stuff</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">has_reinjection</span> <span class="o">=</span> <span class="n">status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">has_reinjection</span><span class="p">:</span>
-            <span class="n">missing_stuff</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="p">(</span><span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_dropped_packets</span> <span class="o">+</span>
-                 <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_missed_dropped_packets</span> <span class="o">+</span>
-                 <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_dropped_packet_overflows</span> <span class="o">+</span>
-                 <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_reinjected_packets</span> <span class="o">+</span>
-                 <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_link_dumps</span> <span class="o">+</span>
-                 <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_processor_dumps</span><span class="p">)</span> <span class="o">&lt;</span>
-                <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span><span class="p">)</span>
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Dropped_Multicast_Packets&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span><span class="p">),</span>
-            <span class="n">report</span><span class="o">=</span><span class="p">((</span><span class="n">has_dropped</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">has_reinjection</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
-                <span class="n">has_dropped</span> <span class="ow">and</span> <span class="n">has_reinjection</span> <span class="ow">and</span> <span class="n">missing_stuff</span><span class="p">)),</span>
-            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;The router on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> has dropped </span><span class="si">{}</span><span class="s2"> multicast route packets. &quot;</span>
-                <span class="s2">&quot;Try increasing the machine_time_step and/or the time scale &quot;</span>
-                <span class="s2">&quot;factor or reducing the number of atoms per core.&quot;</span>
-                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span><span class="p">))))</span>
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span>
-                <span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Dropped_Multicast_Packets_via_local_transmission&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">user_3</span><span class="p">),</span>
-            <span class="n">report</span><span class="o">=</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">user_3</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
-            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;The router on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> has dropped </span><span class="si">{}</span><span class="s2"> multicast packets that&quot;</span>
-                <span class="s2">&quot; were transmitted by local cores. This occurs where the &quot;</span>
-                <span class="s2">&quot;router has no entry associated with the multi-cast key. &quot;</span>
-                <span class="s2">&quot;Try investigating the keys allocated to the vertices and &quot;</span>
-                <span class="s2">&quot;the router table entries for this chip.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">user_3</span><span class="p">))))</span>
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span>
-                <span class="n">names</span><span class="p">,</span> <span class="s2">&quot;default_routed_external_multicast_packets&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">user_2</span><span class="p">),</span>
-            <span class="n">report</span><span class="o">=</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">user_2</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span>
-                    <span class="p">((</span><span class="n">router_table</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
-                      <span class="n">router_table</span><span class="o">.</span><span class="n">number_of_defaultable_entries</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span>
-                     <span class="n">router_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;The router on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> has default routed </span><span class="si">{}</span><span class="s2"> multicast packets,&quot;</span>
-                <span class="s2">&quot; but the router table did not expect any default routed &quot;</span>
-                <span class="s2">&quot;packets. This occurs where the router has no entry&quot;</span>
-                <span class="s2">&quot; associated with the multi-cast key. &quot;</span>
-                <span class="s2">&quot;Try investigating the keys allocated to the vertices and &quot;</span>
-                <span class="s2">&quot;the router table entries for this chip.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">user_2</span><span class="p">))))</span>
+            <span class="n">missing_stuff</span> <span class="o">=</span> <span class="p">((</span>
+                <span class="n">status</span><span class="o">.</span><span class="n">n_dropped_packets</span> <span class="o">+</span> <span class="n">status</span><span class="o">.</span><span class="n">n_missed_dropped_packets</span> <span class="o">+</span>
+                <span class="n">status</span><span class="o">.</span><span class="n">n_dropped_packet_overflows</span> <span class="o">+</span>
+                <span class="n">status</span><span class="o">.</span><span class="n">n_reinjected_packets</span> <span class="o">+</span> <span class="n">status</span><span class="o">.</span><span class="n">n_processor_dumps</span> <span class="o">+</span>
+                <span class="n">status</span><span class="o">.</span><span class="n">n_link_dumps</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span><span class="p">)</span>
 
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Local_P2P_Packets&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_local_peer_to_peer_packets</span><span class="p">)))</span>
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;External_P2P_Packets&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_external_peer_to_peer_packets</span><span class="p">)))</span>
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Dropped_P2P_Packets&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_peer_to_peer_packets</span><span class="p">)))</span>
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Local_NN_Packets&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_local_nearest_neighbour_packets</span><span class="p">)))</span>
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;External_NN_Packets&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_external_nearest_neighbour_packets</span><span class="p">)))</span>
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Dropped_NN_Packets&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_nearest_neighbour_packets</span><span class="p">)))</span>
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Local_FR_Packets&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_local_fixed_route_packets</span><span class="p">)))</span>
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;External_FR_Packets&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_external_fixed_route_packets</span><span class="p">)))</span>
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Dropped_FR_Packets&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_fixed_route_packets</span><span class="p">),</span>
-            <span class="n">report</span><span class="o">=</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_fixed_route_packets</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;The router on chip </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> dropped </span><span class="si">{}</span><span class="s2"> Fixed route packets. &quot;</span>
-                <span class="s2">&quot;This is indicative of a error within the data extraction &quot;</span>
-                <span class="s2">&quot;process as this is the only expected user of fixed route &quot;</span>
-                <span class="s2">&quot;packets.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">n_dropped_fixed_route_packets</span><span class="p">))))</span>
-        <span class="k">if</span> <span class="n">reinjection_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Received_For_Reinjection&quot;</span><span class="p">),</span>
-                <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_dropped_packets</span><span class="p">))</span>
-            <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Missed_For_Reinjection&quot;</span><span class="p">),</span>
-                <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_missed_dropped_packets</span><span class="p">,</span>
-                <span class="n">report</span><span class="o">=</span><span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_missed_dropped_packets</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                    <span class="s2">&quot;The extra monitor on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> has missed </span><span class="si">{}</span><span class="s2"> &quot;</span>
-                    <span class="s2">&quot;packets.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_missed_dropped_packets</span><span class="p">))))</span>
-            <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Reinjection_Overflows&quot;</span><span class="p">),</span>
-                <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_dropped_packet_overflows</span><span class="p">,</span>
-                <span class="n">report</span><span class="o">=</span><span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_dropped_packet_overflows</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                    <span class="s2">&quot;The extra monitor on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> has dropped </span><span class="si">{}</span><span class="s2"> &quot;</span>
-                    <span class="s2">&quot;packets.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span>
-                        <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_dropped_packet_overflows</span><span class="p">))))</span>
-            <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Reinjected&quot;</span><span class="p">),</span>
-                <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_reinjected_packets</span><span class="p">))</span>
-            <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Dumped_from_a_Link&quot;</span><span class="p">),</span>
-                <span class="nb">str</span><span class="p">(</span><span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_link_dumps</span><span class="p">),</span>
-                <span class="n">report</span><span class="o">=</span><span class="p">(</span><span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_link_dumps</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_has_virtual_chip_connected</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)),</span>
-                <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                    <span class="s2">&quot;The extra monitor on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> has detected that </span><span class="si">{}</span><span class="s2"> packets &quot;</span>
-                    <span class="s2">&quot;were dumped from a outgoing link of this chip&#39;s router.&quot;</span>
-                    <span class="s2">&quot; This often occurs when external devices are used in the &quot;</span>
-                    <span class="s2">&quot;script but not connected to the communication fabric &quot;</span>
-                    <span class="s2">&quot;correctly. These packets may have been reinjected &quot;</span>
-                    <span class="s2">&quot;multiple times and so this number may be a overestimate.&quot;</span>
-                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_link_dumps</span><span class="p">))))</span>
-            <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Dumped_from_a_processor&quot;</span><span class="p">),</span>
-                <span class="nb">str</span><span class="p">(</span><span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_processor_dumps</span><span class="p">),</span>
-                <span class="n">report</span><span class="o">=</span><span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_processor_dumps</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                    <span class="s2">&quot;The extra monitor on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> has detected that </span><span class="si">{}</span><span class="s2"> packets &quot;</span>
-                    <span class="s2">&quot;were dumped from a core failing to take the packet.&quot;</span>
-                    <span class="s2">&quot; This often occurs when the executable has crashed or&quot;</span>
-                    <span class="s2">&quot; has not been given a multicast packet callback. It can&quot;</span>
-                    <span class="s2">&quot; also result from the core taking too long to process&quot;</span>
-                    <span class="s2">&quot; each packet. These packets were reinjected and so this&quot;</span>
-                    <span class="s2">&quot; number is likely a overestimate.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">reinjection_status</span><span class="o">.</span><span class="n">n_processor_dumps</span><span class="p">))))</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Dropped_Multicast_Packets&quot;</span><span class="p">],</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">has_dropped</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">has_reinjection</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+                <span class="n">has_dropped</span> <span class="ow">and</span> <span class="n">has_reinjection</span> <span class="ow">and</span> <span class="n">missing_stuff</span><span class="p">),</span>
+            <span class="sa">f</span><span class="s2">&quot;The router on </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2"> has dropped &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">n_dropped_multicast_packets</span><span class="si">}</span><span class="s2"> multicast route &quot;</span>
+            <span class="s2">&quot;packets. Try increasing the machine_time_step and/or the time &quot;</span>
+            <span class="s2">&quot;scale factor or reducing the number of atoms per core.&quot;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Dropped_Multicast_Packets_via_local_transmission&quot;</span><span class="p">],</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">user_3</span><span class="p">,</span> <span class="p">(</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">user_3</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="sa">f</span><span class="s2">&quot;The router on </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2"> has dropped </span><span class="si">{</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">user_3</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="s2">&quot;multicast packets that were transmitted by local cores. This &quot;</span>
+            <span class="s2">&quot;occurs where the router has no entry associated with the &quot;</span>
+            <span class="s2">&quot;multicast key. Try investigating the keys allocated to the &quot;</span>
+            <span class="s2">&quot;vertices and the router table entries for this chip.&quot;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;default_routed_external_multicast_packets&quot;</span><span class="p">],</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">user_2</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">user_2</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span>
+                <span class="n">table</span> <span class="ow">and</span> <span class="n">table</span><span class="o">.</span><span class="n">number_of_defaultable_entries</span><span class="p">)),</span>
+            <span class="sa">f</span><span class="s2">&quot;The router on </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2"> has default routed </span><span class="si">{</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">user_2</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="s2">&quot;multicast packets, but the router table did not expect any &quot;</span>
+            <span class="s2">&quot;default routed packets. This occurs where the router has no &quot;</span>
+            <span class="s2">&quot;entry associated with the multicast key. Try investigating the &quot;</span>
+            <span class="s2">&quot;keys allocated to the vertices and the router table entries for &quot;</span>
+            <span class="s2">&quot;this chip.&quot;</span><span class="p">)</span>
 
-        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Error status&quot;</span><span class="p">),</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">error_status</span><span class="p">),</span>
-            <span class="n">report</span><span class="o">=</span><span class="n">router_diagnostic</span><span class="o">.</span><span class="n">error_status</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;The router on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> has a non-zero error status.  This could&quot;</span>
-                <span class="s2">&quot; indicate a hardware fault.  The errors set are </span><span class="si">{}</span><span class="s2">, and the&quot;</span>
-                <span class="s2">&quot; error count is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">errors_set</span><span class="p">,</span>
-                    <span class="n">router_diagnostic</span><span class="o">.</span><span class="n">error_count</span><span class="p">))))</span>
+        <span class="k">if</span> <span class="n">table</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Entries&quot;</span><span class="p">],</span> <span class="n">table</span><span class="o">.</span><span class="n">number_of_entries</span><span class="p">)</span>
+            <span class="n">routes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">ent</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">multicast_routing_entries</span><span class="p">:</span>
+                <span class="n">routes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ent</span><span class="o">.</span><span class="n">spinnaker_route</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Unique_Routes&quot;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">routes</span><span class="p">))</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_has_virtual_chip_connected</span><span class="p">(</span><span class="n">machine</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Local_P2P_Packets&quot;</span><span class="p">],</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_local_peer_to_peer_packets</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;External_P2P_Packets&quot;</span><span class="p">],</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_external_peer_to_peer_packets</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Dropped_P2P_Packets&quot;</span><span class="p">],</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_dropped_peer_to_peer_packets</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Local_NN_Packets&quot;</span><span class="p">],</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_local_nearest_neighbour_packets</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;External_NN_Packets&quot;</span><span class="p">],</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_external_nearest_neighbour_packets</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Dropped_NN_Packets&quot;</span><span class="p">],</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_dropped_nearest_neighbour_packets</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Local_FR_Packets&quot;</span><span class="p">],</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_local_fixed_route_packets</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;External_FR_Packets&quot;</span><span class="p">],</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_external_fixed_route_packets</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Dropped_FR_Packets&quot;</span><span class="p">],</span>
+            <span class="n">diagnostics</span><span class="o">.</span><span class="n">n_dropped_fixed_route_packets</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">n_dropped_fixed_route_packets</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="sa">f</span><span class="s2">&quot;The router on chip </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2"> dropped &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">n_dropped_fixed_route_packets</span><span class="si">}</span><span class="s2"> fixed route &quot;</span>
+            <span class="s2">&quot;packets. This is indicative of an error within the data &quot;</span>
+            <span class="s2">&quot;extraction process as this is the only expected user of fixed &quot;</span>
+            <span class="s2">&quot;route packets.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Received_For_Reinjection&quot;</span><span class="p">],</span> <span class="n">status</span><span class="o">.</span><span class="n">n_dropped_packets</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Missed_For_Reinjection&quot;</span><span class="p">],</span>
+                <span class="n">status</span><span class="o">.</span><span class="n">n_missed_dropped_packets</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">status</span><span class="o">.</span><span class="n">n_missed_dropped_packets</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="sa">f</span><span class="s2">&quot;The extra monitor on </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2"> has missed &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">status</span><span class="o">.</span><span class="n">n_missed_dropped_packets</span><span class="si">}</span><span class="s2"> packets.&quot;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Reinjection_Overflows&quot;</span><span class="p">],</span>
+                <span class="n">status</span><span class="o">.</span><span class="n">n_dropped_packet_overflows</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">status</span><span class="o">.</span><span class="n">n_dropped_packet_overflows</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="sa">f</span><span class="s2">&quot;The extra monitor on </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2"> has dropped &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">status</span><span class="o">.</span><span class="n">n_dropped_packet_overflows</span><span class="si">}</span><span class="s2"> packets.&quot;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Reinjected&quot;</span><span class="p">],</span> <span class="n">status</span><span class="o">.</span><span class="n">n_reinjected_packets</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Dumped_from_a_Link&quot;</span><span class="p">],</span> <span class="n">status</span><span class="o">.</span><span class="n">n_link_dumps</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">status</span><span class="o">.</span><span class="n">n_link_dumps</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__has_virtual_chip_connected</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))),</span>
+                <span class="sa">f</span><span class="s2">&quot;The extra monitor on </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2"> has detected that &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">status</span><span class="o">.</span><span class="n">n_link_dumps</span><span class="si">}</span><span class="s2"> packets were dumped from an outgoing &quot;</span>
+                <span class="s2">&quot;link of this chip&#39;s router. This often occurs when external &quot;</span>
+                <span class="s2">&quot;devices are used in the script but not connected to the &quot;</span>
+                <span class="s2">&quot;communication fabric correctly. These packets may have been &quot;</span>
+                <span class="s2">&quot;reinjected multiple times and so this number may be an &quot;</span>
+                <span class="s2">&quot;overestimate.&quot;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Dumped_from_a_processor&quot;</span><span class="p">],</span> <span class="n">status</span><span class="o">.</span><span class="n">n_processor_dumps</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">status</span><span class="o">.</span><span class="n">n_processor_dumps</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="sa">f</span><span class="s2">&quot;The extra monitor on </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2"> has detected that &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">status</span><span class="o">.</span><span class="n">n_processor_dumps</span><span class="si">}</span><span class="s2"> packets were dumped from a &quot;</span>
+                <span class="s2">&quot;core failing to take the packet. This often occurs when &quot;</span>
+                <span class="s2">&quot;the executable has crashed or has not been given a &quot;</span>
+                <span class="s2">&quot;multicast packet callback. It can also result from the &quot;</span>
+                <span class="s2">&quot;core taking too long to process each packet. These &quot;</span>
+                <span class="s2">&quot;packets were reinjected and so this number is likely an &quot;</span>
+                <span class="s2">&quot;overestimate.&quot;</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Error status&quot;</span><span class="p">],</span> <span class="n">diagnostics</span><span class="o">.</span><span class="n">error_status</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">error_status</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="sa">f</span><span class="s2">&quot;The router on </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2"> has a non-zero error status. This could &quot;</span>
+            <span class="s2">&quot;indicate a hardware fault. The errors set are &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">errors_set</span><span class="si">}</span><span class="s2">, and the error count is &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">error_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__has_virtual_chip_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~.Machine machine:</span>
 <span class="sd">        :param int x:</span>
 <span class="sd">        :param int y:</span>
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">links</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span>
-                    <span class="n">link</span><span class="o">.</span><span class="n">destination_x</span><span class="p">,</span> <span class="n">link</span><span class="o">.</span><span class="n">destination_y</span><span class="p">)</span><span class="o">.</span><span class="n">virtual</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">return</span> <span class="kc">False</span></div>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span>
+                <span class="n">link</span><span class="o">.</span><span class="n">destination_x</span><span class="p">,</span> <span class="n">link</span><span class="o">.</span><span class="n">destination_y</span><span class="p">)</span><span class="o">.</span><span class="n">virtual</span>
+            <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">links</span><span class="p">)</span></div>
 </pre></div>
 
             <div class="clearer"></div>

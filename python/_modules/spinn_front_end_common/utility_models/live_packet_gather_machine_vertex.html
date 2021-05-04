@@ -59,7 +59,6 @@
 <span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">CPUCyclesPerTickResource</span><span class="p">,</span> <span class="n">DTCMResource</span><span class="p">,</span> <span class="n">ResourceContainer</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">,</span>
     <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.simulation.simulation_utilities</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">get_simulation_header_array</span><span class="p">)</span>
@@ -92,7 +91,7 @@
     <span class="c1">#: Used to identify tags involved with the live packet gatherer.</span>
     <span class="n">TRAFFIC_IDENTIFIER</span> <span class="o">=</span> <span class="s2">&quot;LPG_EVENT_STREAM&quot;</span>
 
-    <span class="n">_N_ADDITIONAL_PROVENANCE_ITEMS</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">_N_ADDITIONAL_PROVENANCE_ITEMS</span> <span class="o">=</span> <span class="mi">4</span>
     <span class="n">_CONFIG_SIZE</span> <span class="o">=</span> <span class="mi">12</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
     <span class="n">_PROVENANCE_REGION_SIZE</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
 
@@ -140,40 +139,30 @@
     <span class="k">def</span> <span class="nf">is_in_injection_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">True</span>
 
-<div class="viewcode-block" id="LivePacketGatherMachineVertex.get_provenance_data_from_machine"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_provenance_data_from_machine">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="o">.</span>
-               <span class="n">get_provenance_data_from_machine</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">get_provenance_data_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
-        <span class="n">provenance_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_provenance_data</span><span class="p">(</span><span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
-        <span class="n">provenance_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_basic_provenance_items</span><span class="p">(</span>
-            <span class="n">provenance_data</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
-        <span class="n">provenance_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_remaining_provenance_data_items</span><span class="p">(</span>
-            <span class="n">provenance_data</span><span class="p">)</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_placement_details</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
-
-        <span class="n">provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;lost_packets_without_payload&quot;</span><span class="p">),</span>
-            <span class="n">provenance_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-            <span class="n">report</span><span class="o">=</span><span class="n">provenance_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+<div class="viewcode-block" id="LivePacketGatherMachineVertex.parse_extra_provenance_items"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.parse_extra_provenance_items">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span>
+        <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">parse_extra_provenance_items</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">parse_extra_provenance_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">provenance_data</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">lost</span><span class="p">,</span> <span class="n">lost_payload</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">messages</span><span class="p">)</span> <span class="o">=</span> <span class="n">provenance_data</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;lost_packets_without_payload&quot;</span><span class="p">],</span> <span class="n">lost</span><span class="p">,</span>
+            <span class="n">report</span><span class="o">=</span><span class="p">(</span><span class="n">lost</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
             <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;The live packet gatherer has lost </span><span class="si">{}</span><span class="s2"> packets which have &quot;</span>
-                <span class="s2">&quot;payloads during its execution. Try increasing the machine &quot;</span>
-                <span class="s2">&quot;time step or increasing the time scale factor. If you are &quot;</span>
-                <span class="s2">&quot;running in real time, try reducing the number of vertices &quot;</span>
-                <span class="s2">&quot;which are feeding this live packet gatherer&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">provenance_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))))</span>
-        <span class="n">provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;lost_packets_with_payload&quot;</span><span class="p">),</span>
-            <span class="n">provenance_data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-            <span class="n">report</span><span class="o">=</span><span class="n">provenance_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;The live packet gatherer has lost </span><span class="si">{}</span><span class="s2"> packets which do not &quot;</span>
-                <span class="s2">&quot;have payloads during its execution. Try increasing the &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;The </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> has lost </span><span class="si">{</span><span class="n">lost</span><span class="si">}</span><span class="s2"> packets which do &quot;</span>
+                <span class="s2">&quot;not have payloads during its execution. Try increasing the &quot;</span>
                 <span class="s2">&quot;machine time step or increasing the time scale factor. If &quot;</span>
                 <span class="s2">&quot;you are running in real time, try reducing the number of &quot;</span>
-                <span class="s2">&quot;vertices which are feeding this live packet gatherer&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">provenance_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]))))</span>
-
-        <span class="k">return</span> <span class="n">provenance_items</span></div>
+                <span class="s2">&quot;vertices which are feeding this live packet gatherer&quot;</span><span class="p">))</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;lost_packets_with_payload&quot;</span><span class="p">],</span> <span class="n">lost_payload</span><span class="p">,</span>
+            <span class="n">report</span><span class="o">=</span><span class="p">(</span><span class="n">lost_payload</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> has lost </span><span class="si">{</span><span class="n">lost_payload</span><span class="si">}</span><span class="s2"> packets &quot;</span>
+                <span class="s2">&quot;which have payloads during its execution. Try increasing &quot;</span>
+                <span class="s2">&quot;the machine time step or increasing the time scale factor. &quot;</span>
+                <span class="s2">&quot;If you are running in real time, try reducing the number of &quot;</span>
+                <span class="s2">&quot;vertices which are feeding this live packet gatherer&quot;</span><span class="p">))</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span><span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;gathered_events&quot;</span><span class="p">],</span> <span class="n">events</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span><span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;messages_sent_to_host&quot;</span><span class="p">],</span> <span class="n">messages</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LivePacketGatherMachineVertex.get_binary_file_name"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_binary_file_name">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractHasAssociatedBinary</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_binary_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

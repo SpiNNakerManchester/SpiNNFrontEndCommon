@@ -371,8 +371,8 @@ statement</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.provenance.abstract_provides_provenance_data_from_machine.AbstractProvidesProvenanceDataFromMachine</span></code></p>
 <p>An implementation that gets provenance data from a region of ints on        the machine.</p>
 <dl class="py attribute">
-<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.NUM_PROVENANCE_DATA_ENTRIES">
-<code class="sig-name descname"><span class="pre">NUM_PROVENANCE_DATA_ENTRIES</span></code><em class="property"> <span class="pre">=</span> <span class="pre">5</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.NUM_PROVENANCE_DATA_ENTRIES" title="Permalink to this definition">¶</a></dt>
+<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.N_SYSTEM_PROVENANCE_WORDS">
+<code class="sig-name descname"><span class="pre">N_SYSTEM_PROVENANCE_WORDS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">5</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.N_SYSTEM_PROVENANCE_WORDS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
@@ -424,7 +424,7 @@ statement</p>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.6)">Iterable</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -438,6 +438,55 @@ statement</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items">
+<code class="sig-name descname"><span class="pre">parse_extra_provenance_items</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provenance_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provides_provenance_data_from_machine_impl.html#ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the remaining provenance words (those not in the standard set)
+into provenance items.</p>
+<p>Called by
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">get_provenance_data_from_machine()</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – A descriptive label for the vertex (derived from label and placed
+position) to be used for provenance error reporting to the user.</p></li>
+<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em>) – The base names describing the location of the machine vertex
+producing the provenance.</p></li>
+<li><p><strong>provenance_data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em>) – The list of words of raw provenance data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The interpreted provenance items.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>iterable(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_system_provenance_items">
+<code class="sig-name descname"><span class="pre">parse_system_provenance_items</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provenance_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provides_provenance_data_from_machine_impl.html#ProvidesProvenanceDataFromMachineImpl.parse_system_provenance_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_system_provenance_items" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given some words of provenance data, convert the portion of them that
+describes the system provenance into proper provenance items.</p>
+<p>Called by
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">get_provenance_data_from_machine()</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – A descriptive label for the vertex (derived from label and placed
+position) to be used for provenance error reporting to the user.</p></li>
+<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em>) – The base names describing the location of the machine vertex
+producing the provenance.</p></li>
+<li><p><strong>provenance_data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.6)">Iterable</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
 </dd>
 </dl>
 </dd></dl>

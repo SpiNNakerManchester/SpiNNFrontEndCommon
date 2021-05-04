@@ -101,6 +101,9 @@ Data Structures</h2></td></tr>
 <tr class="memitem:structtimed__command__list"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="command__sender__multicast__source_8c.html#structtimed__command__list">timed_command_list</a></td></tr>
 <tr class="memdesc:structtimed__command__list"><td class="mdescLeft">&#160;</td><td class="mdescRight">A collection of commands to be sent at particular simulation times.  <a href="command__sender__multicast__source_8c.html#structtimed__command__list">More...</a><br /></td></tr>
 <tr class="separator:structtimed__command__list"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:structcs__provenance__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="command__sender__multicast__source_8c.html#structcs__provenance__t">cs_provenance_t</a></td></tr>
+<tr class="memdesc:structcs__provenance__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">custom provenance data  <a href="command__sender__multicast__source_8c.html#structcs__provenance__t">More...</a><br /></td></tr>
+<tr class="separator:structcs__provenance__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -156,6 +159,9 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="memitem:aa51de182df34173453b5d99dcd2ffedc"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="command__sender__multicast__source_8c.html#aa51de182df34173453b5d99dcd2ffedc">timer_callback</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused0, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused1)</td></tr>
 <tr class="memdesc:aa51de182df34173453b5d99dcd2ffedc"><td class="mdescLeft">&#160;</td><td class="mdescRight">The timer tick callback. Sends those commands that are due in the current simulation state and time.  <a href="command__sender__multicast__source_8c.html#aa51de182df34173453b5d99dcd2ffedc">More...</a><br /></td></tr>
 <tr class="separator:aa51de182df34173453b5d99dcd2ffedc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80c27c90dd9a215a33ddabf05ee06d04"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="command__sender__multicast__source_8c.html#a80c27c90dd9a215a33ddabf05ee06d04">write_provenance</a> (<a class="el" href="common-typedefs_8h.html#ac8dc08dd5f5827994d1b06351f925669">address_t</a> address)</td></tr>
+<tr class="memdesc:a80c27c90dd9a215a33ddabf05ee06d04"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write our provenance data into the provenance region.  <a href="command__sender__multicast__source_8c.html#a80c27c90dd9a215a33ddabf05ee06d04">More...</a><br /></td></tr>
+<tr class="separator:a80c27c90dd9a215a33ddabf05ee06d04"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a37f0b2315f3101f6ff9936c212c5bd84"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="command__sender__multicast__source_8c.html#a37f0b2315f3101f6ff9936c212c5bd84">initialize</a> (uint32_t *timer_period)</td></tr>
 <tr class="memdesc:a37f0b2315f3101f6ff9936c212c5bd84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialises the core.  <a href="command__sender__multicast__source_8c.html#a37f0b2315f3101f6ff9936c212c5bd84">More...</a><br /></td></tr>
 <tr class="separator:a37f0b2315f3101f6ff9936c212c5bd84"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -210,6 +216,10 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="command__sender__multicast__source_8c.html#a0adf463e3a606769dafe75e2449e38f6">resume</a> = true</td></tr>
 <tr class="memdesc:a0adf463e3a606769dafe75e2449e38f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether we are in the state where the next run will be a start/resume. <br /></td></tr>
 <tr class="separator:a0adf463e3a606769dafe75e2449e38f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17681b7bff39acc135f4f2e77af696bd"><td class="memItemLeft" align="right" valign="top"><a id="a17681b7bff39acc135f4f2e77af696bd"></a>
+static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="command__sender__multicast__source_8c.html#a17681b7bff39acc135f4f2e77af696bd">n_commands_sent</a></td></tr>
+<tr class="memdesc:a17681b7bff39acc135f4f2e77af696bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of commands sent. <br /></td></tr>
+<tr class="separator:a17681b7bff39acc135f4f2e77af696bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The implementation of the Command Sender Multicast Source. </p>
@@ -282,7 +292,7 @@ The time (in microseconds) to delay between sending each repeat. </td></tr>
 </div><div class="memdoc">
 <div class="textblock"><p>A command that happens at a particular simulation time. </p>
 
-<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00053">53</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00052">52</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -315,7 +325,7 @@ What to send. </td></tr>
 <div class="textblock"><p>A collection of commands to be sent in response to an event. </p>
 <p>This is used for SDRAM only. </p>
 
-<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00061">61</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00060">60</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -348,7 +358,7 @@ The commands to send. </td></tr>
 <div class="textblock"><p>A collection of commands to be sent at particular simulation times. </p>
 <p>This is used for SDRAM only. </p>
 
-<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00069">69</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00068">68</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -363,6 +373,32 @@ The number of commands to send. </td></tr>
 commands[]</td>
 <td class="fielddoc">
 The commands to send, sorted in time order. </td></tr>
+</table>
+
+</div>
+</div>
+<a name="structcs__provenance__t" id="structcs__provenance__t"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#structcs__provenance__t">&#9670;&nbsp;</a></span>cs_provenance_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct cs_provenance_t</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<div class="textblock"><p>custom provenance data </p>
+
+<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00124">124</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
+</div><table class="fieldtable">
+<tr><th colspan="3">Data Fields</th></tr>
+<tr><td class="fieldtype">
+<a id="a05c3ef77c64f8281f6ff8de648a4acab"></a>uint32_t</td>
+<td class="fieldname">
+n_commands_sent</td>
+<td class="fielddoc">
+The number of commands sent. </td></tr>
 </table>
 
 </div>
@@ -390,7 +426,7 @@ The commands to send, sorted in time order. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00099">99</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00100">100</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
 
 </div>
 </div>
@@ -416,11 +452,11 @@ The commands to send, sorted in time order. </td></tr>
 </td></tr>
 <tr><td class="fieldname"><a id="a6e4d67a0bd74db4da98539f8d2e5ab32ac97a449b1f4016509768b3e07cce48a3"></a>COMMANDS_AT_STOP_PAUSE&#160;</td><td class="fielddoc"><p>Where to read stop/pause commands from. The region is formatted as a <a class="el" href="command__sender__multicast__source_8c.html#structcommand__list" title="A collection of commands to be sent in response to an event.">command_list</a>. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a6e4d67a0bd74db4da98539f8d2e5ab32a43f0d58cfc0317ea06139b20c9242d1e"></a>PROVENANCE_REGION&#160;</td><td class="fielddoc"><p>Where to record provenance data. (This model does not record any custom provenance data.) </p>
+<tr><td class="fieldname"><a id="a6e4d67a0bd74db4da98539f8d2e5ab32a43f0d58cfc0317ea06139b20c9242d1e"></a>PROVENANCE_REGION&#160;</td><td class="fielddoc"><p>Where to record provenance data. (Format: <a class="el" href="command__sender__multicast__source_8c.html#structcs__provenance__t" title="custom provenance data">cs_provenance_t</a>) </p>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00106">106</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00107">107</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
 
 </div>
 </div>
@@ -457,7 +493,7 @@ The commands to send, sorted in time order. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00131">131</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00137">137</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
 
 </div>
 </div>
@@ -494,7 +530,7 @@ The commands to send, sorted in time order. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if we succeeded, false if we failed (due to memory problems) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00196">196</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00204">204</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
 
 </div>
 </div>
@@ -531,7 +567,7 @@ The commands to send, sorted in time order. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if we succeeded, false if we failed (due to memory problems) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00225">225</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00233">233</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
 
 </div>
 </div>
@@ -568,7 +604,7 @@ The commands to send, sorted in time order. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if we succeeded, false if we failed (due to memory problems) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00250">250</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00258">258</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
 
 </div>
 </div>
@@ -615,7 +651,43 @@ The commands to send, sorted in time order. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00277">277</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00285">285</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
+
+</div>
+</div>
+<a id="a80c27c90dd9a215a33ddabf05ee06d04"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80c27c90dd9a215a33ddabf05ee06d04">&#9670;&nbsp;</a></span>write_provenance()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void write_provenance </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="common-typedefs_8h.html#ac8dc08dd5f5827994d1b06351f925669">address_t</a>&#160;</td>
+          <td class="paramname"><em>address</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Write our provenance data into the provenance region. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">address</td><td>Where to write </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00319">319</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
 
 </div>
 </div>
@@ -652,7 +724,7 @@ The commands to send, sorted in time order. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if initialisation succeeded. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00312">312</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="command__sender__multicast__source_8c_source.html#l00327">327</a> of file <a class="el" href="command__sender__multicast__source_8c_source.html">command_sender_multicast_source.c</a>.</p>
 
 </div>
 </div>

@@ -868,60 +868,39 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_size</span>
         <span class="k">return</span> <span class="mi">0</span></div>
 
-<div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.get_provenance_data_from_machine"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_provenance_data_from_machine">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span>
-               <span class="n">get_provenance_data_from_machine</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">get_provenance_data_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
-        <span class="n">provenance_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_provenance_data</span><span class="p">(</span><span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
-        <span class="n">provenance_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_basic_provenance_items</span><span class="p">(</span>
-            <span class="n">provenance_data</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
-        <span class="n">provenance_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_remaining_provenance_data_items</span><span class="p">(</span>
-            <span class="n">provenance_data</span><span class="p">)</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_placement_details</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
-
-        <span class="n">provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;received_sdp_packets&quot;</span><span class="p">),</span>
-            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">N_RECEIVED_PACKETS</span><span class="p">],</span>
-            <span class="n">report</span><span class="o">=</span><span class="p">(</span>
-                <span class="n">provenance_data</span><span class="p">[</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">N_RECEIVED_PACKETS</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+<div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.parse_extra_provenance_items"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.parse_extra_provenance_items">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span>
+        <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">parse_extra_provenance_items</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">parse_extra_provenance_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">provenance_data</span><span class="p">):</span>
+        <span class="n">n_rcv</span><span class="p">,</span> <span class="n">n_snt</span><span class="p">,</span> <span class="n">bad_key</span><span class="p">,</span> <span class="n">bad_pkt</span><span class="p">,</span> <span class="n">late</span> <span class="o">=</span> <span class="n">provenance_data</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;received_sdp_packets&quot;</span><span class="p">],</span> <span class="n">n_rcv</span><span class="p">,</span>
+            <span class="n">report</span><span class="o">=</span><span class="p">(</span><span class="n">n_rcv</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
             <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;No SDP packets were received by </span><span class="si">{}</span><span class="s2">.  If you expected packets&quot;</span>
-                <span class="s2">&quot; to be injected, this could indicate an error&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">))))</span>
-        <span class="n">provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;send_multicast_packets&quot;</span><span class="p">),</span>
-            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">N_SENT_PACKETS</span><span class="p">],</span>
-            <span class="n">report</span><span class="o">=</span><span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">N_SENT_PACKETS</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;No SDP packets were received by </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">. If you expected &quot;</span>
+                <span class="s2">&quot;packets to be injected, this could indicate an error&quot;</span><span class="p">))</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;send_multicast_packets&quot;</span><span class="p">],</span> <span class="n">n_snt</span><span class="p">,</span>
+            <span class="n">report</span><span class="o">=</span><span class="p">(</span><span class="n">n_snt</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span>
             <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;No multicast packets were sent by </span><span class="si">{}</span><span class="s2">.  If you expected&quot;</span>
-                <span class="s2">&quot; packets to be sent this could indicate an error&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">))))</span>
-        <span class="n">provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;incorrect_keys&quot;</span><span class="p">),</span>
-            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">INCORRECT_KEYS</span><span class="p">],</span>
-            <span class="n">report</span><span class="o">=</span><span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">INCORRECT_KEYS</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;No multicast packets were sent by </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">. If you expected &quot;</span>
+                <span class="s2">&quot;packets to be sent this could indicate an error&quot;</span><span class="p">))</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;incorrect_keys&quot;</span><span class="p">],</span> <span class="n">bad_key</span><span class="p">,</span>
+            <span class="n">report</span><span class="o">=</span><span class="p">(</span><span class="n">bad_key</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
             <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;Keys were received by </span><span class="si">{}</span><span class="s2"> that did not match the key </span><span class="si">{}</span><span class="s2"> and&quot;</span>
-                <span class="s2">&quot; mask </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">))))</span>
-        <span class="n">provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;incorrect_packets&quot;</span><span class="p">),</span>
-            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">INCORRECT_PACKETS</span><span class="p">],</span>
-            <span class="n">report</span><span class="o">=</span><span class="n">provenance_data</span><span class="p">[</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">INCORRECT_PACKETS</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;Keys were received by </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> that did not match the key &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span><span class="si">}</span><span class="s2"> and mask </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;incorrect_packets&quot;</span><span class="p">],</span> <span class="n">bad_pkt</span><span class="p">,</span>
+            <span class="n">report</span><span class="o">=</span><span class="p">(</span><span class="n">bad_pkt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
             <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;SDP Packets were received by </span><span class="si">{}</span><span class="s2"> that were not correct&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">))))</span>
-        <span class="n">provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;late_packets&quot;</span><span class="p">),</span>
-            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">LATE_PACKETS</span><span class="p">],</span>
-            <span class="n">report</span><span class="o">=</span><span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">LATE_PACKETS</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;SDP Packets were received by </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> that were not correct&quot;</span><span class="p">))</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;late_packets&quot;</span><span class="p">],</span> <span class="n">late</span><span class="p">,</span>
+            <span class="n">report</span><span class="o">=</span><span class="p">(</span><span class="n">late</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
             <span class="n">message</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;SDP Packets were received by </span><span class="si">{}</span><span class="s2"> that were too late to be&quot;</span>
-                <span class="s2">&quot; transmitted in the simulation&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">))))</span>
-
-        <span class="k">return</span> <span class="n">provenance_items</span></div>
+                <span class="sa">f</span><span class="s2">&quot;SDP Packets were received by </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> that were too late &quot;</span>
+                <span class="s2">&quot;to be transmitted in the simulation&quot;</span><span class="p">))</span></div>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span></div>

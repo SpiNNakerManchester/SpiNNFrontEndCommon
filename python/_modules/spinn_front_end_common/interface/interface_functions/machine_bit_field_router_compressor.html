@@ -120,9 +120,6 @@
     <span class="c1">#: how many header elements are in the region addresses (1, n addresses)</span>
     <span class="n">N_REGIONS_ELEMENT</span> <span class="o">=</span> <span class="mi">1</span>
 
-    <span class="c1"># the number of bytes needed to read the user 2 register</span>
-    <span class="n">_USER_BYTES</span> <span class="o">=</span> <span class="mi">4</span>
-
     <span class="c1">#: min size a heap object needs in sdram. (limit on the size of useful</span>
     <span class="c1">#: sdram regions to steal)</span>
     <span class="n">_MIN_SIZE_FOR_HEAP</span> <span class="o">=</span> <span class="mi">32</span>
@@ -144,14 +141,12 @@
 
     <span class="n">_PROGRESS_BAR_TEXT</span> <span class="o">=</span> \
         <span class="s2">&quot;on chip </span><span class="si">{}</span><span class="s2"> compressor with bitfields&quot;</span>
-
     <span class="n">_HOST_BAR_TEXT</span> <span class="o">=</span> \
         <span class="s2">&quot;on host compressing routing tables and merging in bitfields as &quot;</span> \
         <span class="s2">&quot;appropriate&quot;</span>
     <span class="n">_ON_CHIP_ERROR_MESSAGE</span> <span class="o">=</span> \
         <span class="s2">&quot;The router compressor with bit field on </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> failed to complete. &quot;</span> \
         <span class="s2">&quot;Will execute host based routing compression instead&quot;</span>
-
     <span class="n">_ON_HOST_WARNING_MESSAGE</span> <span class="o">=</span> \
         <span class="s2">&quot;Will be executing compression for </span><span class="si">{}</span><span class="s2"> chips on the host, as they &quot;</span> \
         <span class="s2">&quot;failed to complete when running on chip&quot;</span>
@@ -409,7 +404,6 @@
             <span class="n">y</span> <span class="o">=</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">y</span>
 
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">processor_ids</span><span class="p">:</span>
-
                 <span class="c1"># Read the result from USER1/USER2 registers</span>
                 <span class="n">user_1_base_address</span> <span class="o">=</span> \
                     <span class="n">transceiver</span><span class="o">.</span><span class="n">get_user_1_register_address_from_core</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>

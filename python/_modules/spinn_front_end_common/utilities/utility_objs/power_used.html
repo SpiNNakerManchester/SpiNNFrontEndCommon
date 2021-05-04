@@ -389,8 +389,7 @@
 
 <span class="sd">        :rtype: iterable(tuple(int, int))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">xy</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__router_energy</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">xy</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__router_energy</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 
 <div class="viewcode-block" id="PowerUsed.get_core_active_energy_joules"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed.get_core_active_energy_joules">[docs]</a>    <span class="k">def</span> <span class="nf">get_core_active_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Energy used (above idle baseline) by a particular core, in Joules.</span>
@@ -424,8 +423,7 @@
 
 <span class="sd">        :rtype: iterable(tuple(int, int, int))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">xyp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__core_energy</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">xyp</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__core_energy</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
 </pre></div>
 
             <div class="clearer"></div>

@@ -53,9 +53,6 @@
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.application</span> <span class="kn">import</span> <span class="n">ApplicationVertex</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">BYTES_PER_WORD</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ProvenanceDataItem</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance.</span>\
-    <span class="n">provides_provenance_data_from_machine_impl</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">add_name</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="TDMAAwareApplicationVertex"><a class="viewcode-back" href="../../../../spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex">[docs]</a><span class="k">class</span> <span class="nc">TDMAAwareApplicationVertex</span><span class="p">(</span><span class="n">ApplicationVertex</span><span class="p">):</span>
@@ -75,9 +72,6 @@
     <span class="n">_TDMA_N_ELEMENTS</span> <span class="o">=</span> <span class="mi">3</span>
 
     <span class="n">_TDMA_MISSED_SLOTS_NAME</span> <span class="o">=</span> <span class="s2">&quot;Number_of_times_the_tdma_fell_behind&quot;</span>
-    <span class="n">_TDMA_MISSED_SLOTS_MESSAGE</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;The TDMA fell behind by </span><span class="si">{}</span><span class="s2"> times on core </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">. &quot;</span>
-        <span class="s2">&quot;try increasing the time_between_cores in the corresponding .cfg&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">max_atoms_per_core</span><span class="p">,</span> <span class="n">splitter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -180,22 +174,21 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vertex_slices</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TDMAAwareApplicationVertex.get_tdma_provenance_item"><a class="viewcode-back" href="../../../../spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_tdma_provenance_item">[docs]</a>    <span class="k">def</span> <span class="nf">get_tdma_provenance_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">tdma_slots_missed</span><span class="p">):</span>
+<div class="viewcode-block" id="TDMAAwareApplicationVertex.get_tdma_provenance_item"><a class="viewcode-back" href="../../../../spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_tdma_provenance_item">[docs]</a>    <span class="k">def</span> <span class="nf">get_tdma_provenance_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">desc_label</span><span class="p">,</span> <span class="n">tdma_slots_missed</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the provenance item used for the TDMA provenance</span>
 
 <span class="sd">        :param list(str) names: the names for the provenance data item</span>
-<span class="sd">        :param int x: chip x</span>
-<span class="sd">        :param int y: chip y</span>
-<span class="sd">        :param int p: processor id</span>
+<span class="sd">        :param str desc_label: a descriptive label for the vertex</span>
 <span class="sd">        :param int tdma_slots_missed: the number of TDMA slots missed</span>
 <span class="sd">        :return: the provenance data item</span>
 <span class="sd">        :rtype: ProvenanceDataItem</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="n">add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TDMA_MISSED_SLOTS_NAME</span><span class="p">),</span>
-            <span class="n">tdma_slots_missed</span><span class="p">,</span> <span class="n">report</span><span class="o">=</span><span class="p">(</span><span class="n">tdma_slots_missed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
-            <span class="n">message</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_TDMA_MISSED_SLOTS_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">tdma_slots_missed</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span></div></div>
+            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_TDMA_MISSED_SLOTS_NAME</span><span class="p">],</span> <span class="n">tdma_slots_missed</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">tdma_slots_missed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="sa">f</span><span class="s2">&quot;The </span><span class="si">{</span><span class="n">desc_label</span><span class="si">}</span><span class="s2"> had the TDMA fall behind by &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tdma_slots_missed</span><span class="si">}</span><span class="s2"> times.  Try increasing the &quot;</span>
+            <span class="s2">&quot;time_between_cores in the corresponding .cfg&quot;</span><span class="p">)</span></div></div>
 </pre></div>
 
             <div class="clearer"></div>

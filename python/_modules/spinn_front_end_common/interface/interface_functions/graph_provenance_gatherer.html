@@ -72,34 +72,45 @@
 <span class="sd">        :rtype: list(ProvenanceDataItem)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">prov_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">prov_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_machine_graph_provenance</span><span class="p">(</span><span class="n">machine_graph</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">prov_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_get_app_graph_provenance</span><span class="p">(</span><span class="n">application_graph</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">prov_items</span></div>
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_machine_graph_provenance</span><span class="p">(</span><span class="n">machine_graph</span><span class="p">):</span>
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
             <span class="n">machine_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">+</span>
             <span class="n">machine_graph</span><span class="o">.</span><span class="n">n_outgoing_edge_partitions</span><span class="p">,</span>
             <span class="s2">&quot;Getting provenance data from machine graph&quot;</span><span class="p">)</span>
+
         <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractProvidesLocalProvenanceData</span><span class="p">):</span>
-                <span class="n">prov_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">get_local_provenance_data</span><span class="p">())</span>
+                <span class="k">yield from</span> <span class="n">vertex</span><span class="o">.</span><span class="n">get_local_provenance_data</span><span class="p">()</span>
+
         <span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">outgoing_edge_partitions</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">partition</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">AbstractProvidesLocalProvenanceData</span><span class="p">):</span>
-                    <span class="n">prov_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">get_local_provenance_data</span><span class="p">())</span>
+                    <span class="k">yield from</span> <span class="n">edge</span><span class="o">.</span><span class="n">get_local_provenance_data</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
-                <span class="n">application_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">+</span>
-                <span class="n">application_graph</span><span class="o">.</span><span class="n">n_outgoing_edge_partitions</span><span class="p">,</span>
-                <span class="s2">&quot;Getting provenance data from application graph&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">application_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractProvidesLocalProvenanceData</span><span class="p">):</span>
-                    <span class="n">prov_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">get_local_provenance_data</span><span class="p">())</span>
-            <span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
-                    <span class="n">application_graph</span><span class="o">.</span><span class="n">outgoing_edge_partitions</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">partition</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">AbstractProvidesLocalProvenanceData</span><span class="p">):</span>
-                        <span class="n">prov_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">get_local_provenance_data</span><span class="p">())</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_app_graph_provenance</span><span class="p">(</span><span class="n">application_graph</span><span class="p">):</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
+            <span class="n">application_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">+</span>
+            <span class="n">application_graph</span><span class="o">.</span><span class="n">n_outgoing_edge_partitions</span><span class="p">,</span>
+            <span class="s2">&quot;Getting provenance data from application graph&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">prov_items</span></div></div>
+        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">application_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractProvidesLocalProvenanceData</span><span class="p">):</span>
+                <span class="k">yield from</span> <span class="n">vertex</span><span class="o">.</span><span class="n">get_local_provenance_data</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+                <span class="n">application_graph</span><span class="o">.</span><span class="n">outgoing_edge_partitions</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">partition</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">AbstractProvidesLocalProvenanceData</span><span class="p">):</span>
+                    <span class="k">yield from</span> <span class="n">edge</span><span class="o">.</span><span class="n">get_local_provenance_data</span><span class="p">()</span></div>
 </pre></div>
 
             <div class="clearer"></div>

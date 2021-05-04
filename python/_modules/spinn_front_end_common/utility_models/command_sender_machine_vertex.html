@@ -51,9 +51,7 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">IntEnum</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 <span class="kn">from</span> <span class="nn">pacman.executor.injection_decorator</span> <span class="kn">import</span> <span class="n">inject_items</span>
 <span class="kn">from</span> <span class="nn">pacman.model.constraints.key_allocator_constraints</span> <span class="kn">import</span> <span class="p">(</span>
@@ -70,7 +68,9 @@
     <span class="n">get_simulation_header_array</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">SYSTEM_BYTES_REQUIREMENT</span><span class="p">,</span> <span class="n">SIMULATION_N_BYTES</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ExecutableType</span><span class="p">,</span> <span class="n">ProvenanceDataItem</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="CommandSenderMachineVertex"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex">[docs]</a><span class="k">class</span> <span class="nc">CommandSenderMachineVertex</span><span class="p">(</span>
@@ -81,7 +81,7 @@
 <span class="sd">        response to particular events into a SpiNNaker application.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Regions for populations</span>
-<div class="viewcode-block" id="CommandSenderMachineVertex.DATA_REGIONS"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.DATA_REGIONS">[docs]</a>    <span class="k">class</span> <span class="nc">DATA_REGIONS</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<div class="viewcode-block" id="CommandSenderMachineVertex.DATA_REGIONS"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.DATA_REGIONS">[docs]</a>    <span class="k">class</span> <span class="nc">DATA_REGIONS</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
         <span class="n">SYSTEM_REGION</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">COMMANDS_WITH_ARBITRARY_TIMES</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">COMMANDS_AT_START_RESUME</span> <span class="o">=</span> <span class="mi">2</span>
@@ -176,12 +176,12 @@
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">_provenance_region_id</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_provenance_region_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">PROVENANCE_REGION</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">PROVENANCE_REGION</span>
 
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">_n_additional_data_items</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_n_additional_data_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="mi">1</span>
 
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">resources_required</span><span class="p">)</span>
@@ -191,7 +191,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">get_n_command_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_start_resume</span><span class="p">)</span> <span class="o">+</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">get_n_command_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_pause_stop</span><span class="p">)</span> <span class="o">+</span>
             <span class="n">SYSTEM_BYTES_REQUIREMENT</span> <span class="o">+</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">get_provenance_data_size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_provenance_data_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_additional_data_items</span><span class="p">))</span>
 
         <span class="c1"># Return the SDRAM and 1 core</span>
         <span class="k">return</span> <span class="n">ResourceContainer</span><span class="p">(</span><span class="n">sdram</span><span class="o">=</span><span class="n">ConstantSDRAM</span><span class="p">(</span><span class="n">sdram</span><span class="p">))</span>
@@ -213,7 +213,7 @@
 <span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_infos:</span>
 <span class="sd">            the routing infos</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=arguments-differ</span>
+        <span class="c1"># pylint: disable=too-many-arguments, arguments-differ</span>
         <span class="k">for</span> <span class="n">mc_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">allocated_mc_key</span> <span class="o">=</span> <span class="n">routing_infos</span><span class="o">.</span><span class="n">get_first_key_from_pre_vertex</span><span class="p">(</span>
                 <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">mc_key</span><span class="p">])</span>
@@ -223,7 +223,6 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">,</span> <span class="n">mc_key</span><span class="p">,</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">mc_key</span><span class="p">]))</span>
 
-        <span class="c1"># pylint: disable=too-many-arguments, arguments-differ</span>
         <span class="n">timed_commands_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_timed_commands_bytes</span><span class="p">()</span>
         <span class="n">start_resume_commands_size</span> <span class="o">=</span> \
             <span class="bp">self</span><span class="o">.</span><span class="n">get_n_command_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_start_resume</span><span class="p">)</span>
@@ -237,29 +236,22 @@
 
         <span class="c1"># Write system region</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">comment</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">*** Spec for multicast source ***</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">SYSTEM_REGION</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">SYSTEM_REGION</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_array</span><span class="p">(</span><span class="n">get_simulation_header_array</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">(),</span> <span class="n">machine_time_step</span><span class="p">,</span>
             <span class="n">time_scale_factor</span><span class="p">))</span>
 
-        <span class="c1"># write commands</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_WITH_ARBITRARY_TIMES</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-
         <span class="c1"># write commands to spec for timed commands</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_WITH_ARBITRARY_TIMES</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_timed_commands</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_timed_commands</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
 
         <span class="c1"># write commands fired off during a start or resume</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_START_RESUME</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_START_RESUME</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_basic_commands</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_start_resume</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
 
         <span class="c1"># write commands fired off during a pause or end</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_STOP_PAUSE</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_STOP_PAUSE</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_basic_commands</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_pause_stop</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
 
         <span class="c1"># End-of-Spec:</span>
@@ -275,7 +267,7 @@
 
         <span class="c1"># write commands to region</span>
         <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_write_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__write_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_write_timed_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timed_commands</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -287,10 +279,10 @@
         <span class="c1"># write commands</span>
         <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">timed_commands</span><span class="p">:</span>
             <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_write_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__write_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_write_command</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__write_command</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param MultiCastCommand command:</span>
 <span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
@@ -324,19 +316,19 @@
 
         <span class="c1"># Reserve memory:</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">SYSTEM_REGION</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">SYSTEM_REGION</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">SIMULATION_N_BYTES</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;system&#39;</span><span class="p">)</span>
 
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_WITH_ARBITRARY_TIMES</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_WITH_ARBITRARY_TIMES</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">time_command_size</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;commands with arbitrary times&#39;</span><span class="p">)</span>
 
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_START_RESUME</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_START_RESUME</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">start_command_size</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;commands with start resume times&#39;</span><span class="p">)</span>
 
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_STOP_PAUSE</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_STOP_PAUSE</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">end_command_size</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;commands with stop pause times&#39;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reserve_provenance_data_region</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
@@ -414,7 +406,14 @@
 <span class="sd">        :rtype:</span>
 <span class="sd">            tuple(list(~pacman.model.graphs.machine.MachineEdge), list(str))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_edges_and_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">MachineEdge</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_edges_and_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">MachineEdge</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CommandSenderMachineVertex.parse_extra_provenance_items"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.parse_extra_provenance_items">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span>
+               <span class="n">parse_extra_provenance_items</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">parse_extra_provenance_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">provenance_data</span><span class="p">):</span>
+        <span class="c1"># pylint: disable=unused-argument</span>
+        <span class="n">n_commands_sent</span><span class="p">,</span> <span class="o">=</span> <span class="n">provenance_data</span>
+        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span><span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Sent_Commands&quot;</span><span class="p">],</span> <span class="n">n_commands_sent</span><span class="p">)</span></div></div>
 </pre></div>
 
             <div class="clearer"></div>

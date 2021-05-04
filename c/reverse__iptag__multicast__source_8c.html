@@ -97,9 +97,9 @@ Data Structures</h2></td></tr>
 <tr class="memitem:structconfig"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reverse__iptag__multicast__source_8c.html#structconfig">config</a></td></tr>
 <tr class="memdesc:structconfig"><td class="mdescLeft">&#160;</td><td class="mdescRight">The configuration parameters for the application.  <a href="reverse__iptag__multicast__source_8c.html#structconfig">More...</a><br /></td></tr>
 <tr class="separator:structconfig"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:structprovenance__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reverse__iptag__multicast__source_8c.html#structprovenance__t">provenance_t</a></td></tr>
-<tr class="memdesc:structprovenance__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">The provenance data items.  <a href="reverse__iptag__multicast__source_8c.html#structprovenance__t">More...</a><br /></td></tr>
-<tr class="separator:structprovenance__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:structripmcs__provenance__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reverse__iptag__multicast__source_8c.html#structripmcs__provenance__t">ripmcs_provenance_t</a></td></tr>
+<tr class="memdesc:structripmcs__provenance__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">The provenance data items.  <a href="reverse__iptag__multicast__source_8c.html#structripmcs__provenance__t">More...</a><br /></td></tr>
+<tr class="separator:structripmcs__provenance__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:structrecorded__packet__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reverse__iptag__multicast__source_8c.html#structrecorded__packet__t">recorded_packet_t</a></td></tr>
 <tr class="memdesc:structrecorded__packet__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">What information is recorded about a packet.  <a href="reverse__iptag__multicast__source_8c.html#structrecorded__packet__t">More...</a><br /></td></tr>
 <tr class="separator:structrecorded__packet__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -304,10 +304,10 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reverse__iptag__multicast__source_8c.html#a50995a22675f4f5eb4bbb287d4e7d58d">space_before_data_request</a></td></tr>
 <tr class="memdesc:a50995a22675f4f5eb4bbb287d4e7d58d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Threshold at which we ask for buffers to be cleared. <br /></td></tr>
 <tr class="separator:a50995a22675f4f5eb4bbb287d4e7d58d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0c77b975a761fbb12aa41fbf8764c99"><td class="memItemLeft" align="right" valign="top"><a id="af0c77b975a761fbb12aa41fbf8764c99"></a>
-static struct <a class="el" href="reverse__iptag__multicast__source_8c.html#structprovenance__t">provenance_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reverse__iptag__multicast__source_8c.html#af0c77b975a761fbb12aa41fbf8764c99">provenance</a> = {0}</td></tr>
-<tr class="memdesc:af0c77b975a761fbb12aa41fbf8764c99"><td class="mdescLeft">&#160;</td><td class="mdescRight">The provenance information that we're collecting. <br /></td></tr>
-<tr class="separator:af0c77b975a761fbb12aa41fbf8764c99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb4fa903e368a6046ec7b8a9a7dae7c0"><td class="memItemLeft" align="right" valign="top"><a id="afb4fa903e368a6046ec7b8a9a7dae7c0"></a>
+static <a class="el" href="reverse__iptag__multicast__source_8c.html#structripmcs__provenance__t">ripmcs_provenance_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reverse__iptag__multicast__source_8c.html#afb4fa903e368a6046ec7b8a9a7dae7c0">provenance</a> = {0}</td></tr>
+<tr class="memdesc:afb4fa903e368a6046ec7b8a9a7dae7c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The provenance information that we're collecting. <br /></td></tr>
+<tr class="separator:afb4fa903e368a6046ec7b8a9a7dae7c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a97f21dc7fccaac8071bcd29894bccb"><td class="memItemLeft" align="right" valign="top"><a id="a9a97f21dc7fccaac8071bcd29894bccb"></a>
 static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reverse__iptag__multicast__source_8c.html#a9a97f21dc7fccaac8071bcd29894bccb">recording_flags</a> = 0</td></tr>
 <tr class="memdesc:a9a97f21dc7fccaac8071bcd29894bccb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Keeps track of which types of recording should be done to this model. <br /></td></tr>
@@ -501,14 +501,14 @@ The timer offset to use for transmissions. <p>Used to ensure we don't send all m
 
 </div>
 </div>
-<a name="structprovenance__t" id="structprovenance__t"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#structprovenance__t">&#9670;&nbsp;</a></span>provenance_t</h2>
+<a name="structripmcs__provenance__t" id="structripmcs__provenance__t"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#structripmcs__provenance__t">&#9670;&nbsp;</a></span>ripmcs_provenance_t</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">struct provenance_t</td>
+          <td class="memname">struct ripmcs_provenance_t</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -518,31 +518,31 @@ The timer offset to use for transmissions. <p>Used to ensure we don't send all m
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
-<a id="a918f695daa4b76b9d633779b0d06cb60"></a>uint32_t</td>
+<a id="aa9f1247feb7a02e76ee3e7814437a0fd"></a>uint32_t</td>
 <td class="fieldname">
 received_packets</td>
 <td class="fielddoc">
 How many EIEIO packets were received. </td></tr>
 <tr><td class="fieldtype">
-<a id="ab8b40dbfeb1cd81e757cc2c65923e72a"></a>uint32_t</td>
+<a id="a9bfd09ecb0cf815822a3a8199146c167"></a>uint32_t</td>
 <td class="fieldname">
 sent_packets</td>
 <td class="fielddoc">
 How many MC packets were sent. </td></tr>
 <tr><td class="fieldtype">
-<a id="a3ce390193f84f414f1e020ce9885c0b4"></a>uint32_t</td>
+<a id="a70541b2d6fb02b4926177743136fcb19"></a>uint32_t</td>
 <td class="fieldname">
 incorrect_keys</td>
 <td class="fielddoc">
 Number of bad keys. </td></tr>
 <tr><td class="fieldtype">
-<a id="aa350a5920f0b7d423dbb3eae551006d7"></a>uint32_t</td>
+<a id="ad353a87af45bf005a4260958d1dbf2e1"></a>uint32_t</td>
 <td class="fieldname">
 incorrect_packets</td>
 <td class="fielddoc">
 Number of bad packets (in non-debug mode) </td></tr>
 <tr><td class="fieldtype">
-<a id="ae94383b42b85cadfe90b9756cd502a1a"></a>uint32_t</td>
+<a id="afbe2ddb6c744e87738f63058653e6689"></a>uint32_t</td>
 <td class="fieldname">
 late_packets</td>
 <td class="fielddoc">

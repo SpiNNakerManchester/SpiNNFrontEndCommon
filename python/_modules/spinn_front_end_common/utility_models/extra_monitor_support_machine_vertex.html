@@ -51,11 +51,13 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">IntEnum</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 <span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">CoreSubsets</span><span class="p">,</span> <span class="n">Router</span>
+<span class="kn">from</span> <span class="nn">data_specification.utility_calls</span> <span class="kn">import</span> <span class="n">get_region_base_address_offset</span>
 <span class="kn">from</span> <span class="nn">pacman.executor.injection_decorator</span> <span class="kn">import</span> <span class="n">inject_items</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.common</span> <span class="kn">import</span> <span class="n">EdgeTrafficType</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span>
@@ -63,7 +65,8 @@
 <span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_bool</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ExecutableType</span><span class="p">,</span> <span class="n">ProvenanceDataItem</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs.</span>\
     <span class="n">extra_monitor_scp_processes</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">ReadStatusProcess</span><span class="p">,</span> <span class="n">ResetCountersProcess</span><span class="p">,</span> <span class="n">SetPacketTypesProcess</span><span class="p">,</span>
@@ -79,6 +82,8 @@
 <span class="kn">from</span> <span class="nn">.data_speed_up_packet_gatherer_machine_vertex</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">DataSpeedUpPacketGatherMachineVertex</span> <span class="k">as</span>
     <span class="n">Gatherer</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">)</span>
 
 <span class="n">log</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -91,6 +96,15 @@
 <span class="n">_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING</span> <span class="o">=</span> <span class="p">((</span><span class="mi">49</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
 <span class="n">_BIT_SHIFT_TO_MOVE_APP_ID</span> <span class="o">=</span> <span class="mi">24</span>
 
+<span class="n">_ONE_WORD</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;I&quot;</span><span class="p">)</span>
+<span class="c1"># typedef struct extra_monitor_provenance_t {</span>
+<span class="c1">#     uint n_sdp_packets;</span>
+<span class="c1">#     uint n_in_streams;</span>
+<span class="c1">#     uint n_out_streams;</span>
+<span class="c1">#     uint n_router_changes;</span>
+<span class="c1"># } extra_monitor_provenance_t;</span>
+<span class="n">_PROVENANCE_FORMAT</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;IIII&quot;</span><span class="p">)</span>
+
 <span class="c1"># cap for stopping wrap arounds</span>
 <span class="n">TRANSACTION_ID_CAP</span> <span class="o">=</span> <span class="mh">0xFFFFFFFF</span>
 
@@ -102,10 +116,11 @@
 <span class="n">_SDRAM_FOR_ROUTER_TABLE_ENTRIES</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
 
 
-<span class="k">class</span> <span class="nc">_DSG_REGIONS</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">_DSG_REGIONS</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
     <span class="n">REINJECT_CONFIG</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">DATA_OUT_CONFIG</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">DATA_IN_CONFIG</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">PROVENANCE_AREA</span> <span class="o">=</span> <span class="mi">3</span>
 
 
 <span class="k">class</span> <span class="nc">_KEY_OFFSETS</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
@@ -116,7 +131,8 @@
 
 <div class="viewcode-block" id="ExtraMonitorSupportMachineVertex"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex">[docs]</a><span class="k">class</span> <span class="nc">ExtraMonitorSupportMachineVertex</span><span class="p">(</span>
         <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span>
-        <span class="n">AbstractGeneratesDataSpecification</span><span class="p">):</span>
+        <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span>
+        <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Machine vertex for talking to extra monitor cores. \</span>
 <span class="sd">        Supports reinjection control and the faster data transfer protocols.</span>
 
@@ -139,7 +155,9 @@
         <span class="c1"># machine instance</span>
         <span class="s2">&quot;_machine&quot;</span><span class="p">,</span>
         <span class="c1"># the local transaction id</span>
-        <span class="s2">&quot;_transaction_id&quot;</span>
+        <span class="s2">&quot;_transaction_id&quot;</span><span class="p">,</span>
+        <span class="c1"># provenance region address</span>
+        <span class="s2">&quot;_prov_region&quot;</span>
     <span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -177,6 +195,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prov_region</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">reinject_multicast</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -320,6 +339,7 @@
             <span class="n">spec</span><span class="p">,</span> <span class="n">data_in_routing_tables</span><span class="p">,</span>
             <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">),</span>
             <span class="n">mc_data_chips_to_keys</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_generate_provenance_area</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">end_specification</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">_generate_data_speed_up_out_config</span><span class="p">(</span>
@@ -330,10 +350,10 @@
 <span class="sd">        :param ~.MachineGraph machine_graph: The graph containing this vertex</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">DATA_OUT_CONFIG</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">DATA_OUT_CONFIG</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES</span><span class="p">,</span>
             <span class="n">label</span><span class="o">=</span><span class="s2">&quot;data speed-up out config region&quot;</span><span class="p">)</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">DATA_OUT_CONFIG</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">DATA_OUT_CONFIG</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">Gatherer</span><span class="o">.</span><span class="n">TRAFFIC_TYPE</span> <span class="o">==</span> <span class="n">EdgeTrafficType</span><span class="o">.</span><span class="n">MULTICAST</span><span class="p">:</span>
             <span class="n">base_key</span> <span class="o">=</span> <span class="n">routing_info</span><span class="o">.</span><span class="n">get_first_key_for_edge</span><span class="p">(</span>
@@ -359,11 +379,11 @@
 <span class="sd">        :param ~.Machine machine:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">REINJECT_CONFIG</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">REINJECT_CONFIG</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES</span><span class="p">,</span>
             <span class="n">label</span><span class="o">=</span><span class="s2">&quot;re-injection config region&quot;</span><span class="p">)</span>
 
-        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">REINJECT_CONFIG</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">REINJECT_CONFIG</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_multicast</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_point_to_point</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_fixed_route</span><span class="p">,</span>
@@ -389,11 +409,11 @@
 <span class="sd">            data in keys to chips map.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">DATA_IN_CONFIG</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">DATA_IN_CONFIG</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING</span> <span class="o">+</span>
                   <span class="n">_CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES</span><span class="p">),</span>
             <span class="n">label</span><span class="o">=</span><span class="s2">&quot;data speed-up in config region&quot;</span><span class="p">)</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">DATA_IN_CONFIG</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">DATA_IN_CONFIG</span><span class="p">)</span>
 
         <span class="c1"># write address key and data key</span>
         <span class="n">base_key</span> <span class="o">=</span> <span class="n">mc_data_chips_to_keys</span><span class="p">[</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
@@ -418,6 +438,53 @@
         <span class="n">route</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">&lt;&lt;</span> <span class="n">_BIT_SHIFT_TO_MOVE_APP_ID</span>
         <span class="n">route</span> <span class="o">|=</span> <span class="n">Router</span><span class="o">.</span><span class="n">convert_routing_table_entry_to_spinnaker_route</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">route</span>
+
+    <span class="k">def</span> <span class="nf">_generate_provenance_area</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.DataSpecificationGenerator spec: spec file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">PROVENANCE_AREA</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">_PROVENANCE_FORMAT</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;provenance collection region&quot;</span><span class="p">,</span> <span class="n">empty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__get_provenance_region_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">place</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver txrx:</span>
+<span class="sd">        :param ~pacman.model.placements.Placement place:</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prov_region</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">region_table_addr</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_cpu_information_from_core</span><span class="p">(</span>
+                <span class="n">place</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">place</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">place</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">user</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">region_entry_addr</span> <span class="o">=</span> <span class="n">get_region_base_address_offset</span><span class="p">(</span>
+                <span class="n">region_table_addr</span><span class="p">,</span> <span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">PROVENANCE_AREA</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prov_region</span><span class="p">,</span> <span class="o">=</span> <span class="n">_ONE_WORD</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">txrx</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+                <span class="n">place</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">place</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">region_entry_addr</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prov_region</span>
+
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.get_provenance_data_from_machine"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.get_provenance_data_from_machine">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="o">.</span>
+               <span class="n">get_provenance_data_from_machine</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_provenance_data_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
+        <span class="c1"># No standard provenance region, so no standard provenance data</span>
+        <span class="c1"># But we do have our own.</span>
+        <span class="n">provenance_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_provenance_region_address</span><span class="p">(</span>
+            <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+            <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">provenance_address</span><span class="p">,</span>
+            <span class="n">_PROVENANCE_FORMAT</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">n_sdp_packets</span><span class="p">,</span> <span class="n">n_in_streams</span><span class="p">,</span> <span class="n">n_out_streams</span><span class="p">,</span> <span class="n">n_router_changes</span><span class="p">)</span> <span class="o">=</span> \
+            <span class="n">_PROVENANCE_FORMAT</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">root_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;monitor for </span><span class="si">{</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">root_name</span><span class="p">,</span> <span class="s2">&quot;Number_of_Router_Configuration_Changes&quot;</span><span class="p">],</span>
+                <span class="n">n_router_changes</span><span class="p">),</span>
+            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">root_name</span><span class="p">,</span> <span class="s2">&quot;Number_of_Relevant_SDP_Messages&quot;</span><span class="p">],</span> <span class="n">n_sdp_packets</span><span class="p">),</span>
+            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">root_name</span><span class="p">,</span> <span class="s2">&quot;Number_of_Input_Streamlets&quot;</span><span class="p">],</span> <span class="n">n_in_streams</span><span class="p">),</span>
+            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">root_name</span><span class="p">,</span> <span class="s2">&quot;Number_of_Output_Streamlets&quot;</span><span class="p">],</span> <span class="n">n_out_streams</span><span class="p">)]</span></div>
 
 <div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.set_router_wait1_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_wait1_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait1_timeout</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
