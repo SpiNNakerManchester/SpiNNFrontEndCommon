@@ -45,7 +45,7 @@ class NotificationProtocol(AbstractContextManager):
         """
         :param socket_addresses: Where to notify.
         :type socket_addresses:
-            list(~spinn_utilities.socket_address.SocketAddress)
+            set(~spinn_utilities.socket_address.SocketAddress)
         """
         self.__socket_addresses = socket_addresses
 

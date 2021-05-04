@@ -28,7 +28,7 @@ class CreateNotificationProtocol(object):
         """
         :param socket_addresses: Where to notify.
         :type socket_addresses:
-            list(~spinn_utilities.socket_address.SocketAddress)
+            set(~spinn_utilities.socket_address.SocketAddress)
         :param str database_file_path:
         """
         notification_protocol = NotificationProtocol(socket_addresses)

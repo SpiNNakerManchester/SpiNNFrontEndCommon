@@ -81,8 +81,8 @@ class MachineGenerator(object):
             Directory to write any reports too.
             If None the current directory will be used.
         :return: Transceiver, and description of machine it is connected to
-        :rtype: tuple(~spinnman.transceiver.Transceiver,
-            ~spinn_machine.Machine)
+        :rtype: tuple(~spinn_machine.Machine,
+            ~spinnman.transceiver.Transceiver)
         """
         # pylint: disable=too-many-arguments
 
