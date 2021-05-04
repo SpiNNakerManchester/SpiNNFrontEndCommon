@@ -29,17 +29,17 @@ time_scale_factor = None
 default_report_file_path = DEFAULT
 
 # If enabled this option will extract the log information from the boards
-# iobuff extraction can take a condsiderable time and uses disk space
+# iobuf extraction can take a condsiderable time and uses disk space
 extract_iobuf = False
 
-# List the cores to extract iobuff from
+# List the cores to extract iobuf from
 # format is x,y,p[:x,y,p]*
 # ie comma between x y and p And semicolumn between cores
 # ALL extracts from all cores
 # None extracts from only those of the requested binary_types
 extract_iobuf_from_cores = ALL
 
-# Comma seperated list of the apply files to extract iobuff for
+# Comma seperated list of the apply files to extract iobuf for
 # include the .aplx but no directory needed
 extract_iobuf_from_binary_types = None
 
