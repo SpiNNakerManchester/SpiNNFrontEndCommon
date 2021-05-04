@@ -50,7 +50,7 @@ from pacman.model.graphs.machine import MachineGraph, MachineVertex
 from pacman.model.resources import (
     PreAllocatedResourceContainer, ConstantSDRAM)
 from pacman import __version__ as pacman_version
-from pacman.config_holder import (
+from spinn_utilities.config_holder import (
     get_config_bool, get_config_int, get_config_str, get_config_str_list,
     set_config)
 from spinn_front_end_common.abstract_models import (
@@ -1291,8 +1291,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["BMPDetails"] = None
         inputs["AutoDetectBMPFlag"] = False
         inputs["ScampConnectionData"] = None
-        inputs["RouterTableEntriesPerRouter"] = \
-            get_config_int("Machine", "RouterTableEntriesPerRouter")
         inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
 
         algorithms.append("VirtualMachineGenerator")
@@ -1489,29 +1487,32 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def _create_version_provenance(self):
         """ Add the version information to the provenance data at the start.
         """
-        version_provenance = list()
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spinn_utilities_version"], spinn_utils_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spinn_machine_version"], spinn_machine_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spalloc_version"], spalloc_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spinnman_version"], spinnman_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "pacman_version"], pacman_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "data_specification_version"], data_spec_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "front_end_common_version"], fec_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "numpy_version"], numpy_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "scipy_version"], scipy_version))
+        version_provenance = [
+            ProvenanceDataItem(
+                ["version_data", "spinn_utilities_version"],
+                spinn_utils_version),
+            ProvenanceDataItem(
+                ["version_data", "spinn_machine_version"],
+                spinn_machine_version),
+            ProvenanceDataItem(
+                ["version_data", "spalloc_version"], spalloc_version),
+            ProvenanceDataItem(
+                ["version_data", "spinnman_version"], spinnman_version),
+            ProvenanceDataItem(
+                ["version_data", "pacman_version"], pacman_version),
+            ProvenanceDataItem(
+                ["version_data", "data_specification_version"],
+                data_spec_version),
+            ProvenanceDataItem(
+                ["version_data", "front_end_common_version"], fec_version),
+            ProvenanceDataItem(
+                ["version_data", "numpy_version"], numpy_version),
+            ProvenanceDataItem(
+                ["version_data", "scipy_version"], scipy_version)]
         if self._front_end_versions is not None:
-            for name, value in self._front_end_versions:
-                version_provenance.append(ProvenanceDataItem(
-                    names=["version_data", name], value=value))
+            version_provenance.extend(
+                ProvenanceDataItem(names=["version_data", name], value=value)
+                for name, value in self._front_end_versions)
         self._version_provenance = version_provenance
 
     def _do_mapping(self, run_time, total_run_time):
