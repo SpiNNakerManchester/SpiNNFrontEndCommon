@@ -54,37 +54,6 @@ The P2P traffic being mapped is mainly used for system boot and control.
 The white square is due to a chip on that SpiNNaker board being marked as
 deactivated.
 
-Installing NumPy on Older Systems
-=================================
-_Note that this part is not normally required on newer systems,_
-where `numpy` installs inside a virtual environment just fine.
-Sometimes you have to provide a little assistance with:
-
-    pip install --upgrade wheel
-    pip install --binary-only numpy
-
-Otherwise, use these instructions, depending on what platform you are using:
-
-Ubuntu Linux
-------------
-Execute the following to install `numpy`:
-
-    sudo apt-get install python-numpy
-
-Fedora Linux
-------------
-Execute the following to install `numpy`:
-
-    sudo yum install numpy
-
-Windows 7/8 64-bit
-------------------
-Download and install http://spinnaker.cs.manchester.ac.uk/.../numpy-MKL-1.8.1.win-amd64-py2.7.exe
-
-Windows 7/8 32-bit
-------------------
-Download and install http://spinnaker.cs.manchester.ac.uk/.../numpy-MKL-1.8.1.win32-py2.7.exe
-
 Documentation
 =============
 [SpiNNFrontEndCommon Python documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/python/)
