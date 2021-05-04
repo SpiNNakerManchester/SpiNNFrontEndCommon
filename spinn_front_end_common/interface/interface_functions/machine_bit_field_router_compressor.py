@@ -81,9 +81,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
     #: how many header elements are in the region addresses (1, n addresses)
     N_REGIONS_ELEMENT = 1
 
-    # the number of bytes needed to read the user 2 register
-    _USER_BYTES = 4
-
     #: min size a heap object needs in sdram. (limit on the size of useful
     #: sdram regions to steal)
     _MIN_SIZE_FOR_HEAP = 32
@@ -105,14 +102,12 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
 
     _PROGRESS_BAR_TEXT = \
         "on chip {} compressor with bitfields"
-
     _HOST_BAR_TEXT = \
         "on host compressing routing tables and merging in bitfields as " \
         "appropriate"
     _ON_CHIP_ERROR_MESSAGE = \
         "The router compressor with bit field on {}:{} failed to complete. " \
         "Will execute host based routing compression instead"
-
     _ON_HOST_WARNING_MESSAGE = \
         "Will be executing compression for {} chips on the host, as they " \
         "failed to complete when running on chip"
@@ -370,7 +365,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             y = core_subset.y
 
             for p in core_subset.processor_ids:
-
                 # Read the result from USER1/USER2 registers
                 user_1_base_address = \
                     transceiver.get_user_1_register_address_from_core(p)

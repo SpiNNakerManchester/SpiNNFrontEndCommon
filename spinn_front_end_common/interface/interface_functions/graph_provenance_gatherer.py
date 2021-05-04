@@ -33,31 +33,42 @@ class GraphProvenanceGatherer(object):
         :rtype: list(ProvenanceDataItem)
         """
         prov_items = list()
+        prov_items.extend(
+            self._get_machine_graph_provenance(machine_graph))
+        if application_graph is not None:
+            prov_items.extend(
+                self._get_app_graph_provenance(application_graph))
+        return prov_items
 
+    @staticmethod
+    def _get_machine_graph_provenance(machine_graph):
         progress = ProgressBar(
             machine_graph.n_vertices +
             machine_graph.n_outgoing_edge_partitions,
             "Getting provenance data from machine graph")
+
         for vertex in progress.over(machine_graph.vertices, False):
             if isinstance(vertex, AbstractProvidesLocalProvenanceData):
-                prov_items.extend(vertex.get_local_provenance_data())
+                yield from vertex.get_local_provenance_data()
+
         for partition in progress.over(machine_graph.outgoing_edge_partitions):
             for edge in partition.edges:
                 if isinstance(edge, AbstractProvidesLocalProvenanceData):
-                    prov_items.extend(edge.get_local_provenance_data())
+                    yield from edge.get_local_provenance_data()
 
-        if application_graph is not None:
-            progress = ProgressBar(
-                application_graph.n_vertices +
-                application_graph.n_outgoing_edge_partitions,
-                "Getting provenance data from application graph")
-            for vertex in progress.over(application_graph.vertices, False):
-                if isinstance(vertex, AbstractProvidesLocalProvenanceData):
-                    prov_items.extend(vertex.get_local_provenance_data())
-            for partition in progress.over(
-                    application_graph.outgoing_edge_partitions):
-                for edge in partition.edges:
-                    if isinstance(edge, AbstractProvidesLocalProvenanceData):
-                        prov_items.extend(edge.get_local_provenance_data())
+    @staticmethod
+    def _get_app_graph_provenance(application_graph):
+        progress = ProgressBar(
+            application_graph.n_vertices +
+            application_graph.n_outgoing_edge_partitions,
+            "Getting provenance data from application graph")
 
-        return prov_items
+        for vertex in progress.over(application_graph.vertices, False):
+            if isinstance(vertex, AbstractProvidesLocalProvenanceData):
+                yield from vertex.get_local_provenance_data()
+
+        for partition in progress.over(
+                application_graph.outgoing_edge_partitions):
+            for edge in partition.edges:
+                if isinstance(edge, AbstractProvidesLocalProvenanceData):
+                    yield from edge.get_local_provenance_data()
