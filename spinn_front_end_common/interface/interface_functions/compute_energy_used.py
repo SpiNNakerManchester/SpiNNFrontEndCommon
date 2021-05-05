@@ -69,7 +69,7 @@ class ComputeEnergyUsed(object):
     __slots__ = []
 
     def __call__(
-            self, placements, machine, version, time_scale_factor,
+            self, placements, machine, version,
             router_provenance, runtime, buffer_manager, mapping_time,
             load_time, execute_time, dsg_time, extraction_time,
             spalloc_server=None, remote_spinnaker_url=None,
@@ -79,7 +79,6 @@ class ComputeEnergyUsed(object):
         :param ~spinn_machine.Machine machine:
         :param int version:
             The version of the SpiNNaker boards in use.
-        :param int time_scale_factor:
         :param list(ProvenanceDataItem) router_provenance:
             Provenance information from routers.
         :param float runtime:
@@ -122,12 +121,14 @@ class ComputeEnergyUsed(object):
         power_used.mapping_time_secs = mapping_time / _MS_PER_SECOND
 
         using_spalloc = bool(spalloc_server or remote_spinnaker_url)
+        runtime_total_ms = runtime * get_config_int(
+            "Machine", "time_scale_factor")
         self._compute_energy_consumption(
              placements, machine, version, using_spalloc,
              router_provenance, dsg_time, buffer_manager, load_time,
              mapping_time, execute_time + load_time + extraction_time,
              machine_allocation_controller,
-             runtime * time_scale_factor, power_used)
+             runtime_total_ms, power_used)
 
         return power_used
 
