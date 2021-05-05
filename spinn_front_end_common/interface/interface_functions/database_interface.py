@@ -44,9 +44,8 @@ class DatabaseInterface(object):
 
     def __call__(
             self, machine_graph, user_create_database, tags,
-            runtime, machine, data_n_timesteps, time_scale_factor,
-            machine_time_step, placements, routing_infos, router_tables,
-            report_folder, application_graph=None):
+            runtime, machine, data_n_timesteps, placements, routing_infos,
+            router_tables,  report_folder, application_graph=None):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param user_create_database:
@@ -55,8 +54,6 @@ class DatabaseInterface(object):
         :param int runtime:
         :param ~spinn_machine.Machine machine:
         :param int data_n_timesteps:
-        :param int time_scale_factor:
-        :param int machine_time_step:
         :param ~pacman.model.placements.Placements placements:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         :param router_tables:
@@ -79,10 +76,10 @@ class DatabaseInterface(object):
         if self.needs_database:
             logger.info("creating live event connection database in {}",
                         self._writer.database_path)
-            self._write_to_db(machine, time_scale_factor, machine_time_step,
-                              runtime, application_graph, machine_graph,
-                              data_n_timesteps, placements,
-                              routing_infos, router_tables, tags)
+            self._write_to_db(
+                machine, runtime, application_graph, machine_graph,
+                data_n_timesteps, placements, routing_infos, router_tables,
+                tags)
 
         return self, self.database_file_path
 
@@ -105,13 +102,11 @@ class DatabaseInterface(object):
         return None
 
     def _write_to_db(
-            self, machine, time_scale_factor, machine_time_step,
-            runtime, app_graph, machine_graph, data_n_timesteps,
-            placements, routing_infos, router_tables, tags):
+            self, machine, runtime, app_graph, machine_graph,
+            data_n_timesteps, placements, routing_infos, router_tables,
+            tags):
         """
         :param ~.Machine machine:
-        :param int time_scale_factor:
-        :param int machine_time_step:
         :param int runtime:
         :param ~.ApplicationGraph app_graph:
         :param ~.MachineGraph machine_graph:
@@ -126,7 +121,7 @@ class DatabaseInterface(object):
 
         with self._writer as w, ProgressBar(
                 9, "Creating graph description database") as p:
-            w.add_system_params(time_scale_factor, machine_time_step, runtime)
+            w.add_system_params(runtime)
             p.update()
             w.add_machine_objects(machine)
             p.update()
