@@ -104,24 +104,19 @@ class ChipPowerMonitorMachineVertex(
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         # pylint: disable=arguments-differ
-        sim = globals_variables.get_simulator()
-        return self.get_resources(
-            sim.machine_time_step, sim.time_scale_factor,
-            self._sampling_frequency)
+        return self.get_resources(self._sampling_frequency)
 
     @staticmethod
-    def get_resources(
-            time_step, time_scale_factor,
-            sampling_frequency):
+    def get_resources(sampling_frequency):
         """ Get the resources used by this vertex
 
-        :param int time_step:
-        :param int time_scale_factor:
          :param float sampling_frequency:
         :rtype: ~pacman.model.resources.ResourceContainer
         """
         # pylint: disable=too-many-locals
-        step_in_microseconds = (time_step * time_scale_factor)
+        step_in_microseconds = (
+                get_config_int("Machine", "machine_time_step") *
+                get_config_int("Machine", "time_scale_factor"))
         # The number of sample per step CB believes does not have to be an int
         samples_per_step = (step_in_microseconds / sampling_frequency)
         n_samples_per_recording = get_config_int(

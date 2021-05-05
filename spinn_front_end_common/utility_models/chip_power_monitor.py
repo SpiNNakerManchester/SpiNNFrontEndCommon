@@ -57,18 +57,9 @@ class ChipPowerMonitor(ApplicationVertex, LegacyPartitionerAPI):
                     machine_vertex.resources_required)
         return machine_vertex
 
-    @inject_items({
-        "machine_time_step": "MachineTimeStep",
-        "time_scale_factor": "TimeScaleFactor"})
-    @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms,
-               additional_arguments={"machine_time_step", "time_scale_factor"})
-    def get_resources_used_by_atoms(
-            self, vertex_slice,  # @UnusedVariable
-            machine_time_step, time_scale_factor):
-        """
-        :param int machine_time_step:
-        :param int time_scale_factor:
-        """
+    @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms)
+    def get_resources_used_by_atoms(self, vertex_slice,  # @UnusedVariable
+            ):
         # pylint: disable=arguments-differ
         return ChipPowerMonitorMachineVertex.get_resources(
-            machine_time_step, time_scale_factor, self._sampling_frequency)
+            self._sampling_frequency)

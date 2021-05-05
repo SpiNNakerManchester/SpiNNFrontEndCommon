@@ -25,14 +25,11 @@ class PreAllocateResourcesForChipPowerMonitor(object):
     """
 
     def __call__(
-            self, machine,  sampling_frequency, time_scale_factor,
-            machine_time_step,  pre_allocated_resources):
+            self, machine,  sampling_frequency, pre_allocated_resources):
         """
         :param ~spinn_machine.Machine machine:
             the SpiNNaker machine as discovered
         :param int sampling_frequency: the frequency of sampling
-        :param int time_scale_factor: the time scale factor
-        :param int machine_time_step: the machine time step
         :param pre_allocated_resources: other preallocated resources
         :type pre_allocated_resources:
             ~pacman.model.resources.PreAllocatedResourceContainer
@@ -46,9 +43,7 @@ class PreAllocateResourcesForChipPowerMonitor(object):
 
         # store how much SDRAM the power monitor uses per core
         resources = ChipPowerMonitorMachineVertex.get_resources(
-            sampling_frequency=sampling_frequency,
-            time_scale_factor=time_scale_factor,
-            time_step=machine_time_step)
+            sampling_frequency=sampling_frequency)
 
         # for every Ethernet connected chip, get the resources needed by the
         # live packet gatherers
