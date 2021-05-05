@@ -1314,12 +1314,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # if using spalloc system
         if self._spalloc_server is not None:
             inputs["SpallocServer"] = self._spalloc_server
-            inputs["SpallocPort"] = get_config_int(
-                "Machine", "spalloc_port")
-            inputs["SpallocUser"] = get_config_str(
-                "Machine", "spalloc_user")
-            inputs["SpallocMachine"] = get_config_str(
-                "Machine", "spalloc_machine")
         else:
             # must be using HBP server system
             inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
