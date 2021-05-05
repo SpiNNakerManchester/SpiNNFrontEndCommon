@@ -156,7 +156,7 @@ class HostBasedBitFieldRouterCompressor(object):
     def __call__(
             self, router_tables, machine, placements, transceiver,
             default_report_folder, machine_graph,
-            routing_infos,  machine_time_step, time_scale_factor):
+            routing_infos):
         """
         Entry point when using the PACMANAlgorithmExecutor
 
@@ -171,8 +171,6 @@ class HostBasedBitFieldRouterCompressor(object):
             the machine graph level
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
             routing information
-        :param int machine_time_step: time step
-        :param int time_scale_factor: time scale factor
         :return: compressed routing table entries
         :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
