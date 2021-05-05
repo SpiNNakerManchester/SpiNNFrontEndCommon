@@ -14,20 +14,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+from spinn_utilities.config_holder import get_config_int
 from pacman.utilities.utility_calls import md5
 from spinn_front_end_common.utilities.constants import SDP_PORTS
 
 
 def get_simulation_header_array(
-        binary_file_name, machine_time_step, time_scale_factor):
+        binary_file_name, machine_time_step=None, time_scale_factor=None):
     """ Get data to be written to the simulation header
 
     :param str binary_file_name: The name of the binary of the application
-    :param int machine_time_step: The time step of the simulation
-    :param int time_scale_factor: The time scaling of the simulation
     :return: An array of values to be written as the simulation header
     :rtype: list(int)
     """
+    if machine_time_step is None:
+        machine_time_step = get_config_int("Machine", "machine_time_step")
+    if time_scale_factor is None:
+        time_scale_factor = get_config_int("Machine", "time_scale_factor")
     # Get first 32-bits of the md5 hash of the application name
     application_name_hash = md5(os.path.splitext(binary_file_name)[0])[:8]
 

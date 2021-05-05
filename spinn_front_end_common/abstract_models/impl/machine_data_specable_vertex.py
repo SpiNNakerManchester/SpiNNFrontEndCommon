@@ -39,11 +39,9 @@ class MachineDataSpecableVertex(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "machine_graph", "routing_info", "tags",
-            "machine_time_step", "time_scale_factor"
         })
     def generate_data_specification(
-            self, spec, placement, machine_graph, routing_info, tags,
-            machine_time_step, time_scale_factor):
+            self, spec, placement, machine_graph, routing_info, tags):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             (Injected)
@@ -57,12 +55,12 @@ class MachineDataSpecableVertex(
         reverse_iptags = tags.get_reverse_ip_tags_for_vertex(placement.vertex)
         self.generate_machine_data_specification(
             spec, placement, machine_graph, routing_info, iptags,
-            reverse_iptags, machine_time_step, time_scale_factor)
+            reverse_iptags)
 
     @abstractmethod
     def generate_machine_data_specification(
             self, spec, placement, machine_graph, routing_info, iptags,
-            reverse_iptags, machine_time_step, time_scale_factor):
+            reverse_iptags):
         """
         :param ~data_specification.DataSpecificationGenerator spec:
             The data specification to write into.
@@ -77,8 +75,6 @@ class MachineDataSpecableVertex(
         :param reverse_iptags: The reverse IP tags for the vertex, if any
         :type reverse_iptags:
             iterable(~spinn_machine.tags.ReverseIPTag) or None
-        :param int machine_time_step: The machine time step
-        :param int time_scale_factor: The time step scaling factor
         :rtype: None
         """
         # pylint: disable=too-many-arguments
