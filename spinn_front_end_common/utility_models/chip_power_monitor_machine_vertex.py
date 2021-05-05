@@ -17,6 +17,8 @@ import math
 import logging
 from enum import IntEnum
 import numpy
+from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from data_specification.enums import DataType
 from pacman.executor.injection_decorator import (
     inject_items, supports_injection)
@@ -32,16 +34,18 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_utilities.log import FormatAdapter
-from spinn_utilities.overrides import overrides
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
+from spinn_front_end_common.interface.provenance import (
+    AbstractProvidesLocalProvenanceData)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
+PROVENANCE_KEY = "Power_Monitor_Total_Activity_Count"
 
 RECORDING_SIZE_PER_ENTRY = 18 * BYTES_PER_WORD
 DEFAULT_MALLOCS_USED = 3
@@ -51,11 +55,14 @@ CONFIG_SIZE_IN_BYTES = 2 * BYTES_PER_WORD
 @supports_injection
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
-        AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
+        AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost,
+        AbstractProvidesLocalProvenanceData):
     """ Machine vertex for C code representing functionality to record\
         idle times in a machine graph.
     """
-    __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
+    __slots__ = [
+        "_n_samples_per_recording", "_sampling_frequency", "_activity_count",
+        "_location"]
 
     class _REGIONS(IntEnum):
         # data regions
@@ -85,6 +92,8 @@ class ChipPowerMonitorMachineVertex(
             vertex_slice=vertex_slice)
         self._n_samples_per_recording = n_samples_per_recording
         self._sampling_frequency = sampling_frequency
+        self._activity_count = 0
+        self._location = None
 
     @property
     def sampling_frequency(self):
@@ -277,7 +286,8 @@ class ChipPowerMonitorMachineVertex(
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
     def get_recorded_data(self, placement, buffer_manager):
-        """ Get data from SDRAM given placement and buffer manager
+        """ Get data from SDRAM given placement and buffer manager. \
+            Also arranges for provenance data to be available.
 
         :param ~pacman.model.placements.Placement placement:
             the location on machine to get data from
@@ -298,4 +308,15 @@ class ChipPowerMonitorMachineVertex(
         results = (
             numpy.frombuffer(record_raw, dtype="uint32").reshape(-1, 18) /
             self.n_samples_per_recording)
+        self._activity_count = int(
+            numpy.frombuffer(record_raw, dtype="uint32").sum())
+        self._location = (placement.x, placement.y)
         return results
+
+    @overrides(AbstractProvidesLocalProvenanceData.get_local_provenance_data)
+    def get_local_provenance_data(self):
+        # No provenance if we've not generated it
+        if self._location:
+            root_name = "power monitor for {},{}".format(*self._location)
+            yield ProvenanceDataItem(
+                [root_name, PROVENANCE_KEY], self._activity_count)

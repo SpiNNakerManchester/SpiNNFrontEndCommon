@@ -15,8 +15,6 @@
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
-from spinn_front_end_common.interface.provenance.\
-    provides_provenance_data_from_machine_impl import add_name
 from spinn_utilities.abstract_base import abstractmethod
 
 
@@ -37,9 +35,6 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
     _TDMA_N_ELEMENTS = 3
 
     _TDMA_MISSED_SLOTS_NAME = "Number_of_times_the_tdma_fell_behind"
-    _TDMA_MISSED_SLOTS_MESSAGE = (
-        "The TDMA fell behind by {} times on core {}, {}, {}. "
-        "try increasing the time_between_cores in the corresponding .cfg")
 
     def __init__(self, label, constraints, max_atoms_per_core, splitter=None):
         """
@@ -142,19 +137,18 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         :rtype: int
         """
 
-    def get_tdma_provenance_item(self, names, x, y, p, tdma_slots_missed):
+    def get_tdma_provenance_item(self, names, desc_label, tdma_slots_missed):
         """ Get the provenance item used for the TDMA provenance
 
         :param list(str) names: the names for the provenance data item
-        :param int x: chip x
-        :param int y: chip y
-        :param int p: processor id
+        :param str desc_label: a descriptive label for the vertex
         :param int tdma_slots_missed: the number of TDMA slots missed
         :return: the provenance data item
         :rtype: ProvenanceDataItem
         """
         return ProvenanceDataItem(
-            add_name(names, self._TDMA_MISSED_SLOTS_NAME),
-            tdma_slots_missed, report=(tdma_slots_missed > 0),
-            message=self._TDMA_MISSED_SLOTS_MESSAGE.format(
-                tdma_slots_missed, x, y, p))
+            names + [self._TDMA_MISSED_SLOTS_NAME], tdma_slots_missed,
+            (tdma_slots_missed > 0),
+            f"The {desc_label} had the TDMA fall behind by "
+            f"{tdma_slots_missed} times.  Try increasing the "
+            "time_between_cores in the corresponding .cfg")

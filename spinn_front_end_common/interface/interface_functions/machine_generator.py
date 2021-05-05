@@ -102,8 +102,8 @@ class MachineGenerator(object):
             flag for the txrx to report when waiting on busy cores.
         :type report_waiting_logs: bool
         :return: Transceiver, and description of machine it is connected to
-        :rtype: tuple(~spinnman.transceiver.Transceiver,
-            ~spinn_machine.Machine)
+        :rtype: tuple(~spinn_machine.Machine,
+            ~spinnman.transceiver.Transceiver)
         """
         # pylint: disable=too-many-arguments
 
