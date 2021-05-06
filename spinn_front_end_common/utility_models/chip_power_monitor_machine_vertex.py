@@ -109,7 +109,7 @@ class ChipPowerMonitorMachineVertex(
     def get_resources(sampling_frequency):
         """ Get the resources used by this vertex
 
-         :param float sampling_frequency:
+        :param float sampling_frequency:
         :rtype: ~pacman.model.resources.ResourceContainer
         """
         # pylint: disable=too-many-locals
