@@ -149,21 +149,15 @@ class ChipPowerMonitorMachineVertex(
         """
         return BINARY_FILE_NAME
 
-    @inject_items({"time_scale_factor": "TimeScaleFactor",
-                   "machine_time_step": "MachineTimeStep",
-                   "data_n_time_steps": "DataNTimeSteps"})
+    @inject_items({"data_n_time_steps": "DataNTimeSteps"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
-               additional_arguments={
-                   "machine_time_step", "time_scale_factor",
-                   "data_n_time_steps"})
+               additional_arguments={"data_n_time_steps"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_time_step, time_scale_factor, data_n_time_steps):
+            data_n_time_steps):
         """ Supports the application vertex calling this directly
 
         :param ~data_specification.DataSpecificationGenerator spec: data spec
-        :param int machine_time_step: machine time step
-        :param int time_scale_factor: time scale factor
         :param int data_n_time_steps: timesteps to reserve data for
         """
         # pylint: disable=too-many-arguments
@@ -171,8 +165,7 @@ class ChipPowerMonitorMachineVertex(
 
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
-        self._write_setup_info(
-            spec, machine_time_step, time_scale_factor, data_n_time_steps)
+        self._write_setup_info(spec, data_n_time_steps)
         self._write_configuration_region(spec)
 
         # End-of-Spec:
@@ -190,25 +183,21 @@ class ChipPowerMonitorMachineVertex(
         spec.write_value(n_samples_per_recording, data_type=DataType.UINT32)
         spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
 
-    def _write_setup_info(
-            self, spec, machine_time_step, time_scale_factor,
-            n_machine_time_steps):
+    def _write_setup_info(self, spec, n_machine_time_steps):
         """ Writes the system data as required.
 
         :param ~data_specification.DataSpecificationGenerator spec:
             the DSG spec writer
-        :param int machine_time_step: the machine time step
-        :param int time_scale_factor: the time scale factor
         """
         # pylint: disable=too-many-arguments
         spec.switch_write_focus(region=self._REGIONS.SYSTEM)
         spec.write_array(get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step, time_scale_factor))
+            self.get_binary_file_name()))
 
         spec.switch_write_focus(region=self._REGIONS.RECORDING)
         recorded_region_sizes = [
-            self._deduce_sdram_requirements_per_timer_tick(
-                machine_time_step, time_scale_factor) * n_machine_time_steps]
+            self._deduce_sdram_requirements_per_timer_tick()
+            * n_machine_time_steps]
         spec.write_array(recording_utilities.get_recording_header_array(
             recorded_region_sizes))
 
@@ -255,16 +244,15 @@ class ChipPowerMonitorMachineVertex(
     def get_recorded_region_ids(self):
         return [0]
 
-    def _deduce_sdram_requirements_per_timer_tick(
-            self, machine_time_step, time_scale_factor):
+    def _deduce_sdram_requirements_per_timer_tick(self):
         """ Deduce SDRAM usage per timer tick
 
-        :param int machine_time_step: the machine time step
-        :param float time_scale_factor: the time scale factor
         :return: the SDRAM usage
         :rtype: int
         """
-        timer_tick_in_micro_seconds = machine_time_step * time_scale_factor
+        timer_tick_in_micro_seconds = (
+                get_config_int("Machine", "machine_time_step") *
+                get_config_int("Machine", "time_scale_factor"))
 
         recording_time = \
             self._sampling_frequency * get_config_int(
