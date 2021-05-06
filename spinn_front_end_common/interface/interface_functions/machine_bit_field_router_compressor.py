@@ -22,7 +22,7 @@ from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_machine import CoreSubsets, Router
+from spinn_machine import CoreSubsets, Machine, Router
 from spinnman.exceptions import (
     SpinnmanInvalidParameterException,
     SpinnmanUnexpectedResponseCodeException, SpiNNManCoresNotInStateException)
@@ -237,7 +237,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
                 target_length = get_config_int(
                     "Mapping", "router_table_compression_target_length")
                 if target_length is None:
-                    target_length = self._MAX_SUPPORTED_LENGTH
+                    target_length = Machine.ROUTER_ENTRIES
                 report_folder_path = host_compressor.generate_report_path(
                     default_report_folder)
                 prov_items.append(
