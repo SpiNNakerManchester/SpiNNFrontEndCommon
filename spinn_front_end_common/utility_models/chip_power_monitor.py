@@ -15,7 +15,6 @@
 
 from spinn_utilities.overrides import overrides
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
-from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.application import ApplicationVertex
 from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 
@@ -58,7 +57,8 @@ class ChipPowerMonitor(ApplicationVertex, LegacyPartitionerAPI):
         return machine_vertex
 
     @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms)
-    def get_resources_used_by_atoms(self, vertex_slice,  # @UnusedVariable
+    def get_resources_used_by_atoms(
+            self, vertex_slice,  # @UnusedVariable
             ):
         # pylint: disable=arguments-differ
         return ChipPowerMonitorMachineVertex.get_resources(
