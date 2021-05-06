@@ -31,10 +31,7 @@ class MachineDataSpecableVertex(
     @inject_items({
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
-        "tags": "MemoryTags",
-        "machine_time_step": "MachineTimeStep",
-        "time_scale_factor": "TimeScaleFactor"
-    })
+        "tags": "MemoryTags"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
@@ -47,8 +44,6 @@ class MachineDataSpecableVertex(
             (Injected)
         :param ~pacman.model.routing_info.RoutingInfo routing_info: (Injected)
         :param ~pacman.model.tags.Tags tags: (Injected)
-        :param int machine_time_step: (Injected)
-        :param int time_scale_factor: (Injected)
         """
         # pylint: disable=too-many-arguments, arguments-differ
         iptags = tags.get_ip_tags_for_vertex(placement.vertex)
