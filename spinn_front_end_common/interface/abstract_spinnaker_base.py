@@ -1413,8 +1413,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["TotalRunTime"] = total_run_time
         inputs["MaxMachineCoreReduction"] = get_config_int(
             "Machine", "max_machine_core_reduction")
-        inputs["MachineTimeStep"] = self.machine_time_step
-        inputs["TimeScaleFactor"] = self.time_scale_factor
 
         inputs["DownedChipsDetails"] = IgnoreChip.parse_string(
             get_config_str("Machine", "down_chips"))
@@ -1516,8 +1514,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
         inputs["JsonFolder"] = self._json_folder
         inputs["APPID"] = self._app_id
-        inputs["TimeScaleFactor"] = self.time_scale_factor
-        inputs["MachineTimeStep"] = self.machine_time_step
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
         inputs["WriteTextSpecsFlag"] = get_config_bool(
             "Reports", "write_text_specs")
