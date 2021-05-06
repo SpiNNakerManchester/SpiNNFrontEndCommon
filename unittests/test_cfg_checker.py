@@ -26,4 +26,10 @@ class TestCfgChecker(unittest.TestCase):
         reset_configs()
 
     def test_cfg_checker(self):
-        run_config_checks("spinn_front_end_common")
+        unittests = os.path.dirname(__file__)
+        parent = os.path.dirname(unittests)
+        fec = os.path.join(parent, "spinn_front_end_common")
+        local = os.path.join(parent, "fec_local_tests")
+        fec_it = os.path.join(parent, "fec_integration_tests")
+        run_config_checks(directories=[
+            fec, local, fec_it, unittests])
