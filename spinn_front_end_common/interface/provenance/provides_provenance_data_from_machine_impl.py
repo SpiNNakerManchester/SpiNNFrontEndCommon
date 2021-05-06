@@ -257,6 +257,10 @@ class ProvidesProvenanceDataFromMachineImpl(
         :rtype:
             iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
         """
+        if self._n_additional_data_items:
+            raise NotImplementedError(
+                f"{self} provides {self._n_additional_data_items} but doesn't "
+                "parse them")
         return []
 
     @overrides(
