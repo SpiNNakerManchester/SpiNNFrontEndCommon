@@ -304,6 +304,9 @@ typedef struct dsupg_provenance_t {
 //! The DTCM copy of the provenance
 static dsupg_provenance_t prov = {0};
 
+//! The SDRAM copy of the provenance
+static dsupg_provenance_t *sdram_prov;
+
 //-----------------------------------------------------------------------------
 // FUNCTIONS
 //-----------------------------------------------------------------------------
@@ -327,6 +330,7 @@ static inline void send_sdp_message(void) {
         spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
     }
     prov.n_sdp_sent++;
+    sdram_prov->n_sdp_sent = prov.n_sdp_sent;
 }
 
 //! \brief sends a multicast (with payload) message to the current target chip
@@ -508,6 +512,7 @@ static void process_address_data(
     create_sequence_number_bitfield(receive_data_cmd->max_seq_num);
     total_received_seq_nums = 0;
     prov.n_in_streams++;
+    sdram_prov->n_in_streams = prov.n_in_streams;
 
     // set start of last seq number
     last_seen_seq_num = 0;
@@ -681,6 +686,7 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
 static void data_in_receive_sdp_data(const sdp_msg_pure_data *msg) {
     uint command = msg->data[COMMAND_ID];
     prov.n_sdp_recvd++;
+    sdram_prov->n_sdp_recvd = prov.n_sdp_recvd;
 
     // check for separate commands
     switch (command) {
@@ -837,6 +843,7 @@ static void receive_data(uint key, uint payload) {
             data[TRANSACTION_ID] = data_out_transaction_id;
             position_in_store = START_OF_DATA;
             prov.n_out_streams++;
+            sdram_prov->n_out_streams = prov.n_out_streams;
         }
 
         if (key == end_flag_key) {
@@ -852,14 +859,6 @@ static void receive_data(uint key, uint payload) {
             send_data();
         }
     }
-}
-
-//! \brief Write our provenance data into the provenance region.
-//! \param[in] address: Where to write
-static void provenance_callback(address_t address) {
-    dsupg_provenance_t *sdram_prov = (void *) address;
-
-    *sdram_prov = prov;
 }
 
 //! Sets up the application
@@ -901,9 +900,8 @@ static void initialise(void) {
     my_msg.srce_port = 3;
     my_msg.srce_addr = sv->p2p_addr;
 
-    simulation_set_provenance_function(
-            provenance_callback,
-            data_specification_get_region(PROVENANCE_REGION, ds_regions));
+    // Set up provenance
+    sdram_prov = data_specification_get_region(PROVENANCE_REGION, ds_regions);
 
     spin1_callback_on(FRPL_PACKET_RECEIVED, receive_data, MC_PACKET);
 
