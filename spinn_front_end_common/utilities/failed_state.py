@@ -52,11 +52,6 @@ class FailedState(SimulatorInterface):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @property
-    @overrides(SimulatorInterface.machine_time_step)
-    def machine_time_step(self):
-        raise ConfigurationException(FAILED_STATE_MSG)
-
-    @property
     @overrides(SimulatorInterface.no_machine_time_steps)
     def no_machine_time_steps(self):
         raise ConfigurationException(FAILED_STATE_MSG)
@@ -90,11 +85,6 @@ class FailedState(SimulatorInterface):
     @property
     @overrides(SimulatorInterface.transceiver)
     def transceiver(self):
-        raise ConfigurationException(FAILED_STATE_MSG)
-
-    @property
-    @overrides(SimulatorInterface.time_scale_factor)
-    def time_scale_factor(self):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @property

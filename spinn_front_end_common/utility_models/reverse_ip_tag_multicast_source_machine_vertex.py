@@ -618,12 +618,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
             self._prefix = self._virtual_key
 
-    def _write_configuration(
-            self, spec, machine_time_step, time_scale_factor):
+    def _write_configuration(self, spec):
         """
         :param ~.DataSpecificationGenerator spec:
-        :param int machine_time_step:
-        :param int time_scale_factor:
         """
         spec.switch_write_focus(region=self._REGIONS.CONFIGURATION)
 
@@ -673,7 +670,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # write timer offset in microseconds
         max_offset = ((
-            machine_time_step * time_scale_factor) // (
+            get_config_int("Machine", "machine_time_step") *
+            get_config_int("Machine", "time_scale_factor")) // (
             _MAX_OFFSET_DENOMINATOR * 2))
         spec.write_value(
             (int(math.ceil(max_offset / self._n_vertices)) *
@@ -728,8 +726,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         spec.write_array(get_recording_header_array([recording_size]))
 
         # Write the configuration information
-        self._write_configuration(
-            spec, machine_time_step, time_scale_factor)
+        self._write_configuration(spec)
 
         # End spec
         spec.end_specification()

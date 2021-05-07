@@ -58,13 +58,6 @@ class SimulatorInterface(object, metaclass=AbstractBase):
         """
 
     @abstractproperty
-    def machine_time_step(self):
-        """ The machine timestep, in microseconds.
-
-        :rtype: int
-        """
-
-    @abstractproperty
     def no_machine_time_steps(self):
         """ The number of machine time steps.
 
@@ -82,12 +75,6 @@ class SimulatorInterface(object, metaclass=AbstractBase):
     def tags(self):
         """
         :rtype: ~pacman.model.tags.Tags
-        """
-
-    @abstractproperty
-    def time_scale_factor(self):
-        """
-        :rtype: int
         """
 
     @abstractmethod

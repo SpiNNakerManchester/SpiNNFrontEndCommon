@@ -325,30 +325,6 @@ class ConfigHandler(object):
         with open(report_file_name, "w") as f:
             f.writelines("finished")
 
-    @property
-    def machine_time_step(self):
-        """ The machine timestep, in microseconds
-
-        :rtype: int
-        """
-        return get_config_int("Machine", "machine_time_step")
-
-    @machine_time_step.setter
-    def machine_time_step(self, new_value):
-        set_config("Machine", "machine_time_step", new_value)
-
-    @property
-    def time_scale_factor(self):
-        """ The time scaling factor.
-
-        :rtype: int
-        """
-        return get_config_int("Machine", "time_scale_factor")
-
-    @time_scale_factor.setter
-    def time_scale_factor(self, new_value):
-        set_config("Machine", "time_scale_factor", new_value)
-
     def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
         """ Set up timings of the machine
 
@@ -364,15 +340,16 @@ class ConfigHandler(object):
 
         # set up timings
         if machine_time_step is not None:
-            self.machine_time_step = machine_time_step
+            set_config("Machine", "machine_time_step", machine_time_step)
 
-        if self.machine_time_step <= 0:
+        if get_config_int("Machine", "machine_time_step") <= 0:
             raise ConfigurationException(
-                "invalid machine_time_step {}: must greater than zero".format(
-                    self.machine_time_step))
+                f'invalid machine_time_step '
+                f'{get_config_int("Machine", "machine_time_step")}'
+                f': must greater than zero')
 
         if time_scale_factor is not None:
-            self.time_scale_factor = time_scale_factor
+            set_config("Machine", "time_scale_factor", time_scale_factor)
 
     @staticmethod
     def _make_dirs(path):

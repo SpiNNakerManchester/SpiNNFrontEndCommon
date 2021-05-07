@@ -794,7 +794,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :rtype: int
         """
         machine_time_step_ms = (
-            self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION)
+            get_config_int("Machine", "machine_time_step") /
+            MICRO_TO_MILLISECOND_CONVERSION)
         n_time_steps = int(math.ceil(time_in_ms / machine_time_step_ms))
         calc_time = n_time_steps * machine_time_step_ms
 
@@ -829,15 +830,17 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         total_run_timesteps = (
             self._current_run_timesteps + n_machine_time_steps)
         machine_time_step_ms = (
-            self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION)
+            get_config_int("Machine", "machine_time_step") /
+            MICRO_TO_MILLISECOND_CONVERSION)
         total_run_time = (
             total_run_timesteps * machine_time_step_ms *
-            self.time_scale_factor)
+            get_config_int("Machine", "time_scale_factor"))
 
         # Convert dt into microseconds and multiply by
         # scale factor to get hardware timestep
-        hardware_timestep_us = int(round(
-            float(self.machine_time_step) * float(self.time_scale_factor)))
+        hardware_timestep_us =(
+            get_config_int("Machine", "machine_time_step") *
+            get_config_int("Machine", "time_scale_factor"))
 
         logger.info(
             "Simulating for {} {}ms timesteps "
@@ -2796,7 +2799,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         energy_reporter = EnergyReport(
             self._report_default_directory,
             get_config_int("Machine", "version"), self._spalloc_server,
-            self._remote_spinnaker_url, self.time_scale_factor)
+            self._remote_spinnaker_url)
 
         if self._buffer_manager is None or self._last_run_outputs is None:
             return

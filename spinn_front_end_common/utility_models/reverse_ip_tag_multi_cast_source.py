@@ -16,6 +16,7 @@
 import sys
 
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
+from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
@@ -30,7 +31,6 @@ from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities import globals_variables
 
 
 class ReverseIpTagMultiCastSource(
@@ -193,10 +193,10 @@ class ReverseIpTagMultiCastSource(
                 if n_buffer_times == 0:
                     send_buffer_times = None
 
-        sim = globals_variables.get_simulator()
         container = ResourceContainer(
             sdram=ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
-                send_buffer_times, self._is_recording, sim.machine_time_step,
+                send_buffer_times, self._is_recording,
+                get_config_int("Machine", "machine_time_step"),
                 self._receive_rate, vertex_slice.n_atoms),
             dtcm=DTCMResource(
                 ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage()),
