@@ -16,6 +16,7 @@
 import os
 import sys
 import unittest
+from spinn_utilities.config_holder import get_config_int
 from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
@@ -77,13 +78,13 @@ class TestSpinnakerMainInterface(unittest.TestCase):
 
         # Test defaults
         interface = MainInterfaceTimingImpl()
-        assert interface.machine_time_step == 1000
-        assert interface.time_scale_factor is None
+        assert get_config_int("Machine", "machine_time_step") == 1000
+        assert get_config_int("Machine", "time_scale_factor") is None
 
         # Test specified
         interface = MainInterfaceTimingImpl(200, 10)
-        assert interface.machine_time_step == 200
-        assert interface.time_scale_factor == 10
+        assert get_config_int("Machine", "machine_time_step") == 200
+        assert get_config_int("Machine", "time_scale_factor") == 10
 
 
 if __name__ == "__main__":
