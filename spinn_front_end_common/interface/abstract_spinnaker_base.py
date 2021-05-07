@@ -838,7 +838,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # Convert dt into microseconds and multiply by
         # scale factor to get hardware timestep
-        hardware_timestep_us =(
+        hardware_timestep_us = (
             get_config_int("Machine", "machine_time_step") *
             get_config_int("Machine", "time_scale_factor"))
 
@@ -1989,7 +1989,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         run_time = None
         if n_machine_time_steps is not None:
             run_time = (
-                n_machine_time_steps * self.machine_time_step /
+                n_machine_time_steps *
+                get_config_int("Machine", "machine_time_step") /
                 MICRO_TO_MILLISECOND_CONVERSION)
 
         # if running again, load the outputs from last load or last mapping
@@ -2504,7 +2505,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._has_ran:
             return (
                 float(self._current_run_timesteps) *
-                (self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION))
+                (get_config_int("Machine", "machine_time_step") /
+                 MICRO_TO_MILLISECOND_CONVERSION))
         return 0.0
 
     def get_generated_output(self, name_of_variable):

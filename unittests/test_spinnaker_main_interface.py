@@ -77,12 +77,12 @@ class TestSpinnakerMainInterface(unittest.TestCase):
     def test_timings(self):
 
         # Test defaults
-        interface = MainInterfaceTimingImpl()
+        MainInterfaceTimingImpl()
         assert get_config_int("Machine", "machine_time_step") == 1000
         assert get_config_int("Machine", "time_scale_factor") is None
 
         # Test specified
-        interface = MainInterfaceTimingImpl(200, 10)
+        MainInterfaceTimingImpl(200, 10)
         assert get_config_int("Machine", "machine_time_step") == 200
         assert get_config_int("Machine", "time_scale_factor") == 10
 
