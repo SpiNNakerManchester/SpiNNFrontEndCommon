@@ -5730,13 +5730,6 @@
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
-      <name>provenance_callback</name>
-      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
-      <anchor>aa74cd128755cea6215310db37fcd8481</anchor>
-      <arglist>(address_t address)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
       <name>initialise</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
       <anchor>ae7e730f7e25fbd20d09295fe2f6bf1d4</anchor>
@@ -5901,6 +5894,13 @@
       <name>prov</name>
       <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
       <anchor>a4137f360a56bf27af2d98994868ebaa6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static dsupg_provenance_t *</type>
+      <name>sdram_prov</name>
+      <anchorfile>data__speed__up__packet__gatherer_8c.html</anchorfile>
+      <anchor>a952069d1069b87308b38919291764193</anchor>
       <arglist></arglist>
     </member>
   </compound>

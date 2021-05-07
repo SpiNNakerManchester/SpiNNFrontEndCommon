@@ -276,9 +276,6 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="memitem:a0ddbbd253c26b6bbc42db97a4190a3a6"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="data__speed__up__packet__gatherer_8c.html#a0ddbbd253c26b6bbc42db97a4190a3a6">receive_data</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> key, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> payload)</td></tr>
 <tr class="memdesc:a0ddbbd253c26b6bbc42db97a4190a3a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handles receipt of a fixed route packet with payload from the SpiNNaker network.  <a href="data__speed__up__packet__gatherer_8c.html#a0ddbbd253c26b6bbc42db97a4190a3a6">More...</a><br /></td></tr>
 <tr class="separator:a0ddbbd253c26b6bbc42db97a4190a3a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa74cd128755cea6215310db37fcd8481"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="data__speed__up__packet__gatherer_8c.html#aa74cd128755cea6215310db37fcd8481">provenance_callback</a> (<a class="el" href="common-typedefs_8h.html#ac8dc08dd5f5827994d1b06351f925669">address_t</a> address)</td></tr>
-<tr class="memdesc:aa74cd128755cea6215310db37fcd8481"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write our provenance data into the provenance region.  <a href="data__speed__up__packet__gatherer_8c.html#aa74cd128755cea6215310db37fcd8481">More...</a><br /></td></tr>
-<tr class="separator:aa74cd128755cea6215310db37fcd8481"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae7e730f7e25fbd20d09295fe2f6bf1d4"><td class="memItemLeft" align="right" valign="top"><a id="ae7e730f7e25fbd20d09295fe2f6bf1d4"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="data__speed__up__packet__gatherer_8c.html#ae7e730f7e25fbd20d09295fe2f6bf1d4">initialise</a> (void)</td></tr>
 <tr class="memdesc:ae7e730f7e25fbd20d09295fe2f6bf1d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets up the application. <br /></td></tr>
@@ -373,6 +370,10 @@ static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_too
 static <a class="el" href="data__speed__up__packet__gatherer_8c.html#structdsupg__provenance__t">dsupg_provenance_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="data__speed__up__packet__gatherer_8c.html#a4137f360a56bf27af2d98994868ebaa6">prov</a> = {0}</td></tr>
 <tr class="memdesc:a4137f360a56bf27af2d98994868ebaa6"><td class="mdescLeft">&#160;</td><td class="mdescRight">The DTCM copy of the provenance. <br /></td></tr>
 <tr class="separator:a4137f360a56bf27af2d98994868ebaa6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a952069d1069b87308b38919291764193"><td class="memItemLeft" align="right" valign="top"><a id="a952069d1069b87308b38919291764193"></a>
+static <a class="el" href="data__speed__up__packet__gatherer_8c.html#structdsupg__provenance__t">dsupg_provenance_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="data__speed__up__packet__gatherer_8c.html#a952069d1069b87308b38919291764193">sdram_prov</a></td></tr>
+<tr class="memdesc:a952069d1069b87308b38919291764193"><td class="mdescLeft">&#160;</td><td class="mdescRight">The SDRAM copy of the provenance. <br /></td></tr>
+<tr class="separator:a952069d1069b87308b38919291764193"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The implementation of the Data Speed Up Packet Gatherer. </p>
@@ -940,7 +941,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00313">313</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00316">316</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -987,7 +988,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00335">335</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00339">339</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1035,7 +1036,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00350">350</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00354">354</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1096,7 +1097,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00371">371</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00375">375</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1133,7 +1134,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00391">391</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00395">395</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1170,7 +1171,7 @@ The number of output streams (technically, output transactions) </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the new sdram location. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00439">439</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00443">443</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1206,7 +1207,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00446">446</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00450">450</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1242,7 +1243,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00456">456</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00460">460</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1278,7 +1279,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00532">532</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00537">537</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1326,7 +1327,7 @@ The number of output streams (technically, output transactions) </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the number of data words in the message </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00605">605</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00610">610</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1380,7 +1381,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00616">616</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00621">621</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1416,7 +1417,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00628">628</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00633">633</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1452,7 +1453,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00681">681</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00686">686</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1499,7 +1500,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00707">707</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00713">713</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1535,7 +1536,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00721">721</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00727">727</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1571,7 +1572,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00732">732</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00738">738</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1618,7 +1619,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00769">769</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00775">775</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1665,43 +1666,7 @@ The number of output streams (technically, output transactions) </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00806">806</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
-
-</div>
-</div>
-<a id="aa74cd128755cea6215310db37fcd8481"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa74cd128755cea6215310db37fcd8481">&#9670;&nbsp;</a></span>provenance_callback()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static void provenance_callback </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="common-typedefs_8h.html#ac8dc08dd5f5827994d1b06351f925669">address_t</a>&#160;</td>
-          <td class="paramname"><em>address</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Write our provenance data into the provenance region. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">address</td><td>Where to write </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00859">859</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00812">812</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>
@@ -1724,7 +1689,7 @@ The number of output streams (technically, output transactions) </td></tr>
 <p>This function is called at application start-up. </p>
 <p>It is used to register event callbacks (delegated to <a class="el" href="data__speed__up__packet__gatherer_8c.html#ae7e730f7e25fbd20d09295fe2f6bf1d4" title="Sets up the application.">initialise()</a>) and begin the simulation. </p>
 
-<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00941">941</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__speed__up__packet__gatherer_8c_source.html#l00939">939</a> of file <a class="el" href="data__speed__up__packet__gatherer_8c_source.html">data_speed_up_packet_gatherer.c</a>.</p>
 
 </div>
 </div>

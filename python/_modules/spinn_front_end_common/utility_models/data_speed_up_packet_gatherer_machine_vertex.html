@@ -65,6 +65,7 @@
 <span class="kn">from</span> <span class="nn">spinnman.messages.scp.impl.iptag_set</span> <span class="kn">import</span> <span class="n">IPTagSet</span>
 <span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">SCAMPConnection</span>
 <span class="kn">from</span> <span class="nn">spinnman.model.enums.cpu_state</span> <span class="kn">import</span> <span class="n">CPUState</span>
+<span class="kn">from</span> <span class="nn">data_specification.utility_calls</span> <span class="kn">import</span> <span class="n">get_region_base_address_offset</span>
 <span class="kn">from</span> <span class="nn">pacman.executor.injection_decorator</span> <span class="kn">import</span> <span class="n">inject_items</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.common</span> <span class="kn">import</span> <span class="n">EdgeTrafficType</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span>
@@ -78,7 +79,8 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AbstractProvidesLocalProvenanceData</span><span class="p">,</span> <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="p">)</span>
+    <span class="n">AbstractProvidesLocalProvenanceData</span><span class="p">,</span>
+    <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ExecutableType</span><span class="p">,</span> <span class="n">ProvenanceDataItem</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
@@ -206,6 +208,9 @@
 <span class="c1"># This is expensive, and only works in Python 3.5 or later.</span>
 <span class="n">VERIFY_SENT_DATA</span> <span class="o">=</span> <span class="kc">False</span>
 
+<span class="c1"># provenance data size</span>
+<span class="n">_PROVENANCE_DATA_SIZE</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
+
 
 <span class="k">def</span> <span class="nf">ceildiv</span><span class="p">(</span><span class="n">dividend</span><span class="p">,</span> <span class="n">divisor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; How to divide two possibly-integer numbers and round up.</span>
@@ -224,7 +229,7 @@
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex">[docs]</a><span class="k">class</span> <span class="nc">DataSpeedUpPacketGatherMachineVertex</span><span class="p">(</span>
         <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span>
         <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractProvidesLocalProvenanceData</span><span class="p">,</span>
-        <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="p">):</span>
+        <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Machine vertex for handling fast data transfer between host and \</span>
 <span class="sd">        SpiNNaker. This machine vertex is only ever placed on chips with a \</span>
 <span class="sd">        working Ethernet connection; it collaborates with the \</span>
@@ -418,7 +423,7 @@
         <span class="k">return</span> <span class="n">ResourceContainer</span><span class="p">(</span>
             <span class="n">sdram</span><span class="o">=</span><span class="n">ConstantSDRAM</span><span class="p">(</span>
                 <span class="n">CONFIG_SIZE</span> <span class="o">+</span> <span class="n">SDRAM_FOR_MISSING_SDP_SEQ_NUMS</span> <span class="o">+</span>
-                <span class="n">SIZE_DATA_IN_CHIP_TO_KEY_SPACE</span><span class="p">),</span>
+                <span class="n">SIZE_DATA_IN_CHIP_TO_KEY_SPACE</span> <span class="o">+</span> <span class="n">_PROVENANCE_DATA_SIZE</span><span class="p">),</span>
             <span class="n">iptags</span><span class="o">=</span><span class="p">[</span><span class="n">IPtagResource</span><span class="p">(</span>
                 <span class="n">port</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_TAG_INITIAL_PORT</span><span class="p">,</span> <span class="n">strip_sdp</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">ip_address</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">traffic_identifier</span><span class="o">=</span><span class="s2">&quot;DATA_SPEED_UP&quot;</span><span class="p">)])</span></div>
@@ -533,7 +538,9 @@
             <span class="n">region</span><span class="o">=</span><span class="n">_DATA_REGIONS</span><span class="o">.</span><span class="n">CHIP_TO_KEY_SPACE</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">SIZE_DATA_IN_CHIP_TO_KEY_SPACE</span><span class="p">,</span>
             <span class="n">label</span><span class="o">=</span><span class="s2">&quot;mc_key_map&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reserve_provenance_data_region</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">_DATA_REGIONS</span><span class="o">.</span><span class="n">PROVENANCE_REGION</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="n">_PROVENANCE_DATA_SIZE</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Provenance&quot;</span><span class="p">,</span> <span class="n">empty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.get_binary_file_name"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_binary_file_name">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractHasAssociatedBinary</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_binary_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1688,23 +1695,26 @@
         <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;send SDP packet with missing sequence numbers: </span><span class="si">{}</span><span class="s2"> of </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
                   <span class="n">packet_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_packets</span><span class="p">)</span>
 
-    <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">_provenance_region_id</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">_provenance_region_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">_DATA_REGIONS</span><span class="o">.</span><span class="n">PROVENANCE_REGION</span>
+<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.get_provenance_data_from_machine"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_provenance_data_from_machine">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractProvidesProvenanceDataFromMachine</span>
+               <span class="o">.</span><span class="n">get_provenance_data_from_machine</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_provenance_data_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
+        <span class="c1"># Get the App Data for the core</span>
+        <span class="n">region_table_address</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">get_cpu_information_from_core</span><span class="p">(</span>
+            <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">user</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">_n_additional_data_items</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">_n_additional_data_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams</span>
-        <span class="k">return</span> <span class="mi">4</span>
-
-<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.parse_extra_provenance_items"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.parse_extra_provenance_items">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span>
-               <span class="n">parse_extra_provenance_items</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">parse_extra_provenance_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">provenance_data</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=unused-argument</span>
-        <span class="n">n_sdp_sent</span><span class="p">,</span> <span class="n">n_sdp_recvd</span><span class="p">,</span> <span class="n">n_in_streams</span><span class="p">,</span> <span class="n">n_out_streams</span> <span class="o">=</span> <span class="n">provenance_data</span>
-
+        <span class="c1"># Get the provenance region base address</span>
+        <span class="n">prov_region_entry_address</span> <span class="o">=</span> <span class="n">get_region_base_address_offset</span><span class="p">(</span>
+            <span class="n">region_table_address</span><span class="p">,</span> <span class="n">_DATA_REGIONS</span><span class="o">.</span><span class="n">PROVENANCE_REGION</span><span class="p">)</span>
+        <span class="n">provenance_address</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_word</span><span class="p">(</span>
+            <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">prov_region_entry_address</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+            <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">provenance_address</span><span class="p">,</span>
+            <span class="n">_PROVENANCE_DATA_SIZE</span><span class="p">)</span>
+        <span class="n">n_sdp_sent</span><span class="p">,</span> <span class="n">n_sdp_recvd</span><span class="p">,</span> <span class="n">n_in_streams</span><span class="p">,</span> <span class="n">n_out_streams</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">_FOUR_WORDS</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">label</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">location</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;vertex_</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
         <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span><span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Sent_SDP_Packets&quot;</span><span class="p">],</span> <span class="n">n_sdp_sent</span><span class="p">)</span>
         <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span><span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Received_SDP_Packets&quot;</span><span class="p">],</span> <span class="n">n_sdp_recvd</span><span class="p">)</span>
         <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
