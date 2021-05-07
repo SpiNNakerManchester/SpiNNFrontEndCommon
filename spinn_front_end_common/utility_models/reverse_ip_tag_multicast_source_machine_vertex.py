@@ -668,7 +668,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # write SDP port to which SDP packets will be received
         spec.write_value(data=self._receive_sdp_port)
 
-        a = get_config_int("Machine", "time_scale_factor")
         # write timer offset in microseconds
         max_offset = ((
             get_config_int("Machine", "machine_time_step") *

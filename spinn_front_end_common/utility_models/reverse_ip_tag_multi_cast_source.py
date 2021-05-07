@@ -16,7 +16,6 @@
 import sys
 
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
-from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
