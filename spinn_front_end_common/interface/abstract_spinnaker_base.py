@@ -1511,8 +1511,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["WriteTextSpecsFlag"] = get_config_bool(
             "Reports", "write_text_specs")
         inputs["ExecutableFinder"] = self._executable_finder
-        inputs["WriteDataSpeedUpReportsFlag"] = get_config_bool(
-            "Reports", "write_data_speed_up_reports")
         inputs['CompressionTargetSize'] = get_config_int(
             "Mapping", "router_table_compression_target_length")
         inputs["CompressionAsNeeded"] = get_config_bool(

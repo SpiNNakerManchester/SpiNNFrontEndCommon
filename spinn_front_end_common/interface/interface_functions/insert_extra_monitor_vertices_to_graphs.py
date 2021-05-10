@@ -28,20 +28,16 @@ class InsertExtraMonitorVerticesToGraphs(object):
     __slots__ = [
         # the directory where reports go
         "_report_dir",
-        #  flag indicating whether to write the reports for data speed up
-        "_write_reports",
     ]
 
     def __call__(
             self, machine, machine_graph, default_report_directory,
-            write_data_speed_up_reports, application_graph=None):
+            application_graph=None):
         """
         :param ~spinn_machine.Machine machine: spinnMachine instance
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             machine graph
         :param str default_report_directory: the directory where reports go
-        :param bool write_data_speed_up_reports:
-            determine whether to write the reports for data speed up
         :param int n_cores_to_allocate:
             number of cores to allocate for reception
         :param application_graph: app graph
@@ -57,7 +53,6 @@ class InsertExtraMonitorVerticesToGraphs(object):
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         self._report_dir = default_report_directory
-        self._write_reports = write_data_speed_up_reports
 
         progress = ProgressBar(
             machine.n_chips + len(list(machine.ethernet_connected_chips)),
@@ -220,8 +215,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
             constraints=[ChipAndCoreConstraint(
                 x=ethernet_chip.x, y=ethernet_chip.y)],
             extra_monitors_by_chip=vertex_to_chip_map,
-            report_default_directory=self._report_dir,
-            write_data_speed_up_reports=self._write_reports)
+            report_default_directory=self._report_dir)
 
     def __new_mach_gatherer(self, ethernet_chip, vertex_to_chip_map):
         """
