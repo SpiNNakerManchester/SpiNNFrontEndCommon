@@ -27,6 +27,7 @@ from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.messages.scp.impl.iptag_set import IPTagSet
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.model.enums.cpu_state import CPUState
+from data_specification.utility_calls import get_region_base_address_offset
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
@@ -40,7 +41,8 @@ from spinn_front_end_common.utilities.emergency_recovery import (
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesLocalProvenanceData, ProvidesProvenanceDataFromMachineImpl)
+    AbstractProvidesLocalProvenanceData,
+    AbstractProvidesProvenanceDataFromMachine)
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utilities.constants import (
@@ -168,6 +170,9 @@ _FIVE_WORDS = struct.Struct("<IIIII")
 # This is expensive, and only works in Python 3.5 or later.
 VERIFY_SENT_DATA = False
 
+# provenance data size
+_PROVENANCE_DATA_SIZE = 4 * BYTES_PER_WORD
+
 
 def ceildiv(dividend, divisor):
     """ How to divide two possibly-integer numbers and round up.
@@ -186,7 +191,7 @@ SDRAM_FOR_MISSING_SDP_SEQ_NUMS = ceildiv(
 class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData,
-        ProvidesProvenanceDataFromMachineImpl):
+        AbstractProvidesProvenanceDataFromMachine):
     """ Machine vertex for handling fast data transfer between host and \
         SpiNNaker. This machine vertex is only ever placed on chips with a \
         working Ethernet connection; it collaborates with the \
@@ -380,7 +385,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return ResourceContainer(
             sdram=ConstantSDRAM(
                 CONFIG_SIZE + SDRAM_FOR_MISSING_SDP_SEQ_NUMS +
-                SIZE_DATA_IN_CHIP_TO_KEY_SPACE),
+                SIZE_DATA_IN_CHIP_TO_KEY_SPACE + _PROVENANCE_DATA_SIZE),
             iptags=[IPtagResource(
                 port=cls._TAG_INITIAL_PORT, strip_sdp=True,
                 ip_address="localhost", traffic_identifier="DATA_SPEED_UP")])
@@ -495,7 +500,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             region=_DATA_REGIONS.CHIP_TO_KEY_SPACE,
             size=SIZE_DATA_IN_CHIP_TO_KEY_SPACE,
             label="mc_key_map")
-        self.reserve_provenance_data_region(spec)
+        spec.reserve_memory_region(
+            region=_DATA_REGIONS.PROVENANCE_REGION,
+            size=_PROVENANCE_DATA_SIZE, label="Provenance", empty=True)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
@@ -1650,23 +1657,26 @@ class DataSpeedUpPacketGatherMachineVertex(
         log.debug("send SDP packet with missing sequence numbers: {} of {}",
                   packet_count + 1, n_packets)
 
-    @property
-    @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
-    def _provenance_region_id(self):
-        return _DATA_REGIONS.PROVENANCE_REGION
+    @overrides(AbstractProvidesProvenanceDataFromMachine
+               .get_provenance_data_from_machine)
+    def get_provenance_data_from_machine(self, transceiver, placement):
+        # Get the App Data for the core
+        region_table_address = transceiver.get_cpu_information_from_core(
+            placement.x, placement.y, placement.p).user[0]
 
-    @property
-    @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
-    def _n_additional_data_items(self):
-        # n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams
-        return 4
-
-    @overrides(ProvidesProvenanceDataFromMachineImpl.
-               parse_extra_provenance_items)
-    def parse_extra_provenance_items(self, label, names, provenance_data):
-        # pylint: disable=unused-argument
-        n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams = provenance_data
-
+        # Get the provenance region base address
+        prov_region_entry_address = get_region_base_address_offset(
+            region_table_address, _DATA_REGIONS.PROVENANCE_REGION)
+        provenance_address = transceiver.read_word(
+            placement.x, placement.y, prov_region_entry_address)
+        data = transceiver.read_memory(
+            placement.x, placement.y, provenance_address,
+            _PROVENANCE_DATA_SIZE)
+        n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams = (
+            _FOUR_WORDS.unpack_from(data))
+        label = placement.vertex.label
+        x, y, p = placement.location
+        names = [f"vertex_{x}_{y}_{p}_{label}"]
         yield ProvenanceDataItem(names + ["Sent_SDP_Packets"], n_sdp_sent)
         yield ProvenanceDataItem(names + ["Received_SDP_Packets"], n_sdp_recvd)
         yield ProvenanceDataItem(
