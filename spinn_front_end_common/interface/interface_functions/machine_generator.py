@@ -93,8 +93,6 @@ class MachineGenerator(object):
 
         ignore_bad_ethernets = get_config_bool(
             "Machine", "ignore_bad_ethernets")
-        max_sdram_size = get_config_int(
-            "Machine", "max_sdram_allowed_per_chip")
         repair_machine = get_config_bool("Machine", "repair_machine")
         report_waiting_logs = get_config_bool(
             "Machine", "report_waiting_logs")
@@ -105,7 +103,6 @@ class MachineGenerator(object):
             version=board_version,
             auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
-            max_sdram_size=max_sdram_size,
             repair_machine=repair_machine,
             ignore_bad_ethernets=ignore_bad_ethernets,
             default_report_directory=default_report_directory,
