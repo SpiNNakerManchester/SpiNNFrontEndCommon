@@ -30,16 +30,12 @@ class DatabaseInterface(object):
         # the database writer object
         "_writer",
 
-        # True if the end user has asked for the database to be written
-        "_user_create_database",
-
         # True if the network is computed to need the database to be written
         "_needs_db"
     ]
 
     def __init__(self):
         self._writer = None
-        self._user_create_database = None
         self._needs_db = None
 
     def __call__(
@@ -72,8 +68,14 @@ class DatabaseInterface(object):
         self._user_create_database = user_create_database
         # add database generation if requested
         self._needs_db = self._writer.auto_detect_database(machine_graph)
+        user_create_database = get_config_bool("Database", "create_database")
+        if user_create_database is not None:
+            if user_create_database != self._needs_db:
+                logger.warning(f"Database creating changed to "
+                               f"{user_create_database} due to cfg settings")
+                self._needs_db = user_create_database
 
-        if self.needs_database:
+        if self._needs_db:
             logger.info("creating live event connection database in {}",
                         self._writer.database_path)
             self._write_to_db(
@@ -84,20 +86,11 @@ class DatabaseInterface(object):
         return self, self.database_file_path
 
     @property
-    def needs_database(self):
-        """
-        :rtype: bool
-        """
-        if self._user_create_database is None:
-            return self._needs_db
-        return self._user_create_database
-
-    @property
     def database_file_path(self):
         """
         :rtype: str or None
         """
-        if self.needs_database:
+        if self._needs_db:
             return self._writer.database_path
         return None
 

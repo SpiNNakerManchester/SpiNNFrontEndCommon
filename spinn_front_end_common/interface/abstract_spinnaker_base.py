@@ -1513,8 +1513,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["WriteTextSpecsFlag"] = get_config_bool(
             "Reports", "write_text_specs")
         inputs["ExecutableFinder"] = self._executable_finder
-        inputs["UserCreateDatabaseFlag"] = get_config_bool(
-            "Database", "create_database")
         inputs["WriteDataSpeedUpReportsFlag"] = get_config_bool(
             "Reports", "write_data_speed_up_reports")
         inputs["UsingReinjection"] = \
