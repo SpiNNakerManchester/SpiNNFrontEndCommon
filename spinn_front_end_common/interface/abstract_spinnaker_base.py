@@ -1508,8 +1508,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["JsonFolder"] = self._json_folder
         inputs["APPID"] = self._app_id
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
-        inputs["WriteTextSpecsFlag"] = get_config_bool(
-            "Reports", "write_text_specs")
         inputs["ExecutableFinder"] = self._executable_finder
         inputs['CompressionTargetSize'] = get_config_int(
             "Mapping", "router_table_compression_target_length")
