@@ -192,7 +192,7 @@ class HostExecuteDataSpecification(object):
 
     def execute_application_data_specs(
             self, transceiver, machine, app_id, dsg_targets,
-            uses_advanced_monitors, executable_targets, region_sizes,
+            executable_targets, region_sizes,
             placements=None, extra_monitor_cores=None,
             extra_monitor_cores_to_ethernet_connection_map=None,
             report_folder=None, java_caller=None,
@@ -240,6 +240,8 @@ class HostExecuteDataSpecification(object):
         self._placements = placements
         self._core_to_conn_map = extra_monitor_cores_to_ethernet_connection_map
 
+        uses_advanced_monitors = get_config_bool(
+            "Machine", "enable_advanced_monitor_support")
         # Allow config to override
         if get_config_bool(
                 "Machine", "disable_advanced_monitor_usage_for_data_in"):

@@ -27,7 +27,7 @@ class BufferManagerCreator(object):
 
     def __call__(
             self, placements, tags, txrx,
-            uses_advanced_monitors, report_folder, extra_monitor_cores=None,
+            report_folder, extra_monitor_cores=None,
             extra_monitor_to_chip_mapping=None,
             packet_gather_cores_to_ethernet_connection_map=None, machine=None,
             fixed_routes=None, java_caller=None):

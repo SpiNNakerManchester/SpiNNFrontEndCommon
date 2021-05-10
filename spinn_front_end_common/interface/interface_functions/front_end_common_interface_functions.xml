@@ -827,10 +827,6 @@
                 <param_type>ProcessorToAppDataBaseAddress</param_type>
             </parameter>
             <parameter>
-                <param_name>uses_advanced_monitors</param_name>
-                <param_type>UsingAdvancedMonitorSupport</param_type>
-            </parameter>
-            <parameter>
                 <param_name>executable_targets</param_name>
                 <param_type>ExecutableTargets</param_type>
             </parameter>
@@ -857,7 +853,6 @@
             <param_name>region_sizes</param_name>
             <param_name>app_id</param_name>
             <param_name>dsg_targets</param_name>
-            <param_name>uses_advanced_monitors</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>report_folder</param_name>
@@ -1279,10 +1274,6 @@
                 <param_type>MemoryExtraMonitorToChipMapping</param_type>
             </parameter>
             <parameter>
-                <param_name>uses_advanced_monitors</param_name>
-                <param_type>UsingAdvancedMonitorSupport</param_type>
-            </parameter>
-            <parameter>
                 <param_name>fixed_routes</param_name>
                 <param_type>MemoryFixedRoutes</param_type>
             </parameter>
@@ -1300,7 +1291,6 @@
             <param_name>placements</param_name>
             <param_name>tags</param_name>
             <param_name>txrx</param_name>
-            <param_name>uses_advanced_monitors</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>extra_monitor_cores</param_name>

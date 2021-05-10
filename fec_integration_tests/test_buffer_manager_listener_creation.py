@@ -77,8 +77,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
             placements=pl, tags=t, transceiver=trnx, extra_monitor_cores=None,
             packet_gather_cores_to_ethernet_connection_map=None,
             extra_monitor_to_chip_mapping=None, machine=None,
-            fixed_routes=None, uses_advanced_monitors=True,
-            report_folder=testdir)
+            fixed_routes=None, report_folder=testdir)
 
         # Register two listeners, and check the second listener uses the
         # first rather than creating a new one
