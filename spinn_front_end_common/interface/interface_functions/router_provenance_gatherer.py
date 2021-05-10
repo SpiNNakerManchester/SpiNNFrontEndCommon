@@ -50,7 +50,7 @@ class RouterProvenanceGatherer(object):
     ]
 
     def __call__(
-            self, transceiver, machine, router_tables, using_reinjection,
+            self, transceiver, machine, router_tables,
             provenance_data_objects=None, extra_monitor_vertices=None,
             placements=None):
         """
@@ -61,7 +61,6 @@ class RouterProvenanceGatherer(object):
         :param router_tables: the router tables that have been generated
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
-        :param bool using_reinjection: whether we are reinjecting packets
         :param list(ProvenanceDataItem) provenance_data_objects:
             any existing provenance information to add to
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:

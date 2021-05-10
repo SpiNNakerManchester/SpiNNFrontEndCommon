@@ -1513,10 +1513,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ExecutableFinder"] = self._executable_finder
         inputs["WriteDataSpeedUpReportsFlag"] = get_config_bool(
             "Reports", "write_data_speed_up_reports")
-        inputs["UsingReinjection"] = \
-            (get_config_bool("Machine", "enable_reinjection") and
-             get_config_bool(
-                 "Machine", "enable_advanced_monitor_support"))
         inputs['CompressionTargetSize'] = get_config_int(
             "Mapping", "router_table_compression_target_length")
         inputs["CompressionAsNeeded"] = get_config_bool(
