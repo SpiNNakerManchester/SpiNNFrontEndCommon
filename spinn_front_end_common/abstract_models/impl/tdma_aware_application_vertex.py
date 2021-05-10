@@ -143,7 +143,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         :param str desc_label: a descriptive label for the vertex
         :param int tdma_slots_missed: the number of TDMA slots missed
         :return: the provenance data item
-        :rtype:\ 
+        :rtype:
             ~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem
         """
         return ProvenanceDataItem(
