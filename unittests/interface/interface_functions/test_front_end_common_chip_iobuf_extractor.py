@@ -20,6 +20,7 @@ from spinn_utilities.config_holder import load_config, set_config
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
+from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_front_end_common.interface.interface_functions import (
     ChipIOBufExtractor)
 from spinnman.model import ExecutableTargets
@@ -85,6 +86,7 @@ executable_targets.add_subsets(alphaaplx, core_subsets)
 class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
     def setUp(self):
+        reset_configs()
         load_config()
 
     @classmethod
