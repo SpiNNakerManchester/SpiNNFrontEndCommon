@@ -187,7 +187,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         transceiver = _MockTransceiver(user_0_addresses, region_addresses)
 
         reloader = DSGRegionReloader()
-        reloader.__call__(transceiver, placements, "localhost", "test", False)
+        reloader.__call__(transceiver, placements, "localhost", "test")
 
         regions_rewritten = transceiver.regions_rewritten
 

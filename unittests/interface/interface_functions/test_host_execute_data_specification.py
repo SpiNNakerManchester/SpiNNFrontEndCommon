@@ -16,6 +16,7 @@
 import struct
 import tempfile
 import unittest
+from spinn_utilities.config_holder import load_config, set_config
 from spinn_machine.virtual_machine import virtual_machine
 from spinnman.model import ExecutableTargets
 from data_specification.constants import (
@@ -83,8 +84,12 @@ class _MockTransceiver(object):
 
 class TestHostExecuteDataSpecification(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
+    def setUp(cls):
+        reset_configs()
+        load_config()
+        set_config("Machine", "enable_advanced_monitor_support", "False")
+
+    def tearDown(self):
         reset_configs()
 
     def test_call(self):
@@ -116,7 +121,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets.add_processor(
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         infos = executor.execute_application_data_specs(
-            transceiver, machine, 30, dsg_targets, False, targets,
+            transceiver, machine, 30, dsg_targets, targets,
             report_folder=tempdir, region_sizes=region_sizes)
 
         # Test regions - although 3 are created, only 2 should be uploaded
