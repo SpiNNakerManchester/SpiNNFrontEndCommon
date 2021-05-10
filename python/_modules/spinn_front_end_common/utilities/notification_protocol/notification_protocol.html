@@ -6,9 +6,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>spinn_front_end_common.utilities.notification_protocol.notification_protocol &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
-    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinxdoc.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
     <script src="../../../../_static/doctools.js"></script>
@@ -66,7 +66,7 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
 
-<div class="viewcode-block" id="NotificationProtocol"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol">[docs]</a><span class="k">class</span> <span class="nc">NotificationProtocol</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">NotificationProtocol</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; The protocol which hand shakes with external devices about the\</span>
 <span class="sd">        database and starting execution</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -234,7 +234,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span> <span class="o">=</span> <span class="kc">None</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span> <span class="o">=</span> <span class="kc">None</span></div>
 </pre></div>
 
             <div class="clearer"></div>
@@ -273,7 +273,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.0.
     </div>
   </body>
 </html>

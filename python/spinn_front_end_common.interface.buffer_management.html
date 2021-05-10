@@ -4,11 +4,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>spinn_front_end_common.interface.buffer_management package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -45,9 +46,9 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="spinn-front-end-common-interface-buffer-management-package">
+  <section id="spinn-front-end-common-interface-buffer-management-package">
 <h1>spinn_front_end_common.interface.buffer_management package<a class="headerlink" href="#spinn-front-end-common-interface-buffer-management-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="subpackages">
+<section id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
@@ -61,12 +62,12 @@
 </li>
 </ul>
 </div>
-</div>
-<div class="section" id="module-spinn_front_end_common.interface.buffer_management">
+</section>
+<section id="module-spinn_front_end_common.interface.buffer_management">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.buffer_management" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="spinn_front_end_common.interface.buffer_management.BufferManager">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.</span></code><code class="sig-name descname"><span class="pre">BufferManager</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_monitor_cores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packet_gather_cores_to_ethernet_connection_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_monitor_to_chip_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_routes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uses_advanced_monitors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_caller</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.</span></span><span class="sig-name descname"><span class="pre">BufferManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_monitor_cores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packet_gather_cores_to_ethernet_connection_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_monitor_to_chip_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_routes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uses_advanced_monitors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_caller</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Manager of send buffers.</p>
 <dl class="field-list simple">
@@ -88,8 +89,8 @@ database.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.BufferManager.add_receiving_vertex">
-<code class="sig-name descname"><span class="pre">add_receiving_vertex</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.add_receiving_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.add_receiving_vertex" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager.add_receiving_vertex">
+<span class="sig-name descname"><span class="pre">add_receiving_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.add_receiving_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.add_receiving_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a vertex into the managed list for vertices which require            buffers to be received from them during runtime.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -99,8 +100,8 @@ database.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.BufferManager.add_sender_vertex">
-<code class="sig-name descname"><span class="pre">add_sender_vertex</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.add_sender_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.add_sender_vertex" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager.add_sender_vertex">
+<span class="sig-name descname"><span class="pre">add_sender_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.add_sender_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.add_sender_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a vertex into the managed list for vertices which require            buffers to be sent to them during runtime.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -110,8 +111,8 @@ database.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.BufferManager.clear_recorded_data">
-<code class="sig-name descname"><span class="pre">clear_recorded_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording_region_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.clear_recorded_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.clear_recorded_data" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager.clear_recorded_data">
+<span class="sig-name descname"><span class="pre">clear_recorded_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording_region_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.clear_recorded_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.clear_recorded_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the recorded data stored in memory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -126,8 +127,8 @@ database.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.BufferManager.get_data_by_placement">
-<code class="sig-name descname"><span class="pre">get_data_by_placement</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording_region_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.get_data_by_placement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_by_placement" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager.get_data_by_placement">
+<span class="sig-name descname"><span class="pre">get_data_by_placement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording_region_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.get_data_by_placement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_by_placement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the data container for all the data retrieved            during the simulation from a specific region area of a core.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -147,8 +148,8 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.BufferManager.get_data_for_placements">
-<code class="sig-name descname"><span class="pre">get_data_for_placements</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.get_data_for_placements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_for_placements" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager.get_data_for_placements">
+<span class="sig-name descname"><span class="pre">get_data_for_placements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.get_data_for_placements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_for_placements" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -160,26 +161,26 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.BufferManager.load_initial_buffers">
-<code class="sig-name descname"><span class="pre">load_initial_buffers</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.load_initial_buffers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.load_initial_buffers" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager.load_initial_buffers">
+<span class="sig-name descname"><span class="pre">load_initial_buffers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.load_initial_buffers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.load_initial_buffers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the initial buffers for the senders using memory writes.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.BufferManager.reset">
-<code class="sig-name descname"><span class="pre">reset</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.reset" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resets the buffered regions to start transmitting from the            beginning of its expected regions and clears the buffered out            data files.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.BufferManager.resume">
-<code class="sig-name descname"><span class="pre">resume</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.resume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.resume" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager.resume">
+<span class="sig-name descname"><span class="pre">resume</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.resume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.resume" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resets any data structures needed before starting running again.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.BufferManager.sender_vertices">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">sender_vertices</span></code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.sender_vertices" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager.sender_vertices">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">sender_vertices</span></span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.sender_vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>The vertices which are buffered.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -189,15 +190,15 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.BufferManager.stop">
-<code class="sig-name descname"><span class="pre">stop</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.stop" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.stop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Indicates that the simulation has finished, so no further            outstanding requests need to be processed.</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -266,7 +267,7 @@ simulation, and a flag indicating if any data was missing</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.0.
     </div>
   </body>
 </html>

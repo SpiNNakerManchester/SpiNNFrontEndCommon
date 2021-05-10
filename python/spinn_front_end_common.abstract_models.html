@@ -4,11 +4,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>spinn_front_end_common.abstract_models package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -44,9 +45,9 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="spinn-front-end-common-abstract-models-package">
+  <section id="spinn-front-end-common-abstract-models-package">
 <h1>spinn_front_end_common.abstract_models package<a class="headerlink" href="#spinn-front-end-common-abstract-models-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="subpackages">
+<section id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
@@ -56,39 +57,39 @@
 </li>
 </ul>
 </div>
-</div>
-<div class="section" id="module-spinn_front_end_common.abstract_models">
+</section>
+<section id="module-spinn_front_end_common.abstract_models">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.abstract_models" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="spinn_front_end_common.abstract_models.AbstractCanReset">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></code><code class="sig-name descname"><span class="pre">AbstractCanReset</span></code><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_can_reset.html#AbstractCanReset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractCanReset" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractCanReset">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractCanReset</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractCanReset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Indicates an object that can be reset to time 0.</p>
 <p>This is used when AbstractSpinnakerBase.reset is called.
 All Vertices and all edges in the original graph
 (the one added to by the user) will be checked and reset.</p>
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractCanReset.reset_to_first_timestep">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">reset_to_first_timestep</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_can_reset.html#AbstractCanReset.reset_to_first_timestep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractCanReset.reset_to_first_timestep" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractCanReset.reset_to_first_timestep">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">reset_to_first_timestep</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_can_reset.html#AbstractCanReset.reset_to_first_timestep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractCanReset.reset_to_first_timestep" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the object to first time step.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.abstract_models.AbstractChangableAfterRun">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></code><code class="sig-name descname"><span class="pre">AbstractChangableAfterRun</span></code><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_changable_after_run.html#AbstractChangableAfterRun"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractChangableAfterRun" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractChangableAfterRun">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractChangableAfterRun</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractChangableAfterRun" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>An item that can be changed after a call to run, the changes to which        might or might not require mapping or data generation.</p>
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractChangableAfterRun.mark_no_changes">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">mark_no_changes</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_changable_after_run.html#AbstractChangableAfterRun.mark_no_changes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractChangableAfterRun.mark_no_changes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractChangableAfterRun.mark_no_changes">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">mark_no_changes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_changable_after_run.html#AbstractChangableAfterRun.mark_no_changes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractChangableAfterRun.mark_no_changes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Marks the point after which changes are reported, so that new            changes can be detected before the next check.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractChangableAfterRun.requires_data_generation">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">requires_data_generation</span></code><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractChangableAfterRun.requires_data_generation" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractChangableAfterRun.requires_data_generation">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">requires_data_generation</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractChangableAfterRun.requires_data_generation" title="Permalink to this definition">¶</a></dt>
 <dd><p>True if changes that have been made require that data generation            be performed.  By default this returns False but can be overridden            to indicate changes that require data regeneration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -97,9 +98,9 @@ All Vertices and all edges in the original graph
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractChangableAfterRun.requires_mapping">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">requires_mapping</span></code><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractChangableAfterRun.requires_mapping" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractChangableAfterRun.requires_mapping">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">requires_mapping</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractChangableAfterRun.requires_mapping" title="Permalink to this definition">¶</a></dt>
 <dd><p>True if changes that have been made require that mapping be            performed.  By default this returns False but can be overridden to            indicate changes that require mapping.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -111,12 +112,12 @@ All Vertices and all edges in the original graph
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></code><code class="sig-name descname"><span class="pre">AbstractGeneratesDataSpecification</span></code><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_generates_data_specification.html#AbstractGeneratesDataSpecification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractGeneratesDataSpecification</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification.generate_data_specification">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">generate_data_specification</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_generates_data_specification.html#AbstractGeneratesDataSpecification.generate_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification.generate_data_specification" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification.generate_data_specification">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">generate_data_specification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_generates_data_specification.html#AbstractGeneratesDataSpecification.generate_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification.generate_data_specification" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a data specification.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -134,13 +135,13 @@ All Vertices and all edges in the original graph
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></code><code class="sig-name descname"><span class="pre">AbstractHasAssociatedBinary</span></code><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_has_associated_binary.html#AbstractHasAssociatedBinary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractHasAssociatedBinary</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Marks a machine graph vertex that can be launched on a SpiNNaker core.</p>
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary.get_binary_file_name">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">get_binary_file_name</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_has_associated_binary.html#AbstractHasAssociatedBinary.get_binary_file_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary.get_binary_file_name" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary.get_binary_file_name">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">get_binary_file_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_has_associated_binary.html#AbstractHasAssociatedBinary.get_binary_file_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary.get_binary_file_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the binary name to be run for this vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -150,8 +151,8 @@ All Vertices and all edges in the original graph
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary.get_binary_start_type">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">get_binary_start_type</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_has_associated_binary.html#AbstractHasAssociatedBinary.get_binary_start_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary.get_binary_start_type" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary.get_binary_start_type">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">get_binary_start_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_has_associated_binary.html#AbstractHasAssociatedBinary.get_binary_start_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary.get_binary_start_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the start type of the binary to be run.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -163,19 +164,19 @@ All Vertices and all edges in the original graph
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></code><code class="sig-name descname"><span class="pre">AbstractMachineAllocationController</span></code><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_machine_allocation_controller.html#AbstractMachineAllocationController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractMachineAllocationController</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>An object that controls the allocation of a machine</p>
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController.close">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">close</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_machine_allocation_controller.html#AbstractMachineAllocationController.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.close" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController.close">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_machine_allocation_controller.html#AbstractMachineAllocationController.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Indicate that the use of the machine is complete.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController.extend_allocation">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">extend_allocation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_total_run_time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_machine_allocation_controller.html#AbstractMachineAllocationController.extend_allocation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.extend_allocation" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController.extend_allocation">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">extend_allocation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_total_run_time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_machine_allocation_controller.html#AbstractMachineAllocationController.extend_allocation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.extend_allocation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extend the allocation of the machine from the original run time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -186,8 +187,8 @@ machine was first allocated</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController.where_is_machine">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">where_is_machine</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chip_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chip_y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_machine_allocation_controller.html#AbstractMachineAllocationController.where_is_machine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.where_is_machine" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController.where_is_machine">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">where_is_machine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chip_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chip_y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_machine_allocation_controller.html#AbstractMachineAllocationController.where_is_machine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.where_is_machine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Locates and returns cabinet, frame, board for a given chip in a            machine allocated to this job.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -208,13 +209,13 @@ machine was first allocated</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.abstract_models.AbstractProvidesIncomingPartitionConstraints">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></code><code class="sig-name descname"><span class="pre">AbstractProvidesIncomingPartitionConstraints</span></code><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_provides_incoming_partition_constraints.html#AbstractProvidesIncomingPartitionConstraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesIncomingPartitionConstraints" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractProvidesIncomingPartitionConstraints">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractProvidesIncomingPartitionConstraints</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesIncomingPartitionConstraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A vertex that can provide constraints for its incoming edge partitions.</p>
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractProvidesIncomingPartitionConstraints.get_incoming_partition_constraints">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">get_incoming_partition_constraints</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_provides_incoming_partition_constraints.html#AbstractProvidesIncomingPartitionConstraints.get_incoming_partition_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesIncomingPartitionConstraints.get_incoming_partition_constraints" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractProvidesIncomingPartitionConstraints.get_incoming_partition_constraints">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">get_incoming_partition_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_provides_incoming_partition_constraints.html#AbstractProvidesIncomingPartitionConstraints.get_incoming_partition_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesIncomingPartitionConstraints.get_incoming_partition_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get constraints to be added to the given edge partition that goes            into a vertex of this vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -232,13 +233,13 @@ machine was first allocated</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.abstract_models.AbstractProvidesKeyToAtomMapping">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></code><code class="sig-name descname"><span class="pre">AbstractProvidesKeyToAtomMapping</span></code><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_provides_key_to_atom_mapping.html#AbstractProvidesKeyToAtomMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesKeyToAtomMapping" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractProvidesKeyToAtomMapping">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractProvidesKeyToAtomMapping</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesKeyToAtomMapping" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Interface to provide a mapping between routing key partitions and        atom IDs</p>
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractProvidesKeyToAtomMapping.routing_key_partition_atom_mapping">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">routing_key_partition_atom_mapping</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">routing_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_provides_key_to_atom_mapping.html#AbstractProvidesKeyToAtomMapping.routing_key_partition_atom_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesKeyToAtomMapping.routing_key_partition_atom_mapping" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractProvidesKeyToAtomMapping.routing_key_partition_atom_mapping">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">routing_key_partition_atom_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">routing_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_provides_key_to_atom_mapping.html#AbstractProvidesKeyToAtomMapping.routing_key_partition_atom_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesKeyToAtomMapping.routing_key_partition_atom_mapping" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of atom to key mapping.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -259,16 +260,16 @@ machine was first allocated</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.abstract_models.AbstractProvidesOutgoingPartitionConstraints">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></code><code class="sig-name descname"><span class="pre">AbstractProvidesOutgoingPartitionConstraints</span></code><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_provides_outgoing_partition_constraints.html#AbstractProvidesOutgoingPartitionConstraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesOutgoingPartitionConstraints" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractProvidesOutgoingPartitionConstraints">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractProvidesOutgoingPartitionConstraints</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesOutgoingPartitionConstraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A vertex that can provide constraints for its outgoing edge partitions.</p>
 <p>If a Machine_vertex is an instance the Application vertex will not be
 checked. However if the MachineVertex does not implement this API
 ProcessPartitionConstraint will then check the ApplicationVertex</p>
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractProvidesOutgoingPartitionConstraints.get_outgoing_partition_constraints">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">get_outgoing_partition_constraints</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_provides_outgoing_partition_constraints.html#AbstractProvidesOutgoingPartitionConstraints.get_outgoing_partition_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesOutgoingPartitionConstraints.get_outgoing_partition_constraints" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractProvidesOutgoingPartitionConstraints.get_outgoing_partition_constraints">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">get_outgoing_partition_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_provides_outgoing_partition_constraints.html#AbstractProvidesOutgoingPartitionConstraints.get_outgoing_partition_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesOutgoingPartitionConstraints.get_outgoing_partition_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get constraints to be added to the given edge partition that comes            out of this vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -286,13 +287,13 @@ ProcessPartitionConstraint will then check the ApplicationVertex</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></code><code class="sig-name descname"><span class="pre">AbstractRewritesDataSpecification</span></code><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_rewrites_data_specification.html#AbstractRewritesDataSpecification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractRewritesDataSpecification</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Indicates an object that allows data to be changed after run,        and so can rewrite the data specification</p>
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.regenerate_data_specification">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">regenerate_data_specification</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_rewrites_data_specification.html#AbstractRewritesDataSpecification.regenerate_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.regenerate_data_specification" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.regenerate_data_specification">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">regenerate_data_specification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_rewrites_data_specification.html#AbstractRewritesDataSpecification.regenerate_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.regenerate_data_specification" title="Permalink to this definition">¶</a></dt>
 <dd><p>Regenerate the data specification, only generating regions that            have changed and need to be reloaded</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -305,8 +306,8 @@ ProcessPartitionConstraint will then check the ApplicationVertex</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.reload_required">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">reload_required</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_rewrites_data_specification.html#AbstractRewritesDataSpecification.reload_required"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.reload_required" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.reload_required">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">reload_required</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_rewrites_data_specification.html#AbstractRewritesDataSpecification.reload_required"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.reload_required" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return true if any data region needs to be reloaded</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -316,8 +317,8 @@ ProcessPartitionConstraint will then check the ApplicationVertex</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.set_reload_required">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">set_reload_required</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_rewrites_data_specification.html#AbstractRewritesDataSpecification.set_reload_required"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.set_reload_required" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.set_reload_required">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">set_reload_required</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_rewrites_data_specification.html#AbstractRewritesDataSpecification.set_reload_required"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.set_reload_required" title="Permalink to this definition">¶</a></dt>
 <dd><p>Indicate that the regions have been reloaded</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -332,8 +333,8 @@ ProcessPartitionConstraint will then check the ApplicationVertex</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></code><code class="sig-name descname"><span class="pre">AbstractSendMeMulticastCommandsVertex</span></code><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_send_me_multicast_commands_vertex.html#AbstractSendMeMulticastCommandsVertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractSendMeMulticastCommandsVertex</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A device that may be a virtual vertex which wants to commands to be        sent to it as multicast packets at fixed points in the simulation.</p>
 <div class="admonition note">
@@ -342,9 +343,9 @@ ProcessPartitionConstraint will then check the ApplicationVertex</p>
 instantiated entirely host side, in which case these methods will
 never be called.</p>
 </div>
-<dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex.pause_stop_commands">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">pause_stop_commands</span></code><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex.pause_stop_commands" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex.pause_stop_commands">
+<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pause_stop_commands</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex.pause_stop_commands" title="Permalink to this definition">¶</a></dt>
 <dd><p>The commands needed when pausing or stopping simulation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -353,9 +354,9 @@ never be called.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex.start_resume_commands">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">start_resume_commands</span></code><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex.start_resume_commands" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex.start_resume_commands">
+<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">start_resume_commands</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex.start_resume_commands" title="Permalink to this definition">¶</a></dt>
 <dd><p>The commands needed when starting or resuming simulation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -364,9 +365,9 @@ never be called.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex.timed_commands">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">timed_commands</span></code><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex.timed_commands" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex.timed_commands">
+<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">timed_commands</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex.timed_commands" title="Permalink to this definition">¶</a></dt>
 <dd><p>The commands to be sent at given times in the simulation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -378,13 +379,13 @@ never be called.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></code><code class="sig-name descname"><span class="pre">AbstractSupportsBitFieldGeneration</span></code><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_generation.html#AbstractSupportsBitFieldGeneration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractSupportsBitFieldGeneration</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Marks a vertex that can provide information about bitfields it wants         generated on-chip.</p>
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_base_address">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">bit_field_base_address</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_generation.html#AbstractSupportsBitFieldGeneration.bit_field_base_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_base_address" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_base_address">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">bit_field_base_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_generation.html#AbstractSupportsBitFieldGeneration.bit_field_base_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_base_address" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the SDRAM address for the bit field table data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -403,8 +404,8 @@ never be called.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_builder_region">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">bit_field_builder_region</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_generation.html#AbstractSupportsBitFieldGeneration.bit_field_builder_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_builder_region" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_builder_region">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">bit_field_builder_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_generation.html#AbstractSupportsBitFieldGeneration.bit_field_builder_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_builder_region" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns the SDRAM address for the bit field builder data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -425,13 +426,13 @@ never be called.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></code><code class="sig-name descname"><span class="pre">AbstractSupportsBitFieldRoutingCompression</span></code><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_routing_compression.html#AbstractSupportsBitFieldRoutingCompression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractSupportsBitFieldRoutingCompression</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Marks a machine vertex that can support having the on-chip bitfield         compressor running on its core.</p>
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.bit_field_base_address">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">bit_field_base_address</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_routing_compression.html#AbstractSupportsBitFieldRoutingCompression.bit_field_base_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.bit_field_base_address" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.bit_field_base_address">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">bit_field_base_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_routing_compression.html#AbstractSupportsBitFieldRoutingCompression.bit_field_base_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.bit_field_base_address" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the SDRAM address for the bit-field table data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -450,8 +451,8 @@ never be called.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.key_to_atom_map_region_base_address">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">key_to_atom_map_region_base_address</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_routing_compression.html#AbstractSupportsBitFieldRoutingCompression.key_to_atom_map_region_base_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.key_to_atom_map_region_base_address" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.key_to_atom_map_region_base_address">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">key_to_atom_map_region_base_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_routing_compression.html#AbstractSupportsBitFieldRoutingCompression.key_to_atom_map_region_base_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.key_to_atom_map_region_base_address" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the SDRAM address for the region that contains             key-to-atom data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -470,8 +471,8 @@ never be called.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.regeneratable_sdram_blocks_and_sizes">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">regeneratable_sdram_blocks_and_sizes</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_routing_compression.html#AbstractSupportsBitFieldRoutingCompression.regeneratable_sdram_blocks_and_sizes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.regeneratable_sdram_blocks_and_sizes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.regeneratable_sdram_blocks_and_sizes">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">regeneratable_sdram_blocks_and_sizes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_routing_compression.html#AbstractSupportsBitFieldRoutingCompression.regeneratable_sdram_blocks_and_sizes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.regeneratable_sdram_blocks_and_sizes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the SDRAM addresses and sizes for the cores’ SDRAM that             are available (borrowed) for generating bitfield tables.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -495,13 +496,13 @@ there)</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.abstract_models.AbstractSupportsDatabaseInjection">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></code><code class="sig-name descname"><span class="pre">AbstractSupportsDatabaseInjection</span></code><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_database_injection.html#AbstractSupportsDatabaseInjection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsDatabaseInjection" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsDatabaseInjection">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractSupportsDatabaseInjection</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsDatabaseInjection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Marks a machine vertex as supporting injection of information via a        database running on the controlling host.</p>
-<dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractSupportsDatabaseInjection.is_in_injection_mode">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_in_injection_mode</span></code><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsDatabaseInjection.is_in_injection_mode" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsDatabaseInjection.is_in_injection_mode">
+<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">is_in_injection_mode</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsDatabaseInjection.is_in_injection_mode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether this vertex is actually in injection mode.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -513,13 +514,13 @@ there)</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></code><code class="sig-name descname"><span class="pre">AbstractVertexWithEdgeToDependentVertices</span></code><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_vertex_with_dependent_vertices.html#AbstractVertexWithEdgeToDependentVertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractVertexWithEdgeToDependentVertices</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A vertex with a dependent vertices, which should be connected to this        vertex by an edge directly to each of them</p>
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices.dependent_vertices">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">dependent_vertices</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_vertex_with_dependent_vertices.html#AbstractVertexWithEdgeToDependentVertices.dependent_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices.dependent_vertices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices.dependent_vertices">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">dependent_vertices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_vertex_with_dependent_vertices.html#AbstractVertexWithEdgeToDependentVertices.dependent_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices.dependent_vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the vertices which this vertex depends upon</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -529,8 +530,8 @@ there)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices.edge_partition_identifiers_for_dependent_vertex">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">edge_partition_identifiers_for_dependent_vertex</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_vertex_with_dependent_vertices.html#AbstractVertexWithEdgeToDependentVertices.edge_partition_identifiers_for_dependent_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices.edge_partition_identifiers_for_dependent_vertex" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices.edge_partition_identifiers_for_dependent_vertex">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">edge_partition_identifiers_for_dependent_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_vertex_with_dependent_vertices.html#AbstractVertexWithEdgeToDependentVertices.edge_partition_identifiers_for_dependent_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices.edge_partition_identifiers_for_dependent_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the dependent edge identifiers for a particular dependent            vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -544,8 +545,8 @@ there)</p>
 
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -613,7 +614,7 @@ there)</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.0.
     </div>
   </body>
 </html>

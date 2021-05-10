@@ -6,9 +6,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>spinn_front_end_common.utilities.connections.live_event_connection &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
-    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinxdoc.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
     <script src="../../../../_static/doctools.js"></script>
@@ -88,7 +88,7 @@
 <span class="n">_TWO_SKIP</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;2x&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="LiveEventConnection"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection">[docs]</a><span class="k">class</span> <span class="nc">LiveEventConnection</span><span class="p">(</span><span class="n">DatabaseConnection</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">LiveEventConnection</span><span class="p">(</span><span class="n">DatabaseConnection</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A connection for receiving and sending live events from and to\</span>
 <span class="sd">        SpiNNaker</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -626,7 +626,7 @@
                 <span class="n">source_port</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">source_cpu</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                 <span class="n">source_chip_x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">source_chip_y</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
             <span class="n">data</span><span class="o">=</span><span class="n">message</span><span class="o">.</span><span class="n">bytestring</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">_TWO_SKIP</span><span class="o">.</span><span class="n">pack</span><span class="p">()</span> <span class="o">+</span> <span class="n">sdp_message</span><span class="o">.</span><span class="n">bytestring</span></div>
+        <span class="k">return</span> <span class="n">_TWO_SKIP</span><span class="o">.</span><span class="n">pack</span><span class="p">()</span> <span class="o">+</span> <span class="n">sdp_message</span><span class="o">.</span><span class="n">bytestring</span>
 </pre></div>
 
             <div class="clearer"></div>
@@ -665,7 +665,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.0.
     </div>
   </body>
 </html>

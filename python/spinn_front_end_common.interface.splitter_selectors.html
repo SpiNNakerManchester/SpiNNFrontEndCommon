@@ -4,11 +4,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>spinn_front_end_common.interface.splitter_selectors package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -45,23 +46,23 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="spinn-front-end-common-interface-splitter-selectors-package">
+  <section id="spinn-front-end-common-interface-splitter-selectors-package">
 <h1>spinn_front_end_common.interface.splitter_selectors package<a class="headerlink" href="#spinn-front-end-common-interface-splitter-selectors-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-spinn_front_end_common.interface.splitter_selectors">
+<section id="module-spinn_front_end_common.interface.splitter_selectors">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.splitter_selectors" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="spinn_front_end_common.interface.splitter_selectors.SplitterSelector">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.splitter_selectors.</span></code><code class="sig-name descname"><span class="pre">SplitterSelector</span></code><a class="reference internal" href="_modules/spinn_front_end_common/interface/splitter_selectors/splitter_selector.html#SplitterSelector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.splitter_selectors.SplitterSelector" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.splitter_selectors.SplitterSelector">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.splitter_selectors.</span></span><span class="sig-name descname"><span class="pre">SplitterSelector</span></span><a class="headerlink" href="#spinn_front_end_common.interface.splitter_selectors.SplitterSelector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Splitter object selector that allocates nothing but legacy        splitter objects where required</p>
 <dl class="py attribute">
-<dt id="spinn_front_end_common.interface.splitter_selectors.SplitterSelector.NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE">
-<code class="sig-name descname"><span class="pre">NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'The</span> <span class="pre">SplitterSelector</span> <span class="pre">has</span> <span class="pre">not</span> <span class="pre">seen</span> <span class="pre">the</span> <span class="pre">{}</span> <span class="pre">vertex</span> <span class="pre">before.</span> <span class="pre">Therefore</span> <span class="pre">there</span> <span class="pre">is</span> <span class="pre">no</span> <span class="pre">known</span> <span class="pre">splitter</span> <span class="pre">to</span> <span class="pre">allocate</span> <span class="pre">to</span> <span class="pre">this</span> <span class="pre">app</span> <span class="pre">vertex</span> <span class="pre">and</span> <span class="pre">so</span> <span class="pre">will</span> <span class="pre">use</span> <span class="pre">the</span> <span class="pre">SplitterSliceLegacy</span> <span class="pre">Splitter.'</span></em><a class="headerlink" href="#spinn_front_end_common.interface.splitter_selectors.SplitterSelector.NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.splitter_selectors.SplitterSelector.NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE">
+<span class="sig-name descname"><span class="pre">NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'The</span> <span class="pre">SplitterSelector</span> <span class="pre">has</span> <span class="pre">not</span> <span class="pre">seen</span> <span class="pre">the</span> <span class="pre">{}</span> <span class="pre">vertex</span> <span class="pre">before.</span> <span class="pre">Therefore</span> <span class="pre">there</span> <span class="pre">is</span> <span class="pre">no</span> <span class="pre">known</span> <span class="pre">splitter</span> <span class="pre">to</span> <span class="pre">allocate</span> <span class="pre">to</span> <span class="pre">this</span> <span class="pre">app</span> <span class="pre">vertex</span> <span class="pre">and</span> <span class="pre">so</span> <span class="pre">will</span> <span class="pre">use</span> <span class="pre">the</span> <span class="pre">SplitterSliceLegacy</span> <span class="pre">Splitter.'</span></em><a class="headerlink" href="#spinn_front_end_common.interface.splitter_selectors.SplitterSelector.NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.splitter_selectors.SplitterSelector.__call__">
-<code class="sig-name descname"><span class="pre">__call__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app_graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/splitter_selectors/splitter_selector.html#SplitterSelector.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.splitter_selectors.SplitterSelector.__call__" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.splitter_selectors.SplitterSelector.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app_graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/splitter_selectors/splitter_selector.html#SplitterSelector.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.splitter_selectors.SplitterSelector.__call__" title="Permalink to this definition">¶</a></dt>
 <dd><p>basic selector which puts the legacy splitter object on            everything without a splitter object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -74,8 +75,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.splitter_selectors.SplitterSelector.vertex_selector">
-<code class="sig-name descname"><span class="pre">vertex_selector</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app_vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/splitter_selectors/splitter_selector.html#SplitterSelector.vertex_selector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.splitter_selectors.SplitterSelector.vertex_selector" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.splitter_selectors.SplitterSelector.vertex_selector">
+<span class="sig-name descname"><span class="pre">vertex_selector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app_vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/splitter_selectors/splitter_selector.html#SplitterSelector.vertex_selector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.splitter_selectors.SplitterSelector.vertex_selector" title="Permalink to this definition">¶</a></dt>
 <dd><p>main point for selecting a splitter object for a given app vertex.</p>
 <p>Will assume the SplitterSliceLegacy if no heuristic is known for the
 app vertex.</p>
@@ -91,8 +92,8 @@ app vertex.</p>
 
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -160,7 +161,7 @@ app vertex.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.0.
     </div>
   </body>
 </html>

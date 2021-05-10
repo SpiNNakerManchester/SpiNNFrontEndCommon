@@ -4,11 +4,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>spinn_front_end_common.utilities.database package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -45,13 +46,13 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="spinn-front-end-common-utilities-database-package">
+  <section id="spinn-front-end-common-utilities-database-package">
 <h1>spinn_front_end_common.utilities.database package<a class="headerlink" href="#spinn-front-end-common-utilities-database-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-spinn_front_end_common.utilities.database">
+<section id="module-spinn_front_end_common.utilities.database">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities.database" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="spinn_front_end_common.utilities.database.DatabaseConnection">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.database.</span></code><code class="sig-name descname"><span class="pre">DatabaseConnection</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_resume_callback_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_pause_callback_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">19999</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_connection.html#DatabaseConnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseConnection" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseConnection">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.database.</span></span><span class="sig-name descname"><span class="pre">DatabaseConnection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_resume_callback_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_pause_callback_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">19999</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseConnection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spinnman.connections.udp_packet_connections.udp_connection.UDPConnection</span></code></p>
 <p>A connection from the toolchain which will be notified when the         database has been written, and can then respond when the database         has been read, and further wait for notification that the simulation         has started.</p>
 <div class="admonition note">
@@ -73,8 +74,8 @@ by default)</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseConnection.add_database_callback">
-<code class="sig-name descname"><span class="pre">add_database_callback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_callback_function</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_connection.html#DatabaseConnection.add_database_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseConnection.add_database_callback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseConnection.add_database_callback">
+<span class="sig-name descname"><span class="pre">add_database_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_callback_function</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_connection.html#DatabaseConnection.add_database_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseConnection.add_database_callback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a database callback to be called when the database is ready.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -88,16 +89,16 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseConnection.close">
-<code class="sig-name descname"><span class="pre">close</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_connection.html#DatabaseConnection.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseConnection.close" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseConnection.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_connection.html#DatabaseConnection.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseConnection.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Closes the connection</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.utilities.database.DatabaseReader">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.database.</span></code><code class="sig-name descname"><span class="pre">DatabaseReader</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.database.</span></span><span class="sig-name descname"><span class="pre">DatabaseReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.utilities.sqlite_db.SQLiteDB</span></code></a></p>
 <p>A reader for the database.</p>
 <dl class="field-list simple">
@@ -106,8 +107,8 @@ needed further, and the return response will be sent.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_atom_id_to_key_mapping">
-<code class="sig-name descname"><span class="pre">get_atom_id_to_key_mapping</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_atom_id_to_key_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_atom_id_to_key_mapping" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_atom_id_to_key_mapping">
+<span class="sig-name descname"><span class="pre">get_atom_id_to_key_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_atom_id_to_key_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_atom_id_to_key_mapping" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a mapping of atom ID to event key for a given vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -123,8 +124,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_configuration_parameter_value">
-<code class="sig-name descname"><span class="pre">get_configuration_parameter_value</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_configuration_parameter_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_configuration_parameter_value" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_configuration_parameter_value">
+<span class="sig-name descname"><span class="pre">get_configuration_parameter_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_configuration_parameter_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_configuration_parameter_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the value of a configuration parameter</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -140,8 +141,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_ip_address">
-<code class="sig-name descname"><span class="pre">get_ip_address</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_ip_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_ip_address" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_ip_address">
+<span class="sig-name descname"><span class="pre">get_ip_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_ip_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_ip_address" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an IP address to contact a chip</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -160,8 +161,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_key_to_atom_id_mapping">
-<code class="sig-name descname"><span class="pre">get_key_to_atom_id_mapping</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_key_to_atom_id_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_key_to_atom_id_mapping" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_key_to_atom_id_mapping">
+<span class="sig-name descname"><span class="pre">get_key_to_atom_id_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_key_to_atom_id_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_key_to_atom_id_mapping" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a mapping of event key to atom ID for a given vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -177,8 +178,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_live_input_details">
-<code class="sig-name descname"><span class="pre">get_live_input_details</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_live_input_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_live_input_details" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_live_input_details">
+<span class="sig-name descname"><span class="pre">get_live_input_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_live_input_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_live_input_details" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the IP address and port where live input should be sent            for a given vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -194,8 +195,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_live_output_details">
-<code class="sig-name descname"><span class="pre">get_live_output_details</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receiver_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_live_output_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_live_output_details" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_live_output_details">
+<span class="sig-name descname"><span class="pre">get_live_output_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receiver_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_live_output_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_live_output_details" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the IP address, port and whether the SDP headers are to be            stripped from the output from a vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -211,8 +212,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_details">
-<code class="sig-name descname"><span class="pre">get_machine_live_input_details</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_machine_live_input_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_details" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_details">
+<span class="sig-name descname"><span class="pre">get_machine_live_input_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_machine_live_input_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_details" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the IP address and port where live input should be sent            for a given machine vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -228,8 +229,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_key">
-<code class="sig-name descname"><span class="pre">get_machine_live_input_key</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_machine_live_input_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_key" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_key">
+<span class="sig-name descname"><span class="pre">get_machine_live_input_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_machine_live_input_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_key" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The label of the vertex</p>
@@ -241,8 +242,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_details">
-<code class="sig-name descname"><span class="pre">get_machine_live_output_details</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receiver_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_machine_live_output_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_details" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_details">
+<span class="sig-name descname"><span class="pre">get_machine_live_output_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receiver_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_machine_live_output_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_details" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the IP address, port and whether the SDP headers are to be            stripped from the output from a machine vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -261,8 +262,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_key">
-<code class="sig-name descname"><span class="pre">get_machine_live_output_key</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receiver_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_machine_live_output_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_key" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_key">
+<span class="sig-name descname"><span class="pre">get_machine_live_output_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receiver_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_machine_live_output_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_key" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -277,8 +278,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_n_atoms">
-<code class="sig-name descname"><span class="pre">get_n_atoms</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_n_atoms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_n_atoms" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_n_atoms">
+<span class="sig-name descname"><span class="pre">get_n_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_n_atoms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_n_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the number of atoms in a given vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -294,8 +295,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_placement">
-<code class="sig-name descname"><span class="pre">get_placement</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_placement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_placement" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_placement">
+<span class="sig-name descname"><span class="pre">get_placement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_placement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_placement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the placement of a machine vertex with a given label</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -311,8 +312,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseReader.get_placements">
-<code class="sig-name descname"><span class="pre">get_placements</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_placements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_placements" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_placements">
+<span class="sig-name descname"><span class="pre">get_placements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_placements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_placements" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the placements of an application vertex with a given label</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -330,8 +331,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.utilities.database.DatabaseWriter">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.database.</span></code><code class="sig-name descname"><span class="pre">DatabaseWriter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_directory</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.database.</span></span><span class="sig-name descname"><span class="pre">DatabaseWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.utilities.sqlite_db.SQLiteDB</span></code></a></p>
 <p>The interface for the database system for main front ends.        Any special tables needed from a front end should be done        by sub classes of this interface.</p>
 <dl class="field-list simple">
@@ -340,8 +341,8 @@ needed further, and the return response will be sent.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices">
-<code class="sig-name descname"><span class="pre">add_application_vertices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">application_graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_application_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices">
+<span class="sig-name descname"><span class="pre">add_application_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">application_graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_application_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stores the main application graph description (vertices, edges).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -351,8 +352,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_machine_objects">
-<code class="sig-name descname"><span class="pre">add_machine_objects</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_machine_objects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_machine_objects" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter.add_machine_objects">
+<span class="sig-name descname"><span class="pre">add_machine_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_machine_objects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_machine_objects" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store the machine object into the database</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -362,8 +363,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_placements">
-<code class="sig-name descname"><span class="pre">add_placements</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_placements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_placements" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter.add_placements">
+<span class="sig-name descname"><span class="pre">add_placements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_placements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_placements" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds the placements objects into the database</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -373,8 +374,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_routing_infos">
-<code class="sig-name descname"><span class="pre">add_routing_infos</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">routing_infos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_routing_infos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_routing_infos" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter.add_routing_infos">
+<span class="sig-name descname"><span class="pre">add_routing_infos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">routing_infos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_routing_infos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_routing_infos" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds the routing information (key masks etc) into the database</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -387,8 +388,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_routing_tables">
-<code class="sig-name descname"><span class="pre">add_routing_tables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">routing_tables</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_routing_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_routing_tables" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter.add_routing_tables">
+<span class="sig-name descname"><span class="pre">add_routing_tables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">routing_tables</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_routing_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_routing_tables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds the routing tables into the database</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -398,8 +399,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params">
-<code class="sig-name descname"><span class="pre">add_system_params</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_scale_factor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_time_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtime</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_system_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params">
+<span class="sig-name descname"><span class="pre">add_system_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_scale_factor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_time_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtime</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_system_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write system params into the database</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -413,8 +414,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_tags">
-<code class="sig-name descname"><span class="pre">add_tags</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_tags"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_tags" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter.add_tags">
+<span class="sig-name descname"><span class="pre">add_tags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_tags"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_tags" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds the tags into the database</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -427,8 +428,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_vertices">
-<code class="sig-name descname"><span class="pre">add_vertices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_n_timesteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application_graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_vertices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter.add_vertices">
+<span class="sig-name descname"><span class="pre">add_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_n_timesteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application_graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add the machine graph into the database.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -442,8 +443,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.auto_detect_database">
-<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">auto_detect_database</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.auto_detect_database"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.auto_detect_database" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter.auto_detect_database">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">auto_detect_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.auto_detect_database"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.auto_detect_database" title="Permalink to this definition">¶</a></dt>
 <dd><p>Auto detects if there is a need to activate the database system</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -459,8 +460,8 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.create_atom_to_event_id_mapping">
-<code class="sig-name descname"><span class="pre">create_atom_to_event_id_mapping</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">application_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routing_infos</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.create_atom_to_event_id_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.create_atom_to_event_id_mapping" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter.create_atom_to_event_id_mapping">
+<span class="sig-name descname"><span class="pre">create_atom_to_event_id_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">application_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routing_infos</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.create_atom_to_event_id_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.create_atom_to_event_id_mapping" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -472,9 +473,9 @@ needed further, and the return response will be sent.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.utilities.database.DatabaseWriter.database_path">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">database_path</span></code><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.database_path" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter.database_path">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">database_path</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.database_path" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
@@ -484,8 +485,8 @@ needed further, and the return response will be sent.</p>
 
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -553,7 +554,7 @@ needed further, and the return response will be sent.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.0.
     </div>
   </body>
 </html>

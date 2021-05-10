@@ -6,9 +6,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>spinn_front_end_common.utilities.report_functions.routing_table_from_machine_report &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
-    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinxdoc.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
     <script src="../../../../_static/doctools.js"></script>
@@ -60,7 +60,7 @@
 <span class="n">_FOLDER_NAME</span> <span class="o">=</span> <span class="s2">&quot;routing_tables_from_machine&quot;</span>
 
 
-<div class="viewcode-block" id="RoutingTableFromMachineReport"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.RoutingTableFromMachineReport">[docs]</a><span class="k">class</span> <span class="nc">RoutingTableFromMachineReport</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">RoutingTableFromMachineReport</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Report the routing table that was actually on the machine.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -92,7 +92,7 @@
         <span class="k">for</span> <span class="n">routing_entry</span> <span class="ow">in</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_multicast_routes</span><span class="p">(</span>
                 <span class="n">table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
             <span class="n">machine_routing_table</span><span class="o">.</span><span class="n">add_multicast_routing_entry</span><span class="p">(</span><span class="n">routing_entry</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">machine_routing_table</span></div>
+        <span class="k">return</span> <span class="n">machine_routing_table</span>
 </pre></div>
 
             <div class="clearer"></div>
@@ -132,7 +132,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.0.
     </div>
   </body>
 </html>

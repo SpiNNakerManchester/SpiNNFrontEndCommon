@@ -4,11 +4,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>spinn_front_end_common.interface.buffer_management.storage_objects package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -46,13 +47,13 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="spinn-front-end-common-interface-buffer-management-storage-objects-package">
+  <section id="spinn-front-end-common-interface-buffer-management-storage-objects-package">
 <h1>spinn_front_end_common.interface.buffer_management.storage_objects package<a class="headerlink" href="#spinn-front-end-common-interface-buffer-management-storage-objects-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-spinn_front_end_common.interface.buffer_management.storage_objects">
+<section id="module-spinn_front_end_common.interface.buffer_management.storage_objects">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.buffer_management.storage_objects" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></code><code class="sig-name descname"><span class="pre">AbstractDatabase</span></code><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></span><span class="sig-name descname"><span class="pre">AbstractDatabase</span></span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>This API separates the required database calls from the implementation.</p>
 <p>Methods here are designed for the convenience of the caller not the    database.</p>
@@ -60,8 +61,8 @@
 <p>Do not assume that just because 2 database objects where opened with the    same parameters (for example SQLite file)    that they hold the same data.     In fact the second init is allowed to delete any previous data.</p>
 <p>While not recommended implementation objects are allowed to hold data in     memory, with the exception of data required by the java which must be     in the database once commit is called.</p>
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">clear</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clears the data for all regions.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -76,8 +77,8 @@ keeping data after reset.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear_region">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">clear_region</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.clear_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear_region" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear_region">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">clear_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.clear_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear_region" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clears the data for a single region.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -102,15 +103,15 @@ keeping data after reset.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.close">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">close</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.close" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.close">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Signals that the database can be closed and will not be reused.</p>
 <p>Once this is called any other method in this API is allowed to        raise any kind of exception.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.get_region_data">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">get_region_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.get_region_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.get_region_data" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.get_region_data">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">get_region_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.get_region_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.get_region_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the data stored for a given region of a given core</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -137,8 +138,8 @@ necessarily shorter than 1GB.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.store_data_in_region_buffer">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">store_data_in_region_buffer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.store_data_in_region_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.store_data_in_region_buffer">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">store_data_in_region_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.store_data_in_region_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store some information in the corresponding buffer for a            specific chip, core and recording region.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -162,8 +163,8 @@ necessarily shorter than 1GB.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></code><code class="sig-name descname"><span class="pre">BufferedReceivingData</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></span><span class="sig-name descname"><span class="pre">BufferedReceivingData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Stores the information received through the buffering output        from the SpiNNaker system.</p>
 <dl class="field-list simple">
@@ -172,8 +173,8 @@ necessarily shorter than 1GB.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.clear">
-<code class="sig-name descname"><span class="pre">clear</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.clear" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.clear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clears the data from a given data region (only clears things            associated with a given data recording region).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -191,8 +192,8 @@ necessarily shorter than 1GB.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_data">
-<code class="sig-name descname"><span class="pre">get_region_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.get_region_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_data" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_data">
+<span class="sig-name descname"><span class="pre">get_region_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.get_region_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the data stored for a given region of a given core.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -214,8 +215,8 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_information">
-<code class="sig-name descname"><span class="pre">get_region_information</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.get_region_information"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_information" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_information">
+<span class="sig-name descname"><span class="pre">get_region_information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.get_region_information"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_information" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the size, address and is_missing of the region</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -233,8 +234,8 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.has_region_information">
-<code class="sig-name descname"><span class="pre">has_region_information</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.has_region_information"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.has_region_information" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.has_region_information">
+<span class="sig-name descname"><span class="pre">has_region_information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.has_region_information"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.has_region_information" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine if region information has been stored for this core</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -251,8 +252,8 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_data_from_region_flushed">
-<code class="sig-name descname"><span class="pre">is_data_from_region_flushed</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.is_data_from_region_flushed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_data_from_region_flushed" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_data_from_region_flushed">
+<span class="sig-name descname"><span class="pre">is_data_from_region_flushed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.is_data_from_region_flushed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_data_from_region_flushed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine if data has been stored for this region</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -267,20 +268,20 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.reset">
-<code class="sig-name descname"><span class="pre">reset</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.reset" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform tasks to restart recording from time=0</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.resume">
-<code class="sig-name descname"><span class="pre">resume</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.resume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.resume" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.resume">
+<span class="sig-name descname"><span class="pre">resume</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.resume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.resume" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform tasks that will continue running without resetting</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_data_in_region_buffer">
-<code class="sig-name descname"><span class="pre">store_data_in_region_buffer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.store_data_in_region_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_data_in_region_buffer">
+<span class="sig-name descname"><span class="pre">store_data_in_region_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.store_data_in_region_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store some information in the correspondent buffer class for a            specific chip, core and region.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -297,8 +298,8 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_region_information">
-<code class="sig-name descname"><span class="pre">store_region_information</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sizes_and_addresses</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.store_region_information"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_region_information" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_region_information">
+<span class="sig-name descname"><span class="pre">store_region_information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sizes_and_addresses</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.store_region_information"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_region_information" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store the sizes, addresses and is_missing data of the regions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -315,13 +316,13 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></code><code class="sig-name descname"><span class="pre">BufferedSendingRegion</span></code><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></span><span class="sig-name descname"><span class="pre">BufferedSendingRegion</span></span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A set of keys to be sent at given timestamps for a given region of        data.  Note that keys must be added in timestamp order or else an        exception will be raised.</p>
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_key">
-<code class="sig-name descname"><span class="pre">add_key</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.add_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_key" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_key">
+<span class="sig-name descname"><span class="pre">add_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.add_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a key to be sent at a given time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -334,8 +335,8 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_keys">
-<code class="sig-name descname"><span class="pre">add_keys</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.add_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_keys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_keys">
+<span class="sig-name descname"><span class="pre">add_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.add_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a set of keys to be sent at the given time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -348,20 +349,20 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.clear">
-<code class="sig-name descname"><span class="pre">clear</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.clear" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.clear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clears the buffer.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.current_timestamp">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">current_timestamp</span></code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.current_timestamp" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.current_timestamp">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">current_timestamp</span></span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.current_timestamp" title="Permalink to this definition">¶</a></dt>
 <dd><p>The current timestamp in the iterator.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.get_n_keys">
-<code class="sig-name descname"><span class="pre">get_n_keys</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.get_n_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.get_n_keys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.get_n_keys">
+<span class="sig-name descname"><span class="pre">get_n_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.get_n_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.get_n_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the number of keys for a given timestamp.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -371,8 +372,8 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_key">
-<code class="sig-name descname"><span class="pre">is_next_key</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.is_next_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_key" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_key">
+<span class="sig-name descname"><span class="pre">is_next_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.is_next_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine if there is another key for the given timestamp.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -381,9 +382,9 @@ simulation, and a flag indicating if any data was missing</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_timestamp">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_next_timestamp</span></code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_timestamp" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_timestamp">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">is_next_timestamp</span></span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_timestamp" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Determines if the region is empty.</dt><dd><p>True if the region is empty, false otherwise.</p>
 </dd>
@@ -395,9 +396,9 @@ simulation, and a flag indicating if any data was missing</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.n_timestamps">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">n_timestamps</span></code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.n_timestamps" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.n_timestamps">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">n_timestamps</span></span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.n_timestamps" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of timestamps available.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -406,9 +407,9 @@ simulation, and a flag indicating if any data was missing</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.next_key">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">next_key</span></code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.next_key" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.next_key">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">next_key</span></span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.next_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>The next key to be sent.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -417,9 +418,9 @@ simulation, and a flag indicating if any data was missing</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.next_timestamp">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">next_timestamp</span></code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.next_timestamp" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.next_timestamp">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">next_timestamp</span></span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.next_timestamp" title="Permalink to this definition">¶</a></dt>
 <dd><p>The next timestamp of the data to be sent, or None if no more data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -429,14 +430,14 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.rewind">
-<code class="sig-name descname"><span class="pre">rewind</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.rewind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.rewind" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.rewind">
+<span class="sig-name descname"><span class="pre">rewind</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_sending_region.html#BufferedSendingRegion.rewind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.rewind" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rewind the buffer to initial position.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.timestamps">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">timestamps</span></code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.timestamps" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.timestamps">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">timestamps</span></span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.timestamps" title="Permalink to this definition">¶</a></dt>
 <dd><p>The timestamps for which there are keys.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -448,8 +449,8 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></code><code class="sig-name descname"><span class="pre">BuffersSentDeque</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sent_stop_message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sequences_per_tranmission</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffers_sent_deque.html#BuffersSentDeque"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></span><span class="sig-name descname"><span class="pre">BuffersSentDeque</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sent_stop_message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sequences_per_tranmission</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A tracker of buffers sent / to send for a region</p>
 <dl class="field-list simple">
@@ -462,8 +463,8 @@ simulation, and a flag indicating if any data was missing</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.add_message_to_send">
-<code class="sig-name descname"><span class="pre">add_message_to_send</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffers_sent_deque.html#BuffersSentDeque.add_message_to_send"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.add_message_to_send" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.add_message_to_send">
+<span class="sig-name descname"><span class="pre">add_message_to_send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffers_sent_deque.html#BuffersSentDeque.add_message_to_send"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.add_message_to_send" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a message to send.  The message is converted to a sequenced            message.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -473,8 +474,8 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_empty">
-<code class="sig-name descname"><span class="pre">is_empty</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffers_sent_deque.html#BuffersSentDeque.is_empty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_empty" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_empty">
+<span class="sig-name descname"><span class="pre">is_empty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffers_sent_deque.html#BuffersSentDeque.is_empty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_empty" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine if there are no messages.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -483,9 +484,9 @@ simulation, and a flag indicating if any data was missing</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_full">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_full</span></code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_full" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_full">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">is_full</span></span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_full" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine if the number of messages sent is at the limit for the            sequencing system.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -494,9 +495,9 @@ simulation, and a flag indicating if any data was missing</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.messages">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">messages</span></code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.messages" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.messages">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">messages</span></span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.messages" title="Permalink to this definition">¶</a></dt>
 <dd><p>The messages that have been added to the set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -506,14 +507,14 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.send_stop_message">
-<code class="sig-name descname"><span class="pre">send_stop_message</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffers_sent_deque.html#BuffersSentDeque.send_stop_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.send_stop_message" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.send_stop_message">
+<span class="sig-name descname"><span class="pre">send_stop_message</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffers_sent_deque.html#BuffersSentDeque.send_stop_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.send_stop_message" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a message to indicate the end of all the messages.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.update_last_received_sequence_number">
-<code class="sig-name descname"><span class="pre">update_last_received_sequence_number</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">last_received_sequence_no</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffers_sent_deque.html#BuffersSentDeque.update_last_received_sequence_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.update_last_received_sequence_number" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.update_last_received_sequence_number">
+<span class="sig-name descname"><span class="pre">update_last_received_sequence_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">last_received_sequence_no</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffers_sent_deque.html#BuffersSentDeque.update_last_received_sequence_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.update_last_received_sequence_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>Updates the last received sequence number.  If the sequence number            is within the valid window, packets before the sequence number            within the window are removed, and the last received sequence            number is updated, thus moving the window for the next call.  If            the sequence number is not within the valid window, it is assumed            to be invalid and so is ignored.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -531,8 +532,8 @@ simulation, and a flag indicating if any data was missing</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></code><code class="sig-name descname"><span class="pre">SqlLiteDatabase</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></span><span class="sig-name descname"><span class="pre">SqlLiteDatabase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.utilities.sqlite_db.SQLiteDB</span></code></a>, <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_utilities.abstract_context_manager.AbstractContextManager</span></code></a></p>
 <p>Specific implementation of the Database for SQLite 3.</p>
 <div class="admonition note">
@@ -548,8 +549,8 @@ database will be used.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear">
-<code class="sig-name descname"><span class="pre">clear</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clears the data for all regions.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -564,8 +565,8 @@ keeping data after reset.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear_region">
-<code class="sig-name descname"><span class="pre">clear_region</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.clear_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear_region" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear_region">
+<span class="sig-name descname"><span class="pre">clear_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.clear_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear_region" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clears the data for a single region.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -590,8 +591,8 @@ keeping data after reset.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.get_region_data">
-<code class="sig-name descname"><span class="pre">get_region_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.get_region_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.get_region_data" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.get_region_data">
+<span class="sig-name descname"><span class="pre">get_region_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.get_region_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.get_region_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the data stored for a given region of a given core</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -618,8 +619,8 @@ necessarily shorter than 1GB.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.store_data_in_region_buffer">
-<code class="sig-name descname"><span class="pre">store_data_in_region_buffer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.store_data_in_region_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.store_data_in_region_buffer">
+<span class="sig-name descname"><span class="pre">store_data_in_region_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.store_data_in_region_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store some information in the corresponding buffer for a            specific chip, core and recording region.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -642,8 +643,8 @@ necessarily shorter than 1GB.</p>
 
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -712,7 +713,7 @@ necessarily shorter than 1GB.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.0.
     </div>
   </body>
 </html>

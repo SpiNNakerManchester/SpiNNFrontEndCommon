@@ -6,9 +6,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>spinn_front_end_common.interface.interface_functions.graph_measurer &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
-    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinxdoc.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
     <script src="../../../../_static/doctools.js"></script>
@@ -57,7 +57,7 @@
     <span class="n">sort_vertices_by_known_constraints</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="GraphMeasurer"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.GraphMeasurer">[docs]</a><span class="k">class</span> <span class="nc">GraphMeasurer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">GraphMeasurer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Works out how many chips a machine graph needs.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -88,7 +88,7 @@
         <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">ordered_vertices</span><span class="p">):</span>
             <span class="n">resource_tracker</span><span class="o">.</span><span class="n">allocate_constrained_resources</span><span class="p">(</span>
                 <span class="n">vertex</span><span class="o">.</span><span class="n">resources_required</span><span class="p">,</span> <span class="n">vertex</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">resource_tracker</span><span class="o">.</span><span class="n">keys</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">resource_tracker</span><span class="o">.</span><span class="n">keys</span><span class="p">)</span></div>
 </pre></div>
 
             <div class="clearer"></div>
@@ -128,7 +128,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.0.
     </div>
   </body>
 </html>

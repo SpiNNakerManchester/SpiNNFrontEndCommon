@@ -4,11 +4,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>spinn_front_end_common.interface package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -44,9 +45,9 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="spinn-front-end-common-interface-package">
+  <section id="spinn-front-end-common-interface-package">
 <h1>spinn_front_end_common.interface package<a class="headerlink" href="#spinn-front-end-common-interface-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="subpackages">
+<section id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
@@ -91,17 +92,17 @@
 </li>
 </ul>
 </div>
-</div>
-<div class="section" id="submodules">
+</section>
+<section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="module-spinn_front_end_common.interface.abstract_spinnaker_base">
+</section>
+<section id="module-spinn_front_end_common.interface.abstract_spinnaker_base">
 <span id="spinn-front-end-common-interface-abstract-spinnaker-base-module"></span><h2>spinn_front_end_common.interface.abstract_spinnaker_base module<a class="headerlink" href="#module-spinn_front_end_common.interface.abstract_spinnaker_base" title="Permalink to this headline">¶</a></h2>
 <p>main interface for the SpiNNaker tools</p>
 <dl class="py class">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.abstract_spinnaker_base.</span></code><code class="sig-name descname"><span class="pre">AbstractSpinnakerBase</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executable_finder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database_socket_addresses</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_algorithm_xml_paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_chips_required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_boards_required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">front_end_versions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.interface.config_handler.ConfigHandler" title="spinn_front_end_common.interface.config_handler.ConfigHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.config_handler.ConfigHandler</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.utilities.simulator_interface.SimulatorInterface</span></code></p>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.abstract_spinnaker_base.</span></span><span class="sig-name descname"><span class="pre">AbstractSpinnakerBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executable_finder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database_socket_addresses</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_algorithm_xml_paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_chips_required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_boards_required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">front_end_versions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.interface.config_handler.ConfigHandler" title="spinn_front_end_common.interface.config_handler.ConfigHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.config_handler.ConfigHandler</span></code></a>, <a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.SimulatorInterface" title="spinn_front_end_common.utilities.SimulatorInterface"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.utilities.SimulatorInterface</span></code></a></p>
 <p>Main interface into the tools logic flow.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -117,8 +118,8 @@
 </dd>
 </dl>
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_application_edge">
-<code class="sig-name descname"><span class="pre">add_application_edge</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_to_add</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_identifier</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_application_edge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_application_edge" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_application_edge">
+<span class="sig-name descname"><span class="pre">add_application_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_to_add</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_identifier</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_application_edge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_application_edge" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -130,8 +131,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_application_vertex">
-<code class="sig-name descname"><span class="pre">add_application_vertex</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_application_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_application_vertex" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_application_vertex">
+<span class="sig-name descname"><span class="pre">add_application_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_application_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_application_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v6.0)"><em>ApplicationVertex</em></a>) – the vertex to add to the graph</p>
@@ -146,8 +147,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_extraction_timing">
-<code class="sig-name descname"><span class="pre">add_extraction_timing</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timing</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_extraction_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_extraction_timing" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_extraction_timing">
+<span class="sig-name descname"><span class="pre">add_extraction_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timing</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_extraction_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_extraction_timing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Record the time taken for doing data extraction.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -157,8 +158,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_live_packet_gatherer_parameters">
-<code class="sig-name descname"><span class="pre">add_live_packet_gatherer_parameters</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">live_packet_gatherer_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertex_to_record_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_ids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_live_packet_gatherer_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_live_packet_gatherer_parameters" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_live_packet_gatherer_parameters">
+<span class="sig-name descname"><span class="pre">add_live_packet_gatherer_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">live_packet_gatherer_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertex_to_record_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_ids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_live_packet_gatherer_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_live_packet_gatherer_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds parameters for a new LPG if needed, or adds to the tracker             for parameters. Note that LPGs can be inserted to track behaviour             either at the application graph level or at the machine graph             level, but not both at the same time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -172,8 +173,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_machine_edge">
-<code class="sig-name descname"><span class="pre">add_machine_edge</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_machine_edge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_machine_edge" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_machine_edge">
+<span class="sig-name descname"><span class="pre">add_machine_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_machine_edge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_machine_edge" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -185,8 +186,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_machine_vertex">
-<code class="sig-name descname"><span class="pre">add_machine_vertex</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_machine_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_machine_vertex" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_machine_vertex">
+<span class="sig-name descname"><span class="pre">add_machine_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_machine_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_machine_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><em>MachineVertex</em></a>) – the vertex to add to the graph</p>
@@ -201,8 +202,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_socket_address">
-<code class="sig-name descname"><span class="pre">add_socket_address</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">socket_address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_socket_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_socket_address" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_socket_address">
+<span class="sig-name descname"><span class="pre">add_socket_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">socket_address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_socket_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_socket_address" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add the address of a socket used in the run notification protocol.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -211,9 +212,9 @@
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.application_graph">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">application_graph</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.application_graph" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.application_graph">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">application_graph</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.application_graph" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>The frozen clone of the application graph used to derive the</dt><dd><p>runtime machine configuration.</p>
 </dd>
@@ -225,9 +226,9 @@
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.buffer_manager">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">buffer_manager</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.buffer_manager" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.buffer_manager">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">buffer_manager</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.buffer_manager" title="Permalink to this definition">¶</a></dt>
 <dd><p>The buffer manager being used for loading/extracting buffers</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -237,14 +238,14 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.continue_simulation">
-<code class="sig-name descname"><span class="pre">continue_simulation</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.continue_simulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.continue_simulation" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.continue_simulation">
+<span class="sig-name descname"><span class="pre">continue_simulation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.continue_simulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.continue_simulation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Continue a simulation that has been started in stepped mode</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.dsg_algorithm">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">dsg_algorithm</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.dsg_algorithm" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.dsg_algorithm">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">dsg_algorithm</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.dsg_algorithm" title="Permalink to this definition">¶</a></dt>
 <dd><p>The DSG algorithm used by the tools</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -254,8 +255,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.exception_handler">
-<code class="sig-name descname"><span class="pre">exception_handler</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exctype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traceback_obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.exception_handler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.exception_handler" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.exception_handler">
+<span class="sig-name descname"><span class="pre">exception_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exctype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traceback_obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.exception_handler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.exception_handler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Handler of exceptions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -269,8 +270,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.extend_extra_load_algorithms">
-<code class="sig-name descname"><span class="pre">extend_extra_load_algorithms</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_load_algorithms</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.extend_extra_load_algorithms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.extend_extra_load_algorithms" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.extend_extra_load_algorithms">
+<span class="sig-name descname"><span class="pre">extend_extra_load_algorithms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_load_algorithms</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.extend_extra_load_algorithms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.extend_extra_load_algorithms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add custom data-loading algorithms to the sequence of             such algorithms to be run.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -280,8 +281,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.extend_extra_mapping_algorithms">
-<code class="sig-name descname"><span class="pre">extend_extra_mapping_algorithms</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_mapping_algorithms</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.extend_extra_mapping_algorithms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.extend_extra_mapping_algorithms" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.extend_extra_mapping_algorithms">
+<span class="sig-name descname"><span class="pre">extend_extra_mapping_algorithms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_mapping_algorithms</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.extend_extra_mapping_algorithms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.extend_extra_mapping_algorithms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add custom mapping algorithms to the end of the sequence of             mapping algorithms to be run.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -291,8 +292,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.extend_extra_post_run_algorithms">
-<code class="sig-name descname"><span class="pre">extend_extra_post_run_algorithms</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_post_run_algorithms</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.extend_extra_post_run_algorithms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.extend_extra_post_run_algorithms" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.extend_extra_post_run_algorithms">
+<span class="sig-name descname"><span class="pre">extend_extra_post_run_algorithms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_post_run_algorithms</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.extend_extra_post_run_algorithms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.extend_extra_post_run_algorithms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add custom post-execution algorithms to the sequence of             such algorithms to be run.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -301,9 +302,9 @@
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.fixed_routes">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">fixed_routes</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.fixed_routes" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.fixed_routes">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">fixed_routes</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.fixed_routes" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.FixedRouteEntry" title="(in SpiNNMachine v6.0)">FixedRouteEntry</a>)</p>
@@ -312,8 +313,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_current_time">
-<code class="sig-name descname"><span class="pre">get_current_time</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.get_current_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_current_time" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_current_time">
+<span class="sig-name descname"><span class="pre">get_current_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.get_current_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_current_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the current simulation time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -323,8 +324,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_generated_output">
-<code class="sig-name descname"><span class="pre">get_generated_output</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name_of_variable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.get_generated_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_generated_output" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_generated_output">
+<span class="sig-name descname"><span class="pre">get_generated_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name_of_variable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.get_generated_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_generated_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the value of an inter-algorithm variable.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -340,9 +341,9 @@ not found.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_number_of_available_cores_on_machine">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">get_number_of_available_cores_on_machine</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_number_of_available_cores_on_machine" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_number_of_available_cores_on_machine">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">get_number_of_available_cores_on_machine</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_number_of_available_cores_on_machine" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of available cores on the machine after taking            into account preallocated resources.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -354,9 +355,9 @@ not found.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.has_ran">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">has_ran</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.has_ran" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.has_ran">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">has_ran</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.has_ran" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether the simulation has executed anything at all.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -365,20 +366,20 @@ not found.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.has_reset_last">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">has_reset_last</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.has_reset_last" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.has_reset_last">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">has_reset_last</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.has_reset_last" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.increment_none_labelled_edge_count">
-<code class="sig-name descname"><span class="pre">increment_none_labelled_edge_count</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.increment_none_labelled_edge_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.increment_none_labelled_edge_count" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.increment_none_labelled_edge_count">
+<span class="sig-name descname"><span class="pre">increment_none_labelled_edge_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.increment_none_labelled_edge_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.increment_none_labelled_edge_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>Increment the number of new edges which have not been labelled.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.machine">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">machine</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.machine" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.machine">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">machine</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.machine" title="Permalink to this definition">¶</a></dt>
 <dd><p>The python machine description object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -387,16 +388,16 @@ not found.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.machine_graph">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">machine_graph</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.machine_graph" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.machine_graph">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">machine_graph</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.machine_graph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a frozen clone of the machine_graph
 :rtype: ~pacman.model.graphs.machine.MachineGraph</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.no_machine_time_steps">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">no_machine_time_steps</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.no_machine_time_steps" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.no_machine_time_steps">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">no_machine_time_steps</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.no_machine_time_steps" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of machine time steps.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -405,9 +406,9 @@ not found.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.none_labelled_edge_count">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">none_labelled_edge_count</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.none_labelled_edge_count" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.none_labelled_edge_count">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">none_labelled_edge_count</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.none_labelled_edge_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of times edges have not been labelled.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -416,9 +417,9 @@ not found.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_application_graph">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">original_application_graph</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_application_graph" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_application_graph">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">original_application_graph</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_application_graph" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v6.0)">ApplicationGraph</a></p>
@@ -426,9 +427,9 @@ not found.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_machine_graph">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">original_machine_graph</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_machine_graph" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_machine_graph">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">original_machine_graph</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_machine_graph" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)">MachineGraph</a></p>
@@ -436,9 +437,9 @@ not found.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.placements">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">placements</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.placements" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.placements">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">placements</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.placements" title="Permalink to this definition">¶</a></dt>
 <dd><p>Where machine vertices are placed on the machine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -448,8 +449,8 @@ not found.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.prepend_extra_pre_run_algorithms">
-<code class="sig-name descname"><span class="pre">prepend_extra_pre_run_algorithms</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_pre_run_algorithms</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.prepend_extra_pre_run_algorithms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.prepend_extra_pre_run_algorithms" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.prepend_extra_pre_run_algorithms">
+<span class="sig-name descname"><span class="pre">prepend_extra_pre_run_algorithms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_pre_run_algorithms</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.prepend_extra_pre_run_algorithms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.prepend_extra_pre_run_algorithms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add custom pre-execution algorithms to the front of the sequence             of algorithms to be run.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -459,14 +460,14 @@ not found.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.reset">
-<code class="sig-name descname"><span class="pre">reset</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.reset" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Code that puts the simulation back at time zero</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.routing_infos">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">routing_infos</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.routing_infos" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.routing_infos">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">routing_infos</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.routing_infos" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN v6.0)">RoutingInfo</a></p>
@@ -475,8 +476,8 @@ not found.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run">
-<code class="sig-name descname"><span class="pre">run</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a simulation for a fixed amount of time</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -491,8 +492,8 @@ called for the simulation to continue.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run_until_complete">
-<code class="sig-name descname"><span class="pre">run_until_complete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.run_until_complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run_until_complete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run_until_complete">
+<span class="sig-name descname"><span class="pre">run_until_complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.run_until_complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run_until_complete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a simulation until it completes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -504,8 +505,8 @@ still wait until the simulation itself says it has completed</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_n_boards_required">
-<code class="sig-name descname"><span class="pre">set_n_boards_required</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_boards_required</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.set_n_boards_required"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_n_boards_required" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_n_boards_required">
+<span class="sig-name descname"><span class="pre">set_n_boards_required</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_boards_required</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.set_n_boards_required"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_n_boards_required" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the machine requirements.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -524,8 +525,8 @@ If any machine requirements have already been set</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_up_machine_specifics">
-<code class="sig-name descname"><span class="pre">set_up_machine_specifics</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.set_up_machine_specifics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_up_machine_specifics" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_up_machine_specifics">
+<span class="sig-name descname"><span class="pre">set_up_machine_specifics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.set_up_machine_specifics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_up_machine_specifics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds machine specifics for the different modes of execution.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -535,8 +536,8 @@ If any machine requirements have already been set</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop">
-<code class="sig-name descname"><span class="pre">stop</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">turn_off_machine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clear_routing_tables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clear_tags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">turn_off_machine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clear_routing_tables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clear_tags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop" title="Permalink to this definition">¶</a></dt>
 <dd><p>End running of the simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -554,8 +555,8 @@ tags off the machine at stop</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop_run">
-<code class="sig-name descname"><span class="pre">stop_run</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.stop_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop_run" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop_run">
+<span class="sig-name descname"><span class="pre">stop_run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.stop_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop_run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request that the current infinite run stop.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -563,9 +564,9 @@ tags off the machine at stop</p></li>
 </div>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.tags">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">tags</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.tags" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.tags">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">tags</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.tags" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v6.0)">Tags</a></p>
@@ -573,9 +574,9 @@ tags off the machine at stop</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.transceiver">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">transceiver</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.transceiver" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.transceiver">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">transceiver</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.transceiver" title="Permalink to this definition">¶</a></dt>
 <dd><p>How to talk to the machine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -585,8 +586,8 @@ tags off the machine at stop</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.update_extra_inputs">
-<code class="sig-name descname"><span class="pre">update_extra_inputs</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.update_extra_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.update_extra_inputs" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.update_extra_inputs">
+<span class="sig-name descname"><span class="pre">update_extra_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.update_extra_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.update_extra_inputs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Supply extra inputs to the runtime algorithms. Mappings are from            known names (the logical type names) to the values to bind to them.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -596,8 +597,8 @@ tags off the machine at stop</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.update_extra_mapping_inputs">
-<code class="sig-name descname"><span class="pre">update_extra_mapping_inputs</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_mapping_inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.update_extra_mapping_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.update_extra_mapping_inputs" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.update_extra_mapping_inputs">
+<span class="sig-name descname"><span class="pre">update_extra_mapping_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_mapping_inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.update_extra_mapping_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.update_extra_mapping_inputs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Supply extra inputs to the mapping algorithms. Mappings are from            known names (the logical type names) to the values to bind to them.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -606,9 +607,9 @@ tags off the machine at stop</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.use_virtual_board">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">use_virtual_board</span></code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.use_virtual_board" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.use_virtual_board">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">use_virtual_board</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.use_virtual_board" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>bool
@@ -621,36 +622,36 @@ True if this run is using a virtual machine</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.verify_not_running">
-<code class="sig-name descname"><span class="pre">verify_not_running</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.verify_not_running"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.verify_not_running" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.verify_not_running">
+<span class="sig-name descname"><span class="pre">verify_not_running</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.verify_not_running"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.verify_not_running" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify that the simulator is in a state where it can start running.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py data">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.DEFAULT_N_VIRTUAL_CORES">
-<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.abstract_spinnaker_base.</span></code><code class="sig-name descname"><span class="pre">DEFAULT_N_VIRTUAL_CORES</span></code><em class="property"> <span class="pre">=</span> <span class="pre">16</span></em><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.DEFAULT_N_VIRTUAL_CORES" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.DEFAULT_N_VIRTUAL_CORES">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.abstract_spinnaker_base.</span></span><span class="sig-name descname"><span class="pre">DEFAULT_N_VIRTUAL_CORES</span></span><em class="property"> <span class="pre">=</span> <span class="pre">16</span></em><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.DEFAULT_N_VIRTUAL_CORES" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of cores to be used when using a Virtual Machine and not specified</p>
 </dd></dl>
 
 <dl class="py data">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.MINIMUM_OFF_STATE_TIME">
-<code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.abstract_spinnaker_base.</span></code><code class="sig-name descname"><span class="pre">MINIMUM_OFF_STATE_TIME</span></code><em class="property"> <span class="pre">=</span> <span class="pre">20</span></em><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.MINIMUM_OFF_STATE_TIME" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.MINIMUM_OFF_STATE_TIME">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.abstract_spinnaker_base.</span></span><span class="sig-name descname"><span class="pre">MINIMUM_OFF_STATE_TIME</span></span><em class="property"> <span class="pre">=</span> <span class="pre">20</span></em><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.MINIMUM_OFF_STATE_TIME" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum time a board is kept in the off state, in seconds</p>
 </dd></dl>
 
-</div>
-<div class="section" id="module-spinn_front_end_common.interface.config_handler">
+</section>
+<section id="module-spinn_front_end_common.interface.config_handler">
 <span id="spinn-front-end-common-interface-config-handler-module"></span><h2>spinn_front_end_common.interface.config_handler module<a class="headerlink" href="#module-spinn_front_end_common.interface.config_handler" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="spinn_front_end_common.interface.config_handler.ConfigHandler">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.config_handler.</span></code><code class="sig-name descname"><span class="pre">ConfigHandler</span></code><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_handler.html#ConfigHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.config_handler.ConfigHandler">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.config_handler.</span></span><span class="sig-name descname"><span class="pre">ConfigHandler</span></span><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_handler.html#ConfigHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Superclass of AbstractSpinnakerBase that handles function only         dependent of the config and the order its methods are called.</p>
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.config_handler.ConfigHandler.child_folder">
-<code class="sig-name descname"><span class="pre">child_folder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">must_create</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_handler.html#ConfigHandler.child_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.child_folder" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.config_handler.ConfigHandler.child_folder">
+<span class="sig-name descname"><span class="pre">child_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">must_create</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_handler.html#ConfigHandler.child_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.child_folder" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -674,9 +675,9 @@ was required by the user</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.config_handler.ConfigHandler.machine_time_step">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">machine_time_step</span></code><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.machine_time_step" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.config_handler.ConfigHandler.machine_time_step">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">machine_time_step</span></span><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.machine_time_step" title="Permalink to this definition">¶</a></dt>
 <dd><p>The machine timestep, in microseconds</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -686,8 +687,8 @@ was required by the user</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.config_handler.ConfigHandler.set_up_timings">
-<code class="sig-name descname"><span class="pre">set_up_timings</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_time_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_scale_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_handler.html#ConfigHandler.set_up_timings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.set_up_timings" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.config_handler.ConfigHandler.set_up_timings">
+<span class="sig-name descname"><span class="pre">set_up_timings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_time_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_scale_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_handler.html#ConfigHandler.set_up_timings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.set_up_timings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up timings of the machine</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -701,9 +702,9 @@ If None, the value is read from the config</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="spinn_front_end_common.interface.config_handler.ConfigHandler.time_scale_factor">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">time_scale_factor</span></code><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.time_scale_factor" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.config_handler.ConfigHandler.time_scale_factor">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">time_scale_factor</span></span><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.time_scale_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>The time scaling factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -713,20 +714,20 @@ If None, the value is read from the config</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.config_handler.ConfigHandler.write_finished_file">
-<code class="sig-name descname"><span class="pre">write_finished_file</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_handler.html#ConfigHandler.write_finished_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.write_finished_file" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.config_handler.ConfigHandler.write_finished_file">
+<span class="sig-name descname"><span class="pre">write_finished_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_handler.html#ConfigHandler.write_finished_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.write_finished_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a finished file that allows file removal to only remove
 folders that are finished.</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-spinn_front_end_common.interface.java_caller">
+</section>
+<section id="module-spinn_front_end_common.interface.java_caller">
 <span id="spinn-front-end-common-interface-java-caller-module"></span><h2>spinn_front_end_common.interface.java_caller module<a class="headerlink" href="#module-spinn_front_end_common.interface.java_caller" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="spinn_front_end_common.interface.java_caller.JavaCaller">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.java_caller.</span></code><code class="sig-name descname"><span class="pre">JavaCaller</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_call</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_spinnaker_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_properties</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_jar_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.java_caller.JavaCaller">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.java_caller.</span></span><span class="sig-name descname"><span class="pre">JavaCaller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_call</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_spinnaker_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_properties</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_jar_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Support class that holds all the stuff for running stuff in Java.
 This includes the work of preparing data for transmitting to Java and        back.</p>
@@ -752,8 +753,8 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 </dd>
 </dl>
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.java_caller.JavaCaller.execute_app_data_specification">
-<code class="sig-name descname"><span class="pre">execute_app_data_specification</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_monitors</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.execute_app_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.execute_app_data_specification" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.java_caller.JavaCaller.execute_app_data_specification">
+<span class="sig-name descname"><span class="pre">execute_app_data_specification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_monitors</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.execute_app_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.execute_app_data_specification" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Writes all the data specs for application cores,</dt><dd><p>uploading the result to the machine.</p>
 </dd>
@@ -769,8 +770,8 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.java_caller.JavaCaller.execute_data_specification">
-<code class="sig-name descname"><span class="pre">execute_data_specification</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.execute_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.execute_data_specification" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.java_caller.JavaCaller.execute_data_specification">
+<span class="sig-name descname"><span class="pre">execute_data_specification</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.execute_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.execute_data_specification" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes all the data specs, uploading the result to the machine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises</dt>
@@ -780,8 +781,8 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.java_caller.JavaCaller.execute_system_data_specification">
-<code class="sig-name descname"><span class="pre">execute_system_data_specification</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.execute_system_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.execute_system_data_specification" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.java_caller.JavaCaller.execute_system_data_specification">
+<span class="sig-name descname"><span class="pre">execute_system_data_specification</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.execute_system_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.execute_system_data_specification" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Writes all the data specs for system cores,</dt><dd><p>uploading the result to the machine.</p>
 </dd>
@@ -794,8 +795,8 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.java_caller.JavaCaller.get_all_data">
-<code class="sig-name descname"><span class="pre">get_all_data</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.get_all_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.get_all_data" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.java_caller.JavaCaller.get_all_data">
+<span class="sig-name descname"><span class="pre">get_all_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.get_all_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.get_all_data" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Gets all the data from the previously set placements</dt><dd><p>and put these in the previously set database.</p>
 </dd>
@@ -808,8 +809,8 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.java_caller.JavaCaller.set_advanced_monitors">
-<code class="sig-name descname"><span class="pre">set_advanced_monitors</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor_cores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packet_gathers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.set_advanced_monitors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.set_advanced_monitors" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.java_caller.JavaCaller.set_advanced_monitors">
+<span class="sig-name descname"><span class="pre">set_advanced_monitors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor_cores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packet_gathers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.set_advanced_monitors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.set_advanced_monitors" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -826,8 +827,8 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.java_caller.JavaCaller.set_machine">
-<code class="sig-name descname"><span class="pre">set_machine</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.set_machine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.set_machine" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.java_caller.JavaCaller.set_machine">
+<span class="sig-name descname"><span class="pre">set_machine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.set_machine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.set_machine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Passes the machine in leaving this class to decide pass it to Java.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -837,8 +838,8 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.java_caller.JavaCaller.set_placements">
-<code class="sig-name descname"><span class="pre">set_placements</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.set_placements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.set_placements" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.java_caller.JavaCaller.set_placements">
+<span class="sig-name descname"><span class="pre">set_placements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.set_placements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.set_placements" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Passes in the placements leaving this class to decide pass it to</dt><dd><p>Java.</p>
 </dd>
@@ -861,8 +862,8 @@ database.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="spinn_front_end_common.interface.java_caller.JavaCaller.set_report_folder">
-<code class="sig-name descname"><span class="pre">set_report_folder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.set_report_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.set_report_folder" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.java_caller.JavaCaller.set_report_folder">
+<span class="sig-name descname"><span class="pre">set_report_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.set_report_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.set_report_folder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Passes the database file in.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -874,57 +875,57 @@ write.</p>
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-spinn_front_end_common.interface.simulator_state">
+</section>
+<section id="module-spinn_front_end_common.interface.simulator_state">
 <span id="spinn-front-end-common-interface-simulator-state-module"></span><h2>spinn_front_end_common.interface.simulator_state module<a class="headerlink" href="#module-spinn_front_end_common.interface.simulator_state" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="spinn_front_end_common.interface.simulator_state.Simulator_State">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.simulator_state.</span></code><code class="sig-name descname"><span class="pre">Simulator_State</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/simulator_state.html#Simulator_State"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulator_state.Simulator_State">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.simulator_state.</span></span><span class="sig-name descname"><span class="pre">Simulator_State</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/simulator_state.html#Simulator_State"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/enum.html#enum.Enum" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
 <p>Different states the Simulator could be in.</p>
 <dl class="py attribute">
-<dt id="spinn_front_end_common.interface.simulator_state.Simulator_State.FINISHED">
-<code class="sig-name descname"><span class="pre">FINISHED</span></code><em class="property"> <span class="pre">=</span> <span class="pre">3</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.FINISHED" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulator_state.Simulator_State.FINISHED">
+<span class="sig-name descname"><span class="pre">FINISHED</span></span><em class="property"> <span class="pre">=</span> <span class="pre">3</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.FINISHED" title="Permalink to this definition">¶</a></dt>
 <dd><p>run ended shutdown not called</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="spinn_front_end_common.interface.simulator_state.Simulator_State.INIT">
-<code class="sig-name descname"><span class="pre">INIT</span></code><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.INIT" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulator_state.Simulator_State.INIT">
+<span class="sig-name descname"><span class="pre">INIT</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.INIT" title="Permalink to this definition">¶</a></dt>
 <dd><p>init called</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="spinn_front_end_common.interface.simulator_state.Simulator_State.IN_RUN">
-<code class="sig-name descname"><span class="pre">IN_RUN</span></code><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.IN_RUN" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulator_state.Simulator_State.IN_RUN">
+<span class="sig-name descname"><span class="pre">IN_RUN</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.IN_RUN" title="Permalink to this definition">¶</a></dt>
 <dd><p>inside run method</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="spinn_front_end_common.interface.simulator_state.Simulator_State.RUN_FOREVER">
-<code class="sig-name descname"><span class="pre">RUN_FOREVER</span></code><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.RUN_FOREVER" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulator_state.Simulator_State.RUN_FOREVER">
+<span class="sig-name descname"><span class="pre">RUN_FOREVER</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.RUN_FOREVER" title="Permalink to this definition">¶</a></dt>
 <dd><p>finished run method, but running forever</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="spinn_front_end_common.interface.simulator_state.Simulator_State.SHUTDOWN">
-<code class="sig-name descname"><span class="pre">SHUTDOWN</span></code><em class="property"> <span class="pre">=</span> <span class="pre">4</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.SHUTDOWN" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulator_state.Simulator_State.SHUTDOWN">
+<span class="sig-name descname"><span class="pre">SHUTDOWN</span></span><em class="property"> <span class="pre">=</span> <span class="pre">4</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.SHUTDOWN" title="Permalink to this definition">¶</a></dt>
 <dd><p>shutdown called</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="spinn_front_end_common.interface.simulator_state.Simulator_State.STOP_REQUESTED">
-<code class="sig-name descname"><span class="pre">STOP_REQUESTED</span></code><em class="property"> <span class="pre">=</span> <span class="pre">5</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.STOP_REQUESTED" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulator_state.Simulator_State.STOP_REQUESTED">
+<span class="sig-name descname"><span class="pre">STOP_REQUESTED</span></span><em class="property"> <span class="pre">=</span> <span class="pre">5</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.STOP_REQUESTED" title="Permalink to this definition">¶</a></dt>
 <dd><p>stop requested in middle of run forever</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-spinn_front_end_common.interface">
+</section>
+<section id="module-spinn_front_end_common.interface">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface" title="Permalink to this headline">¶</a></h2>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -997,7 +998,7 @@ write.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.0.
     </div>
   </body>
 </html>
