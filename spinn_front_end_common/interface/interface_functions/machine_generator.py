@@ -15,7 +15,6 @@
 
 import re
 
-from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinnman.connections import SocketAddressWithChip
 from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
@@ -91,22 +90,13 @@ class MachineGenerator(object):
                 self._parse_scamp_connection(piece)
                 for piece in scamp_connection_data.split(":")]
 
-        ignore_bad_ethernets = get_config_bool(
-            "Machine", "ignore_bad_ethernets")
-        repair_machine = get_config_bool("Machine", "repair_machine")
-        report_waiting_logs = get_config_bool(
-            "Machine", "report_waiting_logs")
-
         txrx = create_transceiver_from_hostname(
             hostname=hostname,
             bmp_connection_data=self._parse_bmp_details(bmp_details),
             version=board_version,
             auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
-            repair_machine=repair_machine,
-            ignore_bad_ethernets=ignore_bad_ethernets,
-            default_report_directory=default_report_directory,
-            report_waiting_logs=report_waiting_logs)
+            default_report_directory=default_report_directory)
 
         if reset_machine_on_start_up:
             success = txrx.power_off_machine()
