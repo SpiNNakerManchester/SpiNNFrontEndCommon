@@ -31,7 +31,6 @@ from spinn_utilities.overrides import overrides
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_machine import CoreSubsets
 from spinn_machine import __version__ as spinn_machine_version
-from spinn_machine.ignores import IgnoreChip, IgnoreCore, IgnoreLink
 from spinnman.model.enums.cpu_state import CPUState
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
@@ -1416,13 +1415,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["TotalRunTime"] = total_run_time
         inputs["MaxMachineCoreReduction"] = get_config_int(
             "Machine", "max_machine_core_reduction")
-
-        inputs["DownedChipsDetails"] = IgnoreChip.parse_string(
-            get_config_str("Machine", "down_chips"))
-        inputs["DownedCoresDetails"] = IgnoreCore.parse_string(
-            get_config_str("Machine", "down_cores"))
-        inputs["DownedLinksDetails"] = IgnoreLink.parse_string(
-            get_config_str("Machine", "down_links"))
         inputs["BoardVersion"] = get_config_int(
             "Machine", "version")
         inputs["ResetMachineOnStartupFlag"] = get_config_bool(

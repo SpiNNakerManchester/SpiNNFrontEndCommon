@@ -52,8 +52,7 @@ class MachineGenerator(object):
     __slots__ = []
 
     def __call__(
-            self, hostname, bmp_details, downed_chips, downed_cores,
-            downed_links, board_version, auto_detect_bmp,
+            self, hostname, bmp_details, board_version, auto_detect_bmp,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
             default_report_directory=None):
         """
@@ -103,8 +102,7 @@ class MachineGenerator(object):
         txrx = create_transceiver_from_hostname(
             hostname=hostname,
             bmp_connection_data=self._parse_bmp_details(bmp_details),
-            version=board_version, ignore_chips=downed_chips,
-            ignore_cores=downed_cores, ignored_links=downed_links,
+            version=board_version,
             auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
             max_sdram_size=max_sdram_size,

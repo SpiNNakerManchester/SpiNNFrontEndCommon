@@ -41,6 +41,10 @@ class TestWriteJson(unittest.TestCase):
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
         reset_configs()
+        load_config()
+        set_config("Machine", "down_chips", None)
+        set_config("Machine", "down_cores", None)
+        set_config("Machine", "down_links", None)
 
     def tearDown(self):
         reset_configs()
