@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
+from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_front_end_common.interface.profiling.profile_data import ProfileData
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 
@@ -28,6 +29,9 @@ def _get_clock(timestep, ms_into_timestep):
 
 
 class Test(unittest.TestCase):
+
+    def setUp(self):
+        reset_configs()
 
     def test_use(self):
 
