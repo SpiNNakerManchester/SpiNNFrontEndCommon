@@ -39,13 +39,11 @@ class DatabaseInterface(object):
         self._needs_db = None
 
     def __call__(
-            self, machine_graph, user_create_database, tags,
-            runtime, machine, data_n_timesteps, placements, routing_infos,
-            router_tables,  report_folder, application_graph=None):
+            self, machine_graph, tags, runtime, machine, data_n_timesteps,
+            placements, routing_infos, router_tables,
+            report_folder, application_graph=None):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        :param user_create_database:
-        :type user_create_database: bool or None
         :param ~pacman.model.tags.Tags tags:
         :param int runtime:
         :param ~spinn_machine.Machine machine:
