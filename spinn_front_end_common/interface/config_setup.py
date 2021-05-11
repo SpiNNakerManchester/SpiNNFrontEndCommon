@@ -41,5 +41,5 @@ def add_spinnaker_cfg():
     """
     add_pacman_cfg()  # This add its dependencies too
     add_spinnman_cfg()  # double adds of dependencies ignored
-    add_data_specification_cfg() # double adds of dependencies ignored
+    add_data_specification_cfg()  # double adds of dependencies ignored
     add_default_cfg(os.path.join(os.path.dirname(__file__), BASE_CONFIG_FILE))
