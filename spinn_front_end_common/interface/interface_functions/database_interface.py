@@ -65,7 +65,6 @@ class DatabaseInterface(object):
         # pylint: disable=too-many-arguments
 
         self._writer = DatabaseWriter(report_folder)
-        self._user_create_database = user_create_database
         # add database generation if requested
         self._needs_db = self._writer.auto_detect_database(machine_graph)
         user_create_database = get_config_bool("Database", "create_database")
