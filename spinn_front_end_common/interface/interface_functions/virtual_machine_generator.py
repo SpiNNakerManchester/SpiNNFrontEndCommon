@@ -26,10 +26,7 @@ class VirtualMachineGenerator(object):
 
     __slots__ = []
 
-    def __call__(
-            self, version=None,
-            max_sdram_size=None,
-            json_path=None):
+    def __call__(self, version=None, json_path=None):
         """
         :param int version: The version of board to create
         :return: The virtual machine.
@@ -40,8 +37,6 @@ class VirtualMachineGenerator(object):
         height = get_config_int("Machine", "height")
         width = get_config_int("Machine", "width")
         json_path = get_config_str("Machine", "json_path")
-        max_sdram_size = get_config_int(
-            "Machine", "max_sdram_allowed_per_chip")
 
         if version is not None:
             if version in [2, 3]:
@@ -74,7 +69,6 @@ class VirtualMachineGenerator(object):
             machine = virtual_machine(
                 width=width, height=height,
                 n_cpus_per_chip=Machine.max_cores_per_chip(),
-                sdram_per_chip=max_sdram_size,
                 validate=True)
         else:
             if (height is not None or width is not None or
