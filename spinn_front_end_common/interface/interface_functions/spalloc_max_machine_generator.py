@@ -65,13 +65,10 @@ class SpallocMaxMachineGenerator(object):
         n_cpus_per_chip = (Machine.max_cores_per_chip() -
                            max_machine_core_reduction)
 
-        max_sdram_size = get_config_int(
-            "Machine", "max_sdram_allowed_per_chip")
-
         # Return the width and height, and make no assumption about wrap-
         # arounds or version.
         return virtual_machine(
-            width=max_width, height=max_height, sdram_per_chip=max_sdram_size,
+            width=max_width, height=max_height,
             n_cpus_per_chip=n_cpus_per_chip, validate=False)
 
     @staticmethod
