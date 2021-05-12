@@ -88,10 +88,8 @@ class ProvenanceDataItem(object):
         _report_count += 1
 
     def __repr__(self):
-        return "{}:{}:{}:{}".format(
-            self._names, self._value, self._report, self._message)
+        return "{}:{}:{}".format(
+            self._names, self._value, self._message)
 
     def __str__(self):
-        if self._report:
-            return self._message
-        return "{}: {}".format(self._names, self._value)
+        return self._message
