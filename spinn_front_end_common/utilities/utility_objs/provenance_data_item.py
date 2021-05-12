@@ -75,17 +75,17 @@ class ProvenanceDataItem(object):
     def _add_report(self):
         global _report_count
         report_file = os.path.join(
-            provenance_file_path(), "provenance_report.txt")
+            provenance_file_path(), "logs")
         with open(report_file, "a") as writer:
             writer.write(self._message)
             writer.write("\n")
         cutoff = get_config_int("Reports", "provenance_report_cutoff")
-        if _report_count < cutoff:
+        if cutoff is None or _report_count < cutoff:
             logger.warning(self._message)
         elif _report_count == cutoff:
             logger.warning(f"Additional interesting provenace items in "
                            f"{report_file}")
-        _report_count+= 1
+        _report_count += 1
 
     def __repr__(self):
         return "{}:{}:{}:{}".format(
