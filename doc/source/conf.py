@@ -27,8 +27,9 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-# import sys
+import sys
 import os
+import re
 from sphinx.ext import apidoc
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -374,6 +375,29 @@ autodoc_default_options = {
     "members": None,
     "special-members": "__call__"
 }
+_package_base = "spinn_front_end_common"
+
+
+# Automatically called by sphinx at startup
+def setup(app):
+    # NB: extra dot at end is deliberate!
+    trim = (_package_base + ".", "pacman.", "spinnman.", "spinn_machine.",
+            "data_specification.", "spinn_utilities.")
+
+    # Magic to shorten the names of our classes to their public versions
+    def skip_handler(_app, what, name, obj, skip, _options):
+        if not skip and what == 'module' and hasattr(obj, "__module__"):
+            # Get parent module *and* check if our name is in it
+            m = re.sub(r'\.[a-z0-9_]+$', '', obj.__module__)
+            if any(m.startswith(prefix) for prefix in trim) and \
+                    name in dir(sys.modules[m]):
+                # It is, so update to say that's canonical location for
+                # documentation purposes
+                obj.__module__ = m
+        return skip  # We don't care to change this
+
+    # Connect the callback to the autodoc-skip-member event from apidoc
+    app.connect('autodoc-skip-member', skip_handler)
 
 
 def filtered_files(base, unfiltered_files_filename):
@@ -393,7 +417,6 @@ def filtered_files(base, unfiltered_files_filename):
 
 _output_dir = os.path.abspath(".")
 _unfiltered_files = os.path.abspath("../unfiltered-files.txt")
-_package_base = "spinn_front_end_common"
 
 # Do the rst generation; remove files which aren't in git first!
 for fl in os.listdir("."):
@@ -402,5 +425,5 @@ for fl in os.listdir("."):
         os.remove(fl)
 os.chdir("../..")  # WARNING! RELATIVE FILENAMES CHANGE MEANING HERE!
 apidoc.main([
-    '-o', _output_dir, _package_base,
+    '-q', '-o', _output_dir, _package_base,
     *filtered_files(_package_base, _unfiltered_files)])
