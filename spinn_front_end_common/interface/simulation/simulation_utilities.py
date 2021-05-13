@@ -40,3 +40,24 @@ def get_simulation_header_array(binary_file_name):
     data.append(SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value)
 
     return data
+
+
+def get_simulation_header_array_no_timestep(binary_file_name):
+    """ Get data to be written to the simulation header
+
+    :param str binary_file_name: The name of the binary of the application
+    :return: An array of values to be written as the simulation header
+    :rtype: list(int)
+    """
+    # Get first 32-bits of the md5 hash of the application name
+    application_name_hash = md5(os.path.splitext(binary_file_name)[0])[:8]
+
+    # Write this to the system region (to be picked up by the simulation):
+    data = list()
+    data.append(int(application_name_hash, 16))
+    data.append(0)
+
+    # add SDP port number for receiving synchronisations and new run times
+    data.append(SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value)
+
+    return data

@@ -13,6 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .simulation_utilities import get_simulation_header_array
+from .simulation_utilities import (
+    get_simulation_header_array,
+    get_simulation_header_array_no_timestep)
 
-__all__ = ["get_simulation_header_array"]
+__all__ = ["get_simulation_header_array",
+           "get_simulation_header_array_no_timestep"]
