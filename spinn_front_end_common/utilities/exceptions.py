@@ -60,3 +60,21 @@ class BufferedRegionNotPresent(SpinnFrontEndException):
 class CantFindSDRAMToUseException(SpinnFrontEndException):
     """ Raised when malloc and sdram stealing cannot occur.
     """
+
+
+class SimmulatorNotSetupException(SpinnFrontEndException):
+    """
+    Raised when trying to get simulator before it has been setup
+    """
+
+
+class SimmulatorShutdownException(SpinnFrontEndException):
+    """
+    Raised when trying to get simulator after it has been shit down
+    """
+
+
+class SimmulatorRunningException(SpinnFrontEndException):
+    """
+    Raised when trying to running get simulator that should not be running
+    """
