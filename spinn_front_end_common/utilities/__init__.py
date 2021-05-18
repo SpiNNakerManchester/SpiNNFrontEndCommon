@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .simulator_interface import SimulatorInterface
 from .iobuf_extractor import IOBufExtractor
 
-__all__ = ["SimulatorInterface", "IOBufExtractor"]
+__all__ = ["IOBufExtractor"]

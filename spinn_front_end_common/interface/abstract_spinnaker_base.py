@@ -57,8 +57,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
-from spinn_front_end_common.utilities import (
-    globals_variables, SimulatorInterface,)
+from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -106,7 +105,7 @@ PROVENANCE_TYPE_CUTOFF = 20000
 _PREALLOC_NAME = 'MemoryPreAllocatedResources'
 
 
-class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
+class AbstractSpinnakerBase(ConfigHandler):
     """ Main interface into the tools logic flow.
     """
     # pylint: disable=broad-except
@@ -733,8 +732,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._shutdown()
         return self._last_except_hook(exctype, value, traceback_obj)
 
-    @overrides(SimulatorInterface.verify_not_running)
     def verify_not_running(self):
+        """ Verify that the simulator is in a state where it can start running.
+        """
         if self._state in RUNNING_STATES:
             raise ConfigurationException(
                 "Illegal call while a simulation is already running")
@@ -774,8 +774,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._run_until_complete = True
         self._run(n_steps, sync_time=0)
 
-    @overrides(SimulatorInterface.run)
     def run(self, run_time, sync_time=0):
+        """ Run a simulation for a fixed amount of time
+
+        :param int run_time: the run duration in milliseconds.
+        :param float sync_time:
+            If not 0, this specifies that the simulation should pause after
+            this duration.  The continue_simulation() method must then be
+            called for the simulation to continue.
+        """
         self._run(run_time, sync_time)
 
     def _build_graphs_for_usage(self):
@@ -2462,18 +2469,26 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return changed, data_changed
 
     @property
-    @overrides(SimulatorInterface.has_ran)
     def has_ran(self):
-        return self._has_ran
+        """ Whether the simulation has executed anything at all.
+
+        :rtype: bool
+        """
 
     @property
-    @overrides(SimulatorInterface.machine)
     def machine(self):
+        """ The python machine description object.
+
+         :rtype: ~spinn_machine.Machine
+         """
         return self._get_machine()
 
     @property
-    @overrides(SimulatorInterface.no_machine_time_steps)
     def no_machine_time_steps(self):
+        """ The number of machine time steps.
+
+        :rtype: int
+        """
         return self._no_machine_time_steps
 
     @property
@@ -2522,23 +2537,34 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._fixed_routes
 
     @property
-    @overrides(SimulatorInterface.placements)
     def placements(self):
-        return self._placements
+        """ Where machine vertices are placed on the machine.
+
+        :rtype: ~pacman.model.placements.Placements
+        """
 
     @property
-    @overrides(SimulatorInterface.transceiver)
     def transceiver(self):
+        """ How to talk to the machine.
+
+        :rtype: ~spinnman.transceiver.Transceiver
+        """
         return self._txrx
 
     @property
-    @overrides(SimulatorInterface.tags)
     def tags(self):
+        """
+        :rtype: ~pacman.model.tags.Tags
+        """
         return self._tags
 
     @property
-    @overrides(SimulatorInterface.buffer_manager)
     def buffer_manager(self):
+        """ The buffer manager being used for loading/extracting buffers
+
+        :rtype:
+            ~spinn_front_end_common.interface.buffer_management.BufferManager
+        """
         return self._buffer_manager
 
     @property
@@ -2571,7 +2597,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._none_labelled_edge_count += 1
 
     @property
-    @overrides(SimulatorInterface.use_virtual_board)
     def use_virtual_board(self):
         """ True if this run is using a virtual machine
 
@@ -2756,12 +2781,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
 
-    @overrides(SimulatorInterface.stop,
-               extend_defaults=True, additional_arguments=(
-                   "turn_off_machine", "clear_routing_tables", "clear_tags"))
     def stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
              clear_routing_tables=None, clear_tags=None):
         """
+        End running of the simulation.
+
         :param bool turn_off_machine:
             decides if the machine should be powered down after running the
             execution. Note that this powers down all boards connected to the
@@ -2911,7 +2935,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             system_provenance_file_path=self._system_provenance_file_path)
         extractor.extract_iobuf()
 
-    @overrides(SimulatorInterface.add_socket_address, extend_doc=False)
     def add_socket_address(self, socket_address):
         """ Add the address of a socket used in the run notification protocol.
 
@@ -3045,8 +3068,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._state = Simulator_State.STOP_REQUESTED
             self._state_condition.notify_all()
 
-    @overrides(SimulatorInterface.continue_simulation)
     def continue_simulation(self):
+        """ Continue a simulation that has been started in stepped mode
+        """
         if self._no_sync_changes % 2 == 0:
             sync_signal = Signal.SYNC0
         else:
