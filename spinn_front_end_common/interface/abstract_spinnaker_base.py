@@ -27,7 +27,6 @@ from threading import Condition
 from numpy import __version__ as numpy_version
 from spinn_utilities.timer import Timer
 from spinn_utilities.log import FormatAdapter
-from spinn_utilities.overrides import overrides
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_machine import CoreSubsets
 from spinn_machine import __version__ as spinn_machine_version
