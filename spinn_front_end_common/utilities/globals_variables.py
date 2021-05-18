@@ -14,6 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from pacman.executor import injection_decorator
+from spinn_front_end_common.interface.simulator_state import (
+    RUNNING_STATES, SHUTDOWN_STATES)
 
 # pylint: disable=global-statement
 _failed_state = None
@@ -26,12 +28,11 @@ def get_simulator():
 
     :rtype: SimulatorInterface
     """
-    global _simulator, _failed_state
     if _simulator is None:
-        if _failed_state is None:
-            raise ValueError("You must import one of the simulator classes "
-                             "before calling get_simulator")
-        return _failed_state
+       raise ValueError("You must import one of the simulator classes "
+                         "before calling get_simulator")
+    if _simulator.state in SHUTDOWN_STATES:
+        raise ValueError("This call is only valid between setup and end/stop")
     return _simulator
 
 
@@ -40,13 +41,9 @@ def get_not_running_simulator():
 
     :rtype: SimulatorInterface
     """
-    global _simulator, _failed_state
-    if _simulator is None:
-        if _failed_state is None:
-            raise ValueError("You must import one of the simulator classes "
-                             "before calling get_simulator")
-        return _failed_state
-    _simulator.verify_not_running()
+    simulator = get_simulator()
+    if simulator.state in RUNNING_STATES:
+        raise ValueError("Illegal call while a simulation is already running")
     return _simulator
 
 
@@ -55,12 +52,8 @@ def set_simulator(new_simulator):
 
     :param SimulatorInterface new_simulator: The simulator to set.
     """
-    global _simulator, _failed_state, _cached_simulator
-    if _failed_state is None:
-        raise ValueError("Unexpected call to set_simulator before "
-                         "set_failed_state")
+    global _simulator
     _simulator = new_simulator
-    _cached_simulator = None
 
 
 def unset_simulator(to_cache_simulator=None):
@@ -69,10 +62,8 @@ def unset_simulator(to_cache_simulator=None):
     :param SimulatorInterface to_cache_simulator:
         a cached version for allowing data extraction
     """
-    global _simulator, _cached_simulator
+    global _simulator
     _simulator = None
-    _cached_simulator = to_cache_simulator
-
     injection_decorator._instances = list()
 
 
@@ -91,30 +82,7 @@ def set_failed_state(new_failed_state):
     :param FailedState new_failed_state: the failure marker
     """
     # pylint: disable=unidiomatic-typecheck
-    global _failed_state
-    if _failed_state is None:
-        _failed_state = new_failed_state
-    elif type(new_failed_state) != type(_failed_state):
-        raise ValueError("You may only setup/init one type of simulator")
-
-
-def _last_simulator():
-    """ Get last simulator to be used.
-
-    Before setup this will return None.
-    Between setup and end this will return the simulator.
-    After end this will return the previous simulator
-    """
-    global _simulator, _cached_simulator
-    if _simulator is not None:
-        return _simulator
-    if _cached_simulator is not None:
-        return _cached_simulator
-    if _failed_state is not None:
-        return None
-    else:
-        raise ValueError(
-            "There should be some sort of simulator set. Why am i here?!")
+    pass
 
 
 def get_generated_output(output):
@@ -126,13 +94,12 @@ def get_generated_output(output):
     :raises ValueError:
         if the system is in a state where outputs can't be retrieved
     """
-    simulator = _last_simulator()
-    if simulator is None:
+    if _simulator is None:
         raise ValueError(
             "You need to have ran a simulator before asking for its "
             "generated output.")
     else:
-        return simulator.get_generated_output(output)
+        return _simulator.get_generated_output(output)
 
 
 def provenance_file_path():
@@ -146,14 +113,13 @@ def provenance_file_path():
     :raises ValueError:
         if the system is in a state where path can't be retrieved
     """
-    simulator = _last_simulator()
-    if simulator is None:
+    if _simulator is None:
         raise ValueError(
             "You need to have setup a simulator before asking for its "
             "provenance_file_path.")
     else:
         # underscore param used avoid exposing a None PyNN parameter
-        return simulator._provenance_file_path
+        return _simulator._provenance_file_path
 
 
 def app_provenance_file_path():
@@ -167,14 +133,13 @@ def app_provenance_file_path():
     :raises ValueError:
         if the system is in a state where path can't be retrieved
     """
-    simulator = _last_simulator()
-    if simulator is None:
+    if _simulator is None:
         raise ValueError(
             "You need to have setup a simulator before asking for its "
             "app_provenance_file_path.")
     else:
         # underscore param used avoid exposing a None PyNN parameter
-        return simulator._app_provenance_file_path
+        return _simulator._app_provenance_file_path
 
 
 def system_provenance_file_path():
@@ -188,14 +153,13 @@ def system_provenance_file_path():
     :raises ValueError:
         if the system is in a state where path can't be retrieved
     """
-    simulator = _last_simulator()
-    if simulator is None:
+    if _simulator is None:
         raise ValueError(
             "You need to have setup a simulator before asking for its "
             "system_provenance_file_path.")
     else:
         # underscore param used avoid exposing a None PyNN parameter
-        return simulator._system_provenance_file_path
+        return _simulator._system_provenance_file_path
 
 
 def run_report_directory():
@@ -209,11 +173,10 @@ def run_report_directory():
     :raises ValueError:
         if the system is in a state where path can't be retrieved
     """
-    simulator = _last_simulator()
-    if simulator is None:
+    if _simulator is None:
         raise ValueError(
             "You need to have setup a simulator before asking for its "
             "run_report_directory.")
     else:
         # underscore param used avoid exposing a None PyNN parameter
-        return simulator._report_default_directory
+        return _simulator._report_default_directory

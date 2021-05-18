@@ -67,7 +67,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.utilities.report_functions import (
     EnergyReport, TagsFromMachineReport, report_xml)
 from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType, ProvenanceDataItem)
+    ExecutableFinder, ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utility_models import (
     CommandSender, CommandSenderMachineVertex,
     DataSpeedUpPacketGatherMachineVertex)
@@ -356,7 +356,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     ]
 
     def __init__(
-            self, executable_finder, graph_label=None,
+            self, executable_finder=None, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             n_chips_required=None, n_boards_required=None,
             front_end_versions=None):
@@ -387,7 +387,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._dsg_time = 0.0
         self._extraction_time = 0.0
 
-        self._executable_finder = executable_finder
+        if executable_finder is None:
+            self._executable_finder = ExecutableFinder()
+        else:
+            self._executable_finder = executable_finder
 
         # output locations of binaries to be searched for end user info
         logger.info(
@@ -2546,6 +2549,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :rtype: str
         """
         return self._dsg_algorithm
+
+    @property
+    def state(self):
+        return self._state
 
     @dsg_algorithm.setter
     def dsg_algorithm(self, new_dsg_algorithm):
