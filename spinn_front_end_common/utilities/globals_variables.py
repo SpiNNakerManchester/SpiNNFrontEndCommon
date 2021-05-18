@@ -46,7 +46,7 @@ def get_not_running_simulator():
     :rtype: SimulatorInterface
     """
     simulator = get_simulator()
-    if simulator.state in RUNNING_STATES:
+    if simulator._state in RUNNING_STATES:
         raise SimmulatorRunningException(
             "Illegal call while a simulation is already running")
     return _simulator
