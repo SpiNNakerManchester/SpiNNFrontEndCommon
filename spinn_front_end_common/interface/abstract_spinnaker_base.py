@@ -65,7 +65,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.utilities.report_functions import (
     EnergyReport, TagsFromMachineReport, report_xml)
 from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableFinder, ExecutableType, ProvenanceDataItem)
+    ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utility_models import (
     CommandSender, CommandSenderMachineVertex,
     DataSpeedUpPacketGatherMachineVertex)
