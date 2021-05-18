@@ -76,7 +76,8 @@ from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.provenance import (
     PacmanProvenanceExtractor)
-from spinn_front_end_common.interface.simulator_state import Simulator_State
+from spinn_front_end_common.interface.simulator_state import (
+    RUNNING_STATES, SHUTDOWN_STATES, Simulator_State)
 from spinn_front_end_common.interface.interface_functions import (
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
@@ -729,15 +730,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._shutdown()
         return self._last_except_hook(exctype, value, traceback_obj)
 
-    _RUNNING_STATES = (Simulator_State.IN_RUN, Simulator_State.RUN_FOREVER)
-    _SHUTDOWN_STATES = (Simulator_State.SHUTDOWN, )
 
     @overrides(SimulatorInterface.verify_not_running)
     def verify_not_running(self):
-        if self._state in self._RUNNING_STATES:
+        if self._state in RUNNING_STATES:
             raise ConfigurationException(
                 "Illegal call while a simulation is already running")
-        if self._state in self._SHUTDOWN_STATES:
+        if self._state in SHUTDOWN_STATES:
             raise ConfigurationException(
                 "Illegal call after simulation is shutdown")
 
