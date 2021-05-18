@@ -733,7 +733,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._shutdown()
         return self._last_except_hook(exctype, value, traceback_obj)
 
-
     @overrides(SimulatorInterface.verify_not_running)
     def verify_not_running(self):
         if self._state in RUNNING_STATES:

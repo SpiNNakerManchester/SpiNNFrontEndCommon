@@ -43,10 +43,9 @@ class Simulator_State(Enum):
         self._value_ = value
         self.__doc__ = doc
 
+
 #: List of the states a simulator can be in to be considered running
 RUNNING_STATES = (Simulator_State.IN_RUN, Simulator_State.RUN_FOREVER)
 
 #: List of states a simulator can be in to be considered shutdown
 SHUTDOWN_STATES = (Simulator_State.SHUTDOWN, )
-
-

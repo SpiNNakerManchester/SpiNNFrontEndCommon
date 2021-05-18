@@ -32,8 +32,8 @@ def get_simulator():
     :rtype: SimulatorInterface
     """
     if _simulator is None:
-       raise SimmulatorNotSetupException(
-           "This call is only valid after setup has been called")
+        raise SimmulatorNotSetupException(
+            "This call is only valid after setup has been called")
     if _simulator._state in SHUTDOWN_STATES:
         raise SimmulatorShutdownException(
             "This call is only valid between setup and end/stop")
