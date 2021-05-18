@@ -2550,10 +2550,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
         return self._dsg_algorithm
 
-    @property
-    def state(self):
-        return self._state
-
     @dsg_algorithm.setter
     def dsg_algorithm(self, new_dsg_algorithm):
         """ Set the DSG algorithm to be used by the tools

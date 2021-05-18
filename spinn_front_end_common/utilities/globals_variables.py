@@ -34,7 +34,7 @@ def get_simulator():
     if _simulator is None:
        raise SimmulatorNotSetupException(
            "This call is only valid after setup has been called")
-    if _simulator.state in SHUTDOWN_STATES:
+    if _simulator._state in SHUTDOWN_STATES:
         raise SimmulatorShutdownException(
             "This call is only valid between setup and end/stop")
     return _simulator
