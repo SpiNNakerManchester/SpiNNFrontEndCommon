@@ -21,9 +21,7 @@ from spinn_front_end_common.utilities.exceptions import (
     SimmulatorShutdownException)
 
 # pylint: disable=global-statement
-_failed_state = None
 _simulator = None
-_cached_simulator = None
 
 
 def get_simulator():
@@ -79,15 +77,6 @@ def has_simulator():
     """
     global _simulator
     return _simulator is not None
-
-
-def set_failed_state(new_failed_state):
-    """ Install a marker to say that the simulator has failed.
-
-    :param FailedState new_failed_state: the failure marker
-    """
-    # pylint: disable=unidiomatic-typecheck
-    pass
 
 
 def get_generated_output(output):
