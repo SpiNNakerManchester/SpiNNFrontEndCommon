@@ -75,7 +75,7 @@ from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.provenance import (
     PacmanProvenanceExtractor)
 from spinn_front_end_common.interface.simulator_status import (
-    RUNNING_STATES, SHUTDOWN_STATES, Simulator_Status)
+    RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
 from spinn_front_end_common.interface.interface_functions import (
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
@@ -731,10 +731,10 @@ class AbstractSpinnakerBase(ConfigHandler):
     def verify_not_running(self):
         """ Verify that the simulator is in a state where it can start running.
         """
-        if self._status in RUNNING_STATES:
+        if self._status in RUNNING_STATUS:
             raise ConfigurationException(
                 "Illegal call while a simulation is already running")
-        if self._status in SHUTDOWN_STATES:
+        if self._status in SHUTDOWN_STATUS:
             raise ConfigurationException(
                 "Illegal call after simulation is shutdown")
 
