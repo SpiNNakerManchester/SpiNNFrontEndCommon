@@ -27,7 +27,8 @@ _simulator = None
 def get_simulator():
     """ Get the current simulator object.
 
-    :rtype: SimulatorInterface
+    :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase
+    :raises: SimmulatorNotSetupException, SimmulatorShutdownException
     """
     if _simulator is None:
         raise SimmulatorNotSetupException(
@@ -41,7 +42,9 @@ def get_simulator():
 def get_not_running_simulator():
     """ Get the current simulator object and verify that it is not running.
 
-    :rtype: SimulatorInterface
+    :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase
+    :raises: SimmulatorNotSetupException, SimmulatorShutdownException,
+        SimmulatorRunningException
     """
     simulator = get_simulator()
     if simulator._state in RUNNING_STATUS:
@@ -53,17 +56,16 @@ def get_not_running_simulator():
 def set_simulator(new_simulator):
     """ Set the current simulator object.
 
-    :param SimulatorInterface new_simulator: The simulator to set.
+    :param new_simulator: The simulator to set.
+    :type new_simulator:
+        ~spinn_front_end_common.interface.AbstractSpinnakerBase
     """
     global _simulator
     _simulator = new_simulator
 
 
-def unset_simulator(to_cache_simulator=None):
-    """ Destroy the current simulator.
-
-    :param SimulatorInterface to_cache_simulator:
-        a cached version for allowing data extraction
+def unset_simulator():
+    """ Removes the link to the previous simulator and clears injection
     """
     global _simulator
     _simulator = None
@@ -75,8 +77,11 @@ def has_simulator():
 
     :rtype: bool
     """
-    global _simulator
-    return _simulator is not None
+    try:
+        get_simulator()
+        return True
+    except Exception:
+        return False
 
 
 def get_generated_output(output):
@@ -85,11 +90,11 @@ def get_generated_output(output):
     :param str output: The name of the output to retrieve.
     :return: The value (of arbitrary type, dependent on which output),
         or `None` if the variable is not found.
-    :raises ValueError:
-        if the system is in a state where outputs can't be retrieved
+    :raises SimmulatorNotSetupException:
+        if the system has a status where outputs can't be retrieved
     """
     if _simulator is None:
-        raise ValueError(
+        raise SimmulatorNotSetupException(
             "You need to have ran a simulator before asking for its "
             "generated output.")
     else:
@@ -103,12 +108,15 @@ def provenance_file_path():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
+    .. note:
+        The behaviour when called before setup is subject to change
+
     :rtpye: str
-    :raises ValueError:
-        if the system is in a state where path can't be retrieved
+    :raises SimmulatorNotSetupException:
+        if the system has a status where path can't be retrieved
     """
     if _simulator is None:
-        raise ValueError(
+        raise SimmulatorNotSetupException(
             "You need to have setup a simulator before asking for its "
             "provenance_file_path.")
     else:
@@ -123,12 +131,15 @@ def app_provenance_file_path():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
+    .. note:
+        The behaviour when called before setup is subject to change
+
     :rtpye: str
-    :raises ValueError:
-        if the system is in a state where path can't be retrieved
+    :raises SimmulatorNotSetupException:
+        if the system has a status where path can't be retrieved
     """
     if _simulator is None:
-        raise ValueError(
+        raise SimmulatorNotSetupException(
             "You need to have setup a simulator before asking for its "
             "app_provenance_file_path.")
     else:
@@ -143,12 +154,15 @@ def system_provenance_file_path():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
+    .. note:
+        The behaviour when called before setup is subject to change
+
     :rtpye: str
-    :raises ValueError:
-        if the system is in a state where path can't be retrieved
+    :raises SimmulatorNotSetupException:
+        if the system has a status where path can't be retrieved
     """
     if _simulator is None:
-        raise ValueError(
+        raise SimmulatorNotSetupException(
             "You need to have setup a simulator before asking for its "
             "system_provenance_file_path.")
     else:
@@ -163,9 +177,12 @@ def run_report_directory():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
+    .. note:
+        The behaviour when called before setup is subject to change
+
     :rtpye: str
-    :raises ValueError:
-        if the system is in a state where path can't be retrieved
+    :raises SimmulatorNotSetupException:
+        if the system has a status where path can't be retrieved
     """
     if _simulator is None:
         raise ValueError(
