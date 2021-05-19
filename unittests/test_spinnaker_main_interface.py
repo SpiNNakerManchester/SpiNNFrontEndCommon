@@ -46,6 +46,10 @@ class TestSpinnakerMainInterface(unittest.TestCase):
     def setUp(self):
         globals_variables.set_failed_state(FailedState())
 
+    def tearDown(self):
+        globals_variables.unset_simulator()
+        reset_configs()
+
     def test_stop_init(self):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
@@ -69,16 +73,25 @@ class TestSpinnakerMainInterface(unittest.TestCase):
 
     def test_timings(self):
 
-        # Test defaults
+        # Test defaults stay as in the configs
+        machine_time_step = get_config_int("Machine", "machine_time_step")
+        time_scale_factor = get_config_int("Machine", "time_scale_factor")
         asb = AbstractSpinnakerBase(ExecutableFinder())
         asb.set_up_timings(machine_time_step=None, time_scale_factor=None)
-        assert get_config_int("Machine", "machine_time_step") == 1000
-        assert get_config_int("Machine", "time_scale_factor") is None
+        assert machine_time_step == asb.machine_time_step
+        assert time_scale_factor == asb.time_scale_factor
 
         # Test specified
         asb.set_up_timings(machine_time_step=200, time_scale_factor=10)
-        assert get_config_int("Machine", "machine_time_step") == 200
-        assert get_config_int("Machine", "time_scale_factor") == 10
+        assert asb.machine_time_step == 200
+        assert asb.machine_time_step_ms == 0.2
+        assert asb.time_scale_factor == 10
+        assert globals_variables.machine_time_step() == 200
+        assert globals_variables.machine_time_step_ms() == 0.2
+        assert globals_variables.time_scale_factor() == 10
+
+        with self.assertRaises(ConfigurationException):
+            asb.set_up_timings(machine_time_step=-20, time_scale_factor=10)
 
 
 if __name__ == "__main__":

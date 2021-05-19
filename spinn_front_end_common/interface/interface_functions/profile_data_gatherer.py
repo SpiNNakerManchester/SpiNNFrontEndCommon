@@ -14,10 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.interface.profiling import AbstractHasProfileData
 
 
@@ -63,10 +60,6 @@ class ProfileDataGatherer(object):
         :param ProfileData profile_data:
         :param str directory:
         """
-        machine_time_step_ms = (
-                get_config_int("Machine", "machine_time_step") /
-                MICRO_TO_MILLISECOND_CONVERSION)
-
         max_tag_len = max(len(tag) for tag in profile_data.tags)
         file_name = os.path.join(
             directory, "{}_{}_{}_profile.txt".format(p.x, p.y, p.p))
@@ -84,7 +77,5 @@ class ProfileDataGatherer(object):
                 f.write(cls._FMT_C.format(
                     tag, max_tag_len, profile_data.get_n_calls(tag),
                     profile_data.get_mean_ms(tag),
-                    profile_data.get_mean_n_calls_per_ts(
-                        tag, machine_time_step_ms),
-                    profile_data.get_mean_ms_per_ts(
-                        tag, machine_time_step_ms)))
+                    profile_data.get_mean_n_calls_per_ts(tag),
+                    profile_data.get_mean_ms_per_ts(tag)))
