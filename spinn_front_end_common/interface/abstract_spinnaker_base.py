@@ -75,7 +75,7 @@ from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.provenance import (
     PacmanProvenanceExtractor)
-from spinn_front_end_common.interface.simulator_state import Simulator_State
+from spinn_front_end_common.interface.simulator_status import Simulator_Status
 from spinn_front_end_common.interface.interface_functions import (
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
@@ -258,7 +258,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_has_ran",
 
         #
-        "_state",
+        "_status",
 
         #
         "_state_condition",
@@ -477,7 +477,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # holder for timing and running related values
         self._run_until_complete = False
         self._has_ran = False
-        self._state = Simulator_State.INIT
+        self._status = Simulator_Status.INIT
         self._state_condition = Condition()
         self._has_reset_last = False
         self._n_calls_to_run = 1
@@ -728,15 +728,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._shutdown()
         return self._last_except_hook(exctype, value, traceback_obj)
 
-    _RUNNING_STATES = (Simulator_State.IN_RUN, Simulator_State.RUN_FOREVER)
-    _SHUTDOWN_STATES = (Simulator_State.SHUTDOWN, )
+    _RUNNING_STATES = (Simulator_Status.IN_RUN, Simulator_Status.RUN_FOREVER)
+    _SHUTDOWN_STATES = (Simulator_Status.SHUTDOWN, )
 
     @overrides(SimulatorInterface.verify_not_running)
     def verify_not_running(self):
-        if self._state in self._RUNNING_STATES:
+        if self._status in self._RUNNING_STATES:
             raise ConfigurationException(
                 "Illegal call while a simulation is already running")
-        if self._state in self._SHUTDOWN_STATES:
+        if self._status in self._SHUTDOWN_STATES:
             raise ConfigurationException(
                 "Illegal call after simulation is shutdown")
 
@@ -868,7 +868,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     "Only binaries that use the simulation interface can be"
                     " run more than once")
 
-        self._state = Simulator_State.IN_RUN
+        self._status = Simulator_Status.IN_RUN
 
         self._adjust_config(
             run_time, self._DEBUG_ENABLE_OPTS, self._REPORT_DISABLE_OPTS)
@@ -958,7 +958,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if (is_per_timestep_sdram and
                     (self._max_run_time_steps < n_machine_time_steps or
                         n_machine_time_steps is None)):
-                self._state = Simulator_State.FINISHED
+                self._status = Simulator_Status.FINISHED
                 raise ConfigurationException(
                     "The SDRAM required by one or more vertices is based on"
                     " the run time, so the run time is limited to"
@@ -999,13 +999,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._do_run(None, graph_changed, n_sync_steps)
             logger.info("Waiting for stop request")
             with self._state_condition:
-                while self._state != Simulator_State.STOP_REQUESTED:
+                while self._status != Simulator_Status.STOP_REQUESTED:
                     self._state_condition.wait()
         else:
             logger.info("Running forever in steps of {}ms".format(
                 self._max_run_time_steps))
             i = 0
-            while self._state != Simulator_State.STOP_REQUESTED:
+            while self._status != Simulator_Status.STOP_REQUESTED:
                 logger.info("Run {}".format(i + 1))
                 self._do_run(
                     self._max_run_time_steps, graph_changed, n_sync_steps)
@@ -1019,7 +1019,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # update counter for runs (used by reports and app data)
         self._n_calls_to_run += 1
-        self._state = Simulator_State.FINISHED
+        self._status = Simulator_Status.FINISHED
 
     def _is_per_timestep_sdram(self):
         for placement in self._placements.placements:
@@ -2568,7 +2568,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :param bool clear_routing_tables:
         :param bool clear_tags:
         """
-        self._state = Simulator_State.SHUTDOWN
+        self._status = Simulator_Status.SHUTDOWN
 
         # if on a virtual machine then shut down not needed
         if self._use_virtual_board:
@@ -2599,7 +2599,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # stop the transceiver and allocation controller
         self.__close_transceiver(turn_off_machine)
         self.__close_allocation_controller()
-        self._state = Simulator_State.SHUTDOWN
+        self._status = Simulator_Status.SHUTDOWN
 
         try:
             if self._last_run_outputs and \
@@ -2670,9 +2670,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :param bool clear_tags: informs the tool chain if it should clear the
             tags off the machine at stop
         """
-        if self._state in [Simulator_State.SHUTDOWN]:
+        if self._status in [Simulator_Status.SHUTDOWN]:
             raise ConfigurationException("Simulator has already been shutdown")
-        self._state = Simulator_State.SHUTDOWN
+        self._status = Simulator_Status.SHUTDOWN
 
         # Keep track of any exception to be re-raised
         exn = None
@@ -2938,10 +2938,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             This will need to be called from another thread as the infinite \
             run call is blocking.
         """
-        if self._state is not Simulator_State.IN_RUN:
+        if self._status is not Simulator_Status.IN_RUN:
             return
         with self._state_condition:
-            self._state = Simulator_State.STOP_REQUESTED
+            self._status = Simulator_Status.STOP_REQUESTED
             self._state_condition.notify_all()
 
     @overrides(SimulatorInterface.continue_simulation)
