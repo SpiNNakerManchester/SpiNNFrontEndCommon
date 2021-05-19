@@ -2539,6 +2539,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :rtype: ~pacman.model.placements.Placements
         """
+        return self._placements
 
     @property
     def transceiver(self):
