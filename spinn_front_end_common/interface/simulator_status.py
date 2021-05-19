@@ -45,7 +45,7 @@ class Simulator_Status(Enum):
 
 
 #: List of the states a simulator can be in to be considered running
-RUNNING_STATES = (Simulator_Status.IN_RUN, Simulator_Status.RUN_FOREVER)
+RUNNING_STATUS = (Simulator_Status.IN_RUN, Simulator_Status.RUN_FOREVER)
 
 #: List of states a simulator can be in to be considered shutdown
-SHUTDOWN_STATES = (Simulator_Status.SHUTDOWN, )
+SHUTDOWN_STATUS = (Simulator_Status.SHUTDOWN,)

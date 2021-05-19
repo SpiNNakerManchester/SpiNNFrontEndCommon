@@ -15,7 +15,7 @@
 
 from pacman.executor import injection_decorator
 from spinn_front_end_common.interface.simulator_status import (
-    RUNNING_STATES, SHUTDOWN_STATES)
+    RUNNING_STATUS, SHUTDOWN_STATUS)
 from spinn_front_end_common.utilities.exceptions import (
     SimmulatorRunningException, SimmulatorNotSetupException,
     SimmulatorShutdownException)
@@ -32,7 +32,7 @@ def get_simulator():
     if _simulator is None:
         raise SimmulatorNotSetupException(
             "This call is only valid after setup has been called")
-    if _simulator._state in SHUTDOWN_STATES:
+    if _simulator._state in SHUTDOWN_STATUS:
         raise SimmulatorShutdownException(
             "This call is only valid between setup and end/stop")
     return _simulator
@@ -44,7 +44,7 @@ def get_not_running_simulator():
     :rtype: SimulatorInterface
     """
     simulator = get_simulator()
-    if simulator._state in RUNNING_STATES:
+    if simulator._state in RUNNING_STATUS:
         raise SimmulatorRunningException(
             "Illegal call while a simulation is already running")
     return _simulator
