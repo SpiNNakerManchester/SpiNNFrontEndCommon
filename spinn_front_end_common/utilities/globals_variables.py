@@ -52,7 +52,6 @@ def has_simulator():
     return True
 
 
-
 def get_simulator():
     """ Get the current simulator object.
 
