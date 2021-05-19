@@ -62,6 +62,21 @@ def get_simulator():
     return _simulator
 
 
+def get_last_simulator():
+    """ Get the last simulator object setup but not
+
+    Unlike get_simulator this method will also return a simulator that has
+        been shutdown.
+
+    :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase
+    :raises: SimmulatorNotSetupException
+    """
+    if _simulator is None:
+        raise SimmulatorNotSetupException(
+            "This call is only valid after setup has been called")
+    return _simulator
+
+
 def get_not_running_simulator():
     """ Get the current simulator object and verify that it is not running.
 
