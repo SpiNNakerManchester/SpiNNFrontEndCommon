@@ -2470,6 +2470,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :rtype: bool
         """
+        return self._has_ran
 
     @property
     def machine(self):
