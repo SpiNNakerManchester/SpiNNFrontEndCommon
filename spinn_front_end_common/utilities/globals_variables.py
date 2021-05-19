@@ -32,7 +32,7 @@ def check_simulator():
     if _simulator is None:
         raise SimmulatorNotSetupException(
             "This call is only valid after setup has been called")
-    if _simulator._state in SHUTDOWN_STATUS:
+    if _simulator._status in SHUTDOWN_STATUS:
         raise SimmulatorShutdownException(
             "This call is only valid between setup and end/stop")
 
@@ -47,7 +47,7 @@ def has_simulator():
     """
     if _simulator is None:
         return False
-    if _simulator._state in SHUTDOWN_STATUS:
+    if _simulator._status in SHUTDOWN_STATUS:
         return False
     return True
 
@@ -70,7 +70,7 @@ def get_not_running_simulator():
         SimmulatorRunningException
     """
     check_simulator()
-    if _simulator._state in RUNNING_STATUS:
+    if _simulator._status in RUNNING_STATUS:
         raise SimmulatorRunningException(
             "Illegal call while a simulation is already running")
     return _simulator
