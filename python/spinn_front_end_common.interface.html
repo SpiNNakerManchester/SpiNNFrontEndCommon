@@ -876,52 +876,6 @@ write.</p>
 </dd></dl>
 
 </section>
-<section id="module-spinn_front_end_common.interface.simulator_state">
-<span id="spinn-front-end-common-interface-simulator-state-module"></span><h2>spinn_front_end_common.interface.simulator_state module<a class="headerlink" href="#module-spinn_front_end_common.interface.simulator_state" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulator_state.Simulator_State">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.simulator_state.</span></span><span class="sig-name descname"><span class="pre">Simulator_State</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/simulator_state.html#Simulator_State"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/enum.html#enum.Enum" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
-<p>Different states the Simulator could be in.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulator_state.Simulator_State.FINISHED">
-<span class="sig-name descname"><span class="pre">FINISHED</span></span><em class="property"> <span class="pre">=</span> <span class="pre">3</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.FINISHED" title="Permalink to this definition">¶</a></dt>
-<dd><p>run ended shutdown not called</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulator_state.Simulator_State.INIT">
-<span class="sig-name descname"><span class="pre">INIT</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.INIT" title="Permalink to this definition">¶</a></dt>
-<dd><p>init called</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulator_state.Simulator_State.IN_RUN">
-<span class="sig-name descname"><span class="pre">IN_RUN</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.IN_RUN" title="Permalink to this definition">¶</a></dt>
-<dd><p>inside run method</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulator_state.Simulator_State.RUN_FOREVER">
-<span class="sig-name descname"><span class="pre">RUN_FOREVER</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.RUN_FOREVER" title="Permalink to this definition">¶</a></dt>
-<dd><p>finished run method, but running forever</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulator_state.Simulator_State.SHUTDOWN">
-<span class="sig-name descname"><span class="pre">SHUTDOWN</span></span><em class="property"> <span class="pre">=</span> <span class="pre">4</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.SHUTDOWN" title="Permalink to this definition">¶</a></dt>
-<dd><p>shutdown called</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulator_state.Simulator_State.STOP_REQUESTED">
-<span class="sig-name descname"><span class="pre">STOP_REQUESTED</span></span><em class="property"> <span class="pre">=</span> <span class="pre">5</span></em><a class="headerlink" href="#spinn_front_end_common.interface.simulator_state.Simulator_State.STOP_REQUESTED" title="Permalink to this definition">¶</a></dt>
-<dd><p>stop requested in middle of run forever</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
 <section id="module-spinn_front_end_common.interface">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface" title="Permalink to this headline">¶</a></h2>
 </section>
@@ -942,7 +896,6 @@ write.</p>
 <li><a class="reference internal" href="#module-spinn_front_end_common.interface.abstract_spinnaker_base">spinn_front_end_common.interface.abstract_spinnaker_base module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.interface.config_handler">spinn_front_end_common.interface.config_handler module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.interface.java_caller">spinn_front_end_common.interface.java_caller module</a></li>
-<li><a class="reference internal" href="#module-spinn_front_end_common.interface.simulator_state">spinn_front_end_common.interface.simulator_state module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.interface">Module contents</a></li>
 </ul>
 </li>
@@ -998,7 +951,7 @@ write.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
   </body>
 </html>

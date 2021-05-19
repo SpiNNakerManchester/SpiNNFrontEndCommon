@@ -42,14 +42,6 @@ spinn\_front\_end\_common.interface.java\_caller module
    :undoc-members:
    :show-inheritance:
 
-spinn\_front\_end\_common.interface.simulator\_state module
------------------------------------------------------------
-
-.. automodule:: spinn_front_end_common.interface.simulator_state
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

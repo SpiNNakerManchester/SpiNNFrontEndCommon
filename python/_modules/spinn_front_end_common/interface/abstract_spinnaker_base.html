@@ -114,7 +114,7 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.config_handler</span> <span class="kn">import</span> <span class="n">ConfigHandler</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">PacmanProvenanceExtractor</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.simulator_state</span> <span class="kn">import</span> <span class="n">Simulator_State</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.simulator_status</span> <span class="kn">import</span> <span class="n">Simulator_Status</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ProvenanceJSONWriter</span><span class="p">,</span> <span class="n">ProvenanceSQLWriter</span><span class="p">,</span> <span class="n">ProvenanceXMLWriter</span><span class="p">,</span>
     <span class="n">ChipProvenanceUpdater</span><span class="p">,</span>  <span class="n">PlacementsProvenanceGatherer</span><span class="p">,</span>
@@ -297,7 +297,7 @@
         <span class="s2">&quot;_has_ran&quot;</span><span class="p">,</span>
 
         <span class="c1">#</span>
-        <span class="s2">&quot;_state&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_status&quot;</span><span class="p">,</span>
 
         <span class="c1">#</span>
         <span class="s2">&quot;_state_condition&quot;</span><span class="p">,</span>
@@ -516,7 +516,7 @@
         <span class="c1"># holder for timing and running related values</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_complete</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_has_ran</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">Simulator_State</span><span class="o">.</span><span class="n">INIT</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">INIT</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state_condition</span> <span class="o">=</span> <span class="n">Condition</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_has_reset_last</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_calls_to_run</span> <span class="o">=</span> <span class="mi">1</span>
@@ -767,15 +767,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_except_hook</span><span class="p">(</span><span class="n">exctype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback_obj</span><span class="p">)</span></div>
 
-    <span class="n">_RUNNING_STATES</span> <span class="o">=</span> <span class="p">(</span><span class="n">Simulator_State</span><span class="o">.</span><span class="n">IN_RUN</span><span class="p">,</span> <span class="n">Simulator_State</span><span class="o">.</span><span class="n">RUN_FOREVER</span><span class="p">)</span>
-    <span class="n">_SHUTDOWN_STATES</span> <span class="o">=</span> <span class="p">(</span><span class="n">Simulator_State</span><span class="o">.</span><span class="n">SHUTDOWN</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">_RUNNING_STATES</span> <span class="o">=</span> <span class="p">(</span><span class="n">Simulator_Status</span><span class="o">.</span><span class="n">IN_RUN</span><span class="p">,</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">RUN_FOREVER</span><span class="p">)</span>
+    <span class="n">_SHUTDOWN_STATES</span> <span class="o">=</span> <span class="p">(</span><span class="n">Simulator_Status</span><span class="o">.</span><span class="n">SHUTDOWN</span><span class="p">,</span> <span class="p">)</span>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.verify_not_running"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.verify_not_running">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">verify_not_running</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">verify_not_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_RUNNING_STATES</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_RUNNING_STATES</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                 <span class="s2">&quot;Illegal call while a simulation is already running&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_SHUTDOWN_STATES</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_SHUTDOWN_STATES</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                 <span class="s2">&quot;Illegal call after simulation is shutdown&quot;</span><span class="p">)</span></div>
 
@@ -904,7 +904,7 @@
                     <span class="s2">&quot;Only binaries that use the simulation interface can be&quot;</span>
                     <span class="s2">&quot; run more than once&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">Simulator_State</span><span class="o">.</span><span class="n">IN_RUN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">IN_RUN</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_adjust_config</span><span class="p">(</span>
             <span class="n">run_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DEBUG_ENABLE_OPTS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_REPORT_DISABLE_OPTS</span><span class="p">)</span>
@@ -994,7 +994,7 @@
             <span class="k">if</span> <span class="p">(</span><span class="n">is_per_timestep_sdram</span> <span class="ow">and</span>
                     <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_run_time_steps</span> <span class="o">&lt;</span> <span class="n">n_machine_time_steps</span> <span class="ow">or</span>
                         <span class="n">n_machine_time_steps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">Simulator_State</span><span class="o">.</span><span class="n">FINISHED</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">FINISHED</span>
                 <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                     <span class="s2">&quot;The SDRAM required by one or more vertices is based on&quot;</span>
                     <span class="s2">&quot; the run time, so the run time is limited to&quot;</span>
@@ -1035,13 +1035,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_do_run</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Waiting for stop request&quot;</span><span class="p">)</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_condition</span><span class="p">:</span>
-                <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">!=</span> <span class="n">Simulator_State</span><span class="o">.</span><span class="n">STOP_REQUESTED</span><span class="p">:</span>
+                <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">!=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">STOP_REQUESTED</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_state_condition</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running forever in steps of </span><span class="si">{}</span><span class="s2">ms&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_max_run_time_steps</span><span class="p">))</span>
             <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">!=</span> <span class="n">Simulator_State</span><span class="o">.</span><span class="n">STOP_REQUESTED</span><span class="p">:</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">!=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">STOP_REQUESTED</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Run </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_do_run</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_max_run_time_steps</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
@@ -1055,7 +1055,7 @@
 
         <span class="c1"># update counter for runs (used by reports and app data)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_calls_to_run</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">Simulator_State</span><span class="o">.</span><span class="n">FINISHED</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">FINISHED</span>
 
     <span class="k">def</span> <span class="nf">_is_per_timestep_sdram</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="o">.</span><span class="n">placements</span><span class="p">:</span>
@@ -2706,7 +2706,7 @@
 <span class="sd">        :param bool clear_routing_tables:</span>
 <span class="sd">        :param bool clear_tags:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">Simulator_State</span><span class="o">.</span><span class="n">SHUTDOWN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">SHUTDOWN</span>
 
         <span class="c1"># if on a virtual machine then shut down not needed</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
@@ -2737,7 +2737,7 @@
         <span class="c1"># stop the transceiver and allocation controller</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__close_transceiver</span><span class="p">(</span><span class="n">turn_off_machine</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__close_allocation_controller</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">Simulator_State</span><span class="o">.</span><span class="n">SHUTDOWN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">SHUTDOWN</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_run_outputs</span> <span class="ow">and</span> \
@@ -2808,9 +2808,9 @@
 <span class="sd">        :param bool clear_tags: informs the tool chain if it should clear the</span>
 <span class="sd">            tags off the machine at stop</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">in</span> <span class="p">[</span><span class="n">Simulator_State</span><span class="o">.</span><span class="n">SHUTDOWN</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="p">[</span><span class="n">Simulator_Status</span><span class="o">.</span><span class="n">SHUTDOWN</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span><span class="s2">&quot;Simulator has already been shutdown&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">Simulator_State</span><span class="o">.</span><span class="n">SHUTDOWN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">SHUTDOWN</span>
 
         <span class="c1"># Keep track of any exception to be re-raised</span>
         <span class="n">exn</span> <span class="o">=</span> <span class="kc">None</span>
@@ -3076,10 +3076,10 @@
 <span class="sd">            This will need to be called from another thread as the infinite \</span>
 <span class="sd">            run call is blocking.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Simulator_State</span><span class="o">.</span><span class="n">IN_RUN</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">IN_RUN</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_condition</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">Simulator_State</span><span class="o">.</span><span class="n">STOP_REQUESTED</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">STOP_REQUESTED</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_state_condition</span><span class="o">.</span><span class="n">notify_all</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.continue_simulation"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.continue_simulation">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">continue_simulation</span><span class="p">)</span>
@@ -3149,7 +3149,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
   </body>
 </html>
