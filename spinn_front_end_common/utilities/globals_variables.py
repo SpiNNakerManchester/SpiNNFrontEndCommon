@@ -24,10 +24,9 @@ from spinn_front_end_common.utilities.exceptions import (
 _simulator = None
 
 
-def get_simulator():
-    """ Get the current simulator object.
+def check_simulator():
+    """ Check if a simulator has been setup but not yet shut down
 
-    :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase
     :raises: SimmulatorNotSetupException, SimmulatorShutdownException
     """
     if _simulator is None:
@@ -36,6 +35,31 @@ def get_simulator():
     if _simulator._state in SHUTDOWN_STATUS:
         raise SimmulatorShutdownException(
             "This call is only valid between setup and end/stop")
+
+
+def has_simulator():
+    """ Check if a simulator has been setup but not yet shut down
+
+    Should behave in the same way as check_simulator except that it returns
+    False where check_simulator raises and exception and True when it does not
+
+    :rtype: bool
+    """
+    if _simulator is None:
+        return False
+    if _simulator._state in SHUTDOWN_STATUS:
+        return False
+    return True
+
+
+
+def get_simulator():
+    """ Get the current simulator object.
+
+    :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase
+    :raises: SimmulatorNotSetupException, SimmulatorShutdownException
+    """
+    check_simulator()
     return _simulator
 
 
@@ -46,8 +70,8 @@ def get_not_running_simulator():
     :raises: SimmulatorNotSetupException, SimmulatorShutdownException,
         SimmulatorRunningException
     """
-    simulator = get_simulator()
-    if simulator._state in RUNNING_STATUS:
+    check_simulator()
+    if _simulator._state in RUNNING_STATUS:
         raise SimmulatorRunningException(
             "Illegal call while a simulation is already running")
     return _simulator
@@ -70,18 +94,6 @@ def unset_simulator():
     global _simulator
     _simulator = None
     injection_decorator._instances = list()
-
-
-def has_simulator():
-    """ Check if a simulator is operational.
-
-    :rtype: bool
-    """
-    try:
-        get_simulator()
-        return True
-    except Exception:
-        return False
 
 
 def get_generated_output(output):
