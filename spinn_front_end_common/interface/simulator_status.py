@@ -16,7 +16,7 @@
 from enum import Enum
 
 
-class Simulator_State(Enum):
+class Simulator_Status(Enum):
     """ Different states the Simulator could be in.
     """
     #: init called
@@ -45,7 +45,7 @@ class Simulator_State(Enum):
 
 
 #: List of the states a simulator can be in to be considered running
-RUNNING_STATES = (Simulator_State.IN_RUN, Simulator_State.RUN_FOREVER)
+RUNNING_STATES = (Simulator_Status.IN_RUN, Simulator_Status.RUN_FOREVER)
 
 #: List of states a simulator can be in to be considered shutdown
-SHUTDOWN_STATES = (Simulator_State.SHUTDOWN, )
+SHUTDOWN_STATES = (Simulator_Status.SHUTDOWN, )

@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from pacman.executor import injection_decorator
-from spinn_front_end_common.interface.simulator_state import (
+from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATES, SHUTDOWN_STATES)
 from spinn_front_end_common.utilities.exceptions import (
     SimmulatorRunningException, SimmulatorNotSetupException,
