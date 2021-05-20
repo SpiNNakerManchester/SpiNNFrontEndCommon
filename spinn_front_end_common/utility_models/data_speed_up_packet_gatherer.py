@@ -27,7 +27,6 @@ class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
 
     def __init__(
             self, x, y, ip_address, extra_monitors_by_chip,
-            report_default_directory,
             write_data_speed_up_reports, constraints=None):
         """
         :param int x: Where this gatherer is.
@@ -37,7 +36,6 @@ class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
             dict(tuple(int,int), ExtraMonitorSupportMachineVertex)
         :param str ip_address:
             How to talk directly to the chip where the gatherer is.
-        :param str report_default_directory: Where reporting is done.
         :param bool write_data_speed_up_reports:
             Whether to write low-level reports on data transfer speeds.
         :param constraints:
@@ -49,7 +47,6 @@ class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
                 app_vertex=self,
                 x=x, y=y, ip_address=ip_address, constraints=constraints,
                 extra_monitors_by_chip=extra_monitors_by_chip,
-                report_default_directory=report_default_directory,
                 write_data_speed_up_reports=write_data_speed_up_reports),
             "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints)

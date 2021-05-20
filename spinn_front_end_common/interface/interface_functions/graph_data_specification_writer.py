@@ -53,15 +53,12 @@ class GraphDataSpecificationWriter(object):
         self._vertices_by_chip = defaultdict(list)
 
     def __call__(
-            self, placements, hostname,
-            report_default_directory, write_text_specs,
+            self, placements, hostname, write_text_specs,
             machine, data_n_timesteps, placement_order=None):
         """
         :param ~pacman.model.placements.Placements placements:
             placements of machine graph to cores
         :param str hostname: SpiNNaker machine name
-        :param str report_default_directory:
-            the location where reports are stored
         :param bool write_text_specs:
             True if the textual version of the specification is to be written
         :param ~spinn_machine.Machine machine:
@@ -79,7 +76,6 @@ class GraphDataSpecificationWriter(object):
         # pylint: disable=attribute-defined-outside-init
         self._machine = machine
         self._hostname = hostname
-        self._report_dir = report_default_directory
         self._write_text = write_text_specs
 
         # iterate though vertices and call generate_data_spec for each

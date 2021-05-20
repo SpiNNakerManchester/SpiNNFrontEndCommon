@@ -33,7 +33,8 @@ from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
-from spinn_front_end_common.utilities.globals_variables import get_simulator
+from spinn_front_end_common.utilities.globals_variables import (
+    get_simulator, report_default_directory)
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_vertices_to_core_subset, n_word_struct)
 from spinn_front_end_common.utilities.emergency_recovery import (
@@ -293,7 +294,6 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def __init__(
             self, x, y, extra_monitors_by_chip, ip_address,
-            report_default_directory,
             write_data_speed_up_reports, app_vertex=None, constraints=None):
         """
         :param int x: Where this gatherer is.
@@ -303,7 +303,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             dict(tuple(int,int), ExtraMonitorSupportMachineVertex)
         :param str ip_address:
             How to talk directly to the chip where the gatherer is.
-        :param str report_default_directory: Where reporting is done.
         :param bool write_data_speed_up_reports:
             Whether to write low-level reports on data transfer speeds.
         :param constraints:
@@ -344,10 +343,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._app_id = None
 
         # create report if it doesn't already exist
+
         self._out_report_path = \
-            os.path.join(report_default_directory, self.OUT_REPORT_NAME)
+            os.path.join(report_default_directory(), self.OUT_REPORT_NAME)
         self._in_report_path = \
-            os.path.join(report_default_directory, self.IN_REPORT_NAME)
+            os.path.join(report_default_directory(), self.IN_REPORT_NAME)
         self._write_data_speed_up_reports = write_data_speed_up_reports
 
         # Stored reinjection status for resetting timeouts

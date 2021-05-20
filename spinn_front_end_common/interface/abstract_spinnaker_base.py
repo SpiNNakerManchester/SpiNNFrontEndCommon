@@ -1253,7 +1253,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "auto_detect_bmp")
         inputs["ScampConnectionData"] = get_config_str(
             "Machine", "scamp_connections_data")
-        inputs['ReportFolder'] = self._report_default_directory
         inputs['ReportWaitingLogsFlag'] = get_config_bool(
             "Machine", "report_waiting_logs")
         inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
@@ -1316,7 +1315,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         outputs = list()
 
         do_partitioning = self._machine_by_size(inputs, algorithms, outputs)
-        inputs['ReportFolder'] = self._report_default_directory
         inputs['ReportWaitingLogsFlag'] = get_config_bool(
             "Machine", "report_waiting_logs")
         inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
@@ -2874,7 +2872,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def _do_energy_report(self):
         # create energy reporter
         energy_reporter = EnergyReport(
-            self._report_default_directory,
             get_config_int("Machine", "version"), self._spalloc_server,
             self._remote_spinnaker_url, self.time_scale_factor)
 

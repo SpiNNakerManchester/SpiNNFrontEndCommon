@@ -15,6 +15,8 @@
 
 import os
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 
 
 class BoardChipReport(object):
@@ -23,11 +25,9 @@ class BoardChipReport(object):
 
     AREA_CODE_REPORT_NAME = "board_chip_report.txt"
 
-    def __call__(self, report_default_directory, machine):
+    def __call__(self, machine):
         """ Creates a report that states where in SDRAM each region is.
 
-        :param str report_default_directory:
-            the folder where reports are written
         :param ~spinn_machine.Machine machine:
             python representation of the machine
         :rtype: None
@@ -35,7 +35,7 @@ class BoardChipReport(object):
 
         # create file path
         directory_name = os.path.join(
-            report_default_directory, self.AREA_CODE_REPORT_NAME)
+            report_default_directory(), self.AREA_CODE_REPORT_NAME)
 
         # create the progress bar for end users
         progress_bar = ProgressBar(
