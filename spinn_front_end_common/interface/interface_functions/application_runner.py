@@ -15,11 +15,12 @@
 
 import logging
 import time
-from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.scp.enums import Signal
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.globals_variables import (
+    time_scale_factor)
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 
@@ -116,8 +117,7 @@ class ApplicationRunner(object):
         :param float time_threshold:
         """
         if not run_until_complete:
-            factor = get_config_int("Machine", "time_scale_factor")
-            factor /= MICRO_TO_MILLISECOND_CONVERSION
+            factor = time_scale_factor() / MICRO_TO_MILLISECOND_CONVERSION
             scaled_runtime = runtime * factor
             time_to_wait = scaled_runtime + SAFETY_FINISH_TIME
             logger.info(
