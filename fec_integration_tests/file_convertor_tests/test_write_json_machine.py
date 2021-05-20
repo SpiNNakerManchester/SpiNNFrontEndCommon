@@ -21,7 +21,7 @@ import unittest
 from spalloc.job import JobDestroyedError
 from spinn_utilities.ping import Ping
 import spinnman.transceiver as transceiver
-from pacman.operations.algorithm_reports.write_json_machine import (
+from spinn_front_end_common.utilities.report_functions.write_json_machine import (
     WriteJsonMachine, MACHINE_FILENAME)
 from spinn_front_end_common.interface.interface_functions import (
     SpallocAllocator)

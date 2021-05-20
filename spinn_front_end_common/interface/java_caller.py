@@ -20,7 +20,7 @@ import os
 import subprocess
 from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
-from pacman.operations.algorithm_reports.write_json_machine import (
+from spinn_front_end_common.utilities.report_functions.write_json_machine import (
     WriteJsonMachine)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
