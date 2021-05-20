@@ -254,10 +254,6 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>SystemProvenanceFilePath</param_type>
-            </parameter>
-            <parameter>
                 <param_name>compress_as_much_as_possible</param_name>
                 <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
@@ -321,7 +317,6 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
-            <param_name>provenance_file_path</param_name>
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
             <param_name>produce_report</param_name>
@@ -381,10 +376,6 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>SystemProvenanceFilePath</param_type>
-            </parameter>
-            <parameter>
                 <param_name>compress_as_much_as_possible</param_name>
                 <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
@@ -448,7 +439,6 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
-            <param_name>provenance_file_path</param_name>
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
             <param_name>produce_report</param_name>
@@ -506,11 +496,7 @@
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
-            <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>SystemProvenanceFilePath</param_type>
-            </parameter>
-            <parameter>
+             <parameter>
                 <param_name>compress_as_much_as_possible</param_name>
                 <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
@@ -574,7 +560,6 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
-            <param_name>provenance_file_path</param_name>
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
             <param_name>produce_report</param_name>
@@ -2057,14 +2042,6 @@
                 <param_type>ExecutableFinder</param_type>
             </parameter>
             <parameter>
-                <param_name>app_provenance_file_path</param_name>
-                <param_type>AppProvenanceFilePath</param_type>
-            </parameter>
-            <parameter>
-                <param_name>system_provenance_file_path</param_name>
-                <param_type>SystemProvenanceFilePath</param_type>
-            </parameter>
-            <parameter>
                 <param_name>from_cores</param_name>
                 <param_type>ExtractIobufFromCores</param_type>
             </parameter>
@@ -2077,8 +2054,6 @@
             <param_name>transceiver</param_name>
             <param_name>executable_targets</param_name>
             <param_name>executable_finder</param_name>
-            <param_name>app_provenance_file_path</param_name>
-            <param_name>system_provenance_file_path</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
         <optional_inputs>
@@ -2328,10 +2303,6 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>AppProvenanceFilePath</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine_time_step</param_name>
                 <param_type>MachineTimeStep</param_type>
             </parameter>
@@ -2339,7 +2310,6 @@
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>placements</param_name>
-            <param_name>provenance_file_path</param_name>
             <param_name>machine_time_step</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
@@ -2545,10 +2515,6 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>SystemProvenanceFilePath</param_type>
-            </parameter>
-            <parameter>
                 <param_name>compress_as_much_as_possible</param_name>
                 <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
@@ -2563,7 +2529,6 @@
             <param_name>executable_finder</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
-            <param_name>provenance_file_path</param_name>
         </required_inputs>
         <optional_inputs>
                 <param_name>compress_as_much_as_possible</param_name>
@@ -2598,10 +2563,6 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>SystemProvenanceFilePath</param_type>
-            </parameter>
-            <parameter>
                 <param_name>compress_as_much_as_possible</param_name>
                 <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
@@ -2616,7 +2577,6 @@
             <param_name>executable_finder</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
-            <param_name>provenance_file_path</param_name>
         </required_inputs>
         <optional_inputs>
                 <param_name>compress_as_much_as_possible</param_name>
@@ -2652,10 +2612,6 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>SystemProvenanceFilePath</param_type>
-            </parameter>
-            <parameter>
                 <param_name>compress_as_much_as_possible</param_name>
                 <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
@@ -2670,7 +2626,6 @@
             <param_name>executable_finder</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
-            <param_name>provenance_file_path</param_name>
         </required_inputs>
         <optional_inputs>
                 <param_name>compress_as_much_as_possible</param_name>

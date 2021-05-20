@@ -24,6 +24,9 @@ from spinnman.model.io_buffer import IOBuffer
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_string_into_chip_and_core_subset)
+from spinn_front_end_common.utilities.globals_variables import (
+    app_provenance_file_path, system_provenance_file_path)
+
 
 logger = FormatAdapter(logging.getLogger(__name__))
 ERROR_ENTRY = re.compile(r"\[ERROR\]\s+\((.*)\):\s+(.*)")
@@ -48,8 +51,7 @@ class IOBufExtractor(object):
                  "__executable_targets", "__executable_finder"]
 
     def __init__(self, transceiver, executable_targets,
-                 executable_finder, app_provenance_file_path,
-                 system_provenance_file_path, from_cores="ALL",
+                 executable_finder, from_cores="ALL",
                  binary_types=None, recovery_mode=False,
                  filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt",
                  suppress_progress=False):
@@ -60,10 +62,6 @@ class IOBufExtractor(object):
         :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~spinnman.model.ExecutableTargets executable_targets:
         :param ExecutableFinder executable_finder:
-        :param app_provenance_file_path:
-        :type app_provenance_file_path: str or None
-        :param system_provenance_file_path:
-        :type system_provenance_file_path: str or None
         :param str from_cores:
         :param str binary_types:
         """
@@ -71,8 +69,8 @@ class IOBufExtractor(object):
         self._recovery_mode = bool(recovery_mode)
         self.__suppress_progress = bool(suppress_progress)
 
-        self.__app_path = app_provenance_file_path
-        self.__sys_path = system_provenance_file_path
+        self.__app_path = app_provenance_file_path()
+        self.__sys_path = system_provenance_file_path()
         self.__transceiver = transceiver
         self.__from_cores = from_cores
         self.__binary_types = binary_types

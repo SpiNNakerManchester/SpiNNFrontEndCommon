@@ -114,7 +114,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
 
     def __call__(
             self, routing_tables, transceiver, machine, app_id,
-            provenance_file_path, machine_graph, placements, executable_finder,
+            machine_graph, placements, executable_finder,
             write_compressor_iobuf, produce_report, default_report_folder,
             target_length, routing_infos, time_to_try_for_each_iteration,
             use_timer_cut_off, machine_time_step, time_scale_factor,
@@ -128,7 +128,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
         :param ~spinn_machine.Machine machine: spinnMachine instance
         :param int app_id: app id of the application
-        :param str provenance_file_path: file path for prov data
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             machine graph
         :param ~pacman.model.placements.Placements placements:
@@ -209,8 +208,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             run_system_application(
                 compressor_executable_targets,
                 routing_table_compressor_app_id, transceiver,
-                provenance_file_path, executable_finder,
-                write_compressor_iobuf,
+                executable_finder, write_compressor_iobuf,
                 functools.partial(
                     self._check_bit_field_router_compressor_for_success,
                     host_chips=on_host_chips,

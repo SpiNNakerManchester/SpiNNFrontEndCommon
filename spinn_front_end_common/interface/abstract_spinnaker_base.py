@@ -1540,10 +1540,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         else:
             inputs['MemoryMachineGraph'] = self._machine_graph
 
-        inputs['ReportFolder'] = self._report_default_directory
-        inputs["ProvenanceFilePath"] = self._provenance_file_path
-        inputs["AppProvenanceFilePath"] = self._app_provenance_file_path
-        inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
         inputs["JsonFolder"] = self._json_folder
         inputs["APPID"] = self._app_id
         inputs["TimeScaleFactor"] = self.time_scale_factor
@@ -2217,7 +2213,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             writer = ProvenanceXMLWriter()
         else:
             writer = ProvenanceSQLWriter()
-        writer(provenance_data_items, self._provenance_file_path)
+        writer(provenance_data_items)
 
     def _recover_from_error(self, exception, exc_info, executable_targets):
         """
@@ -2338,7 +2334,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Read IOBUF where possible (that should be everywhere)
         iobuf = IOBufExtractor(
             self._txrx, executable_targets, self._executable_finder,
-            self._app_provenance_file_path, self._system_provenance_file_path,
             get_config_str("Reports", "extract_iobuf_from_cores"),
             get_config_str("Reports", "extract_iobuf_from_binary_types"))
         try:
@@ -2905,9 +2900,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         extractor = IOBufExtractor(
             transceiver=self._txrx,
             executable_targets=self._last_run_outputs["ExecutableTargets"],
-            executable_finder=self._executable_finder,
-            app_provenance_file_path=self._app_provenance_file_path,
-            system_provenance_file_path=self._system_provenance_file_path)
+            executable_finder=self._executable_finder)
         extractor.extract_iobuf()
 
     @overrides(SimulatorInterface.add_socket_address, extend_doc=False)

@@ -22,7 +22,7 @@ from pacman.executor import injection_decorator
 _failed_state = None
 _simulator = None
 _cached_simulator = None
-_temp_dir = None
+__temp_dir = None
 
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -76,13 +76,13 @@ def unset_simulator(to_cache_simulator=None):
     :param SimulatorInterface to_cache_simulator:
         a cached version for allowing data extraction
     """
-    global _simulator, _cached_simulator
+    global _simulator, _cached_simulator, __temp_dir
     _simulator = None
     _cached_simulator = to_cache_simulator
 
     injection_decorator._instances = list()
 
-    _temp_dir = None
+    __temp_dir = None
 
 
 def has_simulator():
@@ -119,11 +119,7 @@ def _last_simulator():
         return _simulator
     if _cached_simulator is not None:
         return _cached_simulator
-    if _failed_state is not None:
-        return None
-    else:
-        raise ValueError(
-            "There should be some sort of simulator set. Why am i here?!")
+    return None
 
 
 def get_generated_output(output):
@@ -145,10 +141,10 @@ def get_generated_output(output):
 
 
 def _temp_dir():
-    global _temp_dir
-    if _temp_dir in None:
-        _temp_dir = tempfile.TemporaryDirectory()
-    return _temp_dir.name
+    global __temp_dir
+    if __temp_dir is None:
+        __temp_dir = tempfile.TemporaryDirectory()
+    return __temp_dir.name
 
 
 def provenance_file_path():
