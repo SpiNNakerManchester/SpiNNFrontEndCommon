@@ -13,12 +13,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import tempfile
+from spinn_utilities.log import FormatAdapter
 from pacman.executor import injection_decorator
 
 # pylint: disable=global-statement
 _failed_state = None
 _simulator = None
 _cached_simulator = None
+_temp_dir = None
+
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def get_simulator():
@@ -74,6 +81,8 @@ def unset_simulator(to_cache_simulator=None):
     _cached_simulator = to_cache_simulator
 
     injection_decorator._instances = list()
+
+    _temp_dir = None
 
 
 def has_simulator():
@@ -135,6 +144,13 @@ def get_generated_output(output):
         return simulator.get_generated_output(output)
 
 
+def _temp_dir():
+    global _temp_dir
+    if _temp_dir in None:
+        _temp_dir = tempfile.TemporaryDirectory()
+    return _temp_dir.name
+
+
 def provenance_file_path():
     """
     Returns the path to the directory that holds all provenance files
@@ -142,15 +158,15 @@ def provenance_file_path():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
+    ..note: If the simulator has not been setup this returns a tempdir
+
     :rtpye: str
-    :raises ValueError:
-        if the system is in a state where path can't be retrieved
     """
     simulator = _last_simulator()
     if simulator is None:
-        raise ValueError(
-            "You need to have setup a simulator before asking for its "
-            "provenance_file_path.")
+        logger.warning(
+            "Invalid simulator so provenance_file_path is a tempdir")
+        return _temp_dir()
     else:
         # underscore param used avoid exposing a None PyNN parameter
         return simulator._provenance_file_path
@@ -163,15 +179,15 @@ def app_provenance_file_path():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
+    ..note: If the simulator has not been setup this returns a tempdir
+
     :rtpye: str
-    :raises ValueError:
-        if the system is in a state where path can't be retrieved
     """
     simulator = _last_simulator()
     if simulator is None:
-        raise ValueError(
-            "You need to have setup a simulator before asking for its "
-            "app_provenance_file_path.")
+        logger.warning(
+            "Invalid simulator so app_provenance_file_path is a tempdir")
+        return _temp_dir()
     else:
         # underscore param used avoid exposing a None PyNN parameter
         return simulator._app_provenance_file_path
@@ -184,15 +200,15 @@ def system_provenance_file_path():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
+    ..note: If the simulator has not been setup this returns a tempdir
+
     :rtpye: str
-    :raises ValueError:
-        if the system is in a state where path can't be retrieved
     """
     simulator = _last_simulator()
     if simulator is None:
-        raise ValueError(
-            "You need to have setup a simulator before asking for its "
-            "system_provenance_file_path.")
+        logger.warning(
+            "Invalid simulator so system_provenance_file_path is a tempdir")
+        return _temp_dir()
     else:
         # underscore param used avoid exposing a None PyNN parameter
         return simulator._system_provenance_file_path
@@ -205,15 +221,15 @@ def run_report_directory():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
+    ..note: If the simulator has not been setup this returns a tempdir
+
     :rtpye: str
-    :raises ValueError:
-        if the system is in a state where path can't be retrieved
     """
     simulator = _last_simulator()
     if simulator is None:
-        raise ValueError(
-            "You need to have setup a simulator before asking for its "
-            "run_report_directory.")
+        logger.warning(
+            "Invalid simulator so run_report_directory is a tempdir")
+        return _temp_dir()
     else:
         # underscore param used avoid exposing a None PyNN parameter
         return simulator._report_default_directory
