@@ -171,9 +171,6 @@ class ProfileData(object):
         :param str tag: The tag to get the data for
         :rtype: float
         """
-        a = machine_time_step_ms()
-        b = self._max_time / machine_time_step_ms()
-        c = self._max_time / a
         n_points = math.ceil(
             self._max_time / machine_time_step_ms())
         endpoint = n_points * machine_time_step_ms()

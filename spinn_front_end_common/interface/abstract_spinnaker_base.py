@@ -59,7 +59,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities import (
     globals_variables, SimulatorInterface,)
 from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION, SARK_PER_MALLOC_SDRAM_USAGE)
+    SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
@@ -835,9 +835,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self.machine_time_step * self._time_scale_factor)
 
         logger.info(
-            "Simulating for {} {}ms timesteps "
-            "using a hardware timestep of {}us",
-            n_machine_time_steps, self.machine_time_step_ms, hardware_timestep_us)
+            f"Simulating for {n_machine_time_steps} "
+            f"{self.machine_time_step_ms}ms timesteps using a "
+            f"hardware timestep of {hardware_timestep_us}us")
 
         return n_machine_time_steps, total_run_time
 

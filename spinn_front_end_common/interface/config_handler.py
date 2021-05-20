@@ -394,7 +394,8 @@ class ConfigHandler(object):
         :param new_value: Machine timestep in microseconds
         """
         self._machine_time_step = new_value
-        self._machine_time_step_ms = new_value / MICRO_TO_MILLISECOND_CONVERSION
+        self._machine_time_step_ms = (
+                new_value / MICRO_TO_MILLISECOND_CONVERSION)
 
     @property
     def time_scale_factor(self):
