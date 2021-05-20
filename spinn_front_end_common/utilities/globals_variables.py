@@ -142,9 +142,9 @@ def get_generated_output(output):
 def machine_time_step():
     """ The machine timestep, in microseconds
 
+    ..note: If the simulator has not been setup this returns the default 1000
+
     :rtype: int
-    :raises ValueError:
-        if the system is in a state where machine_timestep can't be retrieved
     """
     try:
         return get_simulator().machine_time_step
@@ -159,9 +159,11 @@ def machine_time_step():
 def machine_time_step_ms():
     """ The machine timestep, in microseconds
 
+    Semantic sugar for machine_time_step() / 1000.
+
+    ..note: If the simulator has not been setup this returns the default 1.0
+
     :rtype: float
-    :raises ValueError:
-        if the system is in a state where machine_timestep can't be retrieved
     """
     try:
         return get_simulator().machine_time_step_ms
@@ -170,6 +172,25 @@ def machine_time_step_ms():
         # Typically in unittests
         logger.warning(
             "Invalid simulator so machine_time_step_ms hardcoded to 1.0")
+        return 1.0
+
+
+def machine_time_step_per_ms():
+    """ The machine timesteps in a microseconds
+
+    Semantic sugar for 1000 / machine_time_step()
+
+    ..note: If the simulator has not been setup this returns the default 1.0
+
+    :rtype: float
+    """
+    try:
+        return get_simulator().machine_time_step_per_ms
+    # TODO merge with globals PR for a better fix
+    except (ValueError, AttributeError):
+        # Typically in unittests
+        logger.warning(
+            "Invalid simulator so machine_time_step_per_ms hardcoded to 1.0")
         return 1.0
 
 
