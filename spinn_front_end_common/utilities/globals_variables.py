@@ -214,7 +214,7 @@ def system_provenance_file_path():
         return simulator._system_provenance_file_path
 
 
-def run_report_directory():
+def report_default_directory():
     """
     Returns the path to the directory that holds all the reports for run
 
@@ -228,7 +228,7 @@ def run_report_directory():
     simulator = _last_simulator()
     if simulator is None:
         logger.warning(
-            "Invalid simulator so run_report_directory is a tempdir")
+            "Invalid simulator so report_default_directory is a tempdir")
         return _temp_dir()
     else:
         # underscore param used avoid exposing a None PyNN parameter
