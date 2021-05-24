@@ -399,7 +399,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         "routing_info": "MemoryRoutingInfos",
         "tags": "MemoryTags",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
-        "machine": "MemoryExtendedMachine",
+        "machine": "ExtendedMachine",
         "app_id": "APPID",
         "router_timeout_key": "SystemMulticastRouterTimeoutKeys"
     })

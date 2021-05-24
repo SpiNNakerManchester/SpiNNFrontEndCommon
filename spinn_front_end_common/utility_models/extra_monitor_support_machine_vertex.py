@@ -263,7 +263,7 @@ class ExtraMonitorSupportMachineVertex(
                    "data_in_routing_tables": "DataInMulticastRoutingTables",
                    "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
                    "app_id": "APPID",
-                   "machine": "MemoryExtendedMachine",
+                   "machine": "ExtendedMachine",
                    "router_timeout_keys": "SystemMulticastRouterTimeoutKeys"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={

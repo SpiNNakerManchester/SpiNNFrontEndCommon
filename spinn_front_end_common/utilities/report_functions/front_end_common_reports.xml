@@ -62,7 +62,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>ExtendedMachine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -198,7 +198,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>ExtendedMachine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -230,7 +230,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>ExtendedMachine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -263,7 +263,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>ExtendedMachine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -304,7 +304,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>ExtendedMachine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -420,7 +420,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>ExtendedMachine</param_type>
             </parameter>
             <parameter>
                 <param_name>plan_n_timesteps</param_name>
