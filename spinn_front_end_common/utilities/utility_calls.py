@@ -96,8 +96,7 @@ def get_data_spec_and_file_writer_filename(
     # writer to send down to DSG
     report_writer = get_report_writer(
         processor_chip_x, processor_chip_y, processor_id,
-        hostname, report_directory=report_directory,
-        write_text_specs=write_text_specs)
+        hostname, write_text_specs=write_text_specs)
 
     # build the file writer for the spec
     spec = DataSpecificationGenerator(data_writer, report_writer)
