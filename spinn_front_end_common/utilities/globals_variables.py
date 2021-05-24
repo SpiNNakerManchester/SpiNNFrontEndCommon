@@ -84,7 +84,6 @@ def unset_simulator(to_cache_simulator=None):
 
     __temp_dir = None
 
-
 def has_simulator():
     """ Check if a simulator is operational.
 
@@ -154,15 +153,15 @@ def provenance_file_path():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
-    ..note: If the simulator has not been setup this returns a tempdir
-
     :rtpye: str
+    :raises ValueError:
+        if the system is in a state where path can't be retrieved
     """
     simulator = _last_simulator()
     if simulator is None:
-        logger.warning(
-            "Invalid simulator so provenance_file_path is a tempdir")
-        return _temp_dir()
+        raise ValueError(
+            "You need to have setup a simulator before asking for its "
+            "provenance_file_path.")
     else:
         # underscore param used avoid exposing a None PyNN parameter
         return simulator._provenance_file_path
@@ -174,8 +173,6 @@ def app_provenance_file_path():
 
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
-
-    ..note: If the simulator has not been setup this returns a tempdir
 
     :rtpye: str
     """
@@ -196,8 +193,6 @@ def system_provenance_file_path():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
-    ..note: If the simulator has not been setup this returns a tempdir
-
     :rtpye: str
     """
     simulator = _last_simulator()
@@ -216,8 +211,6 @@ def report_default_directory():
 
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
-
-    ..note: If the simulator has not been setup this returns a tempdir
 
     :rtpye: str
     """
