@@ -21,6 +21,8 @@ from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesKeyToAtomMapping,
     AbstractSupportsDatabaseInjection)
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.db"
@@ -48,11 +50,8 @@ class DatabaseWriter(SQLiteDB):
         "__machine_to_id", "__vertex_to_id", "__edge_to_id"
     ]
 
-    def __init__(self, database_directory):
-        """
-        :param str database_directory: Where the database will be written
-        """
-        self._database_path = os.path.join(database_directory, DB_NAME)
+    def __init__(self):
+        self._database_path = os.path.join(report_default_directory(), DB_NAME)
         init_sql_path = os.path.join(os.path.dirname(__file__), INIT_SQL)
 
         # delete any old database

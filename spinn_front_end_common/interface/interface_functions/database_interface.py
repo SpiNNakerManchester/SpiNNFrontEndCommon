@@ -45,8 +45,7 @@ class DatabaseInterface(object):
             self, machine_graph, user_create_database, tags,
             runtime, machine, data_n_timesteps, time_scale_factor,
             machine_time_step, placements, routing_infos, router_tables,
-            report_folder, create_atom_to_event_id_mapping=False,
-            application_graph=None):
+            create_atom_to_event_id_mapping=False,  application_graph=None):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param user_create_database:
@@ -62,7 +61,6 @@ class DatabaseInterface(object):
         :param router_tables:
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
-        :param str report_folder: Where the database will be put.
         :param bool create_atom_to_event_id_mapping:
         :param application_graph:
         :type application_graph:
@@ -72,7 +70,7 @@ class DatabaseInterface(object):
         """
         # pylint: disable=too-many-arguments
 
-        self._writer = DatabaseWriter(report_folder)
+        self._writer = DatabaseWriter()
         self._user_create_database = user_create_database
         # add database generation if requested
         self._needs_db = self._writer.auto_detect_database(machine_graph)
