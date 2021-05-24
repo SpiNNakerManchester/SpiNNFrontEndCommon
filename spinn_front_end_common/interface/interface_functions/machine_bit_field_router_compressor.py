@@ -115,7 +115,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
     def __call__(
             self, routing_tables, transceiver, machine, app_id,
             machine_graph, placements, executable_finder,
-            write_compressor_iobuf, produce_report, default_report_folder,
+            write_compressor_iobuf, produce_report,
             target_length, routing_infos, time_to_try_for_each_iteration,
             use_timer_cut_off, machine_time_step, time_scale_factor,
             threshold_percentage, retry_count, executable_targets,
@@ -136,7 +136,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             where are binaries are located
         :param bool write_compressor_iobuf: flag saying if read IOBUF
         :param bool produce_report:
-        :param str default_report_folder:
         :param int target_length:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         :param int time_to_try_for_each_iteration:
@@ -236,8 +235,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
                 machine_graph, routing_infos)
 
             for (chip_x, chip_y) in progress_bar.over(on_host_chips, False):
-                report_folder_path = host_compressor.generate_report_path(
-                    default_report_folder)
+                report_folder_path = host_compressor.generate_report_path()
                 prov_items.append(
                     host_compressor.start_compression_selection_process(
                         router_table=routing_tables.get_routing_table_for_chip(

@@ -40,6 +40,8 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.report_functions.\
     bit_field_compressor_report import (
         generate_provenance_item)
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 from pacman.operations.router_compressors import PairCompressor
 
 
@@ -158,7 +160,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
     def __call__(
             self, router_tables, machine, placements, transceiver,
-            default_report_folder, produce_report, machine_graph,
+            produce_report, machine_graph,
             routing_infos,  machine_time_step, time_scale_factor,
             target_length=None):
         """
@@ -170,7 +172,6 @@ class HostBasedBitFieldRouterCompressor(object):
         :param ~spinn_machine.Machine machine: SpiNNMachine instance
         :param ~pacman.model.placements.Placements placements: placements
         :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
-        :param str default_report_folder: report folder
         :param bool produce_report: flag for producing report
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph level
@@ -194,8 +195,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # create report
         report_folder_path = None
         if produce_report:
-            report_folder_path = self.generate_report_path(
-                default_report_folder)
+            report_folder_path = self.generate_report_path()
 
         # compressed router table
         compressed_pacman_router_tables = MulticastRoutingTables()
@@ -261,13 +261,12 @@ class HostBasedBitFieldRouterCompressor(object):
                     vertex.get_n_keys_for_partition(partition))
         return key_to_n_atoms_map
 
-    def generate_report_path(self, default_report_folder):
+    def generate_report_path(self):
         """
-        :param str default_report_folder:
         :rtype: str
         """
         report_folder_path = os.path.join(
-            default_report_folder, self._REPORT_FOLDER_NAME)
+            report_default_directory(), self._REPORT_FOLDER_NAME)
         if not os.path.exists(report_folder_path):
             os.mkdir(report_folder_path)
         return report_folder_path

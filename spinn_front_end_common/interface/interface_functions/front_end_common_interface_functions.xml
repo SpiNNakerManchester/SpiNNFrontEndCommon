@@ -172,10 +172,6 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
-                <param_name>default_report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>produce_report</param_name>
                 <param_type>RouterBitfieldCompressionReport</param_type>
             </parameter>
@@ -205,7 +201,6 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>placements</param_name>
-            <param_name>default_report_folder</param_name>
             <param_name>produce_report</param_name>
             <param_name>machine_graph</param_name>
             <param_name>machine_time_step</param_name>
@@ -278,10 +273,6 @@
                 <param_type>RouterBitfieldCompressionReport</param_type>
             </parameter>
             <parameter>
-                <param_name>default_report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>target_length</param_name>
                 <param_type>CompressionTargetSize</param_type>
             </parameter>
@@ -320,7 +311,6 @@
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
             <param_name>produce_report</param_name>
-            <param_name>default_report_folder</param_name>
             <param_name>target_length</param_name>
             <param_name>routing_infos</param_name>
             <param_name>threshold_percentage</param_name>
@@ -400,10 +390,6 @@
                 <param_type>RouterBitfieldCompressionReport</param_type>
             </parameter>
             <parameter>
-                <param_name>default_report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>target_length</param_name>
                 <param_type>CompressionTargetSize</param_type>
             </parameter>
@@ -442,7 +428,6 @@
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
             <param_name>produce_report</param_name>
-            <param_name>default_report_folder</param_name>
             <param_name>target_length</param_name>
             <param_name>routing_infos</param_name>
             <param_name>threshold_percentage</param_name>
@@ -521,10 +506,6 @@
                 <param_type>RouterBitfieldCompressionReport</param_type>
             </parameter>
             <parameter>
-                <param_name>default_report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>target_length</param_name>
                 <param_type>CompressionTargetSize</param_type>
             </parameter>
@@ -563,7 +544,6 @@
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
             <param_name>produce_report</param_name>
-            <param_name>default_report_folder</param_name>
             <param_name>target_length</param_name>
             <param_name>routing_infos</param_name>
             <param_name>threshold_percentage</param_name>
