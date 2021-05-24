@@ -2209,7 +2209,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             writer = ProvenanceXMLWriter()
         else:
             writer = ProvenanceSQLWriter()
-        writer(provenance_data_items)
+        writer(provenance_data_items, self._provenance_file_path)
 
     def _recover_from_error(self, exception, exc_info, executable_targets):
         """
