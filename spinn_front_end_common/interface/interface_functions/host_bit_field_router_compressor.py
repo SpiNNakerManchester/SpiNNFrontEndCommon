@@ -28,7 +28,7 @@ from pacman.exceptions import (
 from pacman.model.routing_tables import (
     MulticastRoutingTables, UnCompressedMulticastRoutingTable,
     CompressedMulticastRoutingTable)
-from pacman.operations.algorithm_reports.reports import format_route
+from pacman.utilities.algorithm_utilities.routes_format import format_route
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsBitFieldRoutingCompression)
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
