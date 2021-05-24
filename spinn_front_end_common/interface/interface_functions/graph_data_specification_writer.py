@@ -80,7 +80,7 @@ class GraphDataSpecificationWriter(object):
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        targets = DataSpecificationTargets(machine, self._report_dir)
+        targets = DataSpecificationTargets(machine)
 
         if placement_order is None:
             placement_order = placements.placements

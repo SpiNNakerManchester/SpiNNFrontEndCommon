@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import struct
-import tempfile
 import unittest
 from spinn_machine.virtual_machine import virtual_machine
 from spinnman.model import ExecutableTargets
@@ -86,9 +85,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver(user_0_addresses={0: 1000})
         machine = virtual_machine(2, 2)
-        tempdir = tempfile.mkdtemp()
 
-        dsg_targets = DataSpecificationTargets(machine, tempdir)
+        dsg_targets = DataSpecificationTargets(machine)
         with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reserve_memory_region(0, 100)
