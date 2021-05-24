@@ -24,6 +24,8 @@ from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.utilities.helpful_functions import (
     generate_unique_folder_name, n_word_struct)
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 
 
 class DSGRegionReloader(object):
@@ -33,8 +35,7 @@ class DSGRegionReloader(object):
         "_txrx", "_host", "_write_text", "_rpt_dir", "_data_dir"]
 
     def __call__(
-            self, transceiver, placements, hostname, report_directory,
-            write_text_specs):
+            self, transceiver, placements, hostname, write_text_specs):
         """
         :param ~spinnman.transceiver.Transceiver transceiver:
             SpiNNMan transceiver for communication
@@ -42,8 +43,6 @@ class DSGRegionReloader(object):
             the list of placements of the machine graph to cores
         :param str hostname:
             the machine name
-        :param str report_directory:
-            the location where reports are stored
         :param bool write_text_specs:
             Whether the textual version of the specification is to be written
         """
@@ -54,7 +53,7 @@ class DSGRegionReloader(object):
 
         # build file paths for reloaded stuff
         app_data_dir = generate_unique_folder_name(
-            report_directory, "reloaded_data_regions", "")
+            report_default_directory(), "reloaded_data_regions", "")
         if not os.path.exists(app_data_dir):
             os.makedirs(app_data_dir)
         self._data_dir = app_data_dir
@@ -62,7 +61,7 @@ class DSGRegionReloader(object):
         report_dir = None
         if write_text_specs:
             report_dir = generate_unique_folder_name(
-                report_directory, "reloaded_data_regions", "")
+                report_default_directory(), "reloaded_data_regions", "")
             if not os.path.exists(report_dir):
                 os.makedirs(report_dir)
         self._rpt_dir = report_dir

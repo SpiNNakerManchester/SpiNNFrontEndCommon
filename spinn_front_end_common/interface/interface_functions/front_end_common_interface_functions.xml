@@ -937,10 +937,6 @@
                 <param_type>IPAddress</param_type>
             </parameter>
             <parameter>
-                <param_name>report_directory</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>write_text_specs</param_name>
                 <param_type>WriteTextSpecsFlag</param_type>
             </parameter>
@@ -949,7 +945,6 @@
             <param_name>transceiver</param_name>
             <param_name>placements</param_name>
             <param_name>hostname</param_name>
-            <param_name>report_directory</param_name>
             <param_name>write_text_specs</param_name>
         </required_inputs>
         <optional_inputs>
