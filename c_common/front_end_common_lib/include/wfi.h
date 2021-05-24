@@ -31,6 +31,5 @@ cp15-c7-core-control-operations">the relevant ARM documentation</a>
  *      (it's hardware magic, specific to the ARM968).
  */
 static inline void wait_for_interrupt(void) {
-    register uint32_t value = 0;
-    asm volatile("mcr p15, 0, %[value], c7, c0, 4" : : [value] "r" (value));
+    asm volatile("mcr p15, 0, r0, c7, c0, 4");
 }
