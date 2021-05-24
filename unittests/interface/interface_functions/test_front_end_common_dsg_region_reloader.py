@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-import shutil
 import numpy
 from spinn_machine import SDRAM
 from pacman.model.resources import ResourceContainer
@@ -23,13 +22,14 @@ from pacman.model.placements import Placements, Placement
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineVertex
 from data_specification.constants import MAX_MEM_REGIONS
-from data_specification.utility_calls import get_region_base_address_offset
+from spinn_front_end_common.utilities.utility_calls import get_region_base_address_offset
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.interface.interface_functions import (
     DSGRegionReloader)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
+from spinn_front_end_common.utilities.globals_variables import unset_simulator
 
 
 class _TestMachineVertex(MachineVertex, AbstractRewritesDataSpecification):
@@ -159,6 +159,13 @@ class _MockTransceiver(object):
 
 class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
+    def setUp(self):
+        unset_simulator()
+
+    @classmethod
+    def tearDownClass(cls):
+        unset_simulator()
+
     def test_with_application_vertices(self):
         """ Test that an application vertex's data is rewritten correctly
         """
@@ -187,7 +194,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         transceiver = _MockTransceiver(user_0_addresses, region_addresses)
 
         reloader = DSGRegionReloader()
-        reloader.__call__(transceiver, placements, "localhost", "test", False)
+        reloader.__call__(transceiver, placements, "localhost", False)
 
         regions_rewritten = transceiver.regions_rewritten
 
@@ -212,9 +219,6 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
                 # Check that the base address and data written is correct
                 self.assertEqual(regions_rewritten[pos], (address, data))
-
-        # Delete data files
-        shutil.rmtree("test")
 
 
 if __name__ == "__main__":

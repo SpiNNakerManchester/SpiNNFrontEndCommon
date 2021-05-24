@@ -16,7 +16,7 @@
 from enum import Enum
 from spinn_utilities.abstract_base import abstractproperty
 from spinn_utilities.overrides import overrides
-from data_specification.utility_calls import get_region_base_address_offset
+from spinn_front_end_common.utilities.utility_calls import get_region_base_address_offset
 from .abstract_provides_provenance_data_from_machine import (
     AbstractProvidesProvenanceDataFromMachine)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD

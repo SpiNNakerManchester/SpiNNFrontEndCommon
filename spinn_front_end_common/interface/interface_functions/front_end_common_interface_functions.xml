@@ -1216,9 +1216,6 @@
                 <param_type>IgnoreBadEthernets</param_type>
             </parameter>
             <parameter>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>report_waiting_logs</param_name>
                 <param_type>ReportWaitingLogsFlag</param_type>
             </parameter>

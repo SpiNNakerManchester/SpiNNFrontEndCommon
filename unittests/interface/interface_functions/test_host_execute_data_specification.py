@@ -110,7 +110,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         infos = executor.execute_application_data_specs(
             transceiver, machine, 30, dsg_targets, False, targets,
-            report_folder=tempdir, region_sizes=region_sizes)
+            region_sizes=region_sizes)
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded

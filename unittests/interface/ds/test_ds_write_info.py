@@ -25,8 +25,7 @@ class TestDsWriteInfo(unittest.TestCase):
     def test_dict(self):
         check = dict()
         machine = virtual_machine(2, 2)
-        dst = DataSpecificationTargets(machine, tempdir)
-        print(tempdir)
+        dst = DataSpecificationTargets(machine)
         asDict = DsWriteInfo(dst.get_database())
         c1 = (0, 0, 0)
         foo = DataWritten(123, 12, 23)

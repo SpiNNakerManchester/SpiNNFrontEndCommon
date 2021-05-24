@@ -18,12 +18,12 @@ from collections import defaultdict
 from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 from spinn_utilities.progress_bar import ProgressBar
 from data_specification import DataSpecificationGenerator
-from data_specification.utility_calls import get_report_writer
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.ds.data_specification_targets import (
     DataSpecificationTargets)
+from spinn_front_end_common.utilities.utility_calls import get_report_writer
 
 
 class GraphDataSpecificationWriter(object):
@@ -41,8 +41,6 @@ class GraphDataSpecificationWriter(object):
         "_machine",
         # hostname
         "_hostname",
-        # directory where reports go
-        "_report_dir",
         # bool for writing texts
         "_write_text",
     )
@@ -129,8 +127,7 @@ class GraphDataSpecificationWriter(object):
 
         with targets.create_data_spec(pl.x, pl.y, pl.p) as data_writer:
             report_writer = get_report_writer(
-                pl.x, pl.y, pl.p, self._hostname,
-                self._report_dir, self._write_text)
+                pl.x, pl.y, pl.p, self._hostname, self._write_text)
             spec = DataSpecificationGenerator(data_writer, report_writer)
 
             # generate the DSG file

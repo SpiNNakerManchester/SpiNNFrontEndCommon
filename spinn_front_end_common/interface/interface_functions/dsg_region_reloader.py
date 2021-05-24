@@ -18,7 +18,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import SDRAM
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
-from data_specification.utility_calls import (
+from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset, get_data_spec_and_file_writer_filename)
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
@@ -32,7 +32,7 @@ class DSGRegionReloader(object):
     """ Regenerates and reloads the data specifications.
     """
     __slots__ = [
-        "_txrx", "_host", "_write_text", "_rpt_dir", "_data_dir"]
+        "_txrx", "_host", "_write_text", "_data_dir"]
 
     def __call__(
             self, transceiver, placements, hostname, write_text_specs):
@@ -64,7 +64,6 @@ class DSGRegionReloader(object):
                 report_default_directory(), "reloaded_data_regions", "")
             if not os.path.exists(report_dir):
                 os.makedirs(report_dir)
-        self._rpt_dir = report_dir
 
         progress = ProgressBar(placements.n_placements, "Reloading data")
         for placement in progress.over(placements.placements):
@@ -91,7 +90,7 @@ class DSGRegionReloader(object):
         # build the writers for the reports and data
         spec_file, spec = get_data_spec_and_file_writer_filename(
             placement.x, placement.y, placement.p, self._host,
-            self._rpt_dir, self._write_text, self._data_dir)
+            self._write_text, self._data_dir)
 
         # Execute the regeneration
         vertex.regenerate_data_specification(spec, placement)
