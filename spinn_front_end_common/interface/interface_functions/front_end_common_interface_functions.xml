@@ -121,7 +121,7 @@
             <token>DataLoaded</token>
         </required_inputs>
         <outputs>
-            <param_type>MemoryCompressedRoutingTables</param_type>
+            <param_type>CompressedRoutingTables</param_type>
         </outputs>
     </algorithm>
     <algorithm name="PreAllocateForBitFieldRouterCompressor">
@@ -217,7 +217,7 @@
             <param_name>target_length</param_name>
         </optional_inputs>
         <outputs>
-            <param_type>MemoryCompressedRoutingTables</param_type>
+            <param_type>CompressedRoutingTables</param_type>
             <param_type>RouterCompressorProvenanceItems</param_type>
        </outputs>
     </algorithm>
@@ -1297,7 +1297,7 @@
         <input_definitions>
             <parameter>
                 <param_name>router_tables</param_name>
-                <param_type>MemoryCompressedRoutingTables</param_type>
+                <param_type>CompressedRoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -1328,7 +1328,7 @@
         <input_definitions>
             <parameter>
                 <param_name>router_tables</param_name>
-                <param_type>MemoryCompressedRoutingTables</param_type>
+                <param_type>CompressedRoutingTables</param_type>
                 <param_type>MemoryRoutingTables</param_type>
             </parameter>
             <parameter>
@@ -1861,7 +1861,7 @@
             <parameter>
                 <param_name>router_tables</param_name>
                 <param_type>MemoryRoutingTables</param_type>
-                <param_type>MemoryCompressedRoutingTables</param_type>
+                <param_type>CompressedRoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>create_atom_to_event_id_mapping</param_name>

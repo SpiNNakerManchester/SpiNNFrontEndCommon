@@ -109,7 +109,7 @@
             </parameter>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryCompressedRoutingTables</param_type>
+                <param_type>CompressedRoutingTables</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -358,7 +358,7 @@
             </parameter>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryCompressedRoutingTables</param_type>
+                <param_type>CompressedRoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>hostname</param_name>
@@ -468,7 +468,7 @@
             </parameter>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryCompressedRoutingTables</param_type>
+                <param_type>CompressedRoutingTables</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -486,7 +486,7 @@
             </parameter>
             <parameter>
                 <param_name>compressed_routing_tables</param_name>
-                <param_type>MemoryCompressedRoutingTables</param_type>
+                <param_type>CompressedRoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_tables</param_name>
