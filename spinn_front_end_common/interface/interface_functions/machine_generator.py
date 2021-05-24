@@ -21,6 +21,8 @@ from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 import time
 import logging
 
@@ -55,7 +57,7 @@ class MachineGenerator(object):
             downed_links, board_version, auto_detect_bmp,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
             report_waiting_logs, max_sdram_size=None, repair_machine=False,
-            ignore_bad_ethernets=True, default_report_directory=None):
+            ignore_bad_ethernets=True):
         """
         :param str hostname:
             the hostname or IP address of the SpiNNaker machine
@@ -95,9 +97,6 @@ class MachineGenerator(object):
             The bad IP address is always logged.
             If True, the IP address is ignored.
             If False, the chip with the bad IP address is removed.
-        :param str default_report_directory:
-            Directory to write any reports too.
-            If None the current directory will be used.
         :param report_waiting_logs:
             flag for the txrx to report when waiting on busy cores.
         :type report_waiting_logs: bool
@@ -123,7 +122,7 @@ class MachineGenerator(object):
             max_sdram_size=max_sdram_size,
             repair_machine=repair_machine,
             ignore_bad_ethernets=ignore_bad_ethernets,
-            default_report_directory=default_report_directory,
+            default_report_directory=report_default_directory(),
             report_waiting_logs=report_waiting_logs)
 
         if reset_machine_on_start_up:
