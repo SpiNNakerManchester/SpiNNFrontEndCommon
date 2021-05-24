@@ -222,7 +222,7 @@
             </parameter>
             <parameter>
                 <param_name>graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
@@ -513,7 +513,7 @@
             </parameter>
             <parameter>
                 <param_name>graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -551,7 +551,7 @@
             </parameter>
             <parameter>
                 <param_name>graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
         </input_definitions>

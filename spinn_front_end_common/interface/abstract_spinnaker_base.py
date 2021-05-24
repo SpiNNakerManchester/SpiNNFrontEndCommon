@@ -1391,7 +1391,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # chips to be allocated either by partitioning, or by measuring
         # the graph
         else:
-            inputs["MemoryApplicationGraph"] = self._application_graph
+            inputs["ApplicationGraph"] = self._application_graph
             algorithms.extend(get_config_str_list(
                 "Mapping", "application_to_machine_graph_algorithms"))
             outputs.append("MemoryMachineGraph")
@@ -1478,7 +1478,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # add the application and machine graphs as needed
         # Both could be None if call from other than self._run
         if self._application_graph and self._application_graph.n_vertices:
-            inputs["MemoryApplicationGraph"] = self._application_graph
+            inputs["ApplicationGraph"] = self._application_graph
         elif self._machine_graph and self._machine_graph.n_vertices:
             inputs["MemoryMachineGraph"] = self._machine_graph
 
@@ -1536,7 +1536,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # handle graph additions
         if self._application_graph.n_vertices:
-            inputs["MemoryApplicationGraph"] = self._application_graph
+            inputs["ApplicationGraph"] = self._application_graph
         else:
             inputs['MemoryMachineGraph'] = self._machine_graph
 

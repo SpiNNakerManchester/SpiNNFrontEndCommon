@@ -24,7 +24,7 @@
         <input_definitions>
             <parameter>
                 <param_name>app_graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -84,7 +84,7 @@
             </parameter>
             <parameter>
                 <param_name>application_graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -681,7 +681,7 @@
             </parameter>
             <parameter>
                 <param_name>application_graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
@@ -716,7 +716,7 @@
             </parameter>
             <parameter>
                 <param_name>application_graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>default_report_directory</param_name>
@@ -841,7 +841,7 @@
             </parameter>
             <parameter>
                 <param_name>application_graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -904,7 +904,7 @@
             </parameter>
             <parameter>
                 <param_name>application_graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
@@ -933,7 +933,7 @@
         <input_definitions>
             <parameter>
                 <param_name>application_graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>live_packet_gatherer_parameters</param_name>
@@ -1693,7 +1693,7 @@
             </parameter>
             <parameter>
                 <param_name>application_graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1869,7 +1869,7 @@
             </parameter>
             <parameter>
                 <param_name>application_graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
