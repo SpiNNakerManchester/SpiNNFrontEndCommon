@@ -1177,10 +1177,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
-            report_folder = executor.get_item("ReportFolder")
             try:
-                if report_folder:
-                    TagsFromMachineReport()(report_folder, self._txrx)
+                TagsFromMachineReport()(self._txrx)
             except Exception as e2:
                 logger.warning(
                     "problem with TagsFromMachineReport {}".format(e2),
