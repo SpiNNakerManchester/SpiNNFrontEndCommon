@@ -16,7 +16,7 @@
 from enum import Enum
 
 
-class Simulator_State(Enum):
+class Simulator_Status(Enum):
     """ Different states the Simulator could be in.
     """
     #: init called
