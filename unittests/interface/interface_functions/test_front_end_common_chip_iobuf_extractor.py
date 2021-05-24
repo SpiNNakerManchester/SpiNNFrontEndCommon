@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import tempfile
 import unittest
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, CoreSubset

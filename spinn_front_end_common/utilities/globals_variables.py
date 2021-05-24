@@ -84,6 +84,7 @@ def unset_simulator(to_cache_simulator=None):
 
     __temp_dir = None
 
+
 def has_simulator():
     """ Check if a simulator is operational.
 

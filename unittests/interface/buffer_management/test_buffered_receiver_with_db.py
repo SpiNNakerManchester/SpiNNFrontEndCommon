@@ -15,7 +15,6 @@
 
 import unittest
 import os
-import shutil
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferedReceivingData
 from spinn_front_end_common.interface.buffer_management.storage_objects\

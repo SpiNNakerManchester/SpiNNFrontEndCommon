@@ -22,7 +22,8 @@ from pacman.model.placements import Placements, Placement
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineVertex
 from data_specification.constants import MAX_MEM_REGIONS
-from spinn_front_end_common.utilities.utility_calls import get_region_base_address_offset
+from spinn_front_end_common.utilities.utility_calls import (
+    get_region_base_address_offset)
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.interface.interface_functions import (
