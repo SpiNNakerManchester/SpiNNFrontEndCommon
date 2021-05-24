@@ -107,7 +107,7 @@ def get_data_spec_and_file_writer_filename(
 
 def get_report_writer(
         processor_chip_x, processor_chip_y, processor_id,
-        hostname, report_directory="TEMP", write_text_specs=False):
+        hostname, write_text_specs=False):
     """ Check if text reports are needed, and if so initialise the report\
         writer to send down to DSG.
 
@@ -115,7 +115,6 @@ def get_report_writer(
     :param int processor_chip_y: y-coordinate of the chip
     :param int processor_id: The processor ID
     :param str hostname: The hostname of the SpiNNaker machine
-    :param str report_directory: the directory for the reports folder
     :param bool write_text_specs:
         True if a textual version of the specification should be written
     :return: the report_writer_object, or None if not reporting
@@ -126,7 +125,6 @@ def get_report_writer(
     # check if text reports are needed at all
     if not write_text_specs:
         return None
-
     # initialise the report writer to send down to DSG
     new_report_directory = os.path.join(report_default_directory(), _RPT_DIR)
     _mkdir(new_report_directory)
