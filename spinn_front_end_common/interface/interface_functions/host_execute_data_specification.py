@@ -130,7 +130,6 @@ class HostExecuteDataSpecification(object):
         progress.update()
         dsg_targets.set_app_id(self._app_id)
         self._java.set_machine(self._machine)
-        self._java.set_report_folder(self._db_folder)
         progress.update()
         return dw_write_info
 

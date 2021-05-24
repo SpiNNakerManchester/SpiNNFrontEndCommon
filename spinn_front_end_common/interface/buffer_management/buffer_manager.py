@@ -195,7 +195,6 @@ class BufferManager(object):
         self._java_caller = java_caller
         if self._java_caller is not None:
             self._java_caller.set_machine(machine)
-            self._java_caller.set_report_folder(report_folder)
             if self._uses_advanced_monitors:
                 self._java_caller.set_advanced_monitors(
                     self._placements, self._tags,
