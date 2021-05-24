@@ -136,7 +136,7 @@ class BufferManager(object):
     def __init__(self, placements, tags, transceiver, extra_monitor_cores,
                  packet_gather_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
-                 uses_advanced_monitors, report_folder, java_caller=None):
+                 uses_advanced_monitors, java_caller=None):
         """
         :param ~pacman.model.placements.Placements placements:
             The placements of the vertices
@@ -156,9 +156,6 @@ class BufferManager(object):
         :param fixed_routes:
         :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
         :param bool uses_advanced_monitors:
-        :param str report_folder:
-            The directory for reports which includes the file to use as an SQL
-            database.
         :param JavaCaller java_caller:
             Support class to call Java, or ``None`` to use Python
         """
@@ -184,7 +181,7 @@ class BufferManager(object):
         self._sent_messages = dict()
 
         # storage area for received data from cores
-        self._received_data = BufferedReceivingData(report_folder)
+        self._received_data = BufferedReceivingData()
 
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock_buffer_out = threading.RLock()

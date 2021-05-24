@@ -14,38 +14,42 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-import tempfile
 import os
 import shutil
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferedReceivingData
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_receiving_data import DB_FILE_NAME
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory, unset_simulator)
 
 
 class TestBufferedReceivingDataWithDB(unittest.TestCase):
 
+    def setUp(self):
+        unset_simulator()
+
+    @classmethod
+    def tearDown(cls):
+        unset_simulator()
+
     def test_use_database(self):
-        d = tempfile.mkdtemp()
-        f = os.path.join(d, DB_FILE_NAME)
-        try:
-            self.assertFalse(os.path.isfile(f), "no existing DB at first")
+        f = os.path.join(report_default_directory(), DB_FILE_NAME)
+        self.assertFalse(os.path.isfile(f), "no existing DB at first")
 
-            brd = BufferedReceivingData(d)
-            self.assertTrue(os.path.isfile(f), "DB now exists")
+        brd = BufferedReceivingData()
+        self.assertTrue(os.path.isfile(f), "DB now exists")
 
-            # TODO missing
-            # data, missing = brd.get_region_data(0, 0, 0, 0)
-            # self.assertTrue(missing, "data should be 'missing'")
-            # self.assertEqual(data, b"")
+        # TODO missing
+        # data, missing = brd.get_region_data(0, 0, 0, 0)
+        # self.assertTrue(missing, "data should be 'missing'")
+        # self.assertEqual(data, b"")
 
-            brd.store_data_in_region_buffer(0, 0, 0, 0, False, b"abc")
-            brd.store_data_in_region_buffer(0, 0, 0, 0, False, b"def")
-            data, missing = brd.get_region_data(0, 0, 0, 0)
+        brd.store_data_in_region_buffer(0, 0, 0, 0, False, b"abc")
+        brd.store_data_in_region_buffer(0, 0, 0, 0, False, b"def")
+        data, missing = brd.get_region_data(0, 0, 0, 0)
 
-            self.assertFalse(missing, "data shouldn't be 'missing'")
-            self.assertEqual(bytes(data), b"abcdef")
+        self.assertFalse(missing, "data shouldn't be 'missing'")
+        self.assertEqual(bytes(data), b"abcdef")
 
-            self.assertTrue(os.path.isfile(f), "DB still exists")
-        finally:
-            shutil.rmtree(d, True)
+        self.assertTrue(os.path.isfile(f), "DB still exists")
