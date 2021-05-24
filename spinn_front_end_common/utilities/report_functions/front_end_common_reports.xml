@@ -173,10 +173,6 @@
         <python_function>placer_reports_with_application_graph</python_function>
         <input_definitions>
             <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>hostname</param_name>
                 <param_type>IPAddress</param_type>
             </parameter>
@@ -194,7 +190,6 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
             <param_name>hostname</param_name>
             <param_name>graph</param_name>
             <param_name>placements</param_name>
@@ -205,10 +200,6 @@
         <python_module>spinn_front_end_common.utilities.report_functions.reports</python_module>
         <python_function>placer_reports_without_application_graph</python_function>
         <input_definitions>
-            <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
             <parameter>
                 <param_name>hostname</param_name>
                 <param_type>IPAddress</param_type>
@@ -227,7 +218,6 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
             <param_name>hostname</param_name>
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
@@ -238,10 +228,6 @@
         <python_module>spinn_front_end_common.utilities.report_functions.reports</python_module>
         <python_function>router_report_from_paths</python_function>
         <input_definitions>
-            <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
              <parameter>
                 <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
@@ -268,7 +254,6 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
             <param_name>machine_graph</param_name>
             <param_name>routing_tables</param_name>
             <param_name>routing_infos</param_name>
@@ -281,10 +266,6 @@
         <python_module>spinn_front_end_common.utilities.report_functions.reports</python_module>
         <python_function>router_summary_report</python_function>
         <input_definitions>
-            <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
             <parameter>
                 <param_name>routing_tables</param_name>
                 <param_type>MemoryRoutingTables</param_type>
@@ -299,7 +280,6 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
             <param_name>routing_tables</param_name>
             <param_name>hostname</param_name>
             <param_name>machine</param_name>
@@ -312,10 +292,6 @@
         <python_module>spinn_front_end_common.utilities.report_functions.reports</python_module>
         <python_function>router_compressed_summary_report</python_function>
         <input_definitions>
-            <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
             <parameter>
                 <param_name>routing_tables</param_name>
                 <param_type>MemoryCompressedRoutingTables</param_type>
@@ -330,7 +306,6 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
             <param_name>routing_tables</param_name>
             <param_name>hostname</param_name>
             <param_name>machine</param_name>
@@ -344,10 +319,6 @@
         <python_function>routing_info_report</python_function>
         <input_definitions>
             <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
@@ -357,7 +328,6 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
             <param_name>machine_graph</param_name>
             <param_name>routing_infos</param_name>
         </required_inputs>
@@ -366,10 +336,6 @@
         <python_module>spinn_front_end_common.utilities.report_functions.reports</python_module>
         <python_function>sdram_usage_report_per_chip</python_function>
         <input_definitions>
-            <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
             <parameter>
                 <param_name>hostname</param_name>
                 <param_type>IPAddress</param_type>
@@ -392,7 +358,6 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
             <param_name>hostname</param_name>
             <param_name>placements</param_name>
             <param_name>machine</param_name>
@@ -405,16 +370,11 @@
         <python_function>router_report_from_router_tables</python_function>
         <input_definitions>
             <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>routing_tables</param_name>
                 <param_type>MemoryRoutingTables</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
             <param_name>routing_tables</param_name>
         </required_inputs>
     </algorithm>
@@ -423,16 +383,11 @@
         <python_function>router_report_from_compressed_router_tables</python_function>
         <input_definitions>
             <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>routing_tables</param_name>
                 <param_type>MemoryCompressedRoutingTables</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
             <param_name>routing_tables</param_name>
         </required_inputs>
     </algorithm>
@@ -440,10 +395,6 @@
         <python_module>spinn_front_end_common.utilities.report_functions.reports</python_module>
         <python_function>generate_comparison_router_report</python_function>
         <input_definitions>
-            <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
             <parameter>
                 <param_name>compressed_routing_tables</param_name>
                 <param_type>MemoryCompressedRoutingTables</param_type>
@@ -454,7 +405,6 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
             <param_name>compressed_routing_tables</param_name>
             <param_name>routing_tables</param_name>
         </required_inputs>
@@ -463,10 +413,6 @@
         <python_module>spinn_front_end_common.utilities.report_functions.reports</python_module>
         <python_function>partitioner_report</python_function>
         <input_definitions>
-            <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
             <parameter>
                 <param_name>hostname</param_name>
                 <param_type>IPAddress</param_type>
@@ -477,7 +423,6 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
             <param_name>hostname</param_name>
             <param_name>graph</param_name>
             <token>PartitioningDone</token>
@@ -488,16 +433,11 @@
         <python_function>tag_allocator_report</python_function>
         <input_definitions>
             <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>tag_infos</param_name>
                 <param_type>MemoryTags</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
             <param_name>tag_infos</param_name>
         </required_inputs>
     </algorithm>
@@ -506,17 +446,12 @@
         <python_class>NetworkSpecification</python_class>
         <input_definitions>
             <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
             <param_name>graph</param_name>
         </required_inputs>
     </algorithm>
