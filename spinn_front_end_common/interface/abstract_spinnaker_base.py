@@ -656,13 +656,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Only one type of graph can be used during live output. "
                 "Please fix and try again")
 
-    # options names are all lower without _ inside config
-    _DEBUG_ENABLE_OPTS = frozenset([
-        "reportsenabled",
-        "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
-    _REPORT_DISABLE_OPTS = frozenset([
-        "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
-
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution.
 
@@ -868,8 +861,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._status = Simulator_Status.IN_RUN
 
-        self._adjust_config(
-            run_time, self._DEBUG_ENABLE_OPTS, self._REPORT_DISABLE_OPTS)
+        self._adjust_config(run_time)
 
         # Install the Control-C handler
         if isinstance(threading.current_thread(), threading._MainThread):

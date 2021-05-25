@@ -34,6 +34,13 @@ REPORTS_DIRNAME = "reports"
 TIMESTAMP_FILENAME = "time_stamp"
 WARNING_LOGS_FILENAME = "warning_logs.txt"
 
+# options names are all lower without _ inside config
+_DEBUG_ENABLE_OPTS = frozenset([
+    "reportsenabled",
+    "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
+_REPORT_DISABLE_OPTS = frozenset([
+    "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
+
 
 class ConfigHandler(object):
     """ Superclass of AbstractSpinnakerBase that handles function only \
@@ -74,6 +81,7 @@ class ConfigHandler(object):
 
         # set up machine targeted data
         self._use_virtual_board = get_config_bool("Machine", "virtual_board")
+        self._debug_configs()
 
         # Pass max_machine_cores to Machine so if effects everything!
         max_machine_core = get_config_int("Machine", "max_machine_core")
@@ -86,51 +94,28 @@ class ConfigHandler(object):
         self._report_simulation_top_directory = None
         self._this_run_time_string = None
 
-    def _adjust_config(self, runtime, debug_enable_opts, report_disable_opts):
-        """ Adjust and checks config based on runtime and mode
+    def _debug_configs(self):
+        """ Adjust and checks config based on mode and reports_enabled
 
-        :param runtime:
-        :type runtime: int or bool
-        :param frozenset(str) debug_enable_opts:
-        :param frozenset(str) report_disable_opts:
         :raises ConfigurationException:
         """
         if get_config_str("Mode", "mode") == "Debug":
             for option in config_options("Reports"):
                 # options names are all lower without _ inside config
-                if option in debug_enable_opts or option[:5] == "write":
-                    try:
-                        if not get_config_bool("Reports", option):
-                            set_config("Reports", option, "True")
-                            logger.info("As mode == \"Debug\", [Reports] {} "
-                                        "has been set to True", option)
-                    except ValueError:
-                        pass
+                if option in _DEBUG_ENABLE_OPTS or option[:5] == "write":
+                    if not get_config_bool("Reports", option):
+                        set_config("Reports", option, "True")
+                        logger.info("As mode == \"Debug\", [Reports] {} "
+                                    "has been set to True", option)
         elif not get_config_bool("Reports", "reportsEnabled"):
             for option in config_options("Reports"):
                 # options names are all lower without _ inside config
-                if option in report_disable_opts or option[:5] == "write":
-                    try:
-                        if not get_config_bool("Reports", option):
-                            set_config("Reports", option, "False")
-                            logger.info(
-                                "As reportsEnabled == \"False\", [Reports] {} "
-                                "has been set to False", option)
-                    except ValueError:
-                        pass
-
-        if runtime is None:
-            if get_config_bool("Reports", "write_energy_report"):
-                set_config("Reports", "write_energy_report", "False")
-                logger.info("[Reports]write_energy_report has been set to "
-                            "False as runtime is set to forever")
-            if get_config_bool(
-                    "EnergySavings", "turn_off_board_after_discovery"):
-                set_config(
-                    "EnergySavings", "turn_off_board_after_discovery", "False")
-                logger.info("[EnergySavings]turn_off_board_after_discovery has"
-                            " been set to False as runtime is set to forever")
-
+                if option in _REPORT_DISABLE_OPTS or option[:5] == "write":
+                    if not get_config_bool("Reports", option):
+                        set_config("Reports", option, "False")
+                        logger.info(
+                            "As reportsEnabled == \"False\", [Reports] {} "
+                            "has been set to False", option)
         if self._use_virtual_board:
             if get_config_bool("Reports", "write_energy_report"):
                 set_config("Reports", "write_energy_report", "False")
@@ -146,6 +131,27 @@ class ConfigHandler(object):
                 set_config("Reports", "write_board_chip_report", "False")
                 logger.info("[Reports]write_board_chip_report has been set to"
                             " False as using virtual boards")
+
+    def _adjust_config(self, runtime,):
+        """ Adjust and checks config based on runtime
+
+        :param runtime:
+        :type runtime: int or bool
+        :param frozenset(str) debug_enable_opts:
+        :param frozenset(str) report_disable_opts:
+        :raises ConfigurationException:
+        """
+        if runtime is None:
+            if get_config_bool("Reports", "write_energy_report"):
+                set_config("Reports", "write_energy_report", "False")
+                logger.info("[Reports]write_energy_report has been set to "
+                            "False as runtime is set to forever")
+            if get_config_bool(
+                    "EnergySavings", "turn_off_board_after_discovery"):
+                set_config(
+                    "EnergySavings", "turn_off_board_after_discovery", "False")
+                logger.info("[EnergySavings]turn_off_board_after_discovery has"
+                            " been set to False as runtime is set to forever")
 
     def child_folder(self, parent, child_name, must_create=False):
         """
