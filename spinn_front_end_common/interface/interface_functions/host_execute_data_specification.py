@@ -180,6 +180,9 @@ class _ExecutionContext(object):
         return DataWritten(base_address, size_allocated, bytes_written)
 
     def close(self):
+        """ Called when finished executing all regions.  Fills in the
+            references if possible, and fails if not
+        """
         for core_to_fill in self.__references_to_fill:
             pointer_table = core_to_fill.pointer_table
             for ref_region, ref in core_to_fill.regions:
@@ -197,6 +200,14 @@ class _ExecutionContext(object):
 
     def __handle_new_references(self, x, y, p, executor, pointer_table):
         """ Get references that can be used later
+
+        :param int x: The x-coordinate of the spec being executed
+        :param int y: The y-coordinate of the spec being executed
+        :param int p: The core of the spec being executed
+        :param ~DataSpecificationExecutor executor:
+            The execution context
+        :param list(int) pointer_table:
+            A table of pointers that could be referenced later
         """
         for ref_region in executor.referenceable_regions:
             ref = executor.get_region(ref_region).reference
@@ -212,6 +223,19 @@ class _ExecutionContext(object):
 
     def __handle_references_to_fill(
             self, x, y, p, executor, pointer_table, header, base_address):
+        """ Resolve references
+
+        :param int x: The x-coordinate of the spec being executed
+        :param int y: The y-coordinate of the spec being executed
+        :param int p: The core of the spec being executed
+        :param ~DataSpecificationExecutor executor:
+            The execution context
+        :param list(int) pointer_table:
+            A table of pointers that could be referenced later
+        :param header: The Data Specification header bytes
+        :param base_address: The base address of the executed spec
+        :return: Whether all references were resolved
+        """
         # Resolve any references now
         coreToFill = _CoreToFill(x, y, p, header, pointer_table, base_address)
         for ref_region in executor.references_to_fill:
@@ -227,6 +251,17 @@ class _ExecutionContext(object):
         return not bool(coreToFill.regions)
 
     def __get_reference(self, ref, x, y, p, ref_region):
+        """ Get a reference to a region, doing some extra checks on eligibility
+
+        :param int ref: The reference to the region
+        :param int x: The x-coordinate of the executing spec
+        :param int y: The y-coordinate of the executing spec
+        :param int p: The core of the executing spec
+        :param .CoreToFill ref_region: Data related to the reference
+        :return: The pointer to use
+        :raise ValueError: if the reference cannot be referenced in this
+                            context
+        """
         ref_to_use = self.__references_to_use[ref]
         if ref_to_use.x != x or ref_to_use.y != y:
             raise ValueError(

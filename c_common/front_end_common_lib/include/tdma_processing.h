@@ -40,8 +40,19 @@ typedef struct tdma_parameters {
     uint32_t time_between_sends;
 } tdma_parameters;
 
+//! The number of times the TDMA got behind
 extern uint32_t n_tdma_behind_times;
+
+//! The latest TIMER1 value of the TDMA
+extern uint32_t tdma_latest_send;
+
+//! The number of times the TDMA has to wait
+extern uint32_t tdma_waits;
+
+//! The expected time of the next send
 extern uint32_t tdma_expected_time;
+
+//! The TDMA parameters
 extern tdma_parameters tdma_params;
 
 //! \brief Get the number of times that the TDMA was behind.
@@ -61,10 +72,10 @@ static inline void tdma_processing_reset_phase(void) {
     tdma_expected_time = tdma_params.initial_expected_time;
 }
 
-extern uint32_t tdma_latest_send;
-
-extern uint32_t tdma_waits;
-
+//! \brief Send a packet directly without queuing
+//! \param[in] key The key of the packet to send
+//! \param[in] payload The payload of the packet to send or ignored if none
+//! \param[in] with_payload Indicate whether the payload should be used or ignored
 static inline void send_packet(uint32_t key, uint32_t payload, uint32_t with_payload) {
     while (cc[CC_TCR] & TX_FULL_MASK) {
         spin1_delay_us(1);

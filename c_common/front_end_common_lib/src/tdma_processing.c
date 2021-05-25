@@ -32,9 +32,11 @@ uint32_t tdma_expected_time;
 //! Number of times the core got behind its TDMA
 uint32_t n_tdma_behind_times = 0;
 
-
+//! The latest send time of the TDMA; note it is set to max integer initially
+//! because the timer counts down (so later == smaller)
 uint32_t tdma_latest_send = 0xFFFFFFFF;
 
+//! The number of times the TDMA has to wait to send a packet
 uint32_t tdma_waits = 0;
 
 bool tdma_processing_initialise(void **address) {
