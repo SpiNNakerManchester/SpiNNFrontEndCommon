@@ -1566,7 +1566,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Mapping", "router_table_compress_as_far_as_possible")
         inputs["WriteCompressorIobuf"] = get_config_bool(
             "Reports", "write_compressor_iobuf")
-
+        inputs["RouterCompressorBitFieldPreAllocSize"] = \
+            get_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_pre_alloced_sdram")
         algorithms = list()
 
         # process for TDMA required cores
