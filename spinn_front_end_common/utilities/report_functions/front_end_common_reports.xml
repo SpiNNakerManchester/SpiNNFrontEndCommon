@@ -32,7 +32,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>provenance_items</param_name>
@@ -226,7 +226,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
@@ -259,7 +259,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
@@ -300,7 +300,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
@@ -416,7 +416,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
@@ -608,7 +608,7 @@
         <input_definitions>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>json_folder</param_name>

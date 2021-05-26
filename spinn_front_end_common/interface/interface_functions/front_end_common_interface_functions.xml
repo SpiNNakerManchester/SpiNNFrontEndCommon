@@ -48,7 +48,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -169,7 +169,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>default_report_folder</param_name>
@@ -275,7 +275,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>produce_report</param_name>
@@ -402,7 +402,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>produce_report</param_name>
@@ -528,7 +528,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>produce_report</param_name>
@@ -614,7 +614,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -685,7 +685,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>vertex_to_ethernet_connected_chip_mapping</param_name>
@@ -908,7 +908,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>n_keys_map</param_name>
@@ -970,7 +970,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>hostname</param_name>
@@ -1043,7 +1043,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>extra_monitor_cores</param_name>
@@ -1437,7 +1437,7 @@
         <input_definitions>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>hostname</param_name>
@@ -1479,7 +1479,7 @@
         <input_definitions>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>executable_finder</param_name>
@@ -1505,7 +1505,7 @@
         <input_definitions>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>graph</param_name>
@@ -1526,7 +1526,7 @@
         <input_definitions>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>tags</param_name>
@@ -1671,7 +1671,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1729,7 +1729,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>using_reinjection</param_name>
@@ -1852,7 +1852,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
@@ -2301,7 +2301,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>buffer_manager</param_name>
@@ -2325,7 +2325,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>provenance_file_path</param_name>
@@ -2369,7 +2369,7 @@
         <input_definitions>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
@@ -2461,7 +2461,7 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -2686,7 +2686,7 @@
         <input_definitions>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>

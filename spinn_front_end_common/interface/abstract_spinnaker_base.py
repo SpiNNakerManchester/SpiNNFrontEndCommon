@@ -1690,7 +1690,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # handle outputs
         outputs = [
-            "MemoryPlacements", "MemoryRoutingTables",
+            "Placements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
             "MachineGraph"
         ]
@@ -1736,7 +1736,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._mapping_tokens = executor.get_completed_tokens()
 
         # Get the outputs needed
-        self._placements = executor.get_item("MemoryPlacements")
+        self._placements = executor.get_item("Placements")
         self._router_tables = executor.get_item("MemoryRoutingTables")
         self._tags = executor.get_item("MemoryTags")
         self._routing_infos = executor.get_item("MemoryRoutingInfos")
