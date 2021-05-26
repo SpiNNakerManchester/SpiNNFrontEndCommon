@@ -647,7 +647,7 @@
         <input_definitions>
             <parameter>
                 <param_name>fixed_routes</param_name>
-                <param_type>MemoryFixedRoutes</param_type>
+                <param_type>FixedRoutes</param_type>
             </parameter>
             <parameter>
                 <param_name>transceiver</param_name>
@@ -1558,7 +1558,7 @@
             </parameter>
             <parameter>
                 <param_name>fixed_routes</param_name>
-                <param_type>MemoryFixedRoutes</param_type>
+                <param_type>FixedRoutes</param_type>
             </parameter>
             <parameter>
                 <param_name>report_folder</param_name>

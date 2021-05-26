@@ -1699,7 +1699,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             outputs.append("ExecutableTypes")
 
         if add_data_speed_up:
-            outputs.append("MemoryFixedRoutes")
+            outputs.append("FixedRoutes")
 
         # Create a buffer manager if there isn't one already
         if not self._use_virtual_board:
@@ -1744,7 +1744,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._executable_types = executor.get_item("ExecutableTypes")
 
         if add_data_speed_up:
-            self._fixed_routes = executor.get_item("MemoryFixedRoutes")
+            self._fixed_routes = executor.get_item("FixedRoutes")
 
         if not self._use_virtual_board:
             self._buffer_manager = executor.get_item("BufferManager")
