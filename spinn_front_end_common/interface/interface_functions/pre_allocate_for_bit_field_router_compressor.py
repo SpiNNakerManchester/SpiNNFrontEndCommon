@@ -15,7 +15,7 @@
 
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.resources import (
-    SpecificChipSDRAMResource, PreAllocatedResourceContainer)
+    ConstantSDRAM, SpecificChipSDRAMResource, PreAllocatedResourceContainer)
 from spinn_front_end_common.interface.interface_functions. \
     machine_bit_field_router_compressor import (
         SIZE_OF_SDRAM_ADDRESS_IN_BYTES)
@@ -50,10 +50,10 @@ class PreAllocateForBitFieldRouterCompressor(object):
         sdrams = list()
 
         for chip in progress_bar.over(machine.chips):
-            sdrams.append(SpecificChipSDRAMResource(
-                chip,
+            sdram = ConstantSDRAM(
                 (SIZE_OF_SDRAM_ADDRESS_IN_BYTES * chip.n_user_processors) +
-                sdram_to_pre_alloc_for_bit_fields))
+                sdram_to_pre_alloc_for_bit_fields)
+            sdrams.append(SpecificChipSDRAMResource(chip, sdram))
 
         # note what has been preallocated
         allocated = PreAllocatedResourceContainer(
