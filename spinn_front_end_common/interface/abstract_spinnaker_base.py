@@ -655,13 +655,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Only one type of graph can be used during live output. "
                 "Please fix and try again")
 
-    # options names are all lower without _ inside config
-    _DEBUG_ENABLE_OPTS = frozenset([
-        "reportsenabled",
-        "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
-    _REPORT_DISABLE_OPTS = frozenset([
-        "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
-
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution.
 
@@ -863,8 +856,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._status = Simulator_Status.IN_RUN
 
-        self._adjust_config(
-            run_time, self._DEBUG_ENABLE_OPTS, self._REPORT_DISABLE_OPTS)
+        self._adjust_config(run_time)
 
         # Install the Control-C handler
         if isinstance(threading.current_thread(), threading._MainThread):
@@ -902,6 +894,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
+            if self._has_ran:
+                # create new sub-folder for reporting data
+                self._set_up_output_folders(self._n_calls_to_run)
+
             self._build_graphs_for_usage()
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
@@ -2255,9 +2251,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
 
         logger.info("Resetting")
-
-        # create new sub-folder for reporting data
-        self._set_up_output_folders(self._n_calls_to_run)
 
         # rewind the buffers from the buffer manager, to start at the beginning
         # of the simulation again and clear buffered out
