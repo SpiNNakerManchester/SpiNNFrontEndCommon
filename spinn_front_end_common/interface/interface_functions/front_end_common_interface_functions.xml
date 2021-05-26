@@ -689,7 +689,7 @@
             </parameter>
             <parameter>
                 <param_name>vertex_to_ethernet_connected_chip_mapping</param_name>
-                <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
+                <param_type>VertexToEthernetConnectedChipMapping</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -737,7 +737,7 @@
             <param_name>application_graph</param_name>
         </optional_inputs>
         <outputs>
-            <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
+            <param_type>VertexToEthernetConnectedChipMapping</param_type>
             <param_type>ExtraMonitorVertices</param_type>
             <param_type>ExtraMonitorToChipMapping</param_type>
         </outputs>
@@ -1051,7 +1051,7 @@
             </parameter>
             <parameter>
                 <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
-                <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
+                <param_type>VertexToEthernetConnectedChipMapping</param_type>
             </parameter>
             <parameter>
                 <param_name>disable_advanced_monitor_usage</param_name>
@@ -1546,7 +1546,7 @@
             </parameter>
             <parameter>
                 <param_name>packet_gather_cores_to_ethernet_connection_map</param_name>
-                <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
+                <param_type>VertexToEthernetConnectedChipMapping</param_type>
             </parameter>
             <parameter>
                 <param_name>extra_monitor_to_chip_mapping</param_name>
