@@ -610,7 +610,7 @@
             </parameter>
             <parameter>
                 <param_name>extra_monitor_cores</param_name>
-                <param_type>MemoryExtraMonitorToChipMapping</param_type>
+                <param_type>ExtraMonitorToChipMapping</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
@@ -739,7 +739,7 @@
         <outputs>
             <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
             <param_type>MemoryExtraMonitorVertices</param_type>
-            <param_type>MemoryExtraMonitorToChipMapping</param_type>
+            <param_type>ExtraMonitorToChipMapping</param_type>
         </outputs>
     </algorithm>
     <algorithm name="PreAllocateResourcesForExtraMonitorSupport">
@@ -1550,7 +1550,7 @@
             </parameter>
             <parameter>
                 <param_name>extra_monitor_to_chip_mapping</param_name>
-                <param_type>MemoryExtraMonitorToChipMapping</param_type>
+                <param_type>ExtraMonitorToChipMapping</param_type>
             </parameter>
             <parameter>
                 <param_name>uses_advanced_monitors</param_name>
