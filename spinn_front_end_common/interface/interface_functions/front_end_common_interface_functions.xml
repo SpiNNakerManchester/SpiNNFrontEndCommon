@@ -738,7 +738,7 @@
         </optional_inputs>
         <outputs>
             <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
-            <param_type>MemoryExtraMonitorVertices</param_type>
+            <param_type>ExtraMonitorVertices</param_type>
             <param_type>ExtraMonitorToChipMapping</param_type>
         </outputs>
     </algorithm>
@@ -1047,7 +1047,7 @@
             </parameter>
             <parameter>
                 <param_name>extra_monitor_cores</param_name>
-                <param_type>MemoryExtraMonitorVertices</param_type>
+                <param_type>ExtraMonitorVertices</param_type>
             </parameter>
             <parameter>
                 <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
@@ -1542,7 +1542,7 @@
             </parameter>
             <parameter>
                 <param_name>extra_monitor_cores</param_name>
-                <param_type>MemoryExtraMonitorVertices</param_type>
+                <param_type>ExtraMonitorVertices</param_type>
             </parameter>
             <parameter>
                 <param_name>packet_gather_cores_to_ethernet_connection_map</param_name>
@@ -1725,7 +1725,7 @@
             </parameter>
             <parameter>
                 <param_name>extra_monitor_vertices</param_name>
-                <param_type>MemoryExtraMonitorVertices</param_type>
+                <param_type>ExtraMonitorVertices</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>

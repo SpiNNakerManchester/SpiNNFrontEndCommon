@@ -2244,7 +2244,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if (get_config_bool("Machine", "enable_advanced_monitor_support")
                     or get_config_bool("Machine", "enable_reinjection")):
                 extra_monitor_vertices = self._last_run_outputs[
-                    "MemoryExtraMonitorVertices"]
+                    "ExtraMonitorVertices"]
             router_provenance = RouterProvenanceGatherer()
             prov_item = router_provenance(
                 transceiver=self._txrx, machine=self._machine,
