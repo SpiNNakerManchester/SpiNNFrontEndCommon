@@ -137,7 +137,7 @@ class LivePacketGatherMachineVertex(
     @inject_items({
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor",
-        "tags": "MemoryTags"})
+        "tags": "Tags"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={

@@ -533,7 +533,7 @@
             </parameter>
             <parameter>
                 <param_name>tag_infos</param_name>
-                <param_type>MemoryTags</param_type>
+                <param_type>Tags</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>

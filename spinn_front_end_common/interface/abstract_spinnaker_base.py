@@ -1691,7 +1691,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # handle outputs
         outputs = [
             "Placements", "RoutingTables",
-            "MemoryTags", "RoutingInfos",
+            "Tags", "RoutingInfos",
             "MachineGraph"
         ]
 
@@ -1738,7 +1738,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Get the outputs needed
         self._placements = executor.get_item("Placements")
         self._router_tables = executor.get_item("RoutingTables")
-        self._tags = executor.get_item("MemoryTags")
+        self._tags = executor.get_item("Tags")
         self._routing_infos = executor.get_item("RoutingInfos")
         self._machine_graph = executor.get_item("MachineGraph")
         self._executable_types = executor.get_item("ExecutableTypes")

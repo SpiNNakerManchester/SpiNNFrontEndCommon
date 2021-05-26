@@ -1357,7 +1357,7 @@
         <input_definitions>
             <parameter>
                 <param_name>tags</param_name>
-                <param_type>MemoryTags</param_type>
+                <param_type>Tags</param_type>
             </parameter>
             <parameter>
                 <param_name>transceiver</param_name>
@@ -1530,7 +1530,7 @@
             </parameter>
             <parameter>
                 <param_name>tags</param_name>
-                <param_type>MemoryTags</param_type>
+                <param_type>Tags</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
@@ -1824,7 +1824,7 @@
             </parameter>
             <parameter>
                 <param_name>tags</param_name>
-                <param_type>MemoryTags</param_type>
+                <param_type>Tags</param_type>
             </parameter>
             <parameter>
                 <param_name>report_folder</param_name>
