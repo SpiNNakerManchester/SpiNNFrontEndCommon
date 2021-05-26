@@ -30,7 +30,7 @@ class MachineDataSpecableVertex(
 
     @inject_items({
         "machine_graph": "MachineGraph",
-        "routing_info": "MemoryRoutingInfos",
+        "routing_info": "RoutingInfos",
         "tags": "MemoryTags",
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"

@@ -690,7 +690,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor",
         "machine_graph": "MachineGraph",
-        "routing_info": "MemoryRoutingInfos",
+        "routing_info": "RoutingInfos",
         "first_machine_time_step": "FirstMachineTimeStep",
         "data_n_time_steps": "DataNTimeSteps",
         "run_until_timesteps": "RunUntilTimeSteps"

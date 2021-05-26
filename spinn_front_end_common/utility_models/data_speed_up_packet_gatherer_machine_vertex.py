@@ -396,7 +396,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @inject_items({
         "machine_graph": "MachineGraph",
-        "routing_info": "MemoryRoutingInfos",
+        "routing_info": "RoutingInfos",
         "tags": "MemoryTags",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
         "machine": "ExtendedMachine",

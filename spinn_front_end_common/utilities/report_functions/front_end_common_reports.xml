@@ -292,7 +292,7 @@
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
-                <param_type>MemoryRoutingInfos</param_type>
+                <param_type>RoutingInfos</param_type>
             </parameter>
             <parameter>
                 <param_name>hostname</param_name>
@@ -393,7 +393,7 @@
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
-                <param_type>MemoryRoutingInfos</param_type>
+                <param_type>RoutingInfos</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>

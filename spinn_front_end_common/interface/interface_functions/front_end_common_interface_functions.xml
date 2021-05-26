@@ -134,7 +134,7 @@
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
-                <param_type>MemoryPreAllocatedResources</param_type>
+                <param_type>PreAllocatedResources</param_type>
             </parameter>
             <parameter>
                 <param_name>sdram_to_pre_alloc_for_bit_fields</param_name>
@@ -147,7 +147,7 @@
             <param_name>pre_allocated_resources</param_name>
         </required_inputs>
         <outputs>
-            <param_type>MemoryPreAllocatedResources</param_type>
+            <param_type>PreAllocatedResources</param_type>
             <token part="BitFieldRouterCompressor">GeneratedPreAllocatedResources</token>
         </outputs>
     </algorithm>
@@ -197,7 +197,7 @@
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
-                <param_type>MemoryRoutingInfos</param_type>
+                <param_type>RoutingInfos</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -291,7 +291,7 @@
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
-                <param_type>MemoryRoutingInfos</param_type>
+                <param_type>RoutingInfos</param_type>
             </parameter>
             <parameter>
                 <param_name>time_to_try_for_each_iteration</param_name>
@@ -418,7 +418,7 @@
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
-                <param_type>MemoryRoutingInfos</param_type>
+                <param_type>RoutingInfos</param_type>
             </parameter>
             <parameter>
                 <param_name>time_to_try_for_each_iteration</param_name>
@@ -544,7 +544,7 @@
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
-                <param_type>MemoryRoutingInfos</param_type>
+                <param_type>RoutingInfos</param_type>
             </parameter>
             <parameter>
                 <param_name>time_to_try_for_each_iteration</param_name>
@@ -753,7 +753,7 @@
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
-                <param_type>MemoryPreAllocatedResources</param_type>
+                <param_type>PreAllocatedResources</param_type>
             </parameter>
             <parameter>
                 <param_name>n_cores_to_allocate</param_name>
@@ -768,7 +768,7 @@
             <param_name>n_cores_to_allocate</param_name>
         </optional_inputs>
         <outputs>
-            <param_type>MemoryPreAllocatedResources</param_type>
+            <param_type>PreAllocatedResources</param_type>
             <token part="ExtraMonitor">GeneratedPreAllocatedResources</token>
         </outputs>
     </algorithm>
@@ -785,7 +785,7 @@
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
-                <param_type>MemoryPreAllocatedResources</param_type>
+                <param_type>PreAllocatedResources</param_type>
             </parameter>
             <parameter>
                 <param_name>n_samples_per_recording</param_name>
@@ -813,7 +813,7 @@
             <param_name>pre_allocated_resources</param_name>
         </required_inputs>
         <outputs>
-            <param_type>MemoryPreAllocatedResources</param_type>
+            <param_type>PreAllocatedResources</param_type>
             <token part="EnergyMonitor">GeneratedPreAllocatedResources</token>
         </outputs>
     </algorithm>
@@ -869,7 +869,7 @@
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
-                <param_type>MemoryPreAllocatedResources</param_type>
+                <param_type>PreAllocatedResources</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -878,7 +878,7 @@
             <param_name>pre_allocated_resources</param_name>
         </required_inputs>
         <outputs>
-            <param_type>MemoryPreAllocatedResources</param_type>
+            <param_type>PreAllocatedResources</param_type>
             <token part="LivePacketGatherer">GeneratedPreAllocatedResources</token>
         </outputs>
     </algorithm>
@@ -1856,7 +1856,7 @@
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
-                <param_type>MemoryRoutingInfos</param_type>
+                <param_type>RoutingInfos</param_type>
             </parameter>
             <parameter>
                 <param_name>router_tables</param_name>

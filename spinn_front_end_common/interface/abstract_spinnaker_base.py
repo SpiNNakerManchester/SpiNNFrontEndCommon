@@ -102,7 +102,7 @@ ALANS_DEFAULT_RANDOM_APP_ID = 16
 # Number of provenace items before auto changes to sql format
 PROVENANCE_TYPE_CUTOFF = 20000
 
-_PREALLOC_NAME = 'MemoryPreAllocatedResources'
+_PREALLOC_NAME = 'PreAllocatedResources'
 
 
 class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
@@ -1691,7 +1691,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # handle outputs
         outputs = [
             "Placements", "MemoryRoutingTables",
-            "MemoryTags", "MemoryRoutingInfos",
+            "MemoryTags", "RoutingInfos",
             "MachineGraph"
         ]
 
@@ -1739,7 +1739,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._placements = executor.get_item("Placements")
         self._router_tables = executor.get_item("MemoryRoutingTables")
         self._tags = executor.get_item("MemoryTags")
-        self._routing_infos = executor.get_item("MemoryRoutingInfos")
+        self._routing_infos = executor.get_item("RoutingInfos")
         self._machine_graph = executor.get_item("MachineGraph")
         self._executable_types = executor.get_item("ExecutableTypes")
 

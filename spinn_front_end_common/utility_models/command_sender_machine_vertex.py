@@ -161,7 +161,7 @@ class CommandSenderMachineVertex(
     @inject_items({
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor",
-        "routing_infos": "MemoryRoutingInfos"})
+        "routing_infos": "RoutingInfos"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={

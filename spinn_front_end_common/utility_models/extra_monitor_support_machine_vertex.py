@@ -258,7 +258,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         return "extra_monitor_support.aplx"
 
-    @inject_items({"routing_info": "MemoryRoutingInfos",
+    @inject_items({"routing_info": "RoutingInfos",
                    "machine_graph": "MachineGraph",
                    "data_in_routing_tables": "DataInMulticastRoutingTables",
                    "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
