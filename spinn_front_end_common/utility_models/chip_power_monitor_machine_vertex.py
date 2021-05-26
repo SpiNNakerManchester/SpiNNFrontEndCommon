@@ -34,6 +34,8 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
+from spinn_front_end_common.utilities.globals_variables import (
+    machine_time_step, time_scale_factor)
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utilities.helpful_functions import (
@@ -113,9 +115,7 @@ class ChipPowerMonitorMachineVertex(
         :rtype: ~pacman.model.resources.ResourceContainer
         """
         # pylint: disable=too-many-locals
-        step_in_microseconds = (
-                get_config_int("Machine", "machine_time_step") *
-                get_config_int("Machine", "time_scale_factor"))
+        step_in_microseconds = machine_time_step() * time_scale_factor()
         # The number of sample per step CB believes does not have to be an int
         samples_per_step = (step_in_microseconds / sampling_frequency)
         n_samples_per_recording = get_config_int(
@@ -251,8 +251,7 @@ class ChipPowerMonitorMachineVertex(
         :rtype: int
         """
         timer_tick_in_micro_seconds = (
-                get_config_int("Machine", "machine_time_step") *
-                get_config_int("Machine", "time_scale_factor"))
+                machine_time_step() * time_scale_factor())
 
         recording_time = \
             self._sampling_frequency * get_config_int(

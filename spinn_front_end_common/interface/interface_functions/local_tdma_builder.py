@@ -22,7 +22,8 @@ from spinn_front_end_common.abstract_models.impl.\
         TDMAAwareApplicationVertex)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.constants import CLOCKS_PER_US
-
+from spinn_front_end_common.utilities.globals_variables import (
+    machine_time_step, time_scale_factor)
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
@@ -101,9 +102,7 @@ class LocalTDMABuilder(object):
             return
 
         # get config params
-        machine_time_step = get_config_int("Machine", "machine_time_step")
-        time_scale_factor = get_config_int("Machine", "time_scale_factor")
-        us_per_cycle = int(math.ceil(machine_time_step * time_scale_factor))
+        us_per_cycle = machine_time_step() * time_scale_factor()
         clocks_per_cycle = us_per_cycle * CLOCKS_PER_US
         (app_machine_quantity, clocks_between_cores, clocks_for_sending,
          clocks_waiting, clocks_initial) = self.config_values(clocks_per_cycle)
@@ -139,7 +138,8 @@ class LocalTDMABuilder(object):
                     max_fraction_of_sending = max(
                         max_fraction_of_sending, fraction_of_sending)
 
-        time_scale_factor_needed = time_scale_factor * max_fraction_of_sending
+        time_scale_factor_needed = (
+                time_scale_factor() * max_fraction_of_sending)
         if max_fraction_of_sending > 1:
             logger.warning(
                 "A time scale factor of {} may be needed to run correctly"

@@ -15,7 +15,6 @@
 
 import logging
 import os
-from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -23,6 +22,8 @@ from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.interface.interface_functions import (
     ComputeEnergyUsed)
+from spinn_front_end_common.utilities.globals_variables import (
+    time_scale_factor)
 from spinn_machine.machine import Machine
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -80,8 +81,7 @@ class EnergyReport(object):
             self.__report_dir, self._SUMMARY_FILENAME)
 
         # figure runtime in milliseconds with time scale factor
-        runtime_total_ms = (
-                runtime * get_config_int("Machine", "time_scale_factor"))
+        runtime_total_ms = time_scale_factor()
 
         # create detailed report
         with open(detailed_report, "w") as f:

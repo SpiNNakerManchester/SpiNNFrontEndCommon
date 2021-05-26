@@ -15,13 +15,15 @@
 
 import logging
 import os
-from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesKeyToAtomMapping,
     AbstractSupportsDatabaseInjection)
+from spinn_front_end_common.utilities.globals_variables import (
+    machine_time_step, time_scale_factor)
+
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.db"
@@ -204,10 +206,8 @@ class DatabaseWriter(SQLiteDB):
                     parameter_id, value)
                 VALUES (?, ?)
                 """, [
-                    ("machine_time_step", get_config_int(
-                        "Machine", "machine_time_step")),
-                    ("time_scale_factor", get_config_int(
-                        "Machine", "time_scale_factor")),
+                    ("machine_time_step", machine_time_step()),
+                    ("time_scale_factor", time_scale_factor()),
                     ("infinite_run", str(runtime is None)),
                     ("runtime", -1 if runtime is None else runtime)])
 

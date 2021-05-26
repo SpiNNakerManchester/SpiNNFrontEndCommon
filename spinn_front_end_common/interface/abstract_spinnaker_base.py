@@ -59,7 +59,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities import (
     globals_variables, SimulatorInterface,)
 from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION, SARK_PER_MALLOC_SDRAM_USAGE)
+    SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
@@ -792,11 +792,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :return: The number of timesteps
         :rtype: int
         """
-        machine_time_step_ms = (
-            get_config_int("Machine", "machine_time_step") /
-            MICRO_TO_MILLISECOND_CONVERSION)
-        n_time_steps = int(math.ceil(time_in_ms / machine_time_step_ms))
-        calc_time = n_time_steps * machine_time_step_ms
+        n_time_steps = int(math.ceil(time_in_ms / self.machine_time_step_ms))
+        calc_time = n_time_steps * self.machine_time_step_ms
 
         # Allow for minor float errors
         if abs(time_in_ms - calc_time) > 0.00001:
@@ -804,7 +801,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Time of {}ms "
                 "is not a multiple of the machine time step of {}ms "
                 "and has therefore been rounded up to {}ms",
-                time_in_ms, machine_time_step_ms, calc_time)
+                time_in_ms, self.machine_time_step_ms, calc_time)
         return n_time_steps
 
     def _calc_run_time(self, run_time):
@@ -828,23 +825,19 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         n_machine_time_steps = self.__timesteps(run_time)
         total_run_timesteps = (
             self._current_run_timesteps + n_machine_time_steps)
-        machine_time_step_ms = (
-            get_config_int("Machine", "machine_time_step") /
-            MICRO_TO_MILLISECOND_CONVERSION)
         total_run_time = (
-            total_run_timesteps * machine_time_step_ms *
-            get_config_int("Machine", "time_scale_factor"))
+            total_run_timesteps * self.machine_time_step_ms *
+            self.time_scale_factor)
 
         # Convert dt into microseconds and multiply by
         # scale factor to get hardware timestep
         hardware_timestep_us = (
-            get_config_int("Machine", "machine_time_step") *
-            get_config_int("Machine", "time_scale_factor"))
+                self.machine_time_step * self.time_scale_factor)
 
         logger.info(
-            "Simulating for {} {}ms timesteps "
-            "using a hardware timestep of {}us",
-            n_machine_time_steps, machine_time_step_ms, hardware_timestep_us)
+            f"Simulating for {n_machine_time_steps} "
+            f"{self.machine_time_step_ms}ms timesteps using a "
+            f"hardware timestep of {hardware_timestep_us}us")
 
         return n_machine_time_steps, total_run_time
 
@@ -1968,10 +1961,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             n_machine_time_steps)
         run_time = None
         if n_machine_time_steps is not None:
-            run_time = (
-                n_machine_time_steps *
-                get_config_int("Machine", "machine_time_step") /
-                MICRO_TO_MILLISECOND_CONVERSION)
+            run_time = n_machine_time_steps * self.machine_time_step_ms
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:
@@ -2483,10 +2473,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :rtype: float
         """
         if self._has_ran:
-            return (
-                float(self._current_run_timesteps) *
-                (get_config_int("Machine", "machine_time_step") /
-                 MICRO_TO_MILLISECOND_CONVERSION))
+            return self._current_run_timesteps * self.machine_time_step_ms
         return 0.0
 
     def get_generated_output(self, name_of_variable):
