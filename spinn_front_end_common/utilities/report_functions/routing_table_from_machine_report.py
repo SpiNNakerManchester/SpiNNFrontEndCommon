@@ -16,7 +16,7 @@ import os
 from pacman.model.routing_tables.compressed_multicast_routing_table import (
     CompressedMulticastRoutingTable)
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.operations.algorithm_reports import reports
+from spinn_front_end_common.utilities.report_functions import reports
 
 _FOLDER_NAME = "routing_tables_from_machine"
 
