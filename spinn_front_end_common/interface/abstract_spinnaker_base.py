@@ -2690,15 +2690,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._status = Simulator_Status.SHUTDOWN
 
-        # if on a virtual machine then shut down not needed
-        if self._use_virtual_board:
-            return
-
         if self._machine_is_turned_off is not None:
-            logger.info("Shutdown skipped as board is off for power save")
-            return
-
-        if turn_off_machine is None:
+            turn_off_machine = False
+        elif turn_off_machine is None:
             turn_off_machine = get_config_bool(
                 "Machine", "turn_off_machine")
 
@@ -2719,7 +2713,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # stop the transceiver and allocation controller
         self.__close_transceiver(turn_off_machine)
         self.__close_allocation_controller()
-        self._status = Simulator_Status.SHUTDOWN
 
         try:
             if self._last_run_outputs and \
