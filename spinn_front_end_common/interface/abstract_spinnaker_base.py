@@ -1259,12 +1259,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
         algorithms.append("MachineGenerator")
 
-        outputs.append("MemoryMachine")
+        outputs.append("Machine")
         outputs.append("MemoryTransceiver")
 
         executor = self._run_algorithms(
             inputs, algorithms, outputs, [], [], "machine_generation")
-        self._machine = executor.get_item("MemoryMachine")
+        self._machine = executor.get_item("Machine")
         self._txrx = executor.get_item("MemoryTransceiver")
         self._machine_outputs = executor.get_items()
         self._machine_tokens = executor.get_completed_tokens()
@@ -1295,13 +1295,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         algorithms.append("VirtualMachineGenerator")
 
-        outputs.append("MemoryMachine")
+        outputs.append("Machine")
 
         executor = self._run_algorithms(
             inputs, algorithms, outputs, [], [], "machine_generation")
         self._machine_outputs = executor.get_items()
         self._machine_tokens = executor.get_completed_tokens()
-        self._machine = executor.get_item("MemoryMachine")
+        self._machine = executor.get_item("Machine")
 
     def _machine_by_remote(self, n_machine_time_steps, total_run_time):
         """ Gets a machine when we know one of `self._spalloc_server` or
@@ -1341,7 +1341,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         algorithms.append("MachineGenerator")
 
-        outputs.append("MemoryMachine")
+        outputs.append("Machine")
         outputs.append("IPAddress")
         outputs.append("MemoryTransceiver")
         outputs.append("MachineAllocationController")
@@ -1351,14 +1351,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._machine_outputs = executor.get_items()
         self._machine_tokens = executor.get_completed_tokens()
-        self._machine = executor.get_item("MemoryMachine")
+        self._machine = executor.get_item("Machine")
         self._ip_address = executor.get_item("IPAddress")
         self._txrx = executor.get_item("MemoryTransceiver")
         self._machine_allocation_controller = executor.get_item(
             "MachineAllocationController")
 
         if do_partitioning:
-            self._machine_graph = executor.get_item("MemoryMachineGraph")
+            self._machine_graph = executor.get_item("MachineGraph")
 
     def _machine_by_size(self, inputs, algorithms, outputs):
         """ Checks if we can get a remote machine by size of if we have to \
@@ -1383,7 +1383,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # only add machine graph is it has vertices.
         if self._machine_graph.n_vertices:
-            inputs["MemoryMachineGraph"] = self._machine_graph
+            inputs["MachineGraph"] = self._machine_graph
             algorithms.append("GraphMeasurer")
             do_partitioning = False
         # If we are using an allocation server, and we need a virtual
@@ -1394,7 +1394,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs["ApplicationGraph"] = self._application_graph
             algorithms.extend(get_config_str_list(
                 "Mapping", "application_to_machine_graph_algorithms"))
-            outputs.append("MemoryMachineGraph")
+            outputs.append("MachineGraph")
             do_partitioning = True
 
         # Ok we do need a virtual machine
@@ -1480,7 +1480,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._application_graph and self._application_graph.n_vertices:
             inputs["ApplicationGraph"] = self._application_graph
         elif self._machine_graph and self._machine_graph.n_vertices:
-            inputs["MemoryMachineGraph"] = self._machine_graph
+            inputs["MachineGraph"] = self._machine_graph
 
         return inputs, algorithms
 
@@ -1538,7 +1538,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._application_graph.n_vertices:
             inputs["ApplicationGraph"] = self._application_graph
         else:
-            inputs['MemoryMachineGraph'] = self._machine_graph
+            inputs['MachineGraph'] = self._machine_graph
 
         inputs['ReportFolder'] = self._report_default_directory
         inputs["ProvenanceFilePath"] = self._provenance_file_path
@@ -1692,7 +1692,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
-            "MemoryMachineGraph"
+            "MachineGraph"
         ]
 
         if not self._use_virtual_board:
@@ -1740,7 +1740,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._router_tables = executor.get_item("MemoryRoutingTables")
         self._tags = executor.get_item("MemoryTags")
         self._routing_infos = executor.get_item("MemoryRoutingInfos")
-        self._machine_graph = executor.get_item("MemoryMachineGraph")
+        self._machine_graph = executor.get_item("MachineGraph")
         self._executable_types = executor.get_item("ExecutableTypes")
 
         if add_data_speed_up:

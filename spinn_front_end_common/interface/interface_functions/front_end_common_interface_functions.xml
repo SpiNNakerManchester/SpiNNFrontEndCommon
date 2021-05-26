@@ -40,7 +40,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>transceiver</param_name>
@@ -68,7 +68,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_time_step</param_name>
@@ -80,7 +80,7 @@
             </parameter>
             <parameter>
                 <param_name>n_keys_map</param_name>
-                <param_type>MemoryMachinePartitionNKeysMap</param_type>
+                <param_type>MachinePartitionNKeysMap</param_type>
             </parameter>
             <parameter>
                 <param_name>application_graph</param_name>
@@ -130,7 +130,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
@@ -165,7 +165,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
@@ -185,7 +185,7 @@
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_time_step</param_name>
@@ -247,7 +247,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -271,7 +271,7 @@
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
@@ -374,7 +374,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -398,7 +398,7 @@
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
@@ -500,7 +500,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -524,7 +524,7 @@
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
@@ -634,7 +634,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -677,7 +677,7 @@
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>application_graph</param_name>
@@ -712,7 +712,7 @@
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>application_graph</param_name>
@@ -749,7 +749,7 @@
             <parameter>
                 <param_name>machine</param_name>
                 <param_type>MemoryVirtualMachine</param_type>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
@@ -781,7 +781,7 @@
             <parameter>
                 <param_name>machine</param_name>
                 <param_type>MemoryVirtualMachine</param_type>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
@@ -829,7 +829,7 @@
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>n_samples_per_recording</param_name>
@@ -865,7 +865,7 @@
             <parameter>
                 <param_name>machine</param_name>
                 <param_type>MemoryVirtualMachine</param_type>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
@@ -900,7 +900,7 @@
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>application_graph</param_name>
@@ -912,7 +912,7 @@
             </parameter>
             <parameter>
                 <param_name>n_keys_map</param_name>
-                <param_type>MemoryMachinePartitionNKeysMap</param_type>
+                <param_type>MachinePartitionNKeysMap</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -945,7 +945,7 @@
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1287,7 +1287,7 @@
             <param_name>default_report_directory</param_name>
         </required_inputs>
         <outputs>
-            <param_type>MemoryMachine</param_type>
+            <param_type>Machine</param_type>
             <param_type>MemoryTransceiver</param_type>
         </outputs>
     </algorithm>
@@ -1428,7 +1428,7 @@
             <param_name>json_path</param_name>
         </optional_inputs>
         <outputs>
-            <param_type>MemoryMachine</param_type>
+            <param_type>Machine</param_type>
         </outputs>
     </algorithm>
     <algorithm name="GraphDataSpecificationWriter">
@@ -1487,7 +1487,7 @@
             </parameter>
             <parameter>
                 <param_name>graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1509,7 +1509,7 @@
             </parameter>
             <parameter>
                 <param_name>graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1635,7 +1635,7 @@
             <parameter>
                 <param_name>machine</param_name>
                 <param_type>ExtendedMachine</param_type>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1689,7 +1689,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>application_graph</param_name>
@@ -1717,7 +1717,7 @@
             <parameter>
                 <param_name>machine</param_name>
                 <param_type>ExtendedMachine</param_type>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>router_tables</param_name>
@@ -1816,7 +1816,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>user_create_database</param_name>
@@ -2097,14 +2097,14 @@
         <input_definitions>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine_graph</param_name>
         </required_inputs>
         <outputs>
-            <param_type>MemoryMachinePartitionNKeysMap</param_type>
+            <param_type>MachinePartitionNKeysMap</param_type>
         </outputs>
     </algorithm>
     <algorithm name="SpallocAllocator">
@@ -2271,7 +2271,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
@@ -2297,7 +2297,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
@@ -2487,7 +2487,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -2538,7 +2538,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -2591,7 +2591,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -2645,7 +2645,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>

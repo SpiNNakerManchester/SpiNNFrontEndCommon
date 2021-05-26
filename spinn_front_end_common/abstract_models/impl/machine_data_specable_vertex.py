@@ -29,7 +29,7 @@ class MachineDataSpecableVertex(
     __slots__ = ()
 
     @inject_items({
-        "machine_graph": "MemoryMachineGraph",
+        "machine_graph": "MachineGraph",
         "routing_info": "MemoryRoutingInfos",
         "tags": "MemoryTags",
         "machine_time_step": "MachineTimeStep",

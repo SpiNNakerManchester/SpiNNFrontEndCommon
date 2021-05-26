@@ -395,7 +395,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return ExecutableType.SYSTEM
 
     @inject_items({
-        "machine_graph": "MemoryMachineGraph",
+        "machine_graph": "MachineGraph",
         "routing_info": "MemoryRoutingInfos",
         "tags": "MemoryTags",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
