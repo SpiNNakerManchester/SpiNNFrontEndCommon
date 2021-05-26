@@ -694,13 +694,6 @@
                 <span class="s2">&quot;Only one type of graph can be used during live output. &quot;</span>
                 <span class="s2">&quot;Please fix and try again&quot;</span><span class="p">)</span></div>
 
-    <span class="c1"># options names are all lower without _ inside config</span>
-    <span class="n">_DEBUG_ENABLE_OPTS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span>
-        <span class="s2">&quot;reportsenabled&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;clear_iobuf_during_run&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf_during_run&quot;</span><span class="p">])</span>
-    <span class="n">_REPORT_DISABLE_OPTS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span>
-        <span class="s2">&quot;clear_iobuf_during_run&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf_during_run&quot;</span><span class="p">])</span>
-
 <div class="viewcode-block" id="AbstractSpinnakerBase.set_up_machine_specifics"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_up_machine_specifics">[docs]</a>    <span class="k">def</span> <span class="nf">set_up_machine_specifics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hostname</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Adds machine specifics for the different modes of execution.</span>
 
@@ -906,8 +899,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">IN_RUN</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_adjust_config</span><span class="p">(</span>
-            <span class="n">run_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DEBUG_ENABLE_OPTS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_REPORT_DISABLE_OPTS</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_adjust_config</span><span class="p">(</span><span class="n">run_time</span><span class="p">)</span>
 
         <span class="c1"># Install the Control-C handler</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">(),</span> <span class="n">threading</span><span class="o">.</span><span class="n">_MainThread</span><span class="p">):</span>
@@ -945,6 +937,10 @@
 
         <span class="c1"># build the graphs to modify with system requirements</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_ran</span> <span class="ow">or</span> <span class="n">graph_changed</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_ran</span><span class="p">:</span>
+                <span class="c1"># create new sub-folder for reporting data</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_up_output_folders</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_calls_to_run</span><span class="p">)</span>
+
             <span class="bp">self</span><span class="o">.</span><span class="n">_build_graphs_for_usage</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_dependent_verts_and_edges_for_application_graph</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_commands_to_command_sender</span><span class="p">()</span>
@@ -1608,7 +1604,10 @@
             <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;router_table_compress_as_far_as_possible&quot;</span><span class="p">)</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;WriteCompressorIobuf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span>
             <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_compressor_iobuf&quot;</span><span class="p">)</span>
-
+        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;RouterCompressorBitFieldPreAllocSize&quot;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="n">get_config_int</span><span class="p">(</span>
+                <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;router_table_compression_with_bit_field_pre_alloced_sdram&quot;</span><span class="p">)</span>
         <span class="n">algorithms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="c1"># process for TDMA required cores</span>
@@ -2404,9 +2403,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Resetting&quot;</span><span class="p">)</span>
-
-        <span class="c1"># create new sub-folder for reporting data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_up_output_folders</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_calls_to_run</span><span class="p">)</span>
 
         <span class="c1"># rewind the buffers from the buffer manager, to start at the beginning</span>
         <span class="c1"># of the simulation again and clear buffered out</span>

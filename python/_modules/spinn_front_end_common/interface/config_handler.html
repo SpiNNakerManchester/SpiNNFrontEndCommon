@@ -72,6 +72,13 @@
 <span class="n">TIMESTAMP_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;time_stamp&quot;</span>
 <span class="n">WARNING_LOGS_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;warning_logs.txt&quot;</span>
 
+<span class="c1"># options names are all lower without _ inside config</span>
+<span class="n">_DEBUG_ENABLE_OPTS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span>
+    <span class="s2">&quot;reportsenabled&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;clear_iobuf_during_run&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf_during_run&quot;</span><span class="p">])</span>
+<span class="n">_REPORT_DISABLE_OPTS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span>
+    <span class="s2">&quot;clear_iobuf_during_run&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf_during_run&quot;</span><span class="p">])</span>
+
 
 <div class="viewcode-block" id="ConfigHandler"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler">[docs]</a><span class="k">class</span> <span class="nc">ConfigHandler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Superclass of AbstractSpinnakerBase that handles function only \</span>
@@ -112,6 +119,7 @@
 
         <span class="c1"># set up machine targeted data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;virtual_board&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_debug_configs</span><span class="p">()</span>
 
         <span class="c1"># Pass max_machine_cores to Machine so if effects everything!</span>
         <span class="n">max_machine_core</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;max_machine_core&quot;</span><span class="p">)</span>
@@ -124,51 +132,28 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_this_run_time_string</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">_adjust_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">debug_enable_opts</span><span class="p">,</span> <span class="n">report_disable_opts</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Adjust and checks config based on runtime and mode</span>
+    <span class="k">def</span> <span class="nf">_debug_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Adjust and checks config based on mode and reports_enabled</span>
 
-<span class="sd">        :param runtime:</span>
-<span class="sd">        :type runtime: int or bool</span>
-<span class="sd">        :param frozenset(str) debug_enable_opts:</span>
-<span class="sd">        :param frozenset(str) report_disable_opts:</span>
 <span class="sd">        :raises ConfigurationException:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Mode&quot;</span><span class="p">,</span> <span class="s2">&quot;mode&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;Debug&quot;</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">option</span> <span class="ow">in</span> <span class="n">config_options</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">):</span>
                 <span class="c1"># options names are all lower without _ inside config</span>
-                <span class="k">if</span> <span class="n">option</span> <span class="ow">in</span> <span class="n">debug_enable_opts</span> <span class="ow">or</span> <span class="n">option</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;write&quot;</span><span class="p">:</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="ow">not</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">):</span>
-                            <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="s2">&quot;True&quot;</span><span class="p">)</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;As mode == </span><span class="se">\&quot;</span><span class="s2">Debug</span><span class="se">\&quot;</span><span class="s2">, [Reports] </span><span class="si">{}</span><span class="s2"> &quot;</span>
-                                        <span class="s2">&quot;has been set to True&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span>
-                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                        <span class="k">pass</span>
+                <span class="k">if</span> <span class="n">option</span> <span class="ow">in</span> <span class="n">_DEBUG_ENABLE_OPTS</span> <span class="ow">or</span> <span class="n">option</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;write&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">):</span>
+                        <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="s2">&quot;True&quot;</span><span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;As mode == </span><span class="se">\&quot;</span><span class="s2">Debug</span><span class="se">\&quot;</span><span class="s2">, [Reports] </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                                    <span class="s2">&quot;has been set to True&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;reportsEnabled&quot;</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">option</span> <span class="ow">in</span> <span class="n">config_options</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">):</span>
                 <span class="c1"># options names are all lower without _ inside config</span>
-                <span class="k">if</span> <span class="n">option</span> <span class="ow">in</span> <span class="n">report_disable_opts</span> <span class="ow">or</span> <span class="n">option</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;write&quot;</span><span class="p">:</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="ow">not</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">):</span>
-                            <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                                <span class="s2">&quot;As reportsEnabled == </span><span class="se">\&quot;</span><span class="s2">False</span><span class="se">\&quot;</span><span class="s2">, [Reports] </span><span class="si">{}</span><span class="s2"> &quot;</span>
-                                <span class="s2">&quot;has been set to False&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span>
-                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                        <span class="k">pass</span>
-
-        <span class="k">if</span> <span class="n">runtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">):</span>
-                <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[Reports]write_energy_report has been set to &quot;</span>
-                            <span class="s2">&quot;False as runtime is set to forever&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span>
-                    <span class="s2">&quot;EnergySavings&quot;</span><span class="p">,</span> <span class="s2">&quot;turn_off_board_after_discovery&quot;</span><span class="p">):</span>
-                <span class="n">set_config</span><span class="p">(</span>
-                    <span class="s2">&quot;EnergySavings&quot;</span><span class="p">,</span> <span class="s2">&quot;turn_off_board_after_discovery&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[EnergySavings]turn_off_board_after_discovery has&quot;</span>
-                            <span class="s2">&quot; been set to False as runtime is set to forever&quot;</span><span class="p">)</span>
-
+                <span class="k">if</span> <span class="n">option</span> <span class="ow">in</span> <span class="n">_REPORT_DISABLE_OPTS</span> <span class="ow">or</span> <span class="n">option</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;write&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">):</span>
+                        <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                            <span class="s2">&quot;As reportsEnabled == </span><span class="se">\&quot;</span><span class="s2">False</span><span class="se">\&quot;</span><span class="s2">, [Reports] </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                            <span class="s2">&quot;has been set to False&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">):</span>
                 <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
@@ -184,6 +169,27 @@
                 <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_board_chip_report&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[Reports]write_board_chip_report has been set to&quot;</span>
                             <span class="s2">&quot; False as using virtual boards&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_adjust_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,):</span>
+        <span class="sd">&quot;&quot;&quot; Adjust and checks config based on runtime</span>
+
+<span class="sd">        :param runtime:</span>
+<span class="sd">        :type runtime: int or bool</span>
+<span class="sd">        :param frozenset(str) debug_enable_opts:</span>
+<span class="sd">        :param frozenset(str) report_disable_opts:</span>
+<span class="sd">        :raises ConfigurationException:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">runtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">):</span>
+                <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[Reports]write_energy_report has been set to &quot;</span>
+                            <span class="s2">&quot;False as runtime is set to forever&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span>
+                    <span class="s2">&quot;EnergySavings&quot;</span><span class="p">,</span> <span class="s2">&quot;turn_off_board_after_discovery&quot;</span><span class="p">):</span>
+                <span class="n">set_config</span><span class="p">(</span>
+                    <span class="s2">&quot;EnergySavings&quot;</span><span class="p">,</span> <span class="s2">&quot;turn_off_board_after_discovery&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[EnergySavings]turn_off_board_after_discovery has&quot;</span>
+                            <span class="s2">&quot; been set to False as runtime is set to forever&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ConfigHandler.child_folder"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler.child_folder">[docs]</a>    <span class="k">def</span> <span class="nf">child_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">child_name</span><span class="p">,</span> <span class="n">must_create</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

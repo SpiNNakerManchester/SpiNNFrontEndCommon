@@ -54,7 +54,7 @@
 
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">SpecificChipSDRAMResource</span><span class="p">,</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">)</span>
+    <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">SpecificChipSDRAMResource</span><span class="p">,</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions.</span> \
     <span class="n">machine_bit_field_router_compressor</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">SIZE_OF_SDRAM_ADDRESS_IN_BYTES</span><span class="p">)</span>
@@ -89,10 +89,10 @@
         <span class="n">sdrams</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress_bar</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">):</span>
-            <span class="n">sdrams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SpecificChipSDRAMResource</span><span class="p">(</span>
-                <span class="n">chip</span><span class="p">,</span>
+            <span class="n">sdram</span> <span class="o">=</span> <span class="n">ConstantSDRAM</span><span class="p">(</span>
                 <span class="p">(</span><span class="n">SIZE_OF_SDRAM_ADDRESS_IN_BYTES</span> <span class="o">*</span> <span class="n">chip</span><span class="o">.</span><span class="n">n_user_processors</span><span class="p">)</span> <span class="o">+</span>
-                <span class="n">sdram_to_pre_alloc_for_bit_fields</span><span class="p">))</span>
+                <span class="n">sdram_to_pre_alloc_for_bit_fields</span><span class="p">)</span>
+            <span class="n">sdrams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SpecificChipSDRAMResource</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">sdram</span><span class="p">))</span>
 
         <span class="c1"># note what has been preallocated</span>
         <span class="n">allocated</span> <span class="o">=</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">(</span>
