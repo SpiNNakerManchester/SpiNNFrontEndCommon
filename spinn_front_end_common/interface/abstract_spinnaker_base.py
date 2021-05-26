@@ -1174,7 +1174,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._pacman_provenance.extract_provenance(executor)
             return executor
         except Exception as e:
-            self._txrx = executor.get_item("MemoryTransceiver")
+            self._txrx = executor.get_item("Transceiver")
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
             report_folder = executor.get_item("ReportFolder")
@@ -1260,12 +1260,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         algorithms.append("MachineGenerator")
 
         outputs.append("Machine")
-        outputs.append("MemoryTransceiver")
+        outputs.append("Transceiver")
 
         executor = self._run_algorithms(
             inputs, algorithms, outputs, [], [], "machine_generation")
         self._machine = executor.get_item("Machine")
-        self._txrx = executor.get_item("MemoryTransceiver")
+        self._txrx = executor.get_item("Transceiver")
         self._machine_outputs = executor.get_items()
         self._machine_tokens = executor.get_completed_tokens()
 
@@ -1343,7 +1343,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         outputs.append("Machine")
         outputs.append("IPAddress")
-        outputs.append("MemoryTransceiver")
+        outputs.append("Transceiver")
         outputs.append("MachineAllocationController")
 
         executor = self._run_algorithms(
@@ -1353,7 +1353,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._machine_tokens = executor.get_completed_tokens()
         self._machine = executor.get_item("Machine")
         self._ip_address = executor.get_item("IPAddress")
-        self._txrx = executor.get_item("MemoryTransceiver")
+        self._txrx = executor.get_item("Transceiver")
         self._machine_allocation_controller = executor.get_item(
             "MachineAllocationController")
 
