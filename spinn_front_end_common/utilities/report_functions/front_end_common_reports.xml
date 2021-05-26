@@ -186,7 +186,7 @@
         <input_definitions>
             <parameter>
                 <param_name>router_tables_by_partition</param_name>
-                <param_type>MemoryRoutingTableByPartition</param_type>
+                <param_type>RoutingTableByPartition</param_type>
             </parameter>
             <parameter>
                 <param_name>n_keys_map</param_name>
@@ -288,7 +288,7 @@
             </parameter>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
+                <param_type>RoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
@@ -327,7 +327,7 @@
             </parameter>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
+                <param_type>RoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>hostname</param_name>
@@ -450,7 +450,7 @@
             </parameter>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
+                <param_type>RoutingTables</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -490,7 +490,7 @@
             </parameter>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
+                <param_type>RoutingTables</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -566,7 +566,7 @@
         <input_definitions>
             <parameter>
                 <param_name>router_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
+                <param_type>RoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>json_folder</param_name>
