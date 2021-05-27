@@ -112,7 +112,7 @@ def set_simulator(new_simulator):
 def unset_simulator():
     """ Removes the link to the previous simulator and clears injection
     """
-    global _simulator
+    global _simulator, __temp_dir
     _simulator = None
     injection_decorator._instances = list()
     __temp_dir = None
