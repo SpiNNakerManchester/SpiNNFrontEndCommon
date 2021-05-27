@@ -45,6 +45,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
 
     def tearDown(self):
         reset_configs()
+        globals_variables.unset_simulator()
 
     def test_stop_init(self):
         class_file = sys.modules[self.__module__].__file__
