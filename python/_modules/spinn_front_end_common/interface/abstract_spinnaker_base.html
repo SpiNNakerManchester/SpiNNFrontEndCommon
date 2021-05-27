@@ -65,7 +65,6 @@
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">numpy_version</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.timer</span> <span class="kn">import</span> <span class="n">Timer</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
-<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">spinn_utils_version</span>
 <span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">CoreSubsets</span>
 <span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">spinn_machine_version</span>
@@ -95,8 +94,7 @@
     <span class="n">AbstractSendMeMulticastCommandsVertex</span><span class="p">,</span>
     <span class="n">AbstractVertexWithEdgeToDependentVertices</span><span class="p">,</span> <span class="n">AbstractChangableAfterRun</span><span class="p">,</span>
     <span class="n">AbstractCanReset</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">globals_variables</span><span class="p">,</span> <span class="n">SimulatorInterface</span><span class="p">,)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities</span> <span class="kn">import</span> <span class="n">globals_variables</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">,</span> <span class="n">SARK_PER_MALLOC_SDRAM_USAGE</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
@@ -114,7 +112,8 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.config_handler</span> <span class="kn">import</span> <span class="n">ConfigHandler</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">PacmanProvenanceExtractor</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.simulator_status</span> <span class="kn">import</span> <span class="n">Simulator_Status</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.simulator_status</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">RUNNING_STATUS</span><span class="p">,</span> <span class="n">SHUTDOWN_STATUS</span><span class="p">,</span> <span class="n">Simulator_Status</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ProvenanceJSONWriter</span><span class="p">,</span> <span class="n">ProvenanceSQLWriter</span><span class="p">,</span> <span class="n">ProvenanceXMLWriter</span><span class="p">,</span>
     <span class="n">ChipProvenanceUpdater</span><span class="p">,</span>  <span class="n">PlacementsProvenanceGatherer</span><span class="p">,</span>
@@ -143,7 +142,7 @@
 <span class="n">_PREALLOC_NAME</span> <span class="o">=</span> <span class="s1">&#39;MemoryPreAllocatedResources&#39;</span>
 
 
-<div class="viewcode-block" id="AbstractSpinnakerBase"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase">[docs]</a><span class="k">class</span> <span class="nc">AbstractSpinnakerBase</span><span class="p">(</span><span class="n">ConfigHandler</span><span class="p">,</span> <span class="n">SimulatorInterface</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractSpinnakerBase"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase">[docs]</a><span class="k">class</span> <span class="nc">AbstractSpinnakerBase</span><span class="p">(</span><span class="n">ConfigHandler</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Main interface into the tools logic flow.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># pylint: disable=broad-except</span>
@@ -760,15 +759,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_except_hook</span><span class="p">(</span><span class="n">exctype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback_obj</span><span class="p">)</span></div>
 
-    <span class="n">_RUNNING_STATES</span> <span class="o">=</span> <span class="p">(</span><span class="n">Simulator_Status</span><span class="o">.</span><span class="n">IN_RUN</span><span class="p">,</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">RUN_FOREVER</span><span class="p">)</span>
-    <span class="n">_SHUTDOWN_STATES</span> <span class="o">=</span> <span class="p">(</span><span class="n">Simulator_Status</span><span class="o">.</span><span class="n">SHUTDOWN</span><span class="p">,</span> <span class="p">)</span>
-
-<div class="viewcode-block" id="AbstractSpinnakerBase.verify_not_running"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.verify_not_running">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">verify_not_running</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">verify_not_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_RUNNING_STATES</span><span class="p">:</span>
+<div class="viewcode-block" id="AbstractSpinnakerBase.verify_not_running"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.verify_not_running">[docs]</a>    <span class="k">def</span> <span class="nf">verify_not_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Verify that the simulator is in a state where it can start running.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="n">RUNNING_STATUS</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                 <span class="s2">&quot;Illegal call while a simulation is already running&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_SHUTDOWN_STATES</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="n">SHUTDOWN_STATUS</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                 <span class="s2">&quot;Illegal call after simulation is shutdown&quot;</span><span class="p">)</span></div>
 
@@ -804,8 +801,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_complete</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">n_steps</span><span class="p">,</span> <span class="n">sync_time</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AbstractSpinnakerBase.run"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">run</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_time</span><span class="p">,</span> <span class="n">sync_time</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractSpinnakerBase.run"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_time</span><span class="p">,</span> <span class="n">sync_time</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Run a simulation for a fixed amount of time</span>
+
+<span class="sd">        :param int run_time: the run duration in milliseconds.</span>
+<span class="sd">        :param float sync_time:</span>
+<span class="sd">            If not 0, this specifies that the simulation should pause after</span>
+<span class="sd">            this duration.  The continue_simulation() method must then be</span>
+<span class="sd">            called for the simulation to continue.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">run_time</span><span class="p">,</span> <span class="n">sync_time</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_build_graphs_for_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2495,18 +2499,27 @@
         <span class="k">return</span> <span class="n">changed</span><span class="p">,</span> <span class="n">data_changed</span>
 
     <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">has_ran</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">has_ran</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Whether the simulation has executed anything at all.</span>
+
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_ran</span>
 
     <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">machine</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The python machine description object.</span>
+
+<span class="sd">         :rtype: ~spinn_machine.Machine</span>
+<span class="sd">         &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_machine</span><span class="p">()</span>
 
     <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">no_machine_time_steps</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">no_machine_time_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The number of machine time steps.</span>
+
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_no_machine_time_steps</span>
 
     <span class="nd">@property</span>
@@ -2555,23 +2568,35 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span>
 
     <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">placements</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">placements</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Where machine vertices are placed on the machine.</span>
+
+<span class="sd">        :rtype: ~pacman.model.placements.Placements</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span>
 
     <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">transceiver</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">transceiver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; How to talk to the machine.</span>
+
+<span class="sd">        :rtype: ~spinnman.transceiver.Transceiver</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span>
 
     <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: ~pacman.model.tags.Tags</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span>
 
     <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">buffer_manager</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">buffer_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The buffer manager being used for loading/extracting buffers</span>
+
+<span class="sd">        :rtype:</span>
+<span class="sd">            ~spinn_front_end_common.interface.buffer_management.BufferManager</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span>
 
     <span class="nd">@property</span>
@@ -2604,7 +2629,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_none_labelled_edge_count</span> <span class="o">+=</span> <span class="mi">1</span></div>
 
     <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">use_virtual_board</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">use_virtual_board</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; True if this run is using a virtual machine</span>
 
@@ -2704,15 +2728,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">SHUTDOWN</span>
 
-        <span class="c1"># if on a virtual machine then shut down not needed</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
-            <span class="k">return</span>
-
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_is_turned_off</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Shutdown skipped as board is off for power save&quot;</span><span class="p">)</span>
-            <span class="k">return</span>
-
-        <span class="k">if</span> <span class="n">turn_off_machine</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">turn_off_machine</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">turn_off_machine</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">turn_off_machine</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span>
                 <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;turn_off_machine&quot;</span><span class="p">)</span>
 
@@ -2733,7 +2751,6 @@
         <span class="c1"># stop the transceiver and allocation controller</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__close_transceiver</span><span class="p">(</span><span class="n">turn_off_machine</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__close_allocation_controller</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">SHUTDOWN</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_run_outputs</span> <span class="ow">and</span> \
@@ -2789,12 +2806,11 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="AbstractSpinnakerBase.stop"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">stop</span><span class="p">,</span>
-               <span class="n">extend_defaults</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">additional_arguments</span><span class="o">=</span><span class="p">(</span>
-                   <span class="s2">&quot;turn_off_machine&quot;</span><span class="p">,</span> <span class="s2">&quot;clear_routing_tables&quot;</span><span class="p">,</span> <span class="s2">&quot;clear_tags&quot;</span><span class="p">))</span>
-    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">turn_off_machine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># pylint: disable=arguments-differ</span>
+<div class="viewcode-block" id="AbstractSpinnakerBase.stop"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">turn_off_machine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># pylint: disable=arguments-differ</span>
              <span class="n">clear_routing_tables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clear_tags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        End running of the simulation.</span>
+
 <span class="sd">        :param bool turn_off_machine:</span>
 <span class="sd">            decides if the machine should be powered down after running the</span>
 <span class="sd">            execution. Note that this powers down all boards connected to the</span>
@@ -2944,8 +2960,7 @@
             <span class="n">system_provenance_file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span><span class="p">)</span>
         <span class="n">extractor</span><span class="o">.</span><span class="n">extract_iobuf</span><span class="p">()</span>
 
-<div class="viewcode-block" id="AbstractSpinnakerBase.add_socket_address"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_socket_address">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">add_socket_address</span><span class="p">,</span> <span class="n">extend_doc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">add_socket_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_address</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractSpinnakerBase.add_socket_address"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_socket_address">[docs]</a>    <span class="k">def</span> <span class="nf">add_socket_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_address</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Add the address of a socket used in the run notification protocol.</span>
 
 <span class="sd">        :param ~spinn_utilities.socket_address.SocketAddress socket_address:</span>
@@ -3078,8 +3093,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">STOP_REQUESTED</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_state_condition</span><span class="o">.</span><span class="n">notify_all</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="AbstractSpinnakerBase.continue_simulation"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.continue_simulation">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">continue_simulation</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">continue_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractSpinnakerBase.continue_simulation"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.continue_simulation">[docs]</a>    <span class="k">def</span> <span class="nf">continue_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Continue a simulation that has been started in stepped mode</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_no_sync_changes</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">sync_signal</span> <span class="o">=</span> <span class="n">Signal</span><span class="o">.</span><span class="n">SYNC0</span>
         <span class="k">else</span><span class="p">:</span>

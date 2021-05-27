@@ -328,6 +328,27 @@ for the application hash.</p>
 </dd></dl>
 
 <dl class="py exception">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.exceptions.</span></span><span class="sig-name descname"><span class="pre">SimulatorNotSetupException</span></span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#SimulatorNotSetupException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.utilities.exceptions.SpinnFrontEndException</span></code></a></p>
+<p>Raised when trying to get simulator before it has been setup</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.exceptions.SimulatorRunningException">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.exceptions.</span></span><span class="sig-name descname"><span class="pre">SimulatorRunningException</span></span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#SimulatorRunningException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.SimulatorRunningException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.utilities.exceptions.SpinnFrontEndException</span></code></a></p>
+<p>Raised when trying to running get simulator that should not be running</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.exceptions.SimulatorShutdownException">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.exceptions.</span></span><span class="sig-name descname"><span class="pre">SimulatorShutdownException</span></span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#SimulatorShutdownException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.SimulatorShutdownException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.utilities.exceptions.SpinnFrontEndException</span></code></a></p>
+<p>Raised when trying to get simulator after it has been shit down</p>
+</dd></dl>
+
+<dl class="py exception">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException">
 <em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.exceptions.</span></span><span class="sig-name descname"><span class="pre">SpinnFrontEndException</span></span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#SpinnFrontEndException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#Exception" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
@@ -348,7 +369,18 @@ the next run if it has not yet been called.</p>
 <dd class="field-odd"><p>str</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – if the system is in a state where path can’t be retrieved</p>
+<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException"><strong>SimulatorNotSetupException</strong></a> – if the system has a status where path can’t be retrieved</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.check_simulator">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">check_simulator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#check_simulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.check_simulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a simulator has been setup but not yet shut down</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p>SimulatorNotSetupException, SimulatorShutdownException</p>
 </dd>
 </dl>
 </dd></dl>
@@ -366,7 +398,25 @@ the next run if it has not yet been called.</p>
 or <cite>None</cite> if the variable is not found.</p>
 </dd>
 <dt class="field-odd">Raises</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – if the system is in a state where outputs can’t be retrieved</p>
+<dd class="field-odd"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException"><strong>SimulatorNotSetupException</strong></a> – if the system has a status where outputs can’t be retrieved</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.get_last_simulator">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">get_last_simulator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#get_last_simulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.get_last_simulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the last simulator object setup but not</p>
+<dl class="simple">
+<dt>Unlike get_simulator this method will also return a simulator that has</dt><dd><p>been shutdown.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>AbstractSpinnakerBase</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p>SimulatorNotSetupException</p>
 </dd>
 </dl>
 </dd></dl>
@@ -377,7 +427,11 @@ or <cite>None</cite> if the variable is not found.</p>
 <dd><p>Get the current simulator object and verify that it is not running.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#spinn_front_end_common.utilities.SimulatorInterface" title="spinn_front_end_common.utilities.SimulatorInterface">SimulatorInterface</a></p>
+<dd class="field-odd"><p>AbstractSpinnakerBase</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p>SimulatorNotSetupException, SimulatorShutdownException,
+SimulatorRunningException</p>
 </dd>
 </dl>
 </dd></dl>
@@ -388,7 +442,10 @@ or <cite>None</cite> if the variable is not found.</p>
 <dd><p>Get the current simulator object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#spinn_front_end_common.utilities.SimulatorInterface" title="spinn_front_end_common.utilities.SimulatorInterface">SimulatorInterface</a></p>
+<dd class="field-odd"><p>AbstractSpinnakerBase</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p>SimulatorNotSetupException, SimulatorShutdownException</p>
 </dd>
 </dl>
 </dd></dl>
@@ -396,7 +453,9 @@ or <cite>None</cite> if the variable is not found.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.has_simulator">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">has_simulator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#has_simulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.has_simulator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if a simulator is operational.</p>
+<dd><p>Check if a simulator has been setup but not yet shut down</p>
+<p>Should behave in the same way as check_simulator except that it returns
+False where check_simulator raises and exception and True when it does not</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
@@ -415,7 +474,7 @@ the next run if it has not yet been called.</p>
 <dd class="field-odd"><p>str</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – if the system is in a state where path can’t be retrieved</p>
+<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException"><strong>SimulatorNotSetupException</strong></a> – if the system has a status where path can’t be retrieved</p>
 </dd>
 </dl>
 </dd></dl>
@@ -431,18 +490,7 @@ the next run if it has not yet been called.</p>
 <dd class="field-odd"><p>str</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – if the system is in a state where path can’t be retrieved</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.set_failed_state">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">set_failed_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_failed_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#set_failed_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.set_failed_state" title="Permalink to this definition">¶</a></dt>
-<dd><p>Install a marker to say that the simulator has failed.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>new_failed_state</strong> (<a class="reference internal" href="#spinn_front_end_common.utilities.FailedState" title="spinn_front_end_common.utilities.FailedState"><em>FailedState</em></a>) – the failure marker</p>
+<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException"><strong>SimulatorNotSetupException</strong></a> – if the system has a status where path can’t be retrieved</p>
 </dd>
 </dl>
 </dd></dl>
@@ -453,7 +501,7 @@ the next run if it has not yet been called.</p>
 <dd><p>Set the current simulator object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>new_simulator</strong> (<a class="reference internal" href="#spinn_front_end_common.utilities.SimulatorInterface" title="spinn_front_end_common.utilities.SimulatorInterface"><em>SimulatorInterface</em></a>) – The simulator to set.</p>
+<dd class="field-odd"><p><strong>new_simulator</strong> (<em>AbstractSpinnakerBase</em>) – The simulator to set.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -469,20 +517,15 @@ the next run if it has not yet been called.</p>
 <dd class="field-odd"><p>str</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – if the system is in a state where path can’t be retrieved</p>
+<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException"><strong>SimulatorNotSetupException</strong></a> – if the system has a status where path can’t be retrieved</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.unset_simulator">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">unset_simulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_cache_simulator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#unset_simulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.unset_simulator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Destroy the current simulator.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>to_cache_simulator</strong> (<a class="reference internal" href="#spinn_front_end_common.utilities.SimulatorInterface" title="spinn_front_end_common.utilities.SimulatorInterface"><em>SimulatorInterface</em></a>) – a cached version for allowing data extraction</p>
-</dd>
-</dl>
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">unset_simulator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#unset_simulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.unset_simulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the link to the previous simulator and clears injection</p>
 </dd></dl>
 
 </section>
@@ -916,179 +959,6 @@ warnings</p></li>
 <section id="module-spinn_front_end_common.utilities">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.</span></span><span class="sig-name descname"><span class="pre">FailedState</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.SimulatorInterface" title="spinn_front_end_common.utilities.SimulatorInterface"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.utilities.SimulatorInterface</span></code></a></p>
-<p>Marks that the simulator has failed (and replaces said simulator).</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Any method invoked on this object may fail with        <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationException</span></code></a>.</p>
-</div>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.add_socket_address">
-<span class="sig-name descname"><span class="pre">add_socket_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">socket_address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/failed_state.html#FailedState.add_socket_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.add_socket_address" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add the address of a socket used in the run notification protocol.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>socket_address</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils v6.0)"><em>SocketAddress</em></a>) – The address of the socket</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.buffer_manager">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">buffer_manager</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.buffer_manager" title="Permalink to this definition">¶</a></dt>
-<dd><p>The buffer manager being used for loading/extracting buffers</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager" title="spinn_front_end_common.interface.buffer_management.BufferManager">BufferManager</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.continue_simulation">
-<span class="sig-name descname"><span class="pre">continue_simulation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/failed_state.html#FailedState.continue_simulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.continue_simulation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Continue a simulation that has been started in stepped mode</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.has_ran">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">has_ran</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.has_ran" title="Permalink to this definition">¶</a></dt>
-<dd><p>Whether the simulation has executed anything at all.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.machine">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">machine</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.machine" title="Permalink to this definition">¶</a></dt>
-<dd><p>The python machine description object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)">Machine</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.machine_time_step">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">machine_time_step</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.machine_time_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>The machine timestep, in microseconds.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.no_machine_time_steps">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">no_machine_time_steps</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.no_machine_time_steps" title="Permalink to this definition">¶</a></dt>
-<dd><p>The number of machine time steps.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.placements">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">placements</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.placements" title="Permalink to this definition">¶</a></dt>
-<dd><p>Where machine vertices are placed on the machine.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)">Placements</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/failed_state.html#FailedState.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run a simulation for a fixed amount of time</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>run_time</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the run duration in milliseconds.</p></li>
-<li><p><strong>sync_time</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – If not 0, this specifies that the simulation should pause after
-this duration.  The continue_simulation() method must then be
-called for the simulation to continue.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.stop">
-<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/failed_state.html#FailedState.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.stop" title="Permalink to this definition">¶</a></dt>
-<dd><p>End running of the simulation.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.stop_run">
-<span class="sig-name descname"><span class="pre">stop_run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/failed_state.html#FailedState.stop_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.stop_run" title="Permalink to this definition">¶</a></dt>
-<dd><p>End the running of a simulation that has been started with
-run_forever</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.tags">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">tags</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.tags" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v6.0)">Tags</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.time_scale_factor">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">time_scale_factor</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.time_scale_factor" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.transceiver">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">transceiver</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.transceiver" title="Permalink to this definition">¶</a></dt>
-<dd><p>How to talk to the machine.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)">Transceiver</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.use_virtual_board">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">use_virtual_board</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.use_virtual_board" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.FailedState.verify_not_running">
-<span class="sig-name descname"><span class="pre">verify_not_running</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/failed_state.html#FailedState.verify_not_running"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.verify_not_running" title="Permalink to this definition">¶</a></dt>
-<dd><p>Verify that the simulator is in a state where it can start running.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.IOBufExtractor">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.</span></span><span class="sig-name descname"><span class="pre">IOBufExtractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_finder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_provenance_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_provenance_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recovery_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iobuf_for_chip_{}_{}_processor_id_{}.txt'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.IOBufExtractor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
@@ -1121,174 +991,6 @@ run_forever</p>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>),<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>))</p>
 </dd>
 </dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.</span></span><span class="sig-name descname"><span class="pre">SimulatorInterface</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.add_socket_address">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">add_socket_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">socket_address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/simulator_interface.html#SimulatorInterface.add_socket_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.add_socket_address" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add the address of a socket used in the run notification protocol.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>socket_address</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils v6.0)"><em>SocketAddress</em></a>) – The address of the socket</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.buffer_manager">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">buffer_manager</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.buffer_manager" title="Permalink to this definition">¶</a></dt>
-<dd><p>The buffer manager being used for loading/extracting buffers</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager" title="spinn_front_end_common.interface.buffer_management.BufferManager">BufferManager</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.continue_simulation">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">continue_simulation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/simulator_interface.html#SimulatorInterface.continue_simulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.continue_simulation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Continue a simulation that has been started in stepped mode</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.has_ran">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">has_ran</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.has_ran" title="Permalink to this definition">¶</a></dt>
-<dd><p>Whether the simulation has executed anything at all.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.machine">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">machine</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.machine" title="Permalink to this definition">¶</a></dt>
-<dd><p>The python machine description object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)">Machine</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.machine_time_step">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">machine_time_step</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.machine_time_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>The machine timestep, in microseconds.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.no_machine_time_steps">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">no_machine_time_steps</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.no_machine_time_steps" title="Permalink to this definition">¶</a></dt>
-<dd><p>The number of machine time steps.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.placements">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">placements</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.placements" title="Permalink to this definition">¶</a></dt>
-<dd><p>Where machine vertices are placed on the machine.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)">Placements</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.run">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/simulator_interface.html#SimulatorInterface.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run a simulation for a fixed amount of time</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>run_time</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the run duration in milliseconds.</p></li>
-<li><p><strong>sync_time</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – If not 0, this specifies that the simulation should pause after
-this duration.  The continue_simulation() method must then be
-called for the simulation to continue.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.stop">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/simulator_interface.html#SimulatorInterface.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.stop" title="Permalink to this definition">¶</a></dt>
-<dd><p>End running of the simulation.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.stop_run">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">stop_run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/simulator_interface.html#SimulatorInterface.stop_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.stop_run" title="Permalink to this definition">¶</a></dt>
-<dd><p>End the running of a simulation that has been started with
-run_forever</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.tags">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">tags</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.tags" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v6.0)">Tags</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.time_scale_factor">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">time_scale_factor</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.time_scale_factor" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.transceiver">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">transceiver</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.transceiver" title="Permalink to this definition">¶</a></dt>
-<dd><p>How to talk to the machine.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)">Transceiver</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.use_virtual_board">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">use_virtual_board</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.use_virtual_board" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.SimulatorInterface.verify_not_running">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">verify_not_running</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/simulator_interface.html#SimulatorInterface.verify_not_running"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.verify_not_running" title="Permalink to this definition">¶</a></dt>
-<dd><p>Verify that the simulator is in a state where it can start running.</p>
 </dd></dl>
 
 </dd></dl>
