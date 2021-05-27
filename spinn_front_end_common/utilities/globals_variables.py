@@ -17,8 +17,8 @@ from pacman.executor import injection_decorator
 from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS)
 from spinn_front_end_common.utilities.exceptions import (
-    SimmulatorRunningException, SimmulatorNotSetupException,
-    SimmulatorShutdownException)
+    SimulatorRunningException, SimulatorNotSetupException,
+    SimulatorShutdownException)
 
 # pylint: disable=global-statement
 _simulator = None
@@ -27,13 +27,13 @@ _simulator = None
 def check_simulator():
     """ Check if a simulator has been setup but not yet shut down
 
-    :raises: SimmulatorNotSetupException, SimmulatorShutdownException
+    :raises: SimulatorNotSetupException, SimulatorShutdownException
     """
     if _simulator is None:
-        raise SimmulatorNotSetupException(
+        raise SimulatorNotSetupException(
             "This call is only valid after setup has been called")
     if _simulator._status in SHUTDOWN_STATUS:
-        raise SimmulatorShutdownException(
+        raise SimulatorShutdownException(
             "This call is only valid between setup and end/stop")
 
 
@@ -56,7 +56,7 @@ def get_simulator():
     """ Get the current simulator object.
 
     :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase
-    :raises: SimmulatorNotSetupException, SimmulatorShutdownException
+    :raises: SimulatorNotSetupException, SimulatorShutdownException
     """
     check_simulator()
     return _simulator
@@ -69,10 +69,10 @@ def get_last_simulator():
         been shutdown.
 
     :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase
-    :raises: SimmulatorNotSetupException
+    :raises: SimulatorNotSetupException
     """
     if _simulator is None:
-        raise SimmulatorNotSetupException(
+        raise SimulatorNotSetupException(
             "This call is only valid after setup has been called")
     return _simulator
 
@@ -81,12 +81,12 @@ def get_not_running_simulator():
     """ Get the current simulator object and verify that it is not running.
 
     :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase
-    :raises: SimmulatorNotSetupException, SimmulatorShutdownException,
-        SimmulatorRunningException
+    :raises: SimulatorNotSetupException, SimulatorShutdownException,
+        SimulatorRunningException
     """
     check_simulator()
     if _simulator._status in RUNNING_STATUS:
-        raise SimmulatorRunningException(
+        raise SimulatorRunningException(
             "Illegal call while a simulation is already running")
     return _simulator
 
@@ -116,11 +116,11 @@ def get_generated_output(output):
     :param str output: The name of the output to retrieve.
     :return: The value (of arbitrary type, dependent on which output),
         or `None` if the variable is not found.
-    :raises SimmulatorNotSetupException:
+    :raises SimulatorNotSetupException:
         if the system has a status where outputs can't be retrieved
     """
     if _simulator is None:
-        raise SimmulatorNotSetupException(
+        raise SimulatorNotSetupException(
             "You need to have ran a simulator before asking for its "
             "generated output.")
     else:
@@ -138,11 +138,11 @@ def provenance_file_path():
         The behaviour when called before setup is subject to change
 
     :rtpye: str
-    :raises SimmulatorNotSetupException:
+    :raises SimulatorNotSetupException:
         if the system has a status where path can't be retrieved
     """
     if _simulator is None:
-        raise SimmulatorNotSetupException(
+        raise SimulatorNotSetupException(
             "You need to have setup a simulator before asking for its "
             "provenance_file_path.")
     else:
@@ -161,11 +161,11 @@ def app_provenance_file_path():
         The behaviour when called before setup is subject to change
 
     :rtpye: str
-    :raises SimmulatorNotSetupException:
+    :raises SimulatorNotSetupException:
         if the system has a status where path can't be retrieved
     """
     if _simulator is None:
-        raise SimmulatorNotSetupException(
+        raise SimulatorNotSetupException(
             "You need to have setup a simulator before asking for its "
             "app_provenance_file_path.")
     else:
@@ -184,11 +184,11 @@ def system_provenance_file_path():
         The behaviour when called before setup is subject to change
 
     :rtpye: str
-    :raises SimmulatorNotSetupException:
+    :raises SimulatorNotSetupException:
         if the system has a status where path can't be retrieved
     """
     if _simulator is None:
-        raise SimmulatorNotSetupException(
+        raise SimulatorNotSetupException(
             "You need to have setup a simulator before asking for its "
             "system_provenance_file_path.")
     else:
@@ -207,13 +207,13 @@ def run_report_directory():
         The behaviour when called before setup is subject to change
 
     :rtpye: str
-    :raises SimmulatorNotSetupException:
+    :raises SimulatorNotSetupException:
         if the system has a status where path can't be retrieved
     """
     if _simulator is None:
-        raise ValueError(
+        raise SimulatorNotSetupException(
             "You need to have setup a simulator before asking for its "
-            "run_report_directory.")
+            "system_provenance_file_path.")
     else:
         # underscore param used avoid exposing a None PyNN parameter
         return _simulator._report_default_directory
