@@ -17,109 +17,105 @@ import logging
 import tempfile
 from spinn_utilities.log import FormatAdapter
 from pacman.executor import injection_decorator
+from spinn_front_end_common.interface.simulator_status import (
+    RUNNING_STATUS, SHUTDOWN_STATUS)
+from spinn_front_end_common.utilities.exceptions import (
+    SimulatorRunningException, SimulatorNotSetupException,
+    SimulatorShutdownException)
 
 # pylint: disable=global-statement
-_failed_state = None
 _simulator = None
-_cached_simulator = None
 __temp_dir = None
 
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
+def check_simulator():
+    """ Check if a simulator has been setup but not yet shut down
+
+    :raises: SimulatorNotSetupException, SimulatorShutdownException
+    """
+    if _simulator is None:
+        raise SimulatorNotSetupException(
+            "This call is only valid after setup has been called")
+    if _simulator._status in SHUTDOWN_STATUS:
+        raise SimulatorShutdownException(
+            "This call is only valid between setup and end/stop")
+
+
+def has_simulator():
+    """ Check if a simulator has been setup but not yet shut down
+
+    Should behave in the same way as check_simulator except that it returns
+    False where check_simulator raises and exception and True when it does not
+
+    :rtype: bool
+    """
+    if _simulator is None:
+        return False
+    if _simulator._status in SHUTDOWN_STATUS:
+        return False
+    return True
+
+
 def get_simulator():
     """ Get the current simulator object.
 
-    :rtype: SimulatorInterface
+    :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase
+    :raises: SimulatorNotSetupException, SimulatorShutdownException
     """
-    global _simulator, _failed_state
+    check_simulator()
+    return _simulator
+
+
+def get_last_simulator():
+    """ Get the last simulator object setup.
+
+    Unlike get_simulator this method will also return a simulator that has
+        been shutdown.
+
+    :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase
+    :raises: SimulatorNotSetupException
+    """
     if _simulator is None:
-        if _failed_state is None:
-            raise ValueError("You must import one of the simulator classes "
-                             "before calling get_simulator")
-        return _failed_state
+        raise SimulatorNotSetupException(
+            "This call is only valid after setup has been called")
     return _simulator
 
 
 def get_not_running_simulator():
     """ Get the current simulator object and verify that it is not running.
 
-    :rtype: SimulatorInterface
+    :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase
+    :raises: SimulatorNotSetupException, SimulatorShutdownException,
+        SimulatorRunningException
     """
-    global _simulator, _failed_state
-    if _simulator is None:
-        if _failed_state is None:
-            raise ValueError("You must import one of the simulator classes "
-                             "before calling get_simulator")
-        return _failed_state
-    _simulator.verify_not_running()
+    check_simulator()
+    if _simulator._status in RUNNING_STATUS:
+        raise SimulatorRunningException(
+            "Illegal call while a simulation is already running")
     return _simulator
 
 
 def set_simulator(new_simulator):
     """ Set the current simulator object.
 
-    :param SimulatorInterface new_simulator: The simulator to set.
-    """
-    global _simulator, _failed_state, _cached_simulator
-    if _failed_state is None:
-        raise ValueError("Unexpected call to set_simulator before "
-                         "set_failed_state")
-    _simulator = new_simulator
-    _cached_simulator = None
-
-
-def unset_simulator(to_cache_simulator=None):
-    """ Destroy the current simulator.
-
-    :param SimulatorInterface to_cache_simulator:
-        a cached version for allowing data extraction
-    """
-    global _simulator, _cached_simulator, __temp_dir
-    _simulator = None
-    _cached_simulator = to_cache_simulator
-
-    injection_decorator._instances = list()
-
-    __temp_dir = None
-
-
-def has_simulator():
-    """ Check if a simulator is operational.
-
-    :rtype: bool
+    :param new_simulator: The simulator to set.
+    :type new_simulator:
+        ~spinn_front_end_common.interface.AbstractSpinnakerBase
     """
     global _simulator
-    return _simulator is not None
+    _simulator = new_simulator
 
 
-def set_failed_state(new_failed_state):
-    """ Install a marker to say that the simulator has failed.
-
-    :param FailedState new_failed_state: the failure marker
+def unset_simulator():
+    """ Removes the link to the previous simulator and clears injection
     """
-    # pylint: disable=unidiomatic-typecheck
-    global _failed_state
-    if _failed_state is None:
-        _failed_state = new_failed_state
-    elif type(new_failed_state) != type(_failed_state):
-        raise ValueError("You may only setup/init one type of simulator")
-
-
-def _last_simulator():
-    """ Get last simulator to be used.
-
-    Before setup this will return None.
-    Between setup and end this will return the simulator.
-    After end this will return the previous simulator
-    """
-    global _simulator, _cached_simulator
-    if _simulator is not None:
-        return _simulator
-    if _cached_simulator is not None:
-        return _cached_simulator
-    return None
+    global _simulator
+    _simulator = None
+    injection_decorator._instances = list()
+    __temp_dir = None
 
 
 def get_generated_output(output):
@@ -128,16 +124,15 @@ def get_generated_output(output):
     :param str output: The name of the output to retrieve.
     :return: The value (of arbitrary type, dependent on which output),
         or `None` if the variable is not found.
-    :raises ValueError:
-        if the system is in a state where outputs can't be retrieved
+    :raises SimulatorNotSetupException:
+        if the system has a status where outputs can't be retrieved
     """
-    simulator = _last_simulator()
-    if simulator is None:
-        raise ValueError(
+    if _simulator is None:
+        raise SimulatorNotSetupException(
             "You need to have ran a simulator before asking for its "
             "generated output.")
     else:
-        return simulator.get_generated_output(output)
+        return _simulator.get_generated_output(output)
 
 
 def _temp_dir():
@@ -154,18 +149,20 @@ def provenance_file_path():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
+    .. note:
+        The behaviour when called before setup is subject to change
+
     :rtpye: str
-    :raises ValueError:
-        if the system is in a state where path can't be retrieved
+    :raises SimulatorNotSetupException:
+        if the system has a status where path can't be retrieved
     """
-    simulator = _last_simulator()
-    if simulator is None:
-        raise ValueError(
-            "You need to have setup a simulator before asking for its "
-            "provenance_file_path.")
+    if _simulator is None:
+        logger.warning(
+            "Invalid simulator so app_provenance_file_path is a tempdir")
+        return _temp_dir()
     else:
         # underscore param used avoid exposing a None PyNN parameter
-        return simulator._provenance_file_path
+        return _simulator._provenance_file_path
 
 
 def app_provenance_file_path():
@@ -175,16 +172,18 @@ def app_provenance_file_path():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
+    .. note:
+        The behaviour when called before setup is subject to change
+
     :rtpye: str
     """
-    simulator = _last_simulator()
-    if simulator is None:
+    if _simulator is None:
         logger.warning(
             "Invalid simulator so app_provenance_file_path is a tempdir")
         return _temp_dir()
     else:
         # underscore param used avoid exposing a None PyNN parameter
-        return simulator._app_provenance_file_path
+        return _simulator._app_provenance_file_path
 
 
 def system_provenance_file_path():
@@ -194,16 +193,17 @@ def system_provenance_file_path():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
+    .. note:
+        The behaviour when called before setup is subject to change
+
     :rtpye: str
     """
-    simulator = _last_simulator()
-    if simulator is None:
+    if _simulator is None:
         logger.warning(
             "Invalid simulator so system_provenance_file_path is a tempdir")
         return _temp_dir()
-    else:
         # underscore param used avoid exposing a None PyNN parameter
-        return simulator._system_provenance_file_path
+        return _simulator._system_provenance_file_path
 
 
 def report_default_directory():
@@ -213,13 +213,15 @@ def report_default_directory():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
+    .. note:
+        The behaviour when called before setup is subject to change
+
     :rtpye: str
     """
-    simulator = _last_simulator()
-    if simulator is None:
+    if _simulator is None:
         logger.warning(
             "Invalid simulator so report_default_directory is a tempdir")
         return _temp_dir()
     else:
         # underscore param used avoid exposing a None PyNN parameter
-        return simulator._report_default_directory
+        return _simulator._report_default_directory
