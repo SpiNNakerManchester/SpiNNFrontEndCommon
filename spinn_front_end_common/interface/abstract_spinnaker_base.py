@@ -27,7 +27,6 @@ from threading import Condition
 from numpy import __version__ as numpy_version
 from spinn_utilities.timer import Timer
 from spinn_utilities.log import FormatAdapter
-from spinn_utilities.overrides import overrides
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_machine import CoreSubsets
 from spinn_machine import __version__ as spinn_machine_version
@@ -57,8 +56,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
-from spinn_front_end_common.utilities import (
-    globals_variables, SimulatorInterface,)
+from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -76,7 +74,8 @@ from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.provenance import (
     PacmanProvenanceExtractor)
-from spinn_front_end_common.interface.simulator_status import Simulator_Status
+from spinn_front_end_common.interface.simulator_status import (
+    RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
 from spinn_front_end_common.interface.interface_functions import (
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
@@ -105,7 +104,7 @@ PROVENANCE_TYPE_CUTOFF = 20000
 _PREALLOC_NAME = 'PreAllocatedResources'
 
 
-class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
+class AbstractSpinnakerBase(ConfigHandler):
     """ Main interface into the tools logic flow.
     """
     # pylint: disable=broad-except
@@ -656,13 +655,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Only one type of graph can be used during live output. "
                 "Please fix and try again")
 
-    # options names are all lower without _ inside config
-    _DEBUG_ENABLE_OPTS = frozenset([
-        "reportsenabled",
-        "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
-    _REPORT_DISABLE_OPTS = frozenset([
-        "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
-
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution.
 
@@ -729,15 +721,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._shutdown()
         return self._last_except_hook(exctype, value, traceback_obj)
 
-    _RUNNING_STATES = (Simulator_Status.IN_RUN, Simulator_Status.RUN_FOREVER)
-    _SHUTDOWN_STATES = (Simulator_Status.SHUTDOWN, )
-
-    @overrides(SimulatorInterface.verify_not_running)
     def verify_not_running(self):
-        if self._status in self._RUNNING_STATES:
+        """ Verify that the simulator is in a state where it can start running.
+        """
+        if self._status in RUNNING_STATUS:
             raise ConfigurationException(
                 "Illegal call while a simulation is already running")
-        if self._status in self._SHUTDOWN_STATES:
+        if self._status in SHUTDOWN_STATUS:
             raise ConfigurationException(
                 "Illegal call after simulation is shutdown")
 
@@ -773,8 +763,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._run_until_complete = True
         self._run(n_steps, sync_time=0)
 
-    @overrides(SimulatorInterface.run)
     def run(self, run_time, sync_time=0):
+        """ Run a simulation for a fixed amount of time
+
+        :param int run_time: the run duration in milliseconds.
+        :param float sync_time:
+            If not 0, this specifies that the simulation should pause after
+            this duration.  The continue_simulation() method must then be
+            called for the simulation to continue.
+        """
         self._run(run_time, sync_time)
 
     def _build_graphs_for_usage(self):
@@ -868,8 +865,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._status = Simulator_Status.IN_RUN
 
-        self._adjust_config(
-            run_time, self._DEBUG_ENABLE_OPTS, self._REPORT_DISABLE_OPTS)
+        self._adjust_config(run_time)
 
         # Install the Control-C handler
         if isinstance(threading.current_thread(), threading._MainThread):
@@ -907,6 +903,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
+            if self._has_ran:
+                # create new sub-folder for reporting data
+                self._set_up_output_folders(self._n_calls_to_run)
+
             self._build_graphs_for_usage()
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
@@ -1570,7 +1570,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Mapping", "router_table_compress_as_far_as_possible")
         inputs["WriteCompressorIobuf"] = get_config_bool(
             "Reports", "write_compressor_iobuf")
-
+        inputs["RouterCompressorBitFieldPreAllocSize"] = \
+            get_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_pre_alloced_sdram")
         algorithms = list()
 
         # process for TDMA required cores
@@ -2367,9 +2370,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         logger.info("Resetting")
 
-        # create new sub-folder for reporting data
-        self._set_up_output_folders(self._n_calls_to_run)
-
         # rewind the buffers from the buffer manager, to start at the beginning
         # of the simulation again and clear buffered out
         if self._buffer_manager is not None:
@@ -2461,18 +2461,27 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return changed, data_changed
 
     @property
-    @overrides(SimulatorInterface.has_ran)
     def has_ran(self):
+        """ Whether the simulation has executed anything at all.
+
+        :rtype: bool
+        """
         return self._has_ran
 
     @property
-    @overrides(SimulatorInterface.machine)
     def machine(self):
+        """ The python machine description object.
+
+         :rtype: ~spinn_machine.Machine
+         """
         return self._get_machine()
 
     @property
-    @overrides(SimulatorInterface.no_machine_time_steps)
     def no_machine_time_steps(self):
+        """ The number of machine time steps.
+
+        :rtype: int
+        """
         return self._no_machine_time_steps
 
     @property
@@ -2521,23 +2530,35 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._fixed_routes
 
     @property
-    @overrides(SimulatorInterface.placements)
     def placements(self):
+        """ Where machine vertices are placed on the machine.
+
+        :rtype: ~pacman.model.placements.Placements
+        """
         return self._placements
 
     @property
-    @overrides(SimulatorInterface.transceiver)
     def transceiver(self):
+        """ How to talk to the machine.
+
+        :rtype: ~spinnman.transceiver.Transceiver
+        """
         return self._txrx
 
     @property
-    @overrides(SimulatorInterface.tags)
     def tags(self):
+        """
+        :rtype: ~pacman.model.tags.Tags
+        """
         return self._tags
 
     @property
-    @overrides(SimulatorInterface.buffer_manager)
     def buffer_manager(self):
+        """ The buffer manager being used for loading/extracting buffers
+
+        :rtype:
+            ~spinn_front_end_common.interface.buffer_management.BufferManager
+        """
         return self._buffer_manager
 
     @property
@@ -2570,7 +2591,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._none_labelled_edge_count += 1
 
     @property
-    @overrides(SimulatorInterface.use_virtual_board)
     def use_virtual_board(self):
         """ True if this run is using a virtual machine
 
@@ -2670,15 +2690,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
         self._status = Simulator_Status.SHUTDOWN
 
-        # if on a virtual machine then shut down not needed
-        if self._use_virtual_board:
-            return
-
         if self._machine_is_turned_off is not None:
-            logger.info("Shutdown skipped as board is off for power save")
-            return
-
-        if turn_off_machine is None:
+            turn_off_machine = False
+        elif turn_off_machine is None:
             turn_off_machine = get_config_bool(
                 "Machine", "turn_off_machine")
 
@@ -2699,7 +2713,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # stop the transceiver and allocation controller
         self.__close_transceiver(turn_off_machine)
         self.__close_allocation_controller()
-        self._status = Simulator_Status.SHUTDOWN
 
         try:
             if self._last_run_outputs and \
@@ -2755,12 +2768,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
 
-    @overrides(SimulatorInterface.stop,
-               extend_defaults=True, additional_arguments=(
-                   "turn_off_machine", "clear_routing_tables", "clear_tags"))
     def stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
              clear_routing_tables=None, clear_tags=None):
         """
+        End running of the simulation.
+
         :param bool turn_off_machine:
             decides if the machine should be powered down after running the
             execution. Note that this powers down all boards connected to the
@@ -2910,7 +2922,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             system_provenance_file_path=self._system_provenance_file_path)
         extractor.extract_iobuf()
 
-    @overrides(SimulatorInterface.add_socket_address, extend_doc=False)
     def add_socket_address(self, socket_address):
         """ Add the address of a socket used in the run notification protocol.
 
@@ -3044,8 +3055,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._status = Simulator_Status.STOP_REQUESTED
             self._state_condition.notify_all()
 
-    @overrides(SimulatorInterface.continue_simulation)
     def continue_simulation(self):
+        """ Continue a simulation that has been started in stepped mode
+        """
         if self._no_sync_changes % 2 == 0:
             sync_signal = Signal.SYNC0
         else:
