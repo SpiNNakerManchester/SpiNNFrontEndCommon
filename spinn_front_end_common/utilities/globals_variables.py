@@ -138,14 +138,15 @@ def machine_time_step():
 
     :rtype: int
     """
-    try:
-        return get_simulator().machine_time_step
-    # TODO merge with globals PR for a better fix
-    except (ValueError, AttributeError):
-        # Typically in unittests
+    if _simulator is None:
         logger.warning(
-            "Invalid simulator so machine_time_step hardcoded to 1000")
+            "Invalid simulator so machine_time_step is 1000")
         return 1000
+    else:
+        if _simulator._status in SHUTDOWN_STATUS:
+            logger.warning(
+                "simulator shutdown before machine_time_step requested")
+    return _simulator.machine_time_step
 
 
 def machine_time_step_ms():
@@ -157,14 +158,15 @@ def machine_time_step_ms():
 
     :rtype: float
     """
-    try:
-        return get_simulator().machine_time_step_ms
-    # TODO merge with globals PR for a better fix
-    except (ValueError, AttributeError):
-        # Typically in unittests
+    if _simulator is None:
         logger.warning(
-            "Invalid simulator so machine_time_step_ms hardcoded to 1.0")
+            "Invalid simulator so machine_time_step_ms is 1.0")
         return 1.0
+    else:
+        if _simulator._status in SHUTDOWN_STATUS:
+            logger.warning(
+                "simulator shutdown before machine_time_step_ms requested")
+    return _simulator.machine_time_step_ms
 
 
 def machine_time_step_per_ms():
@@ -176,14 +178,15 @@ def machine_time_step_per_ms():
 
     :rtype: float
     """
-    try:
-        return get_simulator().machine_time_step_per_ms
-    # TODO merge with globals PR for a better fix
-    except (ValueError, AttributeError):
-        # Typically in unittests
+    if _simulator is None:
         logger.warning(
-            "Invalid simulator so machine_time_step_per_ms hardcoded to 1.0")
+            "Invalid simulator so machine_time_step_per_ms is 1.0")
         return 1.0
+    else:
+        if _simulator._status in SHUTDOWN_STATUS:
+            logger.warning(
+                "simulator shutdown before machine_time_step_per_ms requested")
+    return _simulator.machine_time_step_per_ms
 
 
 def time_scale_factor():
@@ -193,14 +196,15 @@ def time_scale_factor():
     :raises ValueError:
         if the system is in a state where machine_timestep can't be retrieved
     """
-    try:
-        return get_simulator().time_scale_factor
-    # TODO merge with globals PR for a better fix
-    except (ValueError, AttributeError):
-        # Typically in unittests
+    if _simulator is None:
         logger.warning(
-            "Invalid simulator so time_scale_factor hardcoded to 1")
+            "Invalid simulator so time_scale_factor is 1")
         return 1
+    else:
+        if _simulator._status in SHUTDOWN_STATUS:
+            logger.warning(
+                "simulator shutdown before time_scale_factorrequested")
+    return _simulator.time_scale_factor
 
 
 def provenance_file_path():
