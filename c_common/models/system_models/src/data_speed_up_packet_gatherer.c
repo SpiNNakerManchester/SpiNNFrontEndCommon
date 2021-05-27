@@ -194,7 +194,9 @@ enum {
     //! Index of general configuration region
     CONFIG,
     //! Index of chip-to-key mapping table
-    CHIP_TO_KEY
+    CHIP_TO_KEY,
+    //! Index of provenance region
+    PROVENANCE_REGION
 };
 
 //! The layout of the Data Out configuration region
@@ -287,6 +289,24 @@ typedef struct data_in_config_t {
     const struct chip_key_data_t chip_to_key[];
 } data_in_config_t;
 
+//! The structure of the provenance region FIXME
+typedef struct dsupg_provenance_t {
+    //! The number of SDP messages sent
+    uint32_t n_sdp_sent;
+    //! The number of SDP messages received (excluding those for SARK)
+    uint32_t n_sdp_recvd;
+    //! The number of input streams
+    uint32_t n_in_streams;
+    //! The number of output streams (technically, output transactions)
+    uint32_t n_out_streams;
+} dsupg_provenance_t;
+
+//! The DTCM copy of the provenance
+static dsupg_provenance_t prov = {0};
+
+//! The SDRAM copy of the provenance
+static dsupg_provenance_t *sdram_prov;
+
 //-----------------------------------------------------------------------------
 // FUNCTIONS
 //-----------------------------------------------------------------------------
@@ -309,6 +329,8 @@ static inline void send_sdp_message(void) {
         log_debug("failed to send SDP message");
         spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
     }
+    prov.n_sdp_sent++;
+    sdram_prov->n_sdp_sent = prov.n_sdp_sent;
 }
 
 //! \brief sends a multicast (with payload) message to the current target chip
@@ -489,6 +511,8 @@ static void process_address_data(
     // allocate location for holding the seq numbers
     create_sequence_number_bitfield(receive_data_cmd->max_seq_num);
     total_received_seq_nums = 0;
+    prov.n_in_streams++;
+    sdram_prov->n_in_streams = prov.n_in_streams;
 
     // set start of last seq number
     last_seen_seq_num = 0;
@@ -661,6 +685,8 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
 //! \param[in] msg: the SDP message
 static void data_in_receive_sdp_data(const sdp_msg_pure_data *msg) {
     uint command = msg->data[COMMAND_ID];
+    prov.n_sdp_recvd++;
+    sdram_prov->n_sdp_recvd = prov.n_sdp_recvd;
 
     // check for separate commands
     switch (command) {
@@ -816,6 +842,8 @@ static void receive_data(uint key, uint payload) {
             data_out_transaction_id = payload;
             data[TRANSACTION_ID] = data_out_transaction_id;
             position_in_store = START_OF_DATA;
+            prov.n_out_streams++;
+            sdram_prov->n_out_streams = prov.n_out_streams;
         }
 
         if (key == end_flag_key) {
@@ -871,6 +899,9 @@ static void initialise(void) {
     my_msg.flags = 0x07;
     my_msg.srce_port = 3;
     my_msg.srce_addr = sv->p2p_addr;
+
+    // Set up provenance
+    sdram_prov = data_specification_get_region(PROVENANCE_REGION, ds_regions);
 
     spin1_callback_on(FRPL_PACKET_RECEIVED, receive_data, MC_PACKET);
 

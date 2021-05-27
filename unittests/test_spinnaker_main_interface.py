@@ -16,12 +16,11 @@
 import os
 import sys
 import unittest
+from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-import spinn_front_end_common.interface.config_handler as config_handler
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
 from spinn_front_end_common.utilities.utility_objs import ExecutableFinder
-from spinn_front_end_common.utilities import globals_variables, FailedState
 
 
 class Close_Once(object):
@@ -39,22 +38,21 @@ class Close_Once(object):
 class MainInterfaceTimingImpl(AbstractSpinnakerBase):
 
     def __init__(self, machine_time_step=None, time_scale_factor=None):
-        super().__init__(
-            config_handler.CONFIG_FILE, ExecutableFinder())
+        super().__init__(ExecutableFinder())
         self.set_up_timings(machine_time_step, time_scale_factor)
 
 
 class TestSpinnakerMainInterface(unittest.TestCase):
 
-    def setUp(self):
-        globals_variables.set_failed_state(FailedState())
+    @classmethod
+    def setUpClass(cls):
+        reset_configs()
 
     def test_stop_init(self):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
-        interface = AbstractSpinnakerBase(
-            config_handler.CONFIG_FILE, ExecutableFinder())
+        interface = AbstractSpinnakerBase(ExecutableFinder())
         mock_contoller = Close_Once()
         interface._machine_allocation_controller = mock_contoller
         self.assertFalse(mock_contoller.closed)
@@ -69,7 +67,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
-        AbstractSpinnakerBase(config_handler.CONFIG_FILE, ExecutableFinder())
+        AbstractSpinnakerBase(ExecutableFinder())
 
     def test_timings(self):
 
