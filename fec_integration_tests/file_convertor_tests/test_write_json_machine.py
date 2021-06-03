@@ -39,6 +39,29 @@ class TestWriteJson(unittest.TestCase):
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
 
+    def _chips_differ(self, chip1, chip2):
+        if (chip1 == chip2):
+            return False
+        if len(chip1) != len(chip2):
+            raise True
+        for i in range(len(chip1)):
+            if chip1[i] == chip2[i]:
+                continue
+            if len(chip1[i]) != len(chip2[i]):
+                return True
+            for key in chip1[i]:
+                if (chip1[i][key] != chip2[i][key]):
+                    if key != "cores":
+                        return True
+                    # Toterance of
+                    c1 = int(chip1[i][key])
+                    c2 = int(chip2[i][key])
+                    if c1 < c2 -1:
+                        return True
+                    if c1 > c2 + 1:
+                        return True
+            return False
+
     def json_compare(self, file1, file2):
         if filecmp.cmp(file1, file2):
             return
@@ -55,16 +78,18 @@ class TestWriteJson(unittest.TestCase):
             if key == "chips":
                 chips1 = json1[key]
                 chips2 = json2[key]
+                if len(chips1) != len(chips2):
+                    raise AssertionError(
+                        f"# Chips {len(chips1)} != {len(chips2)}")
                 for i in range(len(chips1)):
-                    if (chips1[i] != chips2[i]):
-                        raise AssertionError("Chip {} differ {} {}".format(
-                            i, chips1[i], chips2[i]))
+                    if self._chips_differ(chips1[i], chips2[i]):
+                        raise AssertionError(
+                            f"Chip {i} differs {chips1[i]} {chips2[i]}")
             else:
                 if json1[key] != json2[key]:
                     raise AssertionError(
                         "Values differ for {} found {} {}".format(
                             key, json1[key], json2[key]))
-        raise AssertionError("Some wierd difference")
 
     def _remove_old_json(self, folder):
         if not os.path.exists(folder):
