@@ -56,7 +56,7 @@ class TestWriteJson(unittest.TestCase):
                     # Toterance of
                     c1 = int(chip1[i][key])
                     c2 = int(chip2[i][key])
-                    if c1 < c2 -1:
+                    if c1 < c2 - 1:
                         return True
                     if c1 > c2 + 1:
                         return True
