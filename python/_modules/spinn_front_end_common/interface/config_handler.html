@@ -159,12 +159,6 @@
                 <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[Reports]write_energy_report has been set to &quot;</span>
                             <span class="s2">&quot;False as using virtual boards&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span>
-                    <span class="s2">&quot;EnergySavings&quot;</span><span class="p">,</span> <span class="s2">&quot;turn_off_board_after_discovery&quot;</span><span class="p">):</span>
-                <span class="n">set_config</span><span class="p">(</span>
-                    <span class="s2">&quot;EnergySavings&quot;</span><span class="p">,</span> <span class="s2">&quot;turn_off_board_after_discovery&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[EnergySavings]turn_off_board_after_discovery has&quot;</span>
-                            <span class="s2">&quot; been set to False as s using virtual boards&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_board_chip_report&quot;</span><span class="p">):</span>
                 <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_board_chip_report&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[Reports]write_board_chip_report has been set to&quot;</span>
@@ -184,12 +178,6 @@
                 <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[Reports]write_energy_report has been set to &quot;</span>
                             <span class="s2">&quot;False as runtime is set to forever&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span>
-                    <span class="s2">&quot;EnergySavings&quot;</span><span class="p">,</span> <span class="s2">&quot;turn_off_board_after_discovery&quot;</span><span class="p">):</span>
-                <span class="n">set_config</span><span class="p">(</span>
-                    <span class="s2">&quot;EnergySavings&quot;</span><span class="p">,</span> <span class="s2">&quot;turn_off_board_after_discovery&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[EnergySavings]turn_off_board_after_discovery has&quot;</span>
-                            <span class="s2">&quot; been set to False as runtime is set to forever&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ConfigHandler.child_folder"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler.child_folder">[docs]</a>    <span class="k">def</span> <span class="nf">child_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">child_name</span><span class="p">,</span> <span class="n">must_create</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
