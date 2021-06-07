@@ -16,6 +16,7 @@
 import os
 import unittest
 from spinn_utilities.executable_finder import ExecutableFinder
+from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
 from spinn_front_end_common.interface.interface_functions import (
@@ -23,13 +24,15 @@ from spinn_front_end_common.interface.interface_functions import (
 from spinn_front_end_common.utilities.globals_variables import (
     app_provenance_file_path, unset_simulator)
 from spinnman.model import ExecutableTargets
+from spinnman.transceiver import Transceiver
 
 
 class _PretendTransceiver(object):
     def __init__(self, iobuffers):
         self._iobuffers = iobuffers
 
-    def get_iobuf(self, core_subsets):
+    @overrides(Transceiver.get_iobuf)
+    def get_iobuf(self, core_subsets=None):
         for iobuf in self._iobuffers:
             if core_subsets.is_core(iobuf.x, iobuf.y, iobuf.p):
                 yield iobuf
