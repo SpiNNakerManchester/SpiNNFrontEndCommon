@@ -44,7 +44,7 @@ from pacman.executor.injection_decorator import (
     clear_injectables, provide_injectables)
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 from pacman.model.graphs.application import (
-    ApplicationGraph, ApplicationEdge, ApplicationVertex)
+    ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import (
     MachineGraph, MachineGraphView, MachineVertex)
 from pacman.model.resources import (
@@ -2509,12 +2509,12 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @property
     def application_graph(self):
-        """ The frozen clone of the application graph used to derive the
+        """ The protected view of the application graph used to derive the
             runtime machine configuration.
 
         :rtype: ~pacman.model.graphs.application.ApplicationGraph
         """
-        return self._application_graph.clone(frozen=True)
+        return ApplicationGraphView(self._application_graph)
 
     @property
     def routing_infos(self):
