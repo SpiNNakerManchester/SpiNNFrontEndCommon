@@ -21,7 +21,6 @@ import logging
 import math
 import signal
 import sys
-import time
 import threading
 from threading import Condition
 from numpy import __version__ as numpy_version
@@ -1818,7 +1817,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         load_timer = Timer()
         load_timer.start_timing()
 
-         # The initial inputs are the mapping outputs
+        # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
         inputs["NoSyncChanges"] = self._no_sync_changes
