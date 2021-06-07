@@ -121,12 +121,6 @@ class ConfigHandler(object):
                 set_config("Reports", "write_energy_report", "False")
                 logger.info("[Reports]write_energy_report has been set to "
                             "False as using virtual boards")
-            if get_config_bool(
-                    "EnergySavings", "turn_off_board_after_discovery"):
-                set_config(
-                    "EnergySavings", "turn_off_board_after_discovery", "False")
-                logger.info("[EnergySavings]turn_off_board_after_discovery has"
-                            " been set to False as s using virtual boards")
             if get_config_bool("Reports", "write_board_chip_report"):
                 set_config("Reports", "write_board_chip_report", "False")
                 logger.info("[Reports]write_board_chip_report has been set to"
@@ -146,12 +140,6 @@ class ConfigHandler(object):
                 set_config("Reports", "write_energy_report", "False")
                 logger.info("[Reports]write_energy_report has been set to "
                             "False as runtime is set to forever")
-            if get_config_bool(
-                    "EnergySavings", "turn_off_board_after_discovery"):
-                set_config(
-                    "EnergySavings", "turn_off_board_after_discovery", "False")
-                logger.info("[EnergySavings]turn_off_board_after_discovery has"
-                            " been set to False as runtime is set to forever")
 
     def child_folder(self, parent, child_name, must_create=False):
         """
