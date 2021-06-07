@@ -27,7 +27,7 @@ from pacman.exceptions import (
 from pacman.model.routing_tables import (
     MulticastRoutingTables, UnCompressedMulticastRoutingTable,
     CompressedMulticastRoutingTable)
-from pacman.operations.algorithm_reports.reports import format_route
+from pacman.utilities.algorithm_utilities.routes_format import format_route
 from pacman.operations.router_compressors import Entry
 from pacman.operations.router_compressors.ordered_covering_router_compressor\
     import (
