@@ -308,9 +308,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_cores_to_read_iobuf",
 
         #
-        "_all_provenance_items",
-
-        #
         "_executable_types",
 
         # mapping between parameters and the vertices which need to talk to
@@ -448,7 +445,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._last_run_outputs = dict()
         self._last_run_tokens = dict()
         self._pacman_provenance = PacmanProvenanceExtractor()
-        self._all_provenance_items = list()
         self._version_provenance = list()
         self._xml_paths = self._create_xml_paths(extra_algorithm_xml_paths)
 
@@ -1872,7 +1868,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._pacman_provenance.clear()
         self._version_provenance = list()
         self._write_provenance(prov_items)
-        self._all_provenance_items.append(prov_items)
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """
@@ -2224,7 +2219,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         prov_items.extend(self._pacman_provenance.data_items)
         self._pacman_provenance.clear()
         self._write_provenance(prov_items)
-        self._all_provenance_items.append(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
         iobuf = IOBufExtractor(
@@ -2713,16 +2707,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # shut down the machine properly
         self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
 
-        # display any provenance data gathered
-        for i, provenance_items in enumerate(self._all_provenance_items):
-            message = None
-            if len(self._all_provenance_items) > 1:
-                message = "Provenance from run {}".format(i)
-            self._check_provenance(provenance_items, message)
-
-            # Reset provenance
-            self._all_provenance_items = list()
-
         if exn is not None:
             raise exn  # pylint: disable=raising-bad-type
         self.write_finished_file()
@@ -2813,20 +2797,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             The address of the database socket
         """
         self._database_socket_addresses.add(socket_address)
-
-    @staticmethod
-    def _check_provenance(items, initial_message=None):
-        """ Display any errors from provenance data.
-
-        :param str initial_message:
-        """
-        initial_message_printed = False
-        for item in items:
-            if item.report:
-                if not initial_message_printed and initial_message is not None:
-                    print(initial_message)
-                    initial_message_printed = True
-                logger.warning(item.message)
 
     def _turn_off_on_board_to_save_power(self, config_flag):
         """ Executes the power saving mode of either on or off of the\
