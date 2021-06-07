@@ -13,6 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os
+from spinn_utilities.config_holder import get_config_int
+from spinn_front_end_common.utilities.globals_variables import (
+    provenance_file_path)
+from spinn_utilities.log import FormatAdapter
+logger = FormatAdapter(logging.getLogger(__name__))
+
+_report_count = 0
+
 
 class ProvenanceDataItem(object):
     """ Container for provenance data
@@ -20,7 +30,6 @@ class ProvenanceDataItem(object):
     __slots__ = [
         "_message",
         "_names",
-        "_report",
         "_value"]
 
     def __init__(self, names, value, report=False, message=""):
@@ -35,8 +44,9 @@ class ProvenanceDataItem(object):
         """
         self._names = names
         self._value = value
-        self._report = report
         self._message = message
+        if report:
+            self._add_report()
 
     @property
     def message(self):
@@ -45,14 +55,6 @@ class ProvenanceDataItem(object):
         :rtype: str
         """
         return self._message
-
-    @property
-    def report(self):
-        """ True if this provenance data entry needs reporting to the end user
-
-        :rtype: bool
-        """
-        return self._report
 
     @property
     def names(self):
@@ -70,11 +72,24 @@ class ProvenanceDataItem(object):
         """
         return self._value
 
+    def _add_report(self):
+        global _report_count
+        report_file = os.path.join(
+            provenance_file_path(), "logs")
+        with open(report_file, "a") as writer:
+            writer.write(self._message)
+            writer.write("\n")
+        cutoff = get_config_int("Reports", "provenance_report_cutoff")
+        if cutoff is None or _report_count < cutoff:
+            logger.warning(self._message)
+        elif _report_count == cutoff:
+            logger.warning(f"Additional interesting provenace items in "
+                           f"{report_file}")
+        _report_count += 1
+
     def __repr__(self):
-        return "{}:{}:{}:{}".format(
-            self._names, self._value, self._report, self._message)
+        return "{}:{}:{}".format(
+            self._names, self._value, self._message)
 
     def __str__(self):
-        if self._report:
-            return self._message
-        return "{}: {}".format(self._names, self._value)
+        return self._message
