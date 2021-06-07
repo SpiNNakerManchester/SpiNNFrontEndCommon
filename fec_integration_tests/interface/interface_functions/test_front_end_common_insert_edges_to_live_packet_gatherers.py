@@ -29,9 +29,7 @@ from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.utility_models import (
     LivePacketGather, LivePacketGatherMachineVertex)
-from fec_integration_tests.interface.interface_functions.simple_test_vertex \
-    import (
-        SimpleTestVertex)
+from pacman_test_objects import SimpleTestVertex
 
 
 class TestInsertLPGEdges(unittest.TestCase):

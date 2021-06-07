@@ -16,16 +16,14 @@
 import tempfile
 import unittest
 
-from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
-from spinn_utilities.overrides import overrides
 from pacman.model.placements import Placement, Placements
 from pacman.model.tags import Tags
-from pacman.model.graphs.application import ApplicationVertex
 from spinn_machine.tags import IPTag
 from spinnman.transceiver import Transceiver
 from spinnman.connections.udp_packet_connections import (
     SCAMPConnection, EIEIOConnection)
 from spinn_front_end_common.interface.buffer_management import BufferManager
+from pacman_test_objects import SimpleTestVertex
 
 
 class TestBufferManagerListenerCreation(unittest.TestCase):
@@ -37,8 +35,8 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # a single listener
 
         # Create two vertices
-        v1 = _TestVertex(10, "v1", 256)
-        v2 = _TestVertex(10, "v2", 256)
+        v1 = SimpleTestVertex(10, "v1", 256)
+        v2 = SimpleTestVertex(10, "v2", 256)
 
         # Create two tags - important thing is port=None
         t1 = IPTag(board_address='127.0.0.1', destination_x=0,
@@ -94,33 +92,6 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
                 number_of_listeners += 1
             print(i)
         self.assertEqual(number_of_listeners, 1)
-
-
-class _TestVertex(ApplicationVertex, LegacyPartitionerAPI):
-    """
-    taken skeleton test vertex definition from PACMAN.uinit_test_objects
-    """
-    _model_based_max_atoms_per_core = None
-
-    def __init__(self, n_atoms, label=None, max_atoms_per_core=256):
-        super().__init__(label=label, max_atoms_per_core=max_atoms_per_core)
-        self._model_based_max_atoms_per_core = max_atoms_per_core
-        self._n_atoms = n_atoms
-
-    @overrides
-    def get_resources_used_by_atoms(self, vertex_slice):
-        pass
-
-    @overrides(LegacyPartitionerAPI.create_machine_vertex)
-    def create_machine_vertex(
-            self, vertex_slice, resources_required, label=None,
-            constraints=None):
-        pass
-
-    @property
-    @overrides(LegacyPartitionerAPI.n_atoms)
-    def n_atoms(self):
-        return self._n_atoms
 
 
 if __name__ == "__main__":
