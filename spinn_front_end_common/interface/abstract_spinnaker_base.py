@@ -42,7 +42,6 @@ from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
 from pacman.executor.injection_decorator import (
     clear_injectables, provide_injectables)
-from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
@@ -2217,11 +2216,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         logger.error("An error has occurred during simulation")
         # Print the detail including the traceback
         real_exception = exception
-        if isinstance(exception, PacmanAlgorithmFailedToCompleteException):
-            logger.error(exception.exception, exc_info=exc_info)
-            real_exception = exception.exception
-        else:
-            logger.error(exception, exc_info=exc_info)
+        logger.error(exception, exc_info=exc_info)
 
         logger.info("\n\nAttempting to extract data\n\n")
 
