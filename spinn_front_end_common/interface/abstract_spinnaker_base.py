@@ -21,7 +21,6 @@ import logging
 import math
 import signal
 import sys
-import time
 import threading
 from threading import Condition
 from numpy import __version__ as numpy_version
@@ -335,9 +334,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # time taken by the front end extracting things
         "_extraction_time",
 
-        # power save mode. time board turned off or None if not turned off
-        "_machine_is_turned_off",
-
         # Version information from the front end
         "_front_end_versions",
 
@@ -502,9 +498,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
-
-        # By default board is kept on once started later
-        self._machine_is_turned_off = None
 
         globals_variables.set_simulator(self)
 
@@ -1213,8 +1206,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 self._app_id = self._txrx.app_id_tracker.get_new_id()
 
-        self._turn_off_on_board_to_save_power("turn_off_board_after_discovery")
-
         if self._n_chips_required:
             if self._machine.n_chips < self._n_chips_required:
                 raise ConfigurationException(
@@ -1816,8 +1807,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # set up timing
         load_timer = Timer()
         load_timer.start_timing()
-
-        self._turn_on_board_if_saving_power()
 
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
@@ -2669,9 +2658,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._status = Simulator_Status.SHUTDOWN
 
-        if self._machine_is_turned_off is not None:
-            turn_off_machine = False
-        elif turn_off_machine is None:
+        if turn_off_machine is None:
             turn_off_machine = get_config_bool(
                 "Machine", "turn_off_machine")
 
@@ -2895,74 +2882,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             The address of the database socket
         """
         self._database_socket_addresses.add(socket_address)
-
-    def _turn_off_on_board_to_save_power(self, config_flag):
-        """ Executes the power saving mode of either on or off of the\
-            SpiNNaker machine.
-
-        :param str config_flag: Flag read from the configuration file
-        """
-        # check if machine should be turned off
-        turn_off = get_config_bool("EnergySavings", config_flag)
-        if turn_off is None:
-            return
-
-        # if a mode is set, execute
-        if turn_off:
-            if self._turn_off_board_to_save_power():
-                logger.info("Board turned off based on: {}", config_flag)
-        else:
-            if self._turn_on_board_if_saving_power():
-                logger.info("Board turned on based on: {}", config_flag)
-
-    def _turn_off_board_to_save_power(self):
-        """ Executes the power saving mode of turning off the SpiNNaker\
-            machine.
-
-        :return: true when successful, false otherwise
-        :rtype: bool
-        """
-        # already off or no machine to turn off
-        if self._machine_is_turned_off is not None or self._use_virtual_board:
-            return False
-
-        if self._machine_allocation_controller is not None:
-            # switch power state if needed
-            if self._machine_allocation_controller.power:
-                self._machine_allocation_controller.set_power(False)
-        else:
-            self._txrx.power_off_machine()
-
-        self._machine_is_turned_off = time.time()
-        return True
-
-    def _turn_on_board_if_saving_power(self):
-        # Only required if previously turned off which never happens
-        # on virtual machine
-        if self._machine_is_turned_off is None:
-            return False
-
-        # Ensure the machine is completely powered down and
-        # all residual electrons have gone
-        already_off = time.time() - self._machine_is_turned_off
-        if already_off < MINIMUM_OFF_STATE_TIME:
-            delay = MINIMUM_OFF_STATE_TIME - already_off
-            logger.warning(
-                "Delaying turning machine back on for {} seconds. Consider "
-                "disabling turn_off_board_after_discovery for scripts that "
-                "have short preparation time.".format(delay))
-            time.sleep(delay)
-
-        if self._machine_allocation_controller is not None:
-            # switch power state if needed
-            if not self._machine_allocation_controller.power:
-                self._machine_allocation_controller.set_power(True)
-        else:
-            self._txrx.power_on_machine()
-
-        self._txrx.ensure_board_is_ready()
-        self._machine_is_turned_off = None
-        return True
 
     @property
     def has_reset_last(self):
