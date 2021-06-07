@@ -347,9 +347,6 @@
         <span class="s2">&quot;_cores_to_read_iobuf&quot;</span><span class="p">,</span>
 
         <span class="c1">#</span>
-        <span class="s2">&quot;_all_provenance_items&quot;</span><span class="p">,</span>
-
-        <span class="c1">#</span>
         <span class="s2">&quot;_executable_types&quot;</span><span class="p">,</span>
 
         <span class="c1"># mapping between parameters and the vertices which need to talk to</span>
@@ -487,7 +484,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_run_outputs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_run_tokens</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pacman_provenance</span> <span class="o">=</span> <span class="n">PacmanProvenanceExtractor</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_all_provenance_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_version_provenance</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_xml_paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_xml_paths</span><span class="p">(</span><span class="n">extra_algorithm_xml_paths</span><span class="p">)</span>
 
@@ -2015,7 +2011,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_pacman_provenance</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_version_provenance</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_provenance</span><span class="p">(</span><span class="n">prov_items</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_all_provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prov_items</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_do_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2374,7 +2369,6 @@
         <span class="n">prov_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pacman_provenance</span><span class="o">.</span><span class="n">data_items</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pacman_provenance</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_provenance</span><span class="p">(</span><span class="n">prov_items</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_all_provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prov_items</span><span class="p">)</span>
 
         <span class="c1"># Read IOBUF where possible (that should be everywhere)</span>
         <span class="n">iobuf</span> <span class="o">=</span> <span class="n">IOBufExtractor</span><span class="p">(</span>
@@ -2867,16 +2861,6 @@
         <span class="c1"># shut down the machine properly</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span><span class="p">(</span><span class="n">turn_off_machine</span><span class="p">,</span> <span class="n">clear_routing_tables</span><span class="p">,</span> <span class="n">clear_tags</span><span class="p">)</span>
 
-        <span class="c1"># display any provenance data gathered</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">provenance_items</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_all_provenance_items</span><span class="p">):</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_all_provenance_items</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Provenance from run </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_check_provenance</span><span class="p">(</span><span class="n">provenance_items</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
-
-            <span class="c1"># Reset provenance</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_all_provenance_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-
         <span class="k">if</span> <span class="n">exn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">exn</span>  <span class="c1"># pylint: disable=raising-bad-type</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_finished_file</span><span class="p">()</span></div>
@@ -2967,20 +2951,6 @@
 <span class="sd">            The address of the database socket</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_database_socket_addresses</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">socket_address</span><span class="p">)</span></div>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_check_provenance</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">initial_message</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Display any errors from provenance data.</span>
-
-<span class="sd">        :param str initial_message:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">initial_message_printed</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">report</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">initial_message_printed</span> <span class="ow">and</span> <span class="n">initial_message</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="n">initial_message</span><span class="p">)</span>
-                    <span class="n">initial_message_printed</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_turn_off_on_board_to_save_power</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_flag</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Executes the power saving mode of either on or off of the\</span>
