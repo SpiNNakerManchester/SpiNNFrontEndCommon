@@ -22,7 +22,7 @@ from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_machine import CoreSubsets, Machine, Router
+from spinn_machine import CoreSubsets, Router
 from spinnman.exceptions import (
     SpinnmanInvalidParameterException,
     SpinnmanUnexpectedResponseCodeException, SpiNNManCoresNotInStateException)

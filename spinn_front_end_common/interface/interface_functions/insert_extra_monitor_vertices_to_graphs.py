@@ -16,8 +16,8 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 from spinn_front_end_common.utility_models import (
-    DataSpeedUpPacketGather, DataSpeedUpPacketGatherMachineVertex,
-    ExtraMonitorSupport, ExtraMonitorSupportMachineVertex)
+    DataSpeedUpPacketGather, ExtraMonitorSupport,
+    ExtraMonitorSupportMachineVertex)
 
 
 class InsertExtraMonitorVerticesToGraphs(object):

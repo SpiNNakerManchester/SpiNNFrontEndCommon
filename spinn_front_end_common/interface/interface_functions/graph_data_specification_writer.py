@@ -40,8 +40,7 @@ class GraphDataSpecificationWriter(object):
         # spinnmachine instance
         "_machine",
         # hostname
-        "_hostname",
-   )
+        "_hostname")
 
     def __init__(self):
         self._sdram_usage = defaultdict(lambda: 0)

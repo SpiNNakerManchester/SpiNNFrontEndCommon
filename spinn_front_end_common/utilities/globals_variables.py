@@ -143,6 +143,7 @@ def _temp_dir():
         __temp_dir = tempfile.TemporaryDirectory()
     return __temp_dir.name
 
+
 def machine_time_step():
     """ The machine timestep, in microseconds
 
