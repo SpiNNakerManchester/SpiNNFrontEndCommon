@@ -32,7 +32,7 @@ from spinn_front_end_common.utilities.globals_variables import (
 class DSGRegionReloader(object):
     """ Regenerates and reloads the data specifications.
     """
-    __slots__ = ["_txrx", "_host"]
+    __slots__ = ["_txrx", "_host", "_data_dir"]
 
     def __call__(
             self, transceiver, placements, hostname):

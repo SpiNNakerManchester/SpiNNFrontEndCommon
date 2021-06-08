@@ -26,7 +26,7 @@ class TestDataSpecificationTargets(unittest.TestCase):
     def test_dict(self):
         machine = virtual_machine(2, 2)
         check = dict()
-        asDict = DataSpecificationTargets(self.machine)
+        asDict = DataSpecificationTargets(machine)
         c1 = (0, 0, 0)
         foo = bytearray(b"foo")
         with asDict.create_data_spec(0, 0, 0) as writer:

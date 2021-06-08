@@ -91,12 +91,13 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
     def setUp(self):
         unset_simulator()
+        reset_configs()
+        load_config()
 
     @classmethod
     def tearDownClass(cls):
         unset_simulator()
         reset_configs()
-        load_config()
 
     def testExectuableFinder(self):
         self.assertIn(fooaplx, executableFinder.get_executable_path(fooaplx))

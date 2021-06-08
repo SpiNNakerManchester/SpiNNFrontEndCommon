@@ -65,16 +65,14 @@ _RPT_DIR = "data_spec_text_files"
 
 
 def get_data_spec_and_file_writer_filename(
-        processor_chip_x, processor_chip_y, processor_id,
-        hostname, report_directory="TEMP", write_text_specs=False,
-        application_run_time_report_folder="TEMP"):
+        processor_chip_x, processor_chip_y, processor_id, hostname,
+        write_text_specs=False,  application_run_time_report_folder="TEMP"):
     """ Encapsulates the creation of the DSG writer and the file paths.
 
     :param int processor_chip_x: x-coordinate of the chip
     :param int processor_chip_y: y-coordinate of the chip
     :param int processor_id: The processor ID
     :param str hostname: The hostname of the SpiNNaker machine
-    :param str report_directory: the directory for the reports folder
     :param bool write_text_specs:
         True if a textual version of the specification should be written
     :param str application_run_time_report_folder:

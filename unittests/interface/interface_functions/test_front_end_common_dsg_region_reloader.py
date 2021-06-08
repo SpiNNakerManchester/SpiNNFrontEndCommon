@@ -114,6 +114,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
     def setUp(self):
         unset_simulator()
+        reset_configs()
 
     @classmethod
     def tearDownClass(cls):
