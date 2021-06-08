@@ -30,6 +30,8 @@ __temp_dir = None
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
+logger = FormatAdapter(logging.getLogger(__name__))
+
 
 def check_simulator():
     """ Check if a simulator has been setup but not yet shut down
@@ -140,6 +142,81 @@ def _temp_dir():
     if __temp_dir is None:
         __temp_dir = tempfile.TemporaryDirectory()
     return __temp_dir.name
+
+def machine_time_step():
+    """ The machine timestep, in microseconds
+
+    ..note: If the simulator has not been setup this returns the default 1000
+
+    :rtype: int
+    """
+    if _simulator is None:
+        logger.warning(
+            "Invalid simulator so machine_time_step is 1000")
+        return 1000
+    else:
+        if _simulator._status in SHUTDOWN_STATUS:
+            logger.warning(
+                "simulator shutdown before machine_time_step requested")
+    return _simulator.machine_time_step
+
+
+def machine_time_step_ms():
+    """ The machine timestep, in microseconds
+
+    Semantic sugar for machine_time_step() / 1000.
+
+    ..note: If the simulator has not been setup this returns the default 1.0
+
+    :rtype: float
+    """
+    if _simulator is None:
+        logger.warning(
+            "Invalid simulator so machine_time_step_ms is 1.0")
+        return 1.0
+    else:
+        if _simulator._status in SHUTDOWN_STATUS:
+            logger.warning(
+                "simulator shutdown before machine_time_step_ms requested")
+    return _simulator.machine_time_step_ms
+
+
+def machine_time_step_per_ms():
+    """ The machine timesteps in a microseconds
+
+    Semantic sugar for 1000 / machine_time_step()
+
+    ..note: If the simulator has not been setup this returns the default 1.0
+
+    :rtype: float
+    """
+    if _simulator is None:
+        logger.warning(
+            "Invalid simulator so machine_time_step_per_ms is 1.0")
+        return 1.0
+    else:
+        if _simulator._status in SHUTDOWN_STATUS:
+            logger.warning(
+                "simulator shutdown before machine_time_step_per_ms requested")
+    return _simulator.machine_time_step_per_ms
+
+
+def time_scale_factor():
+    """ The time scaling factor.
+
+    :rtype: int
+    :raises ValueError:
+        if the system is in a state where machine_timestep can't be retrieved
+    """
+    if _simulator is None:
+        logger.warning(
+            "Invalid simulator so time_scale_factor is 1")
+        return 1
+    else:
+        if _simulator._status in SHUTDOWN_STATUS:
+            logger.warning(
+                "simulator shutdown before time_scale_factorrequested")
+    return _simulator.time_scale_factor
 
 
 def provenance_file_path():

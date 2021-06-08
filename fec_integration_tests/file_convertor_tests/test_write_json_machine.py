@@ -18,9 +18,12 @@ import json
 import os
 import sys
 import unittest
+from spinn_utilities.config_holder import load_config, set_config
 from spalloc.job import JobDestroyedError
 from spinn_utilities.ping import Ping
 import spinnman.transceiver as transceiver
+
+from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
     import (WriteJsonMachine, MACHINE_FILENAME)
 from spinn_front_end_common.interface.interface_functions import (
@@ -38,6 +41,14 @@ class TestWriteJson(unittest.TestCase):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
+        reset_configs()
+        load_config()
+        set_config("Machine", "down_chips", None)
+        set_config("Machine", "down_cores", None)
+        set_config("Machine", "down_links", None)
+
+    def tearDown(self):
+        reset_configs()
 
     def _chips_differ(self, chip1, chip2):
         if (chip1 == chip2):
@@ -133,12 +144,15 @@ class TestWriteJson(unittest.TestCase):
     def testSpin2(self):
         if not Ping.host_is_reachable(self.spalloc):
             raise unittest.SkipTest(self.spalloc + " appears to be down")
+        load_config()
+        set_config(
+            "Machine", "spalloc_user", "Integration testing ok to kill")
+        set_config("Machine", "spalloc_port", self.spin2Port)
+
         spallocAlgo = SpallocAllocator()
         try:
             (hostname, version, _, _, _, _, _, m_allocation_controller) = \
-                spallocAlgo(spalloc_server=self.spalloc,
-                            spalloc_user="Integration testing ok to kill",
-                            n_chips=20, spalloc_port=self.spin2Port)
+                spallocAlgo(spalloc_server=self.spalloc, n_chips=20)
         except (JobDestroyedError):
             self.skipTest("Skipping as getting Job failed")
 

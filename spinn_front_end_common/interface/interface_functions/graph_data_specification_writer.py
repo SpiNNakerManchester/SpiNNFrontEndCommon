@@ -41,9 +41,7 @@ class GraphDataSpecificationWriter(object):
         "_machine",
         # hostname
         "_hostname",
-        # bool for writing texts
-        "_write_text",
-    )
+   )
 
     def __init__(self):
         self._sdram_usage = defaultdict(lambda: 0)
@@ -51,14 +49,12 @@ class GraphDataSpecificationWriter(object):
         self._vertices_by_chip = defaultdict(list)
 
     def __call__(
-            self, placements, hostname, write_text_specs,
-            machine, data_n_timesteps, placement_order=None):
+            self, placements, hostname, machine, data_n_timesteps,
+            placement_order=None):
         """
         :param ~pacman.model.placements.Placements placements:
             placements of machine graph to cores
         :param str hostname: SpiNNaker machine name
-        :param bool write_text_specs:
-            True if the textual version of the specification is to be written
         :param ~spinn_machine.Machine machine:
             the python representation of the SpiNNaker machine
         :param int data_n_timesteps:
@@ -74,7 +70,6 @@ class GraphDataSpecificationWriter(object):
         # pylint: disable=attribute-defined-outside-init
         self._machine = machine
         self._hostname = hostname
-        self._write_text = write_text_specs
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
@@ -127,7 +122,7 @@ class GraphDataSpecificationWriter(object):
 
         with targets.create_data_spec(pl.x, pl.y, pl.p) as data_writer:
             report_writer = get_report_writer(
-                pl.x, pl.y, pl.p, self._hostname, self._write_text)
+                pl.x, pl.y, pl.p, self._hostname)
             spec = DataSpecificationGenerator(data_writer, report_writer)
 
             # generate the DSG file

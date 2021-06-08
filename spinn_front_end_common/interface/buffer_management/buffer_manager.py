@@ -16,6 +16,7 @@
 import logging
 import threading
 import ctypes
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
@@ -126,9 +127,6 @@ class BufferManager(object):
         # machine object
         "_machine",
 
-        # flag for what data extraction to use
-        "_uses_advanced_monitors",
-
         # Support class to help call Java
         "_java_caller"
     ]
@@ -136,7 +134,7 @@ class BufferManager(object):
     def __init__(self, placements, tags, transceiver, extra_monitor_cores,
                  packet_gather_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
-                 uses_advanced_monitors, java_caller=None):
+                 java_caller=None):
         """
         :param ~pacman.model.placements.Placements placements:
             The placements of the vertices
@@ -155,7 +153,6 @@ class BufferManager(object):
         :param ~spinn_machine.Machine machine:
         :param fixed_routes:
         :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
-        :param bool uses_advanced_monitors:
         :param JavaCaller java_caller:
             Support class to call Java, or ``None`` to use Python
         """
@@ -169,7 +166,6 @@ class BufferManager(object):
         self._extra_monitor_cores_by_chip = extra_monitor_to_chip_mapping
         self._fixed_routes = fixed_routes
         self._machine = machine
-        self._uses_advanced_monitors = uses_advanced_monitors
 
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
@@ -192,7 +188,7 @@ class BufferManager(object):
         self._java_caller = java_caller
         if self._java_caller is not None:
             self._java_caller.set_machine(machine)
-            if self._uses_advanced_monitors:
+            if get_config_bool("Machine", "enable_advanced_monitor_support"):
                 self._java_caller.set_advanced_monitors(
                     self._placements, self._tags,
                     self._extra_monitor_cores_by_chip,
@@ -211,7 +207,7 @@ class BufferManager(object):
         :rtype: bytearray
         """
         # pylint: disable=too-many-arguments
-        if not self._uses_advanced_monitors:
+        if not get_config_bool("Machine", "enable_advanced_monitor_support"):
             return self._transceiver.read_memory(
                 placement_x, placement_y, address, length)
 
@@ -607,7 +603,8 @@ class BufferManager(object):
                     self._java_caller.get_all_data()
                     if progress:
                         progress.end()
-                elif self._uses_advanced_monitors:
+                elif get_config_bool(
+                        "Machine", "enable_advanced_monitor_support"):
                     self.__old_get_data_for_placements_with_monitors(
                         placements, progress)
                 else:

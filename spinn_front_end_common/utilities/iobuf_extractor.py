@@ -21,6 +21,7 @@ from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.core_subsets import CoreSubsets
 from spinnman.model.io_buffer import IOBuffer
+from spinn_utilities.config_holder import get_config_str
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_string_into_chip_and_core_subset)
@@ -51,8 +52,7 @@ class IOBufExtractor(object):
                  "__executable_targets", "__executable_finder"]
 
     def __init__(self, transceiver, executable_targets,
-                 executable_finder, from_cores="ALL",
-                 binary_types=None, recovery_mode=False,
+                 executable_finder, recovery_mode=False,
                  filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt",
                  suppress_progress=False):
         """
@@ -72,8 +72,10 @@ class IOBufExtractor(object):
         self.__app_path = app_provenance_file_path()
         self.__sys_path = system_provenance_file_path()
         self.__transceiver = transceiver
-        self.__from_cores = from_cores
-        self.__binary_types = binary_types
+        self.__from_cores = get_config_str(
+            "Reports", "extract_iobuf_from_cores")
+        self.__binary_types = get_config_str(
+            "Reports", "extract_iobuf_from_binary_types")
         self.__executable_targets = executable_targets
         self.__executable_finder = executable_finder
 

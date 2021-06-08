@@ -18,10 +18,11 @@ import logging
 import struct
 from collections import defaultdict
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
+from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_machine import CoreSubsets, Router
+from spinn_machine import CoreSubsets, Machine, Router
 from spinnman.exceptions import (
     SpinnmanInvalidParameterException,
     SpinnmanUnexpectedResponseCodeException, SpiNNManCoresNotInStateException)
@@ -115,10 +116,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
     def __call__(
             self, routing_tables, transceiver, machine, app_id,
             machine_graph, placements, executable_finder,
-            write_compressor_iobuf, produce_report,
-            target_length, routing_infos, time_to_try_for_each_iteration,
-            use_timer_cut_off, machine_time_step, time_scale_factor,
-            threshold_percentage, retry_count, executable_targets,
+            routing_infos, executable_targets,
             compress_as_much_as_possible=False, provenance_data_objects=None):
         """ entrance for routing table compression with bit field
 
@@ -136,18 +134,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             where are binaries are located
         :param bool write_compressor_iobuf: flag saying if read IOBUF
         :param bool produce_report:
-        :param int target_length:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-        :param int time_to_try_for_each_iteration:
-        :param bool use_timer_cut_off:
-        :param int machine_time_step:
-        :param int time_scale_factor:
-        :param int threshold_percentage:
-            the percentage of bitfields to do on chip
-            before its considered a success
-        :param int retry_count:
-            Number of times that the sorters should set of the compressions
-            again
         :param ~spinnman.model.ExecutableTargets executable_targets:
             the set of targets and executables
         :param bool compress_as_much_as_possible:
@@ -172,6 +159,9 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             transceiver.app_id_tracker.get_new_id()
 
         text = self._PROGRESS_BAR_TEXT.format(self.compressor_type)
+        retry_count = get_config_int(
+            "Mapping",
+            "router_table_compression_with_bit_field_retry_count")
         if retry_count is not None:
             text += " capped at {} retries".format(retry_count)
         progress_bar = ProgressBar(
@@ -197,17 +187,16 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             routing_tables, app_id, machine,
             compress_as_much_as_possible, progress_bar,
             compressor_executable_targets,
-            matrix_addresses_and_size, time_to_try_for_each_iteration,
-            bit_field_compressor_executable_path,
-            bit_field_sorter_executable_path, threshold_percentage,
-            retry_count)
+            matrix_addresses_and_size, bit_field_compressor_executable_path,
+            bit_field_sorter_executable_path, retry_count)
 
         # load and run binaries
         try:
             run_system_application(
                 compressor_executable_targets,
                 routing_table_compressor_app_id, transceiver,
-                executable_finder, write_compressor_iobuf,
+                executable_finder,
+                get_config_bool("Reports", "write_compressor_iobuf"),
                 functools.partial(
                     self._check_bit_field_router_compressor_for_success,
                     host_chips=on_host_chips,
@@ -236,11 +225,12 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
 
             for (chip_x, chip_y) in progress_bar.over(on_host_chips, False):
                 report_folder_path = host_compressor.generate_report_path()
+                target_length = get_config_int(
+                    "Mapping", "router_table_compression_target_length")
                 prov_items.append(
                     host_compressor.start_compression_selection_process(
                         router_table=routing_tables.get_routing_table_for_chip(
                             chip_x, chip_y),
-                        produce_report=produce_report,
                         report_folder_path=report_folder_path,
                         transceiver=transceiver, machine_graph=machine_graph,
                         placements=placements, machine=machine,
@@ -382,10 +372,9 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             self, addresses, transceiver, routing_table_compressor_app_id,
             routing_tables, app_id, machine,
             compress_as_much_as_possible, progress_bar, cores,
-            matrix_addresses_and_size, time_per_iteration,
+            matrix_addresses_and_size,
             bit_field_compressor_executable_path,
-            bit_field_sorter_executable_path, threshold_percentage,
-            retry_count):
+            bit_field_sorter_executable_path, retry_count):
         """ load all data onto the chip
 
         :param dict(tuple(int,int),tuple(int,int)) addresses:
@@ -406,9 +395,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             the path to the compressor binary path
         :param str bit_field_sorter_executable_path:
             the path to the sorter binary
-        :param int threshold_percentage:
-            the percentage of bitfields the user has defined as a minimum
-            needed to pass to be successful.
         :param retry_count:
             Number of times that the sorters should set of the compressions
             again. None for as much as needed
@@ -437,7 +423,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
                         cores, matrix_addresses_and_size[(table.x, table.y)],
                         bit_field_compressor_executable_path,
                         bit_field_sorter_executable_path, comms_sdram,
-                        threshold_percentage, retry_count)
+                        retry_count)
 
                     self._load_usable_sdram(
                         matrix_addresses_and_size[(table.x, table.y)], table.x,
@@ -445,7 +431,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
                         cores)
 
                     self._load_compressor_data(
-                        table.x, table.y, time_per_iteration, transceiver,
+                        table.x, table.y, transceiver,
                         bit_field_compressor_executable_path, cores,
                         compress_as_much_as_possible, comms_sdram)
                 except CantFindSDRAMToUseException:
@@ -454,7 +440,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         return run_by_host
 
     def _load_compressor_data(
-            self, chip_x, chip_y, time_per_iteration, transceiver,
+            self, chip_x, chip_y, transceiver,
             bit_field_compressor_executable_path, cores,
             compress_as_much_as_possible, comms_sdram):
         """ Updates the user addresses for the compressor cores with the
@@ -462,7 +448,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
 
         :param int chip_x: chip x coord
         :param int chip_y: chip y coord
-        :param int time_per_iteration: time per attempt of compression
         :param ~.Transceiver transceiver: SpiNNMan instance
         :param str bit_field_compressor_executable_path:
             path for the compressor binary
@@ -482,6 +467,9 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             user3_address = \
                 transceiver.get_user_3_register_address_from_core(processor_id)
             # user 1 the time per compression attempt
+            time_per_iteration = get_config_int(
+                "Mapping",
+                "router_table_compression_with_bit_field_iteration_time")
             transceiver.write_memory(
                 chip_x, chip_y, user1_address,
                 int(time_per_iteration * SECOND_TO_MICRO_SECOND))
@@ -552,8 +540,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             self, addresses, chip_x, chip_y, transceiver,
             routing_table_compressor_app_id, cores, matrix_addresses_and_size,
             bit_field_compressor_executable_path,
-            bit_field_sorter_executable_path, comms_sdram,
-            threshold_percentage, retry_count):
+            bit_field_sorter_executable_path, comms_sdram, retry_count):
         """ loads the bitfield addresses space
 
         :param dict(tuple(int,int),tuple(int,int)) addresses:
@@ -568,9 +555,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         :param str bit_field_sorter_executable_path:
             the path to the sorter binary
         :param int comms_sdram: Address for comms block
-        :param int threshold_percentage:
-            the percentage of bitfields the user has defined as a minimum
-            needed to pass to be successful.
         :param retry_count:
             Number of times that the sorters should set of the compressions
             again. None for as much as needed
@@ -583,7 +567,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             cores.get_cores_for_binary(
                 bit_field_compressor_executable_path).get_core_subset_for_chip(
                     chip_x, chip_y),
-            comms_sdram, threshold_percentage, retry_count)
+            comms_sdram, retry_count)
 
         # get sdram address on chip
         try:
@@ -766,8 +750,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         return region_addresses, sdram_block_addresses_and_sizes
 
     def _generate_chip_data(
-            self, address_list, cores, comms_sdram, threshold_percentage,
-            retry_count):
+            self, address_list, cores, comms_sdram, retry_count):
         """
         Generate the region_addresses_t data
 
@@ -785,9 +768,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             the list of SDRAM addresses
         :param ~.CoreSubset cores: compressor cores on this chip.
         :param int comms_sdram: Address for comms block
-        :param int threshold_percentage:
-            the percentage of bitfields the user has defined as a minimum
-            needed to pass to be successful.
         :param retry_count:
             Number of times that the sorters should set of the compressions
             again. None for as much as needed
@@ -795,6 +775,10 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         :return: the byte array
         :rtype: bytes
         """
+        threshold_percentage = get_config_int(
+            "Mapping",
+            "router_table_compression_with_bit_field_acceptance_threshold")
+
         data = self._FOUR_WORDS.pack(
             threshold_percentage,
             retry_count if retry_count is not None else 0xFFFFFFFF,

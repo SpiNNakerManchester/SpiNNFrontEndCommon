@@ -23,6 +23,7 @@ from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset)
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
+from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_front_end_common.interface.interface_functions import (
     DSGRegionReloader)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
@@ -117,6 +118,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         unset_simulator()
+        reset_configs()
 
     def test_with_application_vertices(self):
         """ Test that an application vertex's data is rewritten correctly
@@ -138,7 +140,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         transceiver = _MockTransceiver(user_0_addresses)
 
         reloader = DSGRegionReloader()
-        reloader.__call__(transceiver, placements, "localhost", False)
+        reloader.__call__(transceiver, placements, "localhost")
 
         regions_rewritten = transceiver._regions_rewritten
 

@@ -17,6 +17,7 @@ import math
 from spinn_utilities.overrides import overrides
 from spalloc import Job
 from spalloc.states import JobState
+from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
 from spinn_front_end_common.abstract_models.impl import (
@@ -104,19 +105,15 @@ class SpallocAllocator(object):
     _MACHINE_VERSION = 5
 
     def __call__(
-            self, spalloc_server, spalloc_user, n_chips=None, n_boards=None,
-            spalloc_port=None, spalloc_machine=None):
+            self, spalloc_server, n_chips=None, n_boards=None):
         """
         :param str spalloc_server:
             The server from which the machine should be requested
-        :param str spalloc_user: The user to allocate the machine to
         :param n_chips: The number of chips required.
             IGNORED if n_boards is not None
         :type n_chips: int or None
         :param int n_boards: The number of boards required
         :type n_boards: int or None
-        :param int spalloc_port: The optional port number to speak to spalloc
-        :param str spalloc_machine: The optional spalloc machine to use
         :rtype: tuple(str, int, None, bool, bool, None, None,
             MachineAllocationController)
         """
@@ -134,10 +131,12 @@ class SpallocAllocator(object):
 
         spalloc_kw_args = {
             'hostname': spalloc_server,
-            'owner': spalloc_user
+            'owner': get_config_str("Machine", "spalloc_user")
         }
+        spalloc_port = get_config_int("Machine", "spalloc_port")
         if spalloc_port is not None:
             spalloc_kw_args['port'] = spalloc_port
+        spalloc_machine = get_config_str("Machine", "spalloc_machine")
         if spalloc_machine is not None:
             spalloc_kw_args['machine'] = spalloc_machine
 

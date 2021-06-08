@@ -71,14 +71,6 @@
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_scale_factor</param_name>
-                <param_type>TimeScaleFactor</param_type>
-            </parameter>
-            <parameter>
                 <param_name>n_keys_map</param_name>
                 <param_type>MemoryMachinePartitionNKeysMap</param_type>
             </parameter>
@@ -89,8 +81,6 @@
         </input_definitions>
         <required_inputs>
             <param_name>machine_graph</param_name>
-            <param_name>machine_time_step</param_name>
-            <param_name>time_scale_factor</param_name>
             <param_name>n_keys_map</param_name>
         </required_inputs>
         <optional_inputs>
@@ -136,14 +126,9 @@
                 <param_name>pre_allocated_resources</param_name>
                 <param_type>MemoryPreAllocatedResources</param_type>
             </parameter>
-            <parameter>
-                <param_name>sdram_to_pre_alloc_for_bit_fields</param_name>
-                <param_type>RouterCompressorBitFieldPreAllocSize</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine</param_name>
-            <param_name>sdram_to_pre_alloc_for_bit_fields</param_name>
             <param_name>pre_allocated_resources</param_name>
         </required_inputs>
         <outputs>
@@ -172,24 +157,8 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
-                <param_name>produce_report</param_name>
-                <param_type>RouterBitfieldCompressionReport</param_type>
-            </parameter>
-            <parameter>
-                <param_name>target_length</param_name>
-                <param_type>RouterCompressorBitFieldTargetLength</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_scale_factor</param_name>
-                <param_type>TimeScaleFactor</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
@@ -201,16 +170,10 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>placements</param_name>
-            <param_name>produce_report</param_name>
             <param_name>machine_graph</param_name>
-            <param_name>machine_time_step</param_name>
-            <param_name>time_scale_factor</param_name>
             <param_name>routing_infos</param_name>
             <token part="BitFieldData">DataLoaded</token>
         </required_inputs>
-        <optional_inputs>
-            <param_name>target_length</param_name>
-        </optional_inputs>
         <outputs>
             <param_type>MemoryCompressedRoutingTables</param_type>
             <param_type>RouterCompressorProvenanceItems</param_type>
@@ -229,14 +192,6 @@
                 <param_type>ExecutableTargets</param_type>
             </parameter>
             <parameter>
-                <param_name>threshold_percentage</param_name>
-                <param_type>RouterCompressorBitFieldPercentageThreshold</param_type>
-            </parameter>
-            <parameter>
-                <param_name>retry_count</param_name>
-                <param_type>RouterCompressorBitFieldRetryCount</param_type>
-            </parameter>
-            <parameter>
                 <param_name>transceiver</param_name>
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
@@ -249,16 +204,8 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>compress_as_much_as_possible</param_name>
-                <param_type>CompressionAsFarAsPos</param_type>
-            </parameter>
-            <parameter>
                 <param_name>executable_finder</param_name>
                 <param_type>ExecutableFinder</param_type>
-            </parameter>
-            <parameter>
-                <param_name>write_compressor_iobuf</param_name>
-                <param_type>WriteCompressorIobuf</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
@@ -269,32 +216,8 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
-                <param_name>produce_report</param_name>
-                <param_type>RouterBitfieldCompressionReport</param_type>
-            </parameter>
-            <parameter>
-                <param_name>target_length</param_name>
-                <param_type>CompressionTargetSize</param_type>
-            </parameter>
-            <parameter>
                 <param_name>routing_infos</param_name>
                 <param_type>MemoryRoutingInfos</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_to_try_for_each_iteration</param_name>
-                <param_type>RouterCompressorBitFieldTimePerAttempt</param_type>
-            </parameter>
-            <parameter>
-                <param_name>use_timer_cut_off</param_name>
-                <param_type>RouterCompressorBitFieldUseCutOff</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_scale_factor</param_name>
-                <param_type>TimeScaleFactor</param_type>
             </parameter>
             <parameter>
                 <param_name>provenance_data_objects</param_name>
@@ -303,27 +226,17 @@
         </input_definitions>
         <required_inputs>
             <param_name>executable_finder</param_name>
-            <param_name>write_compressor_iobuf</param_name>
             <param_name>routing_tables</param_name>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
-            <param_name>produce_report</param_name>
-            <param_name>target_length</param_name>
             <param_name>routing_infos</param_name>
-            <param_name>threshold_percentage</param_name>
-            <param_name>retry_count</param_name>
-            <param_name>time_to_try_for_each_iteration</param_name>
-            <param_name>use_timer_cut_off</param_name>
-            <param_name>machine_time_step</param_name>
-            <param_name>time_scale_factor</param_name>
             <param_name>executable_targets</param_name>
             <token part="BitFieldData">DataLoaded</token>
         </required_inputs>
         <optional_inputs>
-            <param_name>compress_as_much_as_possible</param_name>
             <param_name>provenance_data_objects</param_name>
         </optional_inputs>
         <outputs>
@@ -346,14 +259,6 @@
                 <param_type>ExecutableTargets</param_type>
             </parameter>
             <parameter>
-                <param_name>threshold_percentage</param_name>
-                <param_type>RouterCompressorBitFieldPercentageThreshold</param_type>
-            </parameter>
-            <parameter>
-                <param_name>retry_count</param_name>
-                <param_type>RouterCompressorBitFieldRetryCount</param_type>
-            </parameter>
-            <parameter>
                 <param_name>transceiver</param_name>
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
@@ -366,16 +271,8 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>compress_as_much_as_possible</param_name>
-                <param_type>CompressionAsFarAsPos</param_type>
-            </parameter>
-            <parameter>
                 <param_name>executable_finder</param_name>
                 <param_type>ExecutableFinder</param_type>
-            </parameter>
-            <parameter>
-                <param_name>write_compressor_iobuf</param_name>
-                <param_type>WriteCompressorIobuf</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
@@ -386,32 +283,8 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
-                <param_name>produce_report</param_name>
-                <param_type>RouterBitfieldCompressionReport</param_type>
-            </parameter>
-            <parameter>
-                <param_name>target_length</param_name>
-                <param_type>CompressionTargetSize</param_type>
-            </parameter>
-            <parameter>
                 <param_name>routing_infos</param_name>
                 <param_type>MemoryRoutingInfos</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_to_try_for_each_iteration</param_name>
-                <param_type>RouterCompressorBitFieldTimePerAttempt</param_type>
-            </parameter>
-            <parameter>
-                <param_name>use_timer_cut_off</param_name>
-                <param_type>RouterCompressorBitFieldUseCutOff</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_scale_factor</param_name>
-                <param_type>TimeScaleFactor</param_type>
             </parameter>
             <parameter>
                 <param_name>provenance_data_objects</param_name>
@@ -420,27 +293,17 @@
         </input_definitions>
         <required_inputs>
             <param_name>executable_finder</param_name>
-            <param_name>write_compressor_iobuf</param_name>
             <param_name>routing_tables</param_name>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
-            <param_name>produce_report</param_name>
-            <param_name>target_length</param_name>
             <param_name>routing_infos</param_name>
-            <param_name>threshold_percentage</param_name>
-            <param_name>retry_count</param_name>
-            <param_name>time_to_try_for_each_iteration</param_name>
-            <param_name>use_timer_cut_off</param_name>
-            <param_name>machine_time_step</param_name>
-            <param_name>time_scale_factor</param_name>
             <param_name>executable_targets</param_name>
             <token part="BitFieldData">DataLoaded</token>
         </required_inputs>
         <optional_inputs>
-            <param_name>compress_as_much_as_possible</param_name>
             <param_name>provenance_data_objects</param_name>
         </optional_inputs>
         <outputs>
@@ -462,14 +325,6 @@
                 <param_type>ExecutableTargets</param_type>
             </parameter>
             <parameter>
-                <param_name>threshold_percentage</param_name>
-                <param_type>RouterCompressorBitFieldPercentageThreshold</param_type>
-            </parameter>
-            <parameter>
-                <param_name>retry_count</param_name>
-                <param_type>RouterCompressorBitFieldRetryCount</param_type>
-            </parameter>
-            <parameter>
                 <param_name>transceiver</param_name>
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
@@ -480,18 +335,9 @@
             <parameter>
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
-            </parameter>
-             <parameter>
-                <param_name>compress_as_much_as_possible</param_name>
-                <param_type>CompressionAsFarAsPos</param_type>
-            </parameter>
             <parameter>
                 <param_name>executable_finder</param_name>
                 <param_type>ExecutableFinder</param_type>
-            </parameter>
-            <parameter>
-                <param_name>write_compressor_iobuf</param_name>
-                <param_type>WriteCompressorIobuf</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
@@ -502,32 +348,8 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
-                <param_name>produce_report</param_name>
-                <param_type>RouterBitfieldCompressionReport</param_type>
-            </parameter>
-            <parameter>
-                <param_name>target_length</param_name>
-                <param_type>CompressionTargetSize</param_type>
-            </parameter>
-            <parameter>
                 <param_name>routing_infos</param_name>
                 <param_type>MemoryRoutingInfos</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_to_try_for_each_iteration</param_name>
-                <param_type>RouterCompressorBitFieldTimePerAttempt</param_type>
-            </parameter>
-            <parameter>
-                <param_name>use_timer_cut_off</param_name>
-                <param_type>RouterCompressorBitFieldUseCutOff</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_scale_factor</param_name>
-                <param_type>TimeScaleFactor</param_type>
             </parameter>
             <parameter>
                 <param_name>provenance_data_objects</param_name>
@@ -536,27 +358,17 @@
         </input_definitions>
         <required_inputs>
             <param_name>executable_finder</param_name>
-            <param_name>write_compressor_iobuf</param_name>
             <param_name>routing_tables</param_name>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
-            <param_name>produce_report</param_name>
-            <param_name>target_length</param_name>
             <param_name>routing_infos</param_name>
-            <param_name>threshold_percentage</param_name>
-            <param_name>retry_count</param_name>
-            <param_name>time_to_try_for_each_iteration</param_name>
-            <param_name>use_timer_cut_off</param_name>
-            <param_name>machine_time_step</param_name>
-            <param_name>time_scale_factor</param_name>
             <param_name>executable_targets</param_name>
             <token part="BitFieldData">DataLoaded</token>
         </required_inputs>
         <optional_inputs>
-            <param_name>compress_as_much_as_possible</param_name>
             <param_name>provenance_data_objects</param_name>
         </optional_inputs>
         <outputs>
@@ -683,15 +495,10 @@
                 <param_name>application_graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
-            <parameter>
-                <param_name>write_data_speed_up_reports</param_name>
-                <param_type>WriteDataSpeedUpReportsFlag</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine</param_name>
             <param_name>machine_graph</param_name>
-            <param_name>write_data_speed_up_reports</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>application_graph</param_name>
@@ -748,28 +555,13 @@
                 <param_type>MemoryPreAllocatedResources</param_type>
             </parameter>
             <parameter>
-                <param_name>n_samples_per_recording</param_name>
-                <param_type>MemoryNumberSamplesPerRecordingEntry</param_type>
-            </parameter>
-            <parameter>
                 <param_name>sampling_frequency</param_name>
                 <param_type>MemorySamplingFrequency</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_scale_factor</param_name>
-                <param_type>TimeScaleFactor</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine</param_name>
-            <param_name>n_samples_per_recording</param_name>
             <param_name>sampling_frequency</param_name>
-            <param_name>time_scale_factor</param_name>
-            <param_name>machine_time_step</param_name>
             <param_name>pre_allocated_resources</param_name>
         </required_inputs>
         <outputs>
@@ -792,10 +584,6 @@
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>n_samples_per_recording</param_name>
-                <param_type>MemoryNumberSamplesPerRecordingEntry</param_type>
-            </parameter>
-            <parameter>
                 <param_name>sampling_frequency</param_name>
                 <param_type>MemorySamplingFrequency</param_type>
             </parameter>
@@ -807,7 +595,6 @@
         <required_inputs>
             <param_name>machine</param_name>
             <param_name>machine_graph</param_name>
-            <param_name>n_samples_per_recording</param_name>
             <param_name>sampling_frequency</param_name>
         </required_inputs>
         <optional_inputs>
@@ -936,16 +723,11 @@
                 <param_name>hostname</param_name>
                 <param_type>IPAddress</param_type>
             </parameter>
-            <parameter>
-                <param_name>write_text_specs</param_name>
-                <param_type>WriteTextSpecsFlag</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>placements</param_name>
             <param_name>hostname</param_name>
-            <param_name>write_text_specs</param_name>
         </required_inputs>
         <optional_inputs>
             <token part="DSGDataLoaded">DataLoaded</token>
@@ -985,10 +767,6 @@
                 <param_type>ProcessorToAppDataBaseAddress</param_type>
             </parameter>
             <parameter>
-                <param_name>uses_advanced_monitors</param_name>
-                <param_type>UsingAdvancedMonitorSupport</param_type>
-            </parameter>
-            <parameter>
                 <param_name>executable_targets</param_name>
                 <param_type>ExecutableTargets</param_type>
             </parameter>
@@ -1005,10 +783,6 @@
                 <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
             </parameter>
             <parameter>
-                <param_name>disable_advanced_monitor_usage</param_name>
-                <param_type>DisableAdvancedMonitorUsageForDataIn</param_type>
-            </parameter>
-            <parameter>
                 <param_name>region_sizes</param_name>
                 <param_type>RegionSizes</param_type>
             </parameter>
@@ -1019,7 +793,6 @@
             <param_name>region_sizes</param_name>
             <param_name>app_id</param_name>
             <param_name>dsg_targets</param_name>
-            <param_name>uses_advanced_monitors</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>java_caller</param_name>
@@ -1028,7 +801,6 @@
             <param_name>placements</param_name>
             <param_name>extra_monitor_cores</param_name>
             <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
-            <param_name>disable_advanced_monitor_usage</param_name>
             <token part="DSGSystemDataLoaded">DataLoaded</token>
             <token part="SystemBinariesLoaded">DataLoaded</token>
         </optional_inputs>
@@ -1166,18 +938,6 @@
                 <param_type>BMPDetails</param_type>
             </parameter>
             <parameter>
-                <param_name>downed_chips</param_name>
-                <param_type>DownedChipsDetails</param_type>
-            </parameter>
-            <parameter>
-                <param_name>downed_cores</param_name>
-                <param_type>DownedCoresDetails</param_type>
-            </parameter>
-            <parameter>
-                <param_name>downed_links</param_name>
-                <param_type>DownedLinksDetails</param_type>
-            </parameter>
-            <parameter>
                 <param_name>board_version</param_name>
                 <param_type>BoardVersion</param_type>
             </parameter>
@@ -1193,38 +953,15 @@
                 <param_name>boot_port_num</param_name>
                 <param_type>BootPortNum</param_type>
             </parameter>
-            <parameter>
-                <param_name>max_sdram_size</param_name>
-                <param_type>MaxSDRAMSize</param_type>
-            </parameter>
-            <parameter>
-                <param_name>repair_machine</param_name>
-                <param_type>RepairMachine</param_type>
-            </parameter>
-            <parameter>
-                <param_name>ignore_bad_ethernets</param_name>
-                <param_type>IgnoreBadEthernets</param_type>
-            </parameter>
-            <parameter>
-                <param_name>report_waiting_logs</param_name>
-                <param_type>ReportWaitingLogsFlag</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_waiting_logs</param_name>
             <param_name>hostname</param_name>
             <param_name>reset_machine_on_start_up</param_name>
             <param_name>bmp_details</param_name>
-            <param_name>downed_chips</param_name>
-            <param_name>downed_cores</param_name>
-            <param_name>downed_links</param_name>
             <param_name>board_version</param_name>
             <param_name>auto_detect_bmp</param_name>
             <param_name>scamp_connection_data</param_name>
             <param_name>boot_port_num</param_name>
-            <param_name>max_sdram_size</param_name>
-            <param_name>repair_machine</param_name>
-            <param_name>ignore_bad_ethernets</param_name>
         </required_inputs>
         <outputs>
             <param_type>MemoryMachine</param_type>
@@ -1318,54 +1055,12 @@
         <python_class>VirtualMachineGenerator</python_class>
         <input_definitions>
             <parameter>
-                <param_name>width</param_name>
-                <param_type>MachineWidth</param_type>
-            </parameter>
-            <parameter>
-                <param_name>height</param_name>
-                <param_type>MachineHeight</param_type>
-            </parameter>
-            <parameter>
                 <param_name>version</param_name>
                 <param_type>BoardVersion</param_type>
             </parameter>
-            <parameter>
-                <param_name>down_chips</param_name>
-                <param_type>DownedChipsDetails</param_type>
-            </parameter>
-            <parameter>
-                <param_name>down_cores</param_name>
-                <param_type>DownedCoresDetails</param_type>
-            </parameter>
-            <parameter>
-                <param_name>down_links</param_name>
-                <param_type>DownedLinksDetails</param_type>
-            </parameter>
-            <parameter>
-                <param_name>max_sdram_size</param_name>
-                <param_type>MaxSDRAMSize</param_type>
-            </parameter>
-            <parameter>
-                <param_name>json_path</param_name>
-                <param_type>MachineJsonPath</param_type>
-            </parameter>
         </input_definitions>
-        <required_inputs>
-            <one_of>
-                <all_of>
-                    <param_name>width</param_name>
-                    <param_name>height</param_name>
-                </all_of>
-                <param_name>json_path</param_name>
-            </one_of>
-        </required_inputs>
         <optional_inputs>
             <param_name>version</param_name>
-            <param_name>down_chips</param_name>
-            <param_name>down_cores</param_name>
-            <param_name>down_links</param_name>
-            <param_name>max_sdram_size</param_name>
-            <param_name>json_path</param_name>
         </optional_inputs>
         <outputs>
             <param_type>MemoryMachine</param_type>
@@ -1384,10 +1079,6 @@
                 <param_type>IPAddress</param_type>
             </parameter>
             <parameter>
-                <param_name>write_text_specs</param_name>
-                <param_type>WriteTextSpecsFlag</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine</param_name>
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
@@ -1399,7 +1090,6 @@
         <required_inputs>
             <param_name>placements</param_name>
             <param_name>hostname</param_name>
-            <param_name>write_text_specs</param_name>
             <param_name>machine</param_name>
             <param_name>data_n_timesteps</param_name>
         </required_inputs>
@@ -1488,10 +1178,6 @@
                 <param_type>MemoryExtraMonitorToChipMapping</param_type>
             </parameter>
             <parameter>
-                <param_name>uses_advanced_monitors</param_name>
-                <param_type>UsingAdvancedMonitorSupport</param_type>
-            </parameter>
-            <parameter>
                 <param_name>fixed_routes</param_name>
                 <param_type>MemoryFixedRoutes</param_type>
             </parameter>
@@ -1504,7 +1190,6 @@
             <param_name>placements</param_name>
             <param_name>tags</param_name>
             <param_name>txrx</param_name>
-            <param_name>uses_advanced_monitors</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>extra_monitor_cores</param_name>
@@ -1547,10 +1232,6 @@
                 <param_type>RunTime</param_type>
             </parameter>
             <parameter>
-                <param_name>time_scale_factor</param_name>
-                <param_type>TimeScaleFactor</param_type>
-            </parameter>
-            <parameter>
                 <param_name>no_sync_changes</param_name>
                 <param_type>NoSyncChanges</param_type>
             </parameter>
@@ -1575,7 +1256,6 @@
             <param_name>app_id</param_name>
             <param_name>txrx</param_name>
             <param_name>runtime</param_name>
-            <param_name>time_scale_factor</param_name>
             <param_name>no_sync_changes</param_name>
             <param_name>time_threshold</param_name>
             <param_name>machine</param_name>
@@ -1662,10 +1342,6 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
-                <param_name>using_reinjection</param_name>
-                <param_type>UsingReinjection</param_type>
-            </parameter>
-            <parameter>
                 <param_name>provenance_data_objects</param_name>
                 <param_type>ProvenanceItems</param_type>
             </parameter>
@@ -1674,7 +1350,6 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>router_tables</param_name>
-            <param_name>using_reinjection</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
         <optional_inputs>
@@ -1749,10 +1424,6 @@
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>user_create_database</param_name>
-                <param_type>UserCreateDatabaseFlag</param_type>
-            </parameter>
-            <parameter>
                 <param_name>tags</param_name>
                 <param_type>MemoryTags</param_type>
             </parameter>
@@ -1769,14 +1440,6 @@
                 <param_type>DataNTimeSteps</param_type>
             </parameter>
             <parameter>
-                <param_name>time_scale_factor</param_name>
-                <param_type>TimeScaleFactor</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
-            </parameter>
-            <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
             </parameter>
@@ -1790,32 +1453,22 @@
                 <param_type>MemoryCompressedRoutingTables</param_type>
             </parameter>
             <parameter>
-                <param_name>create_atom_to_event_id_mapping</param_name>
-                <param_type>CreateAtomToEventIdMapping</param_type>
-            </parameter>
-            <parameter>
                 <param_name>application_graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine_graph</param_name>
-            <param_name>user_create_database</param_name>
             <param_name>tags</param_name>
             <param_name>runtime</param_name>
             <param_name>machine</param_name>
             <param_name>data_n_timesteps</param_name>
-            <param_name>time_scale_factor</param_name>
-            <param_name>machine_time_step</param_name>
             <param_name>placements</param_name>
             <param_name>routing_infos</param_name>
             <param_name>router_tables</param_name>
         </required_inputs>
         <optional_inputs>
-            <all_of>
-                <param_name>create_atom_to_event_id_mapping</param_name>
-                <param_name>application_graph</param_name>
-            </all_of>
+            <param_name>application_graph</param_name>
         </optional_inputs>
         <outputs>
             <param_type>DatabaseInterface</param_type>
@@ -1826,11 +1479,7 @@
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
         <python_class>CreateNotificationProtocol</python_class>
         <input_definitions>
-            <parameter>
-                <param_name>wait_for_read_confirmation</param_name>
-                <param_type>DatabaseWaitOnConfirmationFlag</param_type>
-            </parameter>
-            <parameter>
+             <parameter>
                 <param_name>socket_addresses</param_name>
                 <param_type>DatabaseSocketAddresses</param_type>
             </parameter>
@@ -1840,7 +1489,6 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>wait_for_read_confirmation</param_name>
             <param_name>socket_addresses</param_name>
             <param_name>database_file_path</param_name>
         </required_inputs>
@@ -1981,14 +1629,6 @@
                 <param_name>executable_finder</param_name>
                 <param_type>ExecutableFinder</param_type>
             </parameter>
-            <parameter>
-                <param_name>from_cores</param_name>
-                <param_type>ExtractIobufFromCores</param_type>
-            </parameter>
-            <parameter>
-                <param_name>binary_types</param_name>
-                <param_type>ExtractIobufFromBinaryTypes</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
@@ -1996,10 +1636,6 @@
             <param_name>executable_finder</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
-        <optional_inputs>
-            <param_name>from_cores</param_name>
-            <param_name>binary_types</param_name>
-        </optional_inputs>
         <outputs>
             <param_type>ErrorMessages</param_type>
             <param_type>WarnMessages</param_type>
@@ -2031,10 +1667,6 @@
                 <param_type>SpallocServer</param_type>
             </parameter>
             <parameter>
-                <param_name>spalloc_user</param_name>
-                <param_type>SpallocUser</param_type>
-            </parameter>
-            <parameter>
                 <param_name>n_chips</param_name>
                 <param_type>NChipsRequired</param_type>
             </parameter>
@@ -2042,27 +1674,14 @@
                 <param_name>n_boards</param_name>
                 <param_type>NBoardsRequired</param_type>
             </parameter>
-            <parameter>
-                <param_name>spalloc_port</param_name>
-                <param_type>SpallocPort</param_type>
-            </parameter>
-            <parameter>
-                <param_name>spalloc_machine</param_name>
-                <param_type>SpallocMachine</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>spalloc_server</param_name>
-            <param_name>spalloc_user</param_name>
             <one_of>
                 <param_name>n_chips</param_name>
                 <param_name>n_boards</param_name>
             </one_of>
         </required_inputs>
-        <optional_inputs>
-            <param_name>spalloc_port</param_name>
-            <param_name>spalloc_machine</param_name>
-        </optional_inputs>
         <outputs>
             <param_type>IPAddress</param_type>
             <param_type>BoardVersion</param_type>
@@ -2131,10 +1750,6 @@
                 <param_type>SpallocMachine</param_type>
             </parameter>
             <parameter>
-                <param_name>max_sdram_size</param_name>
-                <param_type>MaxSDRAMSize</param_type>
-            </parameter>
-            <parameter>
                 <param_name>max_machine_core_reduction</param_name>
                 <param_type>MaxMachineCoreReduction</param_type>
             </parameter>
@@ -2145,7 +1760,6 @@
         <optional_inputs>
             <param_name>spalloc_port</param_name>
             <param_name>spalloc_machine</param_name>
-            <param_name>max_sdram_size</param_name>
             <param_name>max_machine_core_reduction</param_name>
         </optional_inputs>
         <outputs>
@@ -2242,15 +1856,10 @@
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
             </parameter>
-            <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>placements</param_name>
-            <param_name>machine_time_step</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
     </algorithm>
@@ -2288,10 +1897,6 @@
             <parameter>
                 <param_name>version</param_name>
                 <param_type>BoardVersion</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_scale_factor</param_name>
-                <param_type>TimeScaleFactor</param_type>
             </parameter>
             <parameter>
                 <param_name>router_provenance</param_name>
@@ -2342,7 +1947,6 @@
             <param_name>placements</param_name>
             <param_name>machine</param_name>
             <param_name>version</param_name>
-            <param_name>time_scale_factor</param_name>
             <param_name>router_provenance</param_name>
             <param_name>runtime</param_name>
             <param_name>buffer_manager</param_name>
@@ -2407,14 +2011,6 @@
                 <param_name>system_provenance_folder</param_name>
                 <param_type>SystemProvenanceFilePath</param_type>
             </parameter>
-            <parameter>
-                <param_name>compress_as_much_as_possible</param_name>
-                <param_type>CompressionAsFarAsPos</param_type>
-            </parameter>
-            <parameter>
-                <param_name>write_compressor_iobuf</param_name>
-                <param_type>WriteCompressorIobuf</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2423,10 +2019,6 @@
             <param_name>app_id</param_name>
             <param_name>system_provenance_folder</param_name>
         </required_inputs>
-        <optional_inputs>
-                <param_name>compress_as_much_as_possible</param_name>
-                <param_name>write_compressor_iobuf</param_name>
-        </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
         </outputs>
@@ -2454,14 +2046,6 @@
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
-            <parameter>
-                <param_name>compress_as_much_as_possible</param_name>
-                <param_type>CompressionAsFarAsPos</param_type>
-            </parameter>
-            <parameter>
-                <param_name>write_compressor_iobuf</param_name>
-                <param_type>WriteCompressorIobuf</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2470,10 +2054,6 @@
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
         </required_inputs>
-        <optional_inputs>
-                <param_name>compress_as_much_as_possible</param_name>
-                <param_name>write_compressor_iobuf</param_name>
-        </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
         </outputs>
@@ -2502,14 +2082,6 @@
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
-            <parameter>
-                <param_name>compress_as_much_as_possible</param_name>
-                <param_type>CompressionAsFarAsPos</param_type>
-            </parameter>
-            <parameter>
-                <param_name>write_compressor_iobuf</param_name>
-                <param_type>WriteCompressorIobuf</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2518,10 +2090,6 @@
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
         </required_inputs>
-        <optional_inputs>
-                <param_name>compress_as_much_as_possible</param_name>
-                <param_name>write_compressor_iobuf</param_name>
-        </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
         </outputs>
@@ -2551,14 +2119,6 @@
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
-            <parameter>
-                <param_name>compress_as_much_as_possible</param_name>
-                <param_type>CompressionAsFarAsPos</param_type>
-            </parameter>
-            <parameter>
-                <param_name>write_compressor_iobuf</param_name>
-                <param_type>WriteCompressorIobuf</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2567,10 +2127,6 @@
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
         </required_inputs>
-        <optional_inputs>
-                <param_name>compress_as_much_as_possible</param_name>
-                <param_name>write_compressor_iobuf</param_name>
-        </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
         </outputs>

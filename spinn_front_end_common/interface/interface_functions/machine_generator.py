@@ -53,11 +53,8 @@ class MachineGenerator(object):
     __slots__ = []
 
     def __call__(
-            self, hostname, bmp_details, downed_chips, downed_cores,
-            downed_links, board_version, auto_detect_bmp,
-            scamp_connection_data, boot_port_num, reset_machine_on_start_up,
-            report_waiting_logs, max_sdram_size=None, repair_machine=False,
-            ignore_bad_ethernets=True):
+            self, hostname, bmp_details, board_version, auto_detect_bmp,
+            scamp_connection_data, boot_port_num, reset_machine_on_start_up):
         """
         :param str hostname:
             the hostname or IP address of the SpiNNaker machine
@@ -79,27 +76,6 @@ class MachineGenerator(object):
             list(~spinnman.connections.SocketAddressWithChip)
         :param int boot_port_num: the port number used for the boot connection
         :param bool reset_machine_on_start_up:
-        :param max_sdram_size: the maximum SDRAM each chip can say it has
-            (mainly used in debugging purposes)
-        :type max_sdram_size: int or None
-        :param bool repair_machine:
-            Flag to set the behaviour if a repairable error is found on the
-            machine.
-            If `True` will create a machine without the problematic bits.
-            (See machine_factory.machine_repair)
-            If `False`, get machine will raise an Exception if a problematic
-            machine is discovered.
-        :param bool ignore_bad_ethernets:
-            Flag to say that ip_address information
-            on non-ethernet chips should be ignored.
-            Non-ethernet chips are defined here as ones that do not report
-            themselves their nearest ethernet.
-            The bad IP address is always logged.
-            If True, the IP address is ignored.
-            If False, the chip with the bad IP address is removed.
-        :param report_waiting_logs:
-            flag for the txrx to report when waiting on busy cores.
-        :type report_waiting_logs: bool
         :return: Transceiver, and description of machine it is connected to
         :rtype: tuple(~spinn_machine.Machine,
             ~spinnman.transceiver.Transceiver)
@@ -115,15 +91,10 @@ class MachineGenerator(object):
         txrx = create_transceiver_from_hostname(
             hostname=hostname,
             bmp_connection_data=self._parse_bmp_details(bmp_details),
-            version=board_version, ignore_chips=downed_chips,
-            ignore_cores=downed_cores, ignored_links=downed_links,
+            version=board_version,
             auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
-            max_sdram_size=max_sdram_size,
-            repair_machine=repair_machine,
-            ignore_bad_ethernets=ignore_bad_ethernets,
-            default_report_directory=report_default_directory(),
-            report_waiting_logs=report_waiting_logs)
+            default_report_directory=report_default_directory())
 
         if reset_machine_on_start_up:
             success = txrx.power_off_machine()

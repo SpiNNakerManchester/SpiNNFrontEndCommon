@@ -20,6 +20,7 @@ import logging
 import time
 import struct
 from enum import Enum, IntEnum
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -236,8 +237,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_remote_tag",
         # path to the data out report
         "_out_report_path",
-        # bool flag for writing reports
-        "_write_data_speed_up_reports",
         # data holder for output
         "_view"]
 
@@ -295,7 +294,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def __init__(
             self, x, y, extra_monitors_by_chip, ip_address,
-            write_data_speed_up_reports, app_vertex=None, constraints=None):
+            app_vertex=None, constraints=None):
         """
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.
@@ -304,8 +303,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             dict(tuple(int,int), ExtraMonitorSupportMachineVertex)
         :param str ip_address:
             How to talk directly to the chip where the gatherer is.
-        :param bool write_data_speed_up_reports:
-            Whether to write low-level reports on data transfer speeds.
         :param constraints:
         :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint) or None
@@ -349,7 +346,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             os.path.join(report_default_directory(), self.OUT_REPORT_NAME)
         self._in_report_path = \
             os.path.join(report_default_directory(), self.IN_REPORT_NAME)
-        self._write_data_speed_up_reports = write_data_speed_up_reports
 
         # Stored reinjection status for resetting timeouts
         self._last_status = None
@@ -680,7 +676,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 original_data, verified_data, x, y, base_address, n_bytes)
 
         # write report
-        if self._write_data_speed_up_reports:
+        if get_config_bool("Reports", "write_data_speed_up_reports"):
             self._generate_data_in_report(
                 x=x, y=y, time_diff=end - start,
                 data_size=n_bytes, address_written_to=base_address,
@@ -1267,7 +1263,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 (end - start, lost_seq_nums))
 
         # create report elements
-        if self._write_data_speed_up_reports:
+        if get_config_bool("Reports", "write_data_speed_up_reports"):
             routers_been_in_use = self._determine_which_routers_were_used(
                 extra_monitor_placement, fixed_routes,
                 transceiver.get_machine_details())

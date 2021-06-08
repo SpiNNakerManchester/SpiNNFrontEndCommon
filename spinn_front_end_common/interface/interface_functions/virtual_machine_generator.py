@@ -14,9 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import json_machine, virtual_machine, Machine
-
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
@@ -26,29 +26,18 @@ class VirtualMachineGenerator(object):
 
     __slots__ = []
 
-    def __call__(
-            self, width=None, height=None, version=None,
-            down_chips=None, down_cores=None, down_links=None,
-            max_sdram_size=None,
-            json_path=None):
+    def __call__(self, version=None, json_path=None):
         """
-        :param int width: The width of the machine in chips
-        :param int height: The height of the machine in chips
         :param int version: The version of board to create
-        :param list(tuple(int,int)) down_chips:
-            The set of chips that should be considered broken
-        :param list(tuple(int,int,int)) down_cores:
-            The set of cores that should be considered broken
-        :param list(tuple(int,int,int)) down_links:
-            The set of links that should be considered broken
-        :param int max_sdram_size: The SDRAM that should be given to each chip
-        :param str json_path:
-            Where to load a JSON description of the machine from, if anywhere.
         :return: The virtual machine.
         :rtype: ~spinn_machine.Machine
         :raises Exception: If given bad arguments
         """
         # For backward compatibility support version in csf files for now
+        height = get_config_int("Machine", "height")
+        width = get_config_int("Machine", "width")
+        json_path = get_config_str("Machine", "json_path")
+
         if version is not None:
             if version in [2, 3]:
                 if height is None:
@@ -80,13 +69,13 @@ class VirtualMachineGenerator(object):
             machine = virtual_machine(
                 width=width, height=height,
                 n_cpus_per_chip=Machine.max_cores_per_chip(),
-                down_chips=down_chips, down_cores=down_cores,
-                down_links=down_links, sdram_per_chip=max_sdram_size,
                 validate=True)
         else:
             if (height is not None or width is not None or
-                    version is not None or down_chips is not None or
-                    down_cores is not None or down_links is not None):
+                    version is not None or
+                    get_config_str("Machine", "down_chips") is not None or
+                    get_config_str("Machine", "down_cores") is not None or
+                    get_config_str("Machine", "down_links") is not None):
                 logger.warning("As json_path specified all other virtual "
                                "machine settings ignored.")
             machine = json_machine.machine_from_json(json_path)

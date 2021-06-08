@@ -24,18 +24,14 @@ class ChipIOBufExtractor(object):
     __slots__ = []
 
     def __call__(
-            self, transceiver, executable_targets, executable_finder,
-            from_cores="ALL", binary_types=None):
+            self, transceiver, executable_targets, executable_finder):
         """
         :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~spinnman.model.ExecutableTargets executable_targets:
         :param ExecutableFinder executable_finder:
-        :param str from_cores:
-        :param str binary_types:
         :return: error_entries, warn_entries
         :rtype: tuple(list(str),list(str))
         """
         extractor = IOBufExtractor(
-            transceiver, executable_targets, executable_finder,
-            from_cores, binary_types)
+            transceiver, executable_targets, executable_finder)
         return extractor.extract_iobuf()
