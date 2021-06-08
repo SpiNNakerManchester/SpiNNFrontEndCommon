@@ -18,6 +18,7 @@ from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.application import ApplicationGraph, ApplicationVertex
 from pacman.model.graphs.machine import MachineGraph
+from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_front_end_common.interface.interface_functions import (
     InsertLivePacketGatherersToGraphs)
 from spinn_front_end_common.utilities.utility_objs import (
@@ -28,6 +29,8 @@ class TestInsertLPGs(unittest.TestCase):
     """ tests the LPG insert functions
 
     """
+    def setUp(self):
+        reset_configs()
 
     def test_that_3_lpgs_are_generated_on_3_board(self):
         machine = virtual_machine(width=12, height=12)

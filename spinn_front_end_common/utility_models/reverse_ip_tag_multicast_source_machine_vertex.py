@@ -687,8 +687,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
     @inject_items({
-        "machine_time_step": "MachineTimeStep",
-        "time_scale_factor": "TimeScaleFactor",
         "machine_graph": "MachineGraph",
         "routing_info": "RoutingInfos",
         "first_machine_time_step": "FirstMachineTimeStep",
@@ -698,17 +696,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_time_step", "time_scale_factor", "machine_graph",
-            "routing_info", "first_machine_time_step",
+            "machine_graph", "routing_info", "first_machine_time_step",
             "data_n_time_steps", "run_until_timesteps"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_time_step, time_scale_factor, machine_graph, routing_info,
-            first_machine_time_step, data_n_time_steps, run_until_timesteps):
+            machine_graph, routing_info, first_machine_time_step,
+            data_n_time_steps, run_until_timesteps):
         """
-        :param int machine_time_step:
-        :param int time_scale_factor:
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.routing_info.RoutingInfo routing_info:
         :param int first_machine_time_step:

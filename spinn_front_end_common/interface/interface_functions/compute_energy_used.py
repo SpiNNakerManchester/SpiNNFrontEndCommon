@@ -15,6 +15,7 @@
 
 import itertools
 import re
+from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
@@ -22,7 +23,8 @@ from spinn_front_end_common.utility_models import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
-from spinn_front_end_common.utilities.globals_variables import get_simulator
+from spinn_front_end_common.utilities.globals_variables import (
+    get_simulator, time_scale_factor)
 
 #: milliseconds per second
 _MS_PER_SECOND = 1000.0
@@ -68,7 +70,7 @@ class ComputeEnergyUsed(object):
     __slots__ = []
 
     def __call__(
-            self, placements, machine, version, time_scale_factor,
+            self, placements, machine, version,
             router_provenance, runtime, buffer_manager, mapping_time,
             load_time, execute_time, dsg_time, extraction_time,
             spalloc_server=None, remote_spinnaker_url=None,
@@ -78,7 +80,6 @@ class ComputeEnergyUsed(object):
         :param ~spinn_machine.Machine machine:
         :param int version:
             The version of the SpiNNaker boards in use.
-        :param int time_scale_factor:
         :param list(ProvenanceDataItem) router_provenance:
             Provenance information from routers.
         :param float runtime:
@@ -121,12 +122,13 @@ class ComputeEnergyUsed(object):
         power_used.mapping_time_secs = mapping_time / _MS_PER_SECOND
 
         using_spalloc = bool(spalloc_server or remote_spinnaker_url)
+        runtime_total_ms = runtime * time_scale_factor()
         self._compute_energy_consumption(
              placements, machine, version, using_spalloc,
              router_provenance, dsg_time, buffer_manager, load_time,
              mapping_time, execute_time + load_time + extraction_time,
              machine_allocation_controller,
-             runtime * time_scale_factor, power_used)
+             runtime_total_ms, power_used)
 
         return power_used
 
@@ -282,9 +284,11 @@ class ComputeEnergyUsed(object):
             buffer_manager=buffer_manager)
 
         # deduce time in milliseconds per recording element
+        n_samples_per_recording = get_config_int(
+            "EnergyMonitor", "n_samples_per_recording_entry")
         time_for_recorded_sample = (
             chip_power_monitor.sampling_frequency *
-            chip_power_monitor.n_samples_per_recording) / 1000
+            n_samples_per_recording) / 1000
         cores_power_cost = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 

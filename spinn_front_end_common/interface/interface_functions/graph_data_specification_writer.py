@@ -43,8 +43,6 @@ class GraphDataSpecificationWriter(object):
         "_hostname",
         # directory where reports go
         "_report_dir",
-        # bool for writing texts
-        "_write_text",
     )
 
     def __init__(self):
@@ -54,16 +52,14 @@ class GraphDataSpecificationWriter(object):
 
     def __call__(
             self, placements, hostname,
-            report_default_directory, write_text_specs,
-            machine, data_n_timesteps, placement_order=None):
+            report_default_directory, machine, data_n_timesteps,
+            placement_order=None):
         """
         :param ~pacman.model.placements.Placements placements:
             placements of machine graph to cores
         :param str hostname: SpiNNaker machine name
         :param str report_default_directory:
             the location where reports are stored
-        :param bool write_text_specs:
-            True if the textual version of the specification is to be written
         :param ~spinn_machine.Machine machine:
             the python representation of the SpiNNaker machine
         :param int data_n_timesteps:
@@ -80,7 +76,6 @@ class GraphDataSpecificationWriter(object):
         self._machine = machine
         self._hostname = hostname
         self._report_dir = report_default_directory
-        self._write_text = write_text_specs
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
@@ -134,7 +129,7 @@ class GraphDataSpecificationWriter(object):
         with targets.create_data_spec(pl.x, pl.y, pl.p) as data_writer:
             report_writer = get_report_writer(
                 pl.x, pl.y, pl.p, self._hostname,
-                self._report_dir, self._write_text)
+                self._report_dir)
             spec = DataSpecificationGenerator(data_writer, report_writer)
 
             # generate the DSG file

@@ -15,18 +15,20 @@
 
 import tempfile
 import unittest
-from spinn_front_end_common.interface.ds import DataSpecificationTargets
 from spinn_machine.virtual_machine import virtual_machine
+from spinn_front_end_common.interface.config_setup import reset_configs
+from spinn_front_end_common.interface.ds import DataSpecificationTargets
 
 
 class TestDataSpecificationTargets(unittest.TestCase):
-    machine = virtual_machine(2, 2)
+    def setUp(self):
+        reset_configs()
 
     def test_dict(self):
+        machine = virtual_machine(2, 2)
         check = dict()
         testdir = tempfile.mkdtemp()
-        print(testdir)
-        asDict = DataSpecificationTargets(self.machine, testdir)
+        asDict = DataSpecificationTargets(machine, testdir)
         c1 = (0, 0, 0)
         foo = bytearray(b"foo")
         with asDict.create_data_spec(0, 0, 0) as writer:

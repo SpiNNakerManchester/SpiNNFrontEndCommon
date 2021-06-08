@@ -158,10 +158,7 @@ class CommandSenderMachineVertex(
         # Return the SDRAM and 1 core
         return ResourceContainer(sdram=ConstantSDRAM(sdram))
 
-    @inject_items({
-        "machine_time_step": "MachineTimeStep",
-        "time_scale_factor": "TimeScaleFactor",
-        "routing_infos": "RoutingInfos"})
+    @inject_items({"routing_infos": "RoutingInfos"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={

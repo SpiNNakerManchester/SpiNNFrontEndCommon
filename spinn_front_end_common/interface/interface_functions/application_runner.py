@@ -19,6 +19,8 @@ from spinn_utilities.log import FormatAdapter
 from spinnman.messages.scp.enums import Signal
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.globals_variables import (
+    time_scale_factor)
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 
@@ -37,7 +39,7 @@ class ApplicationRunner(object):
     # Wraps up as a PACMAN algorithm
     def __call__(
             self, buffer_manager, notification_interface, executable_types,
-            app_id, txrx, runtime, time_scale_factor, no_sync_changes,
+            app_id, txrx, runtime, no_sync_changes,
             time_threshold, machine, run_until_complete=False):
         """
         :param BufferManager buffer_manager:
@@ -48,7 +50,6 @@ class ApplicationRunner(object):
         :param int app_id:
         :param ~spinnman.transceiver.Transceiver txrx:
         :param int runtime:
-        :param int time_scale_factor:
         :param int no_sync_changes: Number of synchronisation changes
         :param int time_threshold:
         :param ~spinn_machine.Machine machine:
@@ -99,8 +100,7 @@ class ApplicationRunner(object):
             # Wait for the application to finish
             try:
                 self._run_wait(
-                    run_until_complete, runtime, time_scale_factor,
-                    time_threshold)
+                    run_until_complete, runtime, time_threshold)
             finally:
                 # Stop the buffer manager after run
                 buffer_manager.stop()
@@ -110,16 +110,14 @@ class ApplicationRunner(object):
 
         return self.__syncs
 
-    def _run_wait(self, run_until_complete, runtime, time_scale_factor,
-                  time_threshold):
+    def _run_wait(self, run_until_complete, runtime, time_threshold):
         """
         :param bool run_until_complete:
         :param int runtime:
-        :param int time_scale_factor:
         :param float time_threshold:
         """
         if not run_until_complete:
-            factor = time_scale_factor / MICRO_TO_MILLISECOND_CONVERSION
+            factor = time_scale_factor() / MICRO_TO_MILLISECOND_CONVERSION
             scaled_runtime = runtime * factor
             time_to_wait = scaled_runtime + SAFETY_FINISH_TIME
             logger.info(

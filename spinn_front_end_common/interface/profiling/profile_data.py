@@ -18,6 +18,8 @@ import numpy
 import math
 import scipy.stats
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.utilities.globals_variables import (
+    machine_time_step_ms)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -162,34 +164,30 @@ class ProfileData(object):
         """
         return self._tags[tag][_DURATION].size
 
-    def get_mean_n_calls_per_ts(self, tag, machine_time_step_ms):
+    def get_mean_n_calls_per_ts(self, tag):
         """ Get the mean number of times the given tag was recorded per\
             timestep
 
         :param str tag: The tag to get the data for
-        :param float machine_time_step_ms:
-            The time step of the simulation in microseconds
         :rtype: float
         """
         n_points = math.ceil(
-            self._max_time / machine_time_step_ms)
-        endpoint = n_points * machine_time_step_ms
+            self._max_time / machine_time_step_ms())
+        endpoint = n_points * machine_time_step_ms()
         bins = numpy.linspace(0, endpoint, n_points + 1)
         return numpy.average(numpy.histogram(
             self._tags[tag][_START_TIME], bins)[0])
 
-    def get_mean_ms_per_ts(self, tag, machine_time_step_ms):
+    def get_mean_ms_per_ts(self, tag):
         """ Get the mean time in milliseconds spent on operations with the\
             given tag per timestep
 
         :param str tag: The tag to get the data for
-        :param float machine_time_step_ms:
-            The time step of the simulation in microseconds
         :rtype: float
         """
         n_points = math.ceil(
-            self._max_time / machine_time_step_ms)
-        endpoint = n_points * machine_time_step_ms
+            self._max_time / machine_time_step_ms())
+        endpoint = n_points * machine_time_step_ms()
         bins = numpy.linspace(0, endpoint, n_points + 1)
         mean_per_ts = scipy.stats.binned_statistic(
             self._tags[tag][_START_TIME], self._tags[tag][_DURATION],
