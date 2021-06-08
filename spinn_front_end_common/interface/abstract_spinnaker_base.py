@@ -42,8 +42,9 @@ from pacman.executor import PACMANAlgorithmExecutor
 from pacman.executor.injection_decorator import (
     clear_injectables, provide_injectables)
 from pacman.model.graphs.application import (
-    ApplicationGraph, ApplicationEdge, ApplicationVertex)
-from pacman.model.graphs.machine import MachineGraph, MachineVertex
+    ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex)
+from pacman.model.graphs.machine import (
+    MachineGraph, MachineGraphView, MachineVertex)
 from pacman.model.resources import (
     PreAllocatedResourceContainer, ConstantSDRAM)
 from pacman import __version__ as pacman_version
@@ -2465,10 +2466,10 @@ class AbstractSpinnakerBase(ConfigHandler):
     @property
     def machine_graph(self):
         """
-        Returns a frozen clone of the machine_graph
+        Returns a protected view of the machine_graph
         :rtype: ~pacman.model.graphs.machine.MachineGraph
         """
-        return self._machine_graph.clone(frozen=True)
+        return MachineGraphView(self._machine_graph)
 
     @property
     def original_machine_graph(self):
@@ -2486,12 +2487,12 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @property
     def application_graph(self):
-        """ The frozen clone of the application graph used to derive the
+        """ The protected view of the application graph used to derive the
             runtime machine configuration.
 
         :rtype: ~pacman.model.graphs.application.ApplicationGraph
         """
-        return self._application_graph.clone(frozen=True)
+        return ApplicationGraphView(self._application_graph)
 
     @property
     def routing_infos(self):
