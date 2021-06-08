@@ -22,6 +22,8 @@ from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.interface.interface_functions import (
     ComputeEnergyUsed)
+from spinn_front_end_common.utilities.globals_variables import (
+    time_scale_factor)
 from spinn_machine.machine import Machine
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -33,7 +35,7 @@ class EnergyReport(object):
     """
 
     __slots__ = (
-        "__report_dir", "__version", "__uses_spalloc", "__time_scale_factor")
+        "__report_dir", "__version", "__uses_spalloc")
 
     #: converter between joules to kilowatt hours
     JOULES_TO_KILOWATT_HOURS = 3600000
@@ -43,18 +45,16 @@ class EnergyReport(object):
     _SUMMARY_FILENAME = "summary_energy_report.rpt"
 
     def __init__(self, report_default_directory, version, spalloc_server,
-                 remote_spinnaker_url, time_scale_factor):
+                 remote_spinnaker_url):
         """
         :param str report_default_directory: location for reports
         :param int version: version of machine
         :param str spalloc_server: spalloc server IP
         :param str remote_spinnaker_url: remote SpiNNaker URL
-        :param int time_scale_factor: the time scale factor
         """
         self.__report_dir = report_default_directory
         self.__version = version
         self.__uses_spalloc = bool(spalloc_server or remote_spinnaker_url)
-        self.__time_scale_factor = time_scale_factor
 
     def write_energy_report(
             self, placements, machine, runtime, buffer_manager, power_used):
@@ -81,7 +81,7 @@ class EnergyReport(object):
             self.__report_dir, self._SUMMARY_FILENAME)
 
         # figure runtime in milliseconds with time scale factor
-        runtime_total_ms = runtime * self.__time_scale_factor
+        runtime_total_ms = time_scale_factor()
 
         # create detailed report
         with open(detailed_report, "w") as f:

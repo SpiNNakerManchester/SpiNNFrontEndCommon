@@ -24,6 +24,8 @@ from spinn_machine import Machine
 from spinn_utilities.config_holder import (
     config_options, load_config, get_config_bool, get_config_int,
     get_config_str, set_config)
+from spinn_front_end_common.utilities.constants import (
+    MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -74,6 +76,20 @@ class ConfigHandler(object):
 
         # If not None, path to append pacman executor provenance info to
         "_pacman_executor_provenance_path",
+
+        # The machine timestep, in microseconds
+        "__machine_time_step",
+
+        # The machine timestep, in milliseconds
+        # Semantic sugar for __machine_time_step / 1000
+        "__machine_time_step_ms",
+
+        # The number of machine timestep in a milliseconds
+        # Semantic sugar for 1000 / __machine_time_step
+        "__machine_time_step_per_ms",
+
+        # The time scaling factor.
+        "__time_scale_factor"
     ]
 
     def __init__(self):
@@ -93,6 +109,9 @@ class ConfigHandler(object):
         self._report_default_directory = None
         self._report_simulation_top_directory = None
         self._this_run_time_string = None
+        self.__machine_time_step = None
+        self.__machine_time_step_ms = None
+        self.__time_scale_factor = None
 
     def _debug_configs(self):
         """ Adjust and checks config based on mode and reports_enabled
@@ -319,30 +338,6 @@ class ConfigHandler(object):
         with open(report_file_name, "w") as f:
             f.writelines("finished")
 
-    @property
-    def machine_time_step(self):
-        """ The machine timestep, in microseconds
-
-        :rtype: int
-        """
-        return get_config_int("Machine", "machine_time_step")
-
-    @machine_time_step.setter
-    def machine_time_step(self, new_value):
-        set_config("Machine", "machine_time_step", new_value)
-
-    @property
-    def time_scale_factor(self):
-        """ The time scaling factor.
-
-        :rtype: int
-        """
-        return get_config_int("Machine", "time_scale_factor")
-
-    @time_scale_factor.setter
-    def time_scale_factor(self, new_value):
-        set_config("Machine", "time_scale_factor", new_value)
-
     def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
         """ Set up timings of the machine
 
@@ -357,16 +352,70 @@ class ConfigHandler(object):
         """
 
         # set up timings
-        if machine_time_step is not None:
+        if machine_time_step is None:
+            self.machine_time_step = get_config_int(
+                "Machine", "machine_time_step")
+        else:
             self.machine_time_step = machine_time_step
 
-        if self.machine_time_step <= 0:
+        if self.__machine_time_step <= 0:
             raise ConfigurationException(
-                "invalid machine_time_step {}: must greater than zero".format(
-                    self.machine_time_step))
+                f'invalid machine_time_step {self.__machine_time_step}'
+                f': must greater than zero')
 
-        if time_scale_factor is not None:
-            self.time_scale_factor = time_scale_factor
+        if time_scale_factor is None:
+            # Note while this reads from the cfg the cfg default is None
+            self.__time_scale_factor = get_config_int(
+                "Machine", "time_scale_factor")
+        else:
+            self.__time_scale_factor = time_scale_factor
+
+    @property
+    def machine_time_step(self):
+        """ The machine timestep, in microseconds
+
+        :rtype: int
+        """
+        return self.__machine_time_step
+
+    @property
+    def machine_time_step_ms(self):
+        """ The machine timestep, in milli_seconds
+
+        :rtype: float
+        """
+        return self.__machine_time_step_ms
+
+    @property
+    def machine_time_step_per_ms(self):
+        """ The machine timesteps in a milli_second
+
+        :rtype: float
+        """
+        return self.__machine_time_step_per_ms
+
+    @machine_time_step.setter
+    def machine_time_step(self, new_value):
+        """
+
+        :param new_value: Machine timestep in microseconds
+        """
+        self.__machine_time_step = new_value
+        self.__machine_time_step_ms = (
+                new_value / MICRO_TO_MILLISECOND_CONVERSION)
+        self.__machine_time_step_per_ms = (
+                MICRO_TO_MILLISECOND_CONVERSION / new_value)
+
+    @property
+    def time_scale_factor(self):
+        """ The time scaling factor.
+        :rtype: int
+        """
+        return self.__time_scale_factor
+
+    @time_scale_factor.setter
+    def time_scale_factor(self, new_value):
+        self.__time_scale_factor = new_value
 
     @staticmethod
     def _make_dirs(path):

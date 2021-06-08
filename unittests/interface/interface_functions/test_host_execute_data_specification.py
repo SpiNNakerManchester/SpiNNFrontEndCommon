@@ -16,6 +16,7 @@
 import struct
 import tempfile
 import unittest
+from spinn_utilities.config_holder import load_config, set_config
 from spinn_utilities.overrides import overrides
 from spinn_machine.virtual_machine import virtual_machine
 from spinnman.transceiver import Transceiver
@@ -26,6 +27,7 @@ from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
 from spinn_front_end_common.interface.interface_functions import (
     HostExecuteDataSpecification)
+from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_front_end_common.utilities.utility_objs import (ExecutableType)
 from spinn_front_end_common.interface.ds import DataSpecificationTargets
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
@@ -66,6 +68,14 @@ class _MockTransceiver(object):
 
 class TestHostExecuteDataSpecification(unittest.TestCase):
 
+    def setUp(cls):
+        reset_configs()
+        load_config()
+        set_config("Machine", "enable_advanced_monitor_support", "False")
+
+    def tearDown(self):
+        reset_configs()
+
     def test_call(self):
         executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver()
@@ -95,7 +105,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets.add_processor(
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         infos = executor.execute_application_data_specs(
-            transceiver, machine, 30, dsg_targets, False, targets,
+            transceiver, machine, 30, dsg_targets, targets,
             report_folder=tempdir, region_sizes=region_sizes)
 
         # Test regions - although 3 are created, only 2 should be uploaded

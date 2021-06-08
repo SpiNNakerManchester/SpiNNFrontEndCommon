@@ -21,6 +21,9 @@ from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesKeyToAtomMapping,
     AbstractSupportsDatabaseInjection)
+from spinn_front_end_common.utilities.globals_variables import (
+    machine_time_step, time_scale_factor)
+
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.db"
@@ -191,11 +194,9 @@ class DatabaseWriter(SQLiteDB):
                     for edge in application_graph.get_edges_starting_at_vertex(
                         vertex)))
 
-    def add_system_params(self, time_scale_factor, machine_time_step, runtime):
+    def add_system_params(self, runtime):
         """ Write system params into the database
 
-        :param int time_scale_factor: the time scale factor used in timing
-        :param int machine_time_step: the machine time step used in timing
         :param int runtime: the amount of time the application is to run for
         """
         with self.transaction() as cur:
@@ -205,8 +206,8 @@ class DatabaseWriter(SQLiteDB):
                     parameter_id, value)
                 VALUES (?, ?)
                 """, [
-                    ("machine_time_step", machine_time_step),
-                    ("time_scale_factor", time_scale_factor),
+                    ("machine_time_step", machine_time_step()),
+                    ("time_scale_factor", time_scale_factor()),
                     ("infinite_run", str(runtime is None)),
                     ("runtime", -1 if runtime is None else runtime)])
 

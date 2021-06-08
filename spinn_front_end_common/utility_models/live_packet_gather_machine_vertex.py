@@ -134,21 +134,14 @@ class LivePacketGatherMachineVertex(
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
 
-    @inject_items({
-        "machine_time_step": "MachineTimeStep",
-        "time_scale_factor": "TimeScaleFactor",
-        "tags": "MemoryTags"})
+    @inject_items({"tags": "MemoryTags"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "machine_time_step", "time_scale_factor", "tags"
-        })
+        additional_arguments={"tags"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_time_step, time_scale_factor, tags):
+            tags):
         """
-        :param int machine_time_step:
-        :param int time_scale_factor:
         :param ~pacman.model.tags.Tags tags:
         """
         # pylint: disable=too-many-arguments, arguments-differ
@@ -156,7 +149,7 @@ class LivePacketGatherMachineVertex(
 
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
-        self._write_setup_info(spec, machine_time_step, time_scale_factor)
+        self._write_setup_info(spec)
         self._write_configuration_region(
             spec, tags.get_ip_tags_for_vertex(self))
 
@@ -215,17 +208,15 @@ class LivePacketGatherMachineVertex(
         # number of packets to send per time stamp
         spec.write_value(self._lpg_params.number_of_packets_sent_per_time_step)
 
-    def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
+    def _write_setup_info(self, spec):
         """ Write basic info to the system region
 
         :param ~.DataSpecificationGenerator spec:
-        :param int machine_time_step:
-        :param int time_scale_factor:
         """
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(region=self._REGIONS.SYSTEM)
         spec.write_array(get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step, time_scale_factor))
+            self.get_binary_file_name()))
 
     @staticmethod
     def get_cpu_usage():

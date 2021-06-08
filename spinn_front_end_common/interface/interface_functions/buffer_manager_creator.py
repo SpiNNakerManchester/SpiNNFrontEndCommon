@@ -27,7 +27,7 @@ class BufferManagerCreator(object):
 
     def __call__(
             self, placements, tags, txrx,
-            uses_advanced_monitors, report_folder, extra_monitor_cores=None,
+            report_folder, extra_monitor_cores=None,
             extra_monitor_to_chip_mapping=None,
             packet_gather_cores_to_ethernet_connection_map=None, machine=None,
             fixed_routes=None, java_caller=None):
@@ -62,9 +62,8 @@ class BufferManagerCreator(object):
             packet_gather_cores_to_ethernet_connection_map=(
                 packet_gather_cores_to_ethernet_connection_map),
             extra_monitor_to_chip_mapping=extra_monitor_to_chip_mapping,
-            machine=machine, uses_advanced_monitors=uses_advanced_monitors,
-            fixed_routes=fixed_routes, report_folder=report_folder,
-            java_caller=java_caller)
+            machine=machine, fixed_routes=fixed_routes,
+            report_folder=report_folder, java_caller=java_caller)
 
         for placement in progress.over(placements.placements):
             vertex = placement.vertex
