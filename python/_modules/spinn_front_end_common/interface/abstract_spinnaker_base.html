@@ -80,8 +80,9 @@
 <span class="kn">from</span> <span class="nn">pacman.executor.injection_decorator</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">clear_injectables</span><span class="p">,</span> <span class="n">provide_injectables</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.application</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ApplicationGraph</span><span class="p">,</span> <span class="n">ApplicationEdge</span><span class="p">,</span> <span class="n">ApplicationVertex</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineGraph</span><span class="p">,</span> <span class="n">MachineVertex</span>
+    <span class="n">ApplicationGraph</span><span class="p">,</span> <span class="n">ApplicationGraphView</span><span class="p">,</span> <span class="n">ApplicationEdge</span><span class="p">,</span> <span class="n">ApplicationVertex</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MachineGraph</span><span class="p">,</span> <span class="n">MachineGraphView</span><span class="p">,</span> <span class="n">MachineVertex</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">PreAllocatedResourceContainer</span><span class="p">,</span> <span class="n">ConstantSDRAM</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">pacman_version</span>
@@ -2503,10 +2504,10 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">machine_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns a frozen clone of the machine_graph</span>
+<span class="sd">        Returns a protected view of the machine_graph</span>
 <span class="sd">        :rtype: ~pacman.model.graphs.machine.MachineGraph</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">MachineGraphView</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">original_machine_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2524,12 +2525,12 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">application_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The frozen clone of the application graph used to derive the</span>
+        <span class="sd">&quot;&quot;&quot; The protected view of the application graph used to derive the</span>
 <span class="sd">            runtime machine configuration.</span>
 
 <span class="sd">        :rtype: ~pacman.model.graphs.application.ApplicationGraph</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ApplicationGraphView</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">routing_infos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
