@@ -38,13 +38,20 @@ class _MockTransceiver(object):
     """
     # pylint: disable=unused-argument
 
-    def __init__(self):
+    def __init__(self, user_0_addresses):
         """
 
         :param user_0_addresses: dict of (x, y, p) to user_0_address
         """
         self._regions_written = list()
         self._next_address = 0
+        self._user_0_addresses = user_0_addresses
+
+    @property
+    def regions_written(self):
+        """ A list of tuples of (base_address, data) which has been written
+        """
+        return self._regions_written
 
     @overrides(Transceiver.malloc_sdram)
     def malloc_sdram(self,  x, y, size, app_id, tag=None):
@@ -52,10 +59,8 @@ class _MockTransceiver(object):
         self._next_address += size
         return address
 
-    @staticmethod
-    @overrides(Transceiver.get_user_0_register_address_from_core)
-    def get_user_0_register_address_from_core(p):
-        return {0: 1000}[p]
+    def get_user_0_register_address_from_core(self, p):
+        return self._user_0_addresses[p]
 
     @overrides(Transceiver.write_memory)
     def write_memory(
@@ -78,7 +83,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
     def test_call(self):
         executor = HostExecuteDataSpecification()
-        transceiver = _MockTransceiver()
+        transceiver = _MockTransceiver(user_0_addresses={0: 1000})
         machine = virtual_machine(2, 2)
         tempdir = tempfile.mkdtemp()
 
@@ -185,7 +190,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets.add_processor(
             "text.aplx", 0, 0, 2, ExecutableType.USES_SIMULATION_INTERFACE)
         infos = executor.execute_application_data_specs(
-            transceiver, machine, 30, dsg_targets, False, targets,
+            transceiver, machine, 30, dsg_targets, targets,
             report_folder=tempdir, region_sizes=region_sizes)
 
         # User 0 for each spec (3) + header and table for each spec (3)
@@ -257,7 +262,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because one of the regions can't be found
         with self.assertRaises(ValueError):
             executor.execute_application_data_specs(
-                transceiver, machine, 30, dsg_targets, False, targets,
+                transceiver, machine, 30, dsg_targets, targets,
                 report_folder=tempdir, region_sizes=region_sizes)
 
     def test_multispec_with_double_reference(self):
@@ -287,7 +292,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because regions have same reference
         with self.assertRaises(ValueError):
             executor.execute_application_data_specs(
-                transceiver, machine, 30, dsg_targets, False, targets,
+                transceiver, machine, 30, dsg_targets, targets,
                 report_folder=tempdir, region_sizes=region_sizes)
 
     def test_multispec_with_wrong_chip_reference(self):
@@ -325,7 +330,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because the reference is on a different chip
         with self.assertRaises(ValueError):
             executor.execute_application_data_specs(
-                transceiver, machine, 30, dsg_targets, False, targets,
+                transceiver, machine, 30, dsg_targets, targets,
                 report_folder=tempdir, region_sizes=region_sizes)
 
     def test_multispec_with_wrong_chip_reference_on_close(self):
@@ -363,7 +368,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because the reference is on a different chip
         with self.assertRaises(ValueError):
             executor.execute_application_data_specs(
-                transceiver, machine, 30, dsg_targets, False, targets,
+                transceiver, machine, 30, dsg_targets, targets,
                 report_folder=tempdir, region_sizes=region_sizes)
 
 
