@@ -21,7 +21,6 @@ import logging
 import math
 import signal
 import sys
-import time
 import threading
 from threading import Condition
 from numpy import __version__ as numpy_version
@@ -30,7 +29,6 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_machine import CoreSubsets
 from spinn_machine import __version__ as spinn_machine_version
-from spinn_machine.ignores import IgnoreChip, IgnoreCore, IgnoreLink
 from spinnman.model.enums.cpu_state import CPUState
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
@@ -42,10 +40,10 @@ from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
 from pacman.executor.injection_decorator import (
     clear_injectables, provide_injectables)
-from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 from pacman.model.graphs.application import (
-    ApplicationGraph, ApplicationEdge, ApplicationVertex)
-from pacman.model.graphs.machine import MachineGraph, MachineVertex
+    ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex)
+from pacman.model.graphs.machine import (
+    MachineGraph, MachineGraphView, MachineVertex)
 from pacman.model.resources import (
     PreAllocatedResourceContainer, ConstantSDRAM)
 from pacman import __version__ as pacman_version
@@ -58,7 +56,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractCanReset)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION, SARK_PER_MALLOC_SDRAM_USAGE)
+    SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
@@ -309,9 +307,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_cores_to_read_iobuf",
 
         #
-        "_all_provenance_items",
-
-        #
         "_executable_types",
 
         # mapping between parameters and the vertices which need to talk to
@@ -338,9 +333,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # time taken by the front end extracting things
         "_extraction_time",
-
-        # power save mode. time board turned off or None if not turned off
-        "_machine_is_turned_off",
 
         # Version information from the front end
         "_front_end_versions",
@@ -449,7 +441,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._last_run_outputs = dict()
         self._last_run_tokens = dict()
         self._pacman_provenance = PacmanProvenanceExtractor()
-        self._all_provenance_items = list()
         self._version_provenance = list()
         self._xml_paths = self._create_xml_paths(extra_algorithm_xml_paths)
 
@@ -507,9 +498,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
-
-        # By default board is kept on once started later
-        self._machine_is_turned_off = None
 
         globals_variables.set_simulator(self)
 
@@ -790,10 +778,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: The number of timesteps
         :rtype: int
         """
-        machine_time_step_ms = (
-            self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION)
-        n_time_steps = int(math.ceil(time_in_ms / machine_time_step_ms))
-        calc_time = n_time_steps * machine_time_step_ms
+        n_time_steps = int(math.ceil(time_in_ms / self.machine_time_step_ms))
+        calc_time = n_time_steps * self.machine_time_step_ms
 
         # Allow for minor float errors
         if abs(time_in_ms - calc_time) > 0.00001:
@@ -801,7 +787,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Time of {}ms "
                 "is not a multiple of the machine time step of {}ms "
                 "and has therefore been rounded up to {}ms",
-                time_in_ms, machine_time_step_ms, calc_time)
+                time_in_ms, self.machine_time_step_ms, calc_time)
         return n_time_steps
 
     def _calc_run_time(self, run_time):
@@ -825,21 +811,19 @@ class AbstractSpinnakerBase(ConfigHandler):
         n_machine_time_steps = self.__timesteps(run_time)
         total_run_timesteps = (
             self._current_run_timesteps + n_machine_time_steps)
-        machine_time_step_ms = (
-            self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION)
         total_run_time = (
-            total_run_timesteps * machine_time_step_ms *
+            total_run_timesteps * self.machine_time_step_ms *
             self.time_scale_factor)
 
         # Convert dt into microseconds and multiply by
         # scale factor to get hardware timestep
-        hardware_timestep_us = int(round(
-            float(self.machine_time_step) * float(self.time_scale_factor)))
+        hardware_timestep_us = (
+                self.machine_time_step * self.time_scale_factor)
 
         logger.info(
-            "Simulating for {} {}ms timesteps "
-            "using a hardware timestep of {}us",
-            n_machine_time_steps, machine_time_step_ms, hardware_timestep_us)
+            f"Simulating for {n_machine_time_steps} "
+            f"{self.machine_time_step_ms}ms timesteps using a "
+            f"hardware timestep of {hardware_timestep_us}us")
 
         return n_machine_time_steps, total_run_time
 
@@ -1220,8 +1204,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 self._app_id = self._txrx.app_id_tracker.get_new_id()
 
-        self._turn_off_on_board_to_save_power("turn_off_board_after_discovery")
-
         if self._n_chips_required:
             if self._machine.n_chips < self._n_chips_required:
                 raise ConfigurationException(
@@ -1254,8 +1236,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         inputs["ScampConnectionData"] = get_config_str(
             "Machine", "scamp_connections_data")
         inputs['ReportFolder'] = self._report_default_directory
-        inputs['ReportWaitingLogsFlag'] = get_config_bool(
-            "Machine", "report_waiting_logs")
         inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
         algorithms.append("MachineGenerator")
 
@@ -1282,12 +1262,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         inputs["IPAddress"] = "virtual"
         inputs["NumberOfBoards"] = get_config_int(
             "Machine", "number_of_boards")
-        inputs["MachineWidth"] = get_config_int(
-            "Machine", "width")
-        inputs["MachineHeight"] = get_config_int(
-            "Machine", "height")
-        inputs["MachineJsonPath"] = get_config_str(
-            "Machine", "json_path")
         inputs["BMPDetails"] = None
         inputs["AutoDetectBMPFlag"] = False
         inputs["ScampConnectionData"] = None
@@ -1317,19 +1291,11 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         do_partitioning = self._machine_by_size(inputs, algorithms, outputs)
         inputs['ReportFolder'] = self._report_default_directory
-        inputs['ReportWaitingLogsFlag'] = get_config_bool(
-            "Machine", "report_waiting_logs")
         inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
 
         # if using spalloc system
         if self._spalloc_server is not None:
             inputs["SpallocServer"] = self._spalloc_server
-            inputs["SpallocPort"] = get_config_int(
-                "Machine", "spalloc_port")
-            inputs["SpallocUser"] = get_config_str(
-                "Machine", "spalloc_user")
-            inputs["SpallocMachine"] = get_config_str(
-                "Machine", "spalloc_machine")
         else:
             # must be using HBP server system
             inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
@@ -1417,44 +1383,22 @@ class AbstractSpinnakerBase(ConfigHandler):
         algorithms = list()
 
         self._create_version_provenance()
-        inputs["UsingAdvancedMonitorSupport"] = get_config_bool(
-            "Machine", "enable_advanced_monitor_support")
-        inputs["DisableAdvancedMonitorUsageForDataIn"] = \
-            get_config_bool(
-                "Machine", "disable_advanced_monitor_usage_for_data_in")
 
         if get_config_bool("Buffers", "use_auto_pause_and_resume"):
             inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
         else:
             inputs["PlanNTimeSteps"] = n_machine_time_steps
 
-        # add max SDRAM size and n_cores which we're going to allow
-        # (debug purposes)
-        inputs["MaxSDRAMSize"] = get_config_int(
-            "Machine", "max_sdram_allowed_per_chip")
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
         inputs["MaxMachineCoreReduction"] = get_config_int(
             "Machine", "max_machine_core_reduction")
-        inputs["MachineTimeStep"] = self.machine_time_step
-        inputs["TimeScaleFactor"] = self.time_scale_factor
-
-        inputs["DownedChipsDetails"] = IgnoreChip.parse_string(
-            get_config_str("Machine", "down_chips"))
-        inputs["DownedCoresDetails"] = IgnoreCore.parse_string(
-            get_config_str("Machine", "down_cores"))
-        inputs["DownedLinksDetails"] = IgnoreLink.parse_string(
-            get_config_str("Machine", "down_links"))
         inputs["BoardVersion"] = get_config_int(
             "Machine", "version")
         inputs["ResetMachineOnStartupFlag"] = get_config_bool(
             "Machine", "reset_machine_on_startup")
         inputs["BootPortNum"] = get_config_int(
             "Machine", "boot_connection_port_num")
-        inputs["RepairMachine"] = get_config_bool(
-            "Machine", "repair_machine")
-        inputs["IgnoreBadEthernets"] = get_config_bool(
-            "Machine", "ignore_bad_ethernets")
 
         # add algorithms for handling LPG placement and edge insertion
         if self._live_packet_recorder_params:
@@ -1466,9 +1410,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             algorithms.append("PreAllocateResourcesForChipPowerMonitor")
             inputs['MemorySamplingFrequency'] = get_config_int(
                 "EnergyMonitor", "sampling_frequency")
-            inputs['MemoryNumberSamplesPerRecordingEntry'] = \
-                get_config_int(
-                    "EnergyMonitor", "n_samples_per_recording_entry")
 
         # add algorithms for handling extra monitor code
         if (get_config_bool("Machine", "enable_advanced_monitor_support") or
@@ -1546,34 +1487,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
         inputs["JsonFolder"] = self._json_folder
         inputs["APPID"] = self._app_id
-        inputs["TimeScaleFactor"] = self.time_scale_factor
-        inputs["MachineTimeStep"] = self.machine_time_step
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
-        inputs["DatabaseWaitOnConfirmationFlag"] = get_config_bool(
-            "Database", "wait_on_confirmation")
-        inputs["WriteTextSpecsFlag"] = get_config_bool(
-            "Reports", "write_text_specs")
         inputs["ExecutableFinder"] = self._executable_finder
-        inputs["UserCreateDatabaseFlag"] = get_config_bool(
-            "Database", "create_database")
-        inputs["WriteDataSpeedUpReportsFlag"] = get_config_bool(
-            "Reports", "write_data_speed_up_reports")
-        inputs["UsingReinjection"] = \
-            (get_config_bool("Machine", "enable_reinjection") and
-             get_config_bool(
-                 "Machine", "enable_advanced_monitor_support"))
         inputs['CompressionTargetSize'] = get_config_int(
             "Mapping", "router_table_compression_target_length")
         inputs["CompressionAsNeeded"] = get_config_bool(
             "Mapping", "router_table_compress_as_needed")
-        inputs["CompressionAsFarAsPos"] = get_config_bool(
-            "Mapping", "router_table_compress_as_far_as_possible")
-        inputs["WriteCompressorIobuf"] = get_config_bool(
-            "Reports", "write_compressor_iobuf")
-        inputs["RouterCompressorBitFieldPreAllocSize"] = \
-            get_config_int(
-                "Mapping",
-                "router_table_compression_with_bit_field_pre_alloced_sdram")
+
         algorithms = list()
 
         # process for TDMA required cores
@@ -1591,9 +1511,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "InsertChipPowerMonitorsToGraphs")
             inputs['MemorySamplingFrequency'] = get_config_int(
                 "EnergyMonitor", "sampling_frequency")
-            inputs['MemoryNumberSamplesPerRecordingEntry'] = \
-                get_config_int(
-                    "EnergyMonitor", "n_samples_per_recording_entry")
 
         # handle extra monitor functionality
         add_data_speed_up = (get_config_bool(
@@ -1789,40 +1706,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             data_gen_timer.take_sample())
         self._mapping_outputs["DSGTimeMs"] = self._dsg_time
 
-    def _add_router_compressor_bit_field_inputs(self, inputs):
-        """
-
-        :param dict(str, object) inputs:
-        :return:
-        """
-        # bitfield inputs
-        inputs['RouterBitfieldCompressionReport'] = \
-            get_config_bool(
-                "Reports", "generate_router_compression_with_bitfield_report")
-
-        inputs['RouterCompressorBitFieldUseCutOff'] = \
-            get_config_bool(
-                "Mapping",
-                "router_table_compression_with_bit_field_use_time_cutoff")
-
-        inputs['RouterCompressorBitFieldTimePerAttempt'] = \
-            get_config_int(
-                "Mapping",
-                "router_table_compression_with_bit_field_iteration_time")
-
-        inputs["RouterCompressorBitFieldPreAllocSize"] = \
-            get_config_int(
-                "Mapping",
-                "router_table_compression_with_bit_field_pre_alloced_sdram")
-        inputs["RouterCompressorBitFieldPercentageThreshold"] = \
-            get_config_int(
-                "Mapping",
-                "router_table_compression_with_bit_field_acceptance_threshold")
-        inputs["RouterCompressorBitFieldRetryCount"] = \
-            get_config_int(
-                "Mapping",
-                "router_table_compression_with_bit_field_retry_count")
-
     def _do_load(self, graph_changed, data_changed):
         """
         :param bool graph_changed:
@@ -1832,13 +1715,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         load_timer = Timer()
         load_timer.start_timing()
 
-        self._turn_on_board_if_saving_power()
-
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
         inputs["NoSyncChanges"] = self._no_sync_changes
-        self._add_router_compressor_bit_field_inputs(inputs)
 
         if not graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
@@ -1978,7 +1858,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._pacman_provenance.clear()
         self._version_provenance = list()
         self._write_provenance(prov_items)
-        self._all_provenance_items.append(prov_items)
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """
@@ -2067,9 +1946,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             n_machine_time_steps)
         run_time = None
         if n_machine_time_steps is not None:
-            run_time = (
-                n_machine_time_steps * self.machine_time_step /
-                MICRO_TO_MILLISECOND_CONVERSION)
+            run_time = n_machine_time_steps * self.machine_time_step_ms
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:
@@ -2087,11 +1964,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
         if self._run_until_complete:
             inputs["RunUntilCompleteFlag"] = True
-
-        inputs["ExtractIobufFromCores"] = get_config_str(
-            "Reports", "extract_iobuf_from_cores")
-        inputs["ExtractIobufFromBinaryTypes"] = get_config_str(
-            "Reports", "extract_iobuf_from_binary_types")
 
         # Don't timeout if a stepped mode is in operation
         if n_sync_steps:
@@ -2233,11 +2105,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         logger.error("An error has occurred during simulation")
         # Print the detail including the traceback
         real_exception = exception
-        if isinstance(exception, PacmanAlgorithmFailedToCompleteException):
-            logger.error(exception.exception, exc_info=exc_info)
-            real_exception = exception.exception
-        else:
-            logger.error(exception, exc_info=exc_info)
+        logger.error(exception, exc_info=exc_info)
 
         logger.info("\n\nAttempting to extract data\n\n")
 
@@ -2340,14 +2208,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         prov_items.extend(self._pacman_provenance.data_items)
         self._pacman_provenance.clear()
         self._write_provenance(prov_items)
-        self._all_provenance_items.append(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
         iobuf = IOBufExtractor(
             self._txrx, executable_targets, self._executable_finder,
-            self._app_provenance_file_path, self._system_provenance_file_path,
-            get_config_str("Reports", "extract_iobuf_from_cores"),
-            get_config_str("Reports", "extract_iobuf_from_binary_types"))
+            self._app_provenance_file_path, self._system_provenance_file_path)
         try:
             errors, warnings = iobuf.extract_iobuf()
         except Exception:
@@ -2491,10 +2356,10 @@ class AbstractSpinnakerBase(ConfigHandler):
     @property
     def machine_graph(self):
         """
-        Returns a frozen clone of the machine_graph
+        Returns a protected view of the machine_graph
         :rtype: ~pacman.model.graphs.machine.MachineGraph
         """
-        return self._machine_graph.clone(frozen=True)
+        return MachineGraphView(self._machine_graph)
 
     @property
     def original_machine_graph(self):
@@ -2512,12 +2377,12 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     @property
     def application_graph(self):
-        """ The frozen clone of the application graph used to derive the
+        """ The protected view of the application graph used to derive the
             runtime machine configuration.
 
         :rtype: ~pacman.model.graphs.application.ApplicationGraph
         """
-        return self._application_graph.clone(frozen=True)
+        return ApplicationGraphView(self._application_graph)
 
     @property
     def routing_infos(self):
@@ -2608,9 +2473,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: float
         """
         if self._has_ran:
-            return (
-                float(self._current_run_timesteps) *
-                (self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION))
+            return self._current_run_timesteps * self.machine_time_step_ms
         return 0.0
 
     def get_generated_output(self, name_of_variable):
@@ -2694,9 +2557,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._status = Simulator_Status.SHUTDOWN
 
-        if self._machine_is_turned_off is not None:
-            turn_off_machine = False
-        elif turn_off_machine is None:
+        if turn_off_machine is None:
             turn_off_machine = get_config_bool(
                 "Machine", "turn_off_machine")
 
@@ -2833,16 +2694,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # shut down the machine properly
         self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
 
-        # display any provenance data gathered
-        for i, provenance_items in enumerate(self._all_provenance_items):
-            message = None
-            if len(self._all_provenance_items) > 1:
-                message = "Provenance from run {}".format(i)
-            self._check_provenance(provenance_items, message)
-
-            # Reset provenance
-            self._all_provenance_items = list()
-
         if exn is not None:
             raise exn  # pylint: disable=raising-bad-type
         self.write_finished_file()
@@ -2897,7 +2748,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         energy_reporter = EnergyReport(
             self._report_default_directory,
             get_config_int("Machine", "version"), self._spalloc_server,
-            self._remote_spinnaker_url, self.time_scale_factor)
+            self._remote_spinnaker_url)
 
         if self._buffer_manager is None or self._last_run_outputs is None:
             return
@@ -2933,88 +2784,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             The address of the database socket
         """
         self._database_socket_addresses.add(socket_address)
-
-    @staticmethod
-    def _check_provenance(items, initial_message=None):
-        """ Display any errors from provenance data.
-
-        :param str initial_message:
-        """
-        initial_message_printed = False
-        for item in items:
-            if item.report:
-                if not initial_message_printed and initial_message is not None:
-                    print(initial_message)
-                    initial_message_printed = True
-                logger.warning(item.message)
-
-    def _turn_off_on_board_to_save_power(self, config_flag):
-        """ Executes the power saving mode of either on or off of the\
-            SpiNNaker machine.
-
-        :param str config_flag: Flag read from the configuration file
-        """
-        # check if machine should be turned off
-        turn_off = get_config_bool("EnergySavings", config_flag)
-        if turn_off is None:
-            return
-
-        # if a mode is set, execute
-        if turn_off:
-            if self._turn_off_board_to_save_power():
-                logger.info("Board turned off based on: {}", config_flag)
-        else:
-            if self._turn_on_board_if_saving_power():
-                logger.info("Board turned on based on: {}", config_flag)
-
-    def _turn_off_board_to_save_power(self):
-        """ Executes the power saving mode of turning off the SpiNNaker\
-            machine.
-
-        :return: true when successful, false otherwise
-        :rtype: bool
-        """
-        # already off or no machine to turn off
-        if self._machine_is_turned_off is not None or self._use_virtual_board:
-            return False
-
-        if self._machine_allocation_controller is not None:
-            # switch power state if needed
-            if self._machine_allocation_controller.power:
-                self._machine_allocation_controller.set_power(False)
-        else:
-            self._txrx.power_off_machine()
-
-        self._machine_is_turned_off = time.time()
-        return True
-
-    def _turn_on_board_if_saving_power(self):
-        # Only required if previously turned off which never happens
-        # on virtual machine
-        if self._machine_is_turned_off is None:
-            return False
-
-        # Ensure the machine is completely powered down and
-        # all residual electrons have gone
-        already_off = time.time() - self._machine_is_turned_off
-        if already_off < MINIMUM_OFF_STATE_TIME:
-            delay = MINIMUM_OFF_STATE_TIME - already_off
-            logger.warning(
-                "Delaying turning machine back on for {} seconds. Consider "
-                "disabling turn_off_board_after_discovery for scripts that "
-                "have short preparation time.".format(delay))
-            time.sleep(delay)
-
-        if self._machine_allocation_controller is not None:
-            # switch power state if needed
-            if not self._machine_allocation_controller.power:
-                self._machine_allocation_controller.set_power(True)
-        else:
-            self._txrx.power_on_machine()
-
-        self._txrx.ensure_board_is_ready()
-        self._machine_is_turned_off = None
-        return True
 
     @property
     def has_reset_last(self):

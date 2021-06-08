@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_front_end_common.interface.interface_functions import (
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter)
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
@@ -42,6 +43,7 @@ def check_provenance_data_path(extenstion):
 
 
 def test_json():
+    reset_configs()
     provenance_data_path = check_provenance_data_path(".json")
     provenance_data_items = _create_provenenace()
     writer = ProvenanceJSONWriter()
@@ -49,6 +51,7 @@ def test_json():
 
 
 def test_xml():
+    reset_configs()
     provenance_data_path = check_provenance_data_path(".xml")
     provenance_data_items = _create_provenenace()
     writer = ProvenanceXMLWriter()
@@ -56,6 +59,7 @@ def test_xml():
 
 
 def test_database():
+    reset_configs()
     provenance_data_path = check_provenance_data_path(".sqlite3")
     provenance_data_items = _create_provenenace()
     writer = ProvenanceSQLWriter()

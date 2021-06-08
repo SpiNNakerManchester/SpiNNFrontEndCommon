@@ -16,10 +16,12 @@
 import os
 import sys
 import unittest
+from spinn_utilities.config_holder import get_config_int
 from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
+from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.utility_objs import ExecutableFinder
 
 
@@ -35,18 +37,15 @@ class Close_Once(object):
         self.closed = True
 
 
-class MainInterfaceTimingImpl(AbstractSpinnakerBase):
-
-    def __init__(self, machine_time_step=None, time_scale_factor=None):
-        super().__init__(ExecutableFinder())
-        self.set_up_timings(machine_time_step, time_scale_factor)
-
-
 class TestSpinnakerMainInterface(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         reset_configs()
+
+    def tearDown(self):
+        reset_configs()
+        globals_variables.unset_simulator()
 
     def test_stop_init(self):
         class_file = sys.modules[self.__module__].__file__
@@ -71,15 +70,27 @@ class TestSpinnakerMainInterface(unittest.TestCase):
 
     def test_timings(self):
 
-        # Test defaults
-        interface = MainInterfaceTimingImpl()
-        assert interface.machine_time_step == 1000
-        assert interface.time_scale_factor is None
+        # Test defaults stay as in the configs
+        machine_time_step = get_config_int("Machine", "machine_time_step")
+        time_scale_factor = get_config_int("Machine", "time_scale_factor")
+        asb = AbstractSpinnakerBase(ExecutableFinder())
+        asb.set_up_timings(machine_time_step=None, time_scale_factor=None)
+        assert machine_time_step == asb.machine_time_step
+        assert time_scale_factor == asb.time_scale_factor
 
         # Test specified
-        interface = MainInterfaceTimingImpl(200, 10)
-        assert interface.machine_time_step == 200
-        assert interface.time_scale_factor == 10
+        asb.set_up_timings(machine_time_step=200, time_scale_factor=10)
+        assert asb.machine_time_step == 200
+        assert asb.machine_time_step_ms == 0.2
+        assert asb.machine_time_step_per_ms == 5.0
+        assert asb.time_scale_factor == 10
+        assert globals_variables.machine_time_step() == 200
+        assert globals_variables.machine_time_step_ms() == 0.2
+        assert globals_variables.machine_time_step_per_ms() == 5.0
+        assert globals_variables.time_scale_factor() == 10
+
+        with self.assertRaises(ConfigurationException):
+            asb.set_up_timings(machine_time_step=-20, time_scale_factor=10)
 
 
 if __name__ == "__main__":

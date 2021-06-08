@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
+from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_utilities.socket_address import SocketAddress
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import EIEIOCommandMessage
@@ -24,6 +25,9 @@ from spinn_front_end_common.utilities.notification_protocol import (
 
 class TestStopPauseNotificationProtocol(unittest.TestCase):
 
+    def setUp(self):
+        reset_configs()
+
     def test_send_stop_pause_notification(self):
         """ Test the sending of the stop/pause message of the notification\
             protocol
@@ -31,7 +35,7 @@ class TestStopPauseNotificationProtocol(unittest.TestCase):
         listener = EIEIOConnection()
         socket_addresses = [SocketAddress(
             "127.0.0.1", listener.local_port, None)]
-        protocol = NotificationProtocol(socket_addresses, False)
+        protocol = NotificationProtocol(socket_addresses)
         protocol.send_stop_pause_notification()
         message = listener.receive_eieio_message(timeout=10)
         self.assertIsInstance(message, EIEIOCommandMessage)
