@@ -234,10 +234,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
                 else:
                     report_folder_path = None
 
-                target_length = get_config_int(
-                    "Mapping", "router_table_compression_target_length")
-                if target_length is None:
-                    target_length = Machine.ROUTER_ENTRIES
                 report_folder_path = host_compressor.generate_report_path(
                     default_report_folder)
                 prov_items.append(
@@ -247,7 +243,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
                         report_folder_path=report_folder_path,
                         transceiver=transceiver, machine_graph=machine_graph,
                         placements=placements, machine=machine,
-                        target_length=target_length,
                         compressed_pacman_router_tables=(
                             compressed_pacman_router_tables),
                         key_atom_map=key_atom_map))

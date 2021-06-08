@@ -1489,10 +1489,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         inputs["APPID"] = self._app_id
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
         inputs["ExecutableFinder"] = self._executable_finder
-        inputs['CompressionTargetSize'] = get_config_int(
-            "Mapping", "router_table_compression_target_length")
-        inputs["CompressionAsNeeded"] = get_config_bool(
-            "Mapping", "router_table_compress_as_needed")
 
         algorithms = list()
 
