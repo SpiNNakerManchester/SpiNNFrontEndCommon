@@ -16,6 +16,7 @@
 import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
+from spinnman.exceptions import SpinnmanException
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -161,7 +162,7 @@ class RouterProvenanceGatherer(object):
         if not self._machine.get_chip_at(x, y).virtual:
             try:
                 diagnostics = self._txrx.get_router_diagnostics(x, y)
-            except:  # noqa: E722
+            except SpinnmanException:
                 logger.warning(
                     "Could not read routing diagnostics from {}, {}",
                     x, y, exc_info=True)
@@ -183,7 +184,7 @@ class RouterProvenanceGatherer(object):
         # pylint: disable=bare-except
         try:
             diagnostics = self._txrx.get_router_diagnostics(chip.x, chip.y)
-        except:  # noqa: E722
+        except SpinnmanException:
             # There could be issues with unused chips - don't worry!
             return
         if (diagnostics.n_dropped_multicast_packets or
