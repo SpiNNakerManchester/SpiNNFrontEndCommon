@@ -52,15 +52,28 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.simulation" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.simulation.get_simulation_header_array">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.simulation.</span></span><span class="sig-name descname"><span class="pre">get_simulation_header_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_time_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_scale_factor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.simulation.get_simulation_header_array" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.simulation.</span></span><span class="sig-name descname"><span class="pre">get_simulation_header_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.simulation.get_simulation_header_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get data to be written to the simulation header</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>binary_file_name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The name of the binary of the application</p></li>
-<li><p><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The time step of the simulation</p></li>
-<li><p><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The time scaling of the simulation</p></li>
-</ul>
+<dd class="field-odd"><p><strong>binary_file_name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The name of the binary of the application</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An array of values to be written as the simulation header</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.simulation.get_simulation_header_array_no_timestep">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.simulation.</span></span><span class="sig-name descname"><span class="pre">get_simulation_header_array_no_timestep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.simulation.get_simulation_header_array_no_timestep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get data to be written to the simulation header</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>binary_file_name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The name of the binary of the application</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>An array of values to be written as the simulation header</p>

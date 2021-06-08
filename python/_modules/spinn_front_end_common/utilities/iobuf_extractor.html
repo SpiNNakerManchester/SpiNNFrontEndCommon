@@ -59,6 +59,7 @@
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">spinn_machine.core_subsets</span> <span class="kn">import</span> <span class="n">CoreSubsets</span>
 <span class="kn">from</span> <span class="nn">spinnman.model.io_buffer</span> <span class="kn">import</span> <span class="n">IOBuffer</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_str</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">convert_string_into_chip_and_core_subset</span><span class="p">)</span>
@@ -87,8 +88,8 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span>
                  <span class="n">executable_finder</span><span class="p">,</span> <span class="n">app_provenance_file_path</span><span class="p">,</span>
-                 <span class="n">system_provenance_file_path</span><span class="p">,</span> <span class="n">from_cores</span><span class="o">=</span><span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
-                 <span class="n">binary_types</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">recovery_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">system_provenance_file_path</span><span class="p">,</span>
+                 <span class="n">recovery_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">filename_template</span><span class="o">=</span><span class="s2">&quot;iobuf_for_chip_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">_processor_id_</span><span class="si">{}</span><span class="s2">.txt&quot;</span><span class="p">,</span>
                  <span class="n">suppress_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -102,8 +103,6 @@
 <span class="sd">        :type app_provenance_file_path: str or None</span>
 <span class="sd">        :param system_provenance_file_path:</span>
 <span class="sd">        :type system_provenance_file_path: str or None</span>
-<span class="sd">        :param str from_cores:</span>
-<span class="sd">        :param str binary_types:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename_template</span> <span class="o">=</span> <span class="n">filename_template</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_mode</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">recovery_mode</span><span class="p">)</span>
@@ -112,8 +111,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__app_path</span> <span class="o">=</span> <span class="n">app_provenance_file_path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__sys_path</span> <span class="o">=</span> <span class="n">system_provenance_file_path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__transceiver</span> <span class="o">=</span> <span class="n">transceiver</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__from_cores</span> <span class="o">=</span> <span class="n">from_cores</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__binary_types</span> <span class="o">=</span> <span class="n">binary_types</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__from_cores</span> <span class="o">=</span> <span class="n">get_config_str</span><span class="p">(</span>
+            <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf_from_cores&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__binary_types</span> <span class="o">=</span> <span class="n">get_config_str</span><span class="p">(</span>
+            <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf_from_binary_types&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__executable_targets</span> <span class="o">=</span> <span class="n">executable_targets</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__executable_finder</span> <span class="o">=</span> <span class="n">executable_finder</span>
 

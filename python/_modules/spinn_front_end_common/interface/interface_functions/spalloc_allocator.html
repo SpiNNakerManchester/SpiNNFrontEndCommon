@@ -56,6 +56,7 @@
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 <span class="kn">from</span> <span class="nn">spalloc</span> <span class="kn">import</span> <span class="n">Job</span>
 <span class="kn">from</span> <span class="nn">spalloc.states</span> <span class="kn">import</span> <span class="n">JobState</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_int</span><span class="p">,</span> <span class="n">get_config_str</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractMachineAllocationController</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models.impl</span> <span class="kn">import</span> <span class="p">(</span>
@@ -143,19 +144,15 @@
     <span class="n">_MACHINE_VERSION</span> <span class="o">=</span> <span class="mi">5</span>
 
 <div class="viewcode-block" id="SpallocAllocator.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.SpallocAllocator.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">spalloc_server</span><span class="p">,</span> <span class="n">spalloc_user</span><span class="p">,</span> <span class="n">n_chips</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_boards</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">spalloc_port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spalloc_machine</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">spalloc_server</span><span class="p">,</span> <span class="n">n_chips</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_boards</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str spalloc_server:</span>
 <span class="sd">            The server from which the machine should be requested</span>
-<span class="sd">        :param str spalloc_user: The user to allocate the machine to</span>
 <span class="sd">        :param n_chips: The number of chips required.</span>
 <span class="sd">            IGNORED if n_boards is not None</span>
 <span class="sd">        :type n_chips: int or None</span>
 <span class="sd">        :param int n_boards: The number of boards required</span>
 <span class="sd">        :type n_boards: int or None</span>
-<span class="sd">        :param int spalloc_port: The optional port number to speak to spalloc</span>
-<span class="sd">        :param str spalloc_machine: The optional spalloc machine to use</span>
 <span class="sd">        :rtype: tuple(str, int, None, bool, bool, None, None,</span>
 <span class="sd">            MachineAllocationController)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -173,10 +170,12 @@
 
         <span class="n">spalloc_kw_args</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;hostname&#39;</span><span class="p">:</span> <span class="n">spalloc_server</span><span class="p">,</span>
-            <span class="s1">&#39;owner&#39;</span><span class="p">:</span> <span class="n">spalloc_user</span>
+            <span class="s1">&#39;owner&#39;</span><span class="p">:</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;spalloc_user&quot;</span><span class="p">)</span>
         <span class="p">}</span>
+        <span class="n">spalloc_port</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;spalloc_port&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">spalloc_port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">spalloc_kw_args</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spalloc_port</span>
+        <span class="n">spalloc_machine</span> <span class="o">=</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;spalloc_machine&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">spalloc_machine</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">spalloc_kw_args</span><span class="p">[</span><span class="s1">&#39;machine&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spalloc_machine</span>
 

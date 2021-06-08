@@ -63,17 +63,14 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="CreateNotificationProtocol.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.CreateNotificationProtocol.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">wait_for_read_confirmation</span><span class="p">,</span>
-            <span class="n">socket_addresses</span><span class="p">,</span> <span class="n">database_file_path</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">socket_addresses</span><span class="p">,</span> <span class="n">database_file_path</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param bool wait_for_read_confirmation:</span>
 <span class="sd">        :param socket_addresses: Where to notify.</span>
 <span class="sd">        :type socket_addresses:</span>
 <span class="sd">            set(~spinn_utilities.socket_address.SocketAddress)</span>
 <span class="sd">        :param str database_file_path:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">notification_protocol</span> <span class="o">=</span> <span class="n">NotificationProtocol</span><span class="p">(</span>
-            <span class="n">socket_addresses</span><span class="p">,</span> <span class="n">wait_for_read_confirmation</span><span class="p">)</span>
+        <span class="n">notification_protocol</span> <span class="o">=</span> <span class="n">NotificationProtocol</span><span class="p">(</span><span class="n">socket_addresses</span><span class="p">)</span>
         <span class="n">notification_protocol</span><span class="o">.</span><span class="n">send_read_notification</span><span class="p">(</span><span class="n">database_file_path</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">notification_protocol</span></div>
 </pre></div>

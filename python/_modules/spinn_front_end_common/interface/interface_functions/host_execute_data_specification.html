@@ -55,6 +55,7 @@
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_bool</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">CoreSubsets</span>
@@ -230,12 +231,11 @@
 
 <div class="viewcode-block" id="HostExecuteDataSpecification.execute_application_data_specs"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostExecuteDataSpecification.execute_application_data_specs">[docs]</a>    <span class="k">def</span> <span class="nf">execute_application_data_specs</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">dsg_targets</span><span class="p">,</span>
-            <span class="n">uses_advanced_monitors</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">,</span>
+            <span class="n">executable_targets</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">,</span>
             <span class="n">placements</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">extra_monitor_cores_to_ethernet_connection_map</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">report_folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">java_caller</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">processor_to_app_data_base_address</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">disable_advanced_monitor_usage</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="n">processor_to_app_data_base_address</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Execute the data specs for all non-system targets.</span>
 
 <span class="sd">        :param ~spinn_machine.Machine machine:</span>
@@ -263,8 +263,6 @@
 <span class="sd">            map of placement and DSG data</span>
 <span class="sd">        :type processor_to_app_data_base_address:</span>
 <span class="sd">            dict(tuple(int,int,int), DsWriteInfo)</span>
-<span class="sd">        :param bool disable_advanced_monitor_usage:</span>
-<span class="sd">            whether to avoid using advanced monitors even if they&#39;re available</span>
 <span class="sd">        :return: map of placement and DSG data</span>
 <span class="sd">        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -281,8 +279,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">placements</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_core_to_conn_map</span> <span class="o">=</span> <span class="n">extra_monitor_cores_to_ethernet_connection_map</span>
 
-        <span class="c1"># Allow override to disable</span>
-        <span class="k">if</span> <span class="n">disable_advanced_monitor_usage</span><span class="p">:</span>
+        <span class="n">uses_advanced_monitors</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span>
+            <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">)</span>
+        <span class="c1"># Allow config to override</span>
+        <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span>
+                <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;disable_advanced_monitor_usage_for_data_in&quot;</span><span class="p">):</span>
             <span class="n">uses_advanced_monitors</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="n">impl_method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__java_app</span> <span class="k">if</span> <span class="n">java_caller</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">__python_app</span>

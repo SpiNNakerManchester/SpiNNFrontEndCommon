@@ -54,6 +54,7 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">ctypes</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_bool</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.ordered_set</span> <span class="kn">import</span> <span class="n">OrderedSet</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
@@ -164,9 +165,6 @@
         <span class="c1"># machine object</span>
         <span class="s2">&quot;_machine&quot;</span><span class="p">,</span>
 
-        <span class="c1"># flag for what data extraction to use</span>
-        <span class="s2">&quot;_uses_advanced_monitors&quot;</span><span class="p">,</span>
-
         <span class="c1"># Support class to help call Java</span>
         <span class="s2">&quot;_java_caller&quot;</span>
     <span class="p">]</span>
@@ -174,7 +172,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span>
                  <span class="n">packet_gather_cores_to_ethernet_connection_map</span><span class="p">,</span>
                  <span class="n">extra_monitor_to_chip_mapping</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">fixed_routes</span><span class="p">,</span>
-                 <span class="n">uses_advanced_monitors</span><span class="p">,</span> <span class="n">report_folder</span><span class="p">,</span> <span class="n">java_caller</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                 <span class="n">report_folder</span><span class="p">,</span> <span class="n">java_caller</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">            The placements of the vertices</span>
@@ -193,7 +191,6 @@
 <span class="sd">        :param ~spinn_machine.Machine machine:</span>
 <span class="sd">        :param fixed_routes:</span>
 <span class="sd">        :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)</span>
-<span class="sd">        :param bool uses_advanced_monitors:</span>
 <span class="sd">        :param str report_folder:</span>
 <span class="sd">            The directory for reports which includes the file to use as an SQL</span>
 <span class="sd">            database.</span>
@@ -210,7 +207,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_cores_by_chip</span> <span class="o">=</span> <span class="n">extra_monitor_to_chip_mapping</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span> <span class="o">=</span> <span class="n">fixed_routes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_uses_advanced_monitors</span> <span class="o">=</span> <span class="n">uses_advanced_monitors</span>
 
         <span class="c1"># Set of (ip_address, port) that are being listened to for the tags</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_seen_tags</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -234,7 +230,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="o">.</span><span class="n">set_machine</span><span class="p">(</span><span class="n">machine</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="o">.</span><span class="n">set_report_folder</span><span class="p">(</span><span class="n">report_folder</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_advanced_monitors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="o">.</span><span class="n">set_advanced_monitors</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_cores_by_chip</span><span class="p">,</span>
@@ -253,7 +249,7 @@
 <span class="sd">        :rtype: bytearray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_advanced_monitors</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
                 <span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
 
@@ -649,7 +645,8 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="o">.</span><span class="n">get_all_data</span><span class="p">()</span>
                     <span class="k">if</span> <span class="n">progress</span><span class="p">:</span>
                         <span class="n">progress</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
-                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_advanced_monitors</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">get_config_bool</span><span class="p">(</span>
+                        <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">__old_get_data_for_placements_with_monitors</span><span class="p">(</span>
                         <span class="n">placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>

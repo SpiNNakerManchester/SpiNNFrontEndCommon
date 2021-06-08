@@ -62,6 +62,8 @@
 <span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">config_options</span><span class="p">,</span> <span class="n">load_config</span><span class="p">,</span> <span class="n">get_config_bool</span><span class="p">,</span> <span class="n">get_config_int</span><span class="p">,</span>
     <span class="n">get_config_str</span><span class="p">,</span> <span class="n">set_config</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
@@ -112,6 +114,20 @@
 
         <span class="c1"># If not None, path to append pacman executor provenance info to</span>
         <span class="s2">&quot;_pacman_executor_provenance_path&quot;</span><span class="p">,</span>
+
+        <span class="c1"># The machine timestep, in microseconds</span>
+        <span class="s2">&quot;__machine_time_step&quot;</span><span class="p">,</span>
+
+        <span class="c1"># The machine timestep, in milliseconds</span>
+        <span class="c1"># Semantic sugar for __machine_time_step / 1000</span>
+        <span class="s2">&quot;__machine_time_step_ms&quot;</span><span class="p">,</span>
+
+        <span class="c1"># The number of machine timestep in a milliseconds</span>
+        <span class="c1"># Semantic sugar for 1000 / __machine_time_step</span>
+        <span class="s2">&quot;__machine_time_step_per_ms&quot;</span><span class="p">,</span>
+
+        <span class="c1"># The time scaling factor.</span>
+        <span class="s2">&quot;__time_scale_factor&quot;</span>
     <span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -131,6 +147,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_this_run_time_string</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step_ms</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__time_scale_factor</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">_debug_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Adjust and checks config based on mode and reports_enabled</span>
@@ -357,30 +376,6 @@
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="s2">&quot;finished&quot;</span><span class="p">)</span></div>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">machine_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The machine timestep, in microseconds</span>
-
-<span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;machine_time_step&quot;</span><span class="p">)</span>
-
-    <span class="nd">@machine_time_step</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">machine_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
-        <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;machine_time_step&quot;</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">time_scale_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The time scaling factor.</span>
-
-<span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;time_scale_factor&quot;</span><span class="p">)</span>
-
-    <span class="nd">@time_scale_factor</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">time_scale_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
-        <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;time_scale_factor&quot;</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)</span>
-
 <div class="viewcode-block" id="ConfigHandler.set_up_timings"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler.set_up_timings">[docs]</a>    <span class="k">def</span> <span class="nf">set_up_timings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set up timings of the machine</span>
 
@@ -395,16 +390,70 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># set up timings</span>
-        <span class="k">if</span> <span class="n">machine_time_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">machine_time_step</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">machine_time_step</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
+                <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;machine_time_step&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">machine_time_step</span> <span class="o">=</span> <span class="n">machine_time_step</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">machine_time_step</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                <span class="s2">&quot;invalid machine_time_step </span><span class="si">{}</span><span class="s2">: must greater than zero&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">machine_time_step</span><span class="p">))</span>
+                <span class="sa">f</span><span class="s1">&#39;invalid machine_time_step </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;: must greater than zero&#39;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">time_scale_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">time_scale_factor</span> <span class="o">=</span> <span class="n">time_scale_factor</span></div>
+        <span class="k">if</span> <span class="n">time_scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Note while this reads from the cfg the cfg default is None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__time_scale_factor</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
+                <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;time_scale_factor&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__time_scale_factor</span> <span class="o">=</span> <span class="n">time_scale_factor</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">machine_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The machine timestep, in microseconds</span>
+
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">machine_time_step_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The machine timestep, in milli_seconds</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step_ms</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">machine_time_step_per_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The machine timesteps in a milli_second</span>
+
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step_per_ms</span>
+
+    <span class="nd">@machine_time_step</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">machine_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param new_value: Machine timestep in microseconds</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step</span> <span class="o">=</span> <span class="n">new_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step_ms</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">new_value</span> <span class="o">/</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step_per_ms</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span> <span class="o">/</span> <span class="n">new_value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">time_scale_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The time scaling factor.</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__time_scale_factor</span>
+
+    <span class="nd">@time_scale_factor</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">time_scale_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__time_scale_factor</span> <span class="o">=</span> <span class="n">new_value</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_make_dirs</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>

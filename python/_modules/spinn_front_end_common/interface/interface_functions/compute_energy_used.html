@@ -54,6 +54,7 @@
 
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_int</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.ordered_set</span> <span class="kn">import</span> <span class="n">OrderedSet</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">PowerUsed</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="p">(</span>
@@ -61,7 +62,8 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">convert_time_diff_to_total_milliseconds</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="n">get_simulator</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_simulator</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">)</span>
 
 <span class="c1">#: milliseconds per second</span>
 <span class="n">_MS_PER_SECOND</span> <span class="o">=</span> <span class="mf">1000.0</span>
@@ -107,7 +109,7 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="ComputeEnergyUsed.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ComputeEnergyUsed.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span>
             <span class="n">router_provenance</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">buffer_manager</span><span class="p">,</span> <span class="n">mapping_time</span><span class="p">,</span>
             <span class="n">load_time</span><span class="p">,</span> <span class="n">execute_time</span><span class="p">,</span> <span class="n">dsg_time</span><span class="p">,</span> <span class="n">extraction_time</span><span class="p">,</span>
             <span class="n">spalloc_server</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">remote_spinnaker_url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -117,7 +119,6 @@
 <span class="sd">        :param ~spinn_machine.Machine machine:</span>
 <span class="sd">        :param int version:</span>
 <span class="sd">            The version of the SpiNNaker boards in use.</span>
-<span class="sd">        :param int time_scale_factor:</span>
 <span class="sd">        :param list(ProvenanceDataItem) router_provenance:</span>
 <span class="sd">            Provenance information from routers.</span>
 <span class="sd">        :param float runtime:</span>
@@ -160,12 +161,13 @@
         <span class="n">power_used</span><span class="o">.</span><span class="n">mapping_time_secs</span> <span class="o">=</span> <span class="n">mapping_time</span> <span class="o">/</span> <span class="n">_MS_PER_SECOND</span>
 
         <span class="n">using_spalloc</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">spalloc_server</span> <span class="ow">or</span> <span class="n">remote_spinnaker_url</span><span class="p">)</span>
+        <span class="n">runtime_total_ms</span> <span class="o">=</span> <span class="n">runtime</span> <span class="o">*</span> <span class="n">time_scale_factor</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compute_energy_consumption</span><span class="p">(</span>
              <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">using_spalloc</span><span class="p">,</span>
              <span class="n">router_provenance</span><span class="p">,</span> <span class="n">dsg_time</span><span class="p">,</span> <span class="n">buffer_manager</span><span class="p">,</span> <span class="n">load_time</span><span class="p">,</span>
              <span class="n">mapping_time</span><span class="p">,</span> <span class="n">execute_time</span> <span class="o">+</span> <span class="n">load_time</span> <span class="o">+</span> <span class="n">extraction_time</span><span class="p">,</span>
              <span class="n">machine_allocation_controller</span><span class="p">,</span>
-             <span class="n">runtime</span> <span class="o">*</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">power_used</span><span class="p">)</span>
+             <span class="n">runtime_total_ms</span><span class="p">,</span> <span class="n">power_used</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">power_used</span></div>
 
@@ -321,9 +323,11 @@
             <span class="n">buffer_manager</span><span class="o">=</span><span class="n">buffer_manager</span><span class="p">)</span>
 
         <span class="c1"># deduce time in milliseconds per recording element</span>
+        <span class="n">n_samples_per_recording</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
+            <span class="s2">&quot;EnergyMonitor&quot;</span><span class="p">,</span> <span class="s2">&quot;n_samples_per_recording_entry&quot;</span><span class="p">)</span>
         <span class="n">time_for_recorded_sample</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">chip_power_monitor</span><span class="o">.</span><span class="n">sampling_frequency</span> <span class="o">*</span>
-            <span class="n">chip_power_monitor</span><span class="o">.</span><span class="n">n_samples_per_recording</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+            <span class="n">n_samples_per_recording</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
         <span class="n">cores_power_cost</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span>
                             <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
 

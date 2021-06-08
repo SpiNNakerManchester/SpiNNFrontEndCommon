@@ -90,11 +90,9 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="MachineGenerator.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.MachineGenerator.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">bmp_details</span><span class="p">,</span> <span class="n">downed_chips</span><span class="p">,</span> <span class="n">downed_cores</span><span class="p">,</span>
-            <span class="n">downed_links</span><span class="p">,</span> <span class="n">board_version</span><span class="p">,</span> <span class="n">auto_detect_bmp</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">bmp_details</span><span class="p">,</span> <span class="n">board_version</span><span class="p">,</span> <span class="n">auto_detect_bmp</span><span class="p">,</span>
             <span class="n">scamp_connection_data</span><span class="p">,</span> <span class="n">boot_port_num</span><span class="p">,</span> <span class="n">reset_machine_on_start_up</span><span class="p">,</span>
-            <span class="n">report_waiting_logs</span><span class="p">,</span> <span class="n">max_sdram_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">repair_machine</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">ignore_bad_ethernets</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default_report_directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">default_report_directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str hostname:</span>
 <span class="sd">            the hostname or IP address of the SpiNNaker machine</span>
@@ -116,30 +114,9 @@
 <span class="sd">            list(~spinnman.connections.SocketAddressWithChip)</span>
 <span class="sd">        :param int boot_port_num: the port number used for the boot connection</span>
 <span class="sd">        :param bool reset_machine_on_start_up:</span>
-<span class="sd">        :param max_sdram_size: the maximum SDRAM each chip can say it has</span>
-<span class="sd">            (mainly used in debugging purposes)</span>
-<span class="sd">        :type max_sdram_size: int or None</span>
-<span class="sd">        :param bool repair_machine:</span>
-<span class="sd">            Flag to set the behaviour if a repairable error is found on the</span>
-<span class="sd">            machine.</span>
-<span class="sd">            If `True` will create a machine without the problematic bits.</span>
-<span class="sd">            (See machine_factory.machine_repair)</span>
-<span class="sd">            If `False`, get machine will raise an Exception if a problematic</span>
-<span class="sd">            machine is discovered.</span>
-<span class="sd">        :param bool ignore_bad_ethernets:</span>
-<span class="sd">            Flag to say that ip_address information</span>
-<span class="sd">            on non-ethernet chips should be ignored.</span>
-<span class="sd">            Non-ethernet chips are defined here as ones that do not report</span>
-<span class="sd">            themselves their nearest ethernet.</span>
-<span class="sd">            The bad IP address is always logged.</span>
-<span class="sd">            If True, the IP address is ignored.</span>
-<span class="sd">            If False, the chip with the bad IP address is removed.</span>
 <span class="sd">        :param str default_report_directory:</span>
 <span class="sd">            Directory to write any reports too.</span>
 <span class="sd">            If None the current directory will be used.</span>
-<span class="sd">        :param report_waiting_logs:</span>
-<span class="sd">            flag for the txrx to report when waiting on busy cores.</span>
-<span class="sd">        :type report_waiting_logs: bool</span>
 <span class="sd">        :return: Transceiver, and description of machine it is connected to</span>
 <span class="sd">        :rtype: tuple(~spinn_machine.Machine,</span>
 <span class="sd">            ~spinnman.transceiver.Transceiver)</span>
@@ -155,15 +132,10 @@
         <span class="n">txrx</span> <span class="o">=</span> <span class="n">create_transceiver_from_hostname</span><span class="p">(</span>
             <span class="n">hostname</span><span class="o">=</span><span class="n">hostname</span><span class="p">,</span>
             <span class="n">bmp_connection_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_parse_bmp_details</span><span class="p">(</span><span class="n">bmp_details</span><span class="p">),</span>
-            <span class="n">version</span><span class="o">=</span><span class="n">board_version</span><span class="p">,</span> <span class="n">ignore_chips</span><span class="o">=</span><span class="n">downed_chips</span><span class="p">,</span>
-            <span class="n">ignore_cores</span><span class="o">=</span><span class="n">downed_cores</span><span class="p">,</span> <span class="n">ignored_links</span><span class="o">=</span><span class="n">downed_links</span><span class="p">,</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">board_version</span><span class="p">,</span>
             <span class="n">auto_detect_bmp</span><span class="o">=</span><span class="n">auto_detect_bmp</span><span class="p">,</span> <span class="n">boot_port_no</span><span class="o">=</span><span class="n">boot_port_num</span><span class="p">,</span>
             <span class="n">scamp_connections</span><span class="o">=</span><span class="n">scamp_connection_data</span><span class="p">,</span>
-            <span class="n">max_sdram_size</span><span class="o">=</span><span class="n">max_sdram_size</span><span class="p">,</span>
-            <span class="n">repair_machine</span><span class="o">=</span><span class="n">repair_machine</span><span class="p">,</span>
-            <span class="n">ignore_bad_ethernets</span><span class="o">=</span><span class="n">ignore_bad_ethernets</span><span class="p">,</span>
-            <span class="n">default_report_directory</span><span class="o">=</span><span class="n">default_report_directory</span><span class="p">,</span>
-            <span class="n">report_waiting_logs</span><span class="o">=</span><span class="n">report_waiting_logs</span><span class="p">)</span>
+            <span class="n">default_report_directory</span><span class="o">=</span><span class="n">default_report_directory</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">reset_machine_on_start_up</span><span class="p">:</span>
             <span class="n">success</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">power_off_machine</span><span class="p">()</span>

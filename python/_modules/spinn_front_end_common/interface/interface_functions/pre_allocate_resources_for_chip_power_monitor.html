@@ -64,17 +64,11 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PreAllocateResourcesForChipPowerMonitor.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.PreAllocateResourcesForChipPowerMonitor.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">n_samples_per_recording</span><span class="p">,</span>
-            <span class="n">sampling_frequency</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span>
-            <span class="n">pre_allocated_resources</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span>  <span class="n">sampling_frequency</span><span class="p">,</span> <span class="n">pre_allocated_resources</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~spinn_machine.Machine machine:</span>
 <span class="sd">            the SpiNNaker machine as discovered</span>
-<span class="sd">        :param int n_samples_per_recording:</span>
-<span class="sd">            how many samples between record entries</span>
 <span class="sd">        :param int sampling_frequency: the frequency of sampling</span>
-<span class="sd">        :param int time_scale_factor: the time scale factor</span>
-<span class="sd">        :param int machine_time_step: the machine time step</span>
 <span class="sd">        :param pre_allocated_resources: other preallocated resources</span>
 <span class="sd">        :type pre_allocated_resources:</span>
 <span class="sd">            ~pacman.model.resources.PreAllocatedResourceContainer</span>
@@ -88,10 +82,7 @@
 
         <span class="c1"># store how much SDRAM the power monitor uses per core</span>
         <span class="n">resources</span> <span class="o">=</span> <span class="n">ChipPowerMonitorMachineVertex</span><span class="o">.</span><span class="n">get_resources</span><span class="p">(</span>
-            <span class="n">n_samples_per_recording</span><span class="o">=</span><span class="n">n_samples_per_recording</span><span class="p">,</span>
-            <span class="n">sampling_frequency</span><span class="o">=</span><span class="n">sampling_frequency</span><span class="p">,</span>
-            <span class="n">time_scale_factor</span><span class="o">=</span><span class="n">time_scale_factor</span><span class="p">,</span>
-            <span class="n">time_step</span><span class="o">=</span><span class="n">machine_time_step</span><span class="p">)</span>
+            <span class="n">sampling_frequency</span><span class="o">=</span><span class="n">sampling_frequency</span><span class="p">)</span>
 
         <span class="c1"># for every Ethernet connected chip, get the resources needed by the</span>
         <span class="c1"># live packet gatherers</span>

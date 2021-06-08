@@ -54,8 +54,6 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.profiling</span> <span class="kn">import</span> <span class="n">AbstractHasProfileData</span>
 
 
@@ -67,8 +65,7 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="ProfileDataGatherer.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ProfileDataGatherer.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">,</span>
-            <span class="n">machine_time_step</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">            the SpiNNMan interface object</span>
@@ -76,12 +73,8 @@
 <span class="sd">            The placements of the vertices</span>
 <span class="sd">        :param str provenance_file_path:</span>
 <span class="sd">            The location to store the profile data</span>
-<span class="sd">        :param int machine_time_step:</span>
-<span class="sd">            machine time step in ms</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="n">machine_time_step_ms</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="nb">float</span><span class="p">(</span><span class="n">machine_time_step</span><span class="p">)</span> <span class="o">/</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span>
 
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
             <span class="n">placements</span><span class="o">.</span><span class="n">n_placements</span><span class="p">,</span> <span class="s2">&quot;Getting profile data&quot;</span><span class="p">)</span>
@@ -93,19 +86,17 @@
                 <span class="n">profile_data</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">get_profile_data</span><span class="p">(</span>
                     <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">profile_data</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">profile_data</span><span class="p">,</span> <span class="n">machine_time_step_ms</span><span class="p">,</span>
-                                <span class="n">provenance_file_path</span><span class="p">)</span></div>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">profile_data</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">)</span></div>
 
     <span class="n">_FMT_A</span> <span class="o">=</span> <span class="s2">&quot;{: &lt;</span><span class="si">{}</span><span class="s2">s} </span><span class="si">{: &lt;7s}</span><span class="s2"> </span><span class="si">{: &lt;14s}</span><span class="s2"> </span><span class="si">{: &lt;14s}</span><span class="s2"> </span><span class="si">{: &lt;14s}</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="n">_FMT_B</span> <span class="o">=</span> <span class="s2">&quot;{:-&lt;</span><span class="si">{}</span><span class="s2">s} </span><span class="si">{:-&lt;7s}</span><span class="s2"> </span><span class="si">{:-&lt;14s}</span><span class="s2"> </span><span class="si">{:-&lt;14s}</span><span class="s2"> </span><span class="si">{:-&lt;14s}</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="n">_FMT_C</span> <span class="o">=</span> <span class="s2">&quot;{: &lt;</span><span class="si">{}</span><span class="s2">s} </span><span class="si">{: &gt;7d}</span><span class="s2"> </span><span class="si">{: &gt;14.6f}</span><span class="s2"> </span><span class="si">{: &gt;14.6f}</span><span class="s2"> </span><span class="si">{: &gt;14.6f}</span><span class="se">\n</span><span class="s2">&quot;</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_write</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">profile_data</span><span class="p">,</span> <span class="n">machine_time_step_ms</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_write</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">profile_data</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~.Placement p:</span>
 <span class="sd">        :param ProfileData profile_data:</span>
-<span class="sd">        :param float machine_time_step_ms:</span>
 <span class="sd">        :param str directory:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">max_tag_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">profile_data</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span>
@@ -125,10 +116,8 @@
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_FMT_C</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                     <span class="n">tag</span><span class="p">,</span> <span class="n">max_tag_len</span><span class="p">,</span> <span class="n">profile_data</span><span class="o">.</span><span class="n">get_n_calls</span><span class="p">(</span><span class="n">tag</span><span class="p">),</span>
                     <span class="n">profile_data</span><span class="o">.</span><span class="n">get_mean_ms</span><span class="p">(</span><span class="n">tag</span><span class="p">),</span>
-                    <span class="n">profile_data</span><span class="o">.</span><span class="n">get_mean_n_calls_per_ts</span><span class="p">(</span>
-                        <span class="n">tag</span><span class="p">,</span> <span class="n">machine_time_step_ms</span><span class="p">),</span>
-                    <span class="n">profile_data</span><span class="o">.</span><span class="n">get_mean_ms_per_ts</span><span class="p">(</span>
-                        <span class="n">tag</span><span class="p">,</span> <span class="n">machine_time_step_ms</span><span class="p">)))</span>
+                    <span class="n">profile_data</span><span class="o">.</span><span class="n">get_mean_n_calls_per_ts</span><span class="p">(</span><span class="n">tag</span><span class="p">),</span>
+                    <span class="n">profile_data</span><span class="o">.</span><span class="n">get_mean_ms_per_ts</span><span class="p">(</span><span class="n">tag</span><span class="p">)))</span>
 </pre></div>
 
             <div class="clearer"></div>

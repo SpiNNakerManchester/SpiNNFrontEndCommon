@@ -464,6 +464,44 @@ False where check_simulator raises and exception and True when it does not</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.machine_time_step">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">machine_time_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#machine_time_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.machine_time_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>The machine timestep, in microseconds</p>
+<p>..note: If the simulator has not been setup this returns the default 1000</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.machine_time_step_ms">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">machine_time_step_ms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#machine_time_step_ms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.machine_time_step_ms" title="Permalink to this definition">¶</a></dt>
+<dd><p>The machine timestep, in microseconds</p>
+<p>Semantic sugar for machine_time_step() / 1000.</p>
+<p>..note: If the simulator has not been setup this returns the default 1.0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.machine_time_step_per_ms">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">machine_time_step_per_ms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#machine_time_step_per_ms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.machine_time_step_per_ms" title="Permalink to this definition">¶</a></dt>
+<dd><p>The machine timesteps in a microseconds</p>
+<p>Semantic sugar for 1000 / machine_time_step()</p>
+<p>..note: If the simulator has not been setup this returns the default 1.0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.provenance_file_path">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">provenance_file_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#provenance_file_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.provenance_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path to the directory that holds all provenance files</p>
@@ -518,6 +556,20 @@ the next run if it has not yet been called.</p>
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException"><strong>SimulatorNotSetupException</strong></a> – if the system has a status where path can’t be retrieved</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.time_scale_factor">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">time_scale_factor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#time_scale_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.time_scale_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>The time scaling factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – if the system is in a state where machine_timestep can’t be retrieved</p>
 </dd>
 </dl>
 </dd></dl>
@@ -960,7 +1012,7 @@ warnings</p></li>
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.IOBufExtractor">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.</span></span><span class="sig-name descname"><span class="pre">IOBufExtractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_finder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_provenance_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_provenance_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recovery_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iobuf_for_chip_{}_{}_processor_id_{}.txt'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.IOBufExtractor" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.</span></span><span class="sig-name descname"><span class="pre">IOBufExtractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_finder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_provenance_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_provenance_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recovery_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iobuf_for_chip_{}_{}_processor_id_{}.txt'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.IOBufExtractor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Extract the logging output buffers from the machine, and separates        lines based on their prefix.</p>
 <dl class="field-list simple">
@@ -974,8 +1026,6 @@ warnings</p></li>
 <li><p><strong>executable_finder</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableFinder" title="spinn_front_end_common.utilities.utility_objs.ExecutableFinder"><em>ExecutableFinder</em></a>) – </p></li>
 <li><p><strong>app_provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – </p></li>
 <li><p><strong>system_provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – </p></li>
-<li><p><strong>from_cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </p></li>
-<li><p><strong>binary_types</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </p></li>
 </ul>
 </dd>
 </dl>

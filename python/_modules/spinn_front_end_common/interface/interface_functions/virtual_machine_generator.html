@@ -53,9 +53,9 @@
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_int</span><span class="p">,</span> <span class="n">get_config_str</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">json_machine</span><span class="p">,</span> <span class="n">virtual_machine</span><span class="p">,</span> <span class="n">Machine</span>
-
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
 
@@ -65,29 +65,18 @@
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
-<div class="viewcode-block" id="VirtualMachineGenerator.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.VirtualMachineGenerator.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">down_chips</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">down_cores</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">down_links</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">max_sdram_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">json_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="VirtualMachineGenerator.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.VirtualMachineGenerator.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">json_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param int width: The width of the machine in chips</span>
-<span class="sd">        :param int height: The height of the machine in chips</span>
 <span class="sd">        :param int version: The version of board to create</span>
-<span class="sd">        :param list(tuple(int,int)) down_chips:</span>
-<span class="sd">            The set of chips that should be considered broken</span>
-<span class="sd">        :param list(tuple(int,int,int)) down_cores:</span>
-<span class="sd">            The set of cores that should be considered broken</span>
-<span class="sd">        :param list(tuple(int,int,int)) down_links:</span>
-<span class="sd">            The set of links that should be considered broken</span>
-<span class="sd">        :param int max_sdram_size: The SDRAM that should be given to each chip</span>
-<span class="sd">        :param str json_path:</span>
-<span class="sd">            Where to load a JSON description of the machine from, if anywhere.</span>
 <span class="sd">        :return: The virtual machine.</span>
 <span class="sd">        :rtype: ~spinn_machine.Machine</span>
 <span class="sd">        :raises Exception: If given bad arguments</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># For backward compatibility support version in csf files for now</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;height&quot;</span><span class="p">)</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">)</span>
+        <span class="n">json_path</span> <span class="o">=</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;json_path&quot;</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">version</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]:</span>
                 <span class="k">if</span> <span class="n">height</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -119,13 +108,13 @@
             <span class="n">machine</span> <span class="o">=</span> <span class="n">virtual_machine</span><span class="p">(</span>
                 <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
                 <span class="n">n_cpus_per_chip</span><span class="o">=</span><span class="n">Machine</span><span class="o">.</span><span class="n">max_cores_per_chip</span><span class="p">(),</span>
-                <span class="n">down_chips</span><span class="o">=</span><span class="n">down_chips</span><span class="p">,</span> <span class="n">down_cores</span><span class="o">=</span><span class="n">down_cores</span><span class="p">,</span>
-                <span class="n">down_links</span><span class="o">=</span><span class="n">down_links</span><span class="p">,</span> <span class="n">sdram_per_chip</span><span class="o">=</span><span class="n">max_sdram_size</span><span class="p">,</span>
                 <span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">height</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">width</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span>
-                    <span class="n">version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">down_chips</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span>
-                    <span class="n">down_cores</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">down_links</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="n">version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span>
+                    <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;down_chips&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span>
+                    <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;down_cores&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span>
+                    <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;down_links&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;As json_path specified all other virtual &quot;</span>
                                <span class="s2">&quot;machine settings ignored.&quot;</span><span class="p">)</span>
             <span class="n">machine</span> <span class="o">=</span> <span class="n">json_machine</span><span class="o">.</span><span class="n">machine_from_json</span><span class="p">(</span><span class="n">json_path</span><span class="p">)</span>

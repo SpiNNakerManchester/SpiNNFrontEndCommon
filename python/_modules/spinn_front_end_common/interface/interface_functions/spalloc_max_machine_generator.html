@@ -66,12 +66,11 @@
 
 <div class="viewcode-block" id="SpallocMaxMachineGenerator.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.SpallocMaxMachineGenerator.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">spalloc_server</span><span class="p">,</span> <span class="n">spalloc_port</span><span class="o">=</span><span class="mi">22244</span><span class="p">,</span> <span class="n">spalloc_machine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">max_sdram_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_machine_core_reduction</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+            <span class="n">max_machine_core_reduction</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str spalloc_server:</span>
 <span class="sd">        :param int spalloc_port:</span>
 <span class="sd">        :param str spalloc_machine:</span>
-<span class="sd">        :param int max_sdram_size:</span>
 <span class="sd">        :param int max_machine_core_reduction: the number of cores less than</span>
 <span class="sd">            :py:const:`~spinn_machine.Machine.DEFAULT_MAX_CORES_PER_CHIP`</span>
 <span class="sd">            that each chip should have</span>
@@ -107,7 +106,7 @@
         <span class="c1"># Return the width and height, and make no assumption about wrap-</span>
         <span class="c1"># arounds or version.</span>
         <span class="k">return</span> <span class="n">virtual_machine</span><span class="p">(</span>
-            <span class="n">width</span><span class="o">=</span><span class="n">max_width</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">max_height</span><span class="p">,</span> <span class="n">sdram_per_chip</span><span class="o">=</span><span class="n">max_sdram_size</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">max_width</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">max_height</span><span class="p">,</span>
             <span class="n">n_cpus_per_chip</span><span class="o">=</span><span class="n">n_cpus_per_chip</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
     <span class="nd">@staticmethod</span>

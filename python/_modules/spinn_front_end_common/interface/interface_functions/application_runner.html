@@ -58,6 +58,8 @@
 <span class="kn">from</span> <span class="nn">spinnman.messages.scp.enums</span> <span class="kn">import</span> <span class="n">Signal</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">time_scale_factor</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span>
 
@@ -76,7 +78,7 @@
     <span class="c1"># Wraps up as a PACMAN algorithm</span>
 <div class="viewcode-block" id="ApplicationRunner.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ApplicationRunner.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">buffer_manager</span><span class="p">,</span> <span class="n">notification_interface</span><span class="p">,</span> <span class="n">executable_types</span><span class="p">,</span>
-            <span class="n">app_id</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">no_sync_changes</span><span class="p">,</span>
+            <span class="n">app_id</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">no_sync_changes</span><span class="p">,</span>
             <span class="n">time_threshold</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">run_until_complete</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param BufferManager buffer_manager:</span>
@@ -87,7 +89,6 @@
 <span class="sd">        :param int app_id:</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver txrx:</span>
 <span class="sd">        :param int runtime:</span>
-<span class="sd">        :param int time_scale_factor:</span>
 <span class="sd">        :param int no_sync_changes: Number of synchronisation changes</span>
 <span class="sd">        :param int time_threshold:</span>
 <span class="sd">        :param ~spinn_machine.Machine machine:</span>
@@ -138,8 +139,7 @@
             <span class="c1"># Wait for the application to finish</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_run_wait</span><span class="p">(</span>
-                    <span class="n">run_until_complete</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span>
-                    <span class="n">time_threshold</span><span class="p">)</span>
+                    <span class="n">run_until_complete</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">time_threshold</span><span class="p">)</span>
             <span class="k">finally</span><span class="p">:</span>
                 <span class="c1"># Stop the buffer manager after run</span>
                 <span class="n">buffer_manager</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
@@ -149,16 +149,14 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__syncs</span></div>
 
-    <span class="k">def</span> <span class="nf">_run_wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_until_complete</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span>
-                  <span class="n">time_threshold</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_run_wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_until_complete</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">time_threshold</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param bool run_until_complete:</span>
 <span class="sd">        :param int runtime:</span>
-<span class="sd">        :param int time_scale_factor:</span>
 <span class="sd">        :param float time_threshold:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">run_until_complete</span><span class="p">:</span>
-            <span class="n">factor</span> <span class="o">=</span> <span class="n">time_scale_factor</span> <span class="o">/</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="n">time_scale_factor</span><span class="p">()</span> <span class="o">/</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span>
             <span class="n">scaled_runtime</span> <span class="o">=</span> <span class="n">runtime</span> <span class="o">*</span> <span class="n">factor</span>
             <span class="n">time_to_wait</span> <span class="o">=</span> <span class="n">scaled_runtime</span> <span class="o">+</span> <span class="n">SAFETY_FINISH_TIME</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>

@@ -54,6 +54,7 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">wait</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.abstract_context_manager</span> <span class="kn">import</span> <span class="n">AbstractContextManager</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_bool</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">EIEIOConnection</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio.command_messages</span> <span class="kn">import</span> <span class="p">(</span>
@@ -78,19 +79,18 @@
         <span class="s2">&quot;__wait_futures&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__wait_pool&quot;</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_addresses</span><span class="p">,</span> <span class="n">wait_for_read_confirmation</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_addresses</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param socket_addresses: Where to notify.</span>
 <span class="sd">        :type socket_addresses:</span>
 <span class="sd">            set(~spinn_utilities.socket_address.SocketAddress)</span>
-<span class="sd">        :param bool wait_for_read_confirmation:</span>
-<span class="sd">            Whether to wait for the other side to acknowledge</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__socket_addresses</span> <span class="o">=</span> <span class="n">socket_addresses</span>
 
         <span class="c1"># Determines whether to wait for confirmation that the database</span>
         <span class="c1"># has been read before starting the simulation</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span> <span class="o">=</span> <span class="n">wait_for_read_confirmation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span>
+            <span class="s2">&quot;Database&quot;</span><span class="p">,</span> <span class="s2">&quot;wait_on_confirmation&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__sent_visualisation_confirmation</span> <span class="o">=</span> <span class="kc">False</span>
