@@ -20,6 +20,7 @@ import io
 import os
 import tempfile
 import threading
+from spinn_utilities.config_holder import get_config_bool
 from data_specification.constants import APP_PTR_TABLE_HEADER_BYTE_SIZE
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
@@ -66,15 +67,13 @@ _RPT_DIR = "data_spec_text_files"
 
 def get_data_spec_and_file_writer_filename(
         processor_chip_x, processor_chip_y, processor_id, hostname,
-        write_text_specs=False,  application_run_time_report_folder="TEMP"):
+        application_run_time_report_folder="TEMP"):
     """ Encapsulates the creation of the DSG writer and the file paths.
 
     :param int processor_chip_x: x-coordinate of the chip
     :param int processor_chip_y: y-coordinate of the chip
     :param int processor_id: The processor ID
     :param str hostname: The hostname of the SpiNNaker machine
-    :param bool write_text_specs:
-        True if a textual version of the specification should be written
     :param str application_run_time_report_folder:
         The folder to contain the resulting specification files; if 'TEMP'
         then a temporary directory is used.
@@ -93,8 +92,7 @@ def get_data_spec_and_file_writer_filename(
     # check if text reports are needed and if so initialise the report
     # writer to send down to DSG
     report_writer = get_report_writer(
-        processor_chip_x, processor_chip_y, processor_id,
-        hostname, write_text_specs=write_text_specs)
+        processor_chip_x, processor_chip_y, processor_id, hostname)
 
     # build the file writer for the spec
     spec = DataSpecificationGenerator(data_writer, report_writer)
@@ -103,8 +101,7 @@ def get_data_spec_and_file_writer_filename(
 
 
 def get_report_writer(
-        processor_chip_x, processor_chip_y, processor_id,
-        hostname, write_text_specs=False):
+        processor_chip_x, processor_chip_y, processor_id, hostname):
     """ Check if text reports are needed, and if so initialise the report\
         writer to send down to DSG.
 
@@ -112,15 +109,13 @@ def get_report_writer(
     :param int processor_chip_y: y-coordinate of the chip
     :param int processor_id: The processor ID
     :param str hostname: The hostname of the SpiNNaker machine
-    :param bool write_text_specs:
-        True if a textual version of the specification should be written
     :return: the report_writer_object, or None if not reporting
     :rtype: ~io.FileIO or None
     """
     # pylint: disable=too-many-arguments
 
     # check if text reports are needed at all
-    if not write_text_specs:
+    if not get_config_bool("Reports", "write_text_specs"):
         return None
     # initialise the report writer to send down to DSG
     new_report_directory = os.path.join(report_default_directory(), _RPT_DIR)
