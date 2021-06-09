@@ -221,5 +221,5 @@ class InsertExtraMonitorVerticesToGraphs(object):
             ip_address=ethernet_chip.ip_address,
             constraints=[ChipAndCoreConstraint(
                 x=ethernet_chip.x, y=ethernet_chip.y)],
-            extra_monitors_by_chip=vertex_to_chip_map,
-            report_default_directory=self._report_dir)
+            extra_monitors_by_chip=vertex_to_chip_map)
+
