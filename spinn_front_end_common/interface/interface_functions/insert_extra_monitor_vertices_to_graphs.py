@@ -16,8 +16,8 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 from spinn_front_end_common.utility_models import (
-    DataSpeedUpPacketGather, ExtraMonitorSupport,
-    ExtraMonitorSupportMachineVertex)
+    DataSpeedUpPacketGather, DataSpeedUpPacketGatherMachineVertex,
+    ExtraMonitorSupport, ExtraMonitorSupportMachineVertex)
 
 
 class InsertExtraMonitorVerticesToGraphs(object):
@@ -209,3 +209,17 @@ class InsertExtraMonitorVerticesToGraphs(object):
             constraints=[ChipAndCoreConstraint(
                 x=ethernet_chip.x, y=ethernet_chip.y)],
             extra_monitors_by_chip=vertex_to_chip_map)
+
+    def __new_mach_gatherer(self, ethernet_chip, vertex_to_chip_map):
+        """
+        :param ~.Chip ethernet_chip:
+        :param dict vertex_to_chip_map:
+        :rtype: DataSpeedUpPacketGatherMachineVertex
+        """
+        return DataSpeedUpPacketGatherMachineVertex(
+            x=ethernet_chip.x, y=ethernet_chip.y,
+            ip_address=ethernet_chip.ip_address,
+            constraints=[ChipAndCoreConstraint(
+                x=ethernet_chip.x, y=ethernet_chip.y)],
+            extra_monitors_by_chip=vertex_to_chip_map,
+            report_default_directory=self._report_dir)
