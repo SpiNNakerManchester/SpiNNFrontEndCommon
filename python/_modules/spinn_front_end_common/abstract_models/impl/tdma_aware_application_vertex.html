@@ -181,7 +181,8 @@
 <span class="sd">        :param str desc_label: a descriptive label for the vertex</span>
 <span class="sd">        :param int tdma_slots_missed: the number of TDMA slots missed</span>
 <span class="sd">        :return: the provenance data item</span>
-<span class="sd">        :rtype: ProvenanceDataItem</span>
+<span class="sd">        :rtype:</span>
+<span class="sd">            ~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
             <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_TDMA_MISSED_SLOTS_NAME</span><span class="p">],</span> <span class="n">tdma_slots_missed</span><span class="p">,</span>
