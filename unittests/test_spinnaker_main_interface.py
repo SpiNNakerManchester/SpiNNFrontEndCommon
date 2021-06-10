@@ -17,7 +17,7 @@ import os
 import sys
 import unittest
 from spinn_utilities.config_holder import get_config_int
-from spinn_front_end_common.interface.config_setup import reset_configs
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
@@ -41,11 +41,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        reset_configs()
-
-    def tearDown(self):
-        reset_configs()
-        globals_variables.unset_simulator()
+        unittest_setup()
 
     def test_stop_init(self):
         class_file = sys.modules[self.__module__].__file__

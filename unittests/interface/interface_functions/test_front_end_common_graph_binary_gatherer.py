@@ -19,6 +19,7 @@ from spinn_utilities.overrides import overrides
 from pacman.model.graphs.machine import (
    MachineGraph, SimpleMachineVertex)
 from pacman.model.placements import Placements, Placement
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     GraphBinaryGatherer, LocateExecutableStartType)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
@@ -49,6 +50,9 @@ class _TestExecutableFinder(object):
 
 
 class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
+
+    def setUp(self):
+        unittest_setup()
 
     def test_call(self):
         """ Test calling the binary gatherer normally
