@@ -16,12 +16,16 @@
 import tempfile
 import unittest
 from spinn_machine.virtual_machine import virtual_machine
+from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_front_end_common.utilities.utility_objs import DataWritten
 from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
 from spinn_front_end_common.interface.ds import DataSpecificationTargets
 
 
 class TestDsWriteInfo(unittest.TestCase):
+
+    def setUp(self):
+        reset_configs()
 
     def test_dict(self):
         check = dict()

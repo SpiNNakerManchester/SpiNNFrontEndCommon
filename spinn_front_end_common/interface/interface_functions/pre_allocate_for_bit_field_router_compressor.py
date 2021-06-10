@@ -13,9 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.resources import (
-    SpecificChipSDRAMResource, PreAllocatedResourceContainer)
+    ConstantSDRAM, SpecificChipSDRAMResource, PreAllocatedResourceContainer)
 from spinn_front_end_common.interface.interface_functions. \
     machine_bit_field_router_compressor import (
         SIZE_OF_SDRAM_ADDRESS_IN_BYTES)
@@ -25,15 +26,10 @@ class PreAllocateForBitFieldRouterCompressor(object):
     """ Preallocates resources required for bitfield router compression.
     """
 
-    def __call__(self, machine, sdram_to_pre_alloc_for_bit_fields,
-                 pre_allocated_resources):
+    def __call__(self, machine, pre_allocated_resources):
         """
         :param ~spinn_machine.Machine machine:
             the SpiNNaker machine as discovered
-        :param int sdram_to_pre_alloc_for_bit_fields:
-            SDRAM end user managed to help with bitfield compressions.
-            Basically ensuring some SDRAM is available in the case where there
-            is no SDRAM available to steal/use.
         :param pre_allocated_resources: other preallocated resources
         :type pre_allocated_resources:
             ~pacman.model.resources.PreAllocatedResourceContainer
@@ -48,12 +44,14 @@ class PreAllocateForBitFieldRouterCompressor(object):
         # for every Ethernet connected chip, get the resources needed by the
         # live packet gatherers
         sdrams = list()
-
+        sdram_to_pre_alloc_for_bit_fields = get_config_int(
+            "Mapping",
+            "router_table_compression_with_bit_field_pre_alloced_sdram")
         for chip in progress_bar.over(machine.chips):
-            sdrams.append(SpecificChipSDRAMResource(
-                chip,
+            sdram = ConstantSDRAM(
                 (SIZE_OF_SDRAM_ADDRESS_IN_BYTES * chip.n_user_processors) +
-                sdram_to_pre_alloc_for_bit_fields))
+                sdram_to_pre_alloc_for_bit_fields)
+            sdrams.append(SpecificChipSDRAMResource(chip, sdram))
 
         # note what has been preallocated
         allocated = PreAllocatedResourceContainer(

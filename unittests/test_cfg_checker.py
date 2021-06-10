@@ -15,8 +15,7 @@
 
 import os
 import unittest
-from spinn_utilities.config_holder import (
-    check_python_file, find_double_defaults)
+from spinn_utilities.config_holder import run_config_checks
 from spinn_front_end_common.interface.config_setup import reset_configs
 
 
@@ -27,14 +26,10 @@ class TestCfgChecker(unittest.TestCase):
         reset_configs()
 
     def test_cfg_checker(self):
-        module = __import__("spinn_front_end_common")
-        path = module.__file__
-        directory = os.path.dirname(path)
-        for root, dirs, files in os.walk(directory):
-            for file_name in files:
-                if file_name.endswith(".py"):
-                    py_path = os.path.join(root, file_name)
-                    check_python_file(py_path)
-
-    def test_double_defaults(self):
-        find_double_defaults()
+        unittests = os.path.dirname(__file__)
+        parent = os.path.dirname(unittests)
+        fec = os.path.join(parent, "spinn_front_end_common")
+        local = os.path.join(parent, "fec_local_tests")
+        fec_it = os.path.join(parent, "fec_integration_tests")
+        run_config_checks(directories=[
+            fec, local, fec_it, unittests])
