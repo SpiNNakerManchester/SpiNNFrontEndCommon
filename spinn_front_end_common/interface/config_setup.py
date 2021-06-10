@@ -26,10 +26,14 @@ BASE_CONFIG_FILE = "spinnaker.cfg"
 
 def unittest_setup():
     """
-    Resets the configs so only the local default config is included.
+    Does all the steps that may be required before a unittest
+
+    Resets the configs so only the local default configs are included.
+
+    Unsets any previous simulators and tempdirs
 
     .. note::
-        This file should only be called from PACMAN/unittests
+        This file should only be called from spinn_front_end_common tests
 
     """
     unset_simulator()
