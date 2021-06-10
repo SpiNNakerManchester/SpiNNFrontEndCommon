@@ -19,11 +19,12 @@ from spinn_utilities.config_holder import (
 from spinnman.config_setup import add_spinnman_cfg
 from pacman.config_setup import add_pacman_cfg
 from data_specification.config_setup import add_data_specification_cfg
+from spinn_front_end_common.utilities.globals_variables import unset_simulator
 
 BASE_CONFIG_FILE = "spinnaker.cfg"
 
 
-def reset_configs():
+def unittest_setup():
     """
     Resets the configs so only the local default config is included.
 
@@ -31,7 +32,8 @@ def reset_configs():
         This file should only be called from PACMAN/unittests
 
     """
-    clear_cfg_files()
+    unset_simulator()
+    clear_cfg_files(True)
     add_spinnaker_cfg()
 
 
