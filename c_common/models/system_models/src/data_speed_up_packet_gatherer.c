@@ -831,7 +831,7 @@ static void receive_data(uint key, uint payload) {
         position_in_store++;
 
         if (key == first_data_key) {
-            log_info("received new stream with max %d", payload);
+            log_debug("received new stream with max %d", payload);
             seq_num = FIRST_SEQ_NUM;
             data[SEQ_NUM_LOC] = seq_num;
             position_in_store = TRANSACTION_ID;
@@ -854,7 +854,7 @@ static void receive_data(uint key, uint payload) {
             position_in_store--;
 
             send_data();
-            log_info("sent all data");
+            log_debug("sent all data");
         } else if (position_in_store == ITEMS_PER_DATA_PACKET) {
             send_data();
         }
