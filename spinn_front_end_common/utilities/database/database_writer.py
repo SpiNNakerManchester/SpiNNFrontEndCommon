@@ -23,6 +23,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection)
 from spinn_front_end_common.utilities.globals_variables import (
     machine_time_step, time_scale_factor)
+from pacman.model.graphs.machine import MulticastEdgePartition
 
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -285,7 +286,8 @@ class DatabaseWriter(SQLiteDB):
                     """, (
                         (self.__edge_to_id[edge.app_edge],
                          self.__edge_to_id[edge])
-                        for edge in machine_graph.edges))
+                        for edge in machine_graph.edges
+                        if edge.app_edge is not None))
 
     def add_placements(self, placements):
         """ Adds the placements objects into the database
@@ -416,6 +418,7 @@ class DatabaseWriter(SQLiteDB):
                     (self.__vertex_to_id[vtx], int(key), int(a_id))
                     for vtx, prtn in vertices_and_partitions
                     if isinstance(vtx, AbstractProvidesKeyToAtomMapping)
+                    and isinstance(prtn, MulticastEdgePartition)
                     for a_id, key in vtx.routing_key_partition_atom_mapping(
                         routing_infos.get_routing_info_from_partition(prtn),
                         prtn)))
