@@ -49,7 +49,7 @@ class InsertLivePacketGatherersToGraphs(object):
             machine vertices
         :rtype: dict(LivePacketGatherParameters,
             tuple(LivePacketGather or None,
-                  dict(tuple(int,int),LivePacketGatherMachineVertex)))
+            dict(tuple(int,int),LivePacketGatherMachineVertex)))
         """
 
         self._machine_graph = machine_graph

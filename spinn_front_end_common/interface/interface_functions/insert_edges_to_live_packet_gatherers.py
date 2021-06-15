@@ -53,10 +53,12 @@ class InsertEdgesToLivePacketGatherers(object):
         :param ~spinn_machine.Machine machine: the SpiNNaker machine
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph
-        :param ~pacman.model.graphs.application.ApplicationGraph\
-            application_graph: the application graph
-        :param ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap\
-            n_keys_map: key map
+        :param application_graph: the application graph
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
+        :param n_keys_map: key map
+        :type n_keys_map:
+            ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
