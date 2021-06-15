@@ -46,9 +46,9 @@ class InsertEdgesToLivePacketGatherers(object):
         :param live_packet_gatherers_to_vertex_mapping:
             the mapping of LPG parameters and the machine vertices associated
             with it
-        :type live_packet_gatherers_to_vertex_mapping:
-            dict(LivePacketGatherParameters,
-            tuple(LivePacketGather or None,
+        :type live_packet_gatherers_to_vertex_mapping:\
+            dict(LivePacketGatherParameters,\
+            tuple(LivePacketGather or None,\
             dict(tuple(int,int),LivePacketGatherMachineVertex)))
         :param ~spinn_machine.Machine machine: the SpiNNaker machine
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
