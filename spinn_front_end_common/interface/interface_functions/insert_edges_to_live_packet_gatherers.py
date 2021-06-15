@@ -128,7 +128,7 @@ class InsertEdgesToLivePacketGatherers(object):
 
             m_vertices = app_vertex.splitter.get_out_going_vertices(
                 app_edge, part)
-            for vertex in m_vertices:
+            for vertex in m_vertices.keys():
                 lpg = self._find_closest_live_packet_gatherer(
                     vertex, machine_lpgs)
                 machine_edge = MachineEdge(vertex, lpg, app_edge=app_edge)

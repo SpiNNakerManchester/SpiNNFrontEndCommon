@@ -27,7 +27,7 @@ from pacman.model.graphs.machine import MulticastEdgePartition
 
 
 logger = FormatAdapter(logging.getLogger(__name__))
-DB_NAME = "input_output_database.db"
+DB_NAME = "input_output_database.sqlite3"
 INIT_SQL = "db.sql"
 
 
