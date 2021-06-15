@@ -46,19 +46,17 @@ class InsertEdgesToLivePacketGatherers(object):
         :param live_packet_gatherers_to_vertex_mapping:
             the mapping of LPG parameters and the machine vertices associated
             with it
-        :type live_packet_gatherers_to_vertex_mapping:\
-            dict(LivePacketGatherParameters,\
-            tuple(LivePacketGather or None,\
+        :type live_packet_gatherers_to_vertex_mapping:
+            dict(LivePacketGatherParameters,
+            tuple(LivePacketGather or None,
             dict(tuple(int,int),LivePacketGatherMachineVertex)))
         :param ~spinn_machine.Machine machine: the SpiNNaker machine
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph
-        :param application_graph: the application graph
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
-        :param n_keys_map: key map
-        :type n_keys_map:
-            ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
+        :param ~pacman.model.graphs.application.ApplicationGraph\
+            application_graph: the application graph
+        :param ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap\
+            n_keys_map: key map
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
