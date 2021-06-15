@@ -49,7 +49,7 @@ class InsertEdgesToLivePacketGatherers(object):
         :type live_packet_gatherers_to_vertex_mapping:
             dict(LivePacketGatherParameters,
             tuple(LivePacketGather or None,
-                  dict(tuple(int,int),LivePacketGatherMachineVertex)))
+            dict(tuple(int,int),LivePacketGatherMachineVertex)))
         :param ~spinn_machine.Machine machine: the SpiNNaker machine
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph
