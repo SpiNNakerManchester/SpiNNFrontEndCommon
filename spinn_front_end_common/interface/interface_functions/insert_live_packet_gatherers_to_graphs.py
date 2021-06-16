@@ -66,17 +66,13 @@ class InsertLivePacketGatherersToGraphs(object):
         if application_graph is not None:
             for chip in progress.over(machine.ethernet_connected_chips):
                 for params in live_packet_gatherer_parameters:
-                    if (params.board_address is None or
-                            params.board_address == chip.ip_address):
-                        lpg_params_to_vertices[params][chip.x, chip.y] = \
-                            self._add_app_lpg_vertex(chip, params)
+                    lpg_params_to_vertices[params][chip.x, chip.y] = \
+                        self._add_app_lpg_vertex(chip, params)
         else:
             for chip in progress.over(machine.ethernet_connected_chips):
                 for params in live_packet_gatherer_parameters:
-                    if (params.board_address is None or
-                            params.board_address == chip.ip_address):
-                        lpg_params_to_vertices[params][chip.x, chip.y] = \
-                            self._add_mach_lpg_vertex(chip, params)
+                    lpg_params_to_vertices[params][chip.x, chip.y] = \
+                        self._add_mach_lpg_vertex(chip, params)
 
         return lpg_params_to_vertices
 
