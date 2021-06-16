@@ -91,9 +91,6 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             self.assertEqual(core.n_cores, 1)
         self.assertEqual(len(locs), 0)
 
-        # verify specific cores
-        self.assertEqual(len(pre_res.specific_core_resources), 0)
-
     def test_added_pre_res(self):
         machine = virtual_machine(width=12, height=12)
 
@@ -180,9 +177,6 @@ class TestLPGPreAllocateRes(unittest.TestCase):
                 self.assertEqual(core.n_cores, 2)
         self.assertEqual(len(locs), 0)
 
-        # verify specific cores
-        self.assertEqual(len(pre_res.specific_core_resources), 0)
-
     def test_none(self):
         machine = virtual_machine(width=12, height=12)
         live_packet_gatherers = dict()
@@ -192,7 +186,6 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine,
             pre_allocated_resources=PreAllocatedResourceContainer())
-        self.assertEqual(len(pre_res.specific_core_resources), 0)
         self.assertEqual(len(pre_res.core_resources), 0)
         self.assertEqual(len(pre_res.specific_sdram_usage), 0)
 
