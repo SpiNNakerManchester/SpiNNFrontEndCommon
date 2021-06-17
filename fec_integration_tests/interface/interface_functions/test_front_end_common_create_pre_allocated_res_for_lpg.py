@@ -17,7 +17,7 @@ import unittest
 from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.resources import (
-    ConstantSDRAM, CoreResource, ResourceReservations)
+    ConstantSDRAM, CoreResource, PreAllocatedResourceContainer)
 from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_front_end_common.interface.interface_functions import (
     PreAllocateResourcesForLivePacketGatherers)
@@ -63,7 +63,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         pre_res = pre_alloc(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine,
-            pre_allocated_resources=ResourceReservations())
+            pre_allocated_resources=PreAllocatedResourceContainer())
 
         # verify sdram
         self.assertEqual(
@@ -83,7 +83,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         pre_res = pre_alloc(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine,
-            pre_allocated_resources=ResourceReservations())
+            pre_allocated_resources=PreAllocatedResourceContainer())
         self.assertEqual(
             pre_res.sdram_all.get_total_sdram(0), 0)
         self.assertEqual(
@@ -100,7 +100,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             pre_alloc(
                 live_packet_gatherer_parameters=live_packet_gatherers,
                 machine=machine,
-                pre_allocated_resources=ResourceReservations())
+                pre_allocated_resources=PreAllocatedResourceContainer())
         # Make sure we know what the exception was; NOT an important test!
         self.assertEqual(
             "'str' object has no attribute 'hostname'",
