@@ -17,8 +17,7 @@ import unittest
 from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.resources import (
-    ConstantSDRAM, CoreResource, PreAllocatedResourceContainer,
-    SpecificChipSDRAMResource)
+    ConstantSDRAM, CoreResource, ResourceReservations)
 from spinn_front_end_common.interface.config_setup import reset_configs
 from spinn_front_end_common.interface.interface_functions import (
     PreAllocateResourcesForLivePacketGatherers)
@@ -64,118 +63,17 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         pre_res = pre_alloc(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine,
-            pre_allocated_resources=PreAllocatedResourceContainer())
-
-        locs = list()
-        locs.append((0, 0))
-        locs.append((4, 8))
-        locs.append((8, 4))
+            pre_allocated_resources=ResourceReservations())
 
         # verify sdram
-        sdrams = pre_res.specific_sdram_usage
-        for sdram in sdrams:
-            locs.remove((sdram.chip.x, sdram.chip.y))
-            self.assertEqual(
-                sdram.sdram_usage.get_total_sdram(0),
-                LivePacketGatherMachineVertex.get_sdram_usage())
-        self.assertEqual(len(locs), 0)
+        self.assertEqual(
+            pre_res.sdram_all.get_total_sdram(0), 0)
+        self.assertEqual(
+            pre_res.sdram_ethernet.get_total_sdram(0),
+            LivePacketGatherMachineVertex.get_sdram_usage())
 
-        locs = list()
-        locs.append((0, 0))
-        locs.append((4, 8))
-        locs.append((8, 4))
-        # verify cores
-        cores = pre_res.core_resources
-        for core in cores:
-            locs.remove((core.chip.x, core.chip.y))
-            self.assertEqual(core.n_cores, 1)
-        self.assertEqual(len(locs), 0)
-
-    def test_added_pre_res(self):
-        machine = virtual_machine(width=12, height=12)
-
-        default_params = {
-            'use_prefix': False,
-            'key_prefix': None,
-            'prefix_type': None,
-            'message_type': EIEIOType.KEY_32_BIT,
-            'right_shift': 0,
-            'payload_as_time_stamps': True,
-            'use_payload_prefix': True,
-            'payload_prefix': None,
-            'payload_right_shift': 0,
-            'number_of_packets_sent_per_time_step': 0,
-            'hostname': None,
-            'port': None,
-            'strip_sdp': None,
-            'tag': None,
-            'label': "Test"}
-
-        # data stores needed by algorithm
-        live_packet_gatherers = dict()
-        default_params_holder = LivePacketGatherParameters(**default_params)
-        live_packet_gatherers[default_params_holder] = list()
-
-        # create pre res
-        sdram_requirements = {machine.get_chip_at(2, 2): 30000,
-                              machine.get_chip_at(7, 7): 50000}
-        core_requirements = {machine.get_chip_at(3, 3): 2}
-
-        sdrams = list()
-        cores = list()
-        for chip in sdram_requirements:
-            sdrams.append(SpecificChipSDRAMResource(
-                chip, ConstantSDRAM(sdram_requirements[chip])))
-        for chip in core_requirements:
-            cores.append(CoreResource(chip, core_requirements[chip]))
-        pre_pre_res = PreAllocatedResourceContainer(
-            core_resources=cores, specific_sdram_usage=sdrams)
-
-        # run  pre allocator
-        pre_alloc = PreAllocateResourcesForLivePacketGatherers()
-        pre_res = pre_alloc(
-            live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine, pre_allocated_resources=pre_pre_res)
-
-        locs = list()
-        locs.append((0, 0))
-        locs.append((4, 8))
-        locs.append((8, 4))
-        locs.append((2, 2))
-        locs.append((7, 7))
-
-        # verify sdram
-        sdrams = pre_res.specific_sdram_usage
-        for sdram in sdrams:
-            locs.remove((sdram.chip.x, sdram.chip.y))
-            if sdram.sdram_usage.get_total_sdram(0) != \
-                    LivePacketGatherMachineVertex.get_sdram_usage():
-                self.assertIn(sdram.chip.x, (2, 7))
-                self.assertIn(sdram.chip.y, (2, 7))
-                self.assertEqual(sdram.chip.x, sdram.chip.y)
-                if sdram.chip.x == 2 and sdram.chip.y == 2:
-                    self.assertEqual(sdram.sdram_usage.get_total_sdram(0),
-                                     30000)
-                elif sdram.chip.x == 7 and sdram.chip.y == 7:
-                    self.assertEqual(sdram.sdram_usage.get_total_sdram(0),
-                                     50000)
-        self.assertEqual(len(locs), 0)
-
-        locs = list()
-        locs.append((0, 0))
-        locs.append((4, 8))
-        locs.append((8, 4))
-        locs.append((3, 3))
-
-        # verify cores
-        cores = pre_res.core_resources
-        for core in cores:
-            locs.remove((core.chip.x, core.chip.y))
-            if core.n_cores != 1:
-                self.assertEqual(core.chip.x, 3)
-                self.assertEqual(core.chip.y, 3)
-                self.assertEqual(core.n_cores, 2)
-        self.assertEqual(len(locs), 0)
+        self.assertEqual(pre_res.cores_all, 0)
+        self.assertEqual(pre_res.cores_ethernet, 1)
 
     def test_none(self):
         machine = virtual_machine(width=12, height=12)
@@ -185,9 +83,14 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         pre_res = pre_alloc(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine,
-            pre_allocated_resources=PreAllocatedResourceContainer())
-        self.assertEqual(len(pre_res.core_resources), 0)
-        self.assertEqual(len(pre_res.specific_sdram_usage), 0)
+            pre_allocated_resources=ResourceReservations())
+        self.assertEqual(
+            pre_res.sdram_all.get_total_sdram(0), 0)
+        self.assertEqual(
+            pre_res.sdram_ethernet.get_total_sdram(0), 0)
+
+        self.assertEqual(pre_res.cores_all, 0)
+        self.assertEqual(pre_res.cores_ethernet, 0)
 
     def test_fail(self):
         machine = virtual_machine(width=12, height=12)
@@ -197,7 +100,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             pre_alloc(
                 live_packet_gatherer_parameters=live_packet_gatherers,
                 machine=machine,
-                pre_allocated_resources=PreAllocatedResourceContainer())
+                pre_allocated_resources=ResourceReservations())
         # Make sure we know what the exception was; NOT an important test!
         self.assertEqual(
             "'str' object has no attribute 'hostname'",
