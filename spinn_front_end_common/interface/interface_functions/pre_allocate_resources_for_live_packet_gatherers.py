@@ -14,9 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.resources import (
-    ConstantSDRAM, CoreResource, PreAllocatedResourceContainer,
-    SpecificChipSDRAMResource, SpecificBoardIPtagResource)
+from pacman.model.resources import IPtagResource
 from spinn_front_end_common.utility_models import (
     LivePacketGatherMachineVertex)
 
@@ -43,60 +41,19 @@ class PreAllocateResourcesForLivePacketGatherers(object):
         :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
 
-        progress = ProgressBar(
-            len(machine.ethernet_connected_chips),
-            "Preallocating resources for Live Recording")
+        progress_bar = ProgressBar(
+            1, "Preallocating resources for Live Recording")
 
         # store how much SDRAM the LPG uses per core
-        sdram_requirement = LivePacketGatherMachineVertex.get_sdram_usage()
-
-        # for every Ethernet connected chip, get the resources needed by the
-        # live packet gatherers
-        sdrams = list()
-        cores = list()
-        iptags = list()
-        for chip in progress.over(machine.ethernet_connected_chips):
-            self._add_chip_lpg_reqs(
-                live_packet_gatherer_parameters, chip, sdram_requirement,
-                sdrams, cores, iptags)
-
-        # note what has been preallocated
-        allocated = PreAllocatedResourceContainer(
-            specific_sdram_usage=sdrams, core_resources=cores,
-            specific_iptag_resources=iptags)
-        allocated.extend(pre_allocated_resources)
-        return allocated
-
-    @staticmethod
-    def _add_chip_lpg_reqs(
-            lpg_parameters, chip, lpg_sdram, sdrams, cores, iptags):
-        """
-        :param lpg_parameters:
-        :type lpg_parameters:
-            dict(LivePacketGatherParameters,
-            list(tuple(~.AbstractVertex, list(str))))
-        :param ~.Chip chip:
-        :param int lpg_sdram:
-        :param list(~.SpecificChipSDRAMResource) sdrams:
-        :param list(~.CoreResource) cores:
-        :param list(~.SpecificBoardIPtagResource) iptags:
-        """
-        # pylint: disable=too-many-arguments
-        sdram_reqs = 0
-        core_reqs = 0
-
-        for lpg_params in lpg_parameters:
-            sdram_reqs += lpg_sdram
-            core_reqs += 1
-            iptags.append(SpecificBoardIPtagResource(
-                board=chip.ip_address,
+        sdram = LivePacketGatherMachineVertex.get_sdram_usage()
+        for lpg_params in live_packet_gatherer_parameters:
+            pre_allocated_resources.add_sdram_ethernet(sdram)
+            pre_allocated_resources.add_cores_ethernet(1)
+            pre_allocated_resources.add_iptag_resource(IPtagResource(
                 ip_address=lpg_params.hostname, port=lpg_params.port,
                 strip_sdp=lpg_params.strip_sdp, tag=lpg_params.tag,
                 traffic_identifier=(
                     LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER)))
 
-        if sdram_reqs:
-            sdrams.append(SpecificChipSDRAMResource(
-                chip, ConstantSDRAM(sdram_reqs)))
-        if core_reqs:
-            cores.append(CoreResource(chip, core_reqs))
+        progress_bar.end()
+        return pre_allocated_resources

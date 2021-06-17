@@ -44,8 +44,7 @@ from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import (
     MachineGraph, MachineGraphView, MachineVertex)
-from pacman.model.resources import (
-    PreAllocatedResourceContainer, ConstantSDRAM)
+from pacman.model.resources import (ConstantSDRAM, ResourceReservations)
 from pacman import __version__ as pacman_version
 from spinn_utilities.config_holder import (
     get_config_bool, get_config_int, get_config_str, get_config_str_list,
@@ -1236,7 +1235,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         inputs["ScampConnectionData"] = get_config_str(
             "Machine", "scamp_connections_data")
         inputs['ReportFolder'] = self._report_default_directory
-        inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
+        inputs[_PREALLOC_NAME] = ResourceReservations()
         algorithms.append("MachineGenerator")
 
         outputs.append("MemoryMachine")
@@ -1265,7 +1264,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         inputs["BMPDetails"] = None
         inputs["AutoDetectBMPFlag"] = False
         inputs["ScampConnectionData"] = None
-        inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
+        inputs[_PREALLOC_NAME] = ResourceReservations()
 
         algorithms.append("VirtualMachineGenerator")
 
@@ -1291,7 +1290,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         do_partitioning = self._machine_by_size(inputs, algorithms, outputs)
         inputs['ReportFolder'] = self._report_default_directory
-        inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
+        inputs[_PREALLOC_NAME] = ResourceReservations()
 
         # if using spalloc system
         if self._spalloc_server is not None:
@@ -1592,7 +1591,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # only add the partitioner if there isn't already a machine graph
         algorithms.append("MallocBasedChipIDAllocator")
         if _PREALLOC_NAME not in inputs:
-            inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
+            inputs[_PREALLOC_NAME] = ResourceReservations()
         if not self._machine_graph.n_vertices:
             algorithms.extend(get_config_str_list(
                 "Mapping", "application_to_machine_graph_algorithms"))
