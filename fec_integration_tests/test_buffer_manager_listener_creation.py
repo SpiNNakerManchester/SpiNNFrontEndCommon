@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import tempfile
 import unittest
 
 from pacman.model.placements import Placement, Placements
@@ -72,8 +71,6 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # trnx.register_udp_listener(callback=None,
         #        connection_class=EIEIOConnection)
 
-        testdir = tempfile.mkdtemp()
-        print(testdir)
         # Create buffer manager
         bm = BufferManager(
             placements=pl, tags=t, transceiver=trnx, extra_monitor_cores=None,
