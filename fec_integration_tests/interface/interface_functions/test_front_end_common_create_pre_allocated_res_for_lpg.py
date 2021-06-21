@@ -19,7 +19,7 @@ from spinnman.messages.eieio import EIEIOType
 from pacman.model.resources import (
     ConstantSDRAM, CoreResource, PreAllocatedResourceContainer,
     SpecificChipSDRAMResource)
-from spinn_front_end_common.interface.config_setup import reset_configs
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     PreAllocateResourcesForLivePacketGatherers)
 from spinn_front_end_common.utilities.utility_objs import (
@@ -32,7 +32,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
     """ tests the interaction of the pre resource calculations
     """
     def setUp(self):
-        reset_configs()
+        unittest_setup()
 
     def test_one_lpg_params(self):
         machine = virtual_machine(width=12, height=12)
