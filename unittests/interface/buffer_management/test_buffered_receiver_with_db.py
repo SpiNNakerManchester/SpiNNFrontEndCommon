@@ -21,9 +21,13 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferedReceivingData
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_receiving_data import DB_FILE_NAME
+from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
 class TestBufferedReceivingDataWithDB(unittest.TestCase):
+
+    def setUp(self):
+        unittest_setup()
 
     def test_use_database(self):
         d = tempfile.mkdtemp()
