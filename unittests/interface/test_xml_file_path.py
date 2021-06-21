@@ -15,11 +15,15 @@
 
 from os import path
 import unittest
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import interface_xml
 from spinn_front_end_common.utilities.report_functions import report_xml
 
 
 class TestXmlFilePath(unittest.TestCase):
+
+    def setUp(self):
+        unittest_setup()
 
     def test_interface_exists(self):
         self.assertTrue(path.exists(interface_xml()))

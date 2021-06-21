@@ -15,13 +15,14 @@
 
 import unittest
 from spinn_machine.virtual_machine import virtual_machine
-from spinn_front_end_common.interface.config_setup import reset_configs
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.ds import DataSpecificationTargets
 
 
 class TestDataSpecificationTargets(unittest.TestCase):
+
     def setUp(self):
-        reset_configs()
+        unittest_setup()
 
     def test_dict(self):
         machine = virtual_machine(2, 2)

@@ -15,16 +15,16 @@
 
 import os
 import unittest
-from spinn_utilities.config_holder import load_config, set_config
+from spinn_utilities.config_holder import set_config
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
-from spinn_front_end_common.interface.config_setup import reset_configs
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     ChipIOBufExtractor)
 from spinn_front_end_common.utilities.globals_variables import (
-    app_provenance_file_path, unset_simulator)
+    app_provenance_file_path)
 from spinnman.model import ExecutableTargets
 from spinnman.transceiver import Transceiver
 
@@ -90,14 +90,7 @@ executable_targets.add_subsets(alphaaplx, core_subsets)
 class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
     def setUp(self):
-        unset_simulator()
-        reset_configs()
-        load_config()
-
-    @classmethod
-    def tearDownClass(cls):
-        unset_simulator()
-        reset_configs()
+        unittest_setup()
 
     def testExectuableFinder(self):
         self.assertIn(fooaplx, executableFinder.get_executable_path(fooaplx))

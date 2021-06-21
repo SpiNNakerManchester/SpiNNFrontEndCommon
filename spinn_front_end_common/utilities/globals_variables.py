@@ -26,6 +26,7 @@ from spinn_front_end_common.utilities.exceptions import (
 # pylint: disable=global-statement
 _simulator = None
 __temp_dir = None
+__unittest_mode = False
 
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -107,15 +108,21 @@ def set_simulator(new_simulator):
     :type new_simulator:
         ~spinn_front_end_common.interface.AbstractSpinnakerBase
     """
-    global _simulator
+    global _simulator, __unittest_mode
     _simulator = new_simulator
+    __unittest_mode = False
 
 
-def unset_simulator():
+def setup_for_unittest():
     """ Removes the link to the previous simulator and clears injection
+
+    As this call is not required before calling set_simulator
+    so should only be called by unittest_setup.
+
     """
-    global _simulator, __temp_dir
+    global _simulator, __temp_dir, __unittest_mode
     _simulator = None
+    __unittest_mode = True
     injection_decorator._instances = list()
     __temp_dir = None
 
@@ -150,11 +157,16 @@ def machine_time_step():
     ..note: If the simulator has not been setup this returns the default 1000
 
     :rtype: int
+    :raises SimulatorNotSetupException:
+        If the simulator has not been setup
     """
     if _simulator is None:
-        logger.warning(
-            "Invalid simulator so machine_time_step is 1000")
-        return 1000
+        #  set by unittest_setup
+        if __unittest_mode:
+            return 1000
+        else:
+            raise SimulatorNotSetupException(
+                "machine_time_step() not supported before sim.setup.")
     else:
         if _simulator._status in SHUTDOWN_STATUS:
             logger.warning(
@@ -170,11 +182,16 @@ def machine_time_step_ms():
     ..note: If the simulator has not been setup this returns the default 1.0
 
     :rtype: float
+    :raises SimulatorNotSetupException:
+        If the simulator has not been setup
     """
     if _simulator is None:
-        logger.warning(
-            "Invalid simulator so machine_time_step_ms is 1.0")
-        return 1.0
+        #  set by unittest_setup
+        if __unittest_mode:
+            return 1.0
+        else:
+            raise SimulatorNotSetupException(
+                "machine_time_step_ms() not supported before sim.setup.")
     else:
         if _simulator._status in SHUTDOWN_STATUS:
             logger.warning(
@@ -190,11 +207,16 @@ def machine_time_step_per_ms():
     ..note: If the simulator has not been setup this returns the default 1.0
 
     :rtype: float
+    :raises SimulatorNotSetupException:
+        If the simulator has not been setup
     """
     if _simulator is None:
-        logger.warning(
-            "Invalid simulator so machine_time_step_per_ms is 1.0")
-        return 1.0
+        #  set by unittest_setup
+        if __unittest_mode:
+            return 1.0
+        else:
+            raise SimulatorNotSetupException(
+                "machine_time_step_per_ms() not supported before sim.setup.")
     else:
         if _simulator._status in SHUTDOWN_STATUS:
             logger.warning(
@@ -208,11 +230,16 @@ def time_scale_factor():
     :rtype: int
     :raises ValueError:
         if the system is in a state where machine_timestep can't be retrieved
+    :raises SimulatorNotSetupException:
+        If the simulator has not been setup
     """
     if _simulator is None:
-        logger.warning(
-            "Invalid simulator so time_scale_factor is 1")
-        return 1
+        #  set by unittest_setup
+        if __unittest_mode:
+            return 1
+        else:
+            raise SimulatorNotSetupException(
+                "time_scale_factor() not supported before sim.setup.")
     else:
         if _simulator._status in SHUTDOWN_STATUS:
             logger.warning(

@@ -19,13 +19,13 @@ test for partitioning
 import os
 import unittest
 from pacman.executor import AlgorithmMetadataXmlReader
-from spinn_front_end_common.interface.config_setup import reset_configs
+from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
 class TestXML(unittest.TestCase):
 
     def setUp(self):
-        reset_configs()
+        unittest_setup()
 
     def test_read_xml(self):
 

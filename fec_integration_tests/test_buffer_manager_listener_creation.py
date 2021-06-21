@@ -23,10 +23,14 @@ from spinnman.transceiver import Transceiver
 from spinnman.connections.udp_packet_connections import (
     SCAMPConnection, EIEIOConnection)
 from spinn_front_end_common.interface.buffer_management import BufferManager
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from pacman_test_objects import SimpleTestVertex
 
 
 class TestBufferManagerListenerCreation(unittest.TestCase):
+
+    def setUp(self):
+        unittest_setup()
 
     def test_listener_creation(self):
         # Test of buffer manager listener creation problem, where multiple

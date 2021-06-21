@@ -23,12 +23,11 @@ from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset)
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
-from spinn_front_end_common.interface.config_setup import reset_configs
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     DSGRegionReloader)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
-from spinn_front_end_common.utilities.globals_variables import unset_simulator
 from pacman.model.graphs.machine import (SimpleMachineVertex)
 from spinnman.transceiver import Transceiver
 from spinnman.model import CPUInfo
@@ -113,13 +112,7 @@ class _MockTransceiver(object):
 class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
     def setUp(self):
-        unset_simulator()
-        reset_configs()
-
-    @classmethod
-    def tearDownClass(cls):
-        unset_simulator()
-        reset_configs()
+        unittest_setup()
 
     def test_with_application_vertices(self):
         """ Test that an application vertex's data is rewritten correctly

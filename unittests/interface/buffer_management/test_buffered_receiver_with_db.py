@@ -20,17 +20,14 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_receiving_data import DB_FILE_NAME
 from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory, unset_simulator)
+    report_default_directory)
+from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
 class TestBufferedReceivingDataWithDB(unittest.TestCase):
 
     def setUp(self):
-        unset_simulator()
-
-    @classmethod
-    def tearDown(cls):
-        unset_simulator()
+        unittest_setup()
 
     def test_use_database(self):
         f = os.path.join(report_default_directory(), DB_FILE_NAME)
