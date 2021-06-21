@@ -24,7 +24,7 @@ from spinn_front_end_common.utilities.utility_calls import (
 class TestingUtilities(unittest.TestCase):
 
     def setUp(cls):
-        unittest_setup
+        unittest_setup()
 
     def test_get_region_base_address_offset(self):
         val = get_region_base_address_offset(48, 7)
