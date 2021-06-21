@@ -17,6 +17,7 @@ from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinnman.model.enums.cpu_state import CPUState
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     ApplicationFinisher)
 from spinnman.model.cpu_infos import CPUInfos
@@ -68,6 +69,7 @@ class _MockTransceiver(object):
 
 
 def test_app_finisher():
+    unittest_setup()
     finisher = ApplicationFinisher()
     core_subsets = CoreSubsets()
     core_subsets.add_processor(0, 0, 1)
