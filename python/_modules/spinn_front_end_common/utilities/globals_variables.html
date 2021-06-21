@@ -62,6 +62,7 @@
 
 <span class="c1"># pylint: disable=global-statement</span>
 <span class="n">_simulator</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">__unittest_mode</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -140,15 +141,21 @@
 <span class="sd">    :type new_simulator:</span>
 <span class="sd">        ~spinn_front_end_common.interface.AbstractSpinnakerBase</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">global</span> <span class="n">_simulator</span>
-    <span class="n">_simulator</span> <span class="o">=</span> <span class="n">new_simulator</span></div>
+    <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">__unittest_mode</span>
+    <span class="n">_simulator</span> <span class="o">=</span> <span class="n">new_simulator</span>
+    <span class="n">__unittest_mode</span> <span class="o">=</span> <span class="kc">False</span></div>
 
 
-<div class="viewcode-block" id="unset_simulator"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.unset_simulator">[docs]</a><span class="k">def</span> <span class="nf">unset_simulator</span><span class="p">():</span>
+<div class="viewcode-block" id="setup_for_unittest"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.setup_for_unittest">[docs]</a><span class="k">def</span> <span class="nf">setup_for_unittest</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot; Removes the link to the previous simulator and clears injection</span>
+
+<span class="sd">    As this call is not required before calling set_simulator</span>
+<span class="sd">    so should only be called by unittest_setup.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">global</span> <span class="n">_simulator</span>
+    <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">__unittest_mode</span>
     <span class="n">_simulator</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">__unittest_mode</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">injection_decorator</span><span class="o">.</span><span class="n">_instances</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span></div>
 
 
@@ -175,11 +182,16 @@
 <span class="sd">    ..note: If the simulator has not been setup this returns the default 1000</span>
 
 <span class="sd">    :rtype: int</span>
+<span class="sd">    :raises SimulatorNotSetupException:</span>
+<span class="sd">        If the simulator has not been setup</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-            <span class="s2">&quot;Invalid simulator so machine_time_step is 1000&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mi">1000</span>
+        <span class="c1">#  set by unittest_setup</span>
+        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1000</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
+                <span class="s2">&quot;machine_time_step() not supported before sim.setup.&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="n">SHUTDOWN_STATUS</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
@@ -195,11 +207,16 @@
 <span class="sd">    ..note: If the simulator has not been setup this returns the default 1.0</span>
 
 <span class="sd">    :rtype: float</span>
+<span class="sd">    :raises SimulatorNotSetupException:</span>
+<span class="sd">        If the simulator has not been setup</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-            <span class="s2">&quot;Invalid simulator so machine_time_step_ms is 1.0&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mf">1.0</span>
+        <span class="c1">#  set by unittest_setup</span>
+        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">1.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
+                <span class="s2">&quot;machine_time_step_ms() not supported before sim.setup.&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="n">SHUTDOWN_STATUS</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
@@ -215,11 +232,16 @@
 <span class="sd">    ..note: If the simulator has not been setup this returns the default 1.0</span>
 
 <span class="sd">    :rtype: float</span>
+<span class="sd">    :raises SimulatorNotSetupException:</span>
+<span class="sd">        If the simulator has not been setup</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-            <span class="s2">&quot;Invalid simulator so machine_time_step_per_ms is 1.0&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mf">1.0</span>
+        <span class="c1">#  set by unittest_setup</span>
+        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">1.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
+                <span class="s2">&quot;machine_time_step_per_ms() not supported before sim.setup.&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="n">SHUTDOWN_STATUS</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
@@ -233,11 +255,16 @@
 <span class="sd">    :rtype: int</span>
 <span class="sd">    :raises ValueError:</span>
 <span class="sd">        if the system is in a state where machine_timestep can&#39;t be retrieved</span>
+<span class="sd">    :raises SimulatorNotSetupException:</span>
+<span class="sd">        If the simulator has not been setup</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-            <span class="s2">&quot;Invalid simulator so time_scale_factor is 1&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mi">1</span>
+        <span class="c1">#  set by unittest_setup</span>
+        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
+                <span class="s2">&quot;time_scale_factor() not supported before sim.setup.&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="n">SHUTDOWN_STATUS</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
