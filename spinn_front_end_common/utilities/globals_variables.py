@@ -108,13 +108,16 @@ def set_simulator(new_simulator):
     :type new_simulator:
         ~spinn_front_end_common.interface.AbstractSpinnakerBase
     """
-    global _simulator, __unittest_mode
+    global _simulator, __temp_dir, __unittest_mode
     _simulator = new_simulator
     __unittest_mode = False
+    __temp_dir = None
 
 
 def setup_for_unittest():
     """ Removes the link to the previous simulator and clears injection
+
+    This will also delete any temp_dir from previous tests.
 
     As this call is not required before calling set_simulator
     so should only be called by unittest_setup.
@@ -154,7 +157,7 @@ def _temp_dir():
 def machine_time_step():
     """ The machine timestep, in microseconds
 
-    ..note: If the simulator has not been setup this returns the default 1000
+    ..note: In unittest mode this returns the default 1000
 
     :rtype: int
     :raises SimulatorNotSetupException:
@@ -179,7 +182,7 @@ def machine_time_step_ms():
 
     Semantic sugar for machine_time_step() / 1000.
 
-    ..note: If the simulator has not been setup this returns the default 1.0
+    ..note: In unittest mode this returns the default 1.0
 
     :rtype: float
     :raises SimulatorNotSetupException:
@@ -204,7 +207,7 @@ def machine_time_step_per_ms():
 
     Semantic sugar for 1000 / machine_time_step()
 
-    ..note: If the simulator has not been setup this returns the default 1.0
+    ..note: In unittest mode this returns the default 1.0
 
     :rtype: float
     :raises SimulatorNotSetupException:
@@ -226,6 +229,8 @@ def machine_time_step_per_ms():
 
 def time_scale_factor():
     """ The time scaling factor.
+
+    ..note: In unittest mode this returns the default 1
 
     :rtype: int
     :raises ValueError:
@@ -254,17 +259,18 @@ def provenance_file_path():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
-    .. note:
-        The behaviour when called before setup is subject to change
+    ..note: In unittest mode this returns a tempdir shared by all path methods
 
     :rtpye: str
     :raises SimulatorNotSetupException:
-        if the system has a status where path can't be retrieved
+        If the simulator has not been setup
     """
     if _simulator is None:
-        logger.warning(
-            "Invalid simulator so app_provenance_file_path is a tempdir")
-        return _temp_dir()
+        if __unittest_mode:
+            return _temp_dir()
+        else:
+            raise SimulatorNotSetupException(
+                "provenance_file_path() not supported before sim.setup.")
     else:
         # underscore param used avoid exposing a None PyNN parameter
         return _simulator._provenance_file_path
@@ -277,15 +283,18 @@ def app_provenance_file_path():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
-    .. note:
-        The behaviour when called before setup is subject to change
+    ..note: In unittest mode this returns a tempdir shared by all path methods
 
     :rtpye: str
+    :raises SimulatorNotSetupException:
+        If the simulator has not been setup
     """
     if _simulator is None:
-        logger.warning(
-            "Invalid simulator so app_provenance_file_path is a tempdir")
-        return _temp_dir()
+        if __unittest_mode:
+            return _temp_dir()
+        else:
+            raise SimulatorNotSetupException(
+                "app_provenance_file_path() not supported before sim.setup.")
     else:
         # underscore param used avoid exposing a None PyNN parameter
         return _simulator._app_provenance_file_path
@@ -298,15 +307,18 @@ def system_provenance_file_path():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
-    .. note:
-        The behaviour when called before setup is subject to change
+    ..note: In unittest mode this returns a tempdir shared by all path methods
 
     :rtpye: str
+    :raises SimulatorNotSetupException:
+        If the simulator has not been setup
     """
     if _simulator is None:
-        logger.warning(
-            "Invalid simulator so system_provenance_file_path is a tempdir")
-        return _temp_dir()
+        if __unittest_mode:
+            return _temp_dir()
+        else:
+            raise SimulatorNotSetupException(
+                "system_provenance_file_path not supported before sim.setup.")
         # underscore param used avoid exposing a None PyNN parameter
         return _simulator._system_provenance_file_path
 
@@ -318,15 +330,18 @@ def report_default_directory():
     This will be the path used by the last run call or to be used by
     the next run if it has not yet been called.
 
-    .. note:
-        The behaviour when called before setup is subject to change
+    ..note: In unittest mode this returns a tempdir shared by all path methods
 
     :rtpye: str
+    :raises SimulatorNotSetupException:
+        If the simulator has not been setup
     """
     if _simulator is None:
-        logger.warning(
-            "Invalid simulator so report_default_directory is a tempdir")
-        return _temp_dir()
+        if __unittest_mode:
+            return _temp_dir()
+        else:
+            raise SimulatorNotSetupException(
+                "report_default_directory() not supported before sim.setup.")
     else:
         # underscore param used avoid exposing a None PyNN parameter
         return _simulator._report_default_directory
