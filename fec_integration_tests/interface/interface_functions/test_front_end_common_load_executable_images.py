@@ -18,6 +18,7 @@ from collections import defaultdict
 from spinn_utilities.overrides import overrides
 from spinnman.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType)
 from spinn_front_end_common.interface.interface_functions import (
@@ -56,6 +57,9 @@ class _MockTransceiver(Transceiver):
 
 
 class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
+
+    def setUp(self):
+        unittest_setup()
 
     def test_front_end_common_load_executable_images(self):
         transceiver = _MockTransceiver(self)

@@ -19,12 +19,16 @@ import logging
 import time
 import httpretty
 from testfixtures import LogCapture
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions.hbp_allocator \
     import (
         _HBPJobController)
 
 
 class TestHBPAllocator(unittest.TestCase):
+
+    def setUp(self):
+        unittest_setup()
 
     @httpretty.activate
     def test_hbp_job_controller(self):

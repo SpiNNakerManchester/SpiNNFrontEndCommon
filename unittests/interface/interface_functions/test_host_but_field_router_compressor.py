@@ -14,11 +14,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions.\
     host_bit_field_router_compressor import _BitFieldData
 
 
 class TestHostBasedBitFieldRouterCompressorr(unittest.TestCase):
+
+    def setUp(self):
+        unittest_setup()
 
     def test_bit_field_as_bit_array(self):
         data = _BitFieldData(

@@ -15,7 +15,7 @@
 
 import os
 import unittest
-
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
@@ -24,6 +24,9 @@ class TestJavaCaller(unittest.TestCase):
 
     # default finding jar automatically tested in
     # fec_local_tests/test_java_caller.py
+
+    def setUp(self):
+        unittest_setup()
 
     @classmethod
     def setUpClass(cls):

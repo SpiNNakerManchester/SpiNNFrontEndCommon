@@ -17,7 +17,7 @@ import unittest
 import socket
 from threading import Thread
 import json
-from spinn_front_end_common.interface.config_setup import reset_configs
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     SpallocMaxMachineGenerator)
 
@@ -57,7 +57,7 @@ class _MockSpallocServer(Thread):
 class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
 
     def setUp(self):
-        reset_configs()
+        unittest_setup()
 
     def test_single_board(self):
         server = _MockSpallocServer(

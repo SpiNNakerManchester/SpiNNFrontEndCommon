@@ -18,6 +18,7 @@ from spinn_utilities.overrides import overrides
 from spinn_machine.tags import IPTag, ReverseIPTag
 from pacman.model.tags import Tags
 from pacman.model.graphs.machine import SimpleMachineVertex
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import TagsLoader
 from spinnman.transceiver import Transceiver
 
@@ -42,6 +43,9 @@ class _MockTransceiver(object):
 
 
 class TestFrontEndCommonTagsLoader(unittest.TestCase):
+
+    def setUp(self):
+        unittest_setup()
 
     def test_call(self):
         """ Test calling the tags loader
