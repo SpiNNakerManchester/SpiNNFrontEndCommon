@@ -15,8 +15,8 @@
 
 import os.path
 import unittest
-from spinn_utilities.config_holder import load_config, set_config
-from spinn_front_end_common.interface.config_setup import reset_configs
+from spinn_utilities.config_holder import set_config
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset, get_data_spec_and_file_writer_filename)
 
@@ -24,11 +24,7 @@ from spinn_front_end_common.utilities.utility_calls import (
 class TestingUtilities(unittest.TestCase):
 
     def setUp(cls):
-        reset_configs()
-        load_config()
-
-    def tearDown(self):
-        reset_configs()
+        unittest_setup
 
     def test_get_region_base_address_offset(self):
         val = get_region_base_address_offset(48, 7)
