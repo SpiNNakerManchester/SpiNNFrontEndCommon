@@ -108,7 +108,7 @@ def set_simulator(new_simulator):
     __unittest_mode = False
 
 
-def unset_simulator():
+def setup_for_unittest():
     """ Removes the link to the previous simulator and clears injection
 
     As this call is not required before calling set_simulator
