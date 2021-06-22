@@ -319,6 +319,7 @@ def system_provenance_file_path():
         else:
             raise SimulatorNotSetupException(
                 "system_provenance_file_path not supported before sim.setup.")
+    else:
         # underscore param used avoid exposing a None PyNN parameter
         return _simulator._system_provenance_file_path
 
