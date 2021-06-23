@@ -16,9 +16,13 @@
 import os
 import unittest
 import spinn_utilities.package_loader as package_loader
+from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
 class TestImportAllModule(unittest.TestCase):
+
+    def setUp(self):
+        unittest_setup()
 
     def test_import_all(self):
         if os.environ.get('CONTINUOUS_INTEGRATION', 'false').lower() == 'true':

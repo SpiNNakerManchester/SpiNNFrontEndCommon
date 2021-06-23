@@ -22,7 +22,7 @@ from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineGraph, SimpleMachineVertex
 from pacman.model.placements import Placements, Placement
 from pacman.model.resources import ResourceContainer
-from spinn_front_end_common.interface.config_setup import reset_configs
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     InsertEdgesToLivePacketGatherers)
 from spinn_front_end_common.utilities.utility_objs import (
@@ -37,7 +37,7 @@ class TestInsertLPGEdges(unittest.TestCase):
     """ tests the interaction of the EDGE INSERTION OF LPGS
     """
     def setUp(self):
-        reset_configs()
+        unittest_setup()
 
     def test_local_verts_go_to_local_lpgs(self):
         machine = virtual_machine(width=12, height=12)

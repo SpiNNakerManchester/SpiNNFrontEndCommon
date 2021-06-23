@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from spinn_front_end_common.interface.config_setup import reset_configs
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_utilities.socket_address import SocketAddress
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import EIEIOCommandMessage
@@ -26,7 +26,7 @@ from spinn_front_end_common.utilities.notification_protocol import (
 class TestStartResumeNotificationProtocol(unittest.TestCase):
 
     def setUp(self):
-        reset_configs()
+        unittest_setup()
 
     def test_send_start_resume_notification(self):
         """ Test the sending of the start/resume message of the notification\
