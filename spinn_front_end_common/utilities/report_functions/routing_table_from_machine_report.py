@@ -16,6 +16,8 @@ import os
 from pacman.model.routing_tables.compressed_multicast_routing_table import (
     CompressedMulticastRoutingTable)
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 from spinn_front_end_common.utilities.report_functions import reports
 
 _FOLDER_NAME = "routing_tables_from_machine"
@@ -25,10 +27,8 @@ class RoutingTableFromMachineReport(object):
     """ Report the routing table that was actually on the machine.
     """
 
-    def __call__(
-            self, report_default_directory, routing_tables):
+    def __call__(self, routing_tables):
         """
-        :param str report_default_directory:
         :param routing_tables:
         :type routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
@@ -39,7 +39,7 @@ class RoutingTableFromMachineReport(object):
         tables = list(routing_tables.routing_tables)
         progress = ProgressBar(tables, "Reading Routing Tables from Machine")
 
-        folder_name = os.path.join(report_default_directory, _FOLDER_NAME)
+        folder_name = os.path.join(report_default_directory(), _FOLDER_NAME)
         os.mkdir(folder_name)
 
         # generate a file for every multicast entry

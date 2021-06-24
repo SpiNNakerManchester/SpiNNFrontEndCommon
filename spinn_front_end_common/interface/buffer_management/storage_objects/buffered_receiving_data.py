@@ -14,6 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 from .sqllite_database import SqlLiteDatabase
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 
 #: Name of the database in the data folder
 DB_FILE_NAME = "buffer.sqlite3"
@@ -38,12 +40,8 @@ class BufferedReceivingData(object):
         "__data_flushed"
     ]
 
-    def __init__(self, report_folder):
-        """
-        :param str report_folder:
-            The directory to write the database used to store some of the data
-        """
-        self._db_file = os.path.join(report_folder, DB_FILE_NAME)
+    def __init__(self):
+        self._db_file = os.path.join(report_default_directory(), DB_FILE_NAME)
         self._db = None
         self.reset()
 

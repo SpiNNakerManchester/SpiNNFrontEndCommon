@@ -17,6 +17,8 @@ import logging
 import os
 import sqlite3
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.utilities.utility_objs import DataWritten
 
@@ -33,15 +35,14 @@ class DsSqlliteDatabase(SQLiteDB):
         "_root_ethernet_id"
     ]
 
-    def __init__(self, machine, report_folder, init=None):
+    def __init__(self, machine, init=None):
         """
         :param ~spinn_machine.Machine machine:
-        :param str report_folder:
         :param init:
         :type init: bool or None
         """
         self._machine = machine
-        database_file = os.path.join(report_folder, DB_NAME)
+        database_file = os.path.join(report_default_directory(), DB_NAME)
 
         if init is None:
             init = not os.path.exists(database_file)

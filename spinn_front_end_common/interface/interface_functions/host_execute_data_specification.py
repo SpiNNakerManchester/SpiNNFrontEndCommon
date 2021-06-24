@@ -82,9 +82,6 @@ class HostExecuteDataSpecification(object):
         # the application ID of the simulation
         "_app_id",
         "_core_to_conn_map",
-        # The path where the SQLite database holding the data will be placed,
-        # and where any java provenance can be written.
-        "_db_folder",
         # The support class to run via Java. If None pure python is used.
         "_java",
         # The python representation of the SpiNNaker machine.
@@ -102,7 +99,6 @@ class HostExecuteDataSpecification(object):
     def __init__(self):
         self._app_id = None
         self._core_to_conn_map = None
-        self._db_folder = None
         self._java = None
         self._machine = None
         self._monitors = None
@@ -131,7 +127,6 @@ class HostExecuteDataSpecification(object):
         progress.update()
         dsg_targets.set_app_id(self._app_id)
         self._java.set_machine(self._machine)
-        self._java.set_report_folder(self._db_folder)
         progress.update()
         return dw_write_info
 
@@ -195,8 +190,7 @@ class HostExecuteDataSpecification(object):
             executable_targets, region_sizes,
             placements=None, extra_monitor_cores=None,
             extra_monitor_cores_to_ethernet_connection_map=None,
-            report_folder=None, java_caller=None,
-            processor_to_app_data_base_address=None):
+            java_caller=None, processor_to_app_data_base_address=None):
         """ Execute the data specs for all non-system targets.
 
         :param ~spinn_machine.Machine machine:
@@ -231,7 +225,6 @@ class HostExecuteDataSpecification(object):
         if processor_to_app_data_base_address is None:
             processor_to_app_data_base_address = dict()
         self._write_info_map = processor_to_app_data_base_address
-        self._db_folder = report_folder
         self._java = java_caller
         self._machine = machine
         self._txrx = transceiver
@@ -355,7 +348,7 @@ class HostExecuteDataSpecification(object):
 
     def execute_system_data_specs(
             self, transceiver, machine, app_id, dsg_targets, region_sizes,
-            executable_targets, report_folder=None,
+            executable_targets,
             java_caller=None, processor_to_app_data_base_address=None):
         """ Execute the data specs for all system targets.
 
@@ -370,7 +363,6 @@ class HostExecuteDataSpecification(object):
             the coordinates for region sizes for each core
         :param ~spinnman.model.ExecutableTargets executable_targets:
             the map between binaries and locations and executable types
-        :param str report_folder:
         :param JavaCaller java_caller:
         :param processor_to_app_data_base_address:
         :type processor_to_app_data_base_address:
@@ -386,7 +378,6 @@ class HostExecuteDataSpecification(object):
         self._machine = machine
         self._txrx = transceiver
         self._app_id = app_id
-        self._db_folder = report_folder
         self._java = java_caller
         impl_method = self.__java_sys if java_caller else self.__python_sys
         return impl_method(dsg_targets, executable_targets, region_sizes)
