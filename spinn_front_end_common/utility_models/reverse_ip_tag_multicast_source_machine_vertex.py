@@ -40,7 +40,6 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_sending_region import (
         get_n_bytes)
-from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BufferedSendingRegion)
