@@ -72,7 +72,7 @@ def mundy_on_chip_router_compression(
 
 def pair_compression(
         routing_tables, transceiver, executable_finder,
-        machine, app_id, provenance_file_path):
+        machine, app_id):
     """ Load routing tables and compress then using the Pair Algorithm.
 
     See ``pacman/operations/router_compressors/pair_compressor.py`` which is
@@ -88,7 +88,6 @@ def pair_compression(
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine representation
     :param int app_id: the application ID used by the main application
-    :param str provenance_file_path: the path to where to write the data
     :param bool compress_as_much_as_possible:
         If False, the compressor will only reduce the table until it fits in
         the router space, otherwise it will try to reduce until it until it
@@ -99,15 +98,14 @@ def pair_compression(
     binary_path = executable_finder.get_executable_path(
         "simple_pair_compressor.aplx")
     compression = Compression(
-        app_id, binary_path, machine, provenance_file_path, routing_tables,
-        transceiver, "Running pair routing table compression on chip",
-        result_register=1)
+        app_id, binary_path, machine, routing_tables, transceiver,
+        "Running pair routing table compression on chip", result_register=1)
     compression.compress()
 
 
 def ordered_covering_compression(
         routing_tables, transceiver, executable_finder,
-        machine, app_id, provenance_file_path):
+        machine, app_id):
     """ Load routing tables and compress then using the unordered Algorithm.
 
     To the best of our knowledge this is the same algorithm as
@@ -124,22 +122,21 @@ def ordered_covering_compression(
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine representation
     :param int app_id: the application ID used by the main application
-    :param str provenance_file_path: the path to where to write the data
     :raises SpinnFrontEndException: If compression fails
     """
     # pylint: disable=too-many-arguments
     binary_path = executable_finder.get_executable_path(
         "simple_unordered_compressor.aplx")
     compression = Compression(
-        app_id, binary_path, machine, provenance_file_path, routing_tables,
-        transceiver, "Running unordered routing table compression on chip",
+        app_id, binary_path, machine, routing_tables, transceiver,
+        "Running unordered routing table compression on chip",
         result_register=1)
     compression.compress()
 
 
 def unordered_compression(
         routing_tables, transceiver, executable_finder,
-        machine, app_id, provenance_file_path):
+        machine, app_id):
     """ DEPRECATED use ordered_covering_compression """
     logger.warning(
         "UnorderedOnChipRouterCompression algorithm name is deprecated. "
@@ -147,7 +144,7 @@ def unordered_compression(
         "loading_algorithms from your cfg to use defaults")
     ordered_covering_compression(
         routing_tables, transceiver, executable_finder,
-        machine, app_id, provenance_file_path)
+        machine, app_id)
 
 
 class Compression(object):
@@ -163,22 +160,18 @@ class Compression(object):
         "_compressor_app_id",
         "_machine",
         "_progresses_text",
-        "_provenance_file_path",
         "__result_register",
         "_transceiver",
         "_routing_tables",
         "__failures"]
 
     def __init__(
-            self, app_id, binary_path, machine, provenance_file_path,
-            routing_tables, transceiver, progress_text,
-            result_register):
+            self, app_id, binary_path, machine, routing_tables, transceiver,
+            progress_text, result_register):
         """
         :param int app_id: the application ID used by the main application
         :param str binary_path: What binary to run
         :param ~spinn_machine.Machine machine: The machine model
-        :param str provenance_file_path:
-            Where to write provenance data (IOBUF contents)
         :param routing_tables: the memory routing tables to be compressed
         :type routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
@@ -195,7 +188,6 @@ class Compression(object):
         # Only used by mundy compressor we can not rebuild
         self._compress_only_when_needed = None
         self._machine = machine
-        self._provenance_file_path = provenance_file_path
         self._transceiver = transceiver
         self._routing_tables = routing_tables
         self._progresses_text = progress_text
@@ -232,7 +224,7 @@ class Compression(object):
         executable_finder = ExecutableFinder(binary_search_paths=[])
         run_system_application(
             executable_targets, self._compressor_app_id, self._transceiver,
-            self._provenance_file_path, executable_finder,
+            executable_finder,
             get_config_bool("Reports", "write_compressor_iobuf"),
             self._check_for_success,
             [CPUState.FINISHED], False, "compressor_on_{}_{}_{}.txt",

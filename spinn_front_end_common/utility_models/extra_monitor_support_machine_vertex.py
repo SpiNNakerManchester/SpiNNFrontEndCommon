@@ -19,7 +19,8 @@ import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, Router
-from data_specification.utility_calls import get_region_base_address_offset
+from spinn_front_end_common.utilities.utility_calls import (
+    get_region_base_address_offset)
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
