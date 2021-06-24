@@ -30,7 +30,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         :param ~spinn_machine.Machine machine: SpiNNaker machine object
         :param pre_allocated_resources: resources already preallocated
         :type pre_allocated_resources:
-            ~pacman.model.resources.ResourceReservations
+            ~pacman.model.resources.PreAllocatedResourceContainer
         :param int n_cores_to_allocate: how many gatherers to use per chip
         :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
