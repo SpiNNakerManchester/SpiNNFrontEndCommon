@@ -26,8 +26,7 @@ class BufferManagerCreator(object):
     __slots__ = []
 
     def __call__(
-            self, placements, tags, txrx,
-            report_folder, extra_monitor_cores=None,
+            self, placements, tags, txrx, extra_monitor_cores=None,
             extra_monitor_to_chip_mapping=None,
             packet_gather_cores_to_ethernet_connection_map=None, machine=None,
             fixed_routes=None, java_caller=None):
@@ -36,9 +35,6 @@ class BufferManagerCreator(object):
         :param ~pacman.model.tags.Tags tags:
         :param ~spinnman.transceiver.Transceiver txrx:
         :param bool uses_advanced_monitors:
-        :param str report_folder:
-            The path where the SQLite database holding the data will be placed,
-            and where any java provenance can be written.
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
         :param extra_monitor_to_chip_mapping:
         :type extra_monitor_to_chip_mapping:
@@ -63,7 +59,7 @@ class BufferManagerCreator(object):
                 packet_gather_cores_to_ethernet_connection_map),
             extra_monitor_to_chip_mapping=extra_monitor_to_chip_mapping,
             machine=machine, fixed_routes=fixed_routes,
-            report_folder=report_folder, java_caller=java_caller)
+            java_caller=java_caller)
 
         for placement in progress.over(placements.placements):
             vertex = placement.vertex

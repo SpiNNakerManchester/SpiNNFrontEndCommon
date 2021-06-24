@@ -70,7 +70,6 @@ def _emergency_iobuf_extract(txrx, executable_targets):
     sim = get_simulator()
     extractor = IOBufExtractor(
         txrx, executable_targets, sim._executable_finder,
-        sim._app_provenance_file_path, sim._system_provenance_file_path,
         recovery_mode=True, filename_template="emergency_iobuf_{}_{}_{}.txt")
     extractor.extract_iobuf()
 

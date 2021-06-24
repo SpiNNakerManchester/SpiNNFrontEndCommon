@@ -14,13 +14,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-import shutil
 import numpy
 from spinn_utilities.overrides import overrides
 from spinn_machine import SDRAM
 from pacman.model.placements import Placements, Placement
 from data_specification.constants import MAX_MEM_REGIONS
-from data_specification.utility_calls import get_region_base_address_offset
+from spinn_front_end_common.utilities.utility_calls import (
+    get_region_base_address_offset)
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -134,7 +134,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         transceiver = _MockTransceiver(user_0_addresses)
 
         reloader = DSGRegionReloader()
-        reloader.__call__(transceiver, placements, "localhost", "test")
+        reloader.__call__(transceiver, placements, "localhost")
 
         regions_rewritten = transceiver._regions_rewritten
 
@@ -159,9 +159,6 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
                 # Check that the base address and data written is correct
                 self.assertEqual(regions_rewritten[pos], (address, data))
-
-        # Delete data files
-        shutil.rmtree("test")
 
 
 if __name__ == "__main__":

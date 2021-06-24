@@ -17,6 +17,8 @@ import logging
 import os.path
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs.application import ApplicationVertex
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -27,13 +29,12 @@ class NetworkSpecification(object):
 
     _FILENAME = "network_specification.rpt"
 
-    def __call__(self, report_folder, graph):
+    def __call__(self, graph):
         """
-        :param str report_folder: the directory to which reports are stored
         :param ApplicationGraph graph: the graph generated from the tools
         :rtype: None
         """
-        filename = os.path.join(report_folder, self._FILENAME)
+        filename = os.path.join(report_default_directory(), self._FILENAME)
         try:
             with open(filename, "w") as f:
                 f.write("*** Vertices:\n")

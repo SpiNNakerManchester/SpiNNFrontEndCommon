@@ -1161,10 +1161,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
-            report_folder = executor.get_item("ReportFolder")
             try:
-                if report_folder:
-                    TagsFromMachineReport()(report_folder, self._txrx)
+                TagsFromMachineReport()(self._txrx)
             except Exception as e2:
                 logger.warning(
                     "problem with TagsFromMachineReport {}".format(e2),
@@ -1235,7 +1233,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Machine", "auto_detect_bmp")
         inputs["ScampConnectionData"] = get_config_str(
             "Machine", "scamp_connections_data")
-        inputs['ReportFolder'] = self._report_default_directory
         inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
         algorithms.append("MachineGenerator")
 
@@ -1290,7 +1287,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         outputs = list()
 
         do_partitioning = self._machine_by_size(inputs, algorithms, outputs)
-        inputs['ReportFolder'] = self._report_default_directory
         inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
 
         # if using spalloc system
@@ -1422,7 +1418,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             inputs["MemoryApplicationGraph"] = self._application_graph
         elif self._machine_graph and self._machine_graph.n_vertices:
             inputs["MemoryMachineGraph"] = self._machine_graph
-
         return inputs, algorithms
 
     def _create_version_provenance(self):
@@ -1481,18 +1476,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         else:
             inputs['MemoryMachineGraph'] = self._machine_graph
 
-        inputs['ReportFolder'] = self._report_default_directory
-        inputs["ProvenanceFilePath"] = self._provenance_file_path
-        inputs["AppProvenanceFilePath"] = self._app_provenance_file_path
-        inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
         inputs["JsonFolder"] = self._json_folder
         inputs["APPID"] = self._app_id
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
         inputs["ExecutableFinder"] = self._executable_finder
-        inputs['CompressionTargetSize'] = get_config_int(
-            "Mapping", "router_table_compression_target_length")
-        inputs["CompressionAsNeeded"] = get_config_bool(
-            "Mapping", "router_table_compress_as_needed")
 
         algorithms = list()
 
@@ -2211,8 +2198,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Read IOBUF where possible (that should be everywhere)
         iobuf = IOBufExtractor(
-            self._txrx, executable_targets, self._executable_finder,
-            self._app_provenance_file_path, self._system_provenance_file_path)
+            self._txrx, executable_targets, self._executable_finder)
         try:
             errors, warnings = iobuf.extract_iobuf()
         except Exception:
@@ -2746,7 +2732,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _do_energy_report(self):
         # create energy reporter
         energy_reporter = EnergyReport(
-            self._report_default_directory,
             get_config_int("Machine", "version"), self._spalloc_server,
             self._remote_spinnaker_url)
 
@@ -2772,9 +2757,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         extractor = IOBufExtractor(
             transceiver=self._txrx,
             executable_targets=self._last_run_outputs["ExecutableTargets"],
-            executable_finder=self._executable_finder,
-            app_provenance_file_path=self._app_provenance_file_path,
-            system_provenance_file_path=self._system_provenance_file_path)
+            executable_finder=self._executable_finder)
         extractor.extract_iobuf()
 
     def add_socket_address(self, socket_address):

@@ -19,7 +19,6 @@ import logging
 from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 from spinn_utilities.progress_bar import ProgressBar
 from data_specification import DataSpecificationGenerator
-from data_specification.utility_calls import get_report_writer
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -27,6 +26,7 @@ from spinn_front_end_common.interface.ds.data_specification_targets import (
     DataSpecificationTargets)
 from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
 from data_specification.reference_context import ReferenceContext
+from spinn_front_end_common.utilities.utility_calls import get_report_writer
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +45,7 @@ class GraphDataSpecificationWriter(object):
         # spinnmachine instance
         "_machine",
         # hostname
-        "_hostname",
-        # directory where reports go
-        "_report_dir",
-    )
+        "_hostname")
 
     def __init__(self):
         self._sdram_usage = defaultdict(lambda: 0)
@@ -56,15 +53,12 @@ class GraphDataSpecificationWriter(object):
         self._vertices_by_chip = defaultdict(list)
 
     def __call__(
-            self, placements, hostname,
-            report_default_directory, machine, data_n_timesteps,
+            self, placements, hostname, machine, data_n_timesteps,
             placement_order=None):
         """
         :param ~pacman.model.placements.Placements placements:
             placements of machine graph to cores
         :param str hostname: SpiNNaker machine name
-        :param str report_default_directory:
-            the location where reports are stored
         :param ~spinn_machine.Machine machine:
             the python representation of the SpiNNaker machine
         :param int data_n_timesteps:
@@ -80,11 +74,10 @@ class GraphDataSpecificationWriter(object):
         # pylint: disable=attribute-defined-outside-init
         self._machine = machine
         self._hostname = hostname
-        self._report_dir = report_default_directory
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        targets = DataSpecificationTargets(machine, self._report_dir)
+        targets = DataSpecificationTargets(machine)
 
         if placement_order is None:
             placement_order = placements.placements
@@ -138,8 +131,7 @@ class GraphDataSpecificationWriter(object):
 
         with targets.create_data_spec(pl.x, pl.y, pl.p) as data_writer:
             report_writer = get_report_writer(
-                pl.x, pl.y, pl.p, self._hostname,
-                self._report_dir)
+                pl.x, pl.y, pl.p, self._hostname)
             spec = DataSpecificationGenerator(data_writer, report_writer)
 
             # generate the DSG file

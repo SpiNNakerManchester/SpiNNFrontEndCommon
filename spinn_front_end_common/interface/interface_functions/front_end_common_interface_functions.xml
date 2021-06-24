@@ -159,10 +159,6 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
-                <param_name>default_report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
@@ -176,7 +172,6 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>placements</param_name>
-            <param_name>default_report_folder</param_name>
             <param_name>machine_graph</param_name>
             <param_name>routing_infos</param_name>
             <token part="BitFieldData">DataLoaded</token>
@@ -211,10 +206,6 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>SystemProvenanceFilePath</param_type>
-            </parameter>
-            <parameter>
                 <param_name>executable_finder</param_name>
                 <param_type>ExecutableFinder</param_type>
             </parameter>
@@ -225,10 +216,6 @@
             <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>default_report_folder</param_name>
-                <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
@@ -245,10 +232,8 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
-            <param_name>provenance_file_path</param_name>
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
-            <param_name>default_report_folder</param_name>
             <param_name>routing_infos</param_name>
             <param_name>executable_targets</param_name>
             <token part="BitFieldData">DataLoaded</token>
@@ -288,10 +273,6 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>SystemProvenanceFilePath</param_type>
-            </parameter>
-            <parameter>
                 <param_name>executable_finder</param_name>
                 <param_type>ExecutableFinder</param_type>
             </parameter>
@@ -302,10 +283,6 @@
             <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>default_report_folder</param_name>
-                <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
@@ -322,10 +299,8 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
-            <param_name>provenance_file_path</param_name>
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
-            <param_name>default_report_folder</param_name>
             <param_name>routing_infos</param_name>
             <param_name>executable_targets</param_name>
             <token part="BitFieldData">DataLoaded</token>
@@ -364,10 +339,6 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>SystemProvenanceFilePath</param_type>
-            </parameter>
-            <parameter>
                 <param_name>executable_finder</param_name>
                 <param_type>ExecutableFinder</param_type>
             </parameter>
@@ -378,10 +349,6 @@
             <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>default_report_folder</param_name>
-                <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
@@ -398,10 +365,8 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
-            <param_name>provenance_file_path</param_name>
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
-            <param_name>default_report_folder</param_name>
             <param_name>routing_infos</param_name>
             <param_name>executable_targets</param_name>
             <token part="BitFieldData">DataLoaded</token>
@@ -533,15 +498,10 @@
                 <param_name>application_graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
-            <parameter>
-                <param_name>default_report_directory</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine</param_name>
             <param_name>machine_graph</param_name>
-            <param_name>default_report_directory</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>application_graph</param_name>
@@ -766,16 +726,11 @@
                 <param_name>hostname</param_name>
                 <param_type>IPAddress</param_type>
             </parameter>
-            <parameter>
-                <param_name>report_directory</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>placements</param_name>
             <param_name>hostname</param_name>
-            <param_name>report_directory</param_name>
         </required_inputs>
         <optional_inputs>
             <token part="DSGDataLoaded">DataLoaded</token>
@@ -805,10 +760,6 @@
             <parameter>
                 <param_name>dsg_targets</param_name>
                 <param_type>DataSpecificationTargets</param_type>
-            </parameter>
-            <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
                 <param_name>java_caller</param_name>
@@ -847,7 +798,6 @@
             <param_name>dsg_targets</param_name>
         </required_inputs>
         <optional_inputs>
-            <param_name>report_folder</param_name>
             <param_name>java_caller</param_name>
             <param_name>processor_to_app_data_base_address</param_name>
             <param_name>executable_targets</param_name>
@@ -889,10 +839,6 @@
                 <param_type>ExecutableTargets</param_type>
             </parameter>
             <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>java_caller</param_name>
                 <param_type>JavaCaller</param_type>
             </parameter>
@@ -914,7 +860,6 @@
             <param_name>region_sizes</param_name>
         </required_inputs>
         <optional_inputs>
-            <param_name>report_folder</param_name>
             <param_name>java_caller</param_name>
             <param_name>processor_to_app_data_base_address</param_name>
         </optional_inputs>
@@ -1011,10 +956,6 @@
                 <param_name>boot_port_num</param_name>
                 <param_type>BootPortNum</param_type>
             </parameter>
-            <parameter>
-                <param_name>default_report_directory</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>hostname</param_name>
@@ -1024,7 +965,6 @@
             <param_name>auto_detect_bmp</param_name>
             <param_name>scamp_connection_data</param_name>
             <param_name>boot_port_num</param_name>
-            <param_name>default_report_directory</param_name>
         </required_inputs>
         <outputs>
             <param_type>MemoryMachine</param_type>
@@ -1142,10 +1082,6 @@
                 <param_type>IPAddress</param_type>
             </parameter>
             <parameter>
-                <param_name>report_default_directory</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine</param_name>
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
@@ -1157,7 +1093,6 @@
         <required_inputs>
             <param_name>placements</param_name>
             <param_name>hostname</param_name>
-            <param_name>report_default_directory</param_name>
             <param_name>machine</param_name>
             <param_name>data_n_timesteps</param_name>
         </required_inputs>
@@ -1250,16 +1185,11 @@
                 <param_type>MemoryFixedRoutes</param_type>
             </parameter>
             <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>java_caller</param_name>
                 <param_type>JavaCaller</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
             <param_name>placements</param_name>
             <param_name>tags</param_name>
             <param_name>txrx</param_name>
@@ -1501,10 +1431,6 @@
                 <param_type>MemoryTags</param_type>
             </parameter>
             <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>runtime</param_name>
                 <param_type>RunTime</param_type>
             </parameter>
@@ -1537,7 +1463,6 @@
         <required_inputs>
             <param_name>machine_graph</param_name>
             <param_name>tags</param_name>
-            <param_name>report_folder</param_name>
             <param_name>runtime</param_name>
             <param_name>machine</param_name>
             <param_name>data_n_timesteps</param_name>
@@ -1707,21 +1632,11 @@
                 <param_name>executable_finder</param_name>
                 <param_type>ExecutableFinder</param_type>
             </parameter>
-            <parameter>
-                <param_name>app_provenance_file_path</param_name>
-                <param_type>AppProvenanceFilePath</param_type>
-            </parameter>
-            <parameter>
-                <param_name>system_provenance_file_path</param_name>
-                <param_type>SystemProvenanceFilePath</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>executable_targets</param_name>
             <param_name>executable_finder</param_name>
-            <param_name>app_provenance_file_path</param_name>
-            <param_name>system_provenance_file_path</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
         <outputs>
@@ -1944,15 +1859,10 @@
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
             </parameter>
-            <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>AppProvenanceFilePath</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>placements</param_name>
-            <param_name>provenance_file_path</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
     </algorithm>
@@ -2139,10 +2049,6 @@
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
-            <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>SystemProvenanceFilePath</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2150,7 +2056,6 @@
             <param_name>executable_finder</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
-            <param_name>provenance_file_path</param_name>
         </required_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
@@ -2180,10 +2085,6 @@
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
-            <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>SystemProvenanceFilePath</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2191,7 +2092,6 @@
             <param_name>executable_finder</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
-            <param_name>provenance_file_path</param_name>
         </required_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
@@ -2222,10 +2122,6 @@
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
-            <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>SystemProvenanceFilePath</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>routing_tables</param_name>
@@ -2233,7 +2129,6 @@
             <param_name>executable_finder</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
-            <param_name>provenance_file_path</param_name>
         </required_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>

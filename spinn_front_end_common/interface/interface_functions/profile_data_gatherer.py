@@ -16,6 +16,8 @@
 import os
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.profiling import AbstractHasProfileData
+from spinn_front_end_common.utilities.globals_variables import (
+    app_provenance_file_path)
 
 
 class ProfileDataGatherer(object):
@@ -25,20 +27,18 @@ class ProfileDataGatherer(object):
 
     __slots__ = []
 
-    def __call__(
-            self, transceiver, placements, provenance_file_path):
+    def __call__(self, transceiver, placements):
         """
         :param ~spinnman.transceiver.Transceiver transceiver:
             the SpiNNMan interface object
         :param ~pacman.model.placements.Placements placements:
             The placements of the vertices
-        :param str provenance_file_path:
-            The location to store the profile data
         """
         # pylint: disable=too-many-arguments
 
         progress = ProgressBar(
             placements.n_placements, "Getting profile data")
+        provenance_file_path = app_provenance_file_path()
 
         # retrieve provenance data from any cores that provide data
         for placement in progress.over(placements.placements):

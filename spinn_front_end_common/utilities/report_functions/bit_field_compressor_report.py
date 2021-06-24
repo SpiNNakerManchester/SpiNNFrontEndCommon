@@ -19,6 +19,8 @@ import sys
 from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 from .bit_field_summary import BitFieldSummary
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
@@ -53,10 +55,8 @@ class BitFieldCompressorReport(object):
         bitfields into the routing table.
     """
     def __call__(
-            self, report_default_directory, machine_graph, placements,
-            provenance_items=None):
+            self, machine_graph, placements, provenance_items=None):
         """
-        :param str report_default_directory: report folder
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph
         :param ~pacman.model.placements.Placements placements: the placements
@@ -65,7 +65,7 @@ class BitFieldCompressorReport(object):
         :return: a summary, or `None` if the report file can't be written
         :rtype: BitFieldSummary
         """
-        file_name = os.path.join(report_default_directory, _FILE_NAME)
+        file_name = os.path.join(report_default_directory(), _FILE_NAME)
         if provenance_items is None:
             provenance_items = []
         try:

@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import struct
-import tempfile
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
@@ -81,9 +80,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver(user_0_addresses={0: 1000})
         machine = virtual_machine(2, 2)
-        tempdir = tempfile.mkdtemp()
 
-        dsg_targets = DataSpecificationTargets(machine, tempdir)
+        dsg_targets = DataSpecificationTargets(machine)
         with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reserve_memory_region(0, 100)
@@ -107,7 +105,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         infos = executor.execute_application_data_specs(
             transceiver, machine, 30, dsg_targets, targets,
-            report_folder=tempdir, region_sizes=region_sizes)
+            region_sizes=region_sizes)
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded
@@ -150,10 +148,9 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000, 2: 3000})
         machine = virtual_machine(2, 2)
-        tempdir = tempfile.mkdtemp()
         region_sizes = dict()
 
-        dsg_targets = DataSpecificationTargets(machine, tempdir)
+        dsg_targets = DataSpecificationTargets(machine)
 
         with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
@@ -187,7 +184,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             "text.aplx", 0, 0, 2, ExecutableType.USES_SIMULATION_INTERFACE)
         infos = executor.execute_application_data_specs(
             transceiver, machine, 30, dsg_targets, targets,
-            report_folder=tempdir, region_sizes=region_sizes)
+            region_sizes=region_sizes)
 
         # User 0 for each spec (3) + header and table for each spec (3)
         # + 1 actual region (as rest are references)
@@ -228,10 +225,9 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
         machine = virtual_machine(2, 2)
-        tempdir = tempfile.mkdtemp()
         region_sizes = dict()
 
-        dsg_targets = DataSpecificationTargets(machine, tempdir)
+        dsg_targets = DataSpecificationTargets(machine)
 
         with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
@@ -259,17 +255,16 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         with self.assertRaises(ValueError):
             executor.execute_application_data_specs(
                 transceiver, machine, 30, dsg_targets, targets,
-                report_folder=tempdir, region_sizes=region_sizes)
+                region_sizes=region_sizes)
 
     def test_multispec_with_double_reference(self):
         executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
         machine = virtual_machine(2, 2)
-        tempdir = tempfile.mkdtemp()
         region_sizes = dict()
 
-        dsg_targets = DataSpecificationTargets(machine, tempdir)
+        dsg_targets = DataSpecificationTargets(machine)
 
         with dsg_targets.create_data_spec(0, 0, 1) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
@@ -289,17 +284,16 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         with self.assertRaises(ValueError):
             executor.execute_application_data_specs(
                 transceiver, machine, 30, dsg_targets, targets,
-                report_folder=tempdir, region_sizes=region_sizes)
+                region_sizes=region_sizes)
 
     def test_multispec_with_wrong_chip_reference(self):
         executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
         machine = virtual_machine(2, 2)
-        tempdir = tempfile.mkdtemp()
         region_sizes = dict()
 
-        dsg_targets = DataSpecificationTargets(machine, tempdir)
+        dsg_targets = DataSpecificationTargets(machine)
 
         with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
@@ -327,17 +321,16 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         with self.assertRaises(ValueError):
             executor.execute_application_data_specs(
                 transceiver, machine, 30, dsg_targets, targets,
-                report_folder=tempdir, region_sizes=region_sizes)
+                region_sizes=region_sizes)
 
     def test_multispec_with_wrong_chip_reference_on_close(self):
         executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
         machine = virtual_machine(2, 2)
-        tempdir = tempfile.mkdtemp()
         region_sizes = dict()
 
-        dsg_targets = DataSpecificationTargets(machine, tempdir)
+        dsg_targets = DataSpecificationTargets(machine)
 
         with dsg_targets.create_data_spec(1, 1, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
@@ -365,7 +358,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         with self.assertRaises(ValueError):
             executor.execute_application_data_specs(
                 transceiver, machine, 30, dsg_targets, targets,
-                report_folder=tempdir, region_sizes=region_sizes)
+                region_sizes=region_sizes)
 
 
 if __name__ == "__main__":

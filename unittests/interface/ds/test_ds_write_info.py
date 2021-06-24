@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import tempfile
 import unittest
 from spinn_machine.virtual_machine import virtual_machine
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -30,9 +29,7 @@ class TestDsWriteInfo(unittest.TestCase):
     def test_dict(self):
         check = dict()
         machine = virtual_machine(2, 2)
-        tempdir = tempfile.mkdtemp()
-        dst = DataSpecificationTargets(machine, tempdir)
-        print(tempdir)
+        dst = DataSpecificationTargets(machine)
         asDict = DsWriteInfo(dst.get_database())
         c1 = (0, 0, 0)
         foo = DataWritten(123, 12, 23)
