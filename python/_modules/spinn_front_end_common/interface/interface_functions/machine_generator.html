@@ -60,6 +60,8 @@
 <span class="kn">from</span> <span class="nn">spinnman.transceiver</span> <span class="kn">import</span> <span class="n">create_transceiver_from_hostname</span>
 <span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">BMPConnectionData</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">report_default_directory</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
@@ -91,8 +93,7 @@
 
 <div class="viewcode-block" id="MachineGenerator.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.MachineGenerator.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">bmp_details</span><span class="p">,</span> <span class="n">board_version</span><span class="p">,</span> <span class="n">auto_detect_bmp</span><span class="p">,</span>
-            <span class="n">scamp_connection_data</span><span class="p">,</span> <span class="n">boot_port_num</span><span class="p">,</span> <span class="n">reset_machine_on_start_up</span><span class="p">,</span>
-            <span class="n">default_report_directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">scamp_connection_data</span><span class="p">,</span> <span class="n">boot_port_num</span><span class="p">,</span> <span class="n">reset_machine_on_start_up</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str hostname:</span>
 <span class="sd">            the hostname or IP address of the SpiNNaker machine</span>
@@ -114,9 +115,6 @@
 <span class="sd">            list(~spinnman.connections.SocketAddressWithChip)</span>
 <span class="sd">        :param int boot_port_num: the port number used for the boot connection</span>
 <span class="sd">        :param bool reset_machine_on_start_up:</span>
-<span class="sd">        :param str default_report_directory:</span>
-<span class="sd">            Directory to write any reports too.</span>
-<span class="sd">            If None the current directory will be used.</span>
 <span class="sd">        :return: Transceiver, and description of machine it is connected to</span>
 <span class="sd">        :rtype: tuple(~spinn_machine.Machine,</span>
 <span class="sd">            ~spinnman.transceiver.Transceiver)</span>
@@ -135,7 +133,7 @@
             <span class="n">version</span><span class="o">=</span><span class="n">board_version</span><span class="p">,</span>
             <span class="n">auto_detect_bmp</span><span class="o">=</span><span class="n">auto_detect_bmp</span><span class="p">,</span> <span class="n">boot_port_no</span><span class="o">=</span><span class="n">boot_port_num</span><span class="p">,</span>
             <span class="n">scamp_connections</span><span class="o">=</span><span class="n">scamp_connection_data</span><span class="p">,</span>
-            <span class="n">default_report_directory</span><span class="o">=</span><span class="n">default_report_directory</span><span class="p">)</span>
+            <span class="n">default_report_directory</span><span class="o">=</span><span class="n">report_default_directory</span><span class="p">())</span>
 
         <span class="k">if</span> <span class="n">reset_machine_on_start_up</span><span class="p">:</span>
             <span class="n">success</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">power_off_machine</span><span class="p">()</span>

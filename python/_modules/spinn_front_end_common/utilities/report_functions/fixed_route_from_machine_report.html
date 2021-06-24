@@ -54,23 +54,23 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">report_default_directory</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">FixedRouteFromMachineReport</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Generate a report of the fixed routes from the machine.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="FixedRouteFromMachineReport.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.FixedRouteFromMachineReport.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">report_default_directory</span><span class="p">,</span>
-                 <span class="n">app_id</span><span class="p">):</span>
+<div class="viewcode-block" id="FixedRouteFromMachineReport.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.FixedRouteFromMachineReport.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Writes the fixed routes from the machine</span>
 
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver: spinnMan instance</span>
 <span class="sd">        :param ~spinn_machine.Machine machine: SpiNNMachine instance</span>
-<span class="sd">        :param str report_default_directory: folder where reports reside</span>
 <span class="sd">        :param int app_id: the application ID the fixed routes were loaded with</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="n">report_default_directory</span><span class="p">,</span> <span class="s2">&quot;fixed_route_routers&quot;</span><span class="p">)</span>
+            <span class="n">report_default_directory</span><span class="p">(),</span> <span class="s2">&quot;fixed_route_routers&quot;</span><span class="p">)</span>
 
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_fixed_routers</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)</span></div>

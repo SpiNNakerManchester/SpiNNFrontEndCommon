@@ -63,22 +63,16 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="ChipIOBufExtractor.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ChipIOBufExtractor.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span>
-            <span class="n">app_provenance_file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">system_provenance_file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">        :param ~spinnman.model.ExecutableTargets executable_targets:</span>
 <span class="sd">        :param ExecutableFinder executable_finder:</span>
-<span class="sd">        :param app_provenance_file_path:</span>
-<span class="sd">        :type app_provenance_file_path: str or None</span>
-<span class="sd">        :param system_provenance_file_path:</span>
-<span class="sd">        :type system_provenance_file_path: str or None</span>
 <span class="sd">        :return: error_entries, warn_entries</span>
 <span class="sd">        :rtype: tuple(list(str),list(str))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">extractor</span> <span class="o">=</span> <span class="n">IOBufExtractor</span><span class="p">(</span>
-            <span class="n">transceiver</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span>
-            <span class="n">app_provenance_file_path</span><span class="p">,</span> <span class="n">system_provenance_file_path</span><span class="p">)</span>
+            <span class="n">transceiver</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">extractor</span><span class="o">.</span><span class="n">extract_iobuf</span><span class="p">()</span></div>
 </pre></div>
 

@@ -63,6 +63,9 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.buffer_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractReceiveBuffersToHost</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">report_default_directory</span><span class="p">)</span>
+
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -125,7 +128,7 @@
 <span class="sd">        :raise ConfigurationException: if simple parameter checking fails.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recording</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span> <span class="o">=</span> <span class="n">report_default_directory</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span> <span class="o">=</span> <span class="n">json_folder</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_java_call</span> <span class="o">=</span> <span class="n">java_call</span>

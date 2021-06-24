@@ -121,9 +121,6 @@
         <span class="c1"># the application ID of the simulation</span>
         <span class="s2">&quot;_app_id&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_core_to_conn_map&quot;</span><span class="p">,</span>
-        <span class="c1"># The path where the SQLite database holding the data will be placed,</span>
-        <span class="c1"># and where any java provenance can be written.</span>
-        <span class="s2">&quot;_db_folder&quot;</span><span class="p">,</span>
         <span class="c1"># The support class to run via Java. If None pure python is used.</span>
         <span class="s2">&quot;_java&quot;</span><span class="p">,</span>
         <span class="c1"># The python representation of the SpiNNaker machine.</span>
@@ -141,7 +138,6 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_core_to_conn_map</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_db_folder</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_java</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span> <span class="o">=</span> <span class="kc">None</span>
@@ -170,7 +166,6 @@
         <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
         <span class="n">dsg_targets</span><span class="o">.</span><span class="n">set_app_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_java</span><span class="o">.</span><span class="n">set_machine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_java</span><span class="o">.</span><span class="n">set_report_folder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_db_folder</span><span class="p">)</span>
         <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">dw_write_info</span>
 
@@ -234,8 +229,7 @@
             <span class="n">executable_targets</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">,</span>
             <span class="n">placements</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">extra_monitor_cores_to_ethernet_connection_map</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">report_folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">java_caller</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">processor_to_app_data_base_address</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">java_caller</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">processor_to_app_data_base_address</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Execute the data specs for all non-system targets.</span>
 
 <span class="sd">        :param ~spinn_machine.Machine machine:</span>
@@ -270,7 +264,6 @@
         <span class="k">if</span> <span class="n">processor_to_app_data_base_address</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">processor_to_app_data_base_address</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span> <span class="o">=</span> <span class="n">processor_to_app_data_base_address</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_db_folder</span> <span class="o">=</span> <span class="n">report_folder</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_java</span> <span class="o">=</span> <span class="n">java_caller</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">transceiver</span>
@@ -394,7 +387,7 @@
 
 <div class="viewcode-block" id="HostExecuteDataSpecification.execute_system_data_specs"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostExecuteDataSpecification.execute_system_data_specs">[docs]</a>    <span class="k">def</span> <span class="nf">execute_system_data_specs</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">,</span>
-            <span class="n">executable_targets</span><span class="p">,</span> <span class="n">report_folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">executable_targets</span><span class="p">,</span>
             <span class="n">java_caller</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">processor_to_app_data_base_address</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Execute the data specs for all system targets.</span>
 
@@ -409,7 +402,6 @@
 <span class="sd">            the coordinates for region sizes for each core</span>
 <span class="sd">        :param ~spinnman.model.ExecutableTargets executable_targets:</span>
 <span class="sd">            the map between binaries and locations and executable types</span>
-<span class="sd">        :param str report_folder:</span>
 <span class="sd">        :param JavaCaller java_caller:</span>
 <span class="sd">        :param processor_to_app_data_base_address:</span>
 <span class="sd">        :type processor_to_app_data_base_address:</span>
@@ -425,7 +417,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">transceiver</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="n">app_id</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_db_folder</span> <span class="o">=</span> <span class="n">report_folder</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_java</span> <span class="o">=</span> <span class="n">java_caller</span>
         <span class="n">impl_method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__java_sys</span> <span class="k">if</span> <span class="n">java_caller</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">__python_sys</span>
         <span class="k">return</span> <span class="n">impl_method</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">)</span></div>

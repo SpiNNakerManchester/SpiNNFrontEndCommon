@@ -332,12 +332,32 @@ needed further, and the return response will be sent.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.database.</span></span><span class="sig-name descname"><span class="pre">DatabaseWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.database.</span></span><span class="sig-name descname"><span class="pre">DatabaseWriter</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.utilities.sqlite_db.SQLiteDB</span></code></a></p>
 <p>The interface for the database system for main front ends.        Any special tables needed from a front end should be done        by sub classes of this interface.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>database_directory</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Where the database will be written</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>database_file</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The name of a file that contains (or will contain) an SQLite
+database holding the data. If omitted, an unshared in-memory
+database will be used (suitable only for testing).</p></li>
+<li><p><strong>read_only</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Whether the database is in read-only mode. When the database is in
+read-only mode, it <em>must</em> already exist.</p></li>
+<li><p><strong>ddl_file</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – The name of a file (typically containing SQL DDL commands used to
+create the tables) to be evaluated against the database before this
+object completes construction. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, nothing will be
+evaluated. You probably don’t want to specify a DDL file at the
+same time as setting <code class="docutils literal notranslate"><span class="pre">read_only=True</span></code>.</p></li>
+<li><p><strong>row_factory</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.6)"><em>Callable</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – Callable used to create the rows of result sets.
+Either <code class="docutils literal notranslate"><span class="pre">tuple</span></code> or <code class="docutils literal notranslate"><span class="pre">sqlite3.Row</span></code> (default);
+can be <code class="docutils literal notranslate"><span class="pre">None</span></code> to use the DB driver default.</p></li>
+<li><p><strong>text_factory</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.6)"><em>Callable</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – Callable used to create the Python values of non-numeric columns
+in result sets. Usually <code class="docutils literal notranslate"><span class="pre">memoryview</span></code> (default) but should be
+<code class="docutils literal notranslate"><span class="pre">str</span></code> when you’re expecting string results;
+can be <code class="docutils literal notranslate"><span class="pre">None</span></code> to use the DB driver default.</p></li>
+<li><p><strong>case_insensitive_like</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Whether we want the <code class="docutils literal notranslate"><span class="pre">LIKE</span></code> matching operator to be case-sensitive
+or case-insensitive (default).</p></li>
+</ul>
 </dd>
 </dl>
 <dl class="py method">

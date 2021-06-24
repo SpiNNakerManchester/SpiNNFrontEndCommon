@@ -1199,10 +1199,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryTransceiver&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span>
                 <span class="s2">&quot;MachineAllocationController&quot;</span><span class="p">)</span>
-            <span class="n">report_folder</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;ReportFolder&quot;</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">report_folder</span><span class="p">:</span>
-                    <span class="n">TagsFromMachineReport</span><span class="p">()(</span><span class="n">report_folder</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">)</span>
+                <span class="n">TagsFromMachineReport</span><span class="p">()(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e2</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                     <span class="s2">&quot;problem with TagsFromMachineReport </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e2</span><span class="p">),</span>
@@ -1273,7 +1271,6 @@
             <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;auto_detect_bmp&quot;</span><span class="p">)</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;ScampConnectionData&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_config_str</span><span class="p">(</span>
             <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;scamp_connections_data&quot;</span><span class="p">)</span>
-        <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;ReportFolder&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span>
         <span class="n">inputs</span><span class="p">[</span><span class="n">_PREALLOC_NAME</span><span class="p">]</span> <span class="o">=</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">()</span>
         <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MachineGenerator&quot;</span><span class="p">)</span>
 
@@ -1328,7 +1325,6 @@
         <span class="n">outputs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="n">do_partitioning</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_by_size</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">algorithms</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
-        <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;ReportFolder&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span>
         <span class="n">inputs</span><span class="p">[</span><span class="n">_PREALLOC_NAME</span><span class="p">]</span> <span class="o">=</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">()</span>
 
         <span class="c1"># if using spalloc system</span>
@@ -1460,7 +1456,6 @@
             <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;MemoryApplicationGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
             <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;MemoryMachineGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
-
         <span class="k">return</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">algorithms</span>
 
     <span class="k">def</span> <span class="nf">_create_version_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1519,10 +1514,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;MemoryMachineGraph&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
 
-        <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;ReportFolder&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span>
-        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;ProvenanceFilePath&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span>
-        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;AppProvenanceFilePath&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_provenance_file_path</span>
-        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;SystemProvenanceFilePath&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;JsonFolder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;APPID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;DatabaseSocketAddresses&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database_socket_addresses</span>
@@ -2245,8 +2236,7 @@
 
         <span class="c1"># Read IOBUF where possible (that should be everywhere)</span>
         <span class="n">iobuf</span> <span class="o">=</span> <span class="n">IOBufExtractor</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_app_provenance_file_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">errors</span><span class="p">,</span> <span class="n">warnings</span> <span class="o">=</span> <span class="n">iobuf</span><span class="o">.</span><span class="n">extract_iobuf</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
@@ -2780,7 +2770,6 @@
     <span class="k">def</span> <span class="nf">_do_energy_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># create energy reporter</span>
         <span class="n">energy_reporter</span> <span class="o">=</span> <span class="n">EnergyReport</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span><span class="p">,</span>
             <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spalloc_server</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_remote_spinnaker_url</span><span class="p">)</span>
 
@@ -2806,9 +2795,7 @@
         <span class="n">extractor</span> <span class="o">=</span> <span class="n">IOBufExtractor</span><span class="p">(</span>
             <span class="n">transceiver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span>
             <span class="n">executable_targets</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_run_outputs</span><span class="p">[</span><span class="s2">&quot;ExecutableTargets&quot;</span><span class="p">],</span>
-            <span class="n">executable_finder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">,</span>
-            <span class="n">app_provenance_file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_app_provenance_file_path</span><span class="p">,</span>
-            <span class="n">system_provenance_file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span><span class="p">)</span>
+            <span class="n">executable_finder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">)</span>
         <span class="n">extractor</span><span class="o">.</span><span class="n">extract_iobuf</span><span class="p">()</span>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.add_socket_address"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_socket_address">[docs]</a>    <span class="k">def</span> <span class="nf">add_socket_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_address</span><span class="p">):</span>

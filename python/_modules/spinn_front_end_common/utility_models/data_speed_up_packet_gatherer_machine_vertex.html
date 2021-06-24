@@ -67,13 +67,15 @@
 <span class="kn">from</span> <span class="nn">spinnman.messages.scp.impl.iptag_set</span> <span class="kn">import</span> <span class="n">IPTagSet</span>
 <span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">SCAMPConnection</span>
 <span class="kn">from</span> <span class="nn">spinnman.model.enums.cpu_state</span> <span class="kn">import</span> <span class="n">CPUState</span>
-<span class="kn">from</span> <span class="nn">data_specification.utility_calls</span> <span class="kn">import</span> <span class="n">get_region_base_address_offset</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_calls</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_region_base_address_offset</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman.executor.injection_decorator</span> <span class="kn">import</span> <span class="n">inject_items</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.common</span> <span class="kn">import</span> <span class="n">EdgeTrafficType</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span>
 <span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">IPtagResource</span><span class="p">,</span> <span class="n">ResourceContainer</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="n">get_simulator</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_simulator</span><span class="p">,</span> <span class="n">report_default_directory</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">convert_vertices_to_core_subset</span><span class="p">,</span> <span class="n">n_word_struct</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.emergency_recovery</span> <span class="kn">import</span> <span class="p">(</span>
@@ -331,7 +333,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">extra_monitors_by_chip</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span>
-            <span class="n">report_default_directory</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param int x: Where this gatherer is.</span>
 <span class="sd">        :param int y: Where this gatherer is.</span>
@@ -340,7 +342,6 @@
 <span class="sd">            dict(tuple(int,int), ExtraMonitorSupportMachineVertex)</span>
 <span class="sd">        :param str ip_address:</span>
 <span class="sd">            How to talk directly to the chip where the gatherer is.</span>
-<span class="sd">        :param str report_default_directory: Where reporting is done.</span>
 <span class="sd">        :param constraints:</span>
 <span class="sd">        :type constraints:</span>
 <span class="sd">            iterable(~pacman.model.constraints.AbstractConstraint) or None</span>
@@ -379,10 +380,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># create report if it doesn&#39;t already exist</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_out_report_path</span> <span class="o">=</span> \
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OUT_REPORT_NAME</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">OUT_REPORT_NAME</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_in_report_path</span> <span class="o">=</span> \
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">IN_REPORT_NAME</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">IN_REPORT_NAME</span><span class="p">)</span>
 
         <span class="c1"># Stored reinjection status for resetting timeouts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span> <span class="o">=</span> <span class="kc">None</span>

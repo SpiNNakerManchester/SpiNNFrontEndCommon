@@ -55,7 +55,8 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
-
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">report_default_directory</span><span class="p">)</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
 <span class="n">_FOLDER_NAME</span> <span class="o">=</span> <span class="s2">&quot;memory_map_from_processor_to_address_space&quot;</span>
@@ -66,16 +67,14 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="MemoryMapOnHostReport.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.MemoryMapOnHostReport.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">report_default_directory</span><span class="p">,</span>
-            <span class="n">processor_to_app_data_base_address</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">processor_to_app_data_base_address</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param str report_default_directory:</span>
 <span class="sd">        :param processor_to_app_data_base_address:</span>
 <span class="sd">        :type processor_to_app_data_base_address:</span>
 <span class="sd">            dict(tuple(int,int,int),DataWritten)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">,</span> <span class="n">_FOLDER_NAME</span><span class="p">)</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">(),</span> <span class="n">_FOLDER_NAME</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_describe_mem_map</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">processor_to_app_data_base_address</span><span class="p">)</span>

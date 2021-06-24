@@ -55,6 +55,8 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.profiling</span> <span class="kn">import</span> <span class="n">AbstractHasProfileData</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">app_provenance_file_path</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">ProfileDataGatherer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -64,20 +66,18 @@
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
-<div class="viewcode-block" id="ProfileDataGatherer.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ProfileDataGatherer.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">):</span>
+<div class="viewcode-block" id="ProfileDataGatherer.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ProfileDataGatherer.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">            the SpiNNMan interface object</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">            The placements of the vertices</span>
-<span class="sd">        :param str provenance_file_path:</span>
-<span class="sd">            The location to store the profile data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
 
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
             <span class="n">placements</span><span class="o">.</span><span class="n">n_placements</span><span class="p">,</span> <span class="s2">&quot;Getting profile data&quot;</span><span class="p">)</span>
+        <span class="n">provenance_file_path</span> <span class="o">=</span> <span class="n">app_provenance_file_path</span><span class="p">()</span>
 
         <span class="c1"># retrieve provenance data from any cores that provide data</span>
         <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">placements</span><span class="o">.</span><span class="n">placements</span><span class="p">):</span>

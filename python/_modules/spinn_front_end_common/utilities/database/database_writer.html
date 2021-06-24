@@ -60,8 +60,7 @@
     <span class="n">AbstractProvidesKeyToAtomMapping</span><span class="p">,</span>
     <span class="n">AbstractSupportsDatabaseInjection</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">)</span>
-
+    <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">report_default_directory</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">)</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 <span class="n">DB_NAME</span> <span class="o">=</span> <span class="s2">&quot;input_output_database.db&quot;</span>
@@ -89,11 +88,8 @@
         <span class="s2">&quot;__machine_to_id&quot;</span><span class="p">,</span> <span class="s2">&quot;__vertex_to_id&quot;</span><span class="p">,</span> <span class="s2">&quot;__edge_to_id&quot;</span>
     <span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_directory</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param str database_directory: Where the database will be written</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_database_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">database_directory</span><span class="p">,</span> <span class="n">DB_NAME</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_database_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">(),</span> <span class="n">DB_NAME</span><span class="p">)</span>
         <span class="n">init_sql_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="n">INIT_SQL</span><span class="p">)</span>
 
         <span class="c1"># delete any old database</span>

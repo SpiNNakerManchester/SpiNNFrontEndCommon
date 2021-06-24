@@ -53,6 +53,8 @@
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">report_default_directory</span><span class="p">)</span>
 
 <span class="n">_REPORT_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;tags_on_machine.txt&quot;</span>
 
@@ -61,12 +63,12 @@
     <span class="sd">&quot;&quot;&quot; Describes what the tags actually present on the machine are.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="TagsFromMachineReport.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.TagsFromMachineReport.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">report_default_directory</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
+<div class="viewcode-block" id="TagsFromMachineReport.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.TagsFromMachineReport.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str report_default_directory:</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">,</span> <span class="n">_REPORT_FILENAME</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">(),</span> <span class="n">_REPORT_FILENAME</span><span class="p">)</span>
         <span class="n">tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tags</span><span class="p">(</span><span class="n">transceiver</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Tags actually read off the machine</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>

@@ -172,7 +172,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span>
                  <span class="n">packet_gather_cores_to_ethernet_connection_map</span><span class="p">,</span>
                  <span class="n">extra_monitor_to_chip_mapping</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">fixed_routes</span><span class="p">,</span>
-                 <span class="n">report_folder</span><span class="p">,</span> <span class="n">java_caller</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                 <span class="n">java_caller</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">            The placements of the vertices</span>
@@ -191,9 +191,6 @@
 <span class="sd">        :param ~spinn_machine.Machine machine:</span>
 <span class="sd">        :param fixed_routes:</span>
 <span class="sd">        :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)</span>
-<span class="sd">        :param str report_folder:</span>
-<span class="sd">            The directory for reports which includes the file to use as an SQL</span>
-<span class="sd">            database.</span>
 <span class="sd">        :param JavaCaller java_caller:</span>
 <span class="sd">            Support class to call Java, or ``None`` to use Python</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -218,7 +215,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_sent_messages</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="c1"># storage area for received data from cores</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span> <span class="o">=</span> <span class="n">BufferedReceivingData</span><span class="p">(</span><span class="n">report_folder</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_received_data</span> <span class="o">=</span> <span class="n">BufferedReceivingData</span><span class="p">()</span>
 
         <span class="c1"># Lock to avoid multiple messages being processed at the same time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock_buffer_out</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
@@ -229,7 +226,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="o">=</span> <span class="n">java_caller</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="o">.</span><span class="n">set_machine</span><span class="p">(</span><span class="n">machine</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="o">.</span><span class="n">set_report_folder</span><span class="p">(</span><span class="n">report_folder</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="o">.</span><span class="n">set_advanced_monitors</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">,</span>

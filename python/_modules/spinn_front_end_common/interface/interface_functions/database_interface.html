@@ -79,8 +79,7 @@
 
 <div class="viewcode-block" id="DatabaseInterface.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.DatabaseInterface.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">,</span>
-            <span class="n">placements</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">,</span> <span class="n">router_tables</span><span class="p">,</span>
-            <span class="n">report_folder</span><span class="p">,</span> <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">placements</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">,</span> <span class="n">router_tables</span><span class="p">,</span> <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
 <span class="sd">        :param ~pacman.model.tags.Tags tags:</span>
@@ -92,7 +91,6 @@
 <span class="sd">        :param router_tables:</span>
 <span class="sd">        :type router_tables:</span>
 <span class="sd">            ~pacman.model.routing_tables.MulticastRoutingTables</span>
-<span class="sd">        :param str report_folder: Where the database will be put.</span>
 <span class="sd">        :param application_graph:</span>
 <span class="sd">        :type application_graph:</span>
 <span class="sd">            ~pacman.model.graphs.application.ApplicationGraph</span>
@@ -101,7 +99,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span> <span class="o">=</span> <span class="n">DatabaseWriter</span><span class="p">(</span><span class="n">report_folder</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span> <span class="o">=</span> <span class="n">DatabaseWriter</span><span class="p">()</span>
         <span class="c1"># add database generation if requested</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_needs_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">auto_detect_database</span><span class="p">(</span><span class="n">machine_graph</span><span class="p">)</span>
         <span class="n">user_create_database</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Database&quot;</span><span class="p">,</span> <span class="s2">&quot;create_database&quot;</span><span class="p">)</span>

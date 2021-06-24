@@ -52,6 +52,7 @@
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">pacman.executor</span> <span class="kn">import</span> <span class="n">injection_decorator</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.simulator_status</span> <span class="kn">import</span> <span class="p">(</span>
@@ -62,7 +63,11 @@
 
 <span class="c1"># pylint: disable=global-statement</span>
 <span class="n">_simulator</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">__temp_dir</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="n">__unittest_mode</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -106,7 +111,7 @@
 
 
 <div class="viewcode-block" id="get_last_simulator"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.get_last_simulator">[docs]</a><span class="k">def</span> <span class="nf">get_last_simulator</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot; Get the last simulator object setup but not</span>
+    <span class="sd">&quot;&quot;&quot; Get the last simulator object setup.</span>
 
 <span class="sd">    Unlike get_simulator this method will also return a simulator that has</span>
 <span class="sd">        been shutdown.</span>
@@ -141,22 +146,26 @@
 <span class="sd">    :type new_simulator:</span>
 <span class="sd">        ~spinn_front_end_common.interface.AbstractSpinnakerBase</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">__unittest_mode</span>
+    <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">__temp_dir</span><span class="p">,</span> <span class="n">__unittest_mode</span>
     <span class="n">_simulator</span> <span class="o">=</span> <span class="n">new_simulator</span>
-    <span class="n">__unittest_mode</span> <span class="o">=</span> <span class="kc">False</span></div>
+    <span class="n">__unittest_mode</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">__temp_dir</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="setup_for_unittest"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.setup_for_unittest">[docs]</a><span class="k">def</span> <span class="nf">setup_for_unittest</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot; Removes the link to the previous simulator and clears injection</span>
 
+<span class="sd">    This will also delete any temp_dir from previous tests.</span>
+
 <span class="sd">    As this call is not required before calling set_simulator</span>
 <span class="sd">    so should only be called by unittest_setup.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">__unittest_mode</span>
+    <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">__temp_dir</span><span class="p">,</span> <span class="n">__unittest_mode</span>
     <span class="n">_simulator</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">__unittest_mode</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">injection_decorator</span><span class="o">.</span><span class="n">_instances</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span></div>
+    <span class="n">injection_decorator</span><span class="o">.</span><span class="n">_instances</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">__temp_dir</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="get_generated_output"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.get_generated_output">[docs]</a><span class="k">def</span> <span class="nf">get_generated_output</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
@@ -176,10 +185,17 @@
         <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">get_generated_output</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></div>
 
 
+<span class="k">def</span> <span class="nf">_temp_dir</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">__temp_dir</span>
+    <span class="k">if</span> <span class="n">__temp_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">__temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">__temp_dir</span><span class="o">.</span><span class="n">name</span>
+
+
 <div class="viewcode-block" id="machine_time_step"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.machine_time_step">[docs]</a><span class="k">def</span> <span class="nf">machine_time_step</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot; The machine timestep, in microseconds</span>
 
-<span class="sd">    ..note: If the simulator has not been setup this returns the default 1000</span>
+<span class="sd">    ..note: In unittest mode this returns the default 1000</span>
 
 <span class="sd">    :rtype: int</span>
 <span class="sd">    :raises SimulatorNotSetupException:</span>
@@ -204,7 +220,7 @@
 
 <span class="sd">    Semantic sugar for machine_time_step() / 1000.</span>
 
-<span class="sd">    ..note: If the simulator has not been setup this returns the default 1.0</span>
+<span class="sd">    ..note: In unittest mode this returns the default 1.0</span>
 
 <span class="sd">    :rtype: float</span>
 <span class="sd">    :raises SimulatorNotSetupException:</span>
@@ -229,7 +245,7 @@
 
 <span class="sd">    Semantic sugar for 1000 / machine_time_step()</span>
 
-<span class="sd">    ..note: If the simulator has not been setup this returns the default 1.0</span>
+<span class="sd">    ..note: In unittest mode this returns the default 1.0</span>
 
 <span class="sd">    :rtype: float</span>
 <span class="sd">    :raises SimulatorNotSetupException:</span>
@@ -251,6 +267,8 @@
 
 <div class="viewcode-block" id="time_scale_factor"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.time_scale_factor">[docs]</a><span class="k">def</span> <span class="nf">time_scale_factor</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot; The time scaling factor.</span>
+
+<span class="sd">    ..note: In unittest mode this returns the default 1</span>
 
 <span class="sd">    :rtype: int</span>
 <span class="sd">    :raises ValueError:</span>
@@ -279,17 +297,18 @@
 <span class="sd">    This will be the path used by the last run call or to be used by</span>
 <span class="sd">    the next run if it has not yet been called.</span>
 
-<span class="sd">    .. note:</span>
-<span class="sd">        The behaviour when called before setup is subject to change</span>
+<span class="sd">    ..note: In unittest mode this returns a tempdir shared by all path methods</span>
 
 <span class="sd">    :rtpye: str</span>
 <span class="sd">    :raises SimulatorNotSetupException:</span>
-<span class="sd">        if the system has a status where path can&#39;t be retrieved</span>
+<span class="sd">        If the simulator has not been setup</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-            <span class="s2">&quot;You need to have setup a simulator before asking for its &quot;</span>
-            <span class="s2">&quot;provenance_file_path.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_temp_dir</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
+                <span class="s2">&quot;provenance_file_path() not supported before sim.setup.&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># underscore param used avoid exposing a None PyNN parameter</span>
         <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_provenance_file_path</span></div>
@@ -302,17 +321,18 @@
 <span class="sd">    This will be the path used by the last run call or to be used by</span>
 <span class="sd">    the next run if it has not yet been called.</span>
 
-<span class="sd">    .. note:</span>
-<span class="sd">        The behaviour when called before setup is subject to change</span>
+<span class="sd">    ..note: In unittest mode this returns a tempdir shared by all path methods</span>
 
 <span class="sd">    :rtpye: str</span>
 <span class="sd">    :raises SimulatorNotSetupException:</span>
-<span class="sd">        if the system has a status where path can&#39;t be retrieved</span>
+<span class="sd">        If the simulator has not been setup</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-            <span class="s2">&quot;You need to have setup a simulator before asking for its &quot;</span>
-            <span class="s2">&quot;app_provenance_file_path.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_temp_dir</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
+                <span class="s2">&quot;app_provenance_file_path() not supported before sim.setup.&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># underscore param used avoid exposing a None PyNN parameter</span>
         <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_app_provenance_file_path</span></div>
@@ -325,40 +345,42 @@
 <span class="sd">    This will be the path used by the last run call or to be used by</span>
 <span class="sd">    the next run if it has not yet been called.</span>
 
-<span class="sd">    .. note:</span>
-<span class="sd">        The behaviour when called before setup is subject to change</span>
+<span class="sd">    ..note: In unittest mode this returns a tempdir shared by all path methods</span>
 
 <span class="sd">    :rtpye: str</span>
 <span class="sd">    :raises SimulatorNotSetupException:</span>
-<span class="sd">        if the system has a status where path can&#39;t be retrieved</span>
+<span class="sd">        If the simulator has not been setup</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-            <span class="s2">&quot;You need to have setup a simulator before asking for its &quot;</span>
-            <span class="s2">&quot;system_provenance_file_path.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_temp_dir</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
+                <span class="s2">&quot;system_provenance_file_path not supported before sim.setup.&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># underscore param used avoid exposing a None PyNN parameter</span>
         <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_system_provenance_file_path</span></div>
 
 
-<div class="viewcode-block" id="run_report_directory"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.run_report_directory">[docs]</a><span class="k">def</span> <span class="nf">run_report_directory</span><span class="p">():</span>
+<div class="viewcode-block" id="report_default_directory"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.report_default_directory">[docs]</a><span class="k">def</span> <span class="nf">report_default_directory</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns the path to the directory that holds all the reports for run</span>
 
 <span class="sd">    This will be the path used by the last run call or to be used by</span>
 <span class="sd">    the next run if it has not yet been called.</span>
 
-<span class="sd">    .. note:</span>
-<span class="sd">        The behaviour when called before setup is subject to change</span>
+<span class="sd">    ..note: In unittest mode this returns a tempdir shared by all path methods</span>
 
 <span class="sd">    :rtpye: str</span>
 <span class="sd">    :raises SimulatorNotSetupException:</span>
-<span class="sd">        if the system has a status where path can&#39;t be retrieved</span>
+<span class="sd">        If the simulator has not been setup</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-            <span class="s2">&quot;You need to have setup a simulator before asking for its &quot;</span>
-            <span class="s2">&quot;system_provenance_file_path.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_temp_dir</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
+                <span class="s2">&quot;report_default_directory() not supported before sim.setup.&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># underscore param used avoid exposing a None PyNN parameter</span>
         <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_report_default_directory</span></div>

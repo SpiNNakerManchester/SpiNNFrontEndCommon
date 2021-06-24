@@ -364,12 +364,13 @@ for the application hash.</p>
 <dd><p>Returns the path to the directory that holds all app provenance files</p>
 <p>This will be the path used by the last run call or to be used by
 the next run if it has not yet been called.</p>
+<p>..note: In unittest mode this returns a tempdir shared by all path methods</p>
 <dl class="field-list simple">
 <dt class="field-odd">Rtpye</dt>
 <dd class="field-odd"><p>str</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException"><strong>SimulatorNotSetupException</strong></a> – if the system has a status where path can’t be retrieved</p>
+<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException"><strong>SimulatorNotSetupException</strong></a> – If the simulator has not been setup</p>
 </dd>
 </dl>
 </dd></dl>
@@ -406,7 +407,7 @@ or <cite>None</cite> if the variable is not found.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.get_last_simulator">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">get_last_simulator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#get_last_simulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.get_last_simulator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the last simulator object setup but not</p>
+<dd><p>Get the last simulator object setup.</p>
 <dl class="simple">
 <dt>Unlike get_simulator this method will also return a simulator that has</dt><dd><p>been shutdown.</p>
 </dd>
@@ -467,7 +468,7 @@ False where check_simulator raises and exception and True when it does not</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.machine_time_step">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">machine_time_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#machine_time_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.machine_time_step" title="Permalink to this definition">¶</a></dt>
 <dd><p>The machine timestep, in microseconds</p>
-<p>..note: If the simulator has not been setup this returns the default 1000</p>
+<p>..note: In unittest mode this returns the default 1000</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
@@ -483,7 +484,7 @@ False where check_simulator raises and exception and True when it does not</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">machine_time_step_ms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#machine_time_step_ms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.machine_time_step_ms" title="Permalink to this definition">¶</a></dt>
 <dd><p>The machine timestep, in microseconds</p>
 <p>Semantic sugar for machine_time_step() / 1000.</p>
-<p>..note: If the simulator has not been setup this returns the default 1.0</p>
+<p>..note: In unittest mode this returns the default 1.0</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
@@ -499,7 +500,7 @@ False where check_simulator raises and exception and True when it does not</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">machine_time_step_per_ms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#machine_time_step_per_ms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.machine_time_step_per_ms" title="Permalink to this definition">¶</a></dt>
 <dd><p>The machine timesteps in a microseconds</p>
 <p>Semantic sugar for 1000 / machine_time_step()</p>
-<p>..note: If the simulator has not been setup this returns the default 1.0</p>
+<p>..note: In unittest mode this returns the default 1.0</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
@@ -516,28 +517,30 @@ False where check_simulator raises and exception and True when it does not</p>
 <dd><p>Returns the path to the directory that holds all provenance files</p>
 <p>This will be the path used by the last run call or to be used by
 the next run if it has not yet been called.</p>
+<p>..note: In unittest mode this returns a tempdir shared by all path methods</p>
 <dl class="field-list simple">
 <dt class="field-odd">Rtpye</dt>
 <dd class="field-odd"><p>str</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException"><strong>SimulatorNotSetupException</strong></a> – if the system has a status where path can’t be retrieved</p>
+<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException"><strong>SimulatorNotSetupException</strong></a> – If the simulator has not been setup</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.run_report_directory">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">run_report_directory</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#run_report_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.run_report_directory" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.report_default_directory">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">report_default_directory</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#report_default_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.report_default_directory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path to the directory that holds all the reports for run</p>
 <p>This will be the path used by the last run call or to be used by
 the next run if it has not yet been called.</p>
+<p>..note: In unittest mode this returns a tempdir shared by all path methods</p>
 <dl class="field-list simple">
 <dt class="field-odd">Rtpye</dt>
 <dd class="field-odd"><p>str</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException"><strong>SimulatorNotSetupException</strong></a> – if the system has a status where path can’t be retrieved</p>
+<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException"><strong>SimulatorNotSetupException</strong></a> – If the simulator has not been setup</p>
 </dd>
 </dl>
 </dd></dl>
@@ -557,6 +560,7 @@ the next run if it has not yet been called.</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.setup_for_unittest">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">setup_for_unittest</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#setup_for_unittest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.setup_for_unittest" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the link to the previous simulator and clears injection</p>
+<p>This will also delete any temp_dir from previous tests.</p>
 <p>As this call is not required before calling set_simulator
 so should only be called by unittest_setup.</p>
 </dd></dl>
@@ -567,12 +571,13 @@ so should only be called by unittest_setup.</p>
 <dd><p>Returns the path to the directory that holds all provenance files</p>
 <p>This will be the path used by the last run call or to be used by
 the next run if it has not yet been called.</p>
+<p>..note: In unittest mode this returns a tempdir shared by all path methods</p>
 <dl class="field-list simple">
 <dt class="field-odd">Rtpye</dt>
 <dd class="field-odd"><p>str</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException"><strong>SimulatorNotSetupException</strong></a> – if the system has a status where path can’t be retrieved</p>
+<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException" title="spinn_front_end_common.utilities.exceptions.SimulatorNotSetupException"><strong>SimulatorNotSetupException</strong></a> – If the simulator has not been setup</p>
 </dd>
 </dl>
 </dd></dl>
@@ -581,6 +586,7 @@ the next run if it has not yet been called.</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.time_scale_factor">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">time_scale_factor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#time_scale_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.time_scale_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>The time scaling factor.</p>
+<p>..note: In unittest mode this returns the default 1</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
@@ -991,7 +997,7 @@ connection! Can usually be <em>not</em> specified.</p>
 <span id="spinn-front-end-common-utilities-system-control-logic-module"></span><h2>spinn_front_end_common.utilities.system_control_logic module<a class="headerlink" href="#module-spinn_front_end_common.utilities.system_control_logic" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.system_control_logic.run_system_application">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.system_control_logic.</span></span><span class="sig-name descname"><span class="pre">run_system_application</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executable_cores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provenance_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_finder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_algorithm_iobuf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_success_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpu_end_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">needs_sync_barrier</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename_template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binaries_to_track</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_bar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/system_control_logic.html#run_system_application"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.system_control_logic.run_system_application" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.system_control_logic.</span></span><span class="sig-name descname"><span class="pre">run_system_application</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executable_cores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_finder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_algorithm_iobuf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_success_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpu_end_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">needs_sync_barrier</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename_template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binaries_to_track</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_bar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/system_control_logic.html#run_system_application"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.system_control_logic.run_system_application" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes the given _system_ application.         Used for on-chip expanders, compressors, etc.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -999,7 +1005,6 @@ connection! Can usually be <em>not</em> specified.</p>
 <li><p><strong>executable_cores</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v6.0)"><em>ExecutableTargets</em></a>) – the cores to run the executable on</p></li>
 <li><p><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the app-id for the executable</p></li>
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – the SpiNNMan instance</p></li>
-<li><p><strong>provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – the path for where provenance data is stored</p></li>
 <li><p><strong>executable_finder</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableFinder" title="spinn_front_end_common.utilities.utility_objs.ExecutableFinder"><em>ExecutableFinder</em></a>) – finder for executable paths</p></li>
 <li><p><strong>read_algorithm_iobuf</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – whether to report IOBUFs</p></li>
 <li><p><strong>check_for_success_function</strong> (<em>callable</em>) – function used to check success;
@@ -1026,7 +1031,7 @@ warnings</p></li>
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.IOBufExtractor">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.</span></span><span class="sig-name descname"><span class="pre">IOBufExtractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_finder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_provenance_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_provenance_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recovery_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iobuf_for_chip_{}_{}_processor_id_{}.txt'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.IOBufExtractor" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.</span></span><span class="sig-name descname"><span class="pre">IOBufExtractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_finder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recovery_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iobuf_for_chip_{}_{}_processor_id_{}.txt'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.IOBufExtractor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Extract the logging output buffers from the machine, and separates        lines based on their prefix.</p>
 <dl class="field-list simple">
@@ -1038,8 +1043,8 @@ warnings</p></li>
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p></li>
 <li><p><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v6.0)"><em>ExecutableTargets</em></a>) – </p></li>
 <li><p><strong>executable_finder</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableFinder" title="spinn_front_end_common.utilities.utility_objs.ExecutableFinder"><em>ExecutableFinder</em></a>) – </p></li>
-<li><p><strong>app_provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – </p></li>
-<li><p><strong>system_provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – </p></li>
+<li><p><strong>from_cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </p></li>
+<li><p><strong>binary_types</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </p></li>
 </ul>
 </dd>
 </dl>
