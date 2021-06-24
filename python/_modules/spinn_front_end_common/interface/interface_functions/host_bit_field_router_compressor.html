@@ -57,10 +57,10 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_bool</span><span class="p">,</span> <span class="n">get_config_int</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_bool</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.find_max_success</span> <span class="kn">import</span> <span class="n">find_max_success</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
-<span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">MulticastRoutingEntry</span>
+<span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">Machine</span><span class="p">,</span> <span class="n">MulticastRoutingEntry</span>
 <span class="kn">from</span> <span class="nn">pacman.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">PacmanAlgorithmFailedToGenerateOutputsException</span><span class="p">,</span>
     <span class="n">PacmanElementAllocationException</span><span class="p">,</span> <span class="n">MinimisationFailedError</span><span class="p">)</span>
@@ -213,11 +213,6 @@
 <span class="sd">        :return: compressed routing table entries</span>
 <span class="sd">        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">target_length</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
-            <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;router_table_compression_target_length&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">target_length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">target_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MAX_SUPPORTED_LENGTH</span>
-
         <span class="c1"># create progress bar</span>
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
             <span class="nb">len</span><span class="p">(</span><span class="n">router_tables</span><span class="o">.</span><span class="n">routing_tables</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
@@ -242,7 +237,7 @@
         <span class="k">for</span> <span class="n">router_table</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">router_tables</span><span class="o">.</span><span class="n">routing_tables</span><span class="p">):</span>
             <span class="n">prov_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_compression_selection_process</span><span class="p">(</span>
                 <span class="n">router_table</span><span class="p">,</span> <span class="n">report_folder_path</span><span class="p">,</span>
-                <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span>
+                <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span>
                 <span class="n">compressed_pacman_router_tables</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">))</span>
 
         <span class="c1"># return compressed tables</span>
@@ -306,7 +301,7 @@
 
 <div class="viewcode-block" id="HostBasedBitFieldRouterCompressor.start_compression_selection_process"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.start_compression_selection_process">[docs]</a>    <span class="k">def</span> <span class="nf">start_compression_selection_process</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">router_table</span><span class="p">,</span> <span class="n">report_folder_path</span><span class="p">,</span>
-            <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span>
+            <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span>
             <span class="n">compressed_pacman_router_tables</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Entrance method for doing on host compression. Can be used as a \</span>
 <span class="sd">            public method for other compressors.</span>
@@ -322,7 +317,6 @@
 <span class="sd">            machine graph</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements: placements</span>
 <span class="sd">        :param ~spinn_machine.Machine machine: SpiNNMan instance</span>
-<span class="sd">        :param int target_length: length of router compressor to get to</span>
 <span class="sd">        :param compressed_pacman_router_tables:</span>
 <span class="sd">            a data holder for compressed tables</span>
 <span class="sd">        :type compressed_pacman_router_tables:</span>
@@ -350,8 +344,7 @@
                 <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">n_processors</span><span class="p">)</span>
 
         <span class="c1"># execute binary search</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_start_binary_search</span><span class="p">(</span>
-            <span class="n">router_table</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_binary_search</span><span class="p">(</span><span class="n">router_table</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">)</span>
 
         <span class="c1"># add final to compressed tables:</span>
         <span class="c1"># self._best_routing_table is a list of entries</span>
@@ -588,18 +581,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_bitfields</span> <span class="o">=</span> <span class="n">sort_index</span>
 
     <span class="k">def</span> <span class="nf">_start_binary_search</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">router_table</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">router_table</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; start binary search of the merging of bitfield to router table</span>
 
 <span class="sd">        :param ~.UnCompressedMulticastRoutingTable router_table:</span>
 <span class="sd">            uncompressed router table</span>
-<span class="sd">        :param int target_length: length to compress to</span>
 <span class="sd">        :param dict(int,int) key_atom_map: map from key to atoms</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># try first just uncompressed. so see if its possible</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_entries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_algorithm</span><span class="p">(</span>
-                <span class="n">router_table</span><span class="p">,</span> <span class="n">target_length</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_entries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_algorithm</span><span class="p">(</span><span class="n">router_table</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_best_midpoint</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_compression_attempts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;succcess&quot;</span>
         <span class="k">except</span> <span class="n">MinimisationFailedError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -610,17 +601,15 @@
 
         <span class="n">find_max_success</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_bitfields</span><span class="p">,</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_binary_search_check</span><span class="p">,</span> <span class="n">routing_table</span><span class="o">=</span><span class="n">router_table</span><span class="p">,</span>
-            <span class="n">target_length</span><span class="o">=</span><span class="n">target_length</span><span class="p">,</span>
             <span class="n">key_to_n_atoms_map</span><span class="o">=</span><span class="n">key_atom_map</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_binary_search_check</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">mid_point</span><span class="p">,</span> <span class="n">routing_table</span><span class="p">,</span> <span class="n">target_length</span><span class="p">,</span> <span class="n">key_to_n_atoms_map</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">mid_point</span><span class="p">,</span> <span class="n">routing_table</span><span class="p">,</span> <span class="n">key_to_n_atoms_map</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; check function for fix max success</span>
 
 <span class="sd">        :param int mid_point: the point if the list to stop at</span>
 <span class="sd">        :param ~.UnCompressedMulticastRoutingTable routing_table:</span>
 <span class="sd">            the basic routing table</span>
-<span class="sd">        :param int target_length: the target length to reach</span>
 <span class="sd">        :param dict(int,int) key_to_n_atoms_map:</span>
 <span class="sd">        :return: true if it compresses</span>
 <span class="sd">        :rtype: bool</span>
@@ -633,7 +622,7 @@
         <span class="c1"># try to compress</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_entries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_algorithm</span><span class="p">(</span>
-                <span class="n">bit_field_router_table</span><span class="p">,</span> <span class="n">target_length</span><span class="p">)</span>
+                <span class="n">bit_field_router_table</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_best_midpoint</span> <span class="o">=</span> <span class="n">mid_point</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_compression_attempts</span><span class="p">[</span><span class="n">mid_point</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;succcess&quot;</span>
             <span class="k">return</span> <span class="kc">True</span>
@@ -644,13 +633,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_compression_attempts</span><span class="p">[</span><span class="n">mid_point</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Exception&quot;</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">_run_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">router_table</span><span class="p">,</span> <span class="n">target_length</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_run_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">router_table</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Attempts to covert the mega router tables into 1 router table.</span>
 
 <span class="sd">        :param list(~.AbsractMulticastRoutingTable) router_table:</span>
 <span class="sd">            the set of router tables that together need to</span>
 <span class="sd">            be merged into 1 router table</span>
-<span class="sd">        :param int target_length: the number</span>
 <span class="sd">        :return: compressor router table</span>
 <span class="sd">        :rtype: list(RoutingTableEntry)</span>
 <span class="sd">        :throws MinimisationFailedError: if it fails to</span>
@@ -659,9 +647,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">compressor</span> <span class="o">=</span> <span class="n">PairCompressor</span><span class="p">(</span><span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">compressed_entries</span> <span class="o">=</span> <span class="n">compressor</span><span class="o">.</span><span class="n">compress_table</span><span class="p">(</span><span class="n">router_table</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">compressed_entries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">target_length</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">MinimisationFailedError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> &gt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="nb">len</span><span class="p">(</span><span class="n">compressed_entries</span><span class="p">),</span> <span class="n">target_length</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">compressed_entries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">Machine</span><span class="o">.</span><span class="n">ROUTER_ENTRIES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MinimisationFailedError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Compression failed as </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">compressed_entries</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;entires found&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">compressed_entries</span>
 
     <span class="k">def</span> <span class="nf">_remove_merged_bitfields_from_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>

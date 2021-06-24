@@ -1518,10 +1518,6 @@
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;APPID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;DatabaseSocketAddresses&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database_socket_addresses</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;ExecutableFinder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span>
-        <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;CompressionTargetSize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
-            <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;router_table_compression_target_length&quot;</span><span class="p">)</span>
-        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;CompressionAsNeeded&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span>
-            <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;router_table_compress_as_needed&quot;</span><span class="p">)</span>
 
         <span class="n">algorithms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
