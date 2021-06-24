@@ -161,14 +161,10 @@ class CommandSenderMachineVertex(
     @inject_items({"routing_infos": "RoutingInfos"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "machine_time_step", "time_scale_factor", "routing_infos"})
+        additional_arguments={"routing_infos"})
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor,
-            routing_infos):
+            self, spec, placement, routing_infos):
         """
-        :param int machine_time_step:
-        :param int time_scale_factor:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
             the routing infos
         """
@@ -197,8 +193,7 @@ class CommandSenderMachineVertex(
         spec.comment("\n*** Spec for multicast source ***\n\n")
         spec.switch_write_focus(self.DATA_REGIONS.SYSTEM_REGION)
         spec.write_array(get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step,
-            time_scale_factor))
+            self.get_binary_file_name()))
 
         # write commands to spec for timed commands
         spec.switch_write_focus(
