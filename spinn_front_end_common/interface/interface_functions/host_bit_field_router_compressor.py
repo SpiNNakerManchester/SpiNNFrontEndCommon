@@ -18,10 +18,10 @@ import math
 import os
 import struct
 from collections import defaultdict
-from spinn_utilities.config_holder import get_config_bool, get_config_int
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.find_max_success import find_max_success
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_machine import MulticastRoutingEntry
+from spinn_machine import Machine, MulticastRoutingEntry
 from pacman.exceptions import (
     PacmanAlgorithmFailedToGenerateOutputsException,
     PacmanElementAllocationException, MinimisationFailedError)
@@ -174,11 +174,6 @@ class HostBasedBitFieldRouterCompressor(object):
         :return: compressed routing table entries
         :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
-        target_length = get_config_int(
-            "Mapping", "router_table_compression_target_length")
-        if target_length is None:
-            target_length = self._MAX_SUPPORTED_LENGTH
-
         # create progress bar
         progress = ProgressBar(
             len(router_tables.routing_tables) * 2,
@@ -203,7 +198,7 @@ class HostBasedBitFieldRouterCompressor(object):
         for router_table in progress.over(router_tables.routing_tables):
             prov_items.append(self.start_compression_selection_process(
                 router_table, report_folder_path,
-                transceiver, machine_graph, placements, machine, target_length,
+                transceiver, machine_graph, placements, machine,
                 compressed_pacman_router_tables, key_atom_map))
 
         # return compressed tables
@@ -267,7 +262,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
     def start_compression_selection_process(
             self, router_table, report_folder_path,
-            transceiver, machine_graph, placements, machine, target_length,
+            transceiver, machine_graph, placements, machine,
             compressed_pacman_router_tables, key_atom_map):
         """ Entrance method for doing on host compression. Can be used as a \
             public method for other compressors.
@@ -283,7 +278,6 @@ class HostBasedBitFieldRouterCompressor(object):
             machine graph
         :param ~pacman.model.placements.Placements placements: placements
         :param ~spinn_machine.Machine machine: SpiNNMan instance
-        :param int target_length: length of router compressor to get to
         :param compressed_pacman_router_tables:
             a data holder for compressed tables
         :type compressed_pacman_router_tables:
@@ -311,8 +305,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 router_table.x, router_table.y).n_processors)
 
         # execute binary search
-        self._start_binary_search(
-            router_table, target_length, key_atom_map)
+        self._start_binary_search(router_table, key_atom_map)
 
         # add final to compressed tables:
         # self._best_routing_table is a list of entries
@@ -549,18 +542,16 @@ class HostBasedBitFieldRouterCompressor(object):
         self._n_bitfields = sort_index
 
     def _start_binary_search(
-            self, router_table, target_length, key_atom_map):
+            self, router_table, key_atom_map):
         """ start binary search of the merging of bitfield to router table
 
         :param ~.UnCompressedMulticastRoutingTable router_table:
             uncompressed router table
-        :param int target_length: length to compress to
         :param dict(int,int) key_atom_map: map from key to atoms
         """
         # try first just uncompressed. so see if its possible
         try:
-            self._best_routing_entries = self._run_algorithm(
-                router_table, target_length)
+            self._best_routing_entries = self._run_algorithm(router_table)
             self._best_midpoint = 0
             self._compression_attempts[0] = "succcess"
         except MinimisationFailedError as e:
@@ -571,17 +562,15 @@ class HostBasedBitFieldRouterCompressor(object):
 
         find_max_success(self._n_bitfields, functools.partial(
             self._binary_search_check, routing_table=router_table,
-            target_length=target_length,
             key_to_n_atoms_map=key_atom_map))
 
     def _binary_search_check(
-            self, mid_point, routing_table, target_length, key_to_n_atoms_map):
+            self, mid_point, routing_table, key_to_n_atoms_map):
         """ check function for fix max success
 
         :param int mid_point: the point if the list to stop at
         :param ~.UnCompressedMulticastRoutingTable routing_table:
             the basic routing table
-        :param int target_length: the target length to reach
         :param dict(int,int) key_to_n_atoms_map:
         :return: true if it compresses
         :rtype: bool
@@ -594,7 +583,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # try to compress
         try:
             self._best_routing_entries = self._run_algorithm(
-                bit_field_router_table, target_length)
+                bit_field_router_table)
             self._best_midpoint = mid_point
             self._compression_attempts[mid_point] = "succcess"
             return True
@@ -605,13 +594,12 @@ class HostBasedBitFieldRouterCompressor(object):
             self._compression_attempts[mid_point] = "Exception"
             return False
 
-    def _run_algorithm(self, router_table, target_length):
+    def _run_algorithm(self, router_table):
         """ Attempts to covert the mega router tables into 1 router table.
 
         :param list(~.AbsractMulticastRoutingTable) router_table:
             the set of router tables that together need to
             be merged into 1 router table
-        :param int target_length: the number
         :return: compressor router table
         :rtype: list(RoutingTableEntry)
         :throws MinimisationFailedError: if it fails to
@@ -620,9 +608,10 @@ class HostBasedBitFieldRouterCompressor(object):
         """
         compressor = PairCompressor(ordered=True)
         compressed_entries = compressor.compress_table(router_table)
-        if len(compressed_entries) > target_length:
-            raise MinimisationFailedError("{} > {}".format(
-                len(compressed_entries), target_length))
+        if len(compressed_entries) > Machine.ROUTER_ENTRIES:
+            raise MinimisationFailedError(
+                f"Compression failed as {len(compressed_entries)} "
+                f"entires found")
         return compressed_entries
 
     def _remove_merged_bitfields_from_cores(self, chip_x, chip_y, transceiver):
