@@ -32,7 +32,7 @@ class PreAllocateForBitFieldRouterCompressor(object):
             the SpiNNaker machine as discovered
         :param pre_allocated_resources: other preallocated resources
         :type pre_allocated_resources:
-            ~pacman.model.resources.ResourceReservations
+            ~pacman.model.resources.PreAllocatedResourceContainer
         :return: preallocated resources
         :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
