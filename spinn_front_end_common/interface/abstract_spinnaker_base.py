@@ -44,7 +44,8 @@ from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import (
     MachineGraph, MachineGraphView, MachineVertex)
-from pacman.model.resources import (ConstantSDRAM, PreAllocatedResourceContainer)
+from pacman.model.resources import (
+    ConstantSDRAM, PreAllocatedResourceContainer)
 from pacman import __version__ as pacman_version
 from spinn_utilities.config_holder import (
     get_config_bool, get_config_int, get_config_str, get_config_str_list,
