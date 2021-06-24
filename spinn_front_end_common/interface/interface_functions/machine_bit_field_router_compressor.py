@@ -224,9 +224,13 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
                 machine_graph, routing_infos)
 
             for (chip_x, chip_y) in progress_bar.over(on_host_chips, False):
-                report_folder_path = host_compressor.generate_report_path()
-                target_length = get_config_int(
-                    "Mapping", "router_table_compression_target_length")
+                if get_config_bool(
+                        "Reports",
+                        "write_router_compression_with_bitfield_report"):
+                    report_folder_path = host_compressor.generate_report_path()
+                else:
+                    report_folder_path = None
+
                 prov_items.append(
                     host_compressor.start_compression_selection_process(
                         router_table=routing_tables.get_routing_table_for_chip(
@@ -234,7 +238,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
                         report_folder_path=report_folder_path,
                         transceiver=transceiver, machine_graph=machine_graph,
                         placements=placements, machine=machine,
-                        target_length=target_length,
                         compressed_pacman_router_tables=(
                             compressed_pacman_router_tables),
                         key_atom_map=key_atom_map))
