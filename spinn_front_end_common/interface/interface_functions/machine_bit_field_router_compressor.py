@@ -115,8 +115,8 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
 
     def __call__(
             self, routing_tables, transceiver, machine, app_id,
-            provenance_file_path, machine_graph, placements, executable_finder,
-            default_report_folder, routing_infos, executable_targets,
+            machine_graph, placements, executable_finder,
+            routing_infos, executable_targets,
             compress_as_much_as_possible=False, provenance_data_objects=None):
         """ entrance for routing table compression with bit field
 
@@ -126,7 +126,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
         :param ~spinn_machine.Machine machine: spinnMachine instance
         :param int app_id: app id of the application
-        :param str provenance_file_path: file path for prov data
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             machine graph
         :param ~pacman.model.placements.Placements placements:
@@ -135,7 +134,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             where are binaries are located
         :param bool write_compressor_iobuf: flag saying if read IOBUF
         :param bool produce_report:
-        :param str default_report_folder:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         :param ~spinnman.model.ExecutableTargets executable_targets:
             the set of targets and executables
@@ -197,7 +195,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             run_system_application(
                 compressor_executable_targets,
                 routing_table_compressor_app_id, transceiver,
-                provenance_file_path, executable_finder,
+                executable_finder,
                 get_config_bool("Reports", "write_compressor_iobuf"),
                 functools.partial(
                     self._check_bit_field_router_compressor_for_success,
@@ -229,13 +227,10 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
                 if get_config_bool(
                         "Reports",
                         "write_router_compression_with_bitfield_report"):
-                    report_folder_path = host_compressor.generate_report_path(
-                        default_report_folder)
+                    report_folder_path = host_compressor.generate_report_path()
                 else:
                     report_folder_path = None
 
-                report_folder_path = host_compressor.generate_report_path(
-                    default_report_folder)
                 prov_items.append(
                     host_compressor.start_compression_selection_process(
                         router_table=routing_tables.get_routing_table_for_chip(

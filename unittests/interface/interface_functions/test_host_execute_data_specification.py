@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import struct
-import tempfile
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
@@ -76,9 +75,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver()
         machine = virtual_machine(2, 2)
-        tempdir = tempfile.mkdtemp()
 
-        dsg_targets = DataSpecificationTargets(machine, tempdir)
+        dsg_targets = DataSpecificationTargets(machine)
         with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reserve_memory_region(0, 100)
@@ -102,7 +100,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         infos = executor.execute_application_data_specs(
             transceiver, machine, 30, dsg_targets, targets,
-            report_folder=tempdir, region_sizes=region_sizes)
+            region_sizes=region_sizes)
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded

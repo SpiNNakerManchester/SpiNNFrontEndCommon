@@ -16,21 +16,22 @@
 import os
 from collections import defaultdict
 from spinn_machine.router import Router
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 
 
 class RouterCollisionPotentialReport(object):
 
     def __call__(
-            self, router_tables_by_partition, n_keys_map,
-            default_report_folder, machine):
+            self, router_tables_by_partition, n_keys_map, machine):
         """
         :param MulticastRoutingTableByPartition router_tables_by_partition:
         :param AbstractMachinePartitionNKeysMap n_keys_map:
-        :param str default_report_folder:
         :param ~spinn_machine.Machine machine:
         """
         file_name = os.path.join(
-            default_report_folder, "routing_collision_protential_report.rpt")
+            report_default_directory(),
+            "routing_collision_protential_report.rpt")
 
         with open(file_name, "w") as writer:
             collision_counts = self._generate_data(

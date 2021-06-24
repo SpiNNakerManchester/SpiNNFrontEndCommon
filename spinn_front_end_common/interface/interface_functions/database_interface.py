@@ -40,8 +40,7 @@ class DatabaseInterface(object):
 
     def __call__(
             self, machine_graph, tags, runtime, machine, data_n_timesteps,
-            placements, routing_infos, router_tables,
-            report_folder, application_graph=None):
+            placements, routing_infos, router_tables, application_graph=None):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.tags.Tags tags:
@@ -53,7 +52,6 @@ class DatabaseInterface(object):
         :param router_tables:
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
-        :param str report_folder: Where the database will be put.
         :param application_graph:
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph
@@ -62,7 +60,7 @@ class DatabaseInterface(object):
         """
         # pylint: disable=too-many-arguments
 
-        self._writer = DatabaseWriter(report_folder)
+        self._writer = DatabaseWriter()
         # add database generation if requested
         self._needs_db = self._writer.auto_detect_database(machine_graph)
         user_create_database = get_config_bool("Database", "create_database")

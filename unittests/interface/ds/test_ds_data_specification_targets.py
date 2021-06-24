@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import tempfile
 import unittest
 from spinn_machine.virtual_machine import virtual_machine
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -28,8 +27,7 @@ class TestDataSpecificationTargets(unittest.TestCase):
     def test_dict(self):
         machine = virtual_machine(2, 2)
         check = dict()
-        testdir = tempfile.mkdtemp()
-        asDict = DataSpecificationTargets(machine, testdir)
+        asDict = DataSpecificationTargets(machine)
         c1 = (0, 0, 0)
         foo = bytearray(b"foo")
         with asDict.create_data_spec(0, 0, 0) as writer:
