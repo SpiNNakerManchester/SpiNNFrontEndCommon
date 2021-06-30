@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from collections import defaultdict
+import logging
 
 from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 from spinn_utilities.progress_bar import ProgressBar
@@ -23,7 +24,11 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.ds.data_specification_targets import (
     DataSpecificationTargets)
+from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
+from data_specification.reference_context import ReferenceContext
 from spinn_front_end_common.utilities.utility_calls import get_report_writer
+
+logger = logging.getLogger(__name__)
 
 
 class GraphDataSpecificationWriter(object):
@@ -80,24 +85,29 @@ class GraphDataSpecificationWriter(object):
         progress = ProgressBar(
             placements.n_placements, "Generating data specifications")
         vertices_to_reset = list()
-        for placement in progress.over(placement_order):
-            # Try to generate the data spec for the placement
-            vertex = placement.vertex
-            generated = self.__generate_data_spec_for_vertices(
-                placement, vertex, targets, data_n_timesteps)
 
-            if generated and isinstance(
-                    vertex, AbstractRewritesDataSpecification):
-                vertices_to_reset.append(vertex)
-
-            # If the spec wasn't generated directly, and there is an
-            # application vertex, try with that
-            if not generated and vertex.app_vertex is not None:
+        # Do in a context of global identifiers
+        with ReferenceContext():
+            for placement in progress.over(placement_order):
+                # Try to generate the data spec for the placement
+                vertex = placement.vertex
                 generated = self.__generate_data_spec_for_vertices(
-                    placement, vertex.app_vertex, targets, data_n_timesteps)
+                    placement, vertex, targets, data_n_timesteps)
+
                 if generated and isinstance(
-                        vertex.app_vertex, AbstractRewritesDataSpecification):
-                    vertices_to_reset.append(vertex.app_vertex)
+                        vertex, AbstractRewritesDataSpecification):
+                    vertices_to_reset.append(vertex)
+
+                # If the spec wasn't generated directly, and there is an
+                # application vertex, try with that
+                if not generated and vertex.app_vertex is not None:
+                    generated = self.__generate_data_spec_for_vertices(
+                        placement, vertex.app_vertex, targets,
+                        data_n_timesteps)
+                    if generated and isinstance(
+                            vertex.app_vertex,
+                            AbstractRewritesDataSpecification):
+                        vertices_to_reset.append(vertex.app_vertex)
 
         # Ensure that the vertices know their regions have been reloaded
         for vertex in vertices_to_reset:
@@ -135,6 +145,18 @@ class GraphDataSpecificationWriter(object):
             if not isinstance(self._region_sizes[pl.x, pl.y, pl.p], int):
                 self._region_sizes[pl.x, pl.y, pl.p] =\
                     self._region_sizes[pl.x, pl.y, pl.p].item()
+
+            # Check per-region memory usage if possible
+            sdram = vertex.resources_required.sdram
+            if isinstance(sdram, MultiRegionSDRAM):
+                for i, size in enumerate(spec.region_sizes):
+                    est_size = sdram.regions.get(i, ConstantSDRAM(0))
+                    est_size = est_size.get_total_sdram(data_n_timesteps)
+                    if size > est_size:
+                        logger.warn(
+                            "Region {} of vertex {} is bigger than expected: "
+                            "{} estimated vs. {} actual".format(
+                                i, vertex.label, est_size, size))
 
             self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
             self._sdram_usage[pl.x, pl.y] += sum(spec.region_sizes)

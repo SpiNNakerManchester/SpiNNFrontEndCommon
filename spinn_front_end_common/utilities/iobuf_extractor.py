@@ -193,8 +193,9 @@ class IOBufExtractor(object):
         for binary in progress.over(binaries):
             core_subsets = self.__executable_targets.get_cores_for_binary(
                 binary)
-            self.__extract_iobufs_for_binary(
-                core_subsets, binary, error_entries, warn_entries)
+            if core_subsets is not None:
+                self.__extract_iobufs_for_binary(
+                    core_subsets, binary, error_entries, warn_entries)
         return error_entries, warn_entries
 
     def __extract_iobufs_for_binary(

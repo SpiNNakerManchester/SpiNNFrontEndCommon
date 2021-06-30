@@ -15,6 +15,7 @@
 
 import struct
 import logging
+from time import sleep
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
@@ -101,6 +102,7 @@ class ChipProvenanceUpdater(object):
             left_to_do_cores = left_over_now
             if to_update != 0:
                 progress.update(to_update)
+                sleep(0.5)
         if processors_completed != total_processors:
             logger.error("Unable to Finish getting provenance data. "
                          "Abandoned after too many retries. "
