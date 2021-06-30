@@ -329,8 +329,9 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="n">board_address</span><span class="p">)</span>
 
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                <span class="s2">&quot;Listening for traffic from </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
-                <span class="n">label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="o">.</span><span class="n">local_ip_address</span><span class="p">,</span>
+                <span class="s2">&quot;Listening for traffic from </span><span class="si">{}</span><span class="s2"> on board </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">label</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="o">.</span><span class="n">local_ip_address</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="o">.</span><span class="n">local_port</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__machine_vertices</span><span class="p">:</span>

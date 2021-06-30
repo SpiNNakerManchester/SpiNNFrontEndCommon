@@ -52,6 +52,7 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">SourceSegmentedSDRAMMachinePartition</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">SpinnFrontEndException</span>
@@ -59,12 +60,16 @@
 
 <span class="k">class</span> <span class="nc">SDRAMOutgoingPartitionAllocator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
-<div class="viewcode-block" id="SDRAMOutgoingPartitionAllocator.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.SDRAMOutgoingPartitionAllocator.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
+<div class="viewcode-block" id="SDRAMOutgoingPartitionAllocator.__call__"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.SDRAMOutgoingPartitionAllocator.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span>
+                 <span class="n">transceiver</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="n">progress_bar</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
             <span class="n">total_number_of_things_to_do</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">),</span>
             <span class="n">string_describing_what_being_progressed</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;Allocating SDRAM for SDRAM outgoing egde partitions&quot;</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">transceiver</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">virtual_usage</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">machine_vertex</span> <span class="ow">in</span> <span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
             <span class="n">sdram_partitions</span> <span class="o">=</span> <span class="p">(</span>
@@ -92,11 +97,16 @@
                         <span class="s2">&quot;partition </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sdram_partition</span><span class="p">))</span>
 
                 <span class="c1"># allocate</span>
-                <span class="n">sdram_base_address</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">malloc_sdram</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">total_sdram</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">transceiver</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">sdram_base_address</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">malloc_sdram</span><span class="p">(</span>
+                        <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">total_sdram</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">sdram_base_address</span> <span class="o">=</span> <span class="n">virtual_usage</span><span class="p">[</span>
+                        <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
+                    <span class="n">virtual_usage</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">+=</span> <span class="n">total_sdram</span>
 
                 <span class="c1"># update</span>
-                <span class="n">sdram_partition</span><span class="o">.</span><span class="n">sdram_base_address</span> <span class="o">=</span> <span class="p">(</span><span class="n">sdram_base_address</span><span class="p">)</span>
+                <span class="n">sdram_partition</span><span class="o">.</span><span class="n">sdram_base_address</span> <span class="o">=</span> <span class="n">sdram_base_address</span>
 
             <span class="n">progress_bar</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
         <span class="n">progress_bar</span><span class="o">.</span><span class="n">end</span><span class="p">()</span></div>

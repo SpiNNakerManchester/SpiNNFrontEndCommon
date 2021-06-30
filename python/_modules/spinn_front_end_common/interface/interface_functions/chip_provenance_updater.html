@@ -54,6 +54,7 @@
 
 <span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.sdp</span> <span class="kn">import</span> <span class="n">SDPFlag</span><span class="p">,</span> <span class="n">SDPHeader</span><span class="p">,</span> <span class="n">SDPMessage</span>
@@ -140,6 +141,7 @@
             <span class="n">left_to_do_cores</span> <span class="o">=</span> <span class="n">left_over_now</span>
             <span class="k">if</span> <span class="n">to_update</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">to_update</span><span class="p">)</span>
+                <span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">processors_completed</span> <span class="o">!=</span> <span class="n">total_processors</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Unable to Finish getting provenance data. &quot;</span>
                          <span class="s2">&quot;Abandoned after too many retries. &quot;</span>

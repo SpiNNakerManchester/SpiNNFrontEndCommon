@@ -231,8 +231,9 @@
         <span class="k">for</span> <span class="n">binary</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">binaries</span><span class="p">):</span>
             <span class="n">core_subsets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__executable_targets</span><span class="o">.</span><span class="n">get_cores_for_binary</span><span class="p">(</span>
                 <span class="n">binary</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__extract_iobufs_for_binary</span><span class="p">(</span>
-                <span class="n">core_subsets</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">core_subsets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__extract_iobufs_for_binary</span><span class="p">(</span>
+                    <span class="n">core_subsets</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span>
 
     <span class="k">def</span> <span class="nf">__extract_iobufs_for_binary</span><span class="p">(</span>

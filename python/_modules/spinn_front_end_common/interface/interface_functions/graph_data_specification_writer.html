@@ -53,6 +53,7 @@
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">from</span> <span class="nn">data_specification.constants</span> <span class="kn">import</span> <span class="n">APP_PTR_TABLE_BYTE_SIZE</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
@@ -62,7 +63,11 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.ds.data_specification_targets</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">DataSpecificationTargets</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="n">MultiRegionSDRAM</span><span class="p">,</span> <span class="n">ConstantSDRAM</span>
+<span class="kn">from</span> <span class="nn">data_specification.reference_context</span> <span class="kn">import</span> <span class="n">ReferenceContext</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_calls</span> <span class="kn">import</span> <span class="n">get_report_writer</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">GraphDataSpecificationWriter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -119,24 +124,29 @@
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
             <span class="n">placements</span><span class="o">.</span><span class="n">n_placements</span><span class="p">,</span> <span class="s2">&quot;Generating data specifications&quot;</span><span class="p">)</span>
         <span class="n">vertices_to_reset</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">placement_order</span><span class="p">):</span>
-            <span class="c1"># Try to generate the data spec for the placement</span>
-            <span class="n">vertex</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span>
-            <span class="n">generated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__generate_data_spec_for_vertices</span><span class="p">(</span>
-                <span class="n">placement</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">generated</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
-                    <span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractRewritesDataSpecification</span><span class="p">):</span>
-                <span class="n">vertices_to_reset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
-
-            <span class="c1"># If the spec wasn&#39;t generated directly, and there is an</span>
-            <span class="c1"># application vertex, try with that</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">generated</span> <span class="ow">and</span> <span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Do in a context of global identifiers</span>
+        <span class="k">with</span> <span class="n">ReferenceContext</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">placement_order</span><span class="p">):</span>
+                <span class="c1"># Try to generate the data spec for the placement</span>
+                <span class="n">vertex</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span>
                 <span class="n">generated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__generate_data_spec_for_vertices</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="p">,</span> <span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">)</span>
+                    <span class="n">placement</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">)</span>
+
                 <span class="k">if</span> <span class="n">generated</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
-                        <span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">AbstractRewritesDataSpecification</span><span class="p">):</span>
-                    <span class="n">vertices_to_reset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">)</span>
+                        <span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractRewritesDataSpecification</span><span class="p">):</span>
+                    <span class="n">vertices_to_reset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+
+                <span class="c1"># If the spec wasn&#39;t generated directly, and there is an</span>
+                <span class="c1"># application vertex, try with that</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">generated</span> <span class="ow">and</span> <span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">generated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__generate_data_spec_for_vertices</span><span class="p">(</span>
+                        <span class="n">placement</span><span class="p">,</span> <span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span>
+                        <span class="n">data_n_timesteps</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">generated</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+                            <span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">,</span>
+                            <span class="n">AbstractRewritesDataSpecification</span><span class="p">):</span>
+                        <span class="n">vertices_to_reset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">)</span>
 
         <span class="c1"># Ensure that the vertices know their regions have been reloaded</span>
         <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">vertices_to_reset</span><span class="p">:</span>
@@ -174,6 +184,18 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_region_sizes</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">p</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_region_sizes</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span>\
                     <span class="bp">self</span><span class="o">.</span><span class="n">_region_sizes</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+            <span class="c1"># Check per-region memory usage if possible</span>
+            <span class="n">sdram</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="n">resources_required</span><span class="o">.</span><span class="n">sdram</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sdram</span><span class="p">,</span> <span class="n">MultiRegionSDRAM</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">region_sizes</span><span class="p">):</span>
+                    <span class="n">est_size</span> <span class="o">=</span> <span class="n">sdram</span><span class="o">.</span><span class="n">regions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ConstantSDRAM</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+                    <span class="n">est_size</span> <span class="o">=</span> <span class="n">est_size</span><span class="o">.</span><span class="n">get_total_sdram</span><span class="p">(</span><span class="n">data_n_timesteps</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">size</span> <span class="o">&gt;</span> <span class="n">est_size</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                            <span class="s2">&quot;Region </span><span class="si">{}</span><span class="s2"> of vertex </span><span class="si">{}</span><span class="s2"> is bigger than expected: &quot;</span>
+                            <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> estimated vs. </span><span class="si">{}</span><span class="s2"> actual&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                <span class="n">i</span><span class="p">,</span> <span class="n">vertex</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">est_size</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_vertices_by_chip</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">y</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">vertex</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_sdram_usage</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">region_sizes</span><span class="p">)</span>

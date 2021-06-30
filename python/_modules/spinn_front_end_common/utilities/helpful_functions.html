@@ -116,6 +116,19 @@
     <span class="n">txrx</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">user_0_address</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="write_address_to_user1"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.write_address_to_user1">[docs]</a><span class="k">def</span> <span class="nf">write_address_to_user1</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Writes the given address into the user_1 register of the given core.</span>
+
+<span class="sd">    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.</span>
+<span class="sd">    :param int x: Chip coordinate.</span>
+<span class="sd">    :param int y: Chip coordinate.</span>
+<span class="sd">    :param int p: Core ID on chip.</span>
+<span class="sd">    :param int address: Value to write (32-bit integer)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">user_1_address</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_user_1_register_address_from_core</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">txrx</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">user_1_address</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="locate_memory_region_for_placement"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.locate_memory_region_for_placement">[docs]</a><span class="k">def</span> <span class="nf">locate_memory_region_for_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Get the address of a region for a placement.</span>
 

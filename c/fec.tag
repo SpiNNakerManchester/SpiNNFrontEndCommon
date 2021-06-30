@@ -1686,6 +1686,13 @@
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
+      <name>send_packet</name>
+      <anchorfile>tdma__processing_8h.html</anchorfile>
+      <anchor>a44b5e21ccb4a93cbb8acd4c84470ebb6</anchor>
+      <arglist>(uint32_t key, uint32_t payload, uint32_t with_payload)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
       <name>tdma_processing_send_packet</name>
       <anchorfile>tdma__processing_8h.html</anchorfile>
       <anchor>a077df65fe3710db3cf654a60b224713e</anchor>
@@ -1696,6 +1703,20 @@
       <name>n_tdma_behind_times</name>
       <anchorfile>tdma__processing_8h.html</anchorfile>
       <anchor>a63ece3bd490cbc3ecadcb68c70ab8ea8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>tdma_latest_send</name>
+      <anchorfile>tdma__processing_8h.html</anchorfile>
+      <anchor>a967acb4d83e6cf773f45fed48fe3307a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>tdma_waits</name>
+      <anchorfile>tdma__processing_8h.html</anchorfile>
+      <anchor>a26318a16cde432a923f35ba88da5e04d</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -2187,6 +2208,20 @@
       <name>n_tdma_behind_times</name>
       <anchorfile>tdma__processing_8c.html</anchorfile>
       <anchor>a63ece3bd490cbc3ecadcb68c70ab8ea8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>tdma_latest_send</name>
+      <anchorfile>tdma__processing_8c.html</anchorfile>
+      <anchor>a967acb4d83e6cf773f45fed48fe3307a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>tdma_waits</name>
+      <anchorfile>tdma__processing_8c.html</anchorfile>
+      <anchor>a26318a16cde432a923f35ba88da5e04d</anchor>
       <arglist></arglist>
     </member>
   </compound>

@@ -93,9 +93,8 @@ $(function() {
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160; </div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
 <div class="line"><a name="l00033"></a><span class="lineno"><a class="line" href="wfi_8h.html#aad22455729e090a9623bd71ff524dd3b">   33</a></span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="wfi_8h.html#aad22455729e090a9623bd71ff524dd3b">wait_for_interrupt</a>(<span class="keywordtype">void</span>) {</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <span class="keyword">register</span> uint32_t value = 0;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keyword">asm</span> <span class="keyword">volatile</span>(<span class="stringliteral">&quot;mcr p15, 0, %[value], c7, c0, 4&quot;</span> : : [value] <span class="stringliteral">&quot;r&quot;</span> (value));</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;}</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <span class="keyword">asm</span> <span class="keyword">volatile</span>(<span class="stringliteral">&quot;mcr p15, 0, r0, c7, c0, 4&quot;</span>);</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;}</div>
 <div class="ttc" id="awfi_8h_html_aad22455729e090a9623bd71ff524dd3b"><div class="ttname"><a href="wfi_8h.html#aad22455729e090a9623bd71ff524dd3b">wait_for_interrupt</a></div><div class="ttdeci">static void wait_for_interrupt(void)</div><div class="ttdoc">Wait for any interrupt to occur.</div><div class="ttdef"><b>Definition:</b> <a href="wfi_8h_source.html#l00033">wfi.h:33</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

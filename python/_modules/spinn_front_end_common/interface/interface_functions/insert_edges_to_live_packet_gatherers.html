@@ -87,7 +87,8 @@
 <span class="sd">            with it</span>
 <span class="sd">        :type live_packet_gatherers_to_vertex_mapping:</span>
 <span class="sd">            dict(LivePacketGatherParameters,</span>
-<span class="sd">            dict(tuple(int,int),LivePacketGatherMachineVertex))</span>
+<span class="sd">            tuple(LivePacketGather or None,</span>
+<span class="sd">            dict(tuple(int,int),LivePacketGatherMachineVertex)))</span>
 <span class="sd">        :param ~spinn_machine.Machine machine: the SpiNNaker machine</span>
 <span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
 <span class="sd">            the machine graph</span>
@@ -120,6 +121,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_connect_lpg_vertex_in_machine_graph</span><span class="p">(</span>
                         <span class="n">machine_graph</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">,</span> <span class="n">p_ids</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+
             <span class="k">for</span> <span class="n">lpg_params</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">live_packet_gatherer_parameters</span><span class="p">):</span>
                 <span class="c1"># locate vertices to connect to a LPG with these params</span>
                 <span class="k">for</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">p_ids</span> <span class="ow">in</span> <span class="n">live_packet_gatherer_parameters</span><span class="p">[</span>
@@ -155,32 +157,27 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">app_vertex</span><span class="o">.</span><span class="n">machine_vertices</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">p_ids</span><span class="p">:</span>
             <span class="k">return</span>
 
-        <span class="c1"># flag for ensuring we don&#39;t add the edge to the app graph many times</span>
-        <span class="n">app_edges</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">m_partitions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
-        <span class="c1"># iterate through the associated machine vertices</span>
-        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">app_vertex</span><span class="o">.</span><span class="n">machine_vertices</span><span class="p">:</span>
-            <span class="n">lpg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_closest_live_packet_gatherer</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">)</span>
+        <span class="n">lpg_app_vertex</span><span class="p">,</span> <span class="n">machine_lpgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_to_vertex</span><span class="p">[</span><span class="n">lpg_params</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">p_id</span> <span class="ow">in</span> <span class="n">p_ids</span><span class="p">:</span>
+            <span class="n">app_edge</span> <span class="o">=</span> <span class="n">ApplicationEdge</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">lpg_app_vertex</span><span class="p">)</span>
+            <span class="n">app_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">app_edge</span><span class="p">,</span> <span class="n">p_id</span><span class="p">)</span>
+            <span class="n">part</span> <span class="o">=</span> <span class="n">app_graph</span><span class="o">.</span><span class="n">get_outgoing_partition_for_edge</span><span class="p">(</span><span class="n">app_edge</span><span class="p">)</span>
 
-            <span class="c1"># if not yet built the app edges, add them now</span>
-            <span class="c1"># has to be postponed until we know the LPG</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">app_edges</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">partition_id</span> <span class="ow">in</span> <span class="n">p_ids</span><span class="p">:</span>
-                    <span class="n">app_edge</span> <span class="o">=</span> <span class="n">ApplicationEdge</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">lpg</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">)</span>
-                    <span class="n">app_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">app_edge</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">)</span>
-                    <span class="n">app_edges</span><span class="p">[</span><span class="n">partition_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">app_edge</span>
-
-            <span class="c1"># add a edge between the closest LPG and the app_vertex</span>
-            <span class="k">for</span> <span class="n">partition_id</span> <span class="ow">in</span> <span class="n">p_ids</span><span class="p">:</span>
-                <span class="n">machine_edge</span> <span class="o">=</span> <span class="n">MachineEdge</span><span class="p">(</span>
-                    <span class="n">vertex</span><span class="p">,</span> <span class="n">lpg</span><span class="p">,</span> <span class="n">app_edge</span><span class="o">=</span><span class="n">app_edges</span><span class="p">[</span><span class="n">partition_id</span><span class="p">])</span>
-                <span class="n">m_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">machine_edge</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">)</span>
+            <span class="n">m_vertices</span> <span class="o">=</span> <span class="n">app_vertex</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">get_out_going_vertices</span><span class="p">(</span>
+                <span class="n">app_edge</span><span class="p">,</span> <span class="n">part</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">m_vertices</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">lpg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_closest_live_packet_gatherer</span><span class="p">(</span>
+                    <span class="n">vertex</span><span class="p">,</span> <span class="n">machine_lpgs</span><span class="p">)</span>
+                <span class="n">machine_edge</span> <span class="o">=</span> <span class="n">MachineEdge</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">lpg</span><span class="p">,</span> <span class="n">app_edge</span><span class="o">=</span><span class="n">app_edge</span><span class="p">)</span>
+                <span class="n">m_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">machine_edge</span><span class="p">,</span> <span class="n">p_id</span><span class="p">)</span>
 
                 <span class="c1"># add to n_keys_map if needed</span>
                 <span class="k">if</span> <span class="n">n_keys_map</span><span class="p">:</span>
                     <span class="n">m_partitions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">m_graph</span><span class="o">.</span><span class="n">get_outgoing_partition_for_edge</span><span class="p">(</span>
                         <span class="n">machine_edge</span><span class="p">))</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_process_partitions</span><span class="p">(</span><span class="n">m_partitions</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_connect_lpg_vertex_in_machine_graph</span><span class="p">(</span>
@@ -193,7 +190,8 @@
 <span class="sd">        :param ~.DictBasedMachinePartitionNKeysMap n_keys_map:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Find all Live Gatherer machine vertices</span>
-        <span class="n">lpg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_closest_live_packet_gatherer</span><span class="p">(</span><span class="n">m_vertex</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">)</span>
+        <span class="n">machine_lpgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_to_vertex</span><span class="p">[</span><span class="n">lpg_params</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">lpg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_closest_live_packet_gatherer</span><span class="p">(</span><span class="n">m_vertex</span><span class="p">,</span> <span class="n">machine_lpgs</span><span class="p">)</span>
         <span class="n">partitions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
         <span class="c1"># add edges between the closest LPG and the vertex</span>
@@ -205,15 +203,15 @@
                 <span class="n">partitions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">m_graph</span><span class="o">.</span><span class="n">get_outgoing_partition_for_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_process_partitions</span><span class="p">(</span><span class="n">partitions</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_find_closest_live_packet_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_vertex</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_find_closest_live_packet_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_vertex</span><span class="p">,</span> <span class="n">machine_lpgs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Locates the LPG on the nearest Ethernet-connected chip to the\</span>
 <span class="sd">            machine vertex in question, or the LPG on 0, 0 if a closer one\</span>
 <span class="sd">            can&#39;t be found.</span>
 
 <span class="sd">        :param ~.MachineVertex m_vertex:</span>
 <span class="sd">            the machine vertex to locate the nearest LPG to</span>
-<span class="sd">        :param LivePacketGatherParameters lpg_params:</span>
-<span class="sd">            parameters to decide what LPG is to be used</span>
+<span class="sd">        :param dict(tuple(int,int),LivePacketGatherMachineVertex) machine_lpgs:</span>
+<span class="sd">            the machine LPGs to search with their associated placements</span>
 <span class="sd">        :return: the local LPG</span>
 <span class="sd">        :rtype: LivePacketGatherMachineVertex</span>
 <span class="sd">        :raise ConfigurationException: if a local gatherer cannot be found</span>
@@ -223,7 +221,6 @@
         <span class="n">chip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
 
         <span class="c1"># locate closest LPG</span>
-        <span class="n">machine_lpgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_to_vertex</span><span class="p">[</span><span class="n">lpg_params</span><span class="p">]</span>
         <span class="n">chip_key</span> <span class="o">=</span> <span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">chip_key</span> <span class="ow">in</span> <span class="n">machine_lpgs</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">machine_lpgs</span><span class="p">[</span><span class="n">chip_key</span><span class="p">]</span>
