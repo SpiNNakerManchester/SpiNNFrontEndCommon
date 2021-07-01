@@ -15,6 +15,7 @@
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
+from spinn_utilities.abstract_base import abstractmethod
 
 
 class TDMAAwareApplicationVertex(ApplicationVertex):
@@ -127,6 +128,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         self.__n_phases = n_phases
         self.__clocks_per_cycle = clocks_per_cycle
 
+    @abstractmethod
     def get_n_cores(self):
         """ Get the number of cores this application vertex is using in \
             the TDMA.
@@ -134,7 +136,6 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         :return: the number of cores to use in the TDMA
         :rtype: int
         """
-        return len(self.vertex_slices)
 
     def get_tdma_provenance_item(self, names, desc_label, tdma_slots_missed):
         """ Get the provenance item used for the TDMA provenance

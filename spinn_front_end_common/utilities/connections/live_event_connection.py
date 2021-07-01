@@ -291,8 +291,9 @@ class LiveEventConnection(DatabaseConnection):
                     self.__receiver_connection, board_address)
 
             logger.info(
-                "Listening for traffic from {} on {}:{}",
-                label, self.__receiver_connection.local_ip_address,
+                "Listening for traffic from {} on board {} on {}:{}",
+                label, board_address,
+                self.__receiver_connection.local_ip_address,
                 self.__receiver_connection.local_port)
 
             if self.__machine_vertices:
