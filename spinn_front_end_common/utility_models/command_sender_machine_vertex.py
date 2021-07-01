@@ -158,7 +158,7 @@ class CommandSenderMachineVertex(
         # Return the SDRAM and 1 core
         return ResourceContainer(sdram=ConstantSDRAM(sdram))
 
-    @inject_items({"routing_infos": "MemoryRoutingInfos"})
+    @inject_items({"routing_infos": "RoutingInfos"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={"routing_infos"})

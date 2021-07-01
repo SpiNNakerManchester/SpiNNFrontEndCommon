@@ -24,11 +24,11 @@
         <input_definitions>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>provenance_items</param_name>
@@ -53,7 +53,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>ExtendedMachine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -66,11 +66,11 @@
         <input_definitions>
             <parameter>
                 <param_name>transceiver</param_name>
-                <param_type>MemoryTransceiver</param_type>
+                <param_type>Transceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -90,7 +90,7 @@
         <input_definitions>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryCompressedRoutingTables</param_type>
+                <param_type>CompressedRoutingTables</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -122,7 +122,7 @@
             </parameter>
             <parameter>
                 <param_name>transceiver</param_name>
-                <param_type>MemoryTransceiver</param_type>
+                <param_type>Transceiver</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -137,7 +137,7 @@
         <input_definitions>
             <parameter>
                 <param_name>transceiver</param_name>
-                <param_type>MemoryTransceiver</param_type>
+                <param_type>Transceiver</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -151,15 +151,15 @@
         <input_definitions>
             <parameter>
                 <param_name>router_tables_by_partition</param_name>
-                <param_type>MemoryRoutingTableByPartition</param_type>
+                <param_type>RoutingTableByPartition</param_type>
             </parameter>
             <parameter>
                 <param_name>n_keys_map</param_name>
-                <param_type>MemoryMachinePartitionNKeysMap</param_type>
+                <param_type>MachinePartitionNKeysMap</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>ExtendedMachine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -178,15 +178,15 @@
             </parameter>
             <parameter>
                 <param_name>graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>ExtendedMachine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -206,15 +206,15 @@
             </parameter>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>ExtendedMachine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -230,15 +230,15 @@
         <input_definitions>
              <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
+                <param_type>RoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
-                <param_type>MemoryRoutingInfos</param_type>
+                <param_type>RoutingInfos</param_type>
             </parameter>
             <parameter>
                 <param_name>hostname</param_name>
@@ -246,11 +246,11 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>ExtendedMachine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -268,7 +268,7 @@
         <input_definitions>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
+                <param_type>RoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>hostname</param_name>
@@ -276,7 +276,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -312,7 +312,7 @@
         <input_definitions>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryCompressedRoutingTables</param_type>
+                <param_type>CompressedRoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>hostname</param_name>
@@ -320,7 +320,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -338,11 +338,11 @@
         <input_definitions>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
-                <param_type>MemoryRoutingInfos</param_type>
+                <param_type>RoutingInfos</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -360,11 +360,11 @@
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>ExtendedMachine</param_type>
             </parameter>
             <parameter>
                 <param_name>plan_n_timesteps</param_name>
@@ -389,7 +389,7 @@
         <input_definitions>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
+                <param_type>RoutingTables</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -402,7 +402,7 @@
         <input_definitions>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryCompressedRoutingTables</param_type>
+                <param_type>CompressedRoutingTables</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -415,11 +415,11 @@
         <input_definitions>
             <parameter>
                 <param_name>compressed_routing_tables</param_name>
-                <param_type>MemoryCompressedRoutingTables</param_type>
+                <param_type>CompressedRoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
+                <param_type>RoutingTables</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -437,7 +437,7 @@
             </parameter>
             <parameter>
                 <param_name>graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -452,7 +452,7 @@
         <input_definitions>
             <parameter>
                 <param_name>tag_infos</param_name>
-                <param_type>MemoryTags</param_type>
+                <param_type>Tags</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -465,8 +465,8 @@
         <input_definitions>
             <parameter>
                 <param_name>graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>ApplicationGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -479,7 +479,7 @@
         <input_definitions>
             <parameter>
                 <param_name>router_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
+                <param_type>RoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>json_folder</param_name>
@@ -500,7 +500,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>json_folder</param_name>
@@ -521,7 +521,7 @@
         <input_definitions>
             <parameter>
                 <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_type>Placements</param_type>
             </parameter>
             <parameter>
                 <param_name>json_folder</param_name>
@@ -542,7 +542,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryMachine</param_type>
+                <param_type>Machine</param_type>
             </parameter>
             <parameter>
                 <param_name>json_folder</param_name>
@@ -563,7 +563,7 @@
         <input_definitions>
             <parameter>
                 <param_name>partition_to_n_keys_map</param_name>
-                <param_type>MemoryMachinePartitionNKeysMap</param_type>
+                <param_type>MachinePartitionNKeysMap</param_type>
             </parameter>
             <parameter>
                 <param_name>json_folder</param_name>

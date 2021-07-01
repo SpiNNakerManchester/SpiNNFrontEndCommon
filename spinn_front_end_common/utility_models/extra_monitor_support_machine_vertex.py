@@ -259,12 +259,12 @@ class ExtraMonitorSupportMachineVertex(
         """
         return "extra_monitor_support.aplx"
 
-    @inject_items({"routing_info": "MemoryRoutingInfos",
-                   "machine_graph": "MemoryMachineGraph",
+    @inject_items({"routing_info": "RoutingInfos",
+                   "machine_graph": "MachineGraph",
                    "data_in_routing_tables": "DataInMulticastRoutingTables",
                    "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
                    "app_id": "APPID",
-                   "machine": "MemoryExtendedMachine",
+                   "machine": "ExtendedMachine",
                    "router_timeout_keys": "SystemMulticastRouterTimeoutKeys"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={

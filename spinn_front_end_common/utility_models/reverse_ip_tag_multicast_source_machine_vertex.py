@@ -679,8 +679,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
     @inject_items({
-        "machine_graph": "MemoryMachineGraph",
-        "routing_info": "MemoryRoutingInfos",
+        "machine_graph": "MachineGraph",
+        "routing_info": "RoutingInfos",
         "first_machine_time_step": "FirstMachineTimeStep",
         "data_n_time_steps": "DataNTimeSteps",
         "run_until_timesteps": "RunUntilTimeSteps"
