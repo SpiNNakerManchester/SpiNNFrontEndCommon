@@ -137,7 +137,7 @@
 <span class="c1"># Number of provenace items before auto changes to sql format</span>
 <span class="n">PROVENANCE_TYPE_CUTOFF</span> <span class="o">=</span> <span class="mi">20000</span>
 
-<span class="n">_PREALLOC_NAME</span> <span class="o">=</span> <span class="s1">&#39;MemoryPreAllocatedResources&#39;</span>
+<span class="n">_PREALLOC_NAME</span> <span class="o">=</span> <span class="s1">&#39;PreAllocatedResources&#39;</span>
 
 
 <div class="viewcode-block" id="AbstractSpinnakerBase"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase">[docs]</a><span class="k">class</span> <span class="nc">AbstractSpinnakerBase</span><span class="p">(</span><span class="n">ConfigHandler</span><span class="p">):</span>
@@ -1196,7 +1196,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_pacman_provenance</span><span class="o">.</span><span class="n">extract_provenance</span><span class="p">(</span><span class="n">executor</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">executor</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryTransceiver&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;Transceiver&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span>
                 <span class="s2">&quot;MachineAllocationController&quot;</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
@@ -1274,13 +1274,13 @@
         <span class="n">inputs</span><span class="p">[</span><span class="n">_PREALLOC_NAME</span><span class="p">]</span> <span class="o">=</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">()</span>
         <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MachineGenerator&quot;</span><span class="p">)</span>
 
-        <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MemoryMachine&quot;</span><span class="p">)</span>
-        <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MemoryTransceiver&quot;</span><span class="p">)</span>
+        <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">)</span>
+        <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Transceiver&quot;</span><span class="p">)</span>
 
         <span class="n">executor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_algorithms</span><span class="p">(</span>
             <span class="n">inputs</span><span class="p">,</span> <span class="n">algorithms</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[],</span> <span class="s2">&quot;machine_generation&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryMachine&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryTransceiver&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;Transceiver&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_outputs</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_items</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_tokens</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_completed_tokens</span><span class="p">()</span>
 
@@ -1304,13 +1304,13 @@
 
         <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;VirtualMachineGenerator&quot;</span><span class="p">)</span>
 
-        <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MemoryMachine&quot;</span><span class="p">)</span>
+        <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">)</span>
 
         <span class="n">executor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_algorithms</span><span class="p">(</span>
             <span class="n">inputs</span><span class="p">,</span> <span class="n">algorithms</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[],</span> <span class="s2">&quot;machine_generation&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_outputs</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_items</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_tokens</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_completed_tokens</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryMachine&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_machine_by_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Gets a machine when we know one of `self._spalloc_server` or</span>
@@ -1341,9 +1341,9 @@
 
         <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MachineGenerator&quot;</span><span class="p">)</span>
 
-        <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MemoryMachine&quot;</span><span class="p">)</span>
+        <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">)</span>
         <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;IPAddress&quot;</span><span class="p">)</span>
-        <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MemoryTransceiver&quot;</span><span class="p">)</span>
+        <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Transceiver&quot;</span><span class="p">)</span>
         <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MachineAllocationController&quot;</span><span class="p">)</span>
 
         <span class="n">executor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_algorithms</span><span class="p">(</span>
@@ -1351,14 +1351,14 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_outputs</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_items</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_tokens</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_completed_tokens</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryMachine&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ip_address</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;IPAddress&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryTransceiver&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;Transceiver&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span>
             <span class="s2">&quot;MachineAllocationController&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">do_partitioning</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryMachineGraph&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MachineGraph&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_machine_by_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">algorithms</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Checks if we can get a remote machine by size of if we have to \</span>
@@ -1383,7 +1383,7 @@
 
         <span class="c1"># only add machine graph is it has vertices.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
-            <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;MemoryMachineGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
+            <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;MachineGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
             <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;GraphMeasurer&quot;</span><span class="p">)</span>
             <span class="n">do_partitioning</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="c1"># If we are using an allocation server, and we need a virtual</span>
@@ -1391,10 +1391,10 @@
         <span class="c1"># chips to be allocated either by partitioning, or by measuring</span>
         <span class="c1"># the graph</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;MemoryApplicationGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
+            <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;ApplicationGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
             <span class="n">algorithms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">get_config_str_list</span><span class="p">(</span>
                 <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;application_to_machine_graph_algorithms&quot;</span><span class="p">))</span>
-            <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MemoryMachineGraph&quot;</span><span class="p">)</span>
+            <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MachineGraph&quot;</span><span class="p">)</span>
             <span class="n">do_partitioning</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="c1"># Ok we do need a virtual machine</span>
@@ -1453,9 +1453,9 @@
         <span class="c1"># add the application and machine graphs as needed</span>
         <span class="c1"># Both could be None if call from other than self._run</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
-            <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;MemoryApplicationGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
+            <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;ApplicationGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
-            <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;MemoryMachineGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
+            <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;MachineGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
         <span class="k">return</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">algorithms</span>
 
     <span class="k">def</span> <span class="nf">_create_version_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1510,9 +1510,9 @@
 
         <span class="c1"># handle graph additions</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
-            <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;MemoryApplicationGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
+            <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;ApplicationGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;MemoryMachineGraph&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
+            <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;MachineGraph&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
 
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;JsonFolder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span>
         <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;APPID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span>
@@ -1635,16 +1635,16 @@
 
         <span class="c1"># handle outputs</span>
         <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="s2">&quot;MemoryPlacements&quot;</span><span class="p">,</span> <span class="s2">&quot;MemoryRoutingTables&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;MemoryTags&quot;</span><span class="p">,</span> <span class="s2">&quot;MemoryRoutingInfos&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;MemoryMachineGraph&quot;</span>
+            <span class="s2">&quot;Placements&quot;</span><span class="p">,</span> <span class="s2">&quot;RoutingTables&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Tags&quot;</span><span class="p">,</span> <span class="s2">&quot;RoutingInfos&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;MachineGraph&quot;</span>
         <span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
             <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;ExecutableTypes&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">add_data_speed_up</span><span class="p">:</span>
-            <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MemoryFixedRoutes&quot;</span><span class="p">)</span>
+            <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;FixedRoutes&quot;</span><span class="p">)</span>
 
         <span class="c1"># Create a buffer manager if there isn&#39;t one already</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
@@ -1682,15 +1682,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_tokens</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_completed_tokens</span><span class="p">()</span>
 
         <span class="c1"># Get the outputs needed</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryPlacements&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryRoutingTables&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryTags&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_routing_infos</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryRoutingInfos&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryMachineGraph&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;Placements&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;RoutingTables&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;Tags&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_routing_infos</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;RoutingInfos&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MachineGraph&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_executable_types</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;ExecutableTypes&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">add_data_speed_up</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryFixedRoutes&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;FixedRoutes&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;BufferManager&quot;</span><span class="p">)</span>
@@ -2141,7 +2141,7 @@
             <span class="k">if</span> <span class="p">(</span><span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">)</span>
                     <span class="ow">or</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_reinjection&quot;</span><span class="p">)):</span>
                 <span class="n">extra_monitor_vertices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_run_outputs</span><span class="p">[</span>
-                    <span class="s2">&quot;MemoryExtraMonitorVertices&quot;</span><span class="p">]</span>
+                    <span class="s2">&quot;ExtraMonitorVertices&quot;</span><span class="p">]</span>
             <span class="n">router_provenance</span> <span class="o">=</span> <span class="n">RouterProvenanceGatherer</span><span class="p">()</span>
             <span class="n">prov_item</span> <span class="o">=</span> <span class="n">router_provenance</span><span class="p">(</span>
                 <span class="n">transceiver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">machine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
