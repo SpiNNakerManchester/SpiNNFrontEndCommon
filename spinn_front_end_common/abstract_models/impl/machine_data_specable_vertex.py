@@ -29,9 +29,9 @@ class MachineDataSpecableVertex(
     __slots__ = ()
 
     @inject_items({
-        "machine_graph": "MemoryMachineGraph",
-        "routing_info": "MemoryRoutingInfos",
-        "tags": "MemoryTags"})
+        "machine_graph": "MachineGraph",
+        "routing_info": "RoutingInfos",
+        "tags": "Tags"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
