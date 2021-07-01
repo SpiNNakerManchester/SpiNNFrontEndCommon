@@ -30,6 +30,7 @@ from spinn_front_end_common.utilities.utility_objs import (
 from spinn_front_end_common.utility_models import (
     LivePacketGather, LivePacketGatherMachineVertex)
 from pacman_test_objects import SimpleTestVertex
+from pacman.model.partitioner_splitters import SplitterSliceLegacy
 
 
 class TestInsertLPGEdges(unittest.TestCase):
@@ -65,7 +66,9 @@ class TestInsertLPGEdges(unittest.TestCase):
         live_packet_gatherers[default_params_holder] = list()
 
         live_packet_gatherers_to_vertex_mapping = dict()
-        live_packet_gatherers_to_vertex_mapping[default_params_holder] = dict()
+        mac_vtxs = dict()
+        live_packet_gatherers_to_vertex_mapping[default_params_holder] = (
+            None, mac_vtxs)
 
         placements = Placements()
 
@@ -78,8 +81,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             graph.add_vertex(vertex)
             placements.add_placement(
                 Placement(x=chip.x, y=chip.y, p=2, vertex=vertex))
-            live_packet_gatherers_to_vertex_mapping[
-                default_params_holder][chip.x, chip.y] = vertex
+            mac_vtxs[chip.x, chip.y] = vertex
 
         # tracker of wirings
         verts_expected = defaultdict(list)
@@ -120,9 +122,7 @@ class TestInsertLPGEdges(unittest.TestCase):
 
         # verify edges are in the right place
         for chip in machine.ethernet_connected_chips:
-            edges = graph.get_edges_ending_at_vertex(
-                live_packet_gatherers_to_vertex_mapping[
-                    default_params_holder][chip.x, chip.y])
+            edges = graph.get_edges_ending_at_vertex(mac_vtxs[chip.x, chip.y])
             for edge in edges:
                 self.assertIn(edge.pre_vertex, verts_expected[chip.x, chip.y])
 
@@ -153,29 +153,31 @@ class TestInsertLPGEdges(unittest.TestCase):
         default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
-        live_packet_gatherers_to_vertex_mapping = defaultdict(dict)
+        live_packet_gatherers_to_vertex_mapping = dict()
 
         placements = Placements()
 
         # add LPG's (1 for each Ethernet connected chip
+        lpg_app_vertex = LivePacketGather(
+            LivePacketGatherParameters(default_params))
+        app_graph.add_vertex(lpg_app_vertex)
+        vertex_slice = None
+        resources_required = lpg_app_vertex.get_resources_used_by_atoms(
+            vertex_slice)
+        mac_vtxs = dict()
+        live_packet_gatherers_to_vertex_mapping[default_params_holder] = (
+            lpg_app_vertex, mac_vtxs)
         for chip in machine.ethernet_connected_chips:
-            new_params = dict(default_params)
-            vertex = LivePacketGather(
-                LivePacketGatherParameters(**new_params))
-            app_graph.add_vertex(vertex)
-            vertex_slice = None
-            resources_required = vertex.get_resources_used_by_atoms(
-                vertex_slice)
-            mac_vertex = vertex.create_machine_vertex(
+            mac_vertex = lpg_app_vertex.create_machine_vertex(
                 vertex_slice, resources_required)
             graph.add_vertex(mac_vertex)
             placements.add_placement(
                 Placement(x=chip.x, y=chip.y, p=2, vertex=mac_vertex))
-            live_packet_gatherers_to_vertex_mapping[
-                default_params_holder][chip.x, chip.y] = mac_vertex
+            mac_vtxs[chip.x, chip.y] = mac_vertex
 
         # tracker of wirings
         verts_expected = defaultdict(list)
+        app_verts_expected = list()
 
         positions = list()
         positions.append([0, 0, 0, 0])
@@ -196,6 +198,7 @@ class TestInsertLPGEdges(unittest.TestCase):
         #  spread over boards.
         for x, y, eth_x, eth_y in positions:
             vertex = SimpleTestVertex(1)
+            vertex.splitter = SplitterSliceLegacy()
             app_graph.add_vertex(vertex)
             vertex_slice = Slice(0, 0)
             resources_required = vertex.get_resources_used_by_atoms(
@@ -207,6 +210,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             live_packet_gatherers[default_params_holder].append(
                 (vertex, partition_ids))
             verts_expected[eth_x, eth_y].append(mac_vertex)
+            app_verts_expected.append(vertex)
             placements.add_placement(
                 Placement(x=x, y=y, p=5, vertex=mac_vertex))
 
@@ -223,19 +227,13 @@ class TestInsertLPGEdges(unittest.TestCase):
         for chip in machine.ethernet_connected_chips:
             edges = graph.get_edges_ending_at_vertex(
                 live_packet_gatherers_to_vertex_mapping[
-                    default_params_holder][chip.x, chip.y])
+                    default_params_holder][1][chip.x, chip.y])
             for edge in edges:
                 self.assertIn(edge.pre_vertex, verts_expected[chip.x, chip.y])
 
         # check app graph
-        for chip in machine.ethernet_connected_chips:
-            app_verts_expected = [
-                vert.app_vertex for vert in verts_expected[chip.x, chip.y]]
-            lpg_machine = live_packet_gatherers_to_vertex_mapping[
-                default_params_holder][chip.x, chip.y]
-            for edge in app_graph.get_edges_ending_at_vertex(
-                    lpg_machine.app_vertex):
-                self.assertIn(edge.pre_vertex, app_verts_expected)
+        for edge in app_graph.get_edges_ending_at_vertex(lpg_app_vertex):
+            self.assertIn(edge.pre_vertex, app_verts_expected)
 
 
 if __name__ == "__main__":

@@ -20,6 +20,8 @@ from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 from spinn_front_end_common.interface.interface_functions import (
     ComputeEnergyUsed)
 from spinn_front_end_common.utilities.globals_variables import (
@@ -34,8 +36,7 @@ class EnergyReport(object):
         consumed by a SpiNNaker job execution.
     """
 
-    __slots__ = (
-        "__report_dir", "__version", "__uses_spalloc")
+    __slots__ = ("__version", "__uses_spalloc")
 
     #: converter between joules to kilowatt hours
     JOULES_TO_KILOWATT_HOURS = 3600000
@@ -44,15 +45,12 @@ class EnergyReport(object):
     _DETAILED_FILENAME = "detailed_energy_report.rpt"
     _SUMMARY_FILENAME = "summary_energy_report.rpt"
 
-    def __init__(self, report_default_directory, version, spalloc_server,
-                 remote_spinnaker_url):
+    def __init__(self, version, spalloc_server, remote_spinnaker_url):
         """
-        :param str report_default_directory: location for reports
         :param int version: version of machine
         :param str spalloc_server: spalloc server IP
         :param str remote_spinnaker_url: remote SpiNNaker URL
         """
-        self.__report_dir = report_default_directory
         self.__version = version
         self.__uses_spalloc = bool(spalloc_server or remote_spinnaker_url)
 
@@ -72,13 +70,12 @@ class EnergyReport(object):
             logger.info("Skipping Energy report as no buffer_manager set")
             return
 
+        report_dir = report_default_directory()
         # detailed report path
-        detailed_report = os.path.join(
-            self.__report_dir, self._DETAILED_FILENAME)
+        detailed_report = os.path.join(report_dir, self._DETAILED_FILENAME)
 
         # summary report path
-        summary_report = os.path.join(
-            self.__report_dir, self._SUMMARY_FILENAME)
+        summary_report = os.path.join(report_dir, self._SUMMARY_FILENAME)
 
         # figure runtime in milliseconds with time scale factor
         runtime_total_ms = time_scale_factor()

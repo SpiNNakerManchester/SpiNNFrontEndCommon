@@ -22,11 +22,11 @@ from spinn_front_end_common.abstract_models import (
     AbstractProvidesKeyToAtomMapping,
     AbstractSupportsDatabaseInjection)
 from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step, time_scale_factor)
-
+    machine_time_step, report_default_directory, time_scale_factor)
+from pacman.model.graphs.machine import MulticastEdgePartition
 
 logger = FormatAdapter(logging.getLogger(__name__))
-DB_NAME = "input_output_database.db"
+DB_NAME = "input_output_database.sqlite3"
 INIT_SQL = "db.sql"
 
 
@@ -51,11 +51,8 @@ class DatabaseWriter(SQLiteDB):
         "__machine_to_id", "__vertex_to_id", "__edge_to_id"
     ]
 
-    def __init__(self, database_directory):
-        """
-        :param str database_directory: Where the database will be written
-        """
-        self._database_path = os.path.join(database_directory, DB_NAME)
+    def __init__(self):
+        self._database_path = os.path.join(report_default_directory(), DB_NAME)
         init_sql_path = os.path.join(os.path.dirname(__file__), INIT_SQL)
 
         # delete any old database
@@ -285,7 +282,8 @@ class DatabaseWriter(SQLiteDB):
                     """, (
                         (self.__edge_to_id[edge.app_edge],
                          self.__edge_to_id[edge])
-                        for edge in machine_graph.edges))
+                        for edge in machine_graph.edges
+                        if edge.app_edge is not None))
 
     def add_placements(self, placements):
         """ Adds the placements objects into the database
@@ -416,6 +414,7 @@ class DatabaseWriter(SQLiteDB):
                     (self.__vertex_to_id[vtx], int(key), int(a_id))
                     for vtx, prtn in vertices_and_partitions
                     if isinstance(vtx, AbstractProvidesKeyToAtomMapping)
+                    and isinstance(prtn, MulticastEdgePartition)
                     for a_id, key in vtx.routing_key_partition_atom_mapping(
                         routing_infos.get_routing_info_from_partition(prtn),
                         prtn)))

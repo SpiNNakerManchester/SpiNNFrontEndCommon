@@ -19,7 +19,7 @@ import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
-from data_specification import utility_calls
+from . import utility_calls
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .constants import MICRO_TO_MILLISECOND_CONVERSION
@@ -76,6 +76,19 @@ def write_address_to_user0(txrx, x, y, p, address):
     """
     user_0_address = txrx.get_user_0_register_address_from_core(p)
     txrx.write_memory(x, y, user_0_address, address)
+
+
+def write_address_to_user1(txrx, x, y, p, address):
+    """ Writes the given address into the user_1 register of the given core.
+
+    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
+    :param int x: Chip coordinate.
+    :param int y: Chip coordinate.
+    :param int p: Core ID on chip.
+    :param int address: Value to write (32-bit integer)
+    """
+    user_1_address = txrx.get_user_1_register_address_from_core(p)
+    txrx.write_memory(x, y, user_1_address, address)
 
 
 def locate_memory_region_for_placement(placement, region, transceiver):

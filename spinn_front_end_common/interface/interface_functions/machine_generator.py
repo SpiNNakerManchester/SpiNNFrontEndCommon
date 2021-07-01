@@ -21,6 +21,8 @@ from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 import time
 import logging
 
@@ -52,8 +54,7 @@ class MachineGenerator(object):
 
     def __call__(
             self, hostname, bmp_details, board_version, auto_detect_bmp,
-            scamp_connection_data, boot_port_num, reset_machine_on_start_up,
-            default_report_directory=None):
+            scamp_connection_data, boot_port_num, reset_machine_on_start_up):
         """
         :param str hostname:
             the hostname or IP address of the SpiNNaker machine
@@ -75,9 +76,6 @@ class MachineGenerator(object):
             list(~spinnman.connections.SocketAddressWithChip)
         :param int boot_port_num: the port number used for the boot connection
         :param bool reset_machine_on_start_up:
-        :param str default_report_directory:
-            Directory to write any reports too.
-            If None the current directory will be used.
         :return: Transceiver, and description of machine it is connected to
         :rtype: tuple(~spinn_machine.Machine,
             ~spinnman.transceiver.Transceiver)
@@ -96,7 +94,7 @@ class MachineGenerator(object):
             version=board_version,
             auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
-            default_report_directory=default_report_directory)
+            default_report_directory=report_default_directory())
 
         if reset_machine_on_start_up:
             success = txrx.power_off_machine()

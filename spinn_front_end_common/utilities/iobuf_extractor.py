@@ -25,6 +25,9 @@ from spinn_utilities.config_holder import get_config_str
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_string_into_chip_and_core_subset)
+from spinn_front_end_common.utilities.globals_variables import (
+    app_provenance_file_path, system_provenance_file_path)
+
 
 logger = FormatAdapter(logging.getLogger(__name__))
 ERROR_ENTRY = re.compile(r"\[ERROR\]\s+\((.*)\):\s+(.*)")
@@ -49,9 +52,7 @@ class IOBufExtractor(object):
                  "__executable_targets", "__executable_finder"]
 
     def __init__(self, transceiver, executable_targets,
-                 executable_finder, app_provenance_file_path,
-                 system_provenance_file_path,
-                 recovery_mode=False,
+                 executable_finder, recovery_mode=False,
                  filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt",
                  suppress_progress=False):
         """
@@ -61,17 +62,15 @@ class IOBufExtractor(object):
         :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~spinnman.model.ExecutableTargets executable_targets:
         :param ExecutableFinder executable_finder:
-        :param app_provenance_file_path:
-        :type app_provenance_file_path: str or None
-        :param system_provenance_file_path:
-        :type system_provenance_file_path: str or None
+        :param str from_cores:
+        :param str binary_types:
         """
         self._filename_template = filename_template
         self._recovery_mode = bool(recovery_mode)
         self.__suppress_progress = bool(suppress_progress)
 
-        self.__app_path = app_provenance_file_path
-        self.__sys_path = system_provenance_file_path
+        self.__app_path = app_provenance_file_path()
+        self.__sys_path = system_provenance_file_path()
         self.__transceiver = transceiver
         self.__from_cores = get_config_str(
             "Reports", "extract_iobuf_from_cores")
@@ -194,8 +193,9 @@ class IOBufExtractor(object):
         for binary in progress.over(binaries):
             core_subsets = self.__executable_targets.get_cores_for_binary(
                 binary)
-            self.__extract_iobufs_for_binary(
-                core_subsets, binary, error_entries, warn_entries)
+            if core_subsets is not None:
+                self.__extract_iobufs_for_binary(
+                    core_subsets, binary, error_entries, warn_entries)
         return error_entries, warn_entries
 
     def __extract_iobufs_for_binary(

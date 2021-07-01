@@ -1161,10 +1161,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
-            report_folder = executor.get_item("ReportFolder")
             try:
-                if report_folder:
-                    TagsFromMachineReport()(report_folder, self._txrx)
+                TagsFromMachineReport()(self._txrx)
             except Exception as e2:
                 logger.warning(
                     "problem with TagsFromMachineReport {}".format(e2),
@@ -1235,7 +1233,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Machine", "auto_detect_bmp")
         inputs["ScampConnectionData"] = get_config_str(
             "Machine", "scamp_connections_data")
-        inputs['ReportFolder'] = self._report_default_directory
         inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
         algorithms.append("MachineGenerator")
 
@@ -1290,7 +1287,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         outputs = list()
 
         do_partitioning = self._machine_by_size(inputs, algorithms, outputs)
-        inputs['ReportFolder'] = self._report_default_directory
         inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
 
         # if using spalloc system
@@ -1422,7 +1418,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             inputs["MemoryApplicationGraph"] = self._application_graph
         elif self._machine_graph and self._machine_graph.n_vertices:
             inputs["MemoryMachineGraph"] = self._machine_graph
-
         return inputs, algorithms
 
     def _create_version_provenance(self):
@@ -1481,18 +1476,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         else:
             inputs['MemoryMachineGraph'] = self._machine_graph
 
-        inputs['ReportFolder'] = self._report_default_directory
-        inputs["ProvenanceFilePath"] = self._provenance_file_path
-        inputs["AppProvenanceFilePath"] = self._app_provenance_file_path
-        inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
         inputs["JsonFolder"] = self._json_folder
         inputs["APPID"] = self._app_id
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
         inputs["ExecutableFinder"] = self._executable_finder
-        inputs['CompressionTargetSize'] = get_config_int(
-            "Mapping", "router_table_compression_target_length")
-        inputs["CompressionAsNeeded"] = get_config_bool(
-            "Mapping", "router_table_compress_as_needed")
 
         algorithms = list()
 
@@ -1642,9 +1629,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                         java_properties, java_jar_path)
             inputs["JavaCaller"] = self._java_caller
 
-            # add the sdram allocator to ensure the sdram is allocated before
-            #  dsg on a real machine
-            algorithms.append("SDRAMOutgoingPartitionAllocator")
+        # Add the sdram allocator to ensure the sdram is allocated before
+        # DSG.  Note this can run with a virtual machine but then makes fake
+        # allocations, but avoids DSG issues.
+        algorithms.append("SDRAMOutgoingPartitionAllocator")
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(
@@ -2177,11 +2165,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         if (non_rte_cores and
                 ExecutableType.USES_SIMULATION_INTERFACE in
                 self._executable_types):
-            placements = Placements()
             non_rte_core_subsets = CoreSubsets()
             for (x, y, p) in non_rte_cores:
-                placements.add_placement(
-                    self._placements.get_placement_on_processor(x, y, p))
                 non_rte_core_subsets.add_processor(x, y, p)
 
             # Attempt to force the cores to write provenance and exit
@@ -2193,8 +2178,14 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # Extract any written provenance data
             try:
+                finished_cores = self._txrx.get_cores_in_state(
+                    non_rte_core_subsets, CPUState.FINISHED)
+                finished_placements = Placements()
+                for (x, y, p) in finished_cores:
+                    finished_placements.add_placement(
+                        self._placements.get_placement_on_processor(x, y, p))
                 extractor = PlacementsProvenanceGatherer()
-                prov_item = extractor(self._txrx, placements)
+                prov_item = extractor(self._txrx, finished_placements)
                 if prov_item is not None:
                     prov_items.extend(prov_item)
             except Exception:
@@ -2207,8 +2198,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Read IOBUF where possible (that should be everywhere)
         iobuf = IOBufExtractor(
-            self._txrx, executable_targets, self._executable_finder,
-            self._app_provenance_file_path, self._system_provenance_file_path)
+            self._txrx, executable_targets, self._executable_finder)
         try:
             errors, warnings = iobuf.extract_iobuf()
         except Exception:
@@ -2742,7 +2732,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _do_energy_report(self):
         # create energy reporter
         energy_reporter = EnergyReport(
-            self._report_default_directory,
             get_config_int("Machine", "version"), self._spalloc_server,
             self._remote_spinnaker_url)
 
@@ -2768,9 +2757,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         extractor = IOBufExtractor(
             transceiver=self._txrx,
             executable_targets=self._last_run_outputs["ExecutableTargets"],
-            executable_finder=self._executable_finder,
-            app_provenance_file_path=self._app_provenance_file_path,
-            system_provenance_file_path=self._system_provenance_file_path)
+            executable_finder=self._executable_finder)
         extractor.extract_iobuf()
 
     def add_socket_address(self, socket_address):

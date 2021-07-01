@@ -25,8 +25,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def _emergency_state_check(txrx, app_id):
     """
-    :param ~.Transceiver txrx:
-    :param int app_id:
+    :param ~.Transceiver txrx: spinnman interface
+    :param int app_id: the app id
     """
     # pylint: disable=broad-except
     try:
@@ -34,10 +34,11 @@ def _emergency_state_check(txrx, app_id):
             app_id, CPUState.RUN_TIME_EXCEPTION)
         watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
         if rte_count or watchdog_count:
-            logger.warning(
-                "unexpected core states (rte={}, wdog={})",
-                txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
-                txrx.get_cores_in_state(None, CPUState.WATCHDOG))
+            states = txrx.get_cores_in_state(
+                None, [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG])
+            logger.warning("unexpected core states (rte={}, wdog={})".format(
+                rte_count, watchdog_count))
+            logger.warning(txrx.get_core_status_string(states))
     except Exception:
         logger.exception(
             "Could not read the status count - going to individual cores")
@@ -69,7 +70,6 @@ def _emergency_iobuf_extract(txrx, executable_targets):
     sim = get_simulator()
     extractor = IOBufExtractor(
         txrx, executable_targets, sim._executable_finder,
-        sim._app_provenance_file_path, sim._system_provenance_file_path,
         recovery_mode=True, filename_template="emergency_iobuf_{}_{}_{}.txt")
     extractor.extract_iobuf()
 
