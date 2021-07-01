@@ -64,9 +64,9 @@ class TestInsertLPGs(unittest.TestCase):
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine, machine_graph=graph, application_graph=None)
 
-        self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
+        self.assertEqual(len(lpg_verts_mapping[default_params_holder][1]), 3)
         locs = [(0, 0), (4, 8), (8, 4)]
-        for vertex in lpg_verts_mapping[default_params_holder].values():
+        for vertex in lpg_verts_mapping[default_params_holder][1].values():
             x = list(vertex.constraints)[0].x
             y = list(vertex.constraints)[0].y
             key = (x, y)
@@ -74,7 +74,7 @@ class TestInsertLPGs(unittest.TestCase):
 
         self.assertEqual(len(locs), 0)
 
-        verts = lpg_verts_mapping[default_params_holder].values()
+        verts = lpg_verts_mapping[default_params_holder][1].values()
         for vertex in graph.vertices:
             self.assertIn(vertex, verts)
 
@@ -111,12 +111,12 @@ class TestInsertLPGs(unittest.TestCase):
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine, machine_graph=graph, application_graph=app_graph)
 
-        self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
+        self.assertEqual(len(lpg_verts_mapping[default_params_holder][1]), 3)
         locs = list()
         locs.append((0, 0))
         locs.append((4, 8))
         locs.append((8, 4))
-        for vertex in lpg_verts_mapping[default_params_holder].values():
+        for vertex in lpg_verts_mapping[default_params_holder][1].values():
             x = list(vertex.constraints)[0].x
             y = list(vertex.constraints)[0].y
             key = (x, y)
@@ -124,17 +124,18 @@ class TestInsertLPGs(unittest.TestCase):
 
         self.assertEqual(len(locs), 0)
 
-        verts = lpg_verts_mapping[default_params_holder].values()
+        verts = lpg_verts_mapping[default_params_holder][1].values()
         for vertex in graph.vertices:
             self.assertIn(vertex, verts)
 
         app_verts = set()
-        for vertex in lpg_verts_mapping[default_params_holder].values():
+        for vertex in lpg_verts_mapping[default_params_holder][1].values():
             app_vertex = vertex.app_vertex
             self.assertNotEqual(app_vertex, None)
             self.assertIsInstance(app_vertex, ApplicationVertex)
             app_verts.add(app_vertex)
-        self.assertEqual(len(app_verts), 3)
+        # Should only be a single app vertex for one set of params
+        self.assertEqual(len(app_verts), 1)
 
 
 if __name__ == "__main__":

@@ -54,16 +54,19 @@ class ProvidesProvenanceDataFromMachineImpl(
         CALLBACK_QUEUE_OVERLOADED = 1
         #: The counter of the number of times the DMA queue was overloaded
         DMA_QUEUE_OVERLOADED = 2
+        #: The counter of the number of times the user event queue overloaded
+        USER_QUEUE_OVERLOADED = 3
         #: Whether the timer tick has overrun at all at any point
-        TIMER_TIC_HAS_OVERRUN = 3
+        TIMER_TIC_HAS_OVERRUN = 4
         #: The counter of the number of times the timer tick overran
-        MAX_NUMBER_OF_TIMER_TIC_OVERRUN = 4
+        MAX_NUMBER_OF_TIMER_TIC_OVERRUN = 5
 
     N_SYSTEM_PROVENANCE_WORDS = len(PROVENANCE_DATA_ENTRIES)
 
     _TIMER_TICK_OVERRUN = "Times_the_timer_tic_over_ran"
     _MAX_TIMER_TICK_OVERRUN = "max_number_of_times_timer_tic_over_ran"
     _TIMES_DMA_QUEUE_OVERLOADED = "Times_the_dma_queue_was_overloaded"
+    _TIMES_USER_QUEUE_OVERLOADED = "Times_the_user_queue_was_overloaded"
     _TIMES_TRANSMISSION_SPIKES_OVERRAN = \
         "Times_the_transmission_of_spikes_overran"
     _TIMES_CALLBACK_QUEUE_OVERLOADED = \
@@ -169,7 +172,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         :param list(int) provenance_data:
         :rtype: ~collections.abc.Iterable(ProvenanceDataItem)
         """
-        (tx_overflow, cb_overload, dma_overload, tic_overruns,
+        (tx_overflow, cb_overload, dma_overload, user_overload, tic_overruns,
          tic_overrun_max) = provenance_data[:self.N_SYSTEM_PROVENANCE_WORDS]
 
         # create provenance data items for returning
@@ -195,6 +198,14 @@ class ProvidesProvenanceDataFromMachineImpl(
             names + [self._TIMES_DMA_QUEUE_OVERLOADED], dma_overload,
             (dma_overload != 0),
             f"The DMA queue for {label} overloaded on {dma_overload} "
+            "occasions.  This is often a sign that the system is running too "
+            "quickly for the number of neurons per core.  Please increase the "
+            "machine time step or time_scale_factor or decrease the number of "
+            "neurons per core.")
+        yield ProvenanceDataItem(
+            names + [self._TIMES_USER_QUEUE_OVERLOADED], user_overload,
+            (dma_overload != 0),
+            f"The USER queue for {label} overloaded on {user_overload} "
             "occasions.  This is often a sign that the system is running too "
             "quickly for the number of neurons per core.  Please increase the "
             "machine time step or time_scale_factor or decrease the number of "
@@ -247,6 +258,10 @@ class ProvidesProvenanceDataFromMachineImpl(
         :rtype:
             iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
         """
+        if self._n_additional_data_items:
+            raise NotImplementedError(
+                f"{self} provides {self._n_additional_data_items} but doesn't "
+                "parse them")
         return []
 
     @overrides(
