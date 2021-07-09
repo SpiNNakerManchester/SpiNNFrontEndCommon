@@ -38,7 +38,8 @@ class TestingUtilities(unittest.TestCase):
                          "example.com_dataSpec_2_3_5.dat")
         # Should be a DSG
         self.assertEqual(b.region_sizes,
-                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
 
 if __name__ == '__main__':
