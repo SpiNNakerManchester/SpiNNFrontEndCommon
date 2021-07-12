@@ -130,11 +130,12 @@ class ConfigHandler(object):
             for option in config_options("Reports"):
                 # options names are all lower without _ inside config
                 if option in _REPORT_DISABLE_OPTS or option[:5] == "write":
-                    if not get_config_bool("Reports", option):
+                    if get_config_bool("Reports", option):
                         set_config("Reports", option, "False")
                         logger.info(
                             "As reportsEnabled == \"False\", [Reports] {} "
                             "has been set to False", option)
+
         if self._use_virtual_board:
             if get_config_bool("Reports", "write_energy_report"):
                 set_config("Reports", "write_energy_report", "False")
