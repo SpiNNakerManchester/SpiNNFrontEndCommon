@@ -2040,8 +2040,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # add in the timing finalisation
         if not self._use_virtual_board:
-            algorithms.append("FinaliseTimingData")
             if get_config_bool("Reports", "write_energy_report"):
+                algorithms.append("FinaliseTimingData")
                 algorithms.append("ComputeEnergyUsed")
                 if read_prov:
                     algorithms.append("EnergyProvenanceReporter")
