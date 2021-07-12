@@ -100,19 +100,6 @@ def ordered_covering_compression(
     compression.compress()
 
 
-def unordered_compression(
-        routing_tables, transceiver, executable_finder,
-        machine, app_id):
-    """ DEPRECATED use ordered_covering_compression """
-    logger.warning(
-        "UnorderedOnChipRouterCompression algorithm name is deprecated. "
-        "Please use OrderedCoveringOnChipRouterCompression instead. "
-        "loading_algorithms from your cfg to use defaults")
-    ordered_covering_compression(
-        routing_tables, transceiver, executable_finder,
-        machine, app_id)
-
-
 class Compression(object):
     """ Compression algorithm implementation that uses a on-chip router\
         compressor in order to parallelise.
