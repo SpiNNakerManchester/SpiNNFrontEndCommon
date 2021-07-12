@@ -1637,6 +1637,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # allocations, but avoids DSG issues.
         algorithms.append("SDRAMOutgoingPartitionAllocator")
 
+        if self._has_reset_last:
+            algorithms.append("SplitterReset")
+
         # Execute the mapping algorithms
         executor = self._run_algorithms(
             inputs, algorithms, outputs, tokens, [], "mapping",
