@@ -36,40 +36,6 @@ _SDRAM_TAG = 1
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def mundy_on_chip_router_compression(
-        routing_tables, transceiver, machine, app_id,
-        system_provenance_folder):
-    """ Load routing tables and compress them using Andrew Mundy's algorithm.
-
-    This uses an APLX built by Mundy which no longer compiles but still works
-    with the current tool chain
-
-    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
-        the memory routing tables to be compressed
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        How to talk to the machine
-    :param ~spinn_machine.Machine machine:
-        the SpiNNaker machine representation
-    :param int app_id: the application ID used by the main application
-    :param str system_provenance_folder: the path to where to write the data
-    :param bool compress_only_when_needed:
-        If True, the compressor will only compress if the table doesn't fit in
-        the current router space, otherwise it will just load the table
-    :raises SpinnFrontEndException: If compression fails
-    """
-    # pylint: disable=too-many-arguments, unused-argument
-    msg = (
-        "MundyOnChipRouterCompression is no longer supported. "
-        "To use the currently recommended compression algorithm remove "
-        "loading_algorithms from your cfg. "
-        "While not recommended, OrderedCoveringOnChipRouterCompression "
-        "provides the same algorithm but has been updated to use the "
-        "current tools.")
-    print(msg)
-    logger.warning(msg)
-    raise NotImplementedError(msg)
-
-
 def pair_compression(
         routing_tables, transceiver, executable_finder,
         machine, app_id):
