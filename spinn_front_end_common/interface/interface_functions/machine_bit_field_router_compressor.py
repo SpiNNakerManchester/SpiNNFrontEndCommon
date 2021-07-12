@@ -807,19 +807,6 @@ class MachineBitFieldOrderedCoveringCompressor(
         return "OrderedCovering"
 
 
-class MachineBitFieldUnorderedRouterCompressor(
-        MachineBitFieldRouterCompressor):
-    """ DEPRACATED use MachineBitFieldOrderedCoveringCompressor """
-
-    def __new__(cls, *args, **kwargs):
-        logger.warning(
-            "MachineBitFieldUnorderedRouterCompressor algorithm name is "
-            "deprecated. "
-            "Please use MachineBitFieldOrderedCoveringCompressor instead. "
-            "loading_algorithms from your cfg to use defaults")
-        return super().__new__(cls, *args, **kwargs)
-
-
 class MachineBitFieldPairRouterCompressor(MachineBitFieldRouterCompressor):
 
     @property
