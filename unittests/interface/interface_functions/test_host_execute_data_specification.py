@@ -140,8 +140,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(len(regions[0][1]), 4)
 
         info = infos[(0, 0, 0)]
-        self.assertEqual(info.memory_used, 372)
-        self.assertEqual(info.memory_written, 88)
+        self.assertEqual(info.memory_used, 436)
+        self.assertEqual(info.memory_written, 152)
 
     def test_multi_spec_with_references(self):
         executor = HostExecuteDataSpecification()
@@ -213,7 +213,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         for base_addr, data in regions:
             for core, addr in base_addresses.items():
                 if base_addr == addr:
-                    header_data[core] = struct.unpack("<18I", data)
+                    header_data[core] = struct.unpack("<34I", data)
 
         # Check the references - core 0 and 2 pointer 0 (position 2 because
         # of header) should be equal to core 1
