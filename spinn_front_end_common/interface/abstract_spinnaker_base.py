@@ -1568,6 +1568,11 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Reports", "write_json_partition_n_keys_map"):
             algorithms.append("WriteJsonPartitionNKeysMap")
 
+        if get_config_bool(
+                "Reports", "write_router_collision_potential_report"):
+            algorithms.append("RouterCollisionPotentialReport")
+
+
         # only add network specification report if there's
         # application vertices.
         if (get_config_bool(
