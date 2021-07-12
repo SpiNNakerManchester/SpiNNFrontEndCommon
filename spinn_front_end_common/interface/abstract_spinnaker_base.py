@@ -1517,64 +1517,62 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         optional_algorithms = list()
 
-        # Add reports
-        if get_config_bool("Reports", "reports_enabled"):
-            if get_config_bool("Reports", "write_tag_allocation_reports"):
-                algorithms.append("TagReport")
-            if get_config_bool("Reports", "write_router_info_report"):
-                algorithms.append("routingInfoReports")
-            if get_config_bool("Reports", "write_router_reports"):
-                algorithms.append("RouterReports")
-            if get_config_bool(
-                    "Reports", "write_router_summary_report"):
-                algorithms.append("RouterSummaryReport")
+        if get_config_bool("Reports", "write_tag_allocation_reports"):
+            algorithms.append("TagReport")
+        if get_config_bool("Reports", "write_router_info_report"):
+            algorithms.append("routingInfoReports")
+        if get_config_bool("Reports", "write_router_reports"):
+            algorithms.append("RouterReports")
+        if get_config_bool(
+                "Reports", "write_router_summary_report"):
+            algorithms.append("RouterSummaryReport")
 
-            # only add board chip report if requested
-            if get_config_bool("Reports", "write_board_chip_report"):
-                algorithms.append("BoardChipReport")
+        # only add board chip report if requested
+        if get_config_bool("Reports", "write_board_chip_report"):
+            algorithms.append("BoardChipReport")
 
-            # only add partitioner report if using an application graph
-            if (get_config_bool(
-                    "Reports", "write_partitioner_reports") and
-                    self._application_graph.n_vertices):
-                algorithms.append("PartitionerReport")
+        # only add partitioner report if using an application graph
+        if (get_config_bool(
+                "Reports", "write_partitioner_reports") and
+                self._application_graph.n_vertices):
+            algorithms.append("PartitionerReport")
 
-            # only add write placer report with application graph when
-            # there's application vertices
-            if (get_config_bool(
-                    "Reports", "write_application_graph_placer_report") and
-                    self._application_graph.n_vertices):
-                algorithms.append("PlacerReportWithApplicationGraph")
+        # only add write placer report with application graph when
+        # there's application vertices
+        if (get_config_bool(
+                "Reports", "write_application_graph_placer_report") and
+                self._application_graph.n_vertices):
+            algorithms.append("PlacerReportWithApplicationGraph")
 
-            if get_config_bool(
-                    "Reports", "write_machine_graph_placer_report"):
-                algorithms.append("PlacerReportWithoutApplicationGraph")
+        if get_config_bool(
+                "Reports", "write_machine_graph_placer_report"):
+            algorithms.append("PlacerReportWithoutApplicationGraph")
 
-            if get_config_bool(
-                    "Reports", "write_json_machine"):
-                algorithms.append("WriteJsonMachine")
+        if get_config_bool(
+                "Reports", "write_json_machine"):
+            algorithms.append("WriteJsonMachine")
 
-            if get_config_bool(
-                    "Reports", "write_json_machine_graph"):
-                algorithms.append("WriteJsonMachineGraph")
+        if get_config_bool(
+                "Reports", "write_json_machine_graph"):
+            algorithms.append("WriteJsonMachineGraph")
 
-            if get_config_bool(
-                    "Reports", "write_json_placements"):
-                algorithms.append("WriteJsonPlacements")
+        if get_config_bool(
+                "Reports", "write_json_placements"):
+            algorithms.append("WriteJsonPlacements")
 
-            if get_config_bool(
-                    "Reports", "write_json_routing_tables"):
-                algorithms.append("WriteJsonRoutingTables")
+        if get_config_bool(
+                "Reports", "write_json_routing_tables"):
+            algorithms.append("WriteJsonRoutingTables")
 
-            if get_config_bool(
-                    "Reports", "write_json_partition_n_keys_map"):
-                algorithms.append("WriteJsonPartitionNKeysMap")
+        if get_config_bool(
+                "Reports", "write_json_partition_n_keys_map"):
+            algorithms.append("WriteJsonPartitionNKeysMap")
 
-            # only add network specification report if there's
-            # application vertices.
-            if (get_config_bool(
-                    "Reports", "write_network_specification_report")):
-                algorithms.append("NetworkSpecificationReport")
+        # only add network specification report if there's
+        # application vertices.
+        if (get_config_bool(
+                "Reports", "write_network_specification_report")):
+            algorithms.append("NetworkSpecificationReport")
 
         # only add the partitioner if there isn't already a machine graph
         algorithms.append("MallocBasedChipIDAllocator")
