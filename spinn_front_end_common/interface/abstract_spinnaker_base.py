@@ -1572,7 +1572,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Reports", "write_router_collision_potential_report"):
             algorithms.append("RouterCollisionPotentialReport")
 
-
         # only add network specification report if there's
         # application vertices.
         if (get_config_bool(
