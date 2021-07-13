@@ -1218,6 +1218,7 @@
         </required_inputs>
         <optional_inputs>
             <param_name>run_until_complete</param_name>
+            <token>ConnectionsFinished</token>
             <token>ClearedIOBuf</token>
         </optional_inputs>
         <outputs>
