@@ -1969,6 +1969,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             algorithms = list(self._extra_pre_run_algorithms)
         else:
             algorithms = list()
+        optional_algorithms = list()
 
         if get_config_bool(
                 "Reports", "write_sdram_usage_report_per_chip"):
@@ -2025,14 +2026,22 @@ class AbstractSpinnakerBase(ConfigHandler):
                 n_machine_time_steps is not None):
             algorithms.append("ChipIOBufExtractor")
 
+        read_prov = get_config_bool(
+            "Reports", "read_provenance_data")
+
         # ensure we exploit the parallel of data extraction by running it at\
         # end regardless of multirun, but only run if using a real machine
         if ((self._run_until_complete or n_machine_time_steps is not None)
                 and not self._use_virtual_board):
             algorithms.append("BufferExtractor")
+            # add extractor of provenance if needed
+            if read_prov:
+                algorithms.append("PlacementsProvenanceGatherer")
+                algorithms.append("RouterProvenanceGatherer")
+                algorithms.append("ProfileDataGatherer")
+            else:
+                optional_algorithms.append("PlacementsProvenanceGatherer")
 
-        read_prov = get_config_bool(
-            "Reports", "read_provenance_data")
         if read_prov:
             algorithms.append("GraphProvenanceGatherer")
 
@@ -2048,20 +2057,14 @@ class AbstractSpinnakerBase(ConfigHandler):
                 if read_prov:
                     algorithms.append("EnergyProvenanceReporter")
 
-        # add extractor of provenance if needed
-        if (read_prov and not self._use_virtual_board and
-                n_machine_time_steps is not None):
-            algorithms.append("PlacementsProvenanceGatherer")
-            algorithms.append("RouterProvenanceGatherer")
-            algorithms.append("ProfileDataGatherer")
-
         # Decide what needs done
         required_tokens = []
         if not self._use_virtual_board:
             required_tokens = ["ApplicationRun"]
 
         return PACMANAlgorithmExecutor(
-            algorithms=algorithms, optional_algorithms=[], inputs=inputs,
+            algorithms=algorithms, optional_algorithms=optional_algorithms,
+            inputs=inputs,
             tokens=tokens, required_output_tokens=required_tokens,
             xml_paths=self._xml_paths, required_outputs=outputs,
             do_timings=self._do_timings, print_timings=self._print_timings,
