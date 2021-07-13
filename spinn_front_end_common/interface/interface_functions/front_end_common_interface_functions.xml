@@ -356,6 +356,9 @@
         <required_inputs>
             <param_name>machine_graph</param_name>
         </required_inputs>
+        <outputs>
+            <token>PartitionConstraints</token>
+        </outputs>
     </algorithm>
     <algorithm name="LoadFixedRoutes">
         <python_module>spinn_front_end_common.interface.interface_functions.load_fixed_routes</python_module>
