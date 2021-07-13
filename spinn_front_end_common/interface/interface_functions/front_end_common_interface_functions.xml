@@ -677,7 +677,7 @@
             <param_name>hostname</param_name>
         </required_inputs>
         <optional_inputs>
-            <token part="DSGDataLoaded">DataLoaded</token>
+            <token part="DSGAppDataLoaded">DataLoaded</token>
             <token>ClearedIOBuf</token>
         </optional_inputs>
         <outputs>
@@ -753,7 +753,6 @@
         </optional_inputs>
         <outputs>
             <param_type>ProcessorToAppDataBaseAddress</param_type>
-            <token part="DSGDataLoaded">DataLoaded</token>
             <token part="DSGAppDataLoaded">DataLoaded</token>
         </outputs>
     </algorithm>
