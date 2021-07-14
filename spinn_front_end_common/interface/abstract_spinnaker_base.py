@@ -1976,9 +1976,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             algorithms.append("SdramUsageReportPerChip")
 
         # Clear iobuf from machine
-        if (n_machine_time_steps is not None and
-                not self._use_virtual_board and not self._empty_graphs and
-                get_config_bool("Reports", "clear_iobuf_during_run")):
+        if (not self._use_virtual_board and not graph_changed):
             algorithms.append("ChipIOBufClearer")
 
         # Reload any parameters over the loaded data if we have already
@@ -2641,6 +2639,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._status in [Simulator_Status.SHUTDOWN]:
             raise ConfigurationException("Simulator has already been shutdown")
+
+        # handle iobuf extraction
+        if self._status == Simulator_Status.STOP_REQUESTED:
+            if get_config_bool("Reports", "extract_iobuf"):
+                self._extract_iobufs()
+
         self._status = Simulator_Status.SHUTDOWN
 
         # Keep track of any exception to be re-raised
@@ -2678,10 +2682,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._use_virtual_board:
             if get_config_bool("Reports", "write_energy_report"):
                 self._do_energy_report()
-
-            # handle iobuf extraction
-            if get_config_bool("Reports", "extract_iobuf"):
-                self._extract_iobufs()
 
         # shut down the machine properly
         self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
@@ -2755,8 +2755,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._buffer_manager, power_used)
 
     def _extract_iobufs(self):
-        if get_config_bool("Reports", "clear_iobuf_during_run"):
-            return
         extractor = IOBufExtractor(
             transceiver=self._txrx,
             executable_targets=self._last_run_outputs["ExecutableTargets"],
