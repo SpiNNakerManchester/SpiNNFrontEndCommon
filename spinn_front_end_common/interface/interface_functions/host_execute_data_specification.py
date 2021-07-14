@@ -389,7 +389,7 @@ class HostExecuteDataSpecification(object):
             executable_targets, region_sizes,
             placements=None, extra_monitor_cores=None,
             extra_monitor_cores_to_ethernet_connection_map=None,
-            java_caller=None, processor_to_app_data_base_address=None):
+            java_caller=None):
         """ Execute the data specs for all non-system targets.
 
         :param ~spinn_machine.Machine machine:
@@ -413,17 +413,11 @@ class HostExecuteDataSpecification(object):
             how to talk to extra monitor cores
         :type extra_monitor_cores_to_ethernet_connection_map:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-        :param processor_to_app_data_base_address:
-            map of placement and DSG data
-        :type processor_to_app_data_base_address:
-            dict(tuple(int,int,int), DsWriteInfo)
         :return: map of placement and DSG data
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         # pylint: disable=too-many-arguments
-        if processor_to_app_data_base_address is None:
-            processor_to_app_data_base_address = dict()
-        self._write_info_map = processor_to_app_data_base_address
+        self._write_info_map = dict()
         self._java = java_caller
         self._machine = machine
         self._txrx = transceiver
@@ -548,8 +542,7 @@ class HostExecuteDataSpecification(object):
 
     def execute_system_data_specs(
             self, transceiver, machine, app_id, dsg_targets, region_sizes,
-            executable_targets,
-            java_caller=None, processor_to_app_data_base_address=None):
+            executable_targets, java_caller=None):
         """ Execute the data specs for all system targets.
 
         :param ~spinnman.transceiver.Transceiver transceiver:
@@ -564,17 +557,12 @@ class HostExecuteDataSpecification(object):
         :param ~spinnman.model.ExecutableTargets executable_targets:
             the map between binaries and locations and executable types
         :param JavaCaller java_caller:
-        :param processor_to_app_data_base_address:
-        :type processor_to_app_data_base_address:
-            dict(tuple(int,int,int),DataWritten)
         :return: map of placement and DSG data, and loaded data flag.
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         # pylint: disable=too-many-arguments
 
-        if processor_to_app_data_base_address is None:
-            processor_to_app_data_base_address = dict()
-        self._write_info_map = processor_to_app_data_base_address
+        self._write_info_map = dict()
         self._machine = machine
         self._txrx = transceiver
         self._app_id = app_id

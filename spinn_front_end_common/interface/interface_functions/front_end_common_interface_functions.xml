@@ -766,10 +766,6 @@
                 <param_type>JavaCaller</param_type>
             </parameter>
             <parameter>
-                <param_name>processor_to_app_data_base_address</param_name>
-                <param_type>ProcessorToAppDataBaseAddress</param_type>
-            </parameter>
-            <parameter>
                 <param_name>executable_targets</param_name>
                 <param_type>ExecutableTargets</param_type>
             </parameter>
@@ -799,7 +795,6 @@
         </required_inputs>
         <optional_inputs>
             <param_name>java_caller</param_name>
-            <param_name>processor_to_app_data_base_address</param_name>
             <param_name>executable_targets</param_name>
             <param_name>placements</param_name>
             <param_name>extra_monitor_cores</param_name>
@@ -808,7 +803,7 @@
             <token part="SystemBinariesLoaded">DataLoaded</token>
         </optional_inputs>
         <outputs>
-            <param_type>ProcessorToAppDataBaseAddress</param_type>
+            <param_type>AppCoreToDsWrite</param_type>
             <token part="DSGDataLoaded">DataLoaded</token>
             <token part="DSGAppDataLoaded">DataLoaded</token>
         </outputs>
@@ -843,10 +838,6 @@
                 <param_type>JavaCaller</param_type>
             </parameter>
             <parameter>
-                <param_name>processor_to_app_data_base_address</param_name>
-                <param_type>ProcessorToAppDataBaseAddress</param_type>
-            </parameter>
-            <parameter>
                 <param_name>region_sizes</param_name>
                 <param_type>RegionSizes</param_type>
             </parameter>
@@ -861,10 +852,9 @@
         </required_inputs>
         <optional_inputs>
             <param_name>java_caller</param_name>
-            <param_name>processor_to_app_data_base_address</param_name>
         </optional_inputs>
         <outputs>
-            <param_type>ProcessorToAppDataBaseAddress</param_type>
+            <param_type>SystemCoreToDsWrite</param_type>
             <token part="DSGSystemDataLoaded">DataLoaded</token>
         </outputs>
     </algorithm>

@@ -26,26 +26,32 @@ _FOLDER_NAME = "memory_map_from_processor_to_address_space"
 class MemoryMapOnHostReport(object):
     """ Report on memory usage.
     """
-
     def __call__(
-            self, processor_to_app_data_base_address):
+            self, app_core_to_dswrite, system_core_to_dswrite):
         """
-        :param processor_to_app_data_base_address:
-        :type processor_to_app_data_base_address:
+        :param app_core_to_dswrite: dswrite per core for application vertexes
+        :type app_core_to_dswrite:
+            dict(tuple(int,int,int),DataWritten)
+        :param system_core_to_dswrite: dswrite per core for system vertexes
+        :type system_core_to_dswrite:
             dict(tuple(int,int,int),DataWritten)
         """
 
         file_name = os.path.join(report_default_directory(), _FOLDER_NAME)
         try:
             with open(file_name, "w") as f:
-                self._describe_mem_map(f, processor_to_app_data_base_address)
+                self._describe_mem_map(
+                    f, app_core_to_dswrite, system_core_to_dswrite)
         except IOError:
             logger.exception("Generate_placement_reports: Can't open file"
                              " {} for writing.", file_name)
 
-    def _describe_mem_map(self, f, memory_map):
+    def _describe_mem_map(
+            self, f, app_core_to_dswrite, system_core_to_dswrite):
         f.write("On host data specification executor\n")
-        for key, data in memory_map.items():
+        for key, data in app_core_to_dswrite.items():
+            self._describe_map_entry(f, key, data)
+        for key, data in system_core_to_dswrite.items():
             self._describe_map_entry(f, key, data)
 
     @staticmethod
