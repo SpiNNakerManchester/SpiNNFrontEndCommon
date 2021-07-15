@@ -1769,6 +1769,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Machine", "enable_advanced_monitor_support")
         if enable_advanced_monitor and (graph_changed or not self._has_ran):
             algorithms.append("LoadFixedRoutes")
+        if get_config_bool("Reports", "write_fixed_route_report"):
             algorithms.append("FixedRouteFromMachineReport")
 
         # add optional algorithms
