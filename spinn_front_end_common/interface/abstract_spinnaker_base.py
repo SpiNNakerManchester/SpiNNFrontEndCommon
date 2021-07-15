@@ -1717,6 +1717,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "ExecutableTargets"]
 
         algorithms = list()
+        optional_algorithms = list()
 
         # add report for extracting routing table from machine report if needed
         # Add algorithm to clear routing tables and set up routing
@@ -1745,21 +1746,19 @@ class AbstractSpinnakerBase(ConfigHandler):
             algorithms.append("MemoryMapOnHostChipReport")
 
         # Add reports that depend on compression
-        routing_tables_needed = False
         if graph_changed:
             if get_config_bool(
                     "Reports", "write_routing_table_reports"):
-                routing_tables_needed = True
                 algorithms.append("unCompressedRoutingTableReports")
+                optional_algorithms.append("RoutingTableFromMachineReport")
 
-                if get_config_bool(
-                        "Reports",
-                        "write_routing_tables_from_machine_reports"):
-                    algorithms.append("ReadRoutingTablesFromMachine")
-                    algorithms.append("compressedRoutingTableReports")
-                    algorithms.append("comparisonOfRoutingTablesReport")
-                    algorithms.append("CompressedRouterSummaryReport")
-                    algorithms.append("RoutingTableFromMachineReport")
+            if get_config_bool("Reports",
+                               "write_routing_tables_from_machine_reports"):
+                algorithms.append("ReadRoutingTablesFromMachine")
+                algorithms.append("compressedRoutingTableReports")
+                algorithms.append("comparisonOfRoutingTablesReport")
+                algorithms.append("CompressedRouterSummaryReport")
+                algorithms.append("RoutingTableFromMachineReport")
 
         if get_config_bool(
                 "Reports", "write_bit_field_compressor_report"):
@@ -1773,7 +1772,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             algorithms.append("FixedRouteFromMachineReport")
 
         # add optional algorithms
-        optional_algorithms = list()
 
         if graph_changed or data_changed:
             optional_algorithms.append("RoutingTableLoader")
@@ -1789,10 +1787,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         algorithms.append("HostExecuteSystemDataSpecification")
         algorithms.append("LoadSystemExecutableImages")
 
-        # Something probably a report needs the routing tables
-        # This report is one way to get them if done on machine
-        if routing_tables_needed:
-            optional_algorithms.append("RoutingTableFromMachineReport")
         if get_config_bool("Reports", "write_tag_allocation_reports"):
             algorithms.append("TagsFromMachineReport")
 
