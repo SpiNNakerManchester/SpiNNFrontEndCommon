@@ -33,6 +33,7 @@ from pacman.model.resources import (
 from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
+from pacman.utilities.utility_calls import get_field_based_keys
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
@@ -510,10 +511,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int first_time_step:
         :param int n_time_steps:
         """
+        keys = get_field_based_keys(key_base, self._vertex_slice)
         for key in range(self._n_keys):
             for tick in sorted(self._send_buffer_times[key]):
                 if self._is_in_range(tick, first_time_step, n_time_steps):
-                    self._send_buffer.add_key(tick, key_base + key)
+                    self._send_buffer.add_key(tick, keys[key])
 
     def __fill_send_buffer_1d(
             self, key_base, first_time_step, n_time_steps):
@@ -522,7 +524,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int first_time_step:
         :param int n_time_steps:
         """
-        key_list = [key + key_base for key in range(self._n_keys)]
+        keys = get_field_based_keys(key_base, self._vertex_slice)
+        key_list = [keys[key] for key in range(self._n_keys)]
         for tick in sorted(self._send_buffer_times):
             if self._is_in_range(tick, first_time_step, n_time_steps):
                 self._send_buffer.add_keys(tick, key_list)
