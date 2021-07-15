@@ -294,11 +294,11 @@
         <input_definitions>
             <parameter>
                 <param_name>compressed_routing_tables</param_name>
-                <param_type>MemoryCompressedRoutingTables</param_type>
+                <param_type>CompressedRoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
+                <param_type>RoutingTables</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
