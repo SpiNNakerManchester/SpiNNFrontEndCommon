@@ -176,26 +176,11 @@ class ReverseIpTagMultiCastSource(
 
     @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
-        send_buffer_times = self._send_buffer_times
-        if send_buffer_times is not None and len(send_buffer_times):
-            if hasattr(send_buffer_times[0], "__len__"):
-                send_buffer_times = send_buffer_times[
-                    vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
-                # Check the buffer times on the slice are not empty
-                n_buffer_times = 0
-                for i in send_buffer_times:
-                    if hasattr(i, "__len__"):
-                        n_buffer_times += len(i)
-                    else:
-                        # assuming this must be a single integer
-                        n_buffer_times += 1
-                if n_buffer_times == 0:
-                    send_buffer_times = None
 
         container = ResourceContainer(
             sdram=ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
-                send_buffer_times, self._is_recording,
-                self._receive_rate, vertex_slice.n_atoms),
+                self.__filtered_send_buffer_times(vertex_slice),
+                self._is_recording, self._receive_rate, vertex_slice.n_atoms),
             dtcm=DTCMResource(
                 ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage()),
             cpu_cycles=CPUCyclesPerTickResource(
@@ -240,11 +225,7 @@ class ReverseIpTagMultiCastSource(
             self, vertex_slice,
             resources_required,  # @UnusedVariable
             label=None, constraints=None):
-        send_buffer_times = self._send_buffer_times
-        if send_buffer_times is not None and len(send_buffer_times):
-            if hasattr(send_buffer_times[0], "__len__"):
-                send_buffer_times = send_buffer_times[
-                    vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
+        send_buffer_times = self.__filtered_send_buffer_times(vertex_slice)
         machine_vertex = ReverseIPTagMulticastSourceMachineVertex(
             vertex_slice=vertex_slice,
             label=label, constraints=constraints, app_vertex=self,
@@ -264,6 +245,27 @@ class ReverseIpTagMultiCastSource(
         if resources_required:
             assert (resources_required == machine_vertex.resources_required)
         return machine_vertex
+
+    def __filtered_send_buffer_times(self, vertex_slice):
+        send_buffer_times = self._send_buffer_times
+        n_buffer_times = 0
+        if send_buffer_times is not None:
+            # If there is at least one array element, and that element is
+            # itself and array
+            if (len(send_buffer_times) and
+                    hasattr(send_buffer_times[0], "__len__")):
+                send_buffer_times = send_buffer_times[
+                    vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
+            # Check the buffer times are not empty
+            for i in send_buffer_times:
+                if hasattr(i, "__len__"):
+                    n_buffer_times += len(i)
+                else:
+                    # assuming this must be a single integer
+                    n_buffer_times += 1
+        if n_buffer_times == 0:
+            return None
+        return send_buffer_times
 
     def __repr__(self):
         return self._label
