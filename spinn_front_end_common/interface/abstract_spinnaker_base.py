@@ -2109,9 +2109,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
                 extra_monitor_vertices=extra_monitor_vertices,
-                placements=self._placements,
-                using_reinjection=get_config_bool(
-                    "Machine", "enable_reinjection"))
+                placements=self._placements)
             if prov_item is not None:
                 prov_items.extend(prov_item)
         except Exception:
