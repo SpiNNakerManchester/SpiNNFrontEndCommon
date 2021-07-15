@@ -1463,6 +1463,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         # update inputs with extra mapping inputs if required
         inputs = dict(self._machine_outputs)
         tokens = list(self._machine_tokens)
+        outputs = [
+            "Placements", "RoutingTables",
+            "Tags", "RoutingInfos",
+            "MachineGraph"
+        ]
+
         if self._extra_mapping_inputs is not None:
             inputs.update(self._extra_mapping_inputs)
 
@@ -1500,16 +1506,18 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "EnergyMonitor", "sampling_frequency")
 
         # handle extra monitor functionality
-        add_data_speed_up = (get_config_bool(
-            "Machine", "enable_advanced_monitor_support") or
-            get_config_bool("Machine", "enable_reinjection"))
-        if add_data_speed_up:
+        add_data_speed_up = get_config_bool(
+            "Machine", "enable_advanced_monitor_support")
+        if (add_data_speed_up or
+                get_config_bool("Machine", "enable_reinjection")):
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
             algorithms.append("InsertEdgesToExtraMonitorFunctionality")
             algorithms.append("SystemMulticastRoutingGenerator")
-            algorithms.append("FixedRouteRouter")
             inputs['FixedRouteDestinationClass'] = \
                 DataSpeedUpPacketGatherMachineVertex
+        if add_data_speed_up:
+            algorithms.append("FixedRouteRouter")
+            outputs.append("FixedRoutes")
 
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:
@@ -1598,19 +1606,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             algorithms.append("LocateExecutableStartType")
 
         # handle outputs
-        outputs = [
-            "Placements", "RoutingTables",
-            "Tags", "RoutingInfos",
-            "MachineGraph"
-        ]
 
         if not self._use_virtual_board:
             outputs.append("ExecutableTypes")
 
-        if add_data_speed_up:
-            outputs.append("FixedRoutes")
-
-        # Create a buffer manager if there isn't one already
+       # Create a buffer manager if there isn't one already
         if not self._use_virtual_board:
             if self._buffer_manager is None:
                 algorithms.append("BufferManagerCreator")
