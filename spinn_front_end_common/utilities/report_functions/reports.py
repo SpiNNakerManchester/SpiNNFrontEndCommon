@@ -317,9 +317,7 @@ def _write_one_vertex_partition(f, vertex):
     machine_vertices = sorted(machine_vertices,
                               key=lambda x: x.vertex_slice.lo_atom)
     for sv in machine_vertices:
-        f.write("  Slice {}:{} ({} atoms) \n".format(
-            sv.vertex_slice.lo_atom, sv.vertex_slice.hi_atom,
-            sv.vertex_slice.n_atoms))
+        f.write("  Slice {}\n".format(sv.vertex_slice))
     f.write("\n")
 
 
@@ -374,13 +372,10 @@ def _write_one_vertex_application_placement(f, vertex, placements):
     machine_vertices = sorted(machine_vertices,
                               key=lambda vert: vert.vertex_slice.lo_atom)
     for sv in machine_vertices:
-        lo_atom = sv.vertex_slice.lo_atom
-        hi_atom = sv.vertex_slice.hi_atom
-        num_atoms = sv.vertex_slice.n_atoms
         cur_placement = placements.get_placement_of_vertex(sv)
         x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
-        f.write("  Slice {}:{} ({} atoms) on core ({}, {}, {}) \n"
-                .format(lo_atom, hi_atom, num_atoms, x, y, p))
+        f.write("  Slice {} on core ({}, {}, {}) \n"
+                .format(sv.vertex_slice, x, y, p))
     f.write("\n")
 
 
@@ -486,13 +481,10 @@ def _write_one_chip_application_placement(f, chip, placements):
             vertex_label = app_vertex.label
             vertex_model = app_vertex.__class__.__name__
             vertex_atoms = app_vertex.n_atoms
-            lo_atom = vertex.vertex_slice.lo_atom
-            hi_atom = vertex.vertex_slice.hi_atom
-            num_atoms = vertex.vertex_slice.n_atoms
             f.write("  Processor {}: Vertex: '{}', pop size: {}\n".format(
                 pro_id, vertex_label, vertex_atoms))
-            f.write("              Slice on this core: {}:{} ({} atoms)\n"
-                    .format(lo_atom, hi_atom, num_atoms))
+            f.write("              Slice on this core: {}\n"
+                    .format(vertex.vertex_slice))
             f.write("              Model: {}\n\n".format(vertex_model))
 
 
