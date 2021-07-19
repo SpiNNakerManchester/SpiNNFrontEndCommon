@@ -1,0 +1,147 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import itertools
+import json
+from lxml import etree
+import os
+import string
+from spinn_front_end_common.interface.provenance import SqlLiteDatabase
+from spinn_front_end_common.utilities.constants import PROVENANCE_DB
+from spinn_front_end_common.utilities.helpful_functions import (
+    generate_unique_folder_name)
+
+
+_VALID_CHARS = frozenset(
+    "-_.() {}{}".format(string.ascii_letters, string.digits))
+_XML_BRANCH_NAME = "provenance_data_items"
+_XML_LEAF_NAME = "provenance_data_item"
+
+
+def write_sql_provenance(provenance_data_items, provenance_data_path):
+    """ Writes provenance in SQL format
+
+    :param list(ProvenanceDataItem) provenance_data_items:
+    :param str provenance_data_path:
+    """
+    database_file = os.path.join(
+        provenance_data_path, PROVENANCE_DB)
+    with SqlLiteDatabase(database_file) as db:
+        db.insert_items(provenance_data_items)
+
+
+def write_json_provenance(provenance_data_items, provenance_data_path):
+    """
+    :param list(ProvenanceDataItem) provenance_data_items:
+    :param str provenance_data_path:
+    """
+    # Group data by the first name
+    items = sorted(provenance_data_items, key=lambda item: item.names[0])
+    for name, group in itertools.groupby(
+            items, lambda item: item.names[0]):
+        # Create a root node
+        root = dict()
+
+        # Go through the items and add them
+        for item in group:
+            # Add the "categories" for the item (any name between the first
+            # and last)
+            parent = _build_json_path(root, item)
+            # Add the item
+            parent[item.names[-1]] = str(item.value)
+
+        # write json form into file provided
+        with open(_get_file(provenance_data_path, name, ".json"), "w") as f:
+            json.dump(root, f, indent=4, separators=(',', ': '))
+
+
+def _build_json_path(root, item):
+    """
+    :param dict(str,object) root:
+    :param ProvenanceDataItem item:
+    :rtype: dict(str,object)
+    """
+    parent = root
+    for name in item.names[1:-1]:
+        if not (name in parent and isinstance(parent[name], dict)):
+            # If there isn't already a category of this name under the
+            # super element, create a new category under the parent
+            parent[name] = dict()
+        parent = parent[name]
+    return parent
+
+
+def _get_file(path, name, extension):
+    """
+    :param str path:
+    :param str name:
+    :rtype: str
+    """
+    remapped = "".join(c if c in _VALID_CHARS else '_' for c in name)
+    return generate_unique_folder_name(path, remapped, extension)
+
+
+def write_xml_provenance(provenance_data_items, provenance_data_path):
+    """
+    :param list(ProvenanceDataItem) provenance_data_items:
+        data items for provenance
+    :param str provenance_data_path: the file path to store provenance in
+    """
+    # Group data by the first name
+    items = sorted(provenance_data_items, key=lambda item: item.names[0])
+    for name, group in itertools.groupby(
+            items, lambda item: item.names[0]):
+        # Create a root node
+        root = etree.Element(_XML_BRANCH_NAME, name=name)
+        # Keep track of sub-categories
+        categories = {root: dict()}
+
+        # Go through the items and add them
+        for item in group:
+            # Add the "categories" for the item (any name between the first
+            # and last)
+            parent = _build_xml_path(root, categories, item)
+
+            # Add the item
+            element = etree.SubElement(
+                parent, _XML_LEAF_NAME, name=item.names[-1])
+            element.text = str(item.value)
+
+        # write xml form into file provided
+        with open(_get_file(provenance_data_path, name, "xml"), "wb") as f:
+            f.write(etree.tostring(root, pretty_print=True))
+
+
+def _build_xml_path(root, categories, item):
+    """
+    :param etree.Element root:
+    :param dict(etree.Element,dict(str,etree.Element)) categories:
+    :param ProvenanceDataItem item:
+    :rtype: etree.Element
+    """
+    parent = root
+    cats = categories[root]
+    for cat_name in item.names[1:-1]:
+        if cat_name not in cats:
+            # If there is not a category of this name under the parent
+            # element, create a new category
+            parent = etree.SubElement(
+                parent, _XML_BRANCH_NAME, name=cat_name)
+            cats[cat_name] = parent
+            categories[parent] = dict()
+        # Update our state variables for the next run of the loop
+        parent = cats[cat_name]
+        cats = categories[parent]
+    return parent

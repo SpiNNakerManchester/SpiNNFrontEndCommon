@@ -75,9 +75,10 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
 from spinn_front_end_common.interface.interface_functions import (
-    ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
     RouterProvenanceGatherer, interface_xml)
+from spinn_front_end_common.utilities.provenance_writer import (
+    write_json_provenance, write_sql_provenance, write_xml_provenance)
 
 from spinn_front_end_common import __version__ as fec_version
 try:
@@ -2070,16 +2071,20 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         writer = None
         if self._provenance_format == "xml":
-            writer = ProvenanceXMLWriter()
+            write_xml_provenance(
+                provenance_data_items, self._provenance_file_path)
         elif self._provenance_format == "json":
-            writer = ProvenanceJSONWriter()
+            write_json_provenance(
+                provenance_data_items, self._provenance_file_path)
         elif self._provenance_format == "sql":
-            writer = ProvenanceSQLWriter()
+            write_sql_provenance(
+                provenance_data_items, self._provenance_file_path)
         elif len(provenance_data_items) < PROVENANCE_TYPE_CUTOFF:
-            writer = ProvenanceXMLWriter()
+            write_xml_provenance(
+                provenance_data_items, self._provenance_file_path)
         else:
-            writer = ProvenanceSQLWriter()
-        writer(provenance_data_items, self._provenance_file_path)
+            write_sql_provenance(
+                provenance_data_items, self._provenance_file_path)
 
     def _recover_from_error(self, exception, exc_info, executable_targets):
         """

@@ -15,9 +15,9 @@
 
 import os
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.interface.interface_functions import (
-    ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter)
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
+from spinn_front_end_common.utilities.provenance_writer import (
+    write_json_provenance, write_sql_provenance, write_xml_provenance)
 
 
 def _create_provenenace():
@@ -46,21 +46,18 @@ def test_json():
     unittest_setup()
     provenance_data_path = check_provenance_data_path(".json")
     provenance_data_items = _create_provenenace()
-    writer = ProvenanceJSONWriter()
-    writer(provenance_data_items, provenance_data_path)
+    write_json_provenance(provenance_data_items, provenance_data_path)
 
 
 def test_xml():
     unittest_setup()
     provenance_data_path = check_provenance_data_path(".xml")
     provenance_data_items = _create_provenenace()
-    writer = ProvenanceXMLWriter()
-    writer(provenance_data_items, provenance_data_path)
+    write_xml_provenance(provenance_data_items, provenance_data_path)
 
 
 def test_database():
     unittest_setup()
     provenance_data_path = check_provenance_data_path(".sqlite3")
     provenance_data_items = _create_provenenace()
-    writer = ProvenanceSQLWriter()
-    writer(provenance_data_items, provenance_data_path)
+    write_sql_provenance(provenance_data_items, provenance_data_path)
