@@ -25,7 +25,6 @@ from .buffer_extractor import BufferExtractor
 from .chip_iobuf_clearer import ChipIOBufClearer
 from .chip_iobuf_extractor import ChipIOBufExtractor
 from .buffer_manager_creator import BufferManagerCreator
-from .chip_provenance_updater import ChipProvenanceUpdater
 from .chip_runtime_updater import ChipRuntimeUpdater
 from .compute_energy_used import ComputeEnergyUsed
 from .database_interface import DatabaseInterface
@@ -94,8 +93,7 @@ __all__ = [
     "ApplicationFinisher",
     "ApplicationRunner", "BufferExtractor",
     "BufferManagerCreator", "ChipIOBufClearer",
-    "ChipIOBufExtractor", "ChipProvenanceUpdater",
-    "ChipRuntimeUpdater", "CreateNotificationProtocol",
+    "ChipIOBufExtractor", "ChipRuntimeUpdater", "CreateNotificationProtocol",
     "ComputeEnergyUsed", "DatabaseInterface",
     "SystemMulticastRoutingGenerator",
     "DSGRegionReloader", "EdgeToNKeysMapper",

@@ -75,8 +75,10 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
 from spinn_front_end_common.interface.interface_functions import (
-    ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
+    PlacementsProvenanceGatherer,
     RouterProvenanceGatherer, interface_xml)
+from spinn_front_end_common.utilities.chip_provenance_updater import (
+    chip_provenance_update)
 from spinn_front_end_common.utilities.provenance_writer import (
     write_json_provenance, write_sql_provenance, write_xml_provenance)
 
@@ -2175,8 +2177,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # Attempt to force the cores to write provenance and exit
             try:
-                updater = ChipProvenanceUpdater()
-                updater(self._txrx, self._app_id, non_rte_core_subsets)
+                chip_provenance_update(
+                    self._txrx, self._app_id, non_rte_core_subsets)
             except Exception:
                 logger.exception("Could not update provenance on chip")
 
