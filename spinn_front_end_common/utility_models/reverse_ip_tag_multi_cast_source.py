@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import numpy
 
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from spinn_utilities.overrides import overrides
@@ -167,7 +168,7 @@ class ReverseIpTagMultiCastSource(
                     "The array or arrays of times {} does not have the "
                     "expected length of {}".format(
                         send_buffer_times, self._n_atoms))
-        return send_buffer_times
+        return numpy.array(send_buffer_times)
 
     @property
     @overrides(LegacyPartitionerAPI.n_atoms)
@@ -247,6 +248,7 @@ class ReverseIpTagMultiCastSource(
         return machine_vertex
 
     def __filtered_send_buffer_times(self, vertex_slice):
+        ids = vertex_slice.get_raster_ids(self.atoms_shape)
         send_buffer_times = self._send_buffer_times
         n_buffer_times = 0
         if send_buffer_times is not None:
@@ -254,8 +256,7 @@ class ReverseIpTagMultiCastSource(
             # itself and array
             if (len(send_buffer_times) and
                     hasattr(send_buffer_times[0], "__len__")):
-                send_buffer_times = send_buffer_times[
-                    vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
+                send_buffer_times = send_buffer_times[ids]
             # Check the buffer times are not empty
             for i in send_buffer_times:
                 if hasattr(i, "__len__"):
