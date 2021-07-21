@@ -117,7 +117,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             self, routing_tables, transceiver, machine, app_id,
             machine_graph, placements, executable_finder,
             routing_infos, executable_targets,
-            compress_as_much_as_possible=False, provenance_data_objects=None):
+            compress_as_much_as_possible=False):
         """ entrance for routing table compression with bit field
 
         :param routing_tables: routing tables
@@ -139,17 +139,13 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             the set of targets and executables
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
-        :param list(ProvenanceDataItem) provenance_data_objects:
         :return: where the compressors ran, and the provenance they generated
         :rtype: tuple(~spinnman.model.ExecutableTargets,
             list(ProvenanceDataItem))
         """
 
         # build provenance data objects
-        if provenance_data_objects is not None:
-            prov_items = provenance_data_objects
-        else:
-            prov_items = list()
+        prov_items = list()
 
         if len(routing_tables.routing_tables) == 0:
             return ExecutableTargets(), prov_items

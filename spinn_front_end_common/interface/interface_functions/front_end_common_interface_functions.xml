@@ -227,10 +227,6 @@
                 <param_name>routing_infos</param_name>
                 <param_type>RoutingInfos</param_type>
             </parameter>
-            <parameter>
-                <param_name>provenance_data_objects</param_name>
-                <param_type>RouterCompressorProvenanceItems</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>executable_finder</param_name>
@@ -245,9 +241,6 @@
             <token part="BitFieldData">DataLoaded</token>
             <token>RoutersInitialized</token>
         </required_inputs>
-        <optional_inputs>
-            <param_name>provenance_data_objects</param_name>
-        </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
             <param_type>CompressorExecutableTargetsUsed</param_type>
@@ -294,10 +287,6 @@
                 <param_name>routing_infos</param_name>
                 <param_type>RoutingInfos</param_type>
             </parameter>
-            <parameter>
-                <param_name>provenance_data_objects</param_name>
-                <param_type>RouterCompressorProvenanceItems</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>executable_finder</param_name>
@@ -312,9 +301,6 @@
             <token part="BitFieldData">DataLoaded</token>
             <token>RoutersInitialized</token>
         </required_inputs>
-        <optional_inputs>
-            <param_name>provenance_data_objects</param_name>
-        </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
             <param_type>CompressorExecutableTargetsUsed</param_type>
