@@ -57,7 +57,8 @@ class InsertLivePacketGatherersToGraphs(object):
 
         # create progress bar
         progress = ProgressBar(
-            machine.ethernet_connected_chips,
+            len(machine.ethernet_connected_chips) *
+            len(live_packet_gatherer_parameters),
             string_describing_what_being_progressed=(
                 "Adding Live Packet Gatherers to Graph"))
 
