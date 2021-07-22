@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
 
@@ -36,14 +35,10 @@ class PreAllocateResourcesForChipPowerMonitor(object):
         """
         # pylint: disable=too-many-arguments
 
-        progress_bar = ProgressBar(
-            1, "Preallocating resources for chip power monitor")
-
         # store how much SDRAM the power monitor uses per core
         resources = ChipPowerMonitorMachineVertex.get_resources(
             sampling_frequency=sampling_frequency)
         pre_allocated_resources.add_sdram_all(resources.sdram)
         pre_allocated_resources.add_cores_all(1)
 
-        progress_bar.end()
         return pre_allocated_resources

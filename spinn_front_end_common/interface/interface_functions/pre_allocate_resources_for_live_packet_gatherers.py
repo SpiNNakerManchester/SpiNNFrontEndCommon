@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.resources import ConstantSDRAM, IPtagResource
 from spinn_front_end_common.utility_models import (
     LivePacketGatherMachineVertex)
@@ -41,9 +40,6 @@ class PreAllocateResourcesForLivePacketGatherers(object):
         :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
 
-        progress_bar = ProgressBar(
-            1, "Preallocating resources for Live Recording")
-
         # store how much SDRAM the LPG uses per core
         sdram = ConstantSDRAM(LivePacketGatherMachineVertex.get_sdram_usage())
         for lpg_params in live_packet_gatherer_parameters:
@@ -55,5 +51,4 @@ class PreAllocateResourcesForLivePacketGatherers(object):
                 traffic_identifier=(
                     LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER)))
 
-        progress_bar.end()
         return pre_allocated_resources

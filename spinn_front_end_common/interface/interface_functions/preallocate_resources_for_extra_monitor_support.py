@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utility_models import (
     ExtraMonitorSupportMachineVertex)
 from spinn_front_end_common.utility_models import (
@@ -35,9 +34,6 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
 
-        progress_bar = ProgressBar(
-            1, "Preallocating resources for Extra Monitor support vertices")
-
         resources = DataSpeedUpPacketGatherMachineVertex.\
             static_resources_required()
         pre_allocated_resources.add_sdram_ethernet(resources.sdram)
@@ -49,5 +45,4 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         pre_allocated_resources.add_sdram_all(extra_usage.sdram)
         pre_allocated_resources.add_cores_all(1)
 
-        progress_bar.end()
         return pre_allocated_resources

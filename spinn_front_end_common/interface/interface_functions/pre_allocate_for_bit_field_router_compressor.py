@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.config_holder import get_config_int
-from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.machine import Machine
 from pacman.model.resources import (ConstantSDRAM)
 from spinn_front_end_common.interface.interface_functions. \
@@ -36,9 +35,6 @@ class PreAllocateForBitFieldRouterCompressor(object):
         :return: preallocated resources
         :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
-
-        progress_bar = ProgressBar(
-            1, "Preallocating resources for bit field compressor")
 
         # for every Ethernet connected chip, get the resources needed by the
         # live packet gatherers
