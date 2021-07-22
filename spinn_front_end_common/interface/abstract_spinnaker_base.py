@@ -1613,7 +1613,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._use_virtual_board:
             outputs.append("ExecutableTypes")
 
-       # Create a buffer manager if there isn't one already
+        # Create a buffer manager if there isn't one already
         if not self._use_virtual_board:
             if self._buffer_manager is None:
                 algorithms.append("BufferManagerCreator")
@@ -2071,7 +2071,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param list(ProvenanceDataItem) provenance_data_items:
         """
 
-        writer = None
         if self._provenance_format == "xml":
             write_xml_provenance(
                 provenance_data_items, self._provenance_file_path)
