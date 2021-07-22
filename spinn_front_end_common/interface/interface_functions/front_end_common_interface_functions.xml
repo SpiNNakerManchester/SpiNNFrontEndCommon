@@ -30,6 +30,9 @@
         <required_inputs>
             <param_name>app_graph</param_name>
         </required_inputs>
+        <optional_inputs>
+            <token part="RESET">SplitterObjectsAllocated</token>
+        </optional_inputs>
         <outputs>
             <token>SplitterObjectsAllocated</token>
         </outputs>

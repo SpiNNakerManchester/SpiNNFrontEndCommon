@@ -1359,6 +1359,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             inputs["ApplicationGraph"] = self._application_graph
             algorithms.extend(get_config_str_list(
                 "Mapping", "application_to_machine_graph_algorithms"))
+            if self._has_reset_last:
+                algorithms.append("SplitterReset")
             outputs.append("MachineGraph")
             do_partitioning = True
 
@@ -1596,6 +1598,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._machine_graph.n_vertices:
             algorithms.extend(get_config_str_list(
                 "Mapping", "application_to_machine_graph_algorithms"))
+            if self._has_reset_last:
+                algorithms.append("SplitterReset")
 
         if self._use_virtual_board:
             algorithms.extend(get_config_str_list(
@@ -1638,9 +1642,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # DSG.  Note this can run with a virtual machine but then makes fake
         # allocations, but avoids DSG issues.
         algorithms.append("SDRAMOutgoingPartitionAllocator")
-
-        if self._has_reset_last:
-            algorithms.append("SplitterReset")
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(
