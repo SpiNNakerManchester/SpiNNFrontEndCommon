@@ -457,7 +457,7 @@ static inline bool oc_get_best_merge(
     bool success = bit_set_init(
             &considered, routing_table_get_n_entries());
     if (!success) {
-        log_info("failed to initialise the bit_set. throwing response malloc");
+        log_warning("failed to initialise the bit_set. throwing response malloc");
         *failed_by_malloc = true;
         return false;
     }
@@ -467,7 +467,7 @@ static inline bool oc_get_best_merge(
 
     success = merge_init(best, routing_table_get_n_entries());
     if (!success) {
-        log_info("failed to init the merge best. throw response malloc");
+        log_warning("failed to init the merge best. throw response malloc");
         *failed_by_malloc = true;
 
         // free bits we already done
@@ -479,7 +479,7 @@ static inline bool oc_get_best_merge(
 
     success = merge_init(&working, routing_table_get_n_entries());
     if (!success) {
-        log_info("failed to init the merge working. throw response malloc");
+        log_warning("failed to init the merge working. throw response malloc");
         *failed_by_malloc = true;
 
         // free bits we already done

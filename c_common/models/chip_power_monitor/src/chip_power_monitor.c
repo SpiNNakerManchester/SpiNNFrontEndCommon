@@ -119,16 +119,21 @@ static inline void reset_core_counters(void) {
     sample_count = 0;
 }
 
+//! \brief Change simulation ticks to be a number related to sampling frequency.
+static inline void rescale_sim_ticks(void) {
+    simulation_ticks = (simulation_ticks * timer) / sample_frequency;
+    log_info("total_sim_ticks = %d", simulation_ticks);
+}
+
 //! \brief The function to call when resuming a simulation.
 static void resume_callback(void) {
     // change simulation ticks to be a number related to sampling frequency
     if (time == UINT32_MAX) {
-        log_info("resume_skipped as time still zero");
+        log_debug("resume_skipped as time still zero");
     } else {
-        simulation_ticks = (simulation_ticks * timer) / sample_frequency;
-        log_info("total_sim_ticks = %d", simulation_ticks);
+        rescale_sim_ticks();
         recording_reset();
-        log_info("resume_callback");
+        log_debug("resume_callback");
     }
 }
 
@@ -154,8 +159,7 @@ static void sample_in_slot(UNUSED uint unused0, UNUSED uint unused1) {
 
     // handle the situation when the first time update is sent
     if (time == 0) {
-        simulation_ticks = (simulation_ticks * timer) / sample_frequency;
-        log_info("total_sim_ticks = %d", simulation_ticks);
+        rescale_sim_ticks();
     }
     // check if the simulation has run to completion
     if (simulation_is_finished()) {
@@ -215,8 +219,7 @@ static bool initialize(void) {
     }
 
     // change simulation ticks to be a number related to sampling frequency
-    simulation_ticks = (simulation_ticks * timer) / sample_frequency;
-    log_info("total_sim_ticks = %d", simulation_ticks);
+    rescale_sim_ticks();
 
     void *recording_region =
             data_specification_get_region(RECORDING, ds_regions);
