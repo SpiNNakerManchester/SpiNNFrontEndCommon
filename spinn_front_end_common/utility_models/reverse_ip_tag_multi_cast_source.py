@@ -168,7 +168,7 @@ class ReverseIpTagMultiCastSource(
                     "The array or arrays of times {} does not have the "
                     "expected length of {}".format(
                         send_buffer_times, self._n_atoms))
-        return numpy.array(send_buffer_times)
+        return numpy.array(send_buffer_times, dtype="object")
 
     @property
     @overrides(LegacyPartitionerAPI.n_atoms)
