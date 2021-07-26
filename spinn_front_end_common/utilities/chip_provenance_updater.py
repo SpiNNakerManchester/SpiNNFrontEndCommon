@@ -61,7 +61,7 @@ class ChipProvenanceUpdater(object):
         # check that the right number of processors are in sync
         processors_completed = self.__txrx.get_core_state_count(
             self.__app_id, CPUState.FINISHED)
-        total_processors = len(self.__all_core_subsets)
+        total_processors = len(self.__all_cores)
         left_to_do_cores = total_processors - processors_completed
 
         progress = ProgressBar(
@@ -69,11 +69,11 @@ class ChipProvenanceUpdater(object):
             "Forcing error cores to generate provenance data")
 
         error_cores = self.__txrx.get_cores_in_state(
-            self.__all_core_subsets, CPUState.RUN_TIME_EXCEPTION)
+            self.__all_cores, CPUState.RUN_TIME_EXCEPTION)
         watchdog_cores = self.__txrx.get_cores_in_state(
-            self.__all_core_subsets, CPUState.WATCHDOG)
+            self.__all_cores, CPUState.WATCHDOG)
         idle_cores = self.__txrx.get_cores_in_state(
-            self.__all_core_subsets, CPUState.IDLE)
+            self.__all_cores, CPUState.IDLE)
 
         if error_cores or watchdog_cores or idle_cores:
             raise ConfigurationException(
