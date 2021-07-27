@@ -48,5 +48,4 @@ class PreAllocateForBitFieldRouterCompressor(object):
         # note what has been preallocated
         pre_allocated_resources.add_sdram_all(sdram)
 
-        progress_bar.end()
         return pre_allocated_resources
