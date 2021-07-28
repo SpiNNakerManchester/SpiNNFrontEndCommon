@@ -54,6 +54,11 @@ from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
+from spinn_front_end_common.interface.interface_functions import (
+    ApplicationRunner,  BufferExtractor, ChipIOBufClearer, ChipIOBufExtractor,
+    ChipRuntimeUpdater, ComputeEnergyUsed, CreateNotificationProtocol, DatabaseInterface,
+    EnergyProvenanceReporter, GraphProvenanceGatherer,
+    PlacementsProvenanceGatherer, ProfileDataGatherer, RouterProvenanceGatherer)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE)
@@ -342,7 +347,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_vertices_or_edges_added",
 
         # Version provenance
-        "_version_provenance"
+        "_version_provenance",
+
+        "_database_file_path"
     ]
 
     def __init__(
@@ -1819,6 +1826,46 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._mapping_time, self._dsg_time, self._load_time,
             self._execute_time, self._extraction_time)
 
+
+    def _read_and_write_provenance(
+            self, power_used, n_machine_time_steps, inputs):
+        prov_items = list()
+        if self._version_provenance is not None:
+            prov_items.extend(self._version_provenance)
+        prov_items.extend(self._pacman_provenance.data_items)
+        if get_config_bool("Reports", "read_provenance_data"):
+            gatherer = GraphProvenanceGatherer()
+            prov_items.extend(gatherer(
+                self._machine_graph, self._application_graph))
+            if (n_machine_time_steps is not None):
+                placement_gather = PlacementsProvenanceGatherer()
+                prov_items.extend(placement_gather(
+                    self._txrx, self._placements))
+
+                router_gather = RouterProvenanceGatherer()
+                provenance_data_objects = None
+                extra_monitor_vertices = inputs["ExtraMonitorVertices"]
+                prov_items.extend(router_gather(
+                    self._txrx, self._machine, self._router_tables,
+                    provenance_data_objects, extra_monitor_vertices,
+                    self._placements))
+
+                profile_data_gatherer = ProfileDataGatherer()
+                profile_data_gatherer(
+                    self._txrx, self._placements)
+
+                if power_used:
+                    energy_prov_reporter = EnergyProvenanceReporter()
+                    prov_items.extend(prov_energy_prov_reporter(
+                        power_used, self._placements))
+
+        if (get_config_bool("Reports", "write_provenance_data") and
+                  n_machine_time_steps is not None):
+            self._pacman_provenance.clear()
+            self._version_provenance = list()
+            self._write_provenance(prov_items)
+
+
     def _gather_provenance_for_writing(self, executor):
         """ Handles the gathering of provenance items for writer.
 
@@ -1847,6 +1894,98 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._write_provenance(prov_items)
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
+        # TODO virtual board
+        self._run_timer = Timer()
+        self._run_timer.start_timing()
+        if self._load_outputs is not None:
+            inputs = dict(self._load_outputs)
+        else:
+            inputs = dict(self._mapping_outputs)
+        run_time = None
+        if n_machine_time_steps is not None:
+            run_time = n_machine_time_steps * self.machine_time_step_ms
+        machine = inputs["ExtendedMachine"]
+        current_timesteps = self._current_run_timesteps
+        self._current_run_timesteps = \
+            self._calculate_number_of_machine_time_steps(n_machine_time_steps)
+        if (n_machine_time_steps is not None and
+                not self._empty_graphs and
+                get_config_bool("Reports", "clear_iobuf_during_run")):
+            clearer = ChipIOBufClearer()
+            clearer(self._txrx, self._executable_types)
+
+        if (ExecutableType.USES_SIMULATION_INTERFACE in self._executable_types):
+            updater = ChipRuntimeUpdater()
+            updater(self._txrx,  self._app_id, self._executable_types,
+                    self._current_run_timesteps, current_timesteps,
+                    n_sync_steps)
+
+        if not self._has_ran or graph_changed:
+            interface_maker = DatabaseInterface()
+            # TODO check if both in inputs
+            if "CompressedRoutingTables" in inputs:
+                router_tables = inputs["CompressedRoutingTables"]
+            else:
+                router_tables = inputs["RoutingTables"]
+            database_interface, self._database_file_path = interface_maker(
+                self._machine_graph, self._tags, run_time, machine,
+                self._max_run_time_steps, self._placements,
+                self._routing_infos, router_tables, self._application_graph)
+
+        creator = CreateNotificationProtocol()
+        notification_interface = creator(
+            self._database_socket_addresses, self._database_file_path)
+
+        runner = ApplicationRunner()
+        # Don't timeout if a stepped mode is in operation
+        if n_sync_steps:
+            time_threshold = None
+        else:
+            time_threshold = get_config_int(
+                "Machine", "post_simulation_overrun_before_error")
+        self._no_sync_changes = runner(
+            self._buffer_manager, notification_interface,
+            self._executable_types, self._app_id, self._txrx, run_time,
+            self._no_sync_changes, time_threshold, machine,
+            self._run_until_complete)
+
+        if (get_config_bool("Reports", "extract_iobuf") and
+                get_config_bool(
+                    "Reports", "extract_iobuf_during_run") and
+                n_machine_time_steps is not None):
+            iobuf_extractor = ChipIOBufExtractor()
+            executable_targets = inputs["ExecutableTargets"]
+            ErrorMessages, WarnMessages = iobuf_extractor(
+                self._txrx, executable_targets, self._executable_finder)
+
+        if (self._run_until_complete or n_machine_time_steps is not None):
+            buffer_extractor = BufferExtractor()
+            buffer_extractor(
+                self._machine_graph, self._placements, self._buffer_manager)
+
+        self._has_reset_last = False
+        self._has_ran = True
+
+       # FinaliseTimingData never needed as just pushed self._ to inputs
+
+        if get_config_bool("Reports", "write_energy_report"):
+            compute_energy_used  = ComputeEnergyUsed()
+            version = inputs["BoardVersion"]
+            router_provenance = inputs.get("RouterProvenanceItems", None)
+            # TODO why read power if you dont use it?
+            power_used = compute_energy_used(
+                self._placements, self._machine, version, router_provenance,
+                run_time, self._buffer_manager, self._mapping_time,
+                self._load_time, self._execute_time, self._dsg_time,
+                self._extraction_time, self._spalloc_server,
+                self._remote_spinnaker_url, self._machine_allocation_controller)
+        else:
+            power_used = None
+
+        self._read_and_write_provenance(
+            power_used, n_machine_time_steps, inputs)
+
+    def _do_runX(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """
         :param n_machine_time_steps: The number of steps to simulate
         :type n_machine_time_steps: int or None
@@ -1858,7 +1997,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._run_timer.start_timing()
 
         run_complete = False
-        executor, self._current_run_timesteps = self._create_execute_workflow(
+        executor, self._current_run_timesteps = self._create_execute_workflowX(
             n_machine_time_steps, graph_changed, n_sync_steps)
 
         # Update the number of sync changes now in case this is used in a
@@ -1920,7 +2059,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # reraise exception
             raise e
 
-    def _create_execute_workflow(
+    def _create_execute_workflowX(
             self, n_machine_time_steps, graph_changed, n_sync_steps):
         """
         :param n_machine_time_steps:
@@ -2039,7 +2178,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._use_virtual_board:
             algorithms.append("FinaliseTimingData")
             if get_config_bool("Reports", "write_energy_report"):
-                algorithms.append("ComputeEnergyUsed")
+                energy_usage = ComputeEnergyUsed()
                 if read_prov:
                     algorithms.append("EnergyProvenanceReporter")
 
@@ -2738,7 +2877,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._buffer_manager is None or self._last_run_outputs is None:
             return
         # acquire provenance items
-        router_provenance = self._last_run_outputs.get(
+        router_provenance = inputs.get(
             "RouterProvenanceItems", None)
         power_used = self._last_run_outputs.get("PowerUsed", None)
         if router_provenance is None or power_used is None:
