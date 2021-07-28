@@ -272,7 +272,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :rtype: int
         """
         if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
-            counts = numpy.bincount(numpy.concatenate(send_buffer_times))
+            counts = numpy.bincount(
+                numpy.concatenate(send_buffer_times).astype("int"))
             if len(counts):
                 return max(counts)
             return 0
