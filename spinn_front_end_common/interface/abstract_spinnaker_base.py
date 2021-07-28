@@ -349,7 +349,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Version provenance
         "_version_provenance",
 
-        "_database_file_path"
+        "_database_file_path",
     ]
 
     def __init__(
@@ -513,6 +513,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
+        self._database_file_path = None
+
 
     def set_n_boards_required(self, n_boards_required):
         """ Sets the machine requirements.
@@ -1845,19 +1847,32 @@ class AbstractSpinnakerBase(ConfigHandler):
                 router_gather = RouterProvenanceGatherer()
                 provenance_data_objects = None
                 extra_monitor_vertices = inputs["ExtraMonitorVertices"]
-                prov_items.extend(router_gather(
+                router_provenance_items = router_gather(
                     self._txrx, self._machine, self._router_tables,
                     provenance_data_objects, extra_monitor_vertices,
-                    self._placements))
+                    self._placements)
+                prov_items.extend(router_provenance_items)
 
                 profile_data_gatherer = ProfileDataGatherer()
                 profile_data_gatherer(
                     self._txrx, self._placements)
 
-                if power_used:
-                    energy_prov_reporter = EnergyProvenanceReporter()
-                    prov_items.extend(prov_energy_prov_reporter(
-                        power_used, self._placements))
+            if get_config_bool("Reports", "write_energy_report"):
+                compute_energy_used = ComputeEnergyUsed()
+                version = inputs["BoardVersion"]
+                # TODO why read power if you dont use it?
+                power_used = compute_energy_used(
+                    self._placements, self._machine, version,
+                    router_provenance_items, run_time,
+                    self._buffer_manager, self._mapping_time, self._load_time,
+                    self._execute_time, self._dsg_time, self._extraction_time,
+                    self._spalloc_server, self._remote_spinnaker_url,
+                    self._machine_allocation_controller)
+                energy_prov_reporter = EnergyProvenanceReporter()
+                prov_items.extend(prov_energy_prov_reporter(
+                    power_used, self._placements))
+                if get_config_bool("Reports", "write_energy_report"):
+                    self._do_energy_report(power_used)
 
         if (get_config_bool("Reports", "write_provenance_data") and
                   n_machine_time_steps is not None):
@@ -1967,20 +1982,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._has_ran = True
 
        # FinaliseTimingData never needed as just pushed self._ to inputs
-
-        if get_config_bool("Reports", "write_energy_report"):
-            compute_energy_used  = ComputeEnergyUsed()
-            version = inputs["BoardVersion"]
-            router_provenance = inputs.get("RouterProvenanceItems", None)
-            # TODO why read power if you dont use it?
-            power_used = compute_energy_used(
-                self._placements, self._machine, version, router_provenance,
-                run_time, self._buffer_manager, self._mapping_time,
-                self._load_time, self._execute_time, self._dsg_time,
-                self._extraction_time, self._spalloc_server,
-                self._remote_spinnaker_url, self._machine_allocation_controller)
-        else:
-            power_used = None
 
         self._read_and_write_provenance(
             power_used, n_machine_time_steps, inputs)
@@ -2808,10 +2809,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     logger.exception(
                         "Error when attempting to recover from error")
 
-        if not self._use_virtual_board:
-            if get_config_bool("Reports", "write_energy_report"):
-                self._do_energy_report()
-
             # handle iobuf extraction
             if get_config_bool("Reports", "extract_iobuf"):
                 self._extract_iobufs()
@@ -2868,19 +2865,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             provenance_path=self._pacman_executor_provenance_path,
             provenance_name="stopping")
 
-    def _do_energy_report(self):
+    def _do_energy_report(self, power_used):
         # create energy reporter
         energy_reporter = EnergyReport(
             get_config_int("Machine", "version"), self._spalloc_server,
             self._remote_spinnaker_url)
 
         if self._buffer_manager is None or self._last_run_outputs is None:
-            return
-        # acquire provenance items
-        router_provenance = inputs.get(
-            "RouterProvenanceItems", None)
-        power_used = self._last_run_outputs.get("PowerUsed", None)
-        if router_provenance is None or power_used is None:
             return
 
         # run energy report
