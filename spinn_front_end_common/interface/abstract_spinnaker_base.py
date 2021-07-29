@@ -349,7 +349,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Version provenance
         "_version_provenance",
 
+        # New for no exactor
         "_database_file_path",
+        "_executable_targets",
+        "_board_version",
+        "_extra_monitor_vertices",
     ]
 
     def __init__(
@@ -514,7 +518,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
         self._database_file_path = None
-
+        self._executable_targets = None
+        self._board_version = None
+        self.__extra_monitor_vertices = None
 
     def set_n_boards_required(self, n_boards_required):
         """ Sets the machine requirements.
@@ -1254,6 +1260,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._txrx = executor.get_item("Transceiver")
         self._machine_outputs = executor.get_items()
         self._machine_tokens = executor.get_completed_tokens()
+        # new for no executor
+        self._board_version = executor.get_item("BoardVersion")
 
     def _machine_by_virtual(self, n_machine_time_steps, total_run_time):
         """
@@ -1282,6 +1290,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._machine_outputs = executor.get_items()
         self._machine_tokens = executor.get_completed_tokens()
         self._machine = executor.get_item("Machine")
+        # new for no executor
+        self._board_version = executor.get_item("BoardVersion")
 
     def _machine_by_remote(self, n_machine_time_steps, total_run_time):
         """ Gets a machine when we know one of `self._spalloc_server` or
@@ -1330,6 +1340,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         if do_partitioning:
             self._machine_graph = executor.get_item("MachineGraph")
+        # new for no executor
+        self._board_version = executor.get_item("BoardVersion")
 
     def _machine_by_size(self, inputs, algorithms, outputs):
         """ Checks if we can get a remote machine by size of if we have to \
@@ -1670,6 +1682,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             mapping_total_timer.take_sample())
         self._mapping_outputs["MappingTimeMs"] = self._mapping_time
 
+        # New for n executor
+        self._extra_monitor_vertices = executor.get_item("ExtraMonitorVertices")
+
     def _do_data_generation(self, n_machine_time_steps):
         """
         :param int n_machine_time_steps:
@@ -1814,6 +1829,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             load_timer.take_sample())
         self._load_outputs["LoadTimeMs"] = self._load_time
 
+        # new for no executor
+        self._executable_targets = self._load_outputs["ExecutableTargets"]
+
     def _end_of_run_timing(self):
         """
         :return:
@@ -1830,7 +1848,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
 
     def _read_and_write_provenance(
-            self, power_used, n_machine_time_steps, inputs):
+            self, n_machine_time_steps, run_time):
         prov_items = list()
         if self._version_provenance is not None:
             prov_items.extend(self._version_provenance)
@@ -1846,10 +1864,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
                 router_gather = RouterProvenanceGatherer()
                 provenance_data_objects = None
-                extra_monitor_vertices = inputs["ExtraMonitorVertices"]
                 router_provenance_items = router_gather(
                     self._txrx, self._machine, self._router_tables,
-                    provenance_data_objects, extra_monitor_vertices,
+                    provenance_data_objects, self._extra_monitor_vertices,
                     self._placements)
                 prov_items.extend(router_provenance_items)
 
@@ -1859,17 +1876,16 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             if get_config_bool("Reports", "write_energy_report"):
                 compute_energy_used = ComputeEnergyUsed()
-                version = inputs["BoardVersion"]
                 # TODO why read power if you dont use it?
                 power_used = compute_energy_used(
-                    self._placements, self._machine, version,
+                    self._placements, self._machine, self._board_version,
                     router_provenance_items, run_time,
                     self._buffer_manager, self._mapping_time, self._load_time,
                     self._execute_time, self._dsg_time, self._extraction_time,
                     self._spalloc_server, self._remote_spinnaker_url,
                     self._machine_allocation_controller)
                 energy_prov_reporter = EnergyProvenanceReporter()
-                prov_items.extend(prov_energy_prov_reporter(
+                prov_items.extend(energy_prov_reporter(
                     power_used, self._placements))
                 if get_config_bool("Reports", "write_energy_report"):
                     self._do_energy_report(power_used)
@@ -1912,14 +1928,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # TODO virtual board
         self._run_timer = Timer()
         self._run_timer.start_timing()
-        if self._load_outputs is not None:
-            inputs = dict(self._load_outputs)
-        else:
-            inputs = dict(self._mapping_outputs)
         run_time = None
         if n_machine_time_steps is not None:
             run_time = n_machine_time_steps * self.machine_time_step_ms
-        machine = inputs["ExtendedMachine"]
         current_timesteps = self._current_run_timesteps
         self._current_run_timesteps = \
             self._calculate_number_of_machine_time_steps(n_machine_time_steps)
@@ -1937,15 +1948,13 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         if not self._has_ran or graph_changed:
             interface_maker = DatabaseInterface()
-            # TODO check if both in inputs
-            if "CompressedRoutingTables" in inputs:
-                router_tables = inputs["CompressedRoutingTables"]
-            else:
-                router_tables = inputs["RoutingTables"]
+            # Used to used compressed routing tables if available on host
+            # TODO consider not saving router tabes.
             database_interface, self._database_file_path = interface_maker(
-                self._machine_graph, self._tags, run_time, machine,
+                self._machine_graph, self._tags, run_time, self._machine,
                 self._max_run_time_steps, self._placements,
-                self._routing_infos, router_tables, self._application_graph)
+                self._routing_infos, self._router_tables,
+                self._application_graph)
 
         creator = CreateNotificationProtocol()
         notification_interface = creator(
@@ -1961,7 +1970,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._no_sync_changes = runner(
             self._buffer_manager, notification_interface,
             self._executable_types, self._app_id, self._txrx, run_time,
-            self._no_sync_changes, time_threshold, machine,
+            self._no_sync_changes, time_threshold, self._machine,
             self._run_until_complete)
 
         if (get_config_bool("Reports", "extract_iobuf") and
@@ -1969,9 +1978,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "extract_iobuf_during_run") and
                 n_machine_time_steps is not None):
             iobuf_extractor = ChipIOBufExtractor()
-            executable_targets = inputs["ExecutableTargets"]
             ErrorMessages, WarnMessages = iobuf_extractor(
-                self._txrx, executable_targets, self._executable_finder)
+                self._txrx, self._executable_targets, self._executable_finder)
 
         if (self._run_until_complete or n_machine_time_steps is not None):
             buffer_extractor = BufferExtractor()
@@ -1984,7 +1992,7 @@ class AbstractSpinnakerBase(ConfigHandler):
        # FinaliseTimingData never needed as just pushed self._ to inputs
 
         self._read_and_write_provenance(
-            power_used, n_machine_time_steps, inputs)
+            n_machine_time_steps, run_time)
 
     def _do_runX(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """
@@ -2237,18 +2245,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         logger.info("\n\nAttempting to extract data\n\n")
 
         # Extract router provenance
-        extra_monitor_vertices = None
         prov_items = list()
         try:
-            if (get_config_bool("Machine", "enable_advanced_monitor_support")
-                    or get_config_bool("Machine", "enable_reinjection")):
-                extra_monitor_vertices = self._last_run_outputs[
-                    "ExtraMonitorVertices"]
             router_provenance = RouterProvenanceGatherer()
             prov_item = router_provenance(
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
-                extra_monitor_vertices=extra_monitor_vertices,
+                extra_monitor_vertices=self._extra_monitor_vertices,
                 placements=self._placements,
                 using_reinjection=get_config_bool(
                     "Machine", "enable_reinjection"))
