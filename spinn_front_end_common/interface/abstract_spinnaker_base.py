@@ -56,9 +56,13 @@ from spinn_front_end_common.abstract_models import (
     AbstractCanReset)
 from spinn_front_end_common.interface.interface_functions import (
     ApplicationRunner,  BufferExtractor, ChipIOBufClearer, ChipIOBufExtractor,
-    ChipRuntimeUpdater, ComputeEnergyUsed, CreateNotificationProtocol, DatabaseInterface,
-    EnergyProvenanceReporter, GraphProvenanceGatherer,
-    PlacementsProvenanceGatherer, ProfileDataGatherer, RouterProvenanceGatherer)
+    ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
+    CreateNotificationProtocol, DatabaseInterface,
+    DSGRegionReloader, EnergyProvenanceReporter, GraphProvenanceGatherer,
+    interface_xml, PlacementsProvenanceGatherer, ProfileDataGatherer,
+    ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
+    RouterProvenanceGatherer)
+
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE)
@@ -79,10 +83,6 @@ from spinn_front_end_common.interface.provenance import (
     PacmanProvenanceExtractor)
 from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
-from spinn_front_end_common.interface.interface_functions import (
-    ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
-    ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
-    RouterProvenanceGatherer, interface_xml)
 
 from spinn_front_end_common import __version__ as fec_version
 try:
@@ -1846,6 +1846,16 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._mapping_time, self._dsg_time, self._load_time,
             self._execute_time, self._extraction_time)
 
+    def _execute_dsg_region_reloader(self, graph_changed):
+        """
+            Reload any parameters over the loaded data if we have already
+            run and not using a virtual board and the data hasn't already
+            been regenerated
+        """
+        if self._has_ran and not self._use_virtual_board and not graph_changed:
+            reloader = DSGRegionReloader()
+            reloader(self._txrx, self._placements, self._hostname)
+
     def _execute_read_provenance(self, n_machine_time_steps):
         prov_items = list()
         if self._version_provenance is not None:
@@ -1996,7 +2006,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         # TODO virtual board
-        # TODO DSGRegionReloader
         self._run_timer = Timer()
         self._run_timer.start_timing()
         run_time = None
@@ -2006,6 +2015,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._current_run_timesteps = \
             self._calculate_number_of_machine_time_steps(n_machine_time_steps)
 
+        self._execute_dsg_region_reloader(graph_changed)
         self._execute_clear_io_buf(n_machine_time_steps)
         self._execute_runtime_update(first_machine_timestep, n_sync_steps)
         self._execute_interface_maker(run_time, graph_changed)
