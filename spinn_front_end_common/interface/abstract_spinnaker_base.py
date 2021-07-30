@@ -354,6 +354,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_executable_targets",
         "_board_version",
         "_extra_monitor_vertices",
+        "_data_in_multicastKey_to_chip_map",
+        "_first_machine_time_step",
+        "_machine_partition_n_keys_map",
+        "_run_until_time_step",
+        "_system_multicast_router_timeout_keys",
+
     ]
 
     def __init__(
@@ -520,7 +526,63 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._database_file_path = None
         self._executable_targets = None
         self._board_version = None
-        self.__extra_monitor_vertices = None
+        self._extra_monitor_vertices = None
+        self._data_in_multicastKey_to_chip_map = None
+        self._first_machine_time_step = None
+        self._machine_partition_n_keys_map = None
+        self._run_until_time_step = None
+        self._system_multicast_router_timeout_keys = None
+
+    def __getitem__(self, item):
+        """
+        To allow ASB to work as the injector
+
+        :param str item: key to object wanted
+        :return: Object asked for
+        """
+        value = self._unchecked_gettiem(item)
+        if value:
+            return value
+        if value is None:
+            raise KeyError(f"Item {item} is currently not set")
+        else:
+            raise KeyError(f"Unexpected Item {item}")
+
+    def __contains__(self, item):
+        if self._unchecked_gettiem(item):
+            return True
+        return False
+
+    def _unchecked_gettiem(self, item):
+        if item == "APPID":
+            return self._app_id
+        if item == "ApplicationGraph":
+            return self._application_graph
+        if item == "DataInMulticastKeyToChipMap":
+            return self._data_in_multicastKey_to_chip_map
+        if item == "DataNTimeSteps":
+            return self._max_run_time_steps
+        if item == "DataNSteps":
+            return self._max_run_time_steps
+        if item == "ExtendedMachine":
+            return self._machine
+        if item == "FirstMachineTimeStep":
+            return self._first_machine_time_step
+        if item == "MachineGraph":
+            return self.machine_graph
+        if item == "MachinePartitionNKeysMap":
+            return self._machine_partition_n_keys_map
+        if item == "Placements":
+            return self._placements
+        if item == "RoutingInfos":
+            return self._routing_infos
+        if item == "RunUntilTimeSteps":
+            return self._current_run_timesteps
+        if item == "SystemMulticastRouterTimeoutKeys":
+            return self._system_multicast_router_timeout_keys
+        if item == "Tags":
+            return self._tags
+        return False
 
     def set_n_boards_required(self, n_boards_required):
         """ Sets the machine requirements.
@@ -1682,13 +1744,20 @@ class AbstractSpinnakerBase(ConfigHandler):
             mapping_total_timer.take_sample())
         self._mapping_outputs["MappingTimeMs"] = self._mapping_time
 
-        # New for n executor
+        # New for n0 executor
         self._extra_monitor_vertices = executor.get_item("ExtraMonitorVertices")
+        self.data_in_multicastKey_to_chip_map =  executor.get_item(
+            "DataInMulticastKeyToChipMap")
+        self._machine_partition_n_keys_map = executor.get_item(
+            "MachinePartitionNKeysMap")
+        self._system_multicast_router_timeout_keys = \
+            executor.get_item("SystemMulticastRouterTimeoutKeys")
 
     def _do_data_generation(self, n_machine_time_steps):
         """
         :param int n_machine_time_steps:
         """
+        self._run_until_time_step = n_machine_time_steps
         # set up timing
         data_gen_timer = Timer()
         data_gen_timer.start_timing()
@@ -1951,11 +2020,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             clearer = ChipIOBufClearer()
             clearer(self._txrx, self._executable_types)
 
-    def _execute_runtime_update(self, first_machine_timestep, n_sync_steps):
+    def _execute_runtime_update(self, n_sync_steps):
         if (ExecutableType.USES_SIMULATION_INTERFACE in self._executable_types):
             updater = ChipRuntimeUpdater()
             updater(self._txrx,  self._app_id, self._executable_types,
-                    self._current_run_timesteps, first_machine_timestep,
+                    self._current_run_timesteps, self._first_machine_time_step,
                     n_sync_steps)
 
     def _execute_interface_maker(self, run_time, graph_changed):
@@ -2005,19 +2074,20 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._machine_graph, self._placements, self._buffer_manager)
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
+        provide_injectables(self)
         # TODO virtual board
         self._run_timer = Timer()
         self._run_timer.start_timing()
         run_time = None
         if n_machine_time_steps is not None:
             run_time = n_machine_time_steps * self.machine_time_step_ms
-        first_machine_timestep = self._current_run_timesteps
+        self._first_machine_time_step = self._current_run_timesteps
         self._current_run_timesteps = \
             self._calculate_number_of_machine_time_steps(n_machine_time_steps)
-
+        self._run_until_time_step = self._current_run_timesteps
         self._execute_dsg_region_reloader(graph_changed)
         self._execute_clear_io_buf(n_machine_time_steps)
-        self._execute_runtime_update(first_machine_timestep, n_sync_steps)
+        self._execute_runtime_update(n_sync_steps)
         self._execute_interface_maker(run_time, graph_changed)
         notification_interface = self._execute_create_notifiaction_protocol()
         self._execute_runner(n_sync_steps, run_time, notification_interface)
@@ -2031,6 +2101,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._has_reset_last = False
         self._has_ran = True
+        self._first_machine_time_step = None
+        clear_injectables()
 
 
     def _do_runX(self, n_machine_time_steps, graph_changed, n_sync_steps):
