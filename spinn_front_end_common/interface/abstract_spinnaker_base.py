@@ -1846,50 +1846,60 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._mapping_time, self._dsg_time, self._load_time,
             self._execute_time, self._extraction_time)
 
-
-    def _read_and_write_provenance(
-            self, n_machine_time_steps, run_time):
+    def _execute_read_provenance(self, n_machine_time_steps):
         prov_items = list()
         if self._version_provenance is not None:
             prov_items.extend(self._version_provenance)
         prov_items.extend(self._pacman_provenance.data_items)
-        if get_config_bool("Reports", "read_provenance_data"):
-            gatherer = GraphProvenanceGatherer()
-            prov_items.extend(gatherer(
-                self._machine_graph, self._application_graph))
-            if (n_machine_time_steps is not None):
-                placement_gather = PlacementsProvenanceGatherer()
-                prov_items.extend(placement_gather(
-                    self._txrx, self._placements))
 
-                router_gather = RouterProvenanceGatherer()
-                provenance_data_objects = None
-                router_provenance_items = router_gather(
-                    self._txrx, self._machine, self._router_tables,
-                    provenance_data_objects, self._extra_monitor_vertices,
-                    self._placements)
-                prov_items.extend(router_provenance_items)
+        if not get_config_bool("Reports", "read_provenance_data"):
+            return prov_items
 
-                profile_data_gatherer = ProfileDataGatherer()
-                profile_data_gatherer(
-                    self._txrx, self._placements)
+        gatherer = GraphProvenanceGatherer()
+        prov_items.extend(gatherer(
+            self._machine_graph, self._application_graph))
 
-            if get_config_bool("Reports", "write_energy_report"):
-                compute_energy_used = ComputeEnergyUsed()
-                # TODO why read power if you dont use it?
-                power_used = compute_energy_used(
-                    self._placements, self._machine, self._board_version,
-                    router_provenance_items, run_time,
-                    self._buffer_manager, self._mapping_time, self._load_time,
-                    self._execute_time, self._dsg_time, self._extraction_time,
-                    self._spalloc_server, self._remote_spinnaker_url,
-                    self._machine_allocation_controller)
-                energy_prov_reporter = EnergyProvenanceReporter()
-                prov_items.extend(energy_prov_reporter(
-                    power_used, self._placements))
-                if get_config_bool("Reports", "write_energy_report"):
-                    self._do_energy_report(power_used)
+        # TODO verify why master only add if n_machine_time_steps is not None
+        if (n_machine_time_steps is None):
+            return prov_items
 
+        placement_gather = PlacementsProvenanceGatherer()
+        prov_items.extend(placement_gather(
+            self._txrx, self._placements))
+
+        router_gather = RouterProvenanceGatherer()
+        provenance_data_objects = None
+        prov_items.extend(router_gather(
+            self._txrx, self._machine, self._router_tables,
+            provenance_data_objects, self._extra_monitor_vertices,
+            self._placements))
+
+        profile_data_gatherer = ProfileDataGatherer()
+        profile_data_gatherer(
+            self._txrx, self._placements)
+
+        return prov_items
+
+    def _execute_energy_report(self, router_provenance_items, run_time):
+        if not get_config_bool("Reports", "write_energy_report"):
+            return []
+
+        compute_energy_used = ComputeEnergyUsed()
+        power_used = compute_energy_used(
+            self._placements, self._machine, self._board_version,
+            router_provenance_items, run_time,
+            self._buffer_manager, self._mapping_time, self._load_time,
+            self._execute_time, self._dsg_time, self._extraction_time,
+            self._spalloc_server, self._remote_spinnaker_url,
+            self._machine_allocation_controller)
+
+        energy_prov_reporter = EnergyProvenanceReporter()
+        prov_items = energy_prov_reporter(power_used, self._placements)
+
+        self._do_energy_report(power_used)
+        return prov_items
+
+    def _execute_write_provenance(self, prov_items):
         if (get_config_bool("Reports", "write_provenance_data") and
                   n_machine_time_steps is not None):
             self._pacman_provenance.clear()
@@ -1924,28 +1934,21 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._version_provenance = list()
         self._write_provenance(prov_items)
 
-    def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
-        # TODO virtual board
-        self._run_timer = Timer()
-        self._run_timer.start_timing()
-        run_time = None
-        if n_machine_time_steps is not None:
-            run_time = n_machine_time_steps * self.machine_time_step_ms
-        current_timesteps = self._current_run_timesteps
-        self._current_run_timesteps = \
-            self._calculate_number_of_machine_time_steps(n_machine_time_steps)
+    def _execute_clear_io_buf(self, n_machine_time_steps):
         if (n_machine_time_steps is not None and
                 not self._empty_graphs and
                 get_config_bool("Reports", "clear_iobuf_during_run")):
             clearer = ChipIOBufClearer()
             clearer(self._txrx, self._executable_types)
 
+    def _execute_runtime_update(self, first_machine_timestep, n_sync_steps):
         if (ExecutableType.USES_SIMULATION_INTERFACE in self._executable_types):
             updater = ChipRuntimeUpdater()
             updater(self._txrx,  self._app_id, self._executable_types,
-                    self._current_run_timesteps, current_timesteps,
+                    self._current_run_timesteps, first_machine_timestep,
                     n_sync_steps)
 
+    def _execute_interface_maker(self, run_time, graph_changed):
         if not self._has_ran or graph_changed:
             interface_maker = DatabaseInterface()
             # Used to used compressed routing tables if available on host
@@ -1956,10 +1959,12 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._routing_infos, self._router_tables,
                 self._application_graph)
 
+    def _execute_create_notifiaction_protocol(self):
         creator = CreateNotificationProtocol()
-        notification_interface = creator(
+        return creator(
             self._database_socket_addresses, self._database_file_path)
 
+    def _execute_runner(self, n_sync_steps, run_time, notification_interface):
         runner = ApplicationRunner()
         # Don't timeout if a stepped mode is in operation
         if n_sync_steps:
@@ -1973,26 +1978,50 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._no_sync_changes, time_threshold, self._machine,
             self._run_until_complete)
 
+    def _execute_extract_iobuff(self, n_machine_time_steps):
         if (get_config_bool("Reports", "extract_iobuf") and
                 get_config_bool(
                     "Reports", "extract_iobuf_during_run") and
                 n_machine_time_steps is not None):
             iobuf_extractor = ChipIOBufExtractor()
-            ErrorMessages, WarnMessages = iobuf_extractor(
+            # ErrorMessages, WarnMessages output ignored as never used!
+            iobuf_extractor(
                 self._txrx, self._executable_targets, self._executable_finder)
 
+    def _execute_buffer_extractor(self, n_machine_time_steps):
         if (self._run_until_complete or n_machine_time_steps is not None):
             buffer_extractor = BufferExtractor()
             buffer_extractor(
                 self._machine_graph, self._placements, self._buffer_manager)
 
+    def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
+        # TODO virtual board
+        # TODO DSGRegionReloader
+        self._run_timer = Timer()
+        self._run_timer.start_timing()
+        run_time = None
+        if n_machine_time_steps is not None:
+            run_time = n_machine_time_steps * self.machine_time_step_ms
+        first_machine_timestep = self._current_run_timesteps
+        self._current_run_timesteps = \
+            self._calculate_number_of_machine_time_steps(n_machine_time_steps)
+
+        self._execute_clear_io_buf(n_machine_time_steps)
+        self._execute_runtime_update(first_machine_timestep, n_sync_steps)
+        self._execute_interface_maker(run_time, graph_changed)
+        notification_interface = self._execute_create_notifiaction_protocol()
+        self._execute_runner(n_sync_steps, run_time, notification_interface)
+        self._execute_extract_iobuff(n_machine_time_steps)
+        self._execute_buffer_extractor(n_machine_time_steps)
+        # FinaliseTimingData never needed as just pushed self._ to inputs
+        prov_items = self._execute_read_provenance(n_machine_time_steps)
+        prov_items.extend(self._execute_energy_report(
+             prov_items, run_time))
+        self._execute_write_provenance(prov_items)
+
         self._has_reset_last = False
         self._has_ran = True
 
-       # FinaliseTimingData never needed as just pushed self._ to inputs
-
-        self._read_and_write_provenance(
-            n_machine_time_steps, run_time)
 
     def _do_runX(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """
