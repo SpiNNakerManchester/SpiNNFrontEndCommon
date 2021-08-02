@@ -39,7 +39,7 @@ from spalloc import __version__ as spalloc_version
 from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
 from pacman.executor.injection_decorator import (
-    clear_injectables, provide_injectables)
+    clear_injectables, provide_injectables, do_injection)
 from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import (
@@ -552,6 +552,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._unchecked_gettiem(item):
             return True
         return False
+
+    def items(self):
+        for key in ["APPID", "ApplicationGraph", "DataInMulticastKeyToChipMap", "DataNTimeSteps", "ExtendedMachine",
+                    "FirstMachineTimeStep", "MachineGraph", "MachinePartitionNKeysMap", "Placements", "RoutingInfos",
+                    "RunUntilTimeSteps", "SystemMulticastRouterTimeoutKeys", "Tags"]:
+            item = self._unchecked_gettiem(key)
+            if item:
+                yield key, item
 
     def _unchecked_gettiem(self, item):
         if item == "APPID":
@@ -2077,7 +2085,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._machine_graph, self._placements, self._buffer_manager)
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
-        provide_injectables(self)
+        do_injection(self)
         # TODO virtual board
         self._run_timer = Timer()
         self._run_timer.start_timing()
@@ -2105,7 +2113,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._has_reset_last = False
         self._has_ran = True
         self._first_machine_time_step = None
-        clear_injectables()
 
 
     def _do_runX(self, n_machine_time_steps, graph_changed, n_sync_steps):
