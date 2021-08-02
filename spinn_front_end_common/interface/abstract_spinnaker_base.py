@@ -541,7 +541,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: Object asked for
         """
         value = self._unchecked_gettiem(item)
-        if value:
+        if value or value == 0:
             return value
         if value is None:
             raise KeyError(f"Item {item} is currently not set")
@@ -554,12 +554,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         return False
 
     def items(self):
+        results = []
         for key in ["APPID", "ApplicationGraph", "DataInMulticastKeyToChipMap", "DataNTimeSteps", "ExtendedMachine",
                     "FirstMachineTimeStep", "MachineGraph", "MachinePartitionNKeysMap", "Placements", "RoutingInfos",
                     "RunUntilTimeSteps", "SystemMulticastRouterTimeoutKeys", "Tags"]:
             item = self._unchecked_gettiem(key)
-            if item:
-                yield key, item
+            # Skip None and False but not 0
+            if item or item == 0:
+                results.append((key, item))
+        return results
 
     def _unchecked_gettiem(self, item):
         if item == "APPID":
@@ -2085,7 +2088,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._machine_graph, self._placements, self._buffer_manager)
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
-        do_injection(self)
         # TODO virtual board
         self._run_timer = Timer()
         self._run_timer.start_timing()
@@ -2096,6 +2098,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._current_run_timesteps = \
             self._calculate_number_of_machine_time_steps(n_machine_time_steps)
         self._run_until_time_step = self._current_run_timesteps
+
+        # TODO is there a better way to get update_buffer to run
+        provide_injectables(self)
+        do_injection(self)
+
         self._execute_dsg_region_reloader(graph_changed)
         self._execute_clear_io_buf(n_machine_time_steps)
         self._execute_runtime_update(n_sync_steps)
@@ -2113,6 +2120,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._has_reset_last = False
         self._has_ran = True
         self._first_machine_time_step = None
+        clear_injectables()
 
 
     def _do_runX(self, n_machine_time_steps, graph_changed, n_sync_steps):
