@@ -1921,9 +1921,12 @@ class AbstractSpinnakerBase(ConfigHandler):
             run and not using a virtual board and the data hasn't already
             been regenerated
         """
+        logger.info(f"{self._has_ran}, {self._use_virtual_board}, {graph_changed}")
         if self._has_ran and not self._use_virtual_board and not graph_changed:
             reloader = DSGRegionReloader()
             reloader(self._txrx, self._placements, self._hostname)
+        else:
+            print(self._has_ran, self._use_virtual_board, graph_changed)
 
     def _execute_read_provenance(self, n_machine_time_steps):
         prov_items = list()
