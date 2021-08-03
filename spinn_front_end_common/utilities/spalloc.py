@@ -147,6 +147,8 @@ class _Session:
         """
         params = kwargs if kwargs else None
         cookies, headers = self._credentials
+        if isinstance(data, str):
+            headers["Content-Type"] = "text/plain; charset=UTF-8"
         r = requests.put(url, params=params, data=data,
                          cookies=cookies, headers=headers,
                          allow_redirects=False)
@@ -267,7 +269,7 @@ class SpallocClient:
         """
         create = {
             "dimensions": [int(num_boards)],
-            "keepaliveInterval": f"PT{int(keepalive)}S"
+            "keepalive-interval": f"PT{int(keepalive)}S"
         }
         if machine_name:
             create["machine-name"] = machine_name
@@ -275,7 +277,7 @@ class SpallocClient:
             create["tags"] = ["default"]
         r = self.__session.post(self.__jobs_url, create)
         url = r.headers["Location"]
-        return SpallocJob(self, url)
+        return SpallocJob(self.__session, url)
 
     def launch_keepalive_task(self, job):
         """
@@ -306,9 +308,10 @@ class SpallocClient:
 
 
 def _SpallocKeepalive(url, cookies, headers, interval, term_queue):
+    headers["Content-Type"] = "text/plain; charset=UTF-8"
     while True:
         requests.put(url, data="alive", cookies=cookies, headers=headers,
-                     allow_redirect=False)
+                     allow_redirects=False)
         try:
             term_queue.get(True, interval)
             break
@@ -390,8 +393,7 @@ class SpallocJob:
         :rtype: SpallocState
         """
         obj = self.__session.get(self.__url).json()
-        # TODO check if states are reported by name!
-        return SpallocState(obj["state"])
+        return SpallocState[obj["state"]]
 
     def get_root_host(self):
         """
@@ -422,7 +424,7 @@ class SpallocJob:
         """
         while old_state != SpallocState.DESTROYED:
             obj = self.__session.get(self.__url, wait="true").json()
-            s = SpallocState(obj["state"])
+            s = SpallocState[obj["state"]]
             if s != old_state or s == SpallocState.DESTROYED:
                 return s
 
