@@ -47,6 +47,12 @@ from pacman.model.graphs.machine import (
 from pacman.model.resources import (
     PreAllocatedResourceContainer, ConstantSDRAM)
 from pacman import __version__ as pacman_version
+from pacman.operations.router_compressors.ordered_covering_router_compressor \
+    import OrderedCoveringCompressor
+from pacman.operations.router_compressors.checked_unordered_pair_compressor \
+    import CheckedUnorderedPairCompressor
+from pacman.operations.router_compressors import (
+    PairCompressor, UnorderedPairCompressor)
 from spinn_utilities.config_holder import (
     get_config_bool, get_config_int, get_config_str, get_config_str_list,
     set_config)
@@ -58,11 +64,18 @@ from spinn_front_end_common.interface.interface_functions import (
     ApplicationRunner,  BufferExtractor, ChipIOBufClearer, ChipIOBufExtractor,
     ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
     CreateNotificationProtocol, DatabaseInterface,
-    DSGRegionReloader, EnergyProvenanceReporter, GraphProvenanceGatherer,
+    DSGRegionReloader, EnergyProvenanceReporter, GraphBinaryGatherer,
+    GraphProvenanceGatherer,  HostBasedBitFieldRouterCompressor,
     interface_xml, PlacementsProvenanceGatherer, ProfileDataGatherer,
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
-    RouterProvenanceGatherer)
-
+    RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader)
+from spinn_front_end_common.interface.interface_functions.\
+    machine_bit_field_router_compressor import (
+    MachineBitFieldOrderedCoveringCompressor,
+    MachineBitFieldPairRouterCompressor)
+from spinn_front_end_common.interface.interface_functions.\
+    host_no_bitfield_router_compression import (
+    ordered_covering_compression, pair_compression)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE)
@@ -1796,6 +1809,187 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._dsg_time += convert_time_diff_to_total_milliseconds(
             data_gen_timer.take_sample())
         self._mapping_outputs["DSGTimeMs"] = self._dsg_time
+
+    def _execute_routing_setup(self, graph_changed, tokens):
+        if not graph_changed:
+            return
+        # TODO check if anything ever loads routing tables before here!
+        # only clear routing tables if we've not loaded them by now
+        for token in tokens:
+            if token.name == "DataLoaded":
+                if token.part == "MulticastRoutesLoaded":
+                    return
+        setup = RoutingSetup()
+        setup(self._router_tables, self._app_id, self._txrx, self._machine)
+
+    def _exectute_graph_binary_gatherer(self, graph_changed):
+        if not graph_changed:
+            return None
+        gather = GraphBinaryGatherer()
+        self._executable_targets = gather(
+            self._placements, self._machine_graph, self._executable_finder)
+
+    def _execute_compressor(self):
+        """
+
+        :return: CompressedRoutingTables (likely to be None),
+            RouterCompressorProvenanceItems
+        """
+        name = get_config_str("Mapping", "compressor")
+
+        if name == "HostBasedBitFieldRouterCompressor":
+            compressor = HostBasedBitFieldRouterCompressor()
+            return compressor(
+                self._router_tables, self._machine, self._placements,
+                self._txrx,  self._machine_graph, self._routing_infos)
+
+        if name == "MachineBitFieldOrderedCoveringCompressor":
+            compressor = MachineBitFieldOrderedCoveringCompressor()
+            _, provenance = compressor(
+                self._routing_tables, self._txrx, self._machine, self._app_id,
+                self._machine_graph, self._placements, self._executable_finder,
+                self._routing_infos, self._executable_targets)
+            return None, provenance
+
+        if name == "MachineBitFieldPairRouterCompressor":
+            compressor = MachineBitFieldPairRouterCompressor()
+            _, provenance = compressor(
+                self._routing_tables, self._txrx, self._machine, self._app_id,
+                self._machine_graph, self._placements, self._executable_finder,
+                self._routing_infos, self._executable_targets)
+            return None, provenance
+
+        if name == "OrderedCoveringCompressor":
+            compressor = OrderedCoveringCompressor()
+            compressed = compressor(self._router_tables)
+            return compressed, []
+
+        if name == "OrderedCoveringOnChipRouterCompression":
+            ordered_covering_compression(
+                self._routing_tables, self._txrx, self._executable_finder,
+                self._machine, app_id)
+            return None, []
+
+        if name == "PairCompressor":
+            compressor = PairCompressor()
+            compressed = compressor(self._router_tables)
+            return compressed, []
+
+        if name == "PairOnChipRouterCompression":
+            pair_compression(
+                self._routing_tables, self._txrx, self._executable_finder,
+                self._machine, self._app_id))
+
+        if name == "PairUnorderedCompressor":
+            compressor = CheckedUnorderedPairCompressor()
+            compressed = compressor(self._router_tables)
+            return compressed, []
+
+        # overridden in spy to handle:
+        # SpynnakerMachineBitFieldOrderedCoveringCompressor
+        # SpynnakerMachineBitFieldPairRouterCompressor
+
+        if "," in name:
+            raise ConfigurationException(
+                "Only a single algorithm is supported for compressor")
+
+        raise ConfigurationException(
+            f"Unexpected cfg setting compressor: {name}"
+
+    def _load_routing_tables(self, compressed):
+        if compressed:
+            loader = RoutingTableLoader()
+            loader(compressed, self._app_id, self._txrx, self._machine)
+
+    def _execute_extra_load_algorithms(self):
+        pass
+
+    def _do_loadNew(self, graph_changed, data_changed):
+        # set up timing
+        load_timer = Timer()
+        load_timer.start_timing()
+
+        self._execute_routing_setup(graph_changed, self._mapping_tokens)
+        self._exectute_graph_binary_gatherer(graph_changed)
+        # loading_algorithms
+        compressed, router_provenance = self._execute_compressor()
+        self._execute_extra_load_algorithms()
+        self._load_routing_tables(compressed)
+
+
+        write_memory_report = get_config_bool(
+            "Reports", "write_memory_map_report")
+        if write_memory_report and graph_changed:
+            algorithms.append("MemoryMapOnHostReport")
+            algorithms.append("MemoryMapOnHostChipReport")
+
+        # Add reports that depend on compression
+        routing_tables_needed = False
+        if graph_changed:
+            if get_config_bool(
+                    "Reports", "write_routing_table_reports"):
+                routing_tables_needed = True
+                algorithms.append("unCompressedRoutingTableReports")
+
+                if get_config_bool(
+                        "Reports",
+                        "write_routing_tables_from_machine_reports"):
+                    algorithms.append("ReadRoutingTablesFromMachine")
+                    algorithms.append("compressedRoutingTableReports")
+                    algorithms.append("comparisonOfRoutingTablesReport")
+                    algorithms.append("CompressedRouterSummaryReport")
+                    algorithms.append("RoutingTableFromMachineReport")
+
+        if get_config_bool(
+                "Reports", "write_bit_field_compressor_report"):
+            algorithms.append("BitFieldCompressorReport")
+
+        # handle extra monitor functionality
+        enable_advanced_monitor = get_config_bool(
+            "Machine", "enable_advanced_monitor_support")
+        if enable_advanced_monitor and (graph_changed or not self._has_ran):
+            algorithms.append("LoadFixedRoutes")
+            algorithms.append("FixedRouteFromMachineReport")
+
+        # add optional algorithms
+        optional_algorithms = list()
+
+        if graph_changed or data_changed:
+             optional_algorithms.append("TagsLoader")
+
+        optional_algorithms.append("HostExecuteApplicationDataSpecification")
+
+        # Get the executable targets
+        optional_algorithms.append("GraphBinaryGatherer")
+
+        # algorithms needed for loading the binaries to the SpiNNaker machine
+        optional_algorithms.append("LoadApplicationExecutableImages")
+        algorithms.append("HostExecuteSystemDataSpecification")
+        algorithms.append("LoadSystemExecutableImages")
+
+        # Something probably a report needs the routing tables
+        # This report is one way to get them if done on machine
+        if routing_tables_needed:
+            optional_algorithms.append("RoutingTableFromMachineReport")
+        if get_config_bool("Reports", "write_tag_allocation_reports"):
+            algorithms.append("TagsFromMachineReport")
+
+        # Decide what needs to be done
+        required_tokens = ["DataLoaded", "BinariesLoaded"]
+
+        executor = self._run_algorithms(
+            inputs, algorithms, [], tokens, required_tokens, "loading",
+            optional_algorithms)
+        self._no_sync_changes = executor.get_item("NoSyncChanges")
+        self._load_outputs = executor.get_items()
+        self._load_tokens = executor.get_completed_tokens()
+
+        self._load_time += convert_time_diff_to_total_milliseconds(
+            load_timer.take_sample())
+        self._load_outputs["LoadTimeMs"] = self._load_time
+
+        # new for no executor
+        self._executable_targets = self._load_outputs["ExecutableTargets"]
 
     def _do_load(self, graph_changed, data_changed):
         """
