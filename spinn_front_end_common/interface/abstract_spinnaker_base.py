@@ -1932,12 +1932,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             run and not using a virtual board and the data hasn't already
             been regenerated
         """
-        logger.info(f"{self._has_ran}, {self._use_virtual_board}, {graph_changed}")
         if self._has_ran and not self._use_virtual_board and not graph_changed:
             reloader = DSGRegionReloader()
             reloader(self._txrx, self._placements, self._hostname)
-        else:
-            print(self._has_ran, self._use_virtual_board, graph_changed)
 
     def _execute_read_provenance(self, n_machine_time_steps):
         prov_items = list()
@@ -1992,7 +1989,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._do_energy_report(power_used)
         return prov_items
 
-    def _execute_write_provenance(self, prov_items):
+    def _execute_write_provenance(self, prov_items, n_machine_time_steps):
         if (get_config_bool("Reports", "write_provenance_data") and
                   n_machine_time_steps is not None):
             self._pacman_provenance.clear()
@@ -2115,7 +2112,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         prov_items = self._execute_read_provenance(n_machine_time_steps)
         prov_items.extend(self._execute_energy_report(
              prov_items, run_time))
-        self._execute_write_provenance(prov_items)
+        self._execute_write_provenance(prov_items, n_machine_time_steps)
 
         self._has_reset_last = False
         self._has_ran = True
