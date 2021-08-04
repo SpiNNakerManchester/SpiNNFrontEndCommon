@@ -98,6 +98,7 @@ class ConfigHandler(object):
         # set up machine targeted data
         self._use_virtual_board = get_config_bool("Machine", "virtual_board")
         self._debug_configs()
+        self._deprication_handler()
 
         # Pass max_machine_cores to Machine so if effects everything!
         max_machine_core = get_config_int("Machine", "max_machine_core")
@@ -144,6 +145,19 @@ class ConfigHandler(object):
                 set_config("Reports", "write_board_chip_report", "False")
                 logger.info("[Reports]write_board_chip_report has been set to"
                             " False as using virtual boards")
+
+    def _deprication_handler(self):
+        loading_algorithms = get_config_str("Mapping", "loading_algorithms")
+        compressor = get_config_str("Mapping", "compressor")
+        # For now allow identical loading_algorithms and compressor
+        if loading_algorithms and loading_algorithms != compressor:
+            raise ConfigurationException (
+                "cfg setting loading_algorithms is no longer used. "
+                "Ideally remove the loading_algorithms from you cfg. "
+                "To use a none default compressor specify a compressor value")
+        else:
+            # to support older code
+            set_config("Mapping", "loading_algorithms", compressor)
 
     def _adjust_config(self, runtime,):
         """ Adjust and checks config based on runtime
