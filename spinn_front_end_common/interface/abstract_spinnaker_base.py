@@ -66,9 +66,11 @@ from spinn_front_end_common.interface.interface_functions import (
     CreateNotificationProtocol, DatabaseInterface,
     DSGRegionReloader, EnergyProvenanceReporter, GraphBinaryGatherer,
     GraphProvenanceGatherer,  HostBasedBitFieldRouterCompressor,
-    interface_xml, PlacementsProvenanceGatherer, ProfileDataGatherer,
+    HostExecuteDataSpecification,
+    interface_xml, LoadExecutableImages, LoadFixedRoutes,
+    PlacementsProvenanceGatherer, ProfileDataGatherer,
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
-    RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader)
+    RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader, TagsLoader)
 from spinn_front_end_common.interface.interface_functions.\
     machine_bit_field_router_compressor import (
     MachineBitFieldOrderedCoveringCompressor,
@@ -83,7 +85,8 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import (
-    EnergyReport, TagsFromMachineReport, report_xml)
+    BitFieldCompressorReport, EnergyReport, MemoryMapOnHostReport,
+    MemoryMapOnHostChipReport, TagsFromMachineReport, report_xml)
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utility_models import (
@@ -96,7 +99,8 @@ from spinn_front_end_common.interface.provenance import (
     PacmanProvenanceExtractor)
 from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
-
+from spinn_front_end_common.utilities.report_functions.reports import(
+    router_report_from_router_tables)
 from spinn_front_end_common import __version__ as fec_version
 try:
     from scipy import __version__ as scipy_version
@@ -372,7 +376,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_machine_partition_n_keys_map",
         "_run_until_time_step",
         "_system_multicast_router_timeout_keys",
-
+        "_dsg_targets",
+        "_region_sizes",
+        "_processor_to_app_data_base_address",
     ]
 
     def __init__(
@@ -545,6 +551,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._machine_partition_n_keys_map = None
         self._run_until_time_step = None
         self._system_multicast_router_timeout_keys = None
+        self._dsg_targets = None
+        self._region_sizes = None
+        self._processor_to_app_data_base_address = None
 
     def __getitem__(self, item):
         """
@@ -1809,6 +1818,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._dsg_time += convert_time_diff_to_total_milliseconds(
             data_gen_timer.take_sample())
         self._mapping_outputs["DSGTimeMs"] = self._dsg_time
+        # new for no executor
+        self._dsg_targets = self._mapping_outputs["DataSpecificationTargets"]
+        self._region_sizes = self._mapping_outputs["RegionSizes"]
+        self._processor_to_app_data_base_address = self._mapping_outputs[
+            "ProcessorToAppDataBaseAddress"]
 
     def _execute_routing_setup(self, graph_changed, tokens):
         if not graph_changed:
@@ -1878,7 +1892,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if name == "PairOnChipRouterCompression":
             pair_compression(
                 self._routing_tables, self._txrx, self._executable_finder,
-                self._machine, self._app_id))
+                self._machine, self._app_id)
 
         if name == "PairUnorderedCompressor":
             compressor = CheckedUnorderedPairCompressor()
@@ -1894,15 +1908,70 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Only a single algorithm is supported for compressor")
 
         raise ConfigurationException(
-            f"Unexpected cfg setting compressor: {name}"
+            f"Unexpected cfg setting compressor: {name}")
 
-    def _load_routing_tables(self, compressed):
+    def _execute_load_routing_tables(self, compressed):
         if compressed:
             loader = RoutingTableLoader()
             loader(compressed, self._app_id, self._txrx, self._machine)
 
+    def _execute_uncompressed_routing_table_reports(self):
+        # TODO why not during mapping?
+        if get_config_bool("Reports", "write_routing_table_reports"):
+            router_report_from_router_tables(self._routing_infos)
+
+    def _execute_bit_field_compressor_report(self):
+        if get_config_bool("Reports", "write_bit_field_compressor_report"):
+            report = BitFieldCompressorReport()
+            # BitFieldSummary output ignored as never used
+            report(self._machine_graph, self._placements)
+            # TODO get provenance out of report.
+
+    def _execute_load_fixed_routes(self):
+        if get_config_bool("Machine", "enable_advanced_monitor_support") and \
+                (graph_changed or not self._has_ran):
+            loader = LoadFixedRoutes()
+            loader(self._fixed_routes, self._txrx, self._app_id)
+
+    def _execute_system_data_specification(self):
+        specifier = HostExecuteDataSpecification.execute_system_data_specs
+        self._processor_to_app_data_base_address = specifier(
+            self._txrx, self._machine, self._app_id, self._dsg_targets,
+            self._region_sizes, self._executable_targets, self._java_caller,
+            self._processor_to_app_data_base_address)
+
+    def _execute_load_system_executable_images(self):
+        loader = LoadExecutableImages.load_sys_images
+        loader(self._executable_targets, self._app_id, self._txrx)
+
+    def _execute_load_tags(self):
+        # TODO Was master correct to run the report first? I think NOT!
+        if get_config_bool("Reports", "write_tag_allocation_reports"):
+            report = TagsFromMachineReport()
+            report(self._txrx)
+
+       # if graph_changed or data_changed: if no whole do load not run
+       loader = TagsLoader(self._txrx, self._tags))
+
     def _execute_extra_load_algorithms(self):
+        """
+        Allows overriding classes to add algorithms
+
+        """
         pass
+
+    def _execute_memory_report(self, graph_changed):
+        if not graph_changed:
+            return
+        if not get_config_bool("Reports", "write_memory_map_report"):
+            return
+
+        report = MemoryMapOnHostReport()
+        report(self._processor_to_app_data_base_address)
+
+        report = MemoryMapOnHostChipReport()
+        report(self._dsg_targets, self._txrx)
+
 
     def _do_loadNew(self, graph_changed, data_changed):
         # set up timing
@@ -1913,15 +1982,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._exectute_graph_binary_gatherer(graph_changed)
         # loading_algorithms
         compressed, router_provenance = self._execute_compressor()
+        self._execute_load_routing_tables(compressed)
+        self._execute_uncompressed_routing_table_reports()
+        self._execute_bit_field_compressor_report()
+        self._execute_load_fixed_routes()
+        self._execute_system_data_specification()
+        self._execute_load_system_executable_images()
+        self._execute_load_tags()
         self._execute_extra_load_algorithms()
-        self._load_routing_tables(compressed)
-
-
-        write_memory_report = get_config_bool(
-            "Reports", "write_memory_map_report")
-        if write_memory_report and graph_changed:
-            algorithms.append("MemoryMapOnHostReport")
-            algorithms.append("MemoryMapOnHostChipReport")
+        self._execute_memory_report()
 
         # Add reports that depend on compression
         routing_tables_needed = False
@@ -1940,22 +2009,16 @@ class AbstractSpinnakerBase(ConfigHandler):
                     algorithms.append("CompressedRouterSummaryReport")
                     algorithms.append("RoutingTableFromMachineReport")
 
-        if get_config_bool(
-                "Reports", "write_bit_field_compressor_report"):
-            algorithms.append("BitFieldCompressorReport")
 
         # handle extra monitor functionality
         enable_advanced_monitor = get_config_bool(
             "Machine", "enable_advanced_monitor_support")
         if enable_advanced_monitor and (graph_changed or not self._has_ran):
-            algorithms.append("LoadFixedRoutes")
+            # TODO at the same time as LoadFixedRoutes?
             algorithms.append("FixedRouteFromMachineReport")
 
         # add optional algorithms
         optional_algorithms = list()
-
-        if graph_changed or data_changed:
-             optional_algorithms.append("TagsLoader")
 
         optional_algorithms.append("HostExecuteApplicationDataSpecification")
 
@@ -1964,15 +2027,11 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("LoadApplicationExecutableImages")
-        algorithms.append("HostExecuteSystemDataSpecification")
-        algorithms.append("LoadSystemExecutableImages")
 
         # Something probably a report needs the routing tables
         # This report is one way to get them if done on machine
         if routing_tables_needed:
             optional_algorithms.append("RoutingTableFromMachineReport")
-        if get_config_bool("Reports", "write_tag_allocation_reports"):
-            algorithms.append("TagsFromMachineReport")
 
         # Decide what needs to be done
         required_tokens = ["DataLoaded", "BinariesLoaded"]
@@ -2068,10 +2127,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # add optional algorithms
         optional_algorithms = list()
 
-        if graph_changed or data_changed:
-            optional_algorithms.append("RoutingTableLoader")
-            optional_algorithms.append("TagsLoader")
-
         optional_algorithms.append("HostExecuteApplicationDataSpecification")
 
         # Get the executable targets
@@ -2086,8 +2141,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # This report is one way to get them if done on machine
         if routing_tables_needed:
             optional_algorithms.append("RoutingTableFromMachineReport")
-        if get_config_bool("Reports", "write_tag_allocation_reports"):
-            algorithms.append("TagsFromMachineReport")
 
         # Decide what needs to be done
         required_tokens = ["DataLoaded", "BinariesLoaded"]
