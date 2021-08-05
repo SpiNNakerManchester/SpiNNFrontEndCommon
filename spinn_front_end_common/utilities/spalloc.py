@@ -407,9 +407,9 @@ class SpallocJob:
             return None
         obj = r.json()
         for c in obj["connections"]:
-            x, y, z = c["chip"]
-            if x == 0 and y == 0 and z == 0:
-                return c["hostname"]
+            [x, y], host = c
+            if x == 0 and y == 0:
+                return host
         raise Exception(f"could not parse {obj} to get root chip address")
 
     def wait_for_state_change(self, old_state):
@@ -455,6 +455,9 @@ class SpallocJob:
         if self.__keepalive_handle is not None:
             raise Exception("cannot keep job alive from two tasks")
         self.__keepalive_handle = handle
+
+    def __repr__(self):
+        return f"SpallocJob({self.__url})"
 
 
 class SpallocState(IntEnum):
