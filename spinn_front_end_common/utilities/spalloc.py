@@ -410,7 +410,7 @@ class SpallocJob:
             [x, y], host = c
             if x == 0 and y == 0:
                 return host
-        raise Exception(f"could not parse {obj} to get root chip address")
+        return None
 
     def wait_for_state_change(self, old_state):
         """
