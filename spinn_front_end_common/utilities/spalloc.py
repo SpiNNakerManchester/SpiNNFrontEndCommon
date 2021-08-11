@@ -251,24 +251,124 @@ class SpallocClient:
         """
         Get the machines supported by the server.
 
+        :return:
+            Mapping from machine names to handles for working with a machine.
         :rtype: dict(str,SpallocMachine)
         """
         obj = self.__session.get(self.__machines_url).json()
         return {m["name"]: SpallocMachine(self, m) for m in obj["machines"]}
 
-    def create_job(self, num_boards, machine_name=None, keepalive=45):
+    def list_jobs(self, deleted=False):
+        """
+        Get the jobs known to the server.
+
+        :param bool deleted: Whether to include deleted jobs.
+        :return: The jobs known to the server.
+        :rtype: ~typing.Iterable(SpallocJob)
+        """
+        obj = self.__session.get(
+            self.__jobs_url,
+            deleted=("true" if deleted else "false")).json()
+        while obj["jobs"]:
+            for u in obj["jobs"]:
+                yield SpallocJob(self.__session, u)
+            if "next" not in obj:
+                break
+            obj = self.__session.get(obj["next"]).json()
+
+    def create_job(self, num_boards=1, machine_name=None, keepalive=45):
         """
         Create a job with a specified number of boards.
 
-        :param int num_boards: How many boards to ask for
-        :param str machine_name: Which machine to run on? If omitted, the
-            service's machine tagged with ``default`` will be used.
-        :param int keepalive: After how many seconds of no activity should a
-            job become eligible for automatic pruning?
+        :param int num_boards:
+            How many boards to ask for (defaults to 1)
+        :param str machine_name:
+            Which machine to run on? If omitted, the service's machine tagged
+            with ``default`` will be used.
+        :param int keepalive:
+            After how many seconds of no activity should a job become eligible
+            for automatic pruning?
+        :return: A handle for monitoring and interacting with the job.
         :rtype: SpallocJob
         """
         create = {
-            "dimensions": [int(num_boards)],
+            "num-boards": int(num_boards),
+            "keepalive-interval": f"PT{int(keepalive)}S"
+        }
+        if machine_name:
+            create["machine-name"] = machine_name
+        else:
+            create["tags"] = ["default"]
+        r = self.__session.post(self.__jobs_url, create)
+        url = r.headers["Location"]
+        return SpallocJob(self.__session, url)
+
+    def create_job_rect(self, width, height, machine_name=None, keepalive=45):
+        """
+        Create a job with a rectangle of boards.
+
+        :param int width:
+            The width of rectangle to request
+        :param int height:
+            The height of rectangle to request
+        :param str machine_name:
+            Which machine to run on? If omitted, the service's machine tagged
+            with ``default`` will be used.
+        :param int keepalive:
+            After how many seconds of no activity should a job become eligible
+            for automatic pruning?
+        :return: A handle for monitoring and interacting with the job.
+        :rtype: SpallocJob
+        """
+        create = {
+            "dimensions": {
+                "width": int(width),
+                "height": int(height)
+            },
+            "keepalive-interval": f"PT{int(keepalive)}S"
+        }
+        if machine_name:
+            create["machine-name"] = machine_name
+        else:
+            create["tags"] = ["default"]
+        r = self.__session.post(self.__jobs_url, create)
+        url = r.headers["Location"]
+        return SpallocJob(self.__session, url)
+
+    def create_job_board(
+            self, triad=None, physical=None, ip_address=None,
+            machine_name=None, keepalive=45):
+        """
+        Create a job with a rectangle of boards.
+
+        :param tuple(int,int,int) triad:
+            The logical coordinate of the board to request
+        :param tuple(int,int,int) physical:
+            The physical coordinate of the board to request
+        :param str ip_address:
+            The IP address of the board to request
+        :param str machine_name:
+            Which machine to run on? If omitted, the service's machine tagged
+            with ``default`` will be used.
+        :param int keepalive:
+            After how many seconds of no activity should a job become eligible
+            for automatic pruning?
+        :return: A handle for monitoring and interacting with the job.
+        :rtype: SpallocJob
+        """
+        if triad:
+            x, y, z = triad
+            board = {"x": x, "y": y, "z": z}
+        elif physical:
+            c, f, b = physical
+            board = {"cabinet": c, "frame": f, "board": b}
+        elif ip_address:
+            board = {"address": str(ip_address)}
+        else:
+            raise KeyError("at least one of triad, physical and ip_address "
+                           "must be given")
+        create = {
+            "board": board,
             "keepalive-interval": f"PT{int(keepalive)}S"
         }
         if machine_name:
