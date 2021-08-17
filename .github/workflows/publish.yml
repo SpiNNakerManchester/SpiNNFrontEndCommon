@@ -45,6 +45,8 @@ jobs:
           echo "SPINN_DIRS=$PWD/spinnaker_tools" >> $GITHUB_ENV
       - name: Install pip, etc
         uses: ./support/actions/python-tools
+        with:
+          coverage: false
       - name: Checkout SpiNNaker Dependencies
         uses: ./support/actions/checkout-spinn-deps
         with:
