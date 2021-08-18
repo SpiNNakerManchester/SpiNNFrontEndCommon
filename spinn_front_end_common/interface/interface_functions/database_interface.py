@@ -40,7 +40,8 @@ class DatabaseInterface(object):
 
     def __call__(
             self, machine_graph, tags, runtime, machine, data_n_timesteps,
-            placements, routing_infos, router_tables, application_graph=None):
+            placements, routing_infos, router_tables, app_id,
+            application_graph=None):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.tags.Tags tags:
@@ -52,6 +53,7 @@ class DatabaseInterface(object):
         :param router_tables:
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
+        :param int app_id:
         :param application_graph:
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph
@@ -76,7 +78,7 @@ class DatabaseInterface(object):
             self._write_to_db(
                 machine, runtime, application_graph, machine_graph,
                 data_n_timesteps, placements, routing_infos, router_tables,
-                tags)
+                tags, app_id)
 
         return self, self.database_file_path
 
@@ -92,7 +94,7 @@ class DatabaseInterface(object):
     def _write_to_db(
             self, machine, runtime, app_graph, machine_graph,
             data_n_timesteps, placements, routing_infos, router_tables,
-            tags):
+            tags, app_id):
         """
         :param ~.Machine machine:
         :param int runtime:
@@ -104,12 +106,13 @@ class DatabaseInterface(object):
         :param ~.RoutingInfo routing_infos:
         :param ~.MulticastRoutingTables router_tables:
         :param ~.Tags tags:
+        :param int app_id:
         """
         # pylint: disable=too-many-arguments
 
         with self._writer as w, ProgressBar(
                 9, "Creating graph description database") as p:
-            w.add_system_params(runtime)
+            w.add_system_params(runtime, app_id)
             p.update()
             w.add_machine_objects(machine)
             p.update()
