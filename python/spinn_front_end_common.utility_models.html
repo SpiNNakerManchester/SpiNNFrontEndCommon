@@ -121,6 +121,25 @@ and <code class="xref py py-class docutils literal notranslate"><span class="pre
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utility_models.</span></span><span class="sig-name descname"><span class="pre">ChipPowerMonitorMachineVertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pacman.model.graphs.machine.MachineVertex</span></code></a>, <a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary" title="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary</span></code></a>, <a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification" title="spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification</span></code></a>, <a class="reference internal" href="spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost" title="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost</span></code></a>, <a class="reference internal" href="spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData" title="spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData</span></code></a></p>
 <p>Machine vertex for C code representing functionality to record        idle times in a machine graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – The optional name of the vertex</p></li>
+<li><p><strong>constraints</strong> (<em>iterable</em><em>(</em><em>AbstractConstraint</em><em>)  or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – The optional initial constraints of the vertex</p></li>
+<li><p><strong>app_vertex</strong> (<em>ApplicationVertex</em><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – The application vertex that caused this machine vertex to be
+created. If None, there is no such application vertex.</p></li>
+<li><p><strong>vertex_slice</strong> (<em>Slice</em><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – The slice of the application vertex that this machine vertex
+implements.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>PacmanInvalidParameterException</strong> – If one of the constraints is not valid</p></li>
+<li><p><strong>PacmanValueError</strong> – If the slice of the machine_vertex is too big</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#AttributeError" title="(in Python v3.6)"><strong>AttributeError</strong></a> – If a not None app_vertex is not an ApplicationVertex</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.binary_file_name">
 <em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">binary_file_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/chip_power_monitor_machine_vertex.html#ChipPowerMonitorMachineVertex.binary_file_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.binary_file_name" title="Permalink to this definition">¶</a></dt>
@@ -1660,12 +1679,12 @@ repeat is 0</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The label of this vertex</p></li>
-<li><p><strong>vertex_slice</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v6.0)"><em>Slice</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – The slice served via this multicast source</p></li>
-<li><p><strong>app_vertex</strong> (<a class="reference internal" href="#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource" title="spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource"><em>ReverseIpTagMultiCastSource</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – The associated application vertex</p></li>
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – The label of this vertex</p></li>
+<li><p><strong>vertex_slice</strong> (<em>Slice</em><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – The slice served via this multicast source</p></li>
+<li><p><strong>app_vertex</strong> (<em>ApplicationVertex</em><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – The associated application vertex</p></li>
 <li><p><strong>n_keys</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The number of keys to be sent via this mulitcast source
 (can’t be None if vertex_slice is also None)</p></li>
-<li><p><strong>constraints</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN v6.0)"><em>AbstractConstraint</em></a><em>)</em>) – Any initial constraints to this vertex</p></li>
+<li><p><strong>constraints</strong> (<em>iterable</em><em>(</em><em>AbstractConstraint</em><em>)  or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – Any initial constraints to this vertex</p></li>
 <li><p><strong>board_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The IP address of the board on which to place this vertex if receiving
 data, either buffered or live (by default, any board is chosen)</p></li>
 <li><p><strong>receive_port</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The port on the board that will listen for incoming event packets
@@ -1691,6 +1710,19 @@ packets; if port is set to None this can be used to enable the
 reception of packets on a randomly assigned port, which can be read
 from the database</p></li>
 <li><p><strong>enable_injection</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Flag to indicate that data will be received to inject</p></li>
+<li><p><strong>label</strong> – The optional name of the vertex</p></li>
+<li><p><strong>constraints</strong> – The optional initial constraints of the vertex</p></li>
+<li><p><strong>app_vertex</strong> – The application vertex that caused this machine vertex to be
+created. If None, there is no such application vertex.</p></li>
+<li><p><strong>vertex_slice</strong> – The slice of the application vertex that this machine vertex
+implements.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>PacmanInvalidParameterException</strong> – If one of the constraints is not valid</p></li>
+<li><p><strong>PacmanValueError</strong> – If the slice of the machine_vertex is too big</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#AttributeError" title="(in Python v3.6)"><strong>AttributeError</strong></a> – If a not None app_vertex is not an ApplicationVertex</p></li>
 </ul>
 </dd>
 </dl>
@@ -2119,7 +2151,7 @@ and <code class="xref py py-class docutils literal notranslate"><span class="pre
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -2149,7 +2181,7 @@ and <code class="xref py py-class docutils literal notranslate"><span class="pre
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>
