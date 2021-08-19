@@ -65,6 +65,7 @@ from spinn_front_end_common.interface.interface_functions import (
     ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
     CreateNotificationProtocol, DatabaseInterface,
     DSGRegionReloader, EnergyProvenanceReporter, GraphBinaryGatherer,
+    GraphDataSpecificationWriter,
     GraphProvenanceGatherer,  HostBasedBitFieldRouterCompressor,
     HostExecuteDataSpecification,
     interface_xml, LoadExecutableImages, LoadFixedRoutes,
@@ -377,14 +378,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_executable_targets",
         "_board_version",
         "_extra_monitor_vertices",
-        "_data_in_multicastKey_to_chip_map",
         "_first_machine_time_step",
         "_machine_partition_n_keys_map",
         "_run_until_time_step",
         "_system_multicast_router_timeout_keys",
         "_dsg_targets",
         "_region_sizes",
-        "_vertex_to_ethernet_connected_chip_mapping"
+        "_vertex_to_ethernet_connected_chip_mapping",
+        "_data_in_multicast_routing_tables",
+        "_data_in_multicast_key_to_chip_map",
     ]
 
     def __init__(
@@ -552,7 +554,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._executable_targets = None
         self._board_version = None
         self._extra_monitor_vertices = None
-        self._data_in_multicastKey_to_chip_map = None
         self._first_machine_time_step = None
         self._machine_partition_n_keys_map = None
         self._run_until_time_step = None
@@ -560,6 +561,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._dsg_targets = None
         self._region_sizes = None
         self._vertex_to_ethernet_connected_chip_mapping = None
+        self._data_in_multicast_routing_tables = None
+        self._data_in_multicast_key_to_chip_map = None
 
     def __getitem__(self, item):
         """
@@ -577,13 +580,15 @@ class AbstractSpinnakerBase(ConfigHandler):
             raise KeyError(f"Unexpected Item {item}")
 
     def __contains__(self, item):
-        if self._unchecked_gettiem(item):
+        if self._unchecked_gettiem(item) != None:
             return True
         return False
 
+
     def items(self):
         results = []
-        for key in ["APPID", "ApplicationGraph", "DataInMulticastKeyToChipMap", "DataNTimeSteps", "ExtendedMachine",
+        for key in ["APPID", "ApplicationGraph", "DataInMulticastKeyToChipMap",
+                    "DataInMulticastRoutingTables", "DataNTimeSteps", "ExtendedMachine",
                     "FirstMachineTimeStep", "MachineGraph", "MachinePartitionNKeysMap", "Placements", "RoutingInfos",
                     "RunUntilTimeSteps", "SystemMulticastRouterTimeoutKeys", "Tags"]:
             item = self._unchecked_gettiem(key)
@@ -598,7 +603,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         if item == "ApplicationGraph":
             return self._application_graph
         if item == "DataInMulticastKeyToChipMap":
-            return self._data_in_multicastKey_to_chip_map
+            return self._data_in_multicast_key_to_chip_map
+        if item == "DataInMulticastRoutingTables":
+            return self._data_in_multicast_routing_tables
         if item == "DataNTimeSteps":
             return self._max_run_time_steps
         if item == "DataNSteps":
@@ -606,7 +613,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if item == "ExtendedMachine":
             return self._machine
         if item == "FirstMachineTimeStep":
-            return self._first_machine_time_step
+            return self._current_run_timesteps
         if item == "MachineGraph":
             return self.machine_graph
         if item == "MachinePartitionNKeysMap":
@@ -1787,14 +1794,27 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._extra_monitor_vertices = executor.get_item("ExtraMonitorVertices")
         self._vertex_to_ethernet_connected_chip_mapping = \
             executor.get_item("VertexToEthernetConnectedChipMapping")
-        self.data_in_multicastKey_to_chip_map =  executor.get_item(
+        self._data_in_multicast_key_to_chip_map = executor.get_item(
             "DataInMulticastKeyToChipMap")
         self._machine_partition_n_keys_map = executor.get_item(
             "MachinePartitionNKeysMap")
         self._system_multicast_router_timeout_keys = \
             executor.get_item("SystemMulticastRouterTimeoutKeys")
+        self._data_in_multicast_routing_tables = executor.get_item(
+            "DataInMulticastRoutingTables")
 
     def _do_data_generation(self, n_machine_time_steps):
+        provide_injectables(self)
+        #do_injection(self)
+        with FecExecutor(self, "Execute Graph Data Specificatio Writer"):
+            writer = GraphDataSpecificationWriter()
+            self._dsg_targets, self._region_sizes = writer(
+                self._placements, self._hostname, self._machine,
+                self._max_run_time_steps)
+                # TODO placement_order not even in xml
+        clear_injectables()
+
+    def _do_data_generationX(self, n_machine_time_steps):
         """
         :param int n_machine_time_steps:
         """
