@@ -102,6 +102,7 @@ from spinn_front_end_common.interface.provenance import (
     PacmanProvenanceExtractor)
 from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
+from spinn_front_end_common.utilities import FecExecutor
 from spinn_front_end_common.utilities.report_functions.reports import(
     generate_comparison_router_report, router_compressed_summary_report,
     router_report_from_compressed_router_tables,
@@ -1830,23 +1831,98 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._region_sizes = self._mapping_outputs["RegionSizes"]
 
     def _execute_routing_setup(self, graph_changed, tokens):
-        if not graph_changed:
-            return
-        # TODO check if anything ever loads routing tables before here!
-        # only clear routing tables if we've not loaded them by now
-        for token in tokens:
-            if token.name == "DataLoaded":
-                if token.part == "MulticastRoutesLoaded":
-                    return
-        setup = RoutingSetup()
-        setup(self._router_tables, self._app_id, self._txrx, self._machine)
+        with FecExecutor(self, "Execute Routing Setup") as executor:
+            if executor.skip_if_value_false(graph_changed, "graph_changed"):
+                return
+            # TODO check if anything ever loads routing tables before here!
+            # only clear routing tables if we've not loaded them by now
+            for token in tokens:
+                if token.name == "DataLoaded":
+                    if token.part == "MulticastRoutesLoaded":
+                        executor.skip("Routing tables already loaded")
+                        return
+            setup = RoutingSetup()
+            setup(self._router_tables, self._app_id, self._txrx, self._machine)
 
     def _exectute_graph_binary_gatherer(self, graph_changed):
-        if not graph_changed:
-            return None
-        gather = GraphBinaryGatherer()
-        self._executable_targets = gather(
-            self._placements, self._machine_graph, self._executable_finder)
+        with FecExecutor(self, "Execute Graph Binary Gatherer") as executor:
+            if executor.skip_if_value_false(graph_changed, "graph_changed"):
+                return
+            gather = GraphBinaryGatherer()
+            self._executable_targets = gather(
+                self._placements, self._machine_graph, self._executable_finder)
+
+    def _excetute_host_bitfield_compressor(self):
+        with FecExecutor(
+                self, "Execute HostBasedBitFieldRouterCompressor") as executor:
+            if executor.skip_if_virtual_board():
+                return None, []
+            compressor = HostBasedBitFieldRouterCompressor()
+            return compressor(
+                self._router_tables, self._machine, self._placements,
+                self._txrx, self._machine_graph, self._routing_infos)
+
+    def _excetute_machine_bitfield_ordered_covering_compressor(self):
+        with FecExecutor(
+                self, "Execute MachineBitFieldOrderedCoveringCompressor") as executor:
+            if executor.skip_if_virtual_board():
+                return None, []
+            compressor = MachineBitFieldOrderedCoveringCompressor()
+            _, provenance = compressor(
+                self._routing_tables, self._txrx, self._machine, self._app_id,
+                self._machine_graph, self._placements, self._executable_finder,
+                self._routing_infos, self._executable_targets)
+            return None, provenance
+
+    def _excetute_machine_bitfield_pair_compressor(self):
+        with FecExecutor(
+                self, "Execute MachineBitFieldPairRouterCompressor") as executor:
+            if executor.skip_if_virtual_board():
+                return None, []
+            compressor = MachineBitFieldPairRouterCompressor()
+            _, provenance = compressor(
+                self._routing_tables, self._txrx, self._machine, self._app_id,
+                self._machine_graph, self._placements, self._executable_finder,
+                self._routing_infos, self._executable_targets)
+            return None, provenance
+
+    def _excetute_ordered_covering_compressor(self):
+        with FecExecutor(self, "Execute OrderedCoveringCompressor"):
+            compressor = OrderedCoveringCompressor()
+            compressed = compressor(self._router_tables)
+            return compressed, []
+
+    def _excetute_ordered_covering_compression(self):
+        with FecExecutor(
+                self, "Execute OrderedCoveringCompressor") as executor:
+            if executor.skip_if_virtual_board():
+                return None, []
+            ordered_covering_compression(
+                self._routing_tables, self._txrx, self._executable_finder,
+                self._machine, app_id)
+            return None, []
+
+    def _execute_pair_compressor(self):
+        with FecExecutor(self, "Execute PairCompressor"):
+            compressor = PairCompressor()
+            compressed = compressor(self._router_tables)
+            return compressed, []
+
+    def _excetute_pair_compression(self):
+        with FecExecutor(
+                self, "Execute PairOnChipRouterCompression") as executor:
+            if executor.skip_if_virtual_board():
+                return None, []
+            pair_compression(
+                self._router_tables, self._txrx, self._executable_finder,
+                self._machine, self._app_id)
+            return None, []
+
+    def _execute_pair_unordered_compressor(self):
+        with FecExecutor(self, "Execute PairUnorderedCompressor"):
+            compressor = CheckedUnorderedPairCompressor()
+            compressed = compressor(self._router_tables)
+            return compressed, []
 
     def _execute_compressor(self):
         """
@@ -1857,53 +1933,21 @@ class AbstractSpinnakerBase(ConfigHandler):
         name = get_config_str("Mapping", "compressor")
 
         if name == "HostBasedBitFieldRouterCompressor":
-            compressor = HostBasedBitFieldRouterCompressor()
-            return compressor(
-                self._router_tables, self._machine, self._placements,
-                self._txrx,  self._machine_graph, self._routing_infos)
-
+            return self._excetute_host_bitfield_compressor()
         if name == "MachineBitFieldOrderedCoveringCompressor":
-            compressor = MachineBitFieldOrderedCoveringCompressor()
-            _, provenance = compressor(
-                self._routing_tables, self._txrx, self._machine, self._app_id,
-                self._machine_graph, self._placements, self._executable_finder,
-                self._routing_infos, self._executable_targets)
-            return None, provenance
-
+            return self._excetute_machine_bitfield_ordered_covering_compressor()
         if name == "MachineBitFieldPairRouterCompressor":
-            compressor = MachineBitFieldPairRouterCompressor()
-            _, provenance = compressor(
-                self._routing_tables, self._txrx, self._machine, self._app_id,
-                self._machine_graph, self._placements, self._executable_finder,
-                self._routing_infos, self._executable_targets)
-            return None, provenance
-
+            return self._excetute_machine_bitfield_pair_compressor()
         if name == "OrderedCoveringCompressor":
-            compressor = OrderedCoveringCompressor()
-            compressed = compressor(self._router_tables)
-            return compressed, []
-
+            return self._excetute_ordered_covering_compressor()
         if name == "OrderedCoveringOnChipRouterCompression":
-            ordered_covering_compression(
-                self._routing_tables, self._txrx, self._executable_finder,
-                self._machine, app_id)
-            return None, []
-
+            return self._excetute_ordered_covering_compression()
         if name == "PairCompressor":
-            compressor = PairCompressor()
-            compressed = compressor(self._router_tables)
-            return compressed, []
-
+            return self._execute_pair_compressor()
         if name == "PairOnChipRouterCompression":
-            pair_compression(
-                self._router_tables, self._txrx, self._executable_finder,
-                self._machine, self._app_id)
-            return None, []
-
+            return self._excetute_pair_compression()
         if name == "PairUnorderedCompressor":
-            compressor = CheckedUnorderedPairCompressor()
-            compressed = compressor(self._router_tables)
-            return compressed, []
+            return self._execute_pair_unordered_compressor()
 
         # overridden in spy to handle:
         # SpynnakerMachineBitFieldOrderedCoveringCompressor
@@ -1917,58 +1961,85 @@ class AbstractSpinnakerBase(ConfigHandler):
             f"Unexpected cfg setting compressor: {name}")
 
     def _execute_load_routing_tables(self, compressed):
-        if compressed:
-            loader = RoutingTableLoader()
-            loader(compressed, self._app_id, self._txrx, self._machine)
+        with FecExecutor(
+                self, "Execute Routing Table Loader") as executor:
+            if compressed:
+                loader = RoutingTableLoader()
+                loader(compressed, self._app_id, self._txrx, self._machine)
+            else:
+                executor.skip("Tables loaded by compressor")
 
     def _execute_uncompressed_routing_table_reports(self):
         # TODO why not during mapping?
-        if get_config_bool("Reports", "write_routing_table_reports"):
+        with FecExecutor(
+                self, "Execute Uncompressed RoutingTable Reports") as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_routing_table_reports"):
+                return
             router_report_from_router_tables(self._router_tables)
 
     def _execute_bit_field_compressor_report(self):
-        if get_config_bool("Reports", "write_bit_field_compressor_report"):
+        with FecExecutor(
+                self, "Execute BitField Compressor Report") as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports",  "write_bit_field_compressor_report"):
+                return
             report = BitFieldCompressorReport()
             # BitFieldSummary output ignored as never used
             report(self._machine_graph, self._placements)
             # TODO get provenance out of report.
 
     def _execute_load_fixed_routes(self, graph_changed):
-        if get_config_bool("Machine", "enable_advanced_monitor_support") and \
-                (graph_changed or not self._has_ran):
-            loader = LoadFixedRoutes()
-            loader(self._fixed_routes, self._txrx, self._app_id)
+        with FecExecutor(
+                self, "Execute Load Fixed Routes") as executor:
+            if executor.skip_if_cfg_false(
+                    "Machine", "enable_advanced_monitor_support"):
+                return
+            if graph_changed or not self._has_ran:
+                loader = LoadFixedRoutes()
+                loader(self._fixed_routes, self._txrx, self._app_id)
+            else:
+                executor.skip("Graph not changed since last run")
 
     def _execute_system_data_specification(self):
-        specifier = HostExecuteDataSpecification()
-        return specifier.execute_system_data_specs(
-            self._txrx, self._machine, self._app_id, self._dsg_targets,
-            self._region_sizes, self._executable_targets, self._java_caller)
+        with FecExecutor(self, "Execute System Data Specification"):
+            specifier = HostExecuteDataSpecification()
+            return specifier.execute_system_data_specs(
+                self._txrx, self._machine, self._app_id, self._dsg_targets,
+                self._region_sizes, self._executable_targets,
+                self._java_caller)
 
     def _execute_load_system_executable_images(self):
-        loader = LoadExecutableImages()
-        loader.load_sys_images(
-            self._executable_targets, self._app_id, self._txrx)
+        with FecExecutor(self, "Execute Load Executable Images"):
+            loader = LoadExecutableImages()
+            loader.load_sys_images(
+                self._executable_targets, self._app_id, self._txrx)
 
     def _execute_application_data_specification(
             self, processor_to_app_data_base_address):
-        specifier = HostExecuteDataSpecification()
-        return specifier.execute_application_data_specs(
-            self._txrx, self._machine, self._app_id, self._dsg_targets,
-            self._executable_targets, self._region_sizes, self._placements,
-            self._extra_monitor_vertices,
-            self._vertex_to_ethernet_connected_chip_mapping,
-            self._java_caller, processor_to_app_data_base_address)
+        with FecExecutor(self, "Execute Host Data Specification"):
+            specifier = HostExecuteDataSpecification()
+            return specifier.execute_application_data_specs(
+                self._txrx, self._machine, self._app_id, self._dsg_targets,
+                self._executable_targets, self._region_sizes, self._placements,
+                self._extra_monitor_vertices,
+                self._vertex_to_ethernet_connected_chip_mapping,
+                self._java_caller, processor_to_app_data_base_address)
 
-    def _execute_load_tags(self):
-        # TODO Was master correct to run the report first? I think NOT!
-        if get_config_bool("Reports", "write_tag_allocation_reports"):
+    def _execute_tags_from_machine_report(self):
+        with FecExecutor(
+                self, "Execute Tags From Machine Report") as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_tag_allocation_reports"):
+                return
             report = TagsFromMachineReport()
             report(self._txrx)
 
+    def _execute_load_tags(self):
         # TODO why: if graph_changed or data_changed:
-        loader = TagsLoader()
-        loader(self._txrx, self._tags)
+        with FecExecutor(self, "Execute Tags Loader"):
+            loader = TagsLoader()
+            loader(self._txrx, self._tags)
 
     def _execute_extra_load_algorithms(self):
         """
@@ -1979,16 +2050,16 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_memory_report(
             self, graph_changed, processor_to_app_data_base_address):
-        if not graph_changed:
-            return
-        if not get_config_bool("Reports", "write_memory_map_report"):
-            return
+        with FecExecutor(self, "Execute Memory Report") as executor:
+            if executor.skip_if_value_false(graph_changed, "graph_changed"):
+                return
+            if executor.skip_if_cfg_false("Reports", "write_memory_map_report"):
+                return
+            report = MemoryMapOnHostReport()
+            report(processor_to_app_data_base_address)
 
-        report = MemoryMapOnHostReport()
-        report(processor_to_app_data_base_address)
-
-        report = MemoryMapOnHostChipReport()
-        report(self._dsg_targets, self._txrx)
+            report = MemoryMapOnHostChipReport()
+            report(self._dsg_targets, self._txrx)
 
     def _execute_compressed_reports(self, graph_changed, compressed):
         """ Add reports that depend on compression
@@ -1997,48 +2068,51 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param compressed:
         :return:
         """
-        if not graph_changed:
-            return
-        if not get_config_bool("Reports", "write_routing_table_reports"):
-            return
+        with FecExecutor(self, "Execute Compressor Report") as executor:
+            if executor.skip_if_value_false(graph_changed, "graph_changed"):
+                return
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_routing_table_reports"):
+                return
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_routing_tables_from_machine_reports"):
+                return
 
-        if not get_config_bool(
-                "Reports", "write_routing_tables_from_machine_reports"):
-            return
+            if compressed is None:
+                reader = ReadRoutingTablesFromMachine()
+                compressed = reader(self._txrx, self._router_tables, self._app_id)
 
-        if compressed is None:
-            reader = ReadRoutingTablesFromMachine()
-            compressed = reader(self._txrx, self._router_tables, self._app_id)
+            router_report_from_compressed_router_tables(compressed)
 
-        router_report_from_compressed_router_tables(compressed)
+            generate_comparison_router_report(self._router_tables, compressed)
 
-        generate_comparison_router_report(self._router_tables, compressed)
+            router_compressed_summary_report(
+                self._router_tables, self._hostname,self._machine)
 
-        router_compressed_summary_report(
-            self._router_tables, self._hostname,self._machine)
-
-        report = RoutingTableFromMachineReport()
-        report(compressed)
-
+            report = RoutingTableFromMachineReport()
+            report(compressed)
 
     def _execute_fixed_route_report(self, graph_changed):
-       if self._has_ran and not graph_changed:
-           return
-       if not get_config_bool("Machine", "enable_advanced_monitor_support"):
-           return
-
-       # TODO at the same time as LoadFixedRoutes?
-       report = FixedRouteFromMachineReport()
-       report(self._txrx, self._machine, self._app_id)
+        with FecExecutor(self, "Execute Fixed Route Report") as executor:
+            if self._has_ran and not graph_changed:
+                executor.skip("graph not changed since last run")
+                return
+            if executor.skip_if_cfg_false(
+                    "Machine", "enable_advanced_monitor_support"):
+                return
+            # TODO at the same time as LoadFixedRoutes?
+            report = FixedRouteFromMachineReport()
+            report(self._txrx, self._machine, self._app_id)
 
     def _execute_application_load_executables(self):
         """ algorithms needed for loading the binaries to the SpiNNaker machine
 
         :return:
         """
-        loader = LoadExecutableImages()
-        loader.load_app_images(
-            self._executable_targets, self._app_id, self._txrx)
+        with FecExecutor(self, "Execute Load Executable  Images"):
+            loader = LoadExecutableImages()
+            loader.load_app_images(
+                self._executable_targets, self._app_id, self._txrx)
 
     def _do_load(self, graph_changed, data_changed):
         # set up timing
@@ -2056,6 +2130,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         processor_to_app_data_base_address = \
             self._execute_system_data_specification()
         self._execute_load_system_executable_images()
+
+        # TODO Was master correct to run the report first?
+        self._execute_tags_from_machine_report()
         self._execute_load_tags()
         processor_to_app_data_base_address = \
             self._execute_application_data_specification(
@@ -2209,7 +2286,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             run and not using a virtual board and the data hasn't already
             been regenerated
         """
-        if self._has_ran and not self._use_virtual_board and not graph_changed:
+        with FecExecutor(self, "Execute DSG Region Reloader") as executor:
+            if executor.skip_if_has_not_run():
+                return
+            if executor.skip_if_virtual_board():
+                return
+            if executor.skip_if_value_true(graph_changed, "graph changed"):
+                return
             reloader = DSGRegionReloader()
             reloader(self._txrx, self._placements, self._hostname)
 
@@ -2219,33 +2302,35 @@ class AbstractSpinnakerBase(ConfigHandler):
             prov_items.extend(self._version_provenance)
         prov_items.extend(self._pacman_provenance.data_items)
 
-        if not get_config_bool("Reports", "read_provenance_data"):
+        with FecExecutor(self, "Execute Read Provenance") as executor:
+            if executor.skip_if_cfg_false("Reports", "read_provenance_data"):
+                return prov_items
+
+            gatherer = GraphProvenanceGatherer()
+            prov_items.extend(gatherer(
+                self._machine_graph, self._application_graph))
+
+            # TODO verify why master only add if n_machine_time_steps is not None
+            if executor.stop_if_none(
+                    n_machine_time_steps, "n_machine_time_steps"):
+                return prov_items
+
+            placement_gather = PlacementsProvenanceGatherer()
+            prov_items.extend(placement_gather(
+                self._txrx, self._placements))
+
+            router_gather = RouterProvenanceGatherer()
+            provenance_data_objects = None
+            prov_items.extend(router_gather(
+                self._txrx, self._machine, self._router_tables,
+                provenance_data_objects, self._extra_monitor_vertices,
+                self._placements))
+
+            profile_data_gatherer = ProfileDataGatherer()
+            profile_data_gatherer(
+                self._txrx, self._placements)
+
             return prov_items
-
-        gatherer = GraphProvenanceGatherer()
-        prov_items.extend(gatherer(
-            self._machine_graph, self._application_graph))
-
-        # TODO verify why master only add if n_machine_time_steps is not None
-        if (n_machine_time_steps is None):
-            return prov_items
-
-        placement_gather = PlacementsProvenanceGatherer()
-        prov_items.extend(placement_gather(
-            self._txrx, self._placements))
-
-        router_gather = RouterProvenanceGatherer()
-        provenance_data_objects = None
-        prov_items.extend(router_gather(
-            self._txrx, self._machine, self._router_tables,
-            provenance_data_objects, self._extra_monitor_vertices,
-            self._placements))
-
-        profile_data_gatherer = ProfileDataGatherer()
-        profile_data_gatherer(
-            self._txrx, self._placements)
-
-        return prov_items
 
     def _execute_energy_report(self, router_provenance_items, run_time):
         if not get_config_bool("Reports", "write_energy_report"):
@@ -2302,64 +2387,87 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._write_provenance(prov_items)
 
     def _execute_clear_io_buf(self, n_machine_time_steps):
-        if (n_machine_time_steps is not None and
-                not self._empty_graphs and
-                get_config_bool("Reports", "clear_iobuf_during_run")):
+        with FecExecutor(self, "Execute Clear IO Buffer") as executor:
+            if executor.skip_if_value_is_none(
+                    n_machine_time_steps, "n_machine_time_steps"):
+                return
+            # TODO Why check empty_graph is always false??
+            if executor.skip_if_cfg_false("Reports", "clear_iobuf_during_run"):
+                return
             clearer = ChipIOBufClearer()
             clearer(self._txrx, self._executable_types)
 
     def _execute_runtime_update(self, n_sync_steps):
-        if (ExecutableType.USES_SIMULATION_INTERFACE in self._executable_types):
-            updater = ChipRuntimeUpdater()
-            updater(self._txrx,  self._app_id, self._executable_types,
-                    self._current_run_timesteps, self._first_machine_time_step,
-                    n_sync_steps)
+        with FecExecutor(self, "Execute Runtime Update") as executor:
+            if (ExecutableType.USES_SIMULATION_INTERFACE in
+                    self._executable_types):
+                updater = ChipRuntimeUpdater()
+                updater(self._txrx,  self._app_id, self._executable_types,
+                        self._current_run_timesteps,
+                        self._first_machine_time_step, n_sync_steps)
+            else:
+                executor.skip("No Simulation Interface used")
 
-    def _execute_interface_maker(self, run_time, graph_changed):
-        if not self._has_ran or graph_changed:
-            interface_maker = DatabaseInterface()
-            # Used to used compressed routing tables if available on host
-            # TODO consider not saving router tabes.
-            database_interface, self._database_file_path = interface_maker(
-                self._machine_graph, self._tags, run_time, self._machine,
-                self._max_run_time_steps, self._placements,
-                self._routing_infos, self._router_tables,
-                self._application_graph)
+    def _execute_create_database_interface(self, run_time, graph_changed):
+        with FecExecutor(self, "Execute Create Database Interface") as executor:
+            if not self._has_ran or graph_changed:
+                interface_maker = DatabaseInterface()
+                # Used to used compressed routing tables if available on host
+                # TODO consider not saving router tabes.
+                database_interface, self._database_file_path = interface_maker(
+                    self._machine_graph, self._tags, run_time, self._machine,
+                    self._max_run_time_steps, self._placements,
+                    self._routing_infos, self._router_tables,
+                    self._application_graph)
+            else:
+                executor.skip("already run and no graph change")
 
     def _execute_create_notifiaction_protocol(self):
-        creator = CreateNotificationProtocol()
-        return creator(
-            self._database_socket_addresses, self._database_file_path)
+        with FecExecutor(self, "Execute Create Notification Protocol"):
+            creator = CreateNotificationProtocol()
+            return creator(
+                self._database_socket_addresses, self._database_file_path)
 
     def _execute_runner(self, n_sync_steps, run_time, notification_interface):
-        runner = ApplicationRunner()
-        # Don't timeout if a stepped mode is in operation
-        if n_sync_steps:
-            time_threshold = None
-        else:
-            time_threshold = get_config_int(
-                "Machine", "post_simulation_overrun_before_error")
-        self._no_sync_changes = runner(
-            self._buffer_manager, notification_interface,
-            self._executable_types, self._app_id, self._txrx, run_time,
-            self._no_sync_changes, time_threshold, self._machine,
-            self._run_until_complete)
+        with FecExecutor(self, "Execute Runner"):
+            runner = ApplicationRunner()
+            # Don't timeout if a stepped mode is in operation
+            if n_sync_steps:
+                time_threshold = None
+            else:
+                time_threshold = get_config_int(
+                    "Machine", "post_simulation_overrun_before_error")
+            self._no_sync_changes = runner(
+                self._buffer_manager, notification_interface,
+                self._executable_types, self._app_id, self._txrx, run_time,
+                self._no_sync_changes, time_threshold, self._machine,
+                self._run_until_complete)
 
     def _execute_extract_iobuff(self, n_machine_time_steps):
-        if (get_config_bool("Reports", "extract_iobuf") and
-                get_config_bool(
-                    "Reports", "extract_iobuf_during_run") and
-                n_machine_time_steps is not None):
+        with FecExecutor(self, "Execute Extract IO Buff") as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "extract_iobuf_during_run"):
+                return
+            if executor.skip_if_cfg_false(
+                    "Reports", "extract_iobuf"):
+                return
+            if executor.skip_if_value_is_none(
+                    n_machine_time_steps, "n_machine_time_steps"):
+                return
             iobuf_extractor = ChipIOBufExtractor()
             # ErrorMessages, WarnMessages output ignored as never used!
             iobuf_extractor(
                 self._txrx, self._executable_targets, self._executable_finder)
 
     def _execute_buffer_extractor(self, n_machine_time_steps):
-        if (self._run_until_complete or n_machine_time_steps is not None):
-            buffer_extractor = BufferExtractor()
-            buffer_extractor(
-                self._machine_graph, self._placements, self._buffer_manager)
+        with FecExecutor(self, "Execute Buffer Extractor") as executor:
+            if (self._run_until_complete or n_machine_time_steps is not None):
+                buffer_extractor = BufferExtractor()
+                buffer_extractor(
+                    self._machine_graph, self._placements, self._buffer_manager)
+            else:
+                executor.skip(
+                    "Neither run until complete or n_machine_time_steps")
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         # TODO virtual board
@@ -2380,7 +2488,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_dsg_region_reloader(graph_changed)
         self._execute_clear_io_buf(n_machine_time_steps)
         self._execute_runtime_update(n_sync_steps)
-        self._execute_interface_maker(run_time, graph_changed)
+        self._execute_create_database_interface(run_time, graph_changed)
         notification_interface = self._execute_create_notifiaction_protocol()
         self._execute_runner(n_sync_steps, run_time, notification_interface)
         self._execute_extract_iobuff(n_machine_time_steps)
