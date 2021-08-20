@@ -124,7 +124,8 @@ class InsertEdgesToLivePacketGatherers(object):
         for p_id in p_ids:
             app_edge = ApplicationEdge(app_vertex, lpg_app_vertex)
             app_graph.add_edge(app_edge, p_id)
-            part = app_graph.get_outgoing_partition_for_edge(app_edge)
+            part = app_graph.get_outgoing_partition_starting_at_vertex(
+                app_vertex, p_id)
 
             m_vertices = app_vertex.splitter.get_out_going_vertices(
                 app_edge, part)
@@ -136,8 +137,10 @@ class InsertEdgesToLivePacketGatherers(object):
 
                 # add to n_keys_map if needed
                 if n_keys_map:
-                    m_partitions.add(m_graph.get_outgoing_partition_for_edge(
-                        machine_edge))
+                    m_part = m_graph.\
+                        get_outgoing_edge_partition_starting_at_vertex(
+                            vertex, p_id)
+                    m_partitions.add(m_part)
 
         self._process_partitions(m_partitions, n_keys_map)
 
@@ -161,7 +164,10 @@ class InsertEdgesToLivePacketGatherers(object):
             m_graph.add_edge(edge, partition_id)
             # add to n_keys_map if needed
             if n_keys_map:
-                partitions.add(m_graph.get_outgoing_partition_for_edge(edge))
+                m_part = m_graph\
+                    .get_outgoing_edge_partition_starting_at_vertex(
+                        m_vertex, partition_id)
+                partitions.add(m_part)
         self._process_partitions(partitions, n_keys_map)
 
     def _find_closest_live_packet_gatherer(self, m_vertex, machine_lpgs):
