@@ -51,8 +51,7 @@ from pacman.operations.router_compressors.ordered_covering_router_compressor \
     import OrderedCoveringCompressor
 from pacman.operations.router_compressors.checked_unordered_pair_compressor \
     import CheckedUnorderedPairCompressor
-from pacman.operations.router_compressors import (
-    PairCompressor, UnorderedPairCompressor)
+from pacman.operations.router_compressors import PairCompressor
 from spinn_utilities.config_holder import (
     get_config_bool, get_config_int, get_config_str, get_config_str_list,
     set_config)
