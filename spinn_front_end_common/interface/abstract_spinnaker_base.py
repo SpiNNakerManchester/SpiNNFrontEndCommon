@@ -106,7 +106,7 @@ from spinn_front_end_common.utilities import FecExecutor
 from spinn_front_end_common.utilities.report_functions.reports import(
     generate_comparison_router_report, router_compressed_summary_report,
     router_report_from_compressed_router_tables,
-    router_report_from_router_tables)
+    router_report_from_router_tables, sdram_usage_report_per_chip)
 from spinn_front_end_common import __version__ as fec_version
 try:
     from scipy import __version__ as scipy_version
@@ -386,6 +386,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_vertex_to_ethernet_connected_chip_mapping",
         "_data_in_multicast_routing_tables",
         "_data_in_multicast_key_to_chip_map",
+        "_plan_n_timesteps",
     ]
 
     def __init__(
@@ -562,6 +563,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._vertex_to_ethernet_connected_chip_mapping = None
         self._data_in_multicast_routing_tables = None
         self._data_in_multicast_key_to_chip_map = None
+        self._plan_n_timesteps = None
 
     def __getitem__(self, item):
         """
@@ -1551,6 +1553,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             inputs["ApplicationGraph"] = self._application_graph
         elif self._machine_graph and self._machine_graph.n_vertices:
             inputs["MachineGraph"] = self._machine_graph
+
+        # new for no executor
+        self._plan_n_timesteps = inputs["PlanNTimeSteps"]
+
         return inputs, algorithms
 
     def _create_version_provenance(self):
@@ -2304,6 +2310,18 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._mapping_time, self._dsg_time, self._load_time,
             self._execute_time, self._extraction_time)
 
+    def _execute_sdram_usage_report_per_chip(self):
+        # TODO why in do run
+        with FecExecutor(
+                self, "Execute Sdram Usage Report Per Chip") as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_sdram_usage_report_per_chip"):
+                return
+            sdram_usage_report_per_chip(
+                self._hostname, self._placements, self._machine,
+                self._plan_n_timesteps,
+                data_n_timesteps=self._max_run_time_steps)
+
     def _execute_dsg_region_reloader(self, graph_changed):
         """
             Reload any parameters over the loaded data if we have already
@@ -2509,6 +2527,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         provide_injectables(self)
         do_injection(self)
 
+        self._execute_sdram_usage_report_per_chip()
         self._execute_dsg_region_reloader(graph_changed)
         self._execute_clear_io_buf(n_machine_time_steps)
         self._execute_runtime_update(n_sync_steps)
