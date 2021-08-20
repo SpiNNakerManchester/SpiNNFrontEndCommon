@@ -612,7 +612,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         if item == "ExtendedMachine":
             return self._machine
         if item == "FirstMachineTimeStep":
-            return self._current_run_timesteps
+            # TODO remove this HACK!
+            if self._first_machine_time_step is None:
+                # This is what was used in DSG! UGLY but true!
+                return self._current_run_timesteps
+            else:
+                return self._first_machine_time_step
         if item == "MachineGraph":
             return self.machine_graph
         if item == "MachinePartitionNKeysMap":
