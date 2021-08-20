@@ -101,6 +101,7 @@ bool standalone(void) {
 void c_main(void) {
     log_info("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
     malloc_extras_turn_off_safety();
+    malloc_extras_initialise_no_fake_heap_data();
 
     // kick-start the process
     spin1_schedule_callback(compress_start, 0, 0, 3);
