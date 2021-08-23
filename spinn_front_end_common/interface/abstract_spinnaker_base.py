@@ -387,6 +387,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_data_in_multicast_routing_tables",
         "_data_in_multicast_key_to_chip_map",
         "_plan_n_timesteps",
+        "_compressor_provenance",
     ]
 
     def __init__(
@@ -564,6 +565,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_in_multicast_routing_tables = None
         self._data_in_multicast_key_to_chip_map = None
         self._plan_n_timesteps = None
+        self._compressor_provenance = None
 
         # Safety in case a previous run left a bad state
         clear_injectables()
@@ -1819,6 +1821,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             "DataInMulticastRoutingTables")
 
     def _do_data_generation(self, n_machine_time_steps):
+        self._run_until_time_step = n_machine_time_steps
+        # set up timing
+        data_gen_timer = Timer()
+        data_gen_timer.start_timing()
+
         provide_injectables(self)
         with FecExecutor(self, "Execute Graph Data Specificatio Writer"):
             writer = GraphDataSpecificationWriter()
@@ -1827,6 +1834,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._max_run_time_steps)
             # TODO placement_order not even in xml
         clear_injectables()
+
+        self._dsg_time += convert_time_diff_to_total_milliseconds(
+            data_gen_timer.take_sample())
 
     def _do_data_generationX(self, n_machine_time_steps):
         """
@@ -1905,7 +1915,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             compressor = MachineBitFieldOrderedCoveringCompressor()
             _, provenance = compressor(
-                self._routing_tables, self._txrx, self._machine, self._app_id,
+                self._router_tables, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
             return None, provenance
@@ -1918,7 +1928,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             compressor = MachineBitFieldPairRouterCompressor()
             _, provenance = compressor(
-                self._routing_tables, self._txrx, self._machine, self._app_id,
+                self._router_tables, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
             return None, provenance
@@ -1935,7 +1945,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if executor.skip_if_virtual_board():
                 return None, []
             ordered_covering_compression(
-                self._routing_tables, self._txrx, self._executable_finder,
+                self._router_tables, self._txrx, self._executable_finder,
                 self._machine, self._app_id)
             return None, []
 
@@ -2024,7 +2034,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             report = BitFieldCompressorReport()
             # BitFieldSummary output ignored as never used
-            report(self._machine_graph, self._placements)
+            report(self._machine_graph, self._placements,
+                   self._compressor_provenance)
             # TODO get provenance out of report.
 
     def _execute_load_fixed_routes(self, graph_changed):
@@ -2082,9 +2093,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _execute_extra_load_algorithms(self):
         """
         Allows overriding classes to add algorithms
-
         """
-        pass
 
     def _execute_memory_report(
             self, graph_changed, processor_to_app_data_base_address):
@@ -2155,6 +2164,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._executable_targets, self._app_id, self._txrx)
 
     def _do_load(self, graph_changed, data_changed):
+        # todo remove param data_changed
         # set up timing
         load_timer = Timer()
         load_timer.start_timing()
@@ -2162,7 +2172,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_routing_setup(graph_changed, self._mapping_tokens)
         self._exectute_graph_binary_gatherer(graph_changed)
         # loading_algorithms
-        compressed, router_provenance = self._execute_compressor()
+        compressed, self._compressor_provenance = self._execute_compressor()
         self._execute_load_routing_tables(compressed)
         self._execute_uncompressed_routing_table_reports()
         self._execute_bit_field_compressor_report()
@@ -2479,7 +2489,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 interface_maker = DatabaseInterface()
                 # Used to used compressed routing tables if available on host
                 # TODO consider not saving router tabes.
-                database_interface, self._database_file_path = interface_maker(
+                _, self._database_file_path = interface_maker(
                     self._machine_graph, self._tags, run_time, self._machine,
                     self._max_run_time_steps, self._placements,
                     self._routing_infos, self._router_tables,
