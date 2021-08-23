@@ -18,12 +18,11 @@ import os
 import sys
 from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 from .bit_field_summary import BitFieldSummary
 from spinn_front_end_common.utilities.utility_objs import (
-    ProvenanceDataItem, ExecutableType)
+    ProvenanceDataItem)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _FILE_NAME = "bit_field_compressed_summary.rpt"
@@ -149,21 +148,12 @@ class BitFieldCompressorReport(object):
         """
         total_to_merge = 0
         to_merge_per_chip = defaultdict(int)
-
-        for placement in placements:
-            binary_start_type = None
-            if isinstance(placement.vertex, AbstractHasAssociatedBinary):
-                binary_start_type = placement.vertex.get_binary_start_type()
-
-            if binary_start_type != ExecutableType.SYSTEM:
-                seen_partitions = set()
-                for incoming_partition in machine_graph.\
-                        get_multicast_edge_partitions_ending_at_vertex(
-                            placement.vertex):
-                    if incoming_partition not in seen_partitions:
-                        total_to_merge += 1
-                        to_merge_per_chip[placement.x, placement.y] += 1
-                        seen_partitions.add(incoming_partition)
+        for partition in machine_graph.outgoing_multicast_edge_partitions:
+            for edge in partition.edges:
+                placement = placements.get_placement_of_vertex(
+                    edge.post_vertex)
+                total_to_merge += 1
+                to_merge_per_chip[placement.x, placement.y] += 1
 
         return total_to_merge, to_merge_per_chip
 
