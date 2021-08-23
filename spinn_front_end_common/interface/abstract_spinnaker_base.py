@@ -2741,7 +2741,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._use_virtual_board:
             algorithms.append("FinaliseTimingData")
             if get_config_bool("Reports", "write_energy_report"):
-                energy_usage = ComputeEnergyUsed()
+                algorithms.append("ComputeEnergyUsed")
                 if read_prov:
                     algorithms.append("EnergyProvenanceReporter")
 
