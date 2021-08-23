@@ -229,7 +229,7 @@
                     <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">get_edges_starting_at_vertex</span><span class="p">(</span>
                         <span class="n">vertex</span><span class="p">)))</span></div>
 
-<div class="viewcode-block" id="DatabaseWriter.add_system_params"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params">[docs]</a>    <span class="k">def</span> <span class="nf">add_system_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runtime</span><span class="p">):</span>
+<div class="viewcode-block" id="DatabaseWriter.add_system_params"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params">[docs]</a>    <span class="k">def</span> <span class="nf">add_system_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Write system params into the database</span>
 
 <span class="sd">        :param int runtime: the amount of time the application is to run for</span>
@@ -244,7 +244,8 @@
                     <span class="p">(</span><span class="s2">&quot;machine_time_step&quot;</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">()),</span>
                     <span class="p">(</span><span class="s2">&quot;time_scale_factor&quot;</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">()),</span>
                     <span class="p">(</span><span class="s2">&quot;infinite_run&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">runtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-                    <span class="p">(</span><span class="s2">&quot;runtime&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">runtime</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runtime</span><span class="p">)])</span></div>
+                    <span class="p">(</span><span class="s2">&quot;runtime&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">runtime</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runtime</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s2">&quot;app_id&quot;</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)])</span></div>
 
 <div class="viewcode-block" id="DatabaseWriter.add_vertices"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_vertices">[docs]</a>    <span class="k">def</span> <span class="nf">add_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Add the machine graph into the database.</span>
