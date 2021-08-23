@@ -17,9 +17,7 @@ import sys
 import time
 from datetime import timedelta
 # pylint: disable=no-name-in-module
-from spinn_utilities.config_holder import (
-    get_config_bool, get_config_int, get_config_str, get_config_str_list,
-    set_config)
+from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
 
 
@@ -150,5 +148,4 @@ class FecExecutor(object):
         else:
             logger.info("{self._name} exited with {type} after {time_taken}")
         return False
-
 

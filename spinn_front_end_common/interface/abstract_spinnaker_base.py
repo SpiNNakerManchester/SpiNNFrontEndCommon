@@ -73,11 +73,11 @@ from spinn_front_end_common.interface.interface_functions import (
     ReadRoutingTablesFromMachine,
     RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader, TagsLoader)
 from spinn_front_end_common.interface.interface_functions.\
-    machine_bit_field_router_compressor import (
+        machine_bit_field_router_compressor import (
     MachineBitFieldOrderedCoveringCompressor,
     MachineBitFieldPairRouterCompressor)
 from spinn_front_end_common.interface.interface_functions.\
-    host_no_bitfield_router_compression import (
+        host_no_bitfield_router_compression import (
     ordered_covering_compression, pair_compression)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
@@ -103,7 +103,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
 from spinn_front_end_common.utilities import FecExecutor
-from spinn_front_end_common.utilities.report_functions.reports import(
+from spinn_front_end_common.utilities.report_functions.reports import (
     generate_comparison_router_report, router_compressed_summary_report,
     router_report_from_compressed_router_tables,
     router_report_from_router_tables, sdram_usage_report_per_chip)
@@ -581,17 +581,18 @@ class AbstractSpinnakerBase(ConfigHandler):
             raise KeyError(f"Unexpected Item {item}")
 
     def __contains__(self, item):
-        if self._unchecked_gettiem(item) != None:
+        if self._unchecked_gettiem(item) is not None:
             return True
         return False
-
 
     def items(self):
         results = []
         for key in ["APPID", "ApplicationGraph", "DataInMulticastKeyToChipMap",
-                    "DataInMulticastRoutingTables", "DataNTimeSteps", "ExtendedMachine",
-                    "FirstMachineTimeStep", "MachineGraph", "MachinePartitionNKeysMap", "Placements", "RoutingInfos",
-                    "RunUntilTimeSteps", "SystemMulticastRouterTimeoutKeys", "Tags"]:
+                    "DataInMulticastRoutingTables", "DataNTimeSteps",
+                    "ExtendedMachine", "FirstMachineTimeStep", "MachineGraph",
+                    "MachinePartitionNKeysMap", "Placements", "RoutingInfos",
+                    "RunUntilTimeSteps", "SystemMulticastRouterTimeoutKeys",
+                    "Tags"]:
             item = self._unchecked_gettiem(key)
             # Skip None and False but not 0
             if item or item == 0:
@@ -1801,7 +1802,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._mapping_outputs["MappingTimeMs"] = self._mapping_time
 
         # New for no executor
-        self._extra_monitor_vertices = executor.get_item("ExtraMonitorVertices")
+        self._extra_monitor_vertices = executor.get_item(
+            "ExtraMonitorVertices")
         self._vertex_to_ethernet_connected_chip_mapping = \
             executor.get_item("VertexToEthernetConnectedChipMapping")
         self._data_in_multicast_key_to_chip_map = executor.get_item(
@@ -1815,13 +1817,12 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _do_data_generation(self, n_machine_time_steps):
         provide_injectables(self)
-        #do_injection(self)
         with FecExecutor(self, "Execute Graph Data Specificatio Writer"):
             writer = GraphDataSpecificationWriter()
             self._dsg_targets, self._region_sizes = writer(
                 self._placements, self._hostname, self._machine,
                 self._max_run_time_steps)
-                # TODO placement_order not even in xml
+            # TODO placement_order not even in xml
         clear_injectables()
 
     def _do_data_generationX(self, n_machine_time_steps):
@@ -1884,7 +1885,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _excetute_host_bitfield_compressor(self):
         with FecExecutor(
-                self, "Execute HostBasedBitFieldRouterCompressor") as executor:
+                self, "Execute HostBasedBitFieldRouterCompressor") \
+                as executor:
             if executor.skip_if_virtual_board():
                 return None, []
             compressor = HostBasedBitFieldRouterCompressor()
@@ -1906,7 +1908,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _excetute_machine_bitfield_pair_compressor(self):
         with FecExecutor(
-                self, "Execute MachineBitFieldPairRouterCompressor") as executor:
+                self, "Execute MachineBitFieldPairRouterCompressor") \
+                as executor:
             if executor.skip_if_virtual_board():
                 return None, []
             compressor = MachineBitFieldPairRouterCompressor()
@@ -1929,7 +1932,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             ordered_covering_compression(
                 self._routing_tables, self._txrx, self._executable_finder,
-                self._machine, app_id)
+                self._machine, self._app_id)
             return None, []
 
     def _execute_pair_compressor(self):
@@ -1965,7 +1968,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         if name == "HostBasedBitFieldRouterCompressor":
             return self._excetute_host_bitfield_compressor()
         if name == "MachineBitFieldOrderedCoveringCompressor":
-            return self._excetute_machine_bitfield_ordered_covering_compressor()
+            return \
+                self._excetute_machine_bitfield_ordered_covering_compressor()
         if name == "MachineBitFieldPairRouterCompressor":
             return self._excetute_machine_bitfield_pair_compressor()
         if name == "OrderedCoveringCompressor":
@@ -2083,7 +2087,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecExecutor(self, "Execute Memory Report") as executor:
             if executor.skip_if_value_false(graph_changed, "graph_changed"):
                 return
-            if executor.skip_if_cfg_false("Reports", "write_memory_map_report"):
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_memory_map_report"):
                 return
             report = MemoryMapOnHostReport()
             report(processor_to_app_data_base_address)
@@ -2110,14 +2115,15 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             if compressed is None:
                 reader = ReadRoutingTablesFromMachine()
-                compressed = reader(self._txrx, self._router_tables, self._app_id)
+                compressed = reader(self._txrx, self._router_tables,
+                                    self._app_id)
 
             router_report_from_compressed_router_tables(compressed)
 
             generate_comparison_router_report(self._router_tables, compressed)
 
             router_compressed_summary_report(
-                self._router_tables, self._hostname,self._machine)
+                self._router_tables, self._hostname, self._machine)
 
             report = RoutingTableFromMachineReport()
             report(compressed)
@@ -2352,7 +2358,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             prov_items.extend(gatherer(
                 self._machine_graph, self._application_graph))
 
-            # TODO verify why master only add if n_machine_time_steps is not None
+            # TODO verify why master only add
+            #  if n_machine_time_steps is not None
             if executor.stop_if_none(
                     n_machine_time_steps, "n_machine_time_steps"):
                 return prov_items
@@ -2395,11 +2402,10 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_write_provenance(self, prov_items, n_machine_time_steps):
         if (get_config_bool("Reports", "write_provenance_data") and
-                  n_machine_time_steps is not None):
+              n_machine_time_steps is not None):
             self._pacman_provenance.clear()
             self._version_provenance = list()
             self._write_provenance(prov_items)
-
 
     def _gather_provenance_for_writing(self, executor):
         """ Handles the gathering of provenance items for writer.
@@ -2451,7 +2457,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 executor.skip("No Simulation Interface used")
 
     def _execute_create_database_interface(self, run_time, graph_changed):
-        with FecExecutor(self, "Execute Create Database Interface") as executor:
+        with FecExecutor(self, "Execute Create Database Interface") \
+                as executor:
             if not self._has_ran or graph_changed:
                 interface_maker = DatabaseInterface()
                 # Used to used compressed routing tables if available on host
@@ -2506,7 +2513,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             if (self._run_until_complete or n_machine_time_steps is not None):
                 buffer_extractor = BufferExtractor()
                 buffer_extractor(
-                    self._machine_graph, self._placements, self._buffer_manager)
+                    self._machine_graph, self._placements,
+                    self._buffer_manager)
             else:
                 executor.skip(
                     "Neither run until complete or n_machine_time_steps")
@@ -2546,7 +2554,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._has_ran = True
         self._first_machine_time_step = None
         clear_injectables()
-
 
     def _do_runX(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """

@@ -151,7 +151,7 @@ class ConfigHandler(object):
         compressor = get_config_str("Mapping", "compressor")
         # For now allow identical loading_algorithms and compressor
         if loading_algorithms and loading_algorithms != compressor:
-            raise ConfigurationException (
+            raise ConfigurationException(
                 "cfg setting loading_algorithms is no longer used. "
                 "Ideally remove the loading_algorithms from you cfg. "
                 "To use a none default compressor specify a compressor value")
