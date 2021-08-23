@@ -128,6 +128,13 @@ class FecExecutor(object):
             return True
         return False
 
+    def stop_if_virtual_board(self):
+        if self._simulator.use_virtual_board:
+            self._stop("simulator.use_virtual_board")
+            return True
+        else:
+            return False
+
     def _stop_timer(self):
         """ Describes how long has elapsed since the instance that the\
             :py:meth:`start_timing` method was last called.

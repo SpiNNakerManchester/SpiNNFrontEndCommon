@@ -565,6 +565,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_in_multicast_key_to_chip_map = None
         self._plan_n_timesteps = None
 
+        # Safety in case a previous run left a bad state
+        clear_injectables()
+
     def __getitem__(self, item):
         """
         To allow ASB to work as the injector
@@ -2365,6 +2368,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                     n_machine_time_steps, "n_machine_time_steps"):
                 return prov_items
 
+            if executor.stop_if_virtual_board():
+                return prov_items
             placement_gather = PlacementsProvenanceGatherer()
             prov_items.extend(placement_gather(
                 self._txrx, self._placements))
@@ -2383,27 +2388,33 @@ class AbstractSpinnakerBase(ConfigHandler):
             return prov_items
 
     def _execute_energy_report(self, router_provenance_items, run_time):
-        if not get_config_bool("Reports", "write_energy_report"):
-            return []
+        with FecExecutor(self, "Execute energy report") as executor:
+            if executor.skip_if_cfg_false("Reports", "write_energy_report"):
+                return []
 
-        compute_energy_used = ComputeEnergyUsed()
-        power_used = compute_energy_used(
-            self._placements, self._machine, self._board_version,
-            router_provenance_items, run_time,
-            self._buffer_manager, self._mapping_time, self._load_time,
-            self._execute_time, self._dsg_time, self._extraction_time,
-            self._spalloc_server, self._remote_spinnaker_url,
-            self._machine_allocation_controller)
+            compute_energy_used = ComputeEnergyUsed()
+            power_used = compute_energy_used(
+                self._placements, self._machine, self._board_version,
+                router_provenance_items, run_time,
+                self._buffer_manager, self._mapping_time, self._load_time,
+                self._execute_time, self._dsg_time, self._extraction_time,
+                self._spalloc_server, self._remote_spinnaker_url,
+                self._machine_allocation_controller)
 
-        energy_prov_reporter = EnergyProvenanceReporter()
-        prov_items = energy_prov_reporter(power_used, self._placements)
+            energy_prov_reporter = EnergyProvenanceReporter()
+            prov_items = energy_prov_reporter(power_used, self._placements)
 
-        self._do_energy_report(power_used)
-        return prov_items
+            self._do_energy_report(power_used)
+            return prov_items
 
     def _execute_write_provenance(self, prov_items, n_machine_time_steps):
-        if (get_config_bool("Reports", "write_provenance_data") and
-                n_machine_time_steps is not None):
+        with FecExecutor(self, "Write Provenance") as executor:
+            if executor.skip_if_cfg_false("Reports", "write_provenance_data"):
+                return
+            if executor.stop_if_none(
+                    n_machine_time_steps, "n_machine_time_steps"):
+                return
+            # TODO Why does master only clear on write?
             self._pacman_provenance.clear()
             self._version_provenance = list()
             self._write_provenance(prov_items)
@@ -2437,6 +2448,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_clear_io_buf(self, n_machine_time_steps):
         with FecExecutor(self, "Execute Clear IO Buffer") as executor:
+            if executor.skip_if_virtual_board():
+                return
             if executor.skip_if_value_is_none(
                     n_machine_time_steps, "n_machine_time_steps"):
                 return
@@ -2448,6 +2461,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_runtime_update(self, n_sync_steps):
         with FecExecutor(self, "Execute Runtime Update") as executor:
+            if executor.skip_if_virtual_board():
+                return
             if (ExecutableType.USES_SIMULATION_INTERFACE in
                     self._executable_types):
                 updater = ChipRuntimeUpdater()
@@ -2479,7 +2494,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._database_socket_addresses, self._database_file_path)
 
     def _execute_runner(self, n_sync_steps, run_time, notification_interface):
-        with FecExecutor(self, "Execute Runner"):
+        with FecExecutor(self, "Execute Runner") as executor:
+            if executor.skip_if_virtual_board():
+                return
             runner = ApplicationRunner()
             # Don't timeout if a stepped mode is in operation
             if n_sync_steps:
@@ -2495,6 +2512,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_extract_iobuff(self, n_machine_time_steps):
         with FecExecutor(self, "Execute Extract IO Buff") as executor:
+            if executor.skip_if_virtual_board():
+                return
             if executor.skip_if_cfg_false(
                     "Reports", "extract_iobuf_during_run"):
                 return
@@ -2511,6 +2530,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_buffer_extractor(self, n_machine_time_steps):
         with FecExecutor(self, "Execute Buffer Extractor") as executor:
+            if executor.skip_if_virtual_board():
+                return
             if (self._run_until_complete or n_machine_time_steps is not None):
                 buffer_extractor = BufferExtractor()
                 buffer_extractor(
