@@ -1095,9 +1095,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._has_ran or graph_changed or data_changed:
             self._do_data_generation(self._max_run_time_steps)
 
-            # If we are using a virtual board, don't load
-            if not self._use_virtual_board:
-                self._do_load(graph_changed, data_changed)
+            self._do_load(graph_changed, data_changed)
 
         # Run for each of the given steps
         if run_time is not None:
@@ -1876,6 +1874,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_routing_setup(self, graph_changed, tokens):
         with FecExecutor(self, "Execute Routing Setup") as executor:
+            if executor.skip_if_virtual_board():
+                return
             if executor.skip_if_value_false(graph_changed, "graph_changed"):
                 return
             # TODO check if anything ever loads routing tables before here!
@@ -1971,14 +1971,24 @@ class AbstractSpinnakerBase(ConfigHandler):
             compressed = compressor(self._router_tables)
             return compressed, []
 
-    def _execute_compressor(self):
+    def _do_compression(self):
         """
 
         :return: CompressedRoutingTables (likely to be None),
             RouterCompressorProvenanceItems
         """
-        name = get_config_str("Mapping", "compressor")
+        if self.use_virtual_board:
+            name = get_config_str("Mapping", "virtual_compressor")
+            if name is None:
+                logger.info("As no virtual_compressor specified "
+                            "using compressor setting")
+                name = get_config_str("Mapping", "compressor")
+        else:
+            name = get_config_str("Mapping", "compressor")
 
+        return self._do_a_compression(name)
+
+    def _do_a_compression(self, name):
         if name == "HostBasedBitFieldRouterCompressor":
             return self._excetute_host_bitfield_compressor()
         if name == "MachineBitFieldOrderedCoveringCompressor":
@@ -2011,6 +2021,8 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _execute_load_routing_tables(self, compressed):
         with FecExecutor(
                 self, "Execute Routing Table Loader") as executor:
+            if executor.skip_if_virtual_board():
+                return
             if compressed:
                 loader = RoutingTableLoader()
                 loader(compressed, self._app_id, self._txrx, self._machine)
@@ -2044,6 +2056,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             if executor.skip_if_cfg_false(
                     "Machine", "enable_advanced_monitor_support"):
                 return
+            if executor.skip_if_virtual_board():
+                return
             if graph_changed or not self._has_ran:
                 loader = LoadFixedRoutes()
                 loader(self._fixed_routes, self._txrx, self._app_id)
@@ -2051,7 +2065,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 executor.skip("Graph not changed since last run")
 
     def _execute_system_data_specification(self):
-        with FecExecutor(self, "Execute System Data Specification"):
+        with FecExecutor(self, "Execute System Data Specification") \
+                as executor:
+            if executor.skip_if_virtual_board():
+                return None
             specifier = HostExecuteDataSpecification()
             return specifier.execute_system_data_specs(
                 self._txrx, self._machine, self._app_id, self._dsg_targets,
@@ -2059,14 +2076,18 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._java_caller)
 
     def _execute_load_system_executable_images(self):
-        with FecExecutor(self, "Execute Load Executable Images"):
+        with FecExecutor(self, "Execute Load Executable Images") as executor:
+            if executor.skip_if_virtual_board():
+                return
             loader = LoadExecutableImages()
             loader.load_sys_images(
                 self._executable_targets, self._app_id, self._txrx)
 
     def _execute_application_data_specification(
             self, processor_to_app_data_base_address):
-        with FecExecutor(self, "Execute Host Data Specification"):
+        with FecExecutor(self, "Execute Host Data Specification") as executor:
+            if executor.skip_if_virtual_board():
+                return processor_to_app_data_base_address
             specifier = HostExecuteDataSpecification()
             return specifier.execute_application_data_specs(
                 self._txrx, self._machine, self._app_id, self._dsg_targets,
@@ -2078,6 +2099,8 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _execute_tags_from_machine_report(self):
         with FecExecutor(
                 self, "Execute Tags From Machine Report") as executor:
+            if executor.skip_if_virtual_board():
+                return
             if executor.skip_if_cfg_false(
                     "Reports", "write_tag_allocation_reports"):
                 return
@@ -2086,11 +2109,13 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_load_tags(self):
         # TODO why: if graph_changed or data_changed:
-        with FecExecutor(self, "Execute Tags Loader"):
+        with FecExecutor(self, "Execute Tags Loader") as executor:
+            if executor.skip_if_virtual_board():
+                return
             loader = TagsLoader()
             loader(self._txrx, self._tags)
 
-    def _execute_extra_load_algorithms(self):
+    def _do_extra_load_algorithms(self):
         """
         Allows overriding classes to add algorithms
         """
@@ -2098,6 +2123,8 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _execute_memory_report(
             self, graph_changed, processor_to_app_data_base_address):
         with FecExecutor(self, "Execute Memory Report") as executor:
+            if executor.skip_if_virtual_board():
+                return
             if executor.skip_if_value_false(graph_changed, "graph_changed"):
                 return
             if executor.skip_if_cfg_false(
@@ -2127,6 +2154,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
 
             if compressed is None:
+                if executor.skip_if_virtual_board():
+                    return
                 reader = ReadRoutingTablesFromMachine()
                 compressed = reader(self._txrx, self._router_tables,
                                     self._app_id)
@@ -2143,6 +2172,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_fixed_route_report(self, graph_changed):
         with FecExecutor(self, "Execute Fixed Route Report") as executor:
+            if executor.skip_if_virtual_board():
+                return
             if self._has_ran and not graph_changed:
                 executor.skip("graph not changed since last run")
                 return
@@ -2158,7 +2189,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :return:
         """
-        with FecExecutor(self, "Execute Load Executable  Images"):
+        with FecExecutor(self, "Execute Load Executable  Images") as executor:
+            if executor.skip_if_virtual_board():
+                return
             loader = LoadExecutableImages()
             loader.load_app_images(
                 self._executable_targets, self._app_id, self._txrx)
@@ -2172,7 +2205,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_routing_setup(graph_changed, self._mapping_tokens)
         self._exectute_graph_binary_gatherer(graph_changed)
         # loading_algorithms
-        compressed, self._compressor_provenance = self._execute_compressor()
+        compressed, self._compressor_provenance = self._do_compression()
         self._execute_load_routing_tables(compressed)
         self._execute_uncompressed_routing_table_reports()
         self._execute_bit_field_compressor_report()
@@ -2187,7 +2220,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         processor_to_app_data_base_address = \
             self._execute_application_data_specification(
                 processor_to_app_data_base_address)
-        self._execute_extra_load_algorithms()
+        self._do_extra_load_algorithms()
         self._execute_memory_report(
             graph_changed, processor_to_app_data_base_address)
         self._execute_compressed_reports(graph_changed, compressed)
@@ -2206,6 +2239,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param bool graph_changed:
         :param bool data_changed:
         """
+        # If we are using a virtual board, don't load
+        if self._use_virtual_board:
+            return
+
         # set up timing
         load_timer = Timer()
         load_timer.start_timing()
