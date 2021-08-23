@@ -137,6 +137,7 @@ class ConfigHandler(object):
                             "As reportsEnabled == \"False\", [Reports] {} "
                             "has been set to False", option)
         if self._use_virtual_board:
+            # TODO handle in the execute methods
             if get_config_bool("Reports", "write_energy_report"):
                 set_config("Reports", "write_energy_report", "False")
                 logger.info("[Reports]write_energy_report has been set to "
