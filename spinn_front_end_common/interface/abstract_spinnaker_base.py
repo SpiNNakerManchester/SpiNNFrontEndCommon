@@ -1818,6 +1818,18 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_in_multicast_routing_tables = executor.get_item(
             "DataInMulticastRoutingTables")
 
+    def _execute_graph_data_specification_writer(self):
+        """
+        Overridden by spy which adds placement_order
+
+        :return:
+        """
+        with FecExecutor(self, "Execute Graph Data Specification Writer"):
+            writer = GraphDataSpecificationWriter()
+            self._dsg_targets, self._region_sizes = writer(
+                self._placements, self._hostname, self._machine,
+                self._max_run_time_steps)
+
     def _do_data_generation(self, n_machine_time_steps):
         self._run_until_time_step = n_machine_time_steps
         # set up timing
@@ -1825,12 +1837,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         data_gen_timer.start_timing()
 
         provide_injectables(self)
-        with FecExecutor(self, "Execute Graph Data Specificatio Writer"):
-            writer = GraphDataSpecificationWriter()
-            self._dsg_targets, self._region_sizes = writer(
-                self._placements, self._hostname, self._machine,
-                self._max_run_time_steps)
-            # TODO placement_order not even in xml
+        self._execute_graph_data_specification_writer()
         clear_injectables()
 
         self._dsg_time += convert_time_diff_to_total_milliseconds(
