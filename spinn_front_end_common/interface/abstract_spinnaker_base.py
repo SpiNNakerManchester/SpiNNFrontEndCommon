@@ -73,12 +73,12 @@ from spinn_front_end_common.interface.interface_functions import (
     ReadRoutingTablesFromMachine,
     RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader, TagsLoader)
 from spinn_front_end_common.interface.interface_functions.\
-        machine_bit_field_router_compressor import (
-    MachineBitFieldOrderedCoveringCompressor,
-    MachineBitFieldPairRouterCompressor)
+    machine_bit_field_router_compressor import (
+        MachineBitFieldOrderedCoveringCompressor,
+        MachineBitFieldPairRouterCompressor)
 from spinn_front_end_common.interface.interface_functions.\
-        host_no_bitfield_router_compression import (
-    ordered_covering_compression, pair_compression)
+    host_no_bitfield_router_compression import (
+        ordered_covering_compression, pair_compression)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE)
@@ -1896,7 +1896,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _excetute_machine_bitfield_ordered_covering_compressor(self):
         with FecExecutor(
-                self, "Execute MachineBitFieldOrderedCoveringCompressor") as executor:
+                self, "Execute MachineBitFieldOrderedCoveringCompressor")\
+                as executor:
             if executor.skip_if_virtual_board():
                 return None, []
             compressor = MachineBitFieldOrderedCoveringCompressor()
@@ -2402,7 +2403,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_write_provenance(self, prov_items, n_machine_time_steps):
         if (get_config_bool("Reports", "write_provenance_data") and
-              n_machine_time_steps is not None):
+                n_machine_time_steps is not None):
             self._pacman_provenance.clear()
             self._version_provenance = list()
             self._write_provenance(prov_items)
