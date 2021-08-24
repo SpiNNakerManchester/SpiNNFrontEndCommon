@@ -392,17 +392,16 @@ class DatabaseWriter(SQLiteDB):
         if application_graph is not None and application_graph.n_vertices:
             # We will be asking application vertices for key/atom mappings
             vertices_and_partitions = (
-                (vertex.app_vertex, partition)
-                for vertex in machine_graph.vertices
-                for partition in machine_graph.
-                get_outgoing_edge_partitions_starting_at_vertex(vertex))
+                (partition.pre_vertex.app_vertex, partition)
+                for partition in
+                machine_graph.outgoing_multicast_edge_partitions)
         else:
             # We will be asking machine vertices for key/atom mappings
             vertices_and_partitions = (
-                (vertex, partition)
+                (partition.pre_vertex, partition)
                 for vertex in machine_graph.vertices
-                for partition in machine_graph.
-                get_outgoing_edge_partitions_starting_at_vertex(vertex))
+                for partition in
+                machine_graph.outgoing_multicast_edge_partitions)
 
         with self.transaction() as cur:
             cur.executemany(
