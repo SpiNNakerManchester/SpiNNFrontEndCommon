@@ -33,8 +33,7 @@ class _SCPOKMessage(SDPMessage):
             flags=SDPFlag.REPLY_NOT_EXPECTED, destination_port=0,
             destination_cpu=0, destination_chip_x=x, destination_chip_y=y)
         utils.update_sdp_header_for_udp_send(sdp_header, 0, 0)
-        super(_SCPOKMessage, self).__init__(
-            sdp_header, data=scp_header.bytestring)
+        super().__init__(sdp_header, data=scp_header.bytestring)
 
 
 class MockMachine(Thread):
@@ -43,13 +42,13 @@ class MockMachine(Thread):
 
     def __init__(self, responses=None):
         """
-        :param responses:\
-            An optional list of responses to send in the order to be sent. \
-            If not specified, OK responses will be sent for every request. \
-            Note that responses can include "None" which means that no\
+        :param responses:
+            An optional list of responses to send in the order to be sent.
+            If not specified, OK responses will be sent for every request.
+            Note that responses can include "None" which means that no
             response will be sent to that request
         """
-        super(MockMachine, self).__init__()
+        super().__init__()
 
         # Set up a connection to be the machine
         self._receiver = UDPConnection()
@@ -101,7 +100,7 @@ class MockMachine(Thread):
             try:
                 if self._receiver.is_ready_to_receive(10):
                     self._do_receive()
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-except
                 if self._running:
                     traceback.print_exc()
                     self._error = e

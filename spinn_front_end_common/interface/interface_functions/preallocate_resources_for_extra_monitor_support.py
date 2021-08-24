@@ -24,18 +24,23 @@ from spinn_front_end_common.utility_models import (
 
 
 class PreAllocateResourcesForExtraMonitorSupport(object):
+    """ Allocates resources for the extra monitors.
+    """
     def __call__(
-            self, machine, pre_allocated_resources=None,
+            self, machine, pre_allocated_resources,
             n_cores_to_allocate=1):
         """
-        :param machine: SpiNNaker machine object
+        :param ~spinn_machine.Machine machine: SpiNNaker machine object
         :param pre_allocated_resources: resources already preallocated
-        :param n_cores_to_allocate: how many gatherers to use
+        :type pre_allocated_resources:
+            ~pacman.model.resources.PreAllocatedResourceContainer
+        :param int n_cores_to_allocate: how many gatherers to use per chip
+        :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
 
         progress = ProgressBar(
             len(list(machine.ethernet_connected_chips)) + machine.n_chips,
-            "Pre allocating resources for Extra Monitor support vertices")
+            "Preallocating resources for Extra Monitor support vertices")
 
         sdrams = list()
         cores = list()
@@ -50,27 +55,21 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         # extractor
         self._handle_second_monitor_support(cores, sdrams, machine, progress)
 
-        # create pre allocated resource container
-        extra_monitor_pre_allocations = PreAllocatedResourceContainer(
+        # note what has been preallocated
+        allocated = PreAllocatedResourceContainer(
             specific_sdram_usage=sdrams, core_resources=cores,
             specific_iptag_resources=tags)
-
-        # add other pre allocated resources
-        if pre_allocated_resources is not None:
-            extra_monitor_pre_allocations.extend(pre_allocated_resources)
-
-        # return pre allocated resources
-        return extra_monitor_pre_allocations
+        allocated.extend(pre_allocated_resources)
+        return allocated
 
     @staticmethod
     def _handle_second_monitor_support(cores, sdrams, machine, progress):
         """ Adds the second monitor preallocations, which reflect the\
             reinjector and data extractor support
 
-        :param cores: the storage of core requirements
-        :param machine: the spinnMachine instance
-        :param progress: the progress bar to operate one
-        :rtype: None
+        :param list(~.CoreResource) cores: the storage of core requirements
+        :param ~.Machine machine: the spinnMachine instance
+        :param ~.ProgressBar progress: the progress bar to operate one
         """
         extra_usage = \
             ExtraMonitorSupportMachineVertex.static_resources_required()
@@ -85,14 +84,16 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         """ Adds the packet gathering functionality tied into the data\
             extractor within each chip
 
-        :param sdrams: the preallocated SDRAM requirement for these vertices
-        :param cores: the preallocated cores requirement for these vertices
-        :param tags: the preallocated tags requirement for these vertices
-        :param machine: the spinnMachine instance
-        :param progress: the progress bar to update as needed
-        :param n_cores_to_allocate: \
+        :param list(~.SpecificChipSDRAMResource) sdrams:
+            the preallocated SDRAM requirement for these vertices
+        :param list(~.CoreResource) cores:
+            the preallocated cores requirement for these vertices
+        :param list(~.SpecificBoardIPtagResource) tags:
+            the preallocated tags requirement for these vertices
+        :param ~.Machine machine: the spinnMachine instance
+        :param ~.ProgressBar progress: the progress bar to update as needed
+        :param int n_cores_to_allocate:
             how many packet gathers to allocate per chip
-        :rtype: None
         """
         # pylint: disable=too-many-arguments
 

@@ -18,6 +18,8 @@ import numpy
 import math
 import scipy.stats
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.utilities.globals_variables import (
+    machine_time_step_ms)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -50,8 +52,7 @@ class ProfileData(object):
 
     def __init__(self, tag_labels):
         """
-        :param tag_labels: A list of labels indexed by tag ID
-        :type tag_labels: list(str)
+        :param list(str) tag_labels: A list of labels indexed by tag ID
         """
         self._tag_labels = tag_labels
         self._tags = dict()
@@ -60,8 +61,8 @@ class ProfileData(object):
     def add_data(self, data):
         """ Add profiling data read from the profile section
 
-        :param data: Data read from the profile section on the machine
-        :type data: bytearray
+        :param bytearray data:
+            Data read from the profile section on the machine
         """
         samples = numpy.asarray(data, dtype="uint8").view(dtype="<u4")
 
@@ -96,6 +97,13 @@ class ProfileData(object):
 
     def _add_tag_data(
             self, entry_tags, entry_times, exit_tags, exit_times, tag):
+        """
+        :param ~numpy.ndarray entry_tags:
+        :param ~numpy.ndarray entry_times:
+        :param ~numpy.ndarray exit_tags:
+        :param ~numpy.ndarray exit_times:
+        :param int tag:
+        """
         # pylint: disable=too-many-arguments
         tag_label = self._tag_labels.get(tag, None)
         if tag_label is None:
@@ -140,11 +148,10 @@ class ProfileData(object):
         return self._tags.keys()
 
     def get_mean_ms(self, tag):
-        """ Get the mean time in milliseconds spent on operations with the\
+        """ Get the mean time in milliseconds spent on operations with the
             given tag
 
-        :param tag: The tag to get the mean time for
-        :type tag: str
+        :param str tag: The tag to get the mean time for
         :rtype: float
         """
         return numpy.average(self._tags[tag][_DURATION])
@@ -152,44 +159,35 @@ class ProfileData(object):
     def get_n_calls(self, tag):
         """ Get the number of times the given tag was recorded
 
-        :param tag: The tag to get the number of calls of
-        :type tag: str
+        :param str tag: The tag to get the number of calls of
         :rtype: int
         """
         return self._tags[tag][_DURATION].size
 
-    def get_mean_n_calls_per_ts(self, tag, machine_time_step_ms):
+    def get_mean_n_calls_per_ts(self, tag):
         """ Get the mean number of times the given tag was recorded per\
             timestep
 
-        :param tag: The tag to get the data for
-        :type tag: str
-        :param machine_time_step_ms:\
-            The time step of the simulation in microseconds
-        :type machine_time_step_ms: int
+        :param str tag: The tag to get the data for
         :rtype: float
         """
         n_points = math.ceil(
-            self._max_time / machine_time_step_ms)
-        endpoint = n_points * machine_time_step_ms
+            self._max_time / machine_time_step_ms())
+        endpoint = n_points * machine_time_step_ms()
         bins = numpy.linspace(0, endpoint, n_points + 1)
         return numpy.average(numpy.histogram(
             self._tags[tag][_START_TIME], bins)[0])
 
-    def get_mean_ms_per_ts(self, tag, machine_time_step_ms):
+    def get_mean_ms_per_ts(self, tag):
         """ Get the mean time in milliseconds spent on operations with the\
             given tag per timestep
 
-        :param tag: The tag to get the data for
-        :type tag: str
-        :param machine_time_step_ms:\
-            The time step of the simulation in microseconds
-        :type machine_time_step_ms: int
+        :param str tag: The tag to get the data for
         :rtype: float
         """
         n_points = math.ceil(
-            self._max_time / machine_time_step_ms)
-        endpoint = n_points * machine_time_step_ms
+            self._max_time / machine_time_step_ms())
+        endpoint = n_points * machine_time_step_ms()
         bins = numpy.linspace(0, endpoint, n_points + 1)
         mean_per_ts = scipy.stats.binned_statistic(
             self._tags[tag][_START_TIME], self._tags[tag][_DURATION],

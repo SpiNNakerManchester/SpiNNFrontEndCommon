@@ -24,13 +24,17 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class BufferExtractor(object):
-    """ Extracts data in between runs
+    """ Extracts data in between runs.
     """
 
     __slots__ = []
 
     def __call__(self, machine_graph, placements, buffer_manager):
-
+        """
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        :param ~pacman.model.placements.Placements placements:
+        :param BufferManager buffer_manager:
+        """
         # Count the regions to be read
         n_regions_to_read, recording_placements = self._count_regions(
             machine_graph, placements)
@@ -49,6 +53,11 @@ class BufferExtractor(object):
 
     @staticmethod
     def _count_regions(machine_graph, placements):
+        """
+        :param ~.MachineGraph machine_graph:
+        :param ~.Placements placements:
+        :rtype: tuple(int, list(~.Placement))
+        """
         # Count the regions to be read
         n_regions_to_read = 0
         recording_placements = list()

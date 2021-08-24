@@ -13,39 +13,50 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_utilities.overrides import overrides
-from spinn_storage_handlers.abstract_classes import (
-    AbstractDataWriter, AbstractContextManager)
+import io
 
 
-class DataRowWriter(AbstractDataWriter, AbstractContextManager):
+class DataRowWriter(io.RawIOBase):
     __slots__ = [
         "_x",
         "_y",
         "_p",
         "_targets",
         "_data",
-        "_closed"
     ]
 
     def __init__(self, x, y, p, targets):
+        super().__init__()
         self._x = x
         self._y = y
         self._p = p
         self._targets = targets
         self._data = bytearray()
-        self._closed = False
 
-    @overrides(AbstractDataWriter.write)
     def write(self, data):
-        assert self._closed is False
+        assert self.closed is False
         self._data += data
 
-    @overrides(AbstractContextManager.close, extend_doc=False)
+    def readable(self):
+        return False
+
+    def seekable(self):
+        return False
+
+    def writable(self):
+        return False
+
+    def truncate(self, size=None):
+        # Ignore
+        pass
+
+    def fileno(self):
+        raise OSError
+
     def close(self):
         """ Closes the writer if not already closed.
         """
-        if not self._closed:
+        if not self.closed:
             self._targets.write_data_spec(
                 self._x, self._y, self._p, self._data)
-            self._closed = True
+        super().close()

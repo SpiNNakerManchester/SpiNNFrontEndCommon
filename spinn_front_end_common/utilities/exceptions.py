@@ -55,3 +55,26 @@ class BufferableRegionTooSmall(SpinnFrontEndException):
 class BufferedRegionNotPresent(SpinnFrontEndException):
     """ Raised when trying to issue buffered packets for a region not managed
     """
+
+
+class CantFindSDRAMToUseException(SpinnFrontEndException):
+    """ Raised when malloc and sdram stealing cannot occur.
+    """
+
+
+class SimulatorNotSetupException(SpinnFrontEndException):
+    """
+    Raised when trying to get simulator before it has been setup
+    """
+
+
+class SimulatorShutdownException(SpinnFrontEndException):
+    """
+    Raised when trying to get simulator after it has been shit down
+    """
+
+
+class SimulatorRunningException(SpinnFrontEndException):
+    """
+    Raised when trying to running get simulator that should not be running
+    """

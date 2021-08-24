@@ -20,33 +20,41 @@ class PacmanProvenanceExtractor(object):
     """ Extracts Provenance data from a :py:class:`PACMANAlgorithmExecutor`
     """
 
+    TOP_NAME = "pacman"
+
+    __slots__ = ["__data_items", "__already_done"]
+
     def __init__(self):
-        self._data_items = list()
+        self.__data_items = list()
+        self.__already_done = set()
 
     def extract_provenance(self, executor):
         """ Acquires the timings from PACMAN algorithms (provenance data)
 
-        :param executor: the PACMAN workflow executor
+        :param ~pacman.executor.PACMANAlgorithmExecutor executor:
+            the PACMAN workflow executor
         :rtype: None
         """
         for (algorithm, run_time, exec_names) in executor.algorithm_timings:
-            names = ["pacman"]
-            names.append(exec_names)
-            names.extend(["run_time_of_{}".format(algorithm)])
-            self._data_items.append(ProvenanceDataItem(names, run_time))
+            key = "run_time_of_{}".format(algorithm)
+            if key not in self.__already_done:
+                self.__data_items.append(ProvenanceDataItem(
+                    [self.TOP_NAME, exec_names, key], run_time))
+                self.__already_done.add(key)
 
     @property
     def data_items(self):
         """ Returns the provenance data items
 
-        :return: list of provenance data items.
-        :rtype: iterable(:py:class:`ProvenanceDataItem`)
+        :return: the provenance items
+        :rtype: iterable(ProvenanceDataItem)
         """
-        return self._data_items
+        return self.__data_items
 
     def clear(self):
         """ Clears the provenance data store
 
         :rtype: None
         """
-        self._data_items = list()
+        self.__data_items = list()
+        self.__already_done = set()

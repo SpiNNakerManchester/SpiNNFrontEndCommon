@@ -13,12 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
-@add_metaclass(AbstractBase)
-class AbstractProvidesKeyToAtomMapping(object):
+class AbstractProvidesKeyToAtomMapping(object, metaclass=AbstractBase):
     """ Interface to provide a mapping between routing key partitions and\
         atom IDs
     """
@@ -29,10 +27,10 @@ class AbstractProvidesKeyToAtomMapping(object):
     def routing_key_partition_atom_mapping(self, routing_info, partition):
         """ Returns a list of atom to key mapping.
 
-        :param routing_info: the routing info object to consider
-        :type routing_info: ~pacman.model.routing_info.RoutingInfo
-        :param partition: the routing partition to handle.
-        :type partition: ~pacman.model.graphs.AbstractOutgoingEdgePartition
+        :param ~pacman.model.routing_info.RoutingInfo routing_info:
+            the routing info object to consider
+        :param ~pacman.model.graphs.OutgoingEdgePartition partition:
+            the routing partition to handle.
         :return: a iterable of tuples of atom IDs to keys.
         :rtype: iterable(tuple(int,int))
         """

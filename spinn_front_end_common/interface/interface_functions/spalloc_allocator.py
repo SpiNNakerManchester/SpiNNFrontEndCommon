@@ -14,11 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import math
-import six
-import sys
 from spinn_utilities.overrides import overrides
 from spalloc import Job
 from spalloc.states import JobState
+from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
 from spinn_front_end_common.abstract_models.impl import (
@@ -34,11 +33,14 @@ class _SpallocJobController(MachineAllocationController):
     ]
 
     def __init__(self, job):
+        """
+        :param ~spalloc.job.Job job:
+        """
         if job is None:
             raise Exception("must have a real job")
         self._job = job
         self._state = job.state
-        super(_SpallocJobController, self).__init__("SpallocJobController")
+        super().__init__("SpallocJobController")
 
     @overrides(AbstractMachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time):
@@ -47,19 +49,31 @@ class _SpallocJobController(MachineAllocationController):
 
     @overrides(AbstractMachineAllocationController.close)
     def close(self):
-        super(_SpallocJobController, self).close()
+        super().close()
         self._job.destroy()
 
     @property
     def power(self):
+        """
+        :rtype: bool
+        """
         return self._job.power
 
     def set_power(self, power):
+        """
+        :param bool power:
+        """
         self._job.set_power(power)
         if power:
             self._job.wait_until_ready()
 
+    @overrides(AbstractMachineAllocationController.where_is_machine)
     def where_is_machine(self, chip_x, chip_y):
+        """
+        :param int chip_x:
+        :param int chip_y:
+        :rtype: tuple(int,int,int)
+        """
         return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
 
     @overrides(MachineAllocationController._wait)
@@ -69,21 +83,21 @@ class _SpallocJobController(MachineAllocationController):
                 self._state = self._job.wait_for_state_change(self._state)
         except TypeError:
             pass
-        except Exception:  # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             if not self._exited:
-                six.reraise(*sys.exc_info())
+                raise e
         return self._state != JobState.destroyed
 
     @overrides(MachineAllocationController._teardown)
     def _teardown(self):
         if not self._exited:
             self._job.close()
-        super(_SpallocJobController, self)._teardown()
+        super()._teardown()
 
 
 class SpallocAllocator(object):
     """ Request a machine from a SPALLOC server that will fit the given\
-        number of chips
+        number of chips.
     """
 
     # Use a worst case calculation
@@ -91,18 +105,17 @@ class SpallocAllocator(object):
     _MACHINE_VERSION = 5
 
     def __call__(
-            self, spalloc_server, spalloc_user, n_chips=None, n_boards=None,
-            spalloc_port=None, spalloc_machine=None):
+            self, spalloc_server, n_chips=None, n_boards=None):
         """
-        :param spalloc_server: \
+        :param str spalloc_server:
             The server from which the machine should be requested
-        :param spalloc_port: The port of the SPALLOC server
-        :param spalloc_user: The user to allocate the machine to
         :param n_chips: The number of chips required.
             IGNORED if n_boards is not None
-        :param n_boards: The number of boards required
-        :param spalloc_port: The optional port number to speak to spalloc
-        :param spalloc_machine: The optional spalloc machine to use
+        :type n_chips: int or None
+        :param int n_boards: The number of boards required
+        :type n_boards: int or None
+        :rtype: tuple(str, int, None, bool, bool, None, None,
+            MachineAllocationController)
         """
         # pylint: disable=too-many-arguments
 
@@ -118,10 +131,12 @@ class SpallocAllocator(object):
 
         spalloc_kw_args = {
             'hostname': spalloc_server,
-            'owner': spalloc_user
+            'owner': get_config_str("Machine", "spalloc_user")
         }
+        spalloc_port = get_config_int("Machine", "spalloc_port")
         if spalloc_port is not None:
             spalloc_kw_args['port'] = spalloc_port
+        spalloc_machine = get_config_str("Machine", "spalloc_machine")
         if spalloc_machine is not None:
             spalloc_kw_args['machine'] = spalloc_machine
 
@@ -134,6 +149,11 @@ class SpallocAllocator(object):
         )
 
     def _launch_job(self, n_boards, spalloc_kw_args):
+        """
+        :param int n_boards:
+        :param dict(str, str or int) spalloc_kw_args:
+        :rtype: tuple(~.Job, str)
+        """
         job = Job(n_boards, **spalloc_kw_args)
         try:
             job.wait_until_ready()

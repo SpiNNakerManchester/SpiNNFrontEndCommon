@@ -59,8 +59,7 @@ CREATE TABLE IF NOT EXISTS Application_vertices(
     vertex_label TEXT,
     vertex_class TEXT,
     no_atoms INTEGER,
-    max_atom_constrant INTEGER,
-    recorded INTEGER);
+    max_atom_constrant INTEGER);
 
 -- A communication link between two application vertices
 CREATE TABLE IF NOT EXISTS Application_edges(
@@ -214,19 +213,25 @@ CREATE VIEW IF NOT EXISTS app_output_tag_view AS SELECT
     IP_tags.strip_sdp AS strip_sdp,
     IP_tags.board_address AS board_address,
     IP_tags.tag AS tag,
-    pre_vertices.vertex_label AS pre_vertex_label,
-    pre_vertices.vertex_class AS pre_vertex_class,
-    post_vertices.vertex_label AS post_vertex_label,
-    post_vertices.vertex_class AS post_vertex_class
+    pre_app_vertices.vertex_label AS pre_vertex_label,
+    pre_app_vertices.vertex_class AS pre_vertex_class,
+    post_app_vertices.vertex_label AS post_vertex_label,
+    post_app_vertices.vertex_class AS post_vertex_class
 FROM IP_tags
-    JOIN graph_mapper_vertex AS mapper
-        ON IP_tags.vertex_id = mapper.machine_vertex_id
-    JOIN Application_vertices AS post_vertices
-        ON mapper.application_vertex_id = post_vertices.vertex_id
-    JOIN Application_edges AS edges
-        ON mapper.application_vertex_id = edges.post_vertex
-    JOIN Application_vertices AS pre_vertices
-        ON edges.pre_vertex = pre_vertices.vertex_id;
+    JOIN Machine_vertices AS post_vertices
+        ON IP_tags.vertex_id = post_vertices.vertex_id
+    JOIN Machine_edges AS edges
+        ON edges.post_vertex = post_vertices.vertex_id
+    JOIN Machine_vertices AS pre_vertices
+        ON edges.pre_vertex = pre_vertices.vertex_id
+    JOIN graph_mapper_vertex AS pre_mapper
+        ON edges.pre_vertex = pre_mapper.machine_vertex_id
+    JOIN graph_mapper_vertex AS post_mapper
+        ON edges.post_vertex = post_mapper.machine_vertex_id
+    JOIN Application_vertices AS pre_app_vertices
+        ON pre_mapper.application_vertex_id = pre_app_vertices.vertex_id
+    JOIN Application_vertices AS post_app_vertices
+        ON post_mapper.application_vertex_id = post_app_vertices.vertex_id;
 
 CREATE VIEW IF NOT EXISTS machine_output_tag_view AS SELECT
     IP_tags.ip_address AS ip_address,

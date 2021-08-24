@@ -21,21 +21,20 @@ from spinn_front_end_common.utility_models import (
 
 
 class PreAllocateResourcesForChipPowerMonitor(object):
-    """ Adds chip power monitor resources as required for a machine
+    """ Adds chip power monitor resources as required for a machine.
     """
 
     def __call__(
-            self, machine, n_samples_per_recording,
-            sampling_frequency, time_scale_factor, machine_time_step,
-            pre_allocated_resources=None):
+            self, machine,  sampling_frequency, pre_allocated_resources):
         """
+        :param ~spinn_machine.Machine machine:
+            the SpiNNaker machine as discovered
+        :param int sampling_frequency: the frequency of sampling
         :param pre_allocated_resources: other preallocated resources
-        :param machine: the SpiNNaker machine as discovered
-        :param n_samples_per_recording: how many samples between record entries
-        :param sampling_frequency: the frequency of sampling
-        :param time_scale_factor: the time scale factor
-        :param machine_time_step: the machine time step
+        :type pre_allocated_resources:
+            ~pacman.model.resources.PreAllocatedResourceContainer
         :return: preallocated resources
+        :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
         # pylint: disable=too-many-arguments
 
@@ -44,10 +43,7 @@ class PreAllocateResourcesForChipPowerMonitor(object):
 
         # store how much SDRAM the power monitor uses per core
         resources = ChipPowerMonitorMachineVertex.get_resources(
-            n_samples_per_recording=n_samples_per_recording,
-            sampling_frequency=sampling_frequency,
-            time_scale_factor=time_scale_factor,
-            time_step=machine_time_step)
+            sampling_frequency=sampling_frequency)
 
         # for every Ethernet connected chip, get the resources needed by the
         # live packet gatherers
@@ -58,14 +54,8 @@ class PreAllocateResourcesForChipPowerMonitor(object):
                 SpecificChipSDRAMResource(chip, resources.sdram))
             cores.append(CoreResource(chip, 1))
 
-        # create preallocated resource container
-        cpm_pre_allocated_resource_container = PreAllocatedResourceContainer(
+        # note what has been preallocated
+        allocated = PreAllocatedResourceContainer(
             specific_sdram_usage=sdrams, core_resources=cores)
-
-        # add other preallocated resources
-        if pre_allocated_resources is not None:
-            cpm_pre_allocated_resource_container.extend(
-                pre_allocated_resources)
-
-        # return preallocated resources
-        return cpm_pre_allocated_resource_container
+        allocated.extend(pre_allocated_resources)
+        return allocated

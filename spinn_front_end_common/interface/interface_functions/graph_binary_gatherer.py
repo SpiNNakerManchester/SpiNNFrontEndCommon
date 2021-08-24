@@ -13,11 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+from spinnman.model import ExecutableTargets
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities.utility_objs import ExecutableTargets
+from spinn_utilities.log import FormatAdapter
+from pacman.model.graphs import AbstractVirtual
 from spinn_front_end_common.utilities.exceptions import (
     ExecutableNotFoundException)
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class GraphBinaryGatherer(object):
@@ -30,26 +35,37 @@ class GraphBinaryGatherer(object):
         self._exe_finder = None
         self._exe_targets = None
 
-    def __call__(
-            self, placements, graph, executable_finder, graph_mapper=None):
+    def __call__(self, placements, graph, executable_finder):
+        """
+        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.graphs.machine.MachineGraph graph:
+        :param executable_finder:
+        :type executable_finder:
+            ~spinn_utilities.executable_finder.ExecutableFinder
+        :rtype: ExecutableTargets
+        """
         self._exe_finder = executable_finder
         self._exe_targets = ExecutableTargets()
         progress = ProgressBar(graph.n_vertices, "Finding binaries")
         for vertex in progress.over(graph.vertices):
             placement = placements.get_placement_of_vertex(vertex)
             self.__get_binary(placement, vertex)
-            if graph_mapper is not None:
-                self.__get_binary(placement,
-                                  graph_mapper.get_application_vertex(vertex))
 
         return self._exe_targets
 
     def __get_binary(self, placement, vertex):
-        # If we've got junk input (shouldn't happen), ignore it
-        if vertex is None:
-            return
-        # if the vertex cannot generate a DSG, ignore it
+        """
+        :param ~.Placement placement:
+        :param ~.AbstractVertex vertex:
+        """
+        # if the vertex cannot be executed, ignore it
         if not isinstance(vertex, AbstractHasAssociatedBinary):
+            if not isinstance(vertex, AbstractVirtual):
+                msg = (
+                    "Vertex {} does not implement either "
+                    "AbstractHasAssociatedBinary or AbstractVirtual. So it is "
+                    "unclear if it should or should not have a binary")
+                logger.error(msg.format(vertex), vertex)
             return
 
         # Get name of binary from vertex

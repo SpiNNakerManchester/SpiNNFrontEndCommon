@@ -13,18 +13,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinnman.processes import AbstractMultiConnectionProcess
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_messages import (
         LoadApplicationMCRoutesMessage)
-from spinnman.processes.abstract_multi_connection_process import (
-    AbstractMultiConnectionProcess)
 
 
 class LoadApplicationMCRoutesProcess(AbstractMultiConnectionProcess):
+    """ How to send messages to load the saved application multicast routing\
+        tables.
+    """
+
     def load_application_mc_routes(self, core_subsets):
         """
-        :param core_subsets: sets of cores to send command to
-        :rtype: None
+        :param ~spinn_machine.CoreSubsets core_subsets:
+            sets of cores to send command to
         """
         for core_subset in core_subsets.core_subsets:
             for processor_id in core_subset.processor_ids:

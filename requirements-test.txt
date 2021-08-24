@@ -16,7 +16,8 @@
 -r requirements.txt
 flake8
 # pytest will be brought in by pytest-cov
+coverage >= 4.4, < 5.0
 pytest-cov
-sphinx==1.5.3
+sphinx >= 4
 testfixtures
-httpretty
+httpretty != 1.0.0
