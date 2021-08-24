@@ -367,6 +367,7 @@ class ConfigHandler(object):
 
     def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
         """ Set up timings of the machine
+
         :param machine_time_step:
             An explicitly specified time step for the machine.  If None,
             the value is read from the config
