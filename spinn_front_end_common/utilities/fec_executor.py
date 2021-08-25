@@ -117,20 +117,20 @@ class FecExecutor(object):
             self.skip(f"cfg {section}:{option} is False")
             return True
 
-    def _stop(self, reason):
+    def stop(self, reason):
         time_taken = self._stop_timer()
         logger.info(
             f"{self._name} stopped after {time_taken} as {reason}")
 
     def stop_if_none(self, value, name):
         if value is None:
-            self._stop(f"{name} is None")
+            self.stop(f"{name} is None")
             return True
         return False
 
     def stop_if_virtual_board(self):
         if self._simulator.use_virtual_board:
-            self._stop("simulator.use_virtual_board")
+            self.stop("simulator.use_virtual_board")
             return True
         else:
             return False
