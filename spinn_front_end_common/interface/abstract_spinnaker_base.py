@@ -1908,6 +1908,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 if self.use_virtual_board:
                     logger.warning(
                         "Ignoring exectable not found as using virtual")
+                    executor.stop("exectable not found and virtual board")
                     return
                 raise
 
