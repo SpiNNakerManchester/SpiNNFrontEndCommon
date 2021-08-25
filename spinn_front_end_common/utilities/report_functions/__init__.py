@@ -29,7 +29,7 @@ from .memory_map_on_host_report import MemoryMapOnHostReport
 from .network_specification import NetworkSpecification
 from .routing_table_from_machine_report import RoutingTableFromMachineReport
 from .real_tags_report import TagsFromMachineReport
-
+from .write_json_machine import WriteJsonMachine
 
 def report_xml():
     return os.path.join(
@@ -47,4 +47,5 @@ __all__ = [
     "MemoryMapOnHostReport",
     "report_xml",
     "RoutingTableFromMachineReport",
-    "TagsFromMachineReport"]
+    "TagsFromMachineReport",
+    "WriteJsonMachine"]
