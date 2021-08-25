@@ -47,6 +47,9 @@ from pacman.model.graphs.machine import (
 from pacman.model.resources import (
     PreAllocatedResourceContainer, ConstantSDRAM)
 from pacman import __version__ as pacman_version
+from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
+from pacman.operations.chip_id_allocator_algorithms import (
+    MallocBasedChipIdAllocator)
 from pacman.operations.router_compressors.ordered_covering_router_compressor \
     import OrderedCoveringCompressor
 from pacman.operations.router_compressors.checked_unordered_pair_compressor \
@@ -66,7 +69,7 @@ from spinn_front_end_common.interface.interface_functions import (
     DSGRegionReloader, EnergyProvenanceReporter, GraphBinaryGatherer,
     GraphDataSpecificationWriter,
     GraphProvenanceGatherer,  HostBasedBitFieldRouterCompressor,
-    HostExecuteDataSpecification,
+    HostExecuteDataSpecification, InsertChipPowerMonitorsToGraphs,
     interface_xml, LoadExecutableImages, LoadFixedRoutes,
     PlacementsProvenanceGatherer, ProfileDataGatherer,
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
@@ -79,6 +82,8 @@ from spinn_front_end_common.interface.interface_functions.\
 from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression, pair_compression)
+from spinn_front_end_common.interface.splitter_selectors import (
+    SplitterSelector)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE)
@@ -86,10 +91,11 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import (
-    BitFieldCompressorReport, EnergyReport, FixedRouteFromMachineReport,
-    MemoryMapOnHostReport,
-    MemoryMapOnHostChipReport, RoutingTableFromMachineReport,
-    TagsFromMachineReport, report_xml)
+    BitFieldCompressorReport, BoardChipReport, EnergyReport,
+    FixedRouteFromMachineReport, MemoryMapOnHostReport,
+    MemoryMapOnHostChipReport, NetworkSpecification,
+    RoutingTableFromMachineReport, TagsFromMachineReport, report_xml,
+    WriteJsonMachine)
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utility_models import (
@@ -104,7 +110,8 @@ from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
 from spinn_front_end_common.utilities import FecExecutor
 from spinn_front_end_common.utilities.report_functions.reports import (
-    generate_comparison_router_report, router_compressed_summary_report,
+    generate_comparison_router_report, partitioner_report,
+    router_compressed_summary_report,
     router_report_from_compressed_router_tables,
     router_report_from_router_tables, sdram_usage_report_per_chip)
 from spinn_front_end_common import __version__ as fec_version
@@ -1594,7 +1601,112 @@ class AbstractSpinnakerBase(ConfigHandler):
                 for name, value in self._front_end_versions)
         self._version_provenance = version_provenance
 
+    def _do_extra_mapping_algorithms(self):
+        """
+        Allows overriding classes to add algorithms
+        """
+
+    def _execute_write_json_machine(self):
+        with FecExecutor(self, "Execute write json machine") as executor:
+            if executor.skip_if_cfg_false("Reports", "write_json_machine"):
+                return
+            writer = WriteJsonMachine()
+            writer(self._machine, self._json_folder)
+            # TODO output ignored as never used
+
+    def _execute_write_network_specification(self):
+        with FecExecutor(
+                self, "Execute write network_specification") as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_network_specification_report"):
+                return
+            if self._application_graph is None:
+                graph = self._machine_graph
+            else:
+                graph = self._application_graph
+            report = NetworkSpecification(graph)
+            report(graph)
+
+    def _execute_chip_id_allocator(self):
+        with FecExecutor(self, "Execute Chip Id Allocator"):
+            allocator = MallocBasedChipIdAllocator()
+            if self._application_graph is None:
+                graph = self._machine_graph
+            else:
+                graph = self._application_graph
+            allocator(self._machine, graph)
+            # return ignored as changes done inside original machine object
+
+    def _execute_write_board_chip_report(self):
+        with FecExecutor(self, "Execute Write Board Chip Report") as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_board_chip_report"):
+                return
+            report = BoardChipReport()
+            report(self._machine)
+
+    def _execute_splitter_reset(self):
+        with FecExecutor(self, "Execute Splitter Reset"):
+            splitter_reset(self._application_graph)
+
+    def _execute_splitter_selector(self):
+        """
+        overirdden by spynakker
+
+        :return:
+        """
+        with FecExecutor(self, "Execute Splitter Selector"):
+            selector = SplitterSelector()
+            selector(self._application_graph)
+
+    def _execute_delay_support_adder(self):
+        """
+        Stub to allow spynakker to add delay supports
+        :return:
+        """
+
+    def _execute_insert_chip_power_monitors_to_graphs(self):
+        with FecExecutor(
+                self, "Execute Insert Chip Power Monitors") as executor:
+            if executor.skip_if_cfg_false("Reports", "write_energy_report"):
+                return
+            inserter = InsertChipPowerMonitorsToGraphs()
+            inserter(
+                self._machine, self._machine_graph,
+                get_config_int("EnergyMonitor", "sampling_frequency"),
+                self._application_graph)
+
+    def _execute_partitioner_report(self):
+        with FecExecutor(self, "Execute Partitioner Report") as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_partitioner_reports"):
+                return
+            partitioner_report(self._hostname, self._application_graph)
+
     def _do_mapping(self, run_time, total_run_time):
+        """
+        :param float run_time:
+        :param float total_run_time:
+        """
+        # time the time it takes to do all pacman stuff
+        mapping_total_timer = Timer()
+        mapping_total_timer.start_timing()
+
+        self._do_extra_mapping_algorithms()
+        self._execute_write_json_machine()
+        self._execute_write_network_specification()
+        self._execute_chip_id_allocator()
+        self._execute_write_board_chip_report()
+        self._execute_splitter_reset()
+        self._execute_splitter_selector()
+
+        self._execute_insert_chip_power_monitors_to_graphs()
+        self._execute_partitioner_report()
+
+        self._mapping_time += convert_time_diff_to_total_milliseconds(
+            mapping_total_timer.take_sample())
+
+    def _do_mappingX(self, run_time, total_run_time):
         """
         :param float run_time:
         :param float total_run_time:
