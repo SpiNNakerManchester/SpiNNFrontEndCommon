@@ -1899,9 +1899,17 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecExecutor(self, "Execute Graph Binary Gatherer") as executor:
             if executor.skip_if_value_false(graph_changed, "graph_changed"):
                 return
-            gather = GraphBinaryGatherer()
-            self._executable_targets = gather(
-                self._placements, self._machine_graph, self._executable_finder)
+            try:
+                gather = GraphBinaryGatherer()
+                self._executable_targets = gather(
+                    self._placements, self._machine_graph,
+                    self._executable_finder)
+            except KeyError:
+                if self.use_virtual_board:
+                    logger.warning(
+                        "Ignoring exectable not found as using virtual")
+                    return
+                raise
 
     def _excetute_host_bitfield_compressor(self):
         with FecExecutor(
