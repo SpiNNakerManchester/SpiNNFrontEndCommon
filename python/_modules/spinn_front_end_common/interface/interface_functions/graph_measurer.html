@@ -88,7 +88,7 @@
         <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">ordered_vertices</span><span class="p">):</span>
             <span class="n">resource_tracker</span><span class="o">.</span><span class="n">allocate_constrained_resources</span><span class="p">(</span>
                 <span class="n">vertex</span><span class="o">.</span><span class="n">resources_required</span><span class="p">,</span> <span class="n">vertex</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">resource_tracker</span><span class="o">.</span><span class="n">keys</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">resource_tracker</span><span class="o">.</span><span class="n">chips_used</span></div>
 </pre></div>
 
             <div class="clearer"></div>

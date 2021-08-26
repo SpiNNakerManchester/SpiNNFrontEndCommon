@@ -52,10 +52,7 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
-<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">CoreResource</span><span class="p">,</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">,</span>
-    <span class="n">SpecificChipSDRAMResource</span><span class="p">,</span> <span class="n">SpecificBoardIPtagResource</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">IPtagResource</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">LivePacketGatherMachineVertex</span><span class="p">)</span>
 
@@ -82,65 +79,18 @@
 <span class="sd">        :rtype: ~pacman.model.resources.PreAllocatedResourceContainer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
-            <span class="nb">len</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">),</span>
-            <span class="s2">&quot;Preallocating resources for Live Recording&quot;</span><span class="p">)</span>
-
         <span class="c1"># store how much SDRAM the LPG uses per core</span>
-        <span class="n">sdram_requirement</span> <span class="o">=</span> <span class="n">LivePacketGatherMachineVertex</span><span class="o">.</span><span class="n">get_sdram_usage</span><span class="p">()</span>
+        <span class="n">sdram</span> <span class="o">=</span> <span class="n">ConstantSDRAM</span><span class="p">(</span><span class="n">LivePacketGatherMachineVertex</span><span class="o">.</span><span class="n">get_sdram_usage</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">lpg_params</span> <span class="ow">in</span> <span class="n">live_packet_gatherer_parameters</span><span class="p">:</span>
+            <span class="n">pre_allocated_resources</span><span class="o">.</span><span class="n">add_sdram_ethernet</span><span class="p">(</span><span class="n">sdram</span><span class="p">)</span>
+            <span class="n">pre_allocated_resources</span><span class="o">.</span><span class="n">add_cores_ethernet</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">pre_allocated_resources</span><span class="o">.</span><span class="n">add_iptag_resource</span><span class="p">(</span><span class="n">IPtagResource</span><span class="p">(</span>
+                <span class="n">ip_address</span><span class="o">=</span><span class="n">lpg_params</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">lpg_params</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
+                <span class="n">strip_sdp</span><span class="o">=</span><span class="n">lpg_params</span><span class="o">.</span><span class="n">strip_sdp</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">lpg_params</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span>
+                <span class="n">traffic_identifier</span><span class="o">=</span><span class="p">(</span>
+                    <span class="n">LivePacketGatherMachineVertex</span><span class="o">.</span><span class="n">TRAFFIC_IDENTIFIER</span><span class="p">)))</span>
 
-        <span class="c1"># for every Ethernet connected chip, get the resources needed by the</span>
-        <span class="c1"># live packet gatherers</span>
-        <span class="n">sdrams</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">cores</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">iptags</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_chip_lpg_reqs</span><span class="p">(</span>
-                <span class="n">live_packet_gatherer_parameters</span><span class="p">,</span> <span class="n">chip</span><span class="p">,</span> <span class="n">sdram_requirement</span><span class="p">,</span>
-                <span class="n">sdrams</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">iptags</span><span class="p">)</span>
-
-        <span class="c1"># note what has been preallocated</span>
-        <span class="n">allocated</span> <span class="o">=</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">(</span>
-            <span class="n">specific_sdram_usage</span><span class="o">=</span><span class="n">sdrams</span><span class="p">,</span> <span class="n">core_resources</span><span class="o">=</span><span class="n">cores</span><span class="p">,</span>
-            <span class="n">specific_iptag_resources</span><span class="o">=</span><span class="n">iptags</span><span class="p">)</span>
-        <span class="n">allocated</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pre_allocated_resources</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">allocated</span></div>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_add_chip_lpg_reqs</span><span class="p">(</span>
-            <span class="n">lpg_parameters</span><span class="p">,</span> <span class="n">chip</span><span class="p">,</span> <span class="n">lpg_sdram</span><span class="p">,</span> <span class="n">sdrams</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">iptags</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param lpg_parameters:</span>
-<span class="sd">        :type lpg_parameters:</span>
-<span class="sd">            dict(LivePacketGatherParameters,</span>
-<span class="sd">            list(tuple(~.AbstractVertex, list(str))))</span>
-<span class="sd">        :param ~.Chip chip:</span>
-<span class="sd">        :param int lpg_sdram:</span>
-<span class="sd">        :param list(~.SpecificChipSDRAMResource) sdrams:</span>
-<span class="sd">        :param list(~.CoreResource) cores:</span>
-<span class="sd">        :param list(~.SpecificBoardIPtagResource) iptags:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="n">sdram_reqs</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">core_reqs</span> <span class="o">=</span> <span class="mi">0</span>
-
-        <span class="k">for</span> <span class="n">lpg_params</span> <span class="ow">in</span> <span class="n">lpg_parameters</span><span class="p">:</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">lpg_params</span><span class="o">.</span><span class="n">board_address</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span>
-                    <span class="n">lpg_params</span><span class="o">.</span><span class="n">board_address</span> <span class="o">==</span> <span class="n">chip</span><span class="o">.</span><span class="n">ip_address</span><span class="p">):</span>
-                <span class="n">sdram_reqs</span> <span class="o">+=</span> <span class="n">lpg_sdram</span>
-                <span class="n">core_reqs</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="n">iptags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SpecificBoardIPtagResource</span><span class="p">(</span>
-                    <span class="n">board</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">ip_address</span><span class="p">,</span>
-                    <span class="n">ip_address</span><span class="o">=</span><span class="n">lpg_params</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">lpg_params</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
-                    <span class="n">strip_sdp</span><span class="o">=</span><span class="n">lpg_params</span><span class="o">.</span><span class="n">strip_sdp</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">lpg_params</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span>
-                    <span class="n">traffic_identifier</span><span class="o">=</span><span class="p">(</span>
-                        <span class="n">LivePacketGatherMachineVertex</span><span class="o">.</span><span class="n">TRAFFIC_IDENTIFIER</span><span class="p">)))</span>
-
-        <span class="k">if</span> <span class="n">sdram_reqs</span><span class="p">:</span>
-            <span class="n">sdrams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SpecificChipSDRAMResource</span><span class="p">(</span>
-                <span class="n">chip</span><span class="p">,</span> <span class="n">ConstantSDRAM</span><span class="p">(</span><span class="n">sdram_reqs</span><span class="p">)))</span>
-        <span class="k">if</span> <span class="n">core_reqs</span><span class="p">:</span>
-            <span class="n">cores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CoreResource</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">core_reqs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">pre_allocated_resources</span></div>
 </pre></div>
 
             <div class="clearer"></div>

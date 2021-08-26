@@ -52,9 +52,6 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
-<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">CoreResource</span><span class="p">,</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">,</span> <span class="n">SpecificChipSDRAMResource</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ChipPowerMonitorMachineVertex</span><span class="p">)</span>
 
@@ -77,27 +74,13 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
 
-        <span class="n">progress_bar</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
-            <span class="n">machine</span><span class="o">.</span><span class="n">n_chips</span><span class="p">,</span> <span class="s2">&quot;Preallocating resources for chip power monitor&quot;</span><span class="p">)</span>
-
         <span class="c1"># store how much SDRAM the power monitor uses per core</span>
         <span class="n">resources</span> <span class="o">=</span> <span class="n">ChipPowerMonitorMachineVertex</span><span class="o">.</span><span class="n">get_resources</span><span class="p">(</span>
             <span class="n">sampling_frequency</span><span class="o">=</span><span class="n">sampling_frequency</span><span class="p">)</span>
+        <span class="n">pre_allocated_resources</span><span class="o">.</span><span class="n">add_sdram_all</span><span class="p">(</span><span class="n">resources</span><span class="o">.</span><span class="n">sdram</span><span class="p">)</span>
+        <span class="n">pre_allocated_resources</span><span class="o">.</span><span class="n">add_cores_all</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="c1"># for every Ethernet connected chip, get the resources needed by the</span>
-        <span class="c1"># live packet gatherers</span>
-        <span class="n">sdrams</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">cores</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress_bar</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">):</span>
-            <span class="n">sdrams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">SpecificChipSDRAMResource</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">resources</span><span class="o">.</span><span class="n">sdram</span><span class="p">))</span>
-            <span class="n">cores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CoreResource</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-
-        <span class="c1"># note what has been preallocated</span>
-        <span class="n">allocated</span> <span class="o">=</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">(</span>
-            <span class="n">specific_sdram_usage</span><span class="o">=</span><span class="n">sdrams</span><span class="p">,</span> <span class="n">core_resources</span><span class="o">=</span><span class="n">cores</span><span class="p">)</span>
-        <span class="n">allocated</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pre_allocated_resources</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">allocated</span></div>
+        <span class="k">return</span> <span class="n">pre_allocated_resources</span></div>
 </pre></div>
 
             <div class="clearer"></div>

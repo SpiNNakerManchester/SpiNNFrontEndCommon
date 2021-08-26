@@ -52,10 +52,6 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
-<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">SpecificChipSDRAMResource</span><span class="p">,</span> <span class="n">CoreResource</span><span class="p">,</span>
-    <span class="n">PreAllocatedResourceContainer</span><span class="p">,</span> <span class="n">SpecificBoardIPtagResource</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ExtraMonitorSupportMachineVertex</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="p">(</span>
@@ -77,86 +73,18 @@
 <span class="sd">        :rtype: ~pacman.model.resources.PreAllocatedResourceContainer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
-            <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">))</span> <span class="o">+</span> <span class="n">machine</span><span class="o">.</span><span class="n">n_chips</span><span class="p">,</span>
-            <span class="s2">&quot;Preallocating resources for Extra Monitor support vertices&quot;</span><span class="p">)</span>
-
-        <span class="n">sdrams</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">cores</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">tags</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-
-        <span class="c1"># add resource requirements for the gatherers on each Ethernet</span>
-        <span class="c1"># connected chip. part of data extraction</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_packet_gathering_support</span><span class="p">(</span>
-            <span class="n">sdrams</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">n_cores_to_allocate</span><span class="p">)</span>
-
-        <span class="c1"># add resource requirements for re-injector and reader for data</span>
-        <span class="c1"># extractor</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_second_monitor_support</span><span class="p">(</span><span class="n">cores</span><span class="p">,</span> <span class="n">sdrams</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
-
-        <span class="c1"># note what has been preallocated</span>
-        <span class="n">allocated</span> <span class="o">=</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">(</span>
-            <span class="n">specific_sdram_usage</span><span class="o">=</span><span class="n">sdrams</span><span class="p">,</span> <span class="n">core_resources</span><span class="o">=</span><span class="n">cores</span><span class="p">,</span>
-            <span class="n">specific_iptag_resources</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
-        <span class="n">allocated</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pre_allocated_resources</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">allocated</span></div>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_handle_second_monitor_support</span><span class="p">(</span><span class="n">cores</span><span class="p">,</span> <span class="n">sdrams</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">progress</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Adds the second monitor preallocations, which reflect the\</span>
-<span class="sd">            reinjector and data extractor support</span>
-
-<span class="sd">        :param list(~.CoreResource) cores: the storage of core requirements</span>
-<span class="sd">        :param ~.Machine machine: the spinnMachine instance</span>
-<span class="sd">        :param ~.ProgressBar progress: the progress bar to operate one</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">extra_usage</span> <span class="o">=</span> \
-            <span class="n">ExtraMonitorSupportMachineVertex</span><span class="o">.</span><span class="n">static_resources_required</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">):</span>
-            <span class="n">cores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CoreResource</span><span class="p">(</span><span class="n">chip</span><span class="o">=</span><span class="n">chip</span><span class="p">,</span> <span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-            <span class="n">sdrams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SpecificChipSDRAMResource</span><span class="p">(</span>
-                <span class="n">chip</span><span class="o">=</span><span class="n">chip</span><span class="p">,</span> <span class="n">sdram_usage</span><span class="o">=</span><span class="n">extra_usage</span><span class="o">.</span><span class="n">sdram</span><span class="p">))</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_handle_packet_gathering_support</span><span class="p">(</span>
-            <span class="n">sdrams</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">n_cores_to_allocate</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Adds the packet gathering functionality tied into the data\</span>
-<span class="sd">            extractor within each chip</span>
-
-<span class="sd">        :param list(~.SpecificChipSDRAMResource) sdrams:</span>
-<span class="sd">            the preallocated SDRAM requirement for these vertices</span>
-<span class="sd">        :param list(~.CoreResource) cores:</span>
-<span class="sd">            the preallocated cores requirement for these vertices</span>
-<span class="sd">        :param list(~.SpecificBoardIPtagResource) tags:</span>
-<span class="sd">            the preallocated tags requirement for these vertices</span>
-<span class="sd">        :param ~.Machine machine: the spinnMachine instance</span>
-<span class="sd">        :param ~.ProgressBar progress: the progress bar to update as needed</span>
-<span class="sd">        :param int n_cores_to_allocate:</span>
-<span class="sd">            how many packet gathers to allocate per chip</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
-
-        <span class="c1"># get resources from packet gatherer</span>
         <span class="n">resources</span> <span class="o">=</span> <span class="n">DataSpeedUpPacketGatherMachineVertex</span><span class="o">.</span>\
             <span class="n">static_resources_required</span><span class="p">()</span>
+        <span class="n">pre_allocated_resources</span><span class="o">.</span><span class="n">add_sdram_ethernet</span><span class="p">(</span><span class="n">resources</span><span class="o">.</span><span class="n">sdram</span><span class="p">)</span>
+        <span class="n">pre_allocated_resources</span><span class="o">.</span><span class="n">add_cores_ethernet</span><span class="p">(</span><span class="n">n_cores_to_allocate</span><span class="p">)</span>
+        <span class="n">pre_allocated_resources</span><span class="o">.</span><span class="n">add_iptag_resource</span><span class="p">(</span><span class="n">resources</span><span class="o">.</span><span class="n">iptags</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-        <span class="c1"># locate Ethernet connected chips that the vertices reside on</span>
-        <span class="k">for</span> <span class="n">ethernet_connected_chip</span> <span class="ow">in</span> \
-                <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">,</span>
-                              <span class="n">finish_at_end</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-            <span class="c1"># do resources. SDRAM, cores, tags</span>
-            <span class="n">sdrams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SpecificChipSDRAMResource</span><span class="p">(</span>
-                <span class="n">chip</span><span class="o">=</span><span class="n">ethernet_connected_chip</span><span class="p">,</span>
-                <span class="n">sdram_usage</span><span class="o">=</span><span class="n">resources</span><span class="o">.</span><span class="n">sdram</span><span class="p">))</span>
-            <span class="n">cores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CoreResource</span><span class="p">(</span>
-                <span class="n">chip</span><span class="o">=</span><span class="n">ethernet_connected_chip</span><span class="p">,</span> <span class="n">n_cores</span><span class="o">=</span><span class="n">n_cores_to_allocate</span><span class="p">))</span>
-            <span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SpecificBoardIPtagResource</span><span class="p">(</span>
-                <span class="n">board</span><span class="o">=</span><span class="n">ethernet_connected_chip</span><span class="o">.</span><span class="n">ip_address</span><span class="p">,</span>
-                <span class="n">ip_address</span><span class="o">=</span><span class="n">resources</span><span class="o">.</span><span class="n">iptags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ip_address</span><span class="p">,</span>
-                <span class="n">port</span><span class="o">=</span><span class="n">resources</span><span class="o">.</span><span class="n">iptags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
-                <span class="n">strip_sdp</span><span class="o">=</span><span class="n">resources</span><span class="o">.</span><span class="n">iptags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip_sdp</span><span class="p">,</span>
-                <span class="n">tag</span><span class="o">=</span><span class="n">resources</span><span class="o">.</span><span class="n">iptags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span>
-                <span class="n">traffic_identifier</span><span class="o">=</span><span class="n">resources</span><span class="o">.</span><span class="n">iptags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">traffic_identifier</span><span class="p">))</span>
+        <span class="n">extra_usage</span> <span class="o">=</span> \
+            <span class="n">ExtraMonitorSupportMachineVertex</span><span class="o">.</span><span class="n">static_resources_required</span><span class="p">()</span>
+        <span class="n">pre_allocated_resources</span><span class="o">.</span><span class="n">add_sdram_all</span><span class="p">(</span><span class="n">extra_usage</span><span class="o">.</span><span class="n">sdram</span><span class="p">)</span>
+        <span class="n">pre_allocated_resources</span><span class="o">.</span><span class="n">add_cores_all</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pre_allocated_resources</span></div>
 </pre></div>
 
             <div class="clearer"></div>
