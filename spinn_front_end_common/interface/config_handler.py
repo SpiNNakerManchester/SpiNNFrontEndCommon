@@ -210,19 +210,14 @@ class ConfigHandler(object):
                         ERRORED_FILENAME)
                     finished_flag_exists = os.path.exists(finished_flag)
                     errored_flag_exists = os.path.exists(errored_flag)
-                    if finished_flag_exists and not errored_flag_exists:
+                    if finished_flag_exists and (
+                            not errored_flag_exists or remove_errored_folders):
                         shutil.rmtree(os.path.join(
                             starting_directory, current_oldest_file),
                             ignore_errors=True)
                         files_removed += 1
-                    elif finished_flag_exists and errored_flag_exists:
-                        if remove_errored_folders:
-                            shutil.rmtree(os.path.join(
-                                starting_directory, current_oldest_file),
-                                ignore_errors=True)
-                            files_removed += 1
-                        else:
-                            files_not_closed += 1
+                    else:
+                        files_not_closed += 1
                     else:
                         files_not_closed += 1
                     if files_removed + files_not_closed >= num_files_to_remove:
