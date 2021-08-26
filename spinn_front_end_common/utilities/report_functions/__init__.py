@@ -30,6 +30,7 @@ from .network_specification import NetworkSpecification
 from .routing_table_from_machine_report import RoutingTableFromMachineReport
 from .real_tags_report import TagsFromMachineReport
 from .write_json_machine import WriteJsonMachine
+from .write_json_partition_n_keys_map import WriteJsonPartitionNKeysMap
 
 def report_xml():
     return os.path.join(
@@ -48,4 +49,5 @@ __all__ = [
     "report_xml",
     "RoutingTableFromMachineReport",
     "TagsFromMachineReport",
-    "WriteJsonMachine"]
+    "WriteJsonMachine",
+    "WriteJsonPartitionNKeysMap"]

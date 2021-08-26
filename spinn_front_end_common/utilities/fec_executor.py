@@ -91,6 +91,13 @@ class FecExecutor(object):
         else:
             return False
 
+    def skip_if_application_graph_empty(self):
+        if self._simulator.self._application_graph.n_vertices:
+            self.skip("Application graph is empty")
+            return True
+        else:
+            return False
+
     def skip_if_value_true(self, value, name):
         if value:
             self.skip(name)

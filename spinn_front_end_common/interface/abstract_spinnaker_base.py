@@ -50,6 +50,9 @@ from pacman import __version__ as pacman_version
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.operations.chip_id_allocator_algorithms import (
     MallocBasedChipIdAllocator)
+from pacman.operations.partition_algorithms import SplitterPartitioner
+from pacman.operations.placer_algorithms import (
+    ConnectiveBasedPlacer, OneToOnePlacer, RadialPlacer, SpreaderPlacer)
 from pacman.operations.router_compressors.ordered_covering_router_compressor \
     import OrderedCoveringCompressor
 from pacman.operations.router_compressors.checked_unordered_pair_compressor \
@@ -66,12 +69,12 @@ from spinn_front_end_common.interface.interface_functions import (
     ApplicationRunner,  BufferExtractor, ChipIOBufClearer, ChipIOBufExtractor,
     ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
     CreateNotificationProtocol, DatabaseInterface,
-    DSGRegionReloader, EnergyProvenanceReporter, GraphBinaryGatherer,
-    GraphDataSpecificationWriter,
+    DSGRegionReloader, EdgeToNKeysMapper, EnergyProvenanceReporter,
+    GraphBinaryGatherer, GraphDataSpecificationWriter,
     GraphProvenanceGatherer,  HostBasedBitFieldRouterCompressor,
     HostExecuteDataSpecification, InsertChipPowerMonitorsToGraphs,
     interface_xml, LoadExecutableImages, LoadFixedRoutes,
-    PlacementsProvenanceGatherer, ProfileDataGatherer,
+    LocalTDMABuilder, PlacementsProvenanceGatherer, ProfileDataGatherer,
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ReadRoutingTablesFromMachine,
     RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader, TagsLoader)
@@ -95,7 +98,7 @@ from spinn_front_end_common.utilities.report_functions import (
     FixedRouteFromMachineReport, MemoryMapOnHostReport,
     MemoryMapOnHostChipReport, NetworkSpecification,
     RoutingTableFromMachineReport, TagsFromMachineReport, report_xml,
-    WriteJsonMachine)
+    WriteJsonMachine, WriteJsonPartitionNKeysMap)
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utility_models import (
@@ -111,6 +114,8 @@ from spinn_front_end_common.interface.simulator_status import (
 from spinn_front_end_common.utilities import FecExecutor
 from spinn_front_end_common.utilities.report_functions.reports import (
     generate_comparison_router_report, partitioner_report,
+    placer_reports_with_application_graph,
+    placer_reports_without_application_graph,
     router_compressed_summary_report,
     router_report_from_compressed_router_tables,
     router_report_from_router_tables, sdram_usage_report_per_chip)
@@ -1665,6 +1670,20 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return:
         """
 
+    def _execute_splitter_partitioner(self):
+        """
+        overirdden by spynakker
+
+        :return:
+        """
+        with FecExecutor(self, "Execute Splitter Partitioner") as executor:
+            if executor.skip_if_application_graph_empty():
+                return
+            partitioner = SplitterPartitioner()
+            self._machine_graph, _ = partitioner(
+                self._application_graph, self._machine, self._plan_n_timesteps,
+                pre_allocated_resources=None)
+
     def _execute_insert_chip_power_monitors_to_graphs(self):
         with FecExecutor(
                 self, "Execute Insert Chip Power Monitors") as executor:
@@ -1683,6 +1702,97 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             partitioner_report(self._hostname, self._application_graph)
 
+    def _execute_edge_to_n_keys_mapper(self):
+        with FecExecutor(self, "Execute Edge To N Keys Mapper"):
+            mapper = EdgeToNKeysMapper()
+            self._machine_partition_n_keys_map = mapper(self._machine_graph)
+
+    def _execute_edge_to_n_keys_mapper(self):
+        with FecExecutor(self, "Execute Edge To N Keys Mapper"):
+            mapper = EdgeToNKeysMapper()
+            self._machine_partition_n_keys_map = mapper(self._machine_graph)
+
+    def _execute_local_tdma_builder(self):
+        with FecExecutor(self, "Execute Local TDMA Builder"):
+            builder = LocalTDMABuilder()
+            builder(self._machine_graph, self._machine_partition_n_keys_map,
+                    self._application_graph)
+
+    def _execute_write_json_partition_n_keys_map(self):
+        with FecExecutor(self, "Execute Write Json Partition NKeys Map") \
+                as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_json_partition_n_keys_map"):
+                return
+            report = WriteJsonPartitionNKeysMap()
+            report(self._machine_partition_n_keys_map, self._json_folder)
+            # Output ignored as never used
+
+    def _execute_connective_based_placer(self):
+        with FecExecutor(self, "Execute Connective Based Placer"):
+            placer = ConnectiveBasedPlacer()
+            self._placements = placer(
+                self._machine_graph, self._machine, self._plan_n_timesteps)
+
+    def _execute_one_to_one_placer(self):
+        with FecExecutor(self, "Execute One To One Placer"):
+            placer = OneToOnePlacer()
+            self._placements = placer(
+                self._machine_graph, self._machine, self._plan_n_timesteps)
+
+    def _execute_radial_placer(self):
+        with FecExecutor(self, "Execute Radial Placer"):
+            placer = RadialPlacer()
+            self._placements = placer(
+                self._machine_graph, self._machine, self._plan_n_timesteps)
+
+    def _execute_speader_placer(self):
+        with FecExecutor(self, "Execute Spreader Placer"):
+            placer = SpreaderPlacer()
+            self._placements = placer(
+                self._machine_graph, self._machine,
+                self._machine_partition_n_keys_map, self._plan_n_timesteps)
+
+    def do_placer(self):
+        # TODO check machine_graph_to_machine_algorithms ect
+        name = get_config_str("Mapping", "placer")
+        if name == "ConnectiveBasedPlacer":
+            return self._execute_connective_based_placer()
+        if name == "OneToOnePlacer":
+            return self._execute_one_to_one_placer()
+        if name == "RadialPlacer":
+            return self._execute_radial_placer()
+        if name == "SpreaderPlacer":
+            return self._execute_speader_placer()
+        if "," in name:
+            raise ConfigurationException(
+                "Only a single algorithm is supported for placer")
+        raise ConfigurationException(
+            f"Unexpected cfg setting placer: {name}")
+
+    def _execute_write_application_graph_placer_report(self):
+        with FecExecutor(self, "Execute Placer Report With Application Graph") \
+                as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_application_graph_placer_report"):
+                return
+            if executor.skip_if_application_graph_empty():
+                return
+            placer_reports_with_application_graph(
+                self._hostname, self._application_graph, self._placements,
+                self._machine)
+
+    def _execute_write_machine_graph_placer_report(self):
+        with FecExecutor(
+                self, "Execute Placer Report Without Application Graph") \
+                as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_application_graph_placer_report"):
+                return
+            placer_reports_without_application_graph(
+                self._hostname, self._machine_graph, self._placements,
+                self._machine)
+
     def _do_mapping(self, run_time, total_run_time):
         """
         :param float run_time:
@@ -1699,9 +1809,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_write_board_chip_report()
         self._execute_splitter_reset()
         self._execute_splitter_selector()
-
+        self._execute_delay_support_adder()
+        self._execute_splitter_partitioner()
         self._execute_insert_chip_power_monitors_to_graphs()
         self._execute_partitioner_report()
+        self._execute_edge_to_n_keys_mapper()
+        self._execute_write_json_partition_n_keys_map()
+        self._do_placer()
+        self._execute_write_application_graph_placer_report()
+        self.__execute_write_machine_graph_placer_report()
 
         self._mapping_time += convert_time_diff_to_total_milliseconds(
             mapping_total_timer.take_sample())
@@ -2114,9 +2230,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         else:
             name = get_config_str("Mapping", "compressor")
 
-        return self._do_a_compression(name)
+        return self._do_compression_by_name(name)
 
-    def _do_a_compression(self, name):
+    def _do_compression_by_name(self, name):
         if name == "HostBasedBitFieldRouterCompressor":
             return self._excetute_host_bitfield_compressor()
         if name == "MachineBitFieldOrderedCoveringCompressor":
