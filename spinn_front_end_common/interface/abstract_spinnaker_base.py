@@ -1173,6 +1173,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 logger.warning("problem when shutting down {}".format(e3),
                                exc_info=True)
             self.write_errored_file()
+            self.write_finished_file()
             raise e
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
