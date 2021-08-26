@@ -218,8 +218,6 @@ class ConfigHandler(object):
                         files_removed += 1
                     else:
                         files_not_closed += 1
-                    else:
-                        files_not_closed += 1
                     if files_removed + files_not_closed >= num_files_to_remove:
                         break
                 if files_not_closed > max_kept // 4:
