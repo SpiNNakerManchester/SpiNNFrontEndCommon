@@ -49,4 +49,4 @@ class GraphMeasurer(object):
         for vertex in progress.over(ordered_vertices):
             resource_tracker.allocate_constrained_resources(
                 vertex.resources_required, vertex.constraints)
-        return len(resource_tracker.keys)
+        return resource_tracker.chips_used
