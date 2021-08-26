@@ -14,9 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.config_holder import get_config_int
-from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.resources import (
-    ConstantSDRAM, SpecificChipSDRAMResource, PreAllocatedResourceContainer)
+from spinn_machine.machine import Machine
+from pacman.model.resources import (ConstantSDRAM)
 from spinn_front_end_common.interface.interface_functions. \
     machine_bit_field_router_compressor import (
         SIZE_OF_SDRAM_ADDRESS_IN_BYTES)
@@ -37,24 +36,16 @@ class PreAllocateForBitFieldRouterCompressor(object):
         :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
         """
 
-        progress_bar = ProgressBar(
-            machine.n_chips,
-            "Preallocating resources for bit field compressor")
-
         # for every Ethernet connected chip, get the resources needed by the
         # live packet gatherers
-        sdrams = list()
         sdram_to_pre_alloc_for_bit_fields = get_config_int(
             "Mapping",
             "router_table_compression_with_bit_field_pre_alloced_sdram")
-        for chip in progress_bar.over(machine.chips):
-            sdram = ConstantSDRAM(
-                (SIZE_OF_SDRAM_ADDRESS_IN_BYTES * chip.n_user_processors) +
-                sdram_to_pre_alloc_for_bit_fields)
-            sdrams.append(SpecificChipSDRAMResource(chip, sdram))
+        sdram = ConstantSDRAM(
+            (SIZE_OF_SDRAM_ADDRESS_IN_BYTES * Machine.max_cores_per_chip()) +
+            sdram_to_pre_alloc_for_bit_fields)
 
         # note what has been preallocated
-        allocated = PreAllocatedResourceContainer(
-            specific_sdram_usage=sdrams)
-        allocated.extend(pre_allocated_resources)
-        return allocated
+        pre_allocated_resources.add_sdram_all(sdram)
+
+        return pre_allocated_resources

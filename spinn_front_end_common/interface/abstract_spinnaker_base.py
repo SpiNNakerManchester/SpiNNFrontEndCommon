@@ -45,7 +45,7 @@ from pacman.model.graphs.application import (
 from pacman.model.graphs.machine import (
     MachineGraph, MachineGraphView, MachineVertex)
 from pacman.model.resources import (
-    PreAllocatedResourceContainer, ConstantSDRAM)
+    ConstantSDRAM, PreAllocatedResourceContainer)
 from pacman import __version__ as pacman_version
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.operations.chip_id_allocator_algorithms import (
