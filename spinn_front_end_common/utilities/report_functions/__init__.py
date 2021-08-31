@@ -27,10 +27,13 @@ from .fixed_route_from_machine_report import FixedRouteFromMachineReport
 from .memory_map_on_host_chip_report import MemoryMapOnHostChipReport
 from .memory_map_on_host_report import MemoryMapOnHostReport
 from .network_specification import NetworkSpecification
+from .router_collision_potential_report import RouterCollisionPotentialReport
 from .routing_table_from_machine_report import RoutingTableFromMachineReport
 from .real_tags_report import TagsFromMachineReport
 from .write_json_machine import WriteJsonMachine
 from .write_json_partition_n_keys_map import WriteJsonPartitionNKeysMap
+from .write_json_placements import WriteJsonPlacements
+from .write_json_routing_tables import WriteJsonRoutingTables
 
 def report_xml():
     return os.path.join(
@@ -47,7 +50,10 @@ __all__ = [
     "MemoryMapOnHostChipReport",
     "MemoryMapOnHostReport",
     "report_xml",
+    "RouterCollisionPotentialReport",
     "RoutingTableFromMachineReport",
     "TagsFromMachineReport",
     "WriteJsonMachine",
-    "WriteJsonPartitionNKeysMap"]
+    "WriteJsonPartitionNKeysMap",
+    "WriteJsonPlacements",
+    "WriteJsonRoutingTables"]

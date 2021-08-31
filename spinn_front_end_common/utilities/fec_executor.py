@@ -92,15 +92,15 @@ class FecExecutor(object):
             return False
 
     def skip_if_application_graph_empty(self):
-        if self._simulator.self._application_graph.n_vertices:
+        if self._simulator._application_graph.n_vertices:
+            return False
+        else:
             self.skip("Application graph is empty")
             return True
-        else:
-            return False
 
     def skip_if_value_true(self, value, name):
         if value:
-            self.skip(name)
+            self.skip(f"{name} is True")
         return value
 
     def skip_if_value_false(self, value, name):
@@ -116,6 +116,13 @@ class FecExecutor(object):
             return True
         else:
             return False
+
+    def skip_if_value_already_set(self, value, name):
+        if value is None:
+            return False
+        else:
+            self.skip(f"{name} already set")
+            return True
 
     def skip_if_cfg_false(self, section, option):
         if get_config_bool(section, option):

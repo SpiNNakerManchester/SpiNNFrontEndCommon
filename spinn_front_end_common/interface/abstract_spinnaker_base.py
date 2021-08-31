@@ -53,11 +53,20 @@ from pacman.operations.chip_id_allocator_algorithms import (
 from pacman.operations.partition_algorithms import SplitterPartitioner
 from pacman.operations.placer_algorithms import (
     ConnectiveBasedPlacer, OneToOnePlacer, RadialPlacer, SpreaderPlacer)
+from pacman.operations.router_algorithms import (
+    BasicDijkstraRouting, NerRoute, NerRouteTrafficAware)
 from pacman.operations.router_compressors.ordered_covering_router_compressor \
     import OrderedCoveringCompressor
 from pacman.operations.router_compressors.checked_unordered_pair_compressor \
     import CheckedUnorderedPairCompressor
 from pacman.operations.router_compressors import PairCompressor
+from pacman.operations.routing_info_allocator_algorithms.\
+    malloc_based_routing_allocator import MallocBasedRoutingInfoAllocator
+from pacman.operations.routing_info_allocator_algorithms.\
+    zoned_routing_info_allocator import (flexible_allocate, global_allocate)
+from pacman.operations.routing_table_generators import (
+    BasicRoutingTableGenerator)
+from pacman.operations.tag_allocator_algorithms import BasicTagAllocator
 from spinn_utilities.config_holder import (
     get_config_bool, get_config_int, get_config_str, get_config_str_list,
     set_config)
@@ -66,7 +75,8 @@ from spinn_front_end_common.abstract_models import (
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
 from spinn_front_end_common.interface.interface_functions import (
-    ApplicationRunner,  BufferExtractor, ChipIOBufClearer, ChipIOBufExtractor,
+    ApplicationRunner,  BufferExtractor, BufferManagerCreator,
+    ChipIOBufClearer, ChipIOBufExtractor,
     ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
     CreateNotificationProtocol, DatabaseInterface,
     DSGRegionReloader, EdgeToNKeysMapper, EnergyProvenanceReporter,
@@ -74,10 +84,12 @@ from spinn_front_end_common.interface.interface_functions import (
     GraphProvenanceGatherer,  HostBasedBitFieldRouterCompressor,
     HostExecuteDataSpecification, InsertChipPowerMonitorsToGraphs,
     interface_xml, LoadExecutableImages, LoadFixedRoutes,
-    LocalTDMABuilder, PlacementsProvenanceGatherer, ProfileDataGatherer,
+    LocalTDMABuilder, LocateExecutableStartType, PlacementsProvenanceGatherer,
+    ProfileDataGatherer, ProcessPartitionConstraints,
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ReadRoutingTablesFromMachine,
-    RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader, TagsLoader)
+    RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader,
+    SDRAMOutgoingPartitionAllocator, TagsLoader)
 from spinn_front_end_common.interface.interface_functions.\
     machine_bit_field_router_compressor import (
         MachineBitFieldOrderedCoveringCompressor,
@@ -97,8 +109,10 @@ from spinn_front_end_common.utilities.report_functions import (
     BitFieldCompressorReport, BoardChipReport, EnergyReport,
     FixedRouteFromMachineReport, MemoryMapOnHostReport,
     MemoryMapOnHostChipReport, NetworkSpecification,
+    RouterCollisionPotentialReport,
     RoutingTableFromMachineReport, TagsFromMachineReport, report_xml,
-    WriteJsonMachine, WriteJsonPartitionNKeysMap)
+    WriteJsonMachine, WriteJsonPartitionNKeysMap, WriteJsonPlacements,
+    WriteJsonRoutingTables)
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utility_models import (
@@ -116,9 +130,12 @@ from spinn_front_end_common.utilities.report_functions.reports import (
     generate_comparison_router_report, partitioner_report,
     placer_reports_with_application_graph,
     placer_reports_without_application_graph,
-    router_compressed_summary_report,
+    router_compressed_summary_report, routing_info_report,
     router_report_from_compressed_router_tables,
-    router_report_from_router_tables, sdram_usage_report_per_chip)
+    router_report_from_paths,
+    router_report_from_router_tables, router_summary_report,
+    sdram_usage_report_per_chip,
+    tag_allocator_report)
 from spinn_front_end_common import __version__ as fec_version
 try:
     from scipy import __version__ as scipy_version
@@ -400,6 +417,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_data_in_multicast_key_to_chip_map",
         "_plan_n_timesteps",
         "_compressor_provenance",
+        "_routing_table_by_partition",
+        "_multicast_routes_loaded"
     ]
 
     def __init__(
@@ -578,6 +597,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_in_multicast_key_to_chip_map = None
         self._plan_n_timesteps = None
         self._compressor_provenance = None
+        self._routing_table_by_partition = None
+        self._multicast_routes_loaded = False
 
         # Safety in case a previous run left a bad state
         clear_injectables()
@@ -1629,7 +1650,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 graph = self._machine_graph
             else:
                 graph = self._application_graph
-            report = NetworkSpecification(graph)
+            report = NetworkSpecification()
             report(graph)
 
     def _execute_chip_id_allocator(self):
@@ -1753,7 +1774,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._machine_graph, self._machine,
                 self._machine_partition_n_keys_map, self._plan_n_timesteps)
 
-    def do_placer(self):
+    def _do_placer(self):
         # TODO check machine_graph_to_machine_algorithms ect
         name = get_config_str("Mapping", "placer")
         if name == "ConnectiveBasedPlacer":
@@ -1793,6 +1814,191 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._hostname, self._machine_graph, self._placements,
                 self._machine)
 
+    def _execute_write_json_placements(self):
+        with FecExecutor(
+                self, "Execute Write Json Placements") as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_json_placements"):
+                return
+            writer = WriteJsonPlacements()
+            writer(self._placements, self._json_folder)
+            # Output ignored as never used
+
+    def _execute_ner_route_traffic_aware(self):
+        with FecExecutor(self, "Execute Ner Route Traffic Aware"):
+            router = NerRouteTrafficAware()
+            self._routing_table_by_partition = router(
+                self._machine_graph, self._machine, self._placements)
+
+    def _execute_ner_route(self):
+        with FecExecutor(self, "Execute Ner Route"):
+            router = NerRoute()
+            self._routing_table_by_partition = router(
+                self._machine_graph, self._machine, self._placements)
+
+    def _execute_basic_dijkstra_routing(self):
+        with FecExecutor(self, "Execute Basic Dijkstra Routing"):
+            router = BasicDijkstraRouting()
+            self._routing_table_by_partition = router(
+                self._machine_graph, self._machine, self._placements)
+
+    def _do_routing(self):
+        name = get_config_str("Mapping", "router")
+        if name == "BasicDijkstraRouting":
+            return self._execute_basic_dijkstra_routing()
+        if name == "NerRoute":
+            return self._execute_ner_route()
+        if name == "NerRouteTrafficAware":
+            return self._execute_ner_route_traffic_aware()
+        if "," in name:
+            raise ConfigurationException(
+                "Only a single algorithm is supported for router")
+        raise ConfigurationException(
+            f"Unexpected cfg setting router: {name}")
+
+    def _execute_basic_tag_allocator(self):
+        with FecExecutor(self, "Execute Basic Tag Allocator"):
+            allocator = BasicTagAllocator()
+            self._tags = allocator(
+                self._machine, self._plan_n_timesteps, self._placements)
+
+    def _execute_write_tag_allocation_reports(self):
+        with FecExecutor(
+                self, "Execute Write Json Placements") as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_tag_allocation_reports"):
+                return
+            tag_allocator_report(self._tags)
+
+    def _execute_process_partition_constraints(self):
+        with FecExecutor(self, "Execute Process Partition Constraints"):
+            processor = ProcessPartitionConstraints()
+            processor(self._machine_graph)
+
+
+    def _execute_global_allocate(self):
+        with FecExecutor(self, "Execute Global Zoned Routing Info Allocator"):
+            self._routing_infos = global_allocate(
+                self._machine_graph, self._machine_partition_n_keys_map)
+
+    def _execute_flexible_allocate(self):
+        with FecExecutor(self, "Execute Zoned Routing Info Allocator"):
+            self._routing_infos = flexible_allocate(
+                self._machine_graph, self._machine_partition_n_keys_map)
+
+    def _execute_malloc_based_routing_info_allocator(self):
+        with FecExecutor(self, "Execute Malloc Based Routing Info Allocator"):
+            allocator = MallocBasedRoutingInfoAllocator()
+            self._routing_infos = allocator(
+                self._machine_graph, self._machine_partition_n_keys_map)
+
+    def do_info_allocator(self):
+        name = get_config_str("Mapping", "info_allocator")
+        if name == "GlobalZonedRoutingInfoAllocator ":
+            return self._execute_global_allocate()
+        if name == "MallocBasedRoutingInfoAllocator":
+            return self._execute_malloc_based_routing_info_allocator()
+        if name == "ZonedRoutingInfoAllocator":
+            return self._execute_flexible_allocate()
+        if "," in name:
+            raise ConfigurationException(
+                "Only a single algorithm is supported for info_allocator")
+        raise ConfigurationException(
+            f"Unexpected cfg setting info_allocator: {name}")
+
+    def _execute_write_router_info_report(self):
+        with FecExecutor(
+                self, "Execute Write Router Info Report") as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_router_info_report"):
+                return
+            routing_info_report(self._machine_graph, self._routing_infos)
+
+    def _execute_basic_routing_table_generator(self):
+        with FecExecutor(self, "Execute Basic Routing Table Generator"):
+            generator = BasicRoutingTableGenerator()
+            self._router_tables = generator(
+                self._routing_infos, self._routing_table_by_partition,
+                self._machine)
+        # TODO Nuke ZonedRoutingTableGenerator
+
+    def _execute_write_routers(self):
+        with FecExecutor(
+                self, "Execute Write Router Reports") as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_router_reports"):
+                return
+        router_report_from_paths(
+            self._router_tables, self._routing_infos, self._hostname,
+            self._machine_graph, self._placements, self._machine)
+
+    def _execute_write_router_summary_report(self):
+        with FecExecutor(
+                self, "Execute Write Router Summary Report") as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_router_summary_report"):
+                return
+            router_summary_report(
+                self._router_tables,  self._hostname, self._machine)
+
+    def _execute_write_json_routing_tables(self):
+        with FecExecutor(
+                self, "Execute Write Json Routing Tables") as executor:
+            if executor.skip_if_cfg_false(
+                    "Reports", "write_json_routing_tables"):
+                return
+            writer = WriteJsonRoutingTables()
+            writer(self._router_tables, self._json_folder)
+            # Output ignored as never used
+
+
+    def _execute_write_router_collision_potential_report(self):
+        with FecExecutor(self, "Execute RouterCollisionPotentialReport"):
+            # TODO cfg flag!
+            report = RouterCollisionPotentialReport()
+            report(self._routing_table_by_partition,
+                   self._machine_partition_n_keys_map, self._machine)
+
+    def _execute_locate_executable_start_type(self):
+        with FecExecutor(
+                self, "Execute Locate Executable Start Type") as executor:
+            # TODO why skip if virtual ?
+            if executor.skip_if_virtual_board():
+                return
+            locator = LocateExecutableStartType()
+            self._executable_types = locator(
+                self._machine_graph, self._placements)
+
+    def _execute_buffer_manager_creator(self):
+        with FecExecutor(
+                self, "Execute Buffer Manager Creator") as executor:
+            if executor.skip_if_virtual_board():
+                return
+            # TODO Why keep old if placements and or machine changed?
+            if executor.skip_if_value_already_set(
+                    self._buffer_manager, "Buffer Manager"):
+                return
+
+            # TODO extra monitor
+            extra_monitor_to_chip_mapping = None
+
+            creator = BufferManagerCreator()
+            self._buffer_manager = creator(
+                self._placements, self._tags, self._txrx,
+                self._extra_monitor_vertices,
+                extra_monitor_to_chip_mapping,
+                self._vertex_to_ethernet_connected_chip_mapping,
+                self._machine, self._fixed_routes, self._java_caller)
+            print(self._buffer_manager)
+
+    def _execute_sdram_outgoing_partition_allocator(self):
+        with FecExecutor(self, "Execute SDRAM Outgoing Partition Allocator"):
+            allocator = SDRAMOutgoingPartitionAllocator()
+            # Ok if transceiver = None
+            allocator(
+                self._machine_graph, self._placements, self._app_id,
+                self._txrx)
+
     def _do_mapping(self, run_time, total_run_time):
         """
         :param float run_time:
@@ -1801,6 +2007,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # time the time it takes to do all pacman stuff
         mapping_total_timer = Timer()
         mapping_total_timer.start_timing()
+        provide_injectables(self)
 
         self._do_extra_mapping_algorithms()
         self._execute_write_json_machine()
@@ -1814,13 +2021,43 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_insert_chip_power_monitors_to_graphs()
         self._execute_partitioner_report()
         self._execute_edge_to_n_keys_mapper()
+        self._execute_local_tdma_builder()
         self._execute_write_json_partition_n_keys_map()
         self._do_placer()
         self._execute_write_application_graph_placer_report()
-        self.__execute_write_machine_graph_placer_report()
+        self._execute_write_machine_graph_placer_report()
+        self._do_routing()
+        self._execute_basic_tag_allocator()
+        self._execute_write_tag_allocation_reports()
+        self._execute_process_partition_constraints()
+        self.do_info_allocator()
+        self._execute_write_router_info_report()
+        self._execute_basic_routing_table_generator()
+        self._execute_write_routers()
+        self._execute_write_router_summary_report()
+        self._execute_write_json_routing_tables()
+        self._execute_write_router_collision_potential_report()
+        self._execute_locate_executable_start_type()
+        self._execute_buffer_manager_creator()
+        self._execute_sdram_outgoing_partition_allocator()
 
+        clear_injectables()
         self._mapping_time += convert_time_diff_to_total_milliseconds(
             mapping_total_timer.take_sample())
+
+        # TODO
+        """
+        self._extra_monitor_vertices = executor.get_item(
+            "ExtraMonitorVertices")
+        self._vertex_to_ethernet_connected_chip_mapping = \
+            executor.get_item("VertexToEthernetConnectedChipMapping")
+        self._data_in_multicast_key_to_chip_map = executor.get_item(
+            "DataInMulticastKeyToChipMap")
+        self._system_multicast_router_timeout_keys = \
+            executor.get_item("SystemMulticastRouterTimeoutKeys")
+        self._data_in_multicast_routing_tables = executor.get_item(
+            "DataInMulticastRoutingTables")
+        """
 
     def _do_mappingX(self, run_time, total_run_time):
         """
@@ -2107,19 +2344,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._dsg_targets = self._mapping_outputs["DataSpecificationTargets"]
         self._region_sizes = self._mapping_outputs["RegionSizes"]
 
-    def _execute_routing_setup(self, graph_changed, tokens):
+    def _execute_routing_setup(self, graph_changed):
         with FecExecutor(self, "Execute Routing Setup") as executor:
             if executor.skip_if_virtual_board():
                 return
             if executor.skip_if_value_false(graph_changed, "graph_changed"):
                 return
-            # TODO check if anything ever loads routing tables before here!
-            # only clear routing tables if we've not loaded them by now
-            for token in tokens:
-                if token.name == "DataLoaded":
-                    if token.part == "MulticastRoutesLoaded":
-                        executor.skip("Routing tables already loaded")
-                        return
+            if self._multicast_routes_loaded:
+                executor.skip("Routing tables already loaded")
+                return
             setup = RoutingSetup()
             setup(self._router_tables, self._app_id, self._txrx, self._machine)
 
@@ -2146,6 +2379,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 as executor:
             if executor.skip_if_virtual_board():
                 return None, []
+            self._multicast_routes_loaded = False
             compressor = HostBasedBitFieldRouterCompressor()
             return compressor(
                 self._router_tables, self._machine, self._placements,
@@ -2162,6 +2396,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._router_tables, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
+            self._multicast_routes_loaded = True
             return None, provenance
 
     def _excetute_machine_bitfield_pair_compressor(self):
@@ -2170,6 +2405,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 as executor:
             if executor.skip_if_virtual_board():
                 return None, []
+            self._multicast_routes_loaded = True
             compressor = MachineBitFieldPairRouterCompressor()
             _, provenance = compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
@@ -2179,6 +2415,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _excetute_ordered_covering_compressor(self):
         with FecExecutor(self, "Execute OrderedCoveringCompressor"):
+            self._multicast_routes_loaded = False
             compressor = OrderedCoveringCompressor()
             compressed = compressor(self._router_tables)
             return compressed, []
@@ -2191,12 +2428,14 @@ class AbstractSpinnakerBase(ConfigHandler):
             ordered_covering_compression(
                 self._router_tables, self._txrx, self._executable_finder,
                 self._machine, self._app_id)
+            self._multicast_routes_loaded = True
             return None, []
 
     def _execute_pair_compressor(self):
         with FecExecutor(self, "Execute PairCompressor"):
             compressor = PairCompressor()
             compressed = compressor(self._router_tables)
+            self._multicast_routes_loaded = False
             return compressed, []
 
     def _excetute_pair_compression(self):
@@ -2207,12 +2446,14 @@ class AbstractSpinnakerBase(ConfigHandler):
             pair_compression(
                 self._router_tables, self._txrx, self._executable_finder,
                 self._machine, self._app_id)
+            self._multicast_routes_loaded = True
             return None, []
 
     def _execute_pair_unordered_compressor(self):
         with FecExecutor(self, "Execute PairUnorderedCompressor"):
             compressor = CheckedUnorderedPairCompressor()
             compressed = compressor(self._router_tables)
+            self._multicast_routes_loaded = False
             return compressed, []
 
     def _do_compression(self):
@@ -2446,7 +2687,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         load_timer = Timer()
         load_timer.start_timing()
 
-        self._execute_routing_setup(graph_changed, self._mapping_tokens)
+        self._execute_routing_setup(graph_changed)
         self._exectute_graph_binary_gatherer(graph_changed)
         # loading_algorithms
         compressed, self._compressor_provenance = self._do_compression()
