@@ -35,6 +35,7 @@ from .write_json_partition_n_keys_map import WriteJsonPartitionNKeysMap
 from .write_json_placements import WriteJsonPlacements
 from .write_json_routing_tables import WriteJsonRoutingTables
 
+
 def report_xml():
     return os.path.join(
         os.path.dirname(__file__), "front_end_common_reports.xml")

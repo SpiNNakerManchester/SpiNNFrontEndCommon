@@ -1728,11 +1728,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             mapper = EdgeToNKeysMapper()
             self._machine_partition_n_keys_map = mapper(self._machine_graph)
 
-    def _execute_edge_to_n_keys_mapper(self):
-        with FecExecutor(self, "Execute Edge To N Keys Mapper"):
-            mapper = EdgeToNKeysMapper()
-            self._machine_partition_n_keys_map = mapper(self._machine_graph)
-
     def _execute_local_tdma_builder(self):
         with FecExecutor(self, "Execute Local TDMA Builder"):
             builder = LocalTDMABuilder()
@@ -1792,8 +1787,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             f"Unexpected cfg setting placer: {name}")
 
     def _execute_write_application_graph_placer_report(self):
-        with FecExecutor(self, "Execute Placer Report With Application Graph") \
-                as executor:
+        with FecExecutor(
+                self,
+                "Execute Placer Report With Application Graph") as executor:
             if executor.skip_if_cfg_false(
                     "Reports", "write_application_graph_placer_report"):
                 return
@@ -1875,7 +1871,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             processor = ProcessPartitionConstraints()
             processor(self._machine_graph)
 
-
     def _execute_global_allocate(self):
         with FecExecutor(self, "Execute Global Zoned Routing Info Allocator"):
             self._routing_infos = global_allocate(
@@ -1950,7 +1945,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             writer = WriteJsonRoutingTables()
             writer(self._router_tables, self._json_folder)
             # Output ignored as never used
-
 
     def _execute_write_router_collision_potential_report(self):
         with FecExecutor(self, "Execute RouterCollisionPotentialReport"):
