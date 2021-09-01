@@ -23,7 +23,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
 from spinn_utilities.config_holder import (
     config_options, load_config, get_config_bool, get_config_int,
-    get_config_str, set_config)
+    get_config_str, get_config_str_list, set_config)
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -154,11 +154,38 @@ class ConfigHandler(object):
         if loading_algorithms and loading_algorithms != compressor:
             raise ConfigurationException(
                 "cfg setting loading_algorithms is no longer used. "
-                "Ideally remove the loading_algorithms from you cfg. "
+                "Ideally remove it from you cfg. "
                 "To use a none default compressor specify a compressor value")
-        else:
-            # to support older code
-            set_config("Mapping", "loading_algorithms", compressor)
+        self._deprication_list("application_to_machine_graph_algorithms")
+        self._deprication_list("machine_graph_to_machine_algorithms")
+        self._deprication_list("machine_graph_to_virtual_machine_algorithms")
+
+    def _deprication_list(self, option):
+        old_algorithms = get_config_str_list("Mapping", option)
+        if not old_algorithms:
+            return
+        expected = [
+            "BasicRoutingTableGenerator", "BasicTagAllocator",
+            "DelaySupportAdder", "EdgeToNKeysMapper",
+            "ProcessPartitionConstraints", "RouterCollisionPotentialReport",
+            "SplitterReset", "SpynnakerSplitterSelector",
+            "SpYNNakerSplitterPartitioner"]
+        expected.append(get_config_str("Mapping", "placer"))
+        expected.append(get_config_str("Mapping", "info_allocator"))
+        expected.append(get_config_str("Mapping", "router"))
+        expected.append(get_config_str("Mapping", "compressor"))
+        for algorithm in expected:
+            if algorithm in old_algorithms:
+                old_algorithms.remove(algorithm)
+        if old_algorithms:
+            raise ConfigurationException(
+                f"cfg setting {option} is no longer used "
+                f"and contained an unexpected value(s): {old_algorithms}. "
+                "Ideally remove it from you cfg. "
+                "To use a none default placer, info_allocator, router or "
+                "compressor use that cfg value. "
+                "For any other algorithm please contact the software team.")
+
 
     def _adjust_config(self, runtime,):
         """ Adjust and checks config based on runtime
