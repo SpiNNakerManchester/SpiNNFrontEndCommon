@@ -653,12 +653,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if item == "ExtendedMachine":
             return self._machine
         if item == "FirstMachineTimeStep":
-            # TODO remove this HACK!
-            if self._first_machine_time_step is None:
-                # This is what was used in DSG! UGLY but true!
-                return self._current_run_timesteps
-            else:
-                return self._first_machine_time_step
+            return self._first_machine_time_step
         if item == "MachineGraph":
             return self.machine_graph
         if item == "MachinePartitionNKeysMap":
@@ -668,7 +663,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if item == "RoutingInfos":
             return self._routing_infos
         if item == "RunUntilTimeSteps":
-            return self._current_run_timesteps
+            return self._run_until_time_step
         if item == "SystemMulticastRouterTimeoutKeys":
             return self._system_multicast_router_timeout_keys
         if item == "Tags":
@@ -2294,6 +2289,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # set up timing
         data_gen_timer = Timer()
         data_gen_timer.start_timing()
+
+        self._run_until_time_step = n_machine_time_steps
+        self._first_machine_time_step = self._current_run_timesteps
 
         provide_injectables(self)
         self._execute_graph_data_specification_writer()
