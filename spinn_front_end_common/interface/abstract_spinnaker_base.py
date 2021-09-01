@@ -1765,7 +1765,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._machine_partition_n_keys_map, self._plan_n_timesteps)
 
     def _do_placer(self):
-        # TODO check machine_graph_to_machine_algorithms ect
         name = get_config_str("Mapping", "placer")
         if name == "ConnectiveBasedPlacer":
             return self._execute_connective_based_placer()
