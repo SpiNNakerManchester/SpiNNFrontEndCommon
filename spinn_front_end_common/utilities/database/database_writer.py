@@ -191,7 +191,7 @@ class DatabaseWriter(SQLiteDB):
                     for edge in application_graph.get_edges_starting_at_vertex(
                         vertex)))
 
-    def add_system_params(self, runtime):
+    def add_system_params(self, runtime, app_id):
         """ Write system params into the database
 
         :param int runtime: the amount of time the application is to run for
@@ -206,7 +206,8 @@ class DatabaseWriter(SQLiteDB):
                     ("machine_time_step", machine_time_step()),
                     ("time_scale_factor", time_scale_factor()),
                     ("infinite_run", str(runtime is None)),
-                    ("runtime", -1 if runtime is None else runtime)])
+                    ("runtime", -1 if runtime is None else runtime),
+                    ("app_id", app_id)])
 
     def add_vertices(self, machine_graph, data_n_timesteps, application_graph):
         """ Add the machine graph into the database.

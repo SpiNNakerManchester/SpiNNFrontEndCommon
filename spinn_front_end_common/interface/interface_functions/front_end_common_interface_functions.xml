@@ -1459,6 +1459,10 @@
                 <param_name>application_graph</param_name>
                 <param_type>ApplicationGraph</param_type>
             </parameter>
+            <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine_graph</param_name>
@@ -1469,6 +1473,7 @@
             <param_name>placements</param_name>
             <param_name>routing_infos</param_name>
             <param_name>router_tables</param_name>
+            <param_name>app_id</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>application_graph</param_name>
