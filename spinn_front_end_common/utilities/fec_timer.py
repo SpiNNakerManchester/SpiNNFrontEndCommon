@@ -49,7 +49,7 @@ else:
         return timedelta(seconds=time_diff)
 
 
-class FecExecutor(object):
+class FecTimer(object):
 
     __slots__ = [
 
