@@ -1629,17 +1629,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         Allows overriding classes to add algorithms
         """
 
-    def _execute_write_json_machine(self):
-        with FecTimer(self, "Execute write json machine") as timer:
+    def _write_json_machine(self):
+        with FecTimer(self, "Write Json Machine") as timer:
             if timer.skip_if_cfg_false("Reports", "write_json_machine"):
                 return
             writer = WriteJsonMachine()
             writer(self._machine, self._json_folder)
             # TODO output ignored as never used
 
-    def _execute_write_network_specification(self):
-        with FecTimer(
-                self, "Execute write network_specification") as timer:
+    def _report_network_specification(self):
+        with FecTimer(self, "Report network_specification") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_network_specification_report"):
                 return
@@ -1660,8 +1659,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             allocator(self._machine, graph)
             # return ignored as changes done inside original machine object
 
-    def _execute_write_board_chip_report(self):
-        with FecTimer(self, "Execute Write Board Chip Report") as timer:
+    def _report_board_chip(self):
+        with FecTimer(self, "Report Write Board Chip Report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_board_chip_report"):
                 return
@@ -1731,14 +1730,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             builder(self._machine_graph, self._machine_partition_n_keys_map,
                     self._application_graph)
 
-    def _execute_write_json_partition_n_keys_map(self):
-        with FecTimer(self, "Execute Write Json Partition NKeys Map") \
-                as timer:
+    def _json_partition_n_keys_map(self):
+        with FecTimer(self, "Json Partition NKeys Map") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_json_partition_n_keys_map"):
                 return
-            report = WriteJsonPartitionNKeysMap()
-            report(self._machine_partition_n_keys_map, self._json_folder)
+            writer = WriteJsonPartitionNKeysMap()
+            writer(self._machine_partition_n_keys_map, self._json_folder)
             # Output ignored as never used
 
     def _execute_connective_based_placer(self):
@@ -1782,10 +1780,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         raise ConfigurationException(
             f"Unexpected cfg setting placer: {name}")
 
-    def _execute_write_application_graph_placer_report(self):
+    def _report_placements_with_application_graph(self):
         with FecTimer(
-                self,
-                "Execute Placer Report With Application Graph") as timer:
+                self,  "Report Placements With Application Graph") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_application_graph_placer_report"):
                 return
@@ -1795,20 +1792,17 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._hostname, self._application_graph, self._placements,
                 self._machine)
 
-    def _execute_write_machine_graph_placer_report(self):
-        with FecTimer(
-                self, "Execute Placer Report Without Application Graph") \
-                as timer:
+    def _report_placements_with_machine_graph(self):
+        with FecTimer(self, "Report Placements With Machine Graph") as timer:
             if timer.skip_if_cfg_false(
-                    "Reports", "write_application_graph_placer_report"):
+                    "Reports", "write_machine_graph_placer_report"):
                 return
             placer_reports_without_application_graph(
                 self._hostname, self._machine_graph, self._placements,
                 self._machine)
 
-    def _execute_write_json_placements(self):
-        with FecTimer(
-                self, "Execute Write Json Placements") as timer:
+    def _write_json_placements(self):
+        with FecTimer(self, "Write Json Placements") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_json_placements"):
                 return
@@ -1854,9 +1848,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._tags = allocator(
                 self._machine, self._plan_n_timesteps, self._placements)
 
-    def _execute_write_tag_allocation_reports(self):
-        with FecTimer(
-                self, "Execute Write Json Placements") as timer:
+    def _report_tag_allocations(self):
+        with FecTimer(self, "Report Tag Allocations") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_tag_allocation_reports"):
                 return
@@ -1897,9 +1890,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         raise ConfigurationException(
             f"Unexpected cfg setting info_allocator: {name}")
 
-    def _execute_write_router_info_report(self):
-        with FecTimer(
-                self, "Execute Write Router Info Report") as timer:
+    def _report_router_info(self):
+        with FecTimer(self, "Report Router Info") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_info_report"):
                 return
@@ -1913,9 +1905,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._machine)
         # TODO Nuke ZonedRoutingTableGenerator
 
-    def _execute_write_routers(self):
-        with FecTimer(
-                self, "Execute Write Router Reports") as timer:
+    def _report_routers(self):
+        with FecTimer(self, "Report Router") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_reports"):
                 return
@@ -1923,18 +1914,16 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._router_tables, self._routing_infos, self._hostname,
             self._machine_graph, self._placements, self._machine)
 
-    def _execute_write_router_summary_report(self):
-        with FecTimer(
-                self, "Execute Write Router Summary Report") as timer:
+    def _report_router_summary(self):
+        with FecTimer(self, "Report Router Summary") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_summary_report"):
                 return
             router_summary_report(
                 self._router_tables,  self._hostname, self._machine)
 
-    def _execute_write_json_routing_tables(self):
-        with FecTimer(
-                self, "Execute Write Json Routing Tables") as timer:
+    def _write_json_routing_tables(self):
+        with FecTimer(self, "Write Json Routing Tables") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_json_routing_tables"):
                 return
@@ -1942,8 +1931,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             writer(self._router_tables, self._json_folder)
             # Output ignored as never used
 
-    def _execute_write_router_collision_potential_report(self):
-        with FecTimer(self, "Execute RouterCollisionPotentialReport"):
+    def _report_router_collision_potential(self):
+        with FecTimer(self, "Report Router Collision Potential"):
             # TODO cfg flag!
             report = RouterCollisionPotentialReport()
             report(self._routing_table_by_partition,
@@ -2000,10 +1989,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         provide_injectables(self)
 
         self._do_extra_mapping_algorithms()
-        self._execute_write_json_machine()
-        self._execute_write_network_specification()
+        self._write_json_machine()
+        self._report_network_specification()
         self._execute_chip_id_allocator()
-        self._execute_write_board_chip_report()
+        self._report_board_chip()
         self._execute_splitter_reset()
         self._execute_splitter_selector()
         self._execute_delay_support_adder()
@@ -2012,21 +2001,22 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_partitioner_report()
         self._execute_edge_to_n_keys_mapper()
         self._execute_local_tdma_builder()
-        self._execute_write_json_partition_n_keys_map()
+        self._json_partition_n_keys_map()
         self._do_placer()
-        self._execute_write_application_graph_placer_report()
-        self._execute_write_machine_graph_placer_report()
+        self._report_placements_with_application_graph()
+        self._report_placements_with_machine_graph()
+        self._write_json_placement()
         self._do_routing()
         self._execute_basic_tag_allocator()
-        self._execute_write_tag_allocation_reports()
+        self._report_tag_allocations()
         self._execute_process_partition_constraints()
         self.do_info_allocator()
-        self._execute_write_router_info_report()
+        self._report_router_info()
         self._execute_basic_routing_table_generator()
-        self._execute_write_routers()
-        self._execute_write_router_summary_report()
-        self._execute_write_json_routing_tables()
-        self._execute_write_router_collision_potential_report()
+        self._report_routers()
+        self._report_router_summary()
+        self._write_json_routing_tables()
+        self._report_router_collision_potential()
         self._execute_locate_executable_start_type()
         self._execute_buffer_manager_creator()
         self._execute_sdram_outgoing_partition_allocator()
@@ -2932,7 +2922,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._do_energy_report(power_used)
             return prov_items
 
-    def _execute_write_provenance(self, prov_items, n_machine_time_steps):
+    def _report_provenance(self, prov_items, n_machine_time_steps):
         with FecTimer(self, "Write Provenance") as timer:
             if timer.skip_if_cfg_false("Reports", "write_provenance_data"):
                 return
@@ -3095,7 +3085,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         prov_items = self._execute_read_provenance(n_machine_time_steps)
         prov_items.extend(self._execute_energy_report(
              prov_items, run_time))
-        self._execute_write_provenance(prov_items, n_machine_time_steps)
+        self._report_provenance(prov_items, n_machine_time_steps)
 
         self._has_reset_last = False
         self._has_ran = True
