@@ -49,6 +49,7 @@ else:
         return timedelta(seconds=time_diff)
 
 _simulator = None
+_provenance_path = None
 
 
 class FecTimer(object):
@@ -65,8 +66,9 @@ class FecTimer(object):
 
     @classmethod
     def setup(cls, simulator):
-        global _simulator
+        global _simulator, _provenance_path
         _simulator = simulator
+        _provenance_path = simulator._pacman_executor_provenance_path
 
     def __init__(self, name):
         self._start_time = None
@@ -76,8 +78,16 @@ class FecTimer(object):
         self._start_time = _now()
         return self
 
+    def _report(self, message):
+        if _provenance_path is None:
+            return
+        with open(_provenance_path, "a") as provenance_file:
+            provenance_file.write(f"{message}\n")
+
     def skip(self, reason):
-        logger.info(f"{self._name} skipped as {reason}")
+        message = f"{self._name} skipped as {reason}"
+        logger.info(message)
+        self._report(message)
         self._start_time = None
 
     def skip_if_has_not_run(self):
@@ -145,8 +155,9 @@ class FecTimer(object):
 
     def stop(self, reason):
         time_taken = self._stop_timer()
-        logger.info(
-            f"{self._name} stopped after {time_taken} as {reason}")
+        message = f"{self._name} stopped after {time_taken} as {reason}"
+        logger.info(message)
+        self._report(message)
 
     def stop_if_none(self, value, name):
         if value is None:
@@ -177,7 +188,10 @@ class FecTimer(object):
             return False
         time_taken = self._stop_timer()
         if type is None:
-            logger.info(f"Time {time_taken} taken by {self._name}")
+            message = f"Time {time_taken} taken by {self._name}"
         else:
-            logger.info("{self._name} exited with {type} after {time_taken}")
+            message = "{self._name} exited with {type} after {time_taken}"
+        logger.info(message)
+        self._report(message)
+
         return False

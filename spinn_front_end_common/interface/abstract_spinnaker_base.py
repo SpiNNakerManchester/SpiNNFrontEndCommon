@@ -456,7 +456,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_time = 0.0
         self._dsg_time = 0.0
         self._extraction_time = 0.0
-        FecTimer.setup(self)
 
         self._executable_finder = executable_finder
 
@@ -605,6 +604,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._routing_table_by_partition = None
         self._multicast_routes_loaded = False
         self._extra_monitor_to_chip_mapping = None
+
+        FecTimer.setup(self)
 
         # Safety in case a previous run left a bad state
         clear_injectables()
