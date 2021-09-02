@@ -48,6 +48,8 @@ else:
         """
         return timedelta(seconds=time_diff)
 
+_simulator = None
+
 
 class FecTimer(object):
 
@@ -56,17 +58,18 @@ class FecTimer(object):
         # The start time when the timer was set off
         "_start_time",
 
-        # AbstractSpinnakerBase
-        "_simulator",
-
         # Name of what is being times
         "_name",
 
         ]
 
-    def __init__(self, simulator, name):
+    @classmethod
+    def setup(cls, simulator):
+        global _simulator
+        _simulator = simulator
+
+    def __init__(self, name):
         self._start_time = None
-        self._simulator = simulator
         self._name = name
 
     def __enter__(self):
@@ -78,21 +81,21 @@ class FecTimer(object):
         self._start_time = None
 
     def skip_if_has_not_run(self):
-        if self._simulator.has_ran:
+        if _simulator.has_ran:
             self.skip("simulator.has_run")
             return True
         else:
             return False
 
     def skip_if_virtual_board(self):
-        if self._simulator.use_virtual_board:
+        if _simulator.use_virtual_board:
             self.skip("simulator.use_virtual_board")
             return True
         else:
             return False
 
     def skip_if_application_graph_empty(self):
-        if self._simulator._application_graph.n_vertices:
+        if _simulator._application_graph.n_vertices:
             return False
         else:
             self.skip("Application graph is empty")
@@ -143,7 +146,7 @@ class FecTimer(object):
         return False
 
     def stop_if_virtual_board(self):
-        if self._simulator.use_virtual_board:
+        if _simulator.use_virtual_board:
             self.stop("simulator.use_virtual_board")
             return True
         else:
