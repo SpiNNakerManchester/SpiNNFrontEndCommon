@@ -187,7 +187,6 @@ class ConfigHandler(object):
                 "compressor use that cfg value. "
                 "For any other algorithm please contact the software team.")
 
-
     def _adjust_config(self, runtime,):
         """ Adjust and checks config based on runtime
 
