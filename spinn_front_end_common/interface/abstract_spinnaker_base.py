@@ -50,6 +50,7 @@ from pacman import __version__ as pacman_version
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.operations.chip_id_allocator_algorithms import (
     MallocBasedChipIdAllocator)
+from pacman.operations.fixed_route_router import FixedRouteRouter
 from pacman.operations.partition_algorithms import SplitterPartitioner
 from pacman.operations.placer_algorithms import (
     ConnectiveBasedPlacer, OneToOnePlacer, RadialPlacer, SpreaderPlacer)
@@ -83,13 +84,15 @@ from spinn_front_end_common.interface.interface_functions import (
     GraphBinaryGatherer, GraphDataSpecificationWriter,
     GraphProvenanceGatherer,  HostBasedBitFieldRouterCompressor,
     HostExecuteDataSpecification, InsertChipPowerMonitorsToGraphs,
+    InsertEdgesToExtraMonitorFunctionality, InsertExtraMonitorVerticesToGraphs,
     interface_xml, LoadExecutableImages, LoadFixedRoutes,
     LocalTDMABuilder, LocateExecutableStartType, PlacementsProvenanceGatherer,
     ProfileDataGatherer, ProcessPartitionConstraints,
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ReadRoutingTablesFromMachine,
     RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader,
-    SDRAMOutgoingPartitionAllocator, TagsLoader)
+    SDRAMOutgoingPartitionAllocator, SystemMulticastRoutingGenerator,
+    TagsLoader)
 from spinn_front_end_common.interface.interface_functions.\
     machine_bit_field_router_compressor import (
         MachineBitFieldOrderedCoveringCompressor,
@@ -418,7 +421,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_plan_n_timesteps",
         "_compressor_provenance",
         "_routing_table_by_partition",
-        "_multicast_routes_loaded"
+        "_multicast_routes_loaded",
+        "_extra_monitor_to_chip_mapping"
     ]
 
     def __init__(
@@ -600,6 +604,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._compressor_provenance = None
         self._routing_table_by_partition = None
         self._multicast_routes_loaded = False
+        self._extra_monitor_to_chip_mapping = None
 
         # Safety in case a previous run left a bad state
         clear_injectables()
@@ -1702,7 +1707,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._application_graph, self._machine, self._plan_n_timesteps,
                 pre_allocated_resources=None)
 
-    def _execute_insert_chip_power_monitors_to_graphs(self):
+    def _execute_insert_chip_power_monitors(self):
         with FecTimer("Execute Insert Chip Power Monitors") as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
@@ -1711,6 +1716,23 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._machine, self._machine_graph,
                 get_config_int("EnergyMonitor", "sampling_frequency"),
                 self._application_graph)
+
+    def _execute_insert_extra_monitor_vertices(self):
+        with FecTimer("Execute Insert Extra Monitor Vertices") as timer:
+            if timer.skip_if_cfgs_false(
+                    "Machine", "enable_advanced_monitor_support",
+                    "enable_reinjection"):
+                return
+            inserter = InsertExtraMonitorVerticesToGraphs()
+            # inserter checks for None app graph not an empty one
+            if self._application_graph.n_vertices > 0:
+                app_graph = self._application_graph
+            else:
+                app_graph = None
+        (self._vertex_to_ethernet_connected_chip_mapping,
+         self._extra_monitor_vertices,
+         self._extra_monitor_to_chip_mapping) = inserter(
+            self._machine, self._machine_graph, app_graph)
 
     def _execute_partitioner_report(self):
         with FecTimer("Execute Partitioner Report") as timer:
@@ -1779,6 +1801,47 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Only a single algorithm is supported for placer")
         raise ConfigurationException(
             f"Unexpected cfg setting placer: {name}")
+
+    def _execute_insert_edges_to_extra_monitor(self):
+        with FecTimer("Execute Insert Edges To Extra Monitor") as timer:
+            if timer.skip_if_cfgs_false(
+                    "Machine", "enable_advanced_monitor_support",
+                    "enable_reinjection"):
+                return
+            # inserter checks for None app graph not an empty one
+            if self._application_graph.n_vertices > 0:
+                app_graph = self._application_graph
+            else:
+                app_graph = None
+            inserter = InsertEdgesToExtraMonitorFunctionality()
+            inserter(self._machine_graph, self._placements, self._machine,
+                     self._vertex_to_ethernet_connected_chip_mapping,
+                     app_graph)
+
+    def _execute_system_multicast_routing_generator(self):
+        with FecTimer("Execute System Multicast Routing Generator") as timer:
+            if timer.skip_if_cfgs_false(
+                    "Machine", "enable_advanced_monitor_support",
+                    "enable_reinjection"):
+                return
+            generator = SystemMulticastRoutingGenerator()
+            (self._data_in_multicast_routing_tables,
+             self._data_in_multicast_key_to_chip_map,
+             self._system_multicast_router_timeout_keys) = generator(
+                self._machine, self._extra_monitor_to_chip_mapping,
+                self._placements)
+
+    def _execute_fixed_route_router(self):
+        # TODO: Why does Master create Fixed routes but not use them when
+        # enable_reinjection = True enable_advanced_monitor_support = False
+        with FecTimer("Execute Fixed Route Router") as timer:
+            if timer.skip_if_cfg_false(
+                    "Machine", "enable_advanced_monitor_support"):
+                return
+            router = FixedRouteRouter()
+            self._fixed_routes = router(
+                self._machine, self._placements,
+                DataSpeedUpPacketGatherMachineVertex)
 
     def _report_placements_with_application_graph(self):
         with FecTimer("Report Placements With Application Graph") as timer:
@@ -1955,14 +2018,11 @@ class AbstractSpinnakerBase(ConfigHandler):
                     self._buffer_manager, "Buffer Manager"):
                 return
 
-            # TODO extra monitor
-            extra_monitor_to_chip_mapping = None
-
             creator = BufferManagerCreator()
             self._buffer_manager = creator(
                 self._placements, self._tags, self._txrx,
                 self._extra_monitor_vertices,
-                extra_monitor_to_chip_mapping,
+                self._extra_monitor_to_chip_mapping,
                 self._vertex_to_ethernet_connected_chip_mapping,
                 self._machine, self._fixed_routes, self._java_caller)
             print(self._buffer_manager)
@@ -1994,12 +2054,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_splitter_selector()
         self._execute_delay_support_adder()
         self._execute_splitter_partitioner()
-        self._execute_insert_chip_power_monitors_to_graphs()
+        self._execute_insert_chip_power_monitors()
+        self._execute_insert_extra_monitor_vertices()
         self._execute_partitioner_report()
         self._execute_edge_to_n_keys_mapper()
         self._execute_local_tdma_builder()
         self._json_partition_n_keys_map()
         self._do_placer()
+        self._execute_system_multicast_routing_generator()
+        self._execute_fixed_route_router()
         self._report_placements_with_application_graph()
         self._report_placements_with_machine_graph()
         self._write_json_placements()
@@ -2021,20 +2084,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         clear_injectables()
         self._mapping_time += convert_time_diff_to_total_milliseconds(
             mapping_total_timer.take_sample())
-
-        # TODO
-        """
-        self._extra_monitor_vertices = executor.get_item(
-            "ExtraMonitorVertices")
-        self._vertex_to_ethernet_connected_chip_mapping = \
-            executor.get_item("VertexToEthernetConnectedChipMapping")
-        self._data_in_multicast_key_to_chip_map = executor.get_item(
-            "DataInMulticastKeyToChipMap")
-        self._system_multicast_router_timeout_keys = \
-            executor.get_item("SystemMulticastRouterTimeoutKeys")
-        self._data_in_multicast_routing_tables = executor.get_item(
-            "DataInMulticastRoutingTables")
-        """
 
     def _do_mappingX(self, run_time, total_run_time):
         """
@@ -2486,16 +2535,16 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 timer.skip("Tables loaded by compressor")
 
-    def _execute_uncompressed_routing_table_reports(self):
+    def _report_uncompressed_routing_table(self):
         # TODO why not during mapping?
-        with FecTimer("Execute Uncompressed RoutingTable Reports") as timer:
+        with FecTimer("Report Uncompressed RoutingTable") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_routing_table_reports"):
                 return
             router_report_from_router_tables(self._router_tables)
 
-    def _execute_bit_field_compressor_report(self):
-        with FecTimer("Execute BitField Compressor Report") as timer:
+    def _report_bit_field_compressor(self):
+        with FecTimer("Report BitField Compressor") as timer:
             if timer.skip_if_cfg_false(
                     "Reports",  "write_bit_field_compressor_report"):
                 return
@@ -2660,8 +2709,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # loading_algorithms
         compressed, self._compressor_provenance = self._do_compression()
         self._execute_load_routing_tables(compressed)
-        self._execute_uncompressed_routing_table_reports()
-        self._execute_bit_field_compressor_report()
+        self._report_uncompressed_routing_table()
+        self._report_bit_field_compressor()
         self._execute_load_fixed_routes(graph_changed)
         processor_to_app_data_base_address = \
             self._execute_system_data_specification()

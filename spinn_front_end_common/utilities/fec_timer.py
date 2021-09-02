@@ -134,6 +134,15 @@ class FecTimer(object):
             self.skip(f"cfg {section}:{option} is False")
             return True
 
+    def skip_if_cfgs_false(self, section, option1, option2):
+        if get_config_bool(section, option1):
+            return False
+        elif get_config_bool(section, option2):
+            return False
+        else:
+            self.skip(f"cfg {section}:{option1} and {option2} are False")
+            return True
+
     def stop(self, reason):
         time_taken = self._stop_timer()
         logger.info(
