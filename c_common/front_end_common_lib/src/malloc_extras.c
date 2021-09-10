@@ -85,12 +85,10 @@ void malloc_extras_terminate(uint result_code) {
     uint core = spin1_get_core_id();
     sark_virtual_processor_info[core].user1 = result_code;
 
-    // hopefully one of these functions will kill the binary
-    spin1_pause();
-    spin1_exit(0);
     if (result_code != EXITED_CLEANLY && result_code != EXIT_FAIL) {
         rt_error(RTE_SWERR);
     }
+    spin1_exit(0);
 }
 
 bool malloc_extras_check(void *ptr) {

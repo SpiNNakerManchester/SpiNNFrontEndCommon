@@ -45,7 +45,7 @@ from pacman.model.graphs.application import (
 from pacman.model.graphs.machine import (
     MachineGraph, MachineGraphView, MachineVertex)
 from pacman.model.resources import (
-    PreAllocatedResourceContainer, ConstantSDRAM)
+    ConstantSDRAM, PreAllocatedResourceContainer)
 from pacman import __version__ as pacman_version
 from spinn_utilities.config_holder import (
     get_config_bool, get_config_int, get_config_str, get_config_str_list,
@@ -1172,6 +1172,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             except Exception as e3:
                 logger.warning("problem when shutting down {}".format(e3),
                                exc_info=True)
+            self.write_errored_file()
+            self.write_finished_file()
             raise e
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
@@ -2681,6 +2683,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
 
         if exn is not None:
+            self.write_errored_file()
             raise exn  # pylint: disable=raising-bad-type
         self.write_finished_file()
 
