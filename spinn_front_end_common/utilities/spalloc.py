@@ -223,6 +223,16 @@ class _Session:
         headers = {self.__csrf_header: self.__csrf}
         return cookies, headers
 
+    def _purge(self):
+        """
+        Clears out all credentials from this session, rendering the session
+        completely inoperable henceforth.
+        """
+        self.__username = None
+        self.__password = None
+        self._session_id = None
+        self.__csrf = None
+
 
 class SpallocClient:
     """
@@ -231,13 +241,18 @@ class SpallocClient:
     __slots__ = ("__session",
                  "__machines_url", "__jobs_url", "version")
 
-    def __init__(self, service_url, username, password):
+    def __init__(self, service_url, username=None, password=None):
         """
         :param str service_url: The reference to the service.
-            *Should not* include a username or password in it.
+            May have username and password supplied as part of the network
+            location; if so, the ``username`` and ``password`` arguments
+            *must* be ``None``.
         :param str username: The user name to use
         :param str password: The password to use
         """
+        if username is None and password is None:
+            service_url, username, password = self.__parse_service_url(
+                service_url)
         self.__session = _Session(service_url, username, password)
         obj = self.__session.renew()
         v = obj["version"]
@@ -246,6 +261,24 @@ class SpallocClient:
         self.__machines_url = obj["machines-ref"]
         self.__jobs_url = obj["jobs-ref"]
         logger.info("established session to {} for {}", service_url, username)
+
+    @staticmethod
+    def __parse_service_url(url):
+        """
+        Parses a combined service reference.
+
+        :param str url:
+        :rtype: tuple(str,str,str)
+        """
+        pieces = urlparse(url)
+        user = pieces.username
+        password = pieces.password
+        netloc = pieces.hostname
+        if pieces.port is not None:
+            netloc += f":{pieces.port}"
+        url = urlunparse((
+            pieces.scheme, netloc, pieces.path, None, None, None))
+        return url, user, password
 
     def list_machines(self):
         """
@@ -406,6 +439,21 @@ class SpallocClient:
         p.start()
         return closer
 
+    def close(self):
+        if self.__session is not None:
+            self.__session._purge()
+        self.__session = None
+
+    def __enter__(self):
+        """
+        :rtype: SpallocClient
+        """
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
 
 def _SpallocKeepalive(url, cookies, headers, interval, term_queue):
     headers["Content-Type"] = "text/plain; charset=UTF-8"
@@ -471,7 +519,7 @@ class SpallocJob:
 
     Don't make this yourself. Use :py:class:`SpallocClient` instead.
     """
-    __slots__ = ("__session", "__url", "__machine_url",
+    __slots__ = ("__session", "__url", "__machine_url", "__chip_url",
                  "_keepalive_url", "__keepalive_handle")
 
     def __init__(self, session, job_handle):
@@ -483,6 +531,7 @@ class SpallocJob:
         self.__session = session
         self.__url = _clean_url(job_handle)
         self.__machine_url = self.__url + "machine"
+        self.__chip_url = self.__url + "chip"
         self._keepalive_url = self.__url + "keepalive"
         self.__keepalive_handle = None
 
@@ -528,6 +577,18 @@ class SpallocJob:
             if s != old_state or s == SpallocState.DESTROYED:
                 return s
 
+    def wait_until_ready(self):
+        """
+        Wait until the allocation is in the ``READY`` state.
+
+        :raises Exception: If the allocation is destroyed
+        """
+        state = SpallocState.UNKNOWN
+        while state != SpallocState.READY:
+            state = self.wait_for_state_change(state)
+            if state == SpallocState.DESTROYED:
+                raise Exception("job was unexpectedly destroyed")
+
     def destroy(self, reason="finished"):
         """
         Destroy the job.
@@ -545,6 +606,22 @@ class SpallocJob:
         Signal the job that we want it to stay alive for a while longer.
         """
         self.__session.put(self._keepalive_url, "alive")
+
+    def where_is_machine(self, x, y):
+        """
+        Get the *physical* coordinates of the board hosting the given chip.
+
+        :param int x: Chip X coordinate
+        :param int y: Chip Y coordinate
+        :return: physical board coordinates (cabinet, frame, board), or
+            ``None`` if there are no boards currently allocated to the job or
+            the chip lies outside the allocation.
+        :rtype: tuple(int,int,int) or None
+        """
+        r = self.__session.get(self.__chip_url, x=int(x), y=int(y))
+        if r.status_code == 204:
+            return None
+        return tuple(r.json()["physical-board-coordinates"])
 
     @property
     def _keepalive_handle(self):

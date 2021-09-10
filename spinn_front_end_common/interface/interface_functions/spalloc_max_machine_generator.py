@@ -16,6 +16,7 @@
 from spalloc import ProtocolClient
 from spinn_machine.virtual_machine import virtual_machine
 from spinn_machine.machine import Machine
+from spinn_front_end_common.utilities.spalloc import SpallocClient
 
 
 class SpallocMaxMachineGenerator(object):
@@ -38,26 +39,15 @@ class SpallocMaxMachineGenerator(object):
         :return: A virtual machine
         :rtype: ~spinn_machine.Machine
         """
-        with ProtocolClient(spalloc_server, spalloc_port) as client:
-            machines = client.list_machines()
-            # Close the context immediately; don't want to keep this particular
-            # connection around as there's not a great chance of this code
-            # being rerun in this process any time soon.
-        max_width = None
-        max_height = None
-        max_area = -1
+        if (spalloc_server.lower().startswith("http:") or
+                spalloc_server.lower().startswith("https:")):
+            width, height = self.discover_max_machine_area_new(
+                spalloc_server, spalloc_machine)
+        else:
+            width, height = self.discover_max_machine_area_old(
+                spalloc_server, spalloc_port, spalloc_machine)
 
-        for machine in self._filter(machines, spalloc_machine):
-            # Get the width and height in chips, and logical area in chips**2
-            width, height, area = self._get_size(machine)
-
-            # The "biggest" board is the one with the most chips
-            if area > max_area:
-                max_area = area
-                max_width = width
-                max_height = height
-
-        if max_width is None:
+        if width is None:
             raise Exception(
                 "The spalloc server appears to have no compatible machines")
 
@@ -67,11 +57,77 @@ class SpallocMaxMachineGenerator(object):
         # Return the width and height, and make no assumption about wrap-
         # arounds or version.
         return virtual_machine(
-            width=max_width, height=max_height,
+            width=width, height=height,
             n_cpus_per_chip=n_cpus_per_chip, validate=False)
 
+    def discover_max_machine_area_new(self, spalloc_server, spalloc_machine):
+        """
+        Generate a maximum virtual machine a given allocation server can
+        generate, communicating with the spalloc server using the new protocol.
+
+        :param str spalloc_server: Spalloc server URL
+        :param spalloc_machine: Desired machine name, or ``None`` for default.
+        :type spalloc_machine: str or None
+        :return: the dimensions of the maximum machine
+        :rtype: tuple(int or None,int or None)
+        """
+        max_width = None
+        max_height = None
+        max_area = -1
+
+        with SpallocClient(spalloc_server) as client:
+            for machine in client.list_machines().values():
+                if spalloc_machine is not None:
+                    if spalloc_machine != machine.name:
+                        continue
+                else:
+                    if "default" not in machine.tags:
+                        continue
+
+                # The "biggest" board is the one with the most chips
+                if machine.area > max_area:
+                    max_area = machine.area
+                    max_width = machine.width
+                    max_height = machine.height
+
+        return max_width, max_height
+
+    def discover_max_machine_area_old(
+            self, spalloc_server, spalloc_port, spalloc_machine):
+        """
+        Generate a maximum virtual machine a given allocation server can
+        generate, communicating with the spalloc server using the old protocol.
+
+        :param str spalloc_server: Spalloc server hostname
+        :param int spalloc_port: Spalloc server port
+        :param spalloc_machine: Desired machine name, or ``None`` for default.
+        :type spalloc_machine: str or None
+        :return: the dimensions of the maximum machine
+        :rtype: tuple(int or None,int or None)
+        """
+        with ProtocolClient(spalloc_server, spalloc_port) as client:
+            machines = client.list_machines()
+            # Close the context immediately; don't want to keep this particular
+            # connection around as there's not a great chance of this code
+            # being rerun in this process any time soon.
+        max_width = None
+        max_height = None
+        max_area = -1
+
+        for machine in self._filter_old(machines, spalloc_machine):
+            # Get the width and height in chips, and logical area in chips**2
+            width, height, area = self._get_size(machine)
+
+            # The "biggest" board is the one with the most chips
+            if area > max_area:
+                max_area = area
+                max_width = width
+                max_height = height
+
+        return max_width, max_height
+
     @staticmethod
-    def _filter(machines, target_name):
+    def _filter_old(machines, target_name):
         """
         :param list(dict(str,str)) machines:
         :param str target_name:

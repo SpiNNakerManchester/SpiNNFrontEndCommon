@@ -22,9 +22,77 @@ from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
+from spinn_front_end_common.utilities.spalloc import (
+    SpallocClient, SpallocJob, SpallocState)
 
 
-class _SpallocJobController(MachineAllocationController):
+class _NewSpallocJobController(MachineAllocationController):
+    __slots__ = [
+        # the spalloc job object
+        "_job",
+        # the current job's old state
+        "_state",
+        "__client",
+        "__closer"
+    ]
+
+    def __init__(self, client, job, closer):
+        """
+        :param SpallocClient client:
+        :param SpallocJob job:
+        :param closer:
+        """
+        if job is None:
+            raise Exception("must have a real job")
+        self.__client = client
+        self.__closer = closer
+        self._job: SpallocJob = job
+        self._state = job.get_state()
+        super().__init__("SpallocJobController")
+
+    @overrides(AbstractMachineAllocationController.extend_allocation)
+    def extend_allocation(self, new_total_run_time):
+        # Does Nothing in this allocator - machines are held until exit
+        pass
+
+    @overrides(AbstractMachineAllocationController.close)
+    def close(self):
+        super().close()
+        self.__closer.close()
+        self._job.destroy()
+        self.__client.close()
+
+    @overrides(AbstractMachineAllocationController.where_is_machine)
+    def where_is_machine(self, chip_x, chip_y):
+        """
+        :param int chip_x:
+        :param int chip_y:
+        :rtype: tuple(int,int,int)
+        """
+        return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
+
+    @overrides(MachineAllocationController._wait)
+    def _wait(self):
+        try:
+            if self._state != SpallocState.DESTROYED:
+                self._state = self._job.wait_for_state_change(self._state)
+        except TypeError:
+            pass
+        except Exception as e:  # pylint: disable=broad-except
+            if not self._exited:
+                raise e
+        return self._state != SpallocState.DESTROYED
+
+    @overrides(MachineAllocationController._teardown)
+    def _teardown(self):
+        if not self._exited:
+            self.__closer.close()
+            self._job.close()
+            self.__client.close()
+        super()._teardown()
+
+
+class _OldSpallocJobController(MachineAllocationController):
     __slots__ = [
         # the spalloc job object
         "_job",
@@ -129,6 +197,49 @@ class SpallocAllocator(object):
                 n_boards += 1
             n_boards = int(math.ceil(n_boards))
 
+        if (spalloc_server.lower().startswith("http:") or
+                spalloc_server.lower().startswith("https:")):
+            return self.allocate_job_new(spalloc_server, n_boards)
+        else:
+            return self.allocate_job_old(spalloc_server, n_boards)
+
+    def allocate_job_new(self, spalloc_server, n_boards):
+        """
+        Request a machine from an old-style spalloc server that will fit the
+        given number of boards.
+
+        :param str spalloc_server:
+            The server from which the machine should be requested
+        :param int n_boards: The number of boards required
+        :rtype: tuple(str, int, None, bool, bool, None, None,
+            MachineAllocationController)
+        """
+
+        spalloc_machine = get_config_str("Machine", "spalloc_machine")
+        client = SpallocClient(spalloc_server)
+        job = client.create_job(n_boards, spalloc_machine)
+        closer_for_keepalive_task = client.launch_keepalive_task(job)
+        job.wait_until_ready()
+        root = job.get_root_host()
+        machine_allocation_controller = _NewSpallocJobController(
+            client, job, closer_for_keepalive_task)
+        return (
+            root, self._MACHINE_VERSION, None, False,
+            False, None, None, machine_allocation_controller
+        )
+
+    def allocate_job_old(self, spalloc_server, n_boards):
+        """
+        Request a machine from an old-style spalloc server that will fit the
+        given number of boards.
+
+        :param str spalloc_server:
+            The server from which the machine should be requested
+        :param int n_boards: The number of boards required
+        :rtype: tuple(str, int, None, bool, bool, None, None,
+            MachineAllocationController)
+        """
+
         spalloc_kw_args = {
             'hostname': spalloc_server,
             'owner': get_config_str("Machine", "spalloc_user")
@@ -141,7 +252,7 @@ class SpallocAllocator(object):
             spalloc_kw_args['machine'] = spalloc_machine
 
         job, hostname = self._launch_job(n_boards, spalloc_kw_args)
-        machine_allocation_controller = _SpallocJobController(job)
+        machine_allocation_controller = _OldSpallocJobController(job)
 
         return (
             hostname, self._MACHINE_VERSION, None, False,
