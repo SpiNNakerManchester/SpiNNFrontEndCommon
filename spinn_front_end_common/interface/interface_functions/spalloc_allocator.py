@@ -173,7 +173,8 @@ class SpallocAllocator(object):
     _MACHINE_VERSION = 5
 
     def __call__(
-            self, spalloc_server, n_chips=None, n_boards=None):
+            self, spalloc_server, n_chips=None, n_boards=None,
+            bearer_token=None):
         """
         :param str spalloc_server:
             The server from which the machine should be requested
@@ -182,6 +183,8 @@ class SpallocAllocator(object):
         :type n_chips: int or None
         :param int n_boards: The number of boards required
         :type n_boards: int or None
+        :param bearer_token: The bearer token to use
+        :type bearer_token: str or None
         :rtype: tuple(str, int, None, bool, bool, None, None,
             MachineAllocationController)
         """
@@ -198,11 +201,12 @@ class SpallocAllocator(object):
             n_boards = int(math.ceil(n_boards))
 
         if SpallocClient.is_server_address(spalloc_server):
-            return self.allocate_job_new(spalloc_server, n_boards)
+            return self.allocate_job_new(
+                spalloc_server, n_boards, bearer_token)
         else:
             return self.allocate_job_old(spalloc_server, n_boards)
 
-    def allocate_job_new(self, spalloc_server, n_boards):
+    def allocate_job_new(self, spalloc_server, n_boards, bearer_token=None):
         """
         Request a machine from an old-style spalloc server that will fit the
         given number of boards.
@@ -210,12 +214,14 @@ class SpallocAllocator(object):
         :param str spalloc_server:
             The server from which the machine should be requested
         :param int n_boards: The number of boards required
+        :param bearer_token: The bearer token to use
+        :type bearer_token: str or None
         :rtype: tuple(str, int, None, bool, bool, None, None,
             MachineAllocationController)
         """
 
         spalloc_machine = get_config_str("Machine", "spalloc_machine")
-        client = SpallocClient(spalloc_server)
+        client = SpallocClient(spalloc_server, bearer_token=bearer_token)
         job = client.create_job(n_boards, spalloc_machine)
         closer_for_keepalive_task = client.launch_keepalive_task(job)
         try:

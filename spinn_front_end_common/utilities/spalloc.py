@@ -87,15 +87,16 @@ def _may_renew(method):
 class _Session:
     __slots__ = (
         "__login_form_url", "__login_submit_url", "__srv_base",
-        "__username", "__password",
+        "__username", "__password", "__token",
         "_session_id", "__csrf", "__csrf_header")
 
-    def __init__(self, service_url, username, password):
+    def __init__(self, service_url, username, password, token):
         """
         :param str service_url: The reference to the service.
             *Should not* include a username or password in it.
         :param str username: The user name to use
         :param str password: The password to use
+        :param str token: The bearer token to use
         """
         url = _clean_url(service_url)
         self.__login_form_url = url + "system/login.html"
@@ -103,6 +104,7 @@ class _Session:
         self.__srv_base = url + "srv/spalloc/"
         self.__username = username
         self.__password = password
+        self.__token = token
 
     @_may_renew
     def get(self, url, **kwargs):
@@ -178,33 +180,37 @@ class _Session:
         :returns: Description of the root of the service, without CSRF data
         :rtype: dict
         """
-        # Step one: a temporary session so we can log in
-        csrf_matcher = re.compile(
-            r"""<input type="hidden" name="_csrf" value="(.*)" />""")
-        r = requests.get(self.__login_form_url, allow_redirects=False)
-        logger.debug("GET {} returned {}",
-                     self.__login_form_url, r.status_code)
-        m = csrf_matcher.search(r.text)
-        if not m:
-            raise Exception("could not establish temporary session")
-        csrf = m.group(1)
-        session = r.cookies[_S]
+        if self.__token:
+            r = requests.get(self.__login_form_url, allow_redirects=False)
+            self._session_id = r.cookies[_S]
+        else:
+            # Step one: a temporary session so we can log in
+            csrf_matcher = re.compile(
+                r"""<input type="hidden" name="_csrf" value="(.*)" />""")
+            r = requests.get(self.__login_form_url, allow_redirects=False)
+            logger.debug("GET {} returned {}",
+                         self.__login_form_url, r.status_code)
+            m = csrf_matcher.search(r.text)
+            if not m:
+                raise Exception("could not establish temporary session")
+            csrf = m.group(1)
+            session = r.cookies[_S]
 
-        # Step two: actually do the log in
-        form = {
-            "_csrf": csrf,
-            "username": self.__username,
-            "password": self.__password,
-            "submit": "submit"
-        }
-        # NB: returns redirect that sets a cookie
-        r = requests.post(self.__login_submit_url,
-                          cookies={_S: session}, allow_redirects=False,
-                          data=form)
-        logger.debug("POST {} returned {}",
-                     self.__login_submit_url, r.status_code)
-        self._session_id = r.cookies[_S]
-        # We don't need to follow that redirect
+            # Step two: actually do the log in
+            form = {
+                "_csrf": csrf,
+                "username": self.__username,
+                "password": self.__password,
+                "submit": "submit"
+            }
+            # NB: returns redirect that sets a cookie
+            r = requests.post(self.__login_submit_url,
+                              cookies={_S: session}, allow_redirects=False,
+                              data=form)
+            logger.debug("POST {} returned {}",
+                         self.__login_submit_url, r.status_code)
+            self._session_id = r.cookies[_S]
+            # We don't need to follow that redirect
 
         # Step three: get the basic service data and new CSRF token
         obj = self.get(self.__srv_base).json()
@@ -221,6 +227,9 @@ class _Session:
         """
         cookies = {_S: self._session_id}
         headers = {self.__csrf_header: self.__csrf}
+        if self.__token:
+            # This would be better off done once per session only
+            headers["Authorization"] = f"Bearer {self.__token}"
         return cookies, headers
 
     def _purge(self):
@@ -250,7 +259,9 @@ class SpallocClient:
         except Exception:  # pylint: disable=broad-except
             return False
 
-    def __init__(self, service_url, username=None, password=None):
+    def __init__(
+            self, service_url, username=None, password=None,
+            bearer_token=None):
         """
         :param str service_url: The reference to the service.
             May have username and password supplied as part of the network
@@ -258,12 +269,15 @@ class SpallocClient:
             *must* be ``None``.
         :param str username: The user name to use
         :param str password: The password to use
+        :param str bearer_token: The bearer token to use
         """
         if username is None and password is None:
             service_url, username, password = self.__parse_service_url(
                 service_url)
-        self.__session = _Session(service_url, username, password)
-        obj = self.__session.renew()
+        self.__session = _Session(
+            service_url, username, password, bearer_token)
+        if not bearer_token:
+            obj = self.__session.renew()
         v = obj["version"]
         self.version = Version(
             f"{v['major-version']}.{v['minor-version']}.{v['revision']}")

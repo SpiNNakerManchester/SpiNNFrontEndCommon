@@ -28,7 +28,7 @@ class SpallocMaxMachineGenerator(object):
 
     def __call__(
             self, spalloc_server, spalloc_port=22244, spalloc_machine=None,
-            max_machine_core_reduction=0):
+            max_machine_core_reduction=0, bearer_token=None):
         """
         :param str spalloc_server:
         :param int spalloc_port:
@@ -36,12 +36,13 @@ class SpallocMaxMachineGenerator(object):
         :param int max_machine_core_reduction: the number of cores less than
             :py:const:`~spinn_machine.Machine.DEFAULT_MAX_CORES_PER_CHIP`
             that each chip should have
+        :param str bearer_token: The bearer token to use
         :return: A virtual machine
         :rtype: ~spinn_machine.Machine
         """
         if SpallocClient.is_server_address(spalloc_server):
             width, height = self.discover_max_machine_area_new(
-                spalloc_server, spalloc_machine)
+                spalloc_server, spalloc_machine, bearer_token)
         else:
             width, height = self.discover_max_machine_area_old(
                 spalloc_server, spalloc_port, spalloc_machine)
@@ -59,7 +60,8 @@ class SpallocMaxMachineGenerator(object):
             width=width, height=height,
             n_cpus_per_chip=n_cpus_per_chip, validate=False)
 
-    def discover_max_machine_area_new(self, spalloc_server, spalloc_machine):
+    def discover_max_machine_area_new(
+            self, spalloc_server, spalloc_machine, bearer_token=None):
         """
         Generate a maximum virtual machine a given allocation server can
         generate, communicating with the spalloc server using the new protocol.
@@ -67,6 +69,8 @@ class SpallocMaxMachineGenerator(object):
         :param str spalloc_server: Spalloc server URL
         :param spalloc_machine: Desired machine name, or ``None`` for default.
         :type spalloc_machine: str or None
+        :param bearer_token: The bearer token to use
+        :type bearer_token: str or None
         :return: the dimensions of the maximum machine
         :rtype: tuple(int or None,int or None)
         """
@@ -74,8 +78,8 @@ class SpallocMaxMachineGenerator(object):
         max_height = None
         max_area = -1
 
-        with SpallocClient(spalloc_server) as client:
-            for machine in client.list_machines().values():
+        with SpallocClient(spalloc_server, bearer_token=bearer_token) as c:
+            for machine in c.list_machines().values():
                 if spalloc_machine is not None:
                     if spalloc_machine != machine.name:
                         continue
