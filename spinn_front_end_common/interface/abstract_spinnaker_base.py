@@ -83,16 +83,20 @@ from spinn_front_end_common.interface.interface_functions import (
     DSGRegionReloader, EdgeToNKeysMapper, EnergyProvenanceReporter,
     GraphBinaryGatherer, GraphDataSpecificationWriter,
     GraphProvenanceGatherer,  HostBasedBitFieldRouterCompressor,
-    HostExecuteDataSpecification, InsertChipPowerMonitorsToGraphs,
+    HostExecuteDataSpecification, HBPAllocator, HBPMaxMachineGenerator,
+    InsertChipPowerMonitorsToGraphs,
     InsertEdgesToExtraMonitorFunctionality, InsertExtraMonitorVerticesToGraphs,
     interface_xml, LoadExecutableImages, LoadFixedRoutes,
-    LocalTDMABuilder, LocateExecutableStartType, PlacementsProvenanceGatherer,
+    LocalTDMABuilder, LocateExecutableStartType, MachineGenerator,
+    PlacementsProvenanceGatherer,
     ProfileDataGatherer, ProcessPartitionConstraints,
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ReadRoutingTablesFromMachine,
     RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader,
-    SDRAMOutgoingPartitionAllocator, SystemMulticastRoutingGenerator,
-    TagsLoader)
+    SDRAMOutgoingPartitionAllocator, SpallocAllocator,
+    SpallocMaxMachineGenerator,
+    SystemMulticastRoutingGenerator,
+    TagsLoader, VirtualMachineGenerator)
 from spinn_front_end_common.interface.interface_functions.\
     machine_bit_field_router_compressor import (
         MachineBitFieldOrderedCoveringCompressor,
@@ -1344,7 +1348,104 @@ class AbstractSpinnakerBase(ConfigHandler):
             self.write_finished_file()
             raise e
 
+    def _do_get_machine_by_hostname(self):
+        with FecTimer("Execute Machine Generator by hostname"):
+            self._board_version = get_config_int("Machine", "version")
+            self.execute_machine_generator(
+                get_config_str("Machine", "bmp_names"),
+                get_config_bool("Machine", "auto_detect_bmp"),
+                get_config_str("Machine", "scamp_connections_data"),
+                get_config_int("Machine", "boot_connection_port_num"),
+                get_config_bool("Machine", "reset_machine_on_startup")
+            )
+
+    def _execute_allocator(self, total_run_time, n_chips_required=None):
+        with FecTimer("Execute Allocator") as executor:
+            if executor.skip_if_value_already_set(self._machine, "machine"):
+                return None
+            if executor.skip_if_value_is_none(self._hostname, "hostname"):
+                return None
+            if executor.skip_if_value_true(
+                    self._use_virtual_board, "use_virtual_machine"):
+                return None
+            if (n_chips_required is None):
+                n_chips_required = self._n_chips_required
+            if n_chips_required is None and self._n_boards_required is None:
+                executor.skip("Size of required machine not yet known")
+                return None
+            if self._spalloc_server is not None:
+                allocator = SpallocAllocator()
+                return allocator(
+                    self._spalloc_server, n_chips_required,
+                    self._n_boards_required)
+            else:
+                allocator = HBPAllocator()
+                return allocator(
+                    self._remote_spinnaker_url, total_run_time,
+                    n_chips_required, self._n_boards_required)
+
+    def _execute_machine_generator(self, allocator_data):
+        with FecTimer("Execute Machine Generator") as executor:
+            if executor.skip_if_value_already_set(self._machine, "machine"):
+                return
+            if executor.skip_if_value_true(
+                    self._use_virtual_board, "use_virtual_machine"):
+                return
+            if self._hostname:
+                bmp_details = get_config_str("Machine", "bmp_names")
+                auto_detect_bmp = get_config_bool(
+                    "Machine", "auto_detect_bmp")
+                scamp_connection_data = get_config_str(
+                    "Machine", "scamp_connections_data")
+                boot_port_num = get_config_int(
+                    "Machine", "boot_connection_port_num"),
+                reset_machine = get_config_bool(
+                    "Machine", "reset_machine_on_startup")
+            elif allocator_data:
+                (self._hostname, self._board_version, bmp_details,
+                 reset_machine, auto_detect_bmp, scamp_connection_data,
+                 boot_port_num) = allocator_data
+            else:
+                executor.skip("Size of required machine not yet known")
+                return
+
+            generator = MachineGenerator()
+            self._machine, self._txrx = generator(
+                self._hostname, bmp_details, self._board_version,
+                auto_detect_bmp, scamp_connection_data, boot_port_num,
+                reset_machine)
+            return self._machine
+
+    def _execute_get_virtual_machine(self, total_run_time):
+        with FecTimer("Execute Virtual Machine Generator") as executor:
+            if executor.skip_if_value_already_set(self._machine, "machine"):
+                return self._machine
+
+            if self._use_virtual_board:
+                generator = VirtualMachineGenerator()
+                # TODO fix params
+                self._machine = generator(get_config_int("Machine", "version"))
+                return self._machine
+
+            if self._spalloc_server:
+                generator = SpallocMaxMachineGenerator()
+                # TODO fix params
+                return generator(
+                    self._spalloc_server,
+                    max_machine_core_reduction=get_config_int(
+                        "Machine", "max_machine_core_reduction"))
+
+            generator = HBPMaxMachineGenerator()
+            return generator(
+                self._remote_spinnaker_url, total_run_time,
+                get_config_int("Machine", "max_machine_core_reduction"))
+
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
+        allocator_data = self._execute_allocator(total_run_time)
+        self._execute_machine_generator(allocator_data)
+        return self._execute_get_virtual_machine()
+
+    def _get_machineX(self, total_run_time=0.0, n_machine_time_steps=None):
         """
         :param float total_run_time:
         :param n_machine_time_steps:
@@ -2047,14 +2148,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         provide_injectables(self)
 
         self._do_extra_mapping_algorithms()
-        self._write_json_machine()
         self._report_network_specification()
-        self._execute_chip_id_allocator()
-        self._report_board_chip()
         self._execute_splitter_reset()
         self._execute_splitter_selector()
         self._execute_delay_support_adder()
         self._execute_splitter_partitioner()
+        # ALLOCATE AND GET MACHINE 2
+        self._write_json_machine()
+        self._execute_chip_id_allocator()
+        self._report_board_chip()
         self._execute_insert_chip_power_monitors()
         self._execute_insert_extra_monitor_vertices()
         self._execute_partitioner_report()
