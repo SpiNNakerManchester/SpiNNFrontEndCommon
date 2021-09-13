@@ -39,8 +39,7 @@ class SpallocMaxMachineGenerator(object):
         :return: A virtual machine
         :rtype: ~spinn_machine.Machine
         """
-        if (spalloc_server.lower().startswith("http:") or
-                spalloc_server.lower().startswith("https:")):
+        if SpallocClient.is_server_address(spalloc_server):
             width, height = self.discover_max_machine_area_new(
                 spalloc_server, spalloc_machine)
         else:

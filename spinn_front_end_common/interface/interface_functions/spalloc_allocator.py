@@ -169,7 +169,7 @@ class SpallocAllocator(object):
     """
 
     # Use a worst case calculation
-    _N_CHIPS_PER_BOARD = 48.0
+    _N_CHIPS_PER_BOARD = 48
     _MACHINE_VERSION = 5
 
     def __call__(
@@ -197,8 +197,7 @@ class SpallocAllocator(object):
                 n_boards += 1
             n_boards = int(math.ceil(n_boards))
 
-        if (spalloc_server.lower().startswith("http:") or
-                spalloc_server.lower().startswith("https:")):
+        if SpallocClient.is_server_address(spalloc_server):
             return self.allocate_job_new(spalloc_server, n_boards)
         else:
             return self.allocate_job_old(spalloc_server, n_boards)
@@ -219,14 +218,19 @@ class SpallocAllocator(object):
         client = SpallocClient(spalloc_server)
         job = client.create_job(n_boards, spalloc_machine)
         closer_for_keepalive_task = client.launch_keepalive_task(job)
-        job.wait_until_ready()
-        root = job.get_root_host()
-        machine_allocation_controller = _NewSpallocJobController(
-            client, job, closer_for_keepalive_task)
-        return (
-            root, self._MACHINE_VERSION, None, False,
-            False, None, None, machine_allocation_controller
-        )
+        try:
+            job.wait_until_ready()
+            root = job.get_root_host()
+            machine_allocation_controller = _NewSpallocJobController(
+                client, job, closer_for_keepalive_task)
+            return (
+                root, self._MACHINE_VERSION, None, False,
+                False, None, None, machine_allocation_controller
+            )
+        except Exception:
+            closer_for_keepalive_task.close()
+            client.close()
+            raise
 
     def allocate_job_old(self, spalloc_server, n_boards):
         """

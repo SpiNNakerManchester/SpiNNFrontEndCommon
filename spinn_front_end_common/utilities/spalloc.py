@@ -241,6 +241,15 @@ class SpallocClient:
     __slots__ = ("__session",
                  "__machines_url", "__jobs_url", "version")
 
+    @staticmethod
+    def is_server_address(address):
+        try:
+            pieces = urlparse(address)
+            scheme = pieces.scheme.lower()
+            return scheme in ("http", "https") and pieces.netloc is not None
+        except Exception:  # pylint: disable=broad-except
+            return False
+
     def __init__(self, service_url, username=None, password=None):
         """
         :param str service_url: The reference to the service.
