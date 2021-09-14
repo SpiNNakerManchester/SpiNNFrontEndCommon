@@ -1404,7 +1404,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 scamp_connection_data = get_config_str(
                     "Machine", "scamp_connections_data")
                 boot_port_num = get_config_int(
-                    "Machine", "boot_connection_port_num"),
+                    "Machine", "boot_connection_port_num")
                 reset_machine = get_config_bool(
                     "Machine", "reset_machine_on_startup")
                 self._board_version = get_config_int(
