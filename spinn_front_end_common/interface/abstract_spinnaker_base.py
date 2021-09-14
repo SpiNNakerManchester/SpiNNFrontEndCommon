@@ -75,8 +75,8 @@ from spinn_front_end_common.abstract_models import (
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
 from spinn_front_end_common.interface.interface_functions import (
-    ApplicationRunner,  BufferExtractor, BufferManagerCreator,
-    ChipIOBufClearer, ChipIOBufExtractor,
+    ApplicationFinisher, ApplicationRunner,  BufferExtractor,
+    BufferManagerCreator, ChipIOBufClearer, ChipIOBufExtractor,
     ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
     CreateNotificationProtocol, DatabaseInterface,
     DSGRegionReloader, EdgeToNKeysMapper, EnergyProvenanceReporter,
@@ -3114,37 +3114,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         exn = None
 
         # If we have run forever, stop the binaries
+
         if (self._has_ran and self._current_run_timesteps is None and
                 not self._use_virtual_board and not self._run_until_complete):
-            executor = self._create_stop_workflow()
-            run_complete = False
-            try:
-                executor.execute_mapping()
-                self._pacman_provenance.extract_provenance(executor)
-                run_complete = True
-
-                # write provenance to file if necessary
-                if get_config_bool("Reports", "write_provenance_data"):
-                    self._gather_provenance_for_writing(executor)
-            except Exception as e:
-                exn = e
-                exc_info = sys.exc_info()
-
-                # If an exception occurs during a run, attempt to get
-                # information out of the simulation before shutting down
-                try:
-                    # Only do this if the error occurred in the run
-                    if not run_complete and not self._use_virtual_board:
-                        self._recover_from_error(
-                            e, exc_info[2], executor.get_item(
-                                "ExecutableTargets"))
-                except Exception:
-                    logger.exception(
-                        "Error when attempting to recover from error")
-
-            # handle iobuf extraction
-            if get_config_bool("Reports", "extract_iobuf"):
-                self._extract_iobufs()
+            self._do_stop_workflow()
+            # TODO recover from errors?
+            # self._recover_from_error(
+            # e, exc_info[2], executor.get_item("ExecutableTargets"))
 
         # shut down the machine properly
         self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
@@ -3154,50 +3130,21 @@ class AbstractSpinnakerBase(ConfigHandler):
             raise exn  # pylint: disable=raising-bad-type
         self.write_finished_file()
 
-    def _create_stop_workflow(self):
+    def _execute_application_finisher(self):
+        with FecTimer("Execute Application Finisher"):
+            finisher = ApplicationFinisher()
+            finisher(self._app_id, self._txrx, self._executable_types)
+
+    def _do_stop_workflow(self):
         """
         :rtype: ~.PACMANAlgorithmExecutor
         """
-        inputs = self._last_run_outputs
-        tokens = self._last_run_tokens
-        algorithms = []
-        outputs = []
-
-        # stop any binaries that need to be notified of the simulation
-        # stopping if in infinite run
-        if ExecutableType.USES_SIMULATION_INTERFACE in self._executable_types:
-            algorithms.append("ApplicationFinisher")
-
-        # Add the buffer extractor just in case
-        algorithms.append("BufferExtractor")
-
-        read_prov = get_config_bool("Reports", "read_provenance_data")
-
-        # add extractor of iobuf if needed
-        if get_config_bool("Reports", "extract_iobuf") and \
-                get_config_bool("Reports", "extract_iobuf_during_run"):
-            algorithms.append("ChipIOBufExtractor")
-
-        # add extractor of provenance if needed
-        if read_prov:
-            algorithms.append("PlacementsProvenanceGatherer")
-            algorithms.append("RouterProvenanceGatherer")
-            algorithms.append("ProfileDataGatherer")
-        if (get_config_bool("Reports", "write_energy_report") and
-                not self._use_virtual_board):
-            algorithms.append("ComputeEnergyUsed")
-            if read_prov:
-                algorithms.append("EnergyProvenanceReporter")
-
-        # Assemble how to run the algorithms
-        return PACMANAlgorithmExecutor(
-            algorithms=algorithms, optional_algorithms=[], inputs=inputs,
-            tokens=tokens, required_output_tokens=[],
-            xml_paths=self._xml_paths,
-            required_outputs=outputs, do_timings=self._do_timings,
-            print_timings=self._print_timings,
-            provenance_path=self._pacman_executor_provenance_path,
-            provenance_name="stopping")
+        self._execute_application_finisher()
+        self._execute_buffer_extractor(n_machine_time_steps="NOT NONE")
+        prov_items = self._execute_read_provenance(
+            n_machine_time_steps="NOT NONE")
+        self._execute_energy_report(prov_items, None)
+        self._execute_extract_iobuff(n_machine_time_steps="NOT NONE")
 
     def _do_energy_report(self, power_used):
         # create energy reporter
