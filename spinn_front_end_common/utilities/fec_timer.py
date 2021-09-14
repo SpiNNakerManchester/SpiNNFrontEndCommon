@@ -130,6 +130,13 @@ class FecTimer(object):
         else:
             return False
 
+    def skip_if_value_not_none(self, value, name):
+        if value is None:
+            return False
+        else:
+            self.skip(f"{name} is provided")
+            return True
+
     def skip_if_value_already_set(self, value, name):
         if value is None:
             return False

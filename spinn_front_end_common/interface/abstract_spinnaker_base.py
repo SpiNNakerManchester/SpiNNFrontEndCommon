@@ -426,7 +426,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_compressor_provenance",
         "_routing_table_by_partition",
         "_multicast_routes_loaded",
-        "_extra_monitor_to_chip_mapping"
+        "_extra_monitor_to_chip_mapping",
+        "_max_machine",
     ]
 
     def __init__(
@@ -608,6 +609,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._routing_table_by_partition = None
         self._multicast_routes_loaded = False
         self._extra_monitor_to_chip_mapping = None
+        self._max_machine = None
 
         FecTimer.setup(self)
 
@@ -1348,25 +1350,22 @@ class AbstractSpinnakerBase(ConfigHandler):
             self.write_finished_file()
             raise e
 
-    def _do_get_machine_by_hostname(self):
-        with FecTimer("Execute Machine Generator by hostname"):
-            self._board_version = get_config_int("Machine", "version")
-            self.execute_machine_generator(
-                get_config_str("Machine", "bmp_names"),
-                get_config_bool("Machine", "auto_detect_bmp"),
-                get_config_str("Machine", "scamp_connections_data"),
-                get_config_int("Machine", "boot_connection_port_num"),
-                get_config_bool("Machine", "reset_machine_on_startup")
-            )
+    def _execute_get_virtual_machine(self):
+        with FecTimer("Execute Virtual Machine Generator") as executor:
+            if executor.skip_if_value_already_set(self._machine, "machine"):
+                return self._machine
+            if executor.skip_if_value_false(
+                    self._use_virtual_board, "use_virtual_board"):
+            generator = VirtualMachineGenerator()
+            # TODO fix params
+            self._machine = generator(get_config_int("Machine", "version"))
 
     def _execute_allocator(self, total_run_time, n_chips_required=None):
         with FecTimer("Execute Allocator") as executor:
+            self._max_machine = None
             if executor.skip_if_value_already_set(self._machine, "machine"):
                 return None
-            if executor.skip_if_value_is_none(self._hostname, "hostname"):
-                return None
-            if executor.skip_if_value_true(
-                    self._use_virtual_board, "use_virtual_machine"):
+            if executor.skip_if_value_not_none(self._hostname, "hostname"):
                 return None
             if (n_chips_required is None):
                 n_chips_required = self._n_chips_required
@@ -1416,15 +1415,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 reset_machine)
             return self._machine
 
-    def _execute_get_virtual_machine(self, total_run_time):
-        with FecTimer("Execute Virtual Machine Generator") as executor:
+    def _execute_get_max_machine(self, total_run_time):
+        with FecTimer("Execute Max Machine Generator") as executor:
             if executor.skip_if_value_already_set(self._machine, "machine"):
-                return self._machine
-
-            if self._use_virtual_board:
-                generator = VirtualMachineGenerator()
-                # TODO fix params
-                self._machine = generator(get_config_int("Machine", "version"))
                 return self._machine
 
             if self._spalloc_server:
@@ -1435,15 +1428,19 @@ class AbstractSpinnakerBase(ConfigHandler):
                     max_machine_core_reduction=get_config_int(
                         "Machine", "max_machine_core_reduction"))
 
-            generator = HBPMaxMachineGenerator()
-            return generator(
-                self._remote_spinnaker_url, total_run_time,
-                get_config_int("Machine", "max_machine_core_reduction"))
+            if self._remote_spinnaker_url:
+                generator = HBPMaxMachineGenerator()
+                return generator(
+                    self._remote_spinnaker_url, total_run_time,
+                    get_config_int("Machine", "max_machine_core_reduction"))
+
+            raise NotImplementedError("No machine generataion possible")
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
+        self._execute_get_virtual_machine()
         allocator_data = self._execute_allocator(total_run_time)
         self._execute_machine_generator(allocator_data)
-        return self._execute_get_virtual_machine()
+        self._execute_get_virtual_machine()
 
     def _get_machineX(self, total_run_time=0.0, n_machine_time_steps=None):
         """
@@ -2488,7 +2485,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             setup = RoutingSetup()
             setup(self._router_tables, self._app_id, self._txrx, self._machine)
 
-    def _exectute_graph_binary_gatherer(self, graph_changed):
+    def _execute_graph_binary_gatherer(self, graph_changed):
         with FecTimer("Execute Graph Binary Gatherer") as timer:
             if timer.skip_if_value_false(graph_changed, "graph_changed"):
                 return
@@ -2505,7 +2502,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     return
                 raise
 
-    def _excetute_host_bitfield_compressor(self):
+    def _execute_host_bitfield_compressor(self):
         with FecTimer("Execute HostBasedBitFieldRouterCompressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
@@ -2515,7 +2512,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._router_tables, self._machine, self._placements,
                 self._txrx, self._machine_graph, self._routing_infos)
 
-    def _excetute_machine_bitfield_ordered_covering_compressor(self):
+    def _execute_machine_bitfield_ordered_covering_compressor(self):
         with FecTimer(
                 "Execute MachineBitFieldOrderedCoveringCompressor") as timer:
             if timer.skip_if_virtual_board():
@@ -2528,7 +2525,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._multicast_routes_loaded = True
             return None, provenance
 
-    def _excetute_machine_bitfield_pair_compressor(self):
+    def _execute_machine_bitfield_pair_compressor(self):
         with FecTimer("Execute MachineBitFieldPairRouterCompressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
@@ -2540,14 +2537,14 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._routing_infos, self._executable_targets)
             return None, provenance
 
-    def _excetute_ordered_covering_compressor(self):
+    def _execute_ordered_covering_compressor(self):
         with FecTimer("Execute OrderedCoveringCompressor"):
             self._multicast_routes_loaded = False
             compressor = OrderedCoveringCompressor()
             compressed = compressor(self._router_tables)
             return compressed, []
 
-    def _excetute_ordered_covering_compression(self):
+    def _execute_ordered_covering_compression(self):
         with FecTimer("Execute OrderedCoveringCompressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
@@ -2564,7 +2561,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._multicast_routes_loaded = False
             return compressed, []
 
-    def _excetute_pair_compression(self):
+    def _execute_pair_compression(self):
         with FecTimer("Execute PairOnChipRouterCompression") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
@@ -2600,20 +2597,20 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _do_compression_by_name(self, name):
         if name == "HostBasedBitFieldRouterCompressor":
-            return self._excetute_host_bitfield_compressor()
+            return self._execute_host_bitfield_compressor()
         if name == "MachineBitFieldOrderedCoveringCompressor":
             return \
-                self._excetute_machine_bitfield_ordered_covering_compressor()
+                self._execute_machine_bitfield_ordered_covering_compressor()
         if name == "MachineBitFieldPairRouterCompressor":
-            return self._excetute_machine_bitfield_pair_compressor()
+            return self._execute_machine_bitfield_pair_compressor()
         if name == "OrderedCoveringCompressor":
-            return self._excetute_ordered_covering_compressor()
+            return self._execute_ordered_covering_compressor()
         if name == "OrderedCoveringOnChipRouterCompression":
-            return self._excetute_ordered_covering_compression()
+            return self._execute_ordered_covering_compression()
         if name == "PairCompressor":
             return self._execute_pair_compressor()
         if name == "PairOnChipRouterCompression":
-            return self._excetute_pair_compression()
+            return self._execute_pair_compression()
         if name == "PairUnorderedCompressor":
             return self._execute_pair_unordered_compressor()
 
@@ -2808,7 +2805,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         load_timer.start_timing()
 
         self._execute_routing_setup(graph_changed)
-        self._exectute_graph_binary_gatherer(graph_changed)
+        self._execute_graph_binary_gatherer(graph_changed)
         # loading_algorithms
         compressed, self._compressor_provenance = self._do_compression()
         self._execute_load_routing_tables(compressed)
