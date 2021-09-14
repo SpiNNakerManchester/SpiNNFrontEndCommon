@@ -410,6 +410,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_extra_monitor_to_chip_mapping",
         "_max_machine",
         "_n_chips_needed",
+        "_notification_interface",
     ]
 
     def __init__(
@@ -587,6 +588,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._extra_monitor_to_chip_mapping = None
         self._max_machine = None
         self._n_chips_needed = None
+        self._notification_interface = None
 
         FecTimer.setup(self)
 
@@ -2467,10 +2469,10 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _execute_create_notifiaction_protocol(self):
         with FecTimer("Execute Create Notification Protocol"):
             creator = CreateNotificationProtocol()
-            return creator(
+            self._notification_interface = creator(
                 self._database_socket_addresses, self._database_file_path)
 
-    def _execute_runner(self, n_sync_steps, run_time, notification_interface):
+    def _execute_runner(self, n_sync_steps, run_time):
         with FecTimer("Execute Runner") as timer:
             if timer.skip_if_virtual_board():
                 return
@@ -2482,7 +2484,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 time_threshold = get_config_int(
                     "Machine", "post_simulation_overrun_before_error")
             self._no_sync_changes = runner(
-                self._buffer_manager, notification_interface,
+                self._buffer_manager, self._notification_interface,
                 self._executable_types, self._app_id, self._txrx, run_time,
                 self._no_sync_changes, time_threshold, self._machine,
                 self._run_until_complete)
@@ -2539,8 +2541,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_clear_io_buf(n_machine_time_steps)
         self._execute_runtime_update(n_sync_steps)
         self._execute_create_database_interface(run_time, graph_changed)
-        notification_interface = self._execute_create_notifiaction_protocol()
-        self._execute_runner(n_sync_steps, run_time, notification_interface)
+        self._execute_create_notifiaction_protocol()
+        self._execute_runner(n_sync_steps, run_time)
         self._execute_extract_iobuff(n_machine_time_steps)
         self._execute_buffer_extractor(n_machine_time_steps)
         # FinaliseTimingData never needed as just pushed self._ to inputs
@@ -3037,9 +3039,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         self.__close_allocation_controller()
 
         try:
-            if self._last_run_outputs and \
-                    "NotificationInterface" in self._last_run_outputs:
-                self._last_run_outputs["NotificationInterface"].close()
+            if self._notification_interface:
+                self._notification_interface.close()
+                self._notification_interface = None
         except Exception:
             logger.exception(
                 "Error when closing Notifications")
