@@ -82,7 +82,7 @@ from spinn_front_end_common.interface.interface_functions import (
     CreateNotificationProtocol, DatabaseInterface,
     DSGRegionReloader, EdgeToNKeysMapper, EnergyProvenanceReporter,
     GraphBinaryGatherer, GraphDataSpecificationWriter,
-    GraphProvenanceGatherer,  HostBasedBitFieldRouterCompressor,
+    GraphMeasurer, GraphProvenanceGatherer,  HostBasedBitFieldRouterCompressor,
     HostExecuteDataSpecification, HBPAllocator, HBPMaxMachineGenerator,
     InsertChipPowerMonitorsToGraphs,
     InsertEdgesToExtraMonitorFunctionality, InsertExtraMonitorVerticesToGraphs,
@@ -428,6 +428,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_multicast_routes_loaded",
         "_extra_monitor_to_chip_mapping",
         "_max_machine",
+        "_n_chips_needed",
     ]
 
     def __init__(
@@ -610,6 +611,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._multicast_routes_loaded = False
         self._extra_monitor_to_chip_mapping = None
         self._max_machine = None
+        self._n_chips_needed = None
 
         FecTimer.setup(self)
 
@@ -1085,6 +1087,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 if self._machine_allocation_controller is not None:
                     self._machine_allocation_controller.close()
                 self._max_run_time_steps = None
+                self._n_chips_needed = None
 
             if self._machine is None:
                 self._get_machine(total_run_time, n_machine_time_steps)
@@ -1353,21 +1356,25 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _execute_get_virtual_machine(self):
         with FecTimer("Execute Virtual Machine Generator") as executor:
             if executor.skip_if_value_already_set(self._machine, "machine"):
-                return self._machine
+                return
             if executor.skip_if_value_false(
                     self._use_virtual_board, "use_virtual_board"):
+                return
             generator = VirtualMachineGenerator()
             # TODO fix params
             self._machine = generator(get_config_int("Machine", "version"))
 
-    def _execute_allocator(self, total_run_time, n_chips_required=None):
+    def _execute_allocator(self, total_run_time):
         with FecTimer("Execute Allocator") as executor:
             self._max_machine = None
             if executor.skip_if_value_already_set(self._machine, "machine"):
                 return None
             if executor.skip_if_value_not_none(self._hostname, "hostname"):
                 return None
-            if (n_chips_required is None):
+            if self._n_chips_needed:
+                # TODO check needed vs required
+                n_chips_required = self._n_chips_needed
+            else:
                 n_chips_required = self._n_chips_required
             if n_chips_required is None and self._n_boards_required is None:
                 executor.skip("Size of required machine not yet known")
@@ -1400,10 +1407,14 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Machine", "boot_connection_port_num"),
                 reset_machine = get_config_bool(
                     "Machine", "reset_machine_on_startup")
+                self._board_version = get_config_int(
+                    "Machine", "version")
+
             elif allocator_data:
                 (self._hostname, self._board_version, bmp_details,
                  reset_machine, auto_detect_bmp, scamp_connection_data,
-                 boot_port_num) = allocator_data
+                 boot_port_num, self._machine_allocation_controller
+                 ) = allocator_data
             else:
                 executor.skip("Size of required machine not yet known")
                 return
@@ -1423,24 +1434,40 @@ class AbstractSpinnakerBase(ConfigHandler):
             if self._spalloc_server:
                 generator = SpallocMaxMachineGenerator()
                 # TODO fix params
-                return generator(
+                self._max_machine = generator(
                     self._spalloc_server,
                     max_machine_core_reduction=get_config_int(
                         "Machine", "max_machine_core_reduction"))
 
-            if self._remote_spinnaker_url:
+            elif self._remote_spinnaker_url:
                 generator = HBPMaxMachineGenerator()
-                return generator(
+                self._max_machine = generator(
                     self._remote_spinnaker_url, total_run_time,
                     get_config_int("Machine", "max_machine_core_reduction"))
 
-            raise NotImplementedError("No machine generataion possible")
+            else:
+                raise NotImplementedError("No machine generataion possible")
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
+        if get_config_bool("Buffers", "use_auto_pause_and_resume"):
+            self._plan_n_timesteps = self._minimum_auto_time_steps
+        else:
+            self._plan_n_timesteps = n_machine_time_steps
+
+        if self._app_id is None:
+            if self._txrx is None:
+                self._app_id = ALANS_DEFAULT_RANDOM_APP_ID
+            else:
+                self._app_id = self._txrx.app_id_tracker.get_new_id()
+
         self._execute_get_virtual_machine()
         allocator_data = self._execute_allocator(total_run_time)
         self._execute_machine_generator(allocator_data)
-        self._execute_get_virtual_machine()
+        self._execute_get_max_machine(total_run_time)
+        if self._machine:
+            return self._machine
+        else:
+            return self._max_machine
 
     def _get_machineX(self, total_run_time=0.0, n_machine_time_steps=None):
         """
@@ -1801,10 +1828,23 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Execute Splitter Partitioner") as timer:
             if timer.skip_if_application_graph_empty():
                 return
+            if self._machine:
+                machine = self._machine
+            else:
+                machine = self._max_machine
             partitioner = SplitterPartitioner()
-            self._machine_graph, _ = partitioner(
-                self._application_graph, self._machine, self._plan_n_timesteps,
+            self._machine_graph, self._n_chips_needed = partitioner(
+                self._application_graph, machine, self._plan_n_timesteps,
                 pre_allocated_resources=None)
+
+    def _execute_graph_measurer(self):
+        with FecTimer("Execute Graph Measurer") as executor:
+            if executor.skip_if_value_already_set(
+                    self._n_chips_needed, "n_chips_needed"):
+                return
+            measurer = GraphMeasurer()
+            self._n_chips_needed = measurer(
+                self._machine_graph, self._machine, self._plan_n_timesteps)
 
     def _execute_insert_chip_power_monitors(self):
         with FecTimer("Execute Insert Chip Power Monitors") as timer:
@@ -2150,7 +2190,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_splitter_selector()
         self._execute_delay_support_adder()
         self._execute_splitter_partitioner()
-        # ALLOCATE AND GET MACHINE 2
+        self._execute_graph_measurer()
+        allocator_data = self._execute_allocator(total_run_time)
+        self._execute_machine_generator(allocator_data)
+        assert(self._machine)
         self._write_json_machine()
         self._execute_chip_id_allocator()
         self._report_board_chip()
