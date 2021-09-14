@@ -253,24 +253,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_ip_address",
 
         #
-        "_machine_outputs",
-
-        #
-        "_machine_tokens",
-
-        #
-        "_mapping_outputs",
-
-        #
-        "_mapping_tokens",
-
-        #
-        "_load_outputs",
-
-        #
-        "_load_tokens",
-
-        #
         "_last_run_outputs",
 
         #
@@ -517,12 +499,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._executable_types = None
 
         # pacman executor objects
-        self._machine_outputs = None
-        self._machine_tokens = None
-        self._mapping_outputs = None
-        self._mapping_tokens = None
-        self._load_outputs = None
-        self._load_tokens = None
         self._last_run_outputs = dict()
         self._last_run_tokens = dict()
         self._pacman_provenance = PacmanProvenanceExtractor()
@@ -1093,7 +1069,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._do_mapping(run_time, total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
-        provide_injectables(self._mapping_outputs)
+        provide_injectables(self)
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
@@ -2307,7 +2283,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._load_time += convert_time_diff_to_total_milliseconds(
             load_timer.take_sample())
-        # self._load_outputs["LoadTimeMs"] = self._load_time
 
     def _end_of_run_timing(self):
         """
