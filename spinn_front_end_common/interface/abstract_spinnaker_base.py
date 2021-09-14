@@ -2948,21 +2948,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._current_run_timesteps * self.machine_time_step_ms
         return 0.0
 
-    def get_generated_output(self, name_of_variable):
-        """ Get the value of an inter-algorithm variable.
-
-        :param str name_of_variable: The variable to retrieve
-        :return: The value (of arbitrary type), or `None` if the variable is
-            not found.
-        :raises ConfigurationException: If the simulation hasn't yet run
-        """
-        if self._has_ran:
-            if name_of_variable in self._last_run_outputs:
-                return self._last_run_outputs[name_of_variable]
-            return None
-        raise ConfigurationException(
-            "Cannot call this function until after a simulation has ran.")
-
     def __repr__(self):
         return "general front end instance for machine {}".format(
             self._hostname)
