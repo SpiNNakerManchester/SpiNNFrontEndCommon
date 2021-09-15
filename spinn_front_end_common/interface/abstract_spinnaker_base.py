@@ -253,9 +253,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_ip_address",
 
         #
-        "_last_run_tokens",
-
-        #
         "_pacman_provenance",
 
         #
@@ -497,7 +494,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._executable_types = None
 
         # pacman executor objects
-        self._last_run_tokens = dict()
         self._pacman_provenance = PacmanProvenanceExtractor()
         self._version_provenance = list()
         self._xml_paths = self._create_xml_paths(extra_algorithm_xml_paths)
