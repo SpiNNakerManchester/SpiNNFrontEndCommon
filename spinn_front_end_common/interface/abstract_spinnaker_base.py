@@ -1270,10 +1270,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         return None
 
     def _execute_get_virtual_machine(self):
-        with FecTimer("Execute Virtual Machine Generator") as executor:
-            if executor.skip_if_value_already_set(self._machine, "machine"):
+        with FecTimer("Execute Virtual Machine Generator") as timer:
+            if timer.skip_if_value_already_set(self._machine, "machine"):
                 return
-            if executor.skip_if_value_false(
+            if timer.skip_if_value_false(
                     self._use_virtual_board, "use_virtual_board"):
                 return
             generator = VirtualMachineGenerator()
@@ -1281,19 +1281,20 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._machine = generator(get_config_int("Machine", "version"))
 
     def _execute_allocator(self, total_run_time):
-        with FecTimer("Execute Allocator") as executor:
+        with FecTimer("Execute Allocator") as timer:
             self._max_machine = None
-            if executor.skip_if_value_already_set(self._machine, "machine"):
+            if timer.skip_if_value_already_set(self._machine, "machine"):
                 return None
-            if executor.skip_if_value_not_none(self._hostname, "hostname"):
+            if timer.skip_if_value_not_none(self._hostname, "hostname"):
                 return None
             if self._n_chips_needed:
+
                 # TODO check needed vs required
                 n_chips_required = self._n_chips_needed
             else:
                 n_chips_required = self._n_chips_required
             if n_chips_required is None and self._n_boards_required is None:
-                executor.skip("Size of required machine not yet known")
+                timer.skip("Size of required machine not yet known")
                 return None
             if self._spalloc_server is not None:
                 allocator = SpallocAllocator()
@@ -1307,10 +1308,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                     n_chips_required, self._n_boards_required)
 
     def _execute_machine_generator(self, allocator_data):
-        with FecTimer("Execute Machine Generator") as executor:
-            if executor.skip_if_value_already_set(self._machine, "machine"):
+        with FecTimer("Execute Machine Generator") as timer:
+            if timer.skip_if_value_already_set(self._machine, "machine"):
                 return
-            if executor.skip_if_value_true(
+            if timer.skip_if_value_true(
                     self._use_virtual_board, "use_virtual_machine"):
                 return
             if self._hostname:
@@ -1332,7 +1333,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                  boot_port_num, self._machine_allocation_controller
                  ) = allocator_data
             else:
-                executor.skip("Size of required machine not yet known")
+                timer.skip("Size of required machine not yet known")
                 return
 
             generator = MachineGenerator()
@@ -1343,8 +1344,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._machine
 
     def _execute_get_max_machine(self, total_run_time):
-        with FecTimer("Execute Max Machine Generator") as executor:
-            if executor.skip_if_value_already_set(self._machine, "machine"):
+        with FecTimer("Execute Max Machine Generator") as timer:
+            if timer.skip_if_value_already_set(self._machine, "machine"):
                 return self._machine
 
             if self._spalloc_server:
@@ -1498,8 +1499,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 pre_allocated_resources=None)
 
     def _execute_graph_measurer(self):
-        with FecTimer("Execute Graph Measurer") as executor:
-            if executor.skip_if_value_already_set(
+        with FecTimer("Execute Graph Measurer") as timer:
+            if timer.skip_if_value_already_set(
                     self._n_chips_needed, "n_chips_needed"):
                 return
             measurer = GraphMeasurer()
@@ -2270,9 +2271,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_compressed_reports(graph_changed, compressed)
         self._execute_fixed_route_report(graph_changed)
         self._execute_application_load_executables()
-
-        # TODO why in do_load
-        # self._no_sync_changes = executor.get_item("NoSyncChanges")
 
         self._load_time += convert_time_diff_to_total_milliseconds(
             load_timer.take_sample())
