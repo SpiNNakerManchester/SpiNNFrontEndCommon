@@ -204,7 +204,7 @@ class ProvenanceReader(object):
                 description_name AS "description",
                 SUM(the_value) / 1000000.0 AS "value"
             FROM provenance_view
-            WHERE description LIKE 'run_time_of_%'
+            WHERE description LIKE '% took'
             GROUP BY description_name
             ORDER BY the_value
             """
@@ -221,7 +221,7 @@ class ProvenanceReader(object):
             like %BufferExtractor description_name: value
         :rtype: str
         """
-        return self.get_provenance("%BufferExtractor")
+        return self.get_provenance("%Buffer%Extractor%")
 
     def get_provenance_for_chip(self, x, y):
         """

@@ -68,7 +68,7 @@ CREATE VIEW IF NOT EXISTS edge_provenance_view AS
 CREATE VIEW IF NOT EXISTS algorithm_provenance_view AS
     SELECT source_name, description_name, the_value
     FROM source NATURAL JOIN description NATURAL JOIN provenance
-    WHERE source_short_name = 'algorithm_timer';
+    WHERE source_short_name = 'algorithm';
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Show purely version level provenance, as most used
