@@ -253,9 +253,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_ip_address",
 
         #
-        "_last_run_outputs",
-
-        #
         "_last_run_tokens",
 
         #
@@ -500,7 +497,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._executable_types = None
 
         # pacman executor objects
-        self._last_run_outputs = dict()
         self._last_run_tokens = dict()
         self._pacman_provenance = PacmanProvenanceExtractor()
         self._version_provenance = list()
@@ -1832,7 +1828,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._extra_monitor_to_chip_mapping,
                 self._vertex_to_ethernet_connected_chip_mapping,
                 self._machine, self._fixed_routes, self._java_caller)
-            print(self._buffer_manager)
 
     def _execute_sdram_outgoing_partition_allocator(self):
         with FecTimer("Execute SDRAM Outgoing Partition Allocator"):
@@ -2377,7 +2372,17 @@ class AbstractSpinnakerBase(ConfigHandler):
             energy_prov_reporter = EnergyProvenanceReporter()
             prov_items = energy_prov_reporter(power_used, self._placements)
 
-            self._do_energy_report(power_used)
+            # create energy reporter
+            energy_reporter = EnergyReport(
+                get_config_int("Machine", "version"), self._spalloc_server,
+                self._remote_spinnaker_url)
+
+            # run energy report
+            energy_reporter.write_energy_report(
+                self._placements, self._machine,
+                self._current_run_timesteps,
+                self._buffer_manager, power_used)
+
             return prov_items
 
     def _report_provenance(self, prov_items):
@@ -3100,31 +3105,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_application_finisher()
         # TODO is self._current_run_timesteps just 0
         self._do_extract_from_machine(self._current_run_timesteps)
-
-    def _do_energy_report(self, power_used):
-        # create energy reporter
-        energy_reporter = EnergyReport(
-            get_config_int("Machine", "version"), self._spalloc_server,
-            self._remote_spinnaker_url)
-
-        if self._buffer_manager is None or self._last_run_outputs is None:
-            return
-
-        # run energy report
-        energy_reporter.write_energy_report(
-            self._placements, self._machine, self._current_run_timesteps,
-            self._buffer_manager, power_used)
-
-    def _extract_iobufs(self):
-        if get_config_bool("Reports", "extract_iobuf_during_run"):
-            return
-        if get_config_bool("Reports", "clear_iobuf_during_run"):
-            return
-        extractor = IOBufExtractor(
-            transceiver=self._txrx,
-            executable_targets=self._last_run_outputs["ExecutableTargets"],
-            executable_finder=self._executable_finder)
-        extractor.extract_iobuf()
 
     def add_socket_address(self, socket_address):
         """ Add the address of a socket used in the run notification protocol.
