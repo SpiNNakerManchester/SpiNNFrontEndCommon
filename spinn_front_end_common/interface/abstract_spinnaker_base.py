@@ -256,27 +256,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_pacman_provenance",
 
         #
-        "_xml_paths",
-
-        #
-        "_extra_mapping_algorithms",
-
-        #
-        "_extra_mapping_inputs",
-
-        #
-        "_extra_inputs",
-
-        #
-        "_extra_pre_run_algorithms",
-
-        #
-        "_extra_post_run_algorithms",
-
-        #
-        "_extra_load_algorithms",
-
-        #
         "_dsg_algorithm",
 
         #
@@ -409,9 +388,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def __init__(
             self, executable_finder, graph_label=None,
-            database_socket_addresses=None, extra_algorithm_xml_paths=None,
-            n_chips_required=None, n_boards_required=None,
-            front_end_versions=None):
+            database_socket_addresses=None, n_chips_required=None,
+            n_boards_required=None, front_end_versions=None):
         """
         :param executable_finder: How to find APLX files to deploy to SpiNNaker
         :type executable_finder:
@@ -420,8 +398,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param database_socket_addresses: How to talk to notification databases
         :type database_socket_addresses:
             iterable(~spinn_utilities.socket_address.SocketAddress) or None
-        :param iterable(str) extra_algorithm_xml_paths:
-            Where to load definitions of extra algorithms from
         :param int n_chips_required:
             Overrides the number of chips to allocate from spalloc
         :param int n_boards_required:
@@ -496,16 +472,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # pacman executor objects
         self._pacman_provenance = PacmanProvenanceExtractor()
         self._version_provenance = list()
-        self._xml_paths = self._create_xml_paths(extra_algorithm_xml_paths)
-
-        # extra algorithms and inputs for runs, should disappear in future
-        #  releases
-        self._extra_mapping_algorithms = list()
-        self._extra_mapping_inputs = dict()
-        self._extra_inputs = dict()
-        self._extra_pre_run_algorithms = list()
-        self._extra_post_run_algorithms = list()
-        self._extra_load_algorithms = list()
 
         self._dsg_algorithm = "GraphDataSpecificationWriter"
 
@@ -676,78 +642,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             raise ConfigurationException(
                 "Clash with n_chips_required.")
         self._n_boards_required = n_boards_required
-
-    def update_extra_mapping_inputs(self, extra_mapping_inputs):
-        """ Supply extra inputs to the mapping algorithms. Mappings are from\
-            known names (the logical type names) to the values to bind to them.
-
-        :param dict(str,any) extra_inputs: The additional inputs to provide
-        """
-        if self.has_ran:
-            raise ConfigurationException(
-                "Changing mapping inputs is not supported after run")
-        if extra_mapping_inputs is not None:
-            self._extra_mapping_inputs.update(extra_mapping_inputs)
-
-    def update_extra_inputs(self, extra_inputs):
-        """ Supply extra inputs to the runtime algorithms. Mappings are from\
-            known names (the logical type names) to the values to bind to them.
-
-        :param dict(str,any) extra_inputs: The additional inputs to provide
-        """
-        if self.has_ran:
-            raise ConfigurationException(
-                "Changing inputs is not supported after run")
-        if extra_inputs is not None:
-            self._extra_inputs.update(extra_inputs)
-
-    def extend_extra_mapping_algorithms(self, extra_mapping_algorithms):
-        """ Add custom mapping algorithms to the end of the sequence of \
-            mapping algorithms to be run.
-
-        :param list(str) extra_mapping_algorithms: Algorithms to add
-        """
-        if self.has_ran:
-            raise ConfigurationException(
-                "Changing algorithms is not supported after run")
-        if extra_mapping_algorithms is not None:
-            self._extra_mapping_algorithms.extend(extra_mapping_algorithms)
-
-    def prepend_extra_pre_run_algorithms(self, extra_pre_run_algorithms):
-        """ Add custom pre-execution algorithms to the front of the sequence \
-            of algorithms to be run.
-
-        :param list(str) extra_pre_run_algorithms: Algorithms to add
-        """
-        if self.has_ran:
-            raise ConfigurationException(
-                "Changing algorithms is not supported after run")
-        if extra_pre_run_algorithms is not None:
-            self._extra_pre_run_algorithms[0:0] = extra_pre_run_algorithms
-
-    def extend_extra_post_run_algorithms(self, extra_post_run_algorithms):
-        """ Add custom post-execution algorithms to the sequence of \
-            such algorithms to be run.
-
-        :param list(str) extra_post_run_algorithms: Algorithms to add
-        """
-        if self.has_ran:
-            raise ConfigurationException(
-                "Changing algorithms is not supported after run")
-        if extra_post_run_algorithms is not None:
-            self._extra_post_run_algorithms.extend(extra_post_run_algorithms)
-
-    def extend_extra_load_algorithms(self, extra_load_algorithms):
-        """ Add custom data-loading algorithms to the sequence of \
-            such algorithms to be run.
-
-        :param list(str) extra_load_algorithms: Algorithms to add
-        """
-        if self.has_ran:
-            raise ConfigurationException(
-                "Changing algorithms is not supported after run")
-        if extra_load_algorithms is not None:
-            self._extra_load_algorithms.extend(extra_load_algorithms)
 
     def add_extraction_timing(self, timing):
         """ Record the time taken for doing data extraction.
@@ -2507,7 +2401,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_create_notifiaction_protocol()
         self._execute_runner(n_sync_steps, run_time)
         if n_machine_time_steps is not None or self._run_until_complete:
-            self._do_extract_from_machine(self, run_time)
+            self._do_extract_from_machine(run_time)
         self._has_reset_last = False
         self._has_ran = True
         self._first_machine_time_step = None
@@ -2685,21 +2579,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Reset the graph off the machine, to set things to time 0
         self.__reset_graph_elements()
-
-    def _create_xml_paths(self, extra_algorithm_xml_paths):
-        """
-        :param list(str) extra_algorithm_xml_paths:
-        :rtype: list(str)
-        """
-        # add the extra xml files from the config file
-        xml_paths = get_config_str_list("Mapping", "extra_xmls_paths")
-        xml_paths.append(interface_xml())
-        xml_paths.append(report_xml())
-
-        if extra_algorithm_xml_paths is not None:
-            xml_paths.extend(extra_algorithm_xml_paths)
-
-        return xml_paths
 
     def _detect_if_graph_has_changed(self, reset_flags=True):
         """ Iterates though the original graphs looking for changes.
