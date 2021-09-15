@@ -75,9 +75,6 @@ class ConfigHandler(object):
         #
         "_use_virtual_board",
 
-        # If not None, path to append pacman executor provenance info to
-        "_pacman_executor_provenance_path",
-
         # The machine timestep, in microseconds
         "__machine_time_step",
 
@@ -350,11 +347,6 @@ class ConfigHandler(object):
 
         # set up reports default folder
         self._set_up_report_specifics(n_calls_to_run)
-
-        if get_config_bool("Reports", "writePacmanExecutorProvenance"):
-            self._pacman_executor_provenance_path = os.path.join(
-                self._report_default_directory,
-                "pacman_executor_provenance.rpt")
 
         self._json_folder = os.path.join(
             self._report_default_directory, "json_files")

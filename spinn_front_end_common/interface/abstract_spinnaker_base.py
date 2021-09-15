@@ -296,9 +296,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_app_id",
 
         #
-        "_do_timings",
-
-        #
         "_raise_keyboard_interrupt",
 
         #
@@ -485,12 +482,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._app_id = get_config_int("Machine", "app_id")
 
         # folders
-        self._pacman_executor_provenance_path = None
         self._set_up_output_folders(self._n_calls_to_run)
-
-        # timing provenance elements
-        self._do_timings = get_config_bool(
-            "Reports", "write_algorithm_timings")
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
