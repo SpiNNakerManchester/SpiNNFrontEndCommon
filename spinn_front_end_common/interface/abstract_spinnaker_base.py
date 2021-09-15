@@ -2327,7 +2327,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             reloader = DSGRegionReloader()
             reloader(self._txrx, self._placements, self._hostname)
 
-    def _execute_read_provenance(self, n_machine_time_steps):
+    def _execute_read_provenance(self):
         prov_items = list()
         if self._version_provenance is not None:
             prov_items.extend(self._version_provenance)
@@ -2340,12 +2340,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             gatherer = GraphProvenanceGatherer()
             prov_items.extend(gatherer(
                 self._machine_graph, self._application_graph))
-
-            # TODO verify why master only add
-            #  if n_machine_time_steps is not None
-            if timer.stop_if_none(
-                    n_machine_time_steps, "n_machine_time_steps"):
-                return prov_items
 
             if timer.stop_if_virtual_board():
                 return prov_items
@@ -2386,44 +2380,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._do_energy_report(power_used)
             return prov_items
 
-    def _report_provenance(self, prov_items, n_machine_time_steps):
+    def _report_provenance(self, prov_items):
         with FecTimer("Write Provenance") as timer:
-            if timer.skip_if_cfg_false("Reports", "write_provenance_data"):
-                return
-            if timer.stop_if_none(
-                    n_machine_time_steps, "n_machine_time_steps"):
-                return
-            # TODO Why does master only clear on write?
             self._pacman_provenance.clear()
             self._version_provenance = list()
+            if timer.skip_if_cfg_false("Reports", "write_provenance_data"):
+                return
             self._write_provenance(prov_items)
-
-    def _gather_provenance_for_writing(self, executor):
-        """ Handles the gathering of provenance items for writer.
-
-        :param ~pacman.executor.PACMANAlgorithmExecutor executor:
-            the pacman executor.
-        :return:
-        """
-        prov_items = list()
-        if self._version_provenance is not None:
-            prov_items.extend(self._version_provenance)
-        prov_items.extend(self._pacman_provenance.data_items)
-        prov_item = executor.get_item("GraphProvenanceItems")
-        if prov_item is not None:
-            prov_items.extend(prov_item)
-        prov_item = executor.get_item("PlacementsProvenanceItems")
-        if prov_item is not None:
-            prov_items.extend(prov_item)
-        prov_item = executor.get_item("RouterProvenanceItems")
-        if prov_item is not None:
-            prov_items.extend(prov_item)
-        prov_item = executor.get_item("PowerProvenanceItems")
-        if prov_item is not None:
-            prov_items.extend(prov_item)
-        self._pacman_provenance.clear()
-        self._version_provenance = list()
-        self._write_provenance(prov_items)
 
     def _execute_clear_io_buf(self, n_machine_time_steps):
         with FecTimer("Execute Clear IO Buffer") as timer:
@@ -2489,7 +2452,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._no_sync_changes, time_threshold, self._machine,
                 self._run_until_complete)
 
-    def _execute_extract_iobuff(self, n_machine_time_steps):
+    def _execute_extract_iobuff(self):
         with FecTimer("Execute Extract IO Buff") as timer:
             if timer.skip_if_virtual_board():
                 return
@@ -2499,26 +2462,27 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "extract_iobuf"):
                 return
-            if timer.skip_if_value_is_none(
-                    n_machine_time_steps, "n_machine_time_steps"):
-                return
             iobuf_extractor = ChipIOBufExtractor()
             # ErrorMessages, WarnMessages output ignored as never used!
             iobuf_extractor(
                 self._txrx, self._executable_targets, self._executable_finder)
 
-    def _execute_buffer_extractor(self, n_machine_time_steps):
+    def _execute_buffer_extractor(self):
         with FecTimer("Execute Buffer Extractor") as timer:
             if timer.skip_if_virtual_board():
                 return
-            if (self._run_until_complete or n_machine_time_steps is not None):
-                buffer_extractor = BufferExtractor()
-                buffer_extractor(
-                    self._machine_graph, self._placements,
-                    self._buffer_manager)
-            else:
-                timer.skip(
-                    "Neither run until complete or n_machine_time_steps")
+            buffer_extractor = BufferExtractor()
+            buffer_extractor(
+                self._machine_graph, self._placements,
+                self._buffer_manager)
+
+    def _do_extract_from_machine(self, run_time):
+        self._execute_extract_iobuff()
+        self._execute_buffer_extractor()
+        # FinaliseTimingData never needed as just pushed self._ to inputs
+        prov_items = self._execute_read_provenance()
+        prov_items.extend(self._execute_energy_report(prov_items, run_time))
+        self._report_provenance(prov_items)
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         # TODO virtual board
@@ -2543,14 +2507,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_create_database_interface(run_time, graph_changed)
         self._execute_create_notifiaction_protocol()
         self._execute_runner(n_sync_steps, run_time)
-        self._execute_extract_iobuff(n_machine_time_steps)
-        self._execute_buffer_extractor(n_machine_time_steps)
-        # FinaliseTimingData never needed as just pushed self._ to inputs
-        prov_items = self._execute_read_provenance(n_machine_time_steps)
-        prov_items.extend(self._execute_energy_report(
-             prov_items, run_time))
-        self._report_provenance(prov_items, n_machine_time_steps)
-
+        if n_machine_time_steps is not None or self._run_until_complete:
+            self._do_extract_from_machine(self, run_time)
         self._has_reset_last = False
         self._has_ran = True
         self._first_machine_time_step = None
@@ -3140,11 +3098,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: ~.PACMANAlgorithmExecutor
         """
         self._execute_application_finisher()
-        self._execute_buffer_extractor(n_machine_time_steps="NOT NONE")
-        prov_items = self._execute_read_provenance(
-            n_machine_time_steps="NOT NONE")
-        self._execute_energy_report(prov_items, None)
-        self._execute_extract_iobuff(n_machine_time_steps="NOT NONE")
+        # TODO is self._current_run_timesteps just 0
+        self._do_extract_from_machine(self._current_run_timesteps)
 
     def _do_energy_report(self, power_used):
         # create energy reporter
