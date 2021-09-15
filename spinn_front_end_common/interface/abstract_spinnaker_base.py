@@ -125,8 +125,6 @@ from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities import IOBufExtractor
 from spinn_front_end_common.interface.config_handler import ConfigHandler
-from spinn_front_end_common.interface.provenance import (
-    PacmanProvenanceExtractor)
 from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
 from spinn_front_end_common.utilities import FecTimer
