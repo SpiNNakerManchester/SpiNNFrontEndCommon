@@ -299,9 +299,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_do_timings",
 
         #
-        "_print_timings",
-
-        #
         "_provenance_format",
 
         #
@@ -497,8 +494,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # timing provenance elements
         self._do_timings = get_config_bool(
             "Reports", "write_algorithm_timings")
-        self._print_timings = get_config_bool(
-            "Reports", "display_algorithm_timings")
         self._provenance_format = get_config_str(
             "Reports", "provenance_format")
         if self._provenance_format not in ["xml", "json", "sql", "auto"]:

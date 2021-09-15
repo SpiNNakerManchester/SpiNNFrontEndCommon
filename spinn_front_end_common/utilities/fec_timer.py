@@ -66,9 +66,11 @@ class FecTimer(object):
 
     @classmethod
     def setup(cls, simulator):
-        global _simulator, _provenance_path
+        global _simulator, _provenance_path, _print_timings
         _simulator = simulator
         _provenance_path = simulator._pacman_executor_provenance_path
+        _print_timings = get_config_bool(
+            "Reports", "display_algorithm_timings")
 
     def __init__(self, name):
         self._start_time = None
@@ -83,10 +85,11 @@ class FecTimer(object):
             return
         with open(_provenance_path, "a") as provenance_file:
             provenance_file.write(f"{message}\n")
+        if _print_timings:
+            logger.info(message)
 
     def skip(self, reason):
         message = f"{self._name} skipped as {reason}"
-        logger.info(message)
         self._report(message)
         self._start_time = None
 
@@ -163,7 +166,6 @@ class FecTimer(object):
     def stop(self, reason):
         time_taken = self._stop_timer()
         message = f"{self._name} stopped after {time_taken} as {reason}"
-        logger.info(message)
         self._report(message)
 
     def stop_if_none(self, value, name):
@@ -198,7 +200,6 @@ class FecTimer(object):
             message = f"Time {time_taken} taken by {self._name}"
         else:
             message = "{self._name} exited with {type} after {time_taken}"
-        logger.info(message)
         self._report(message)
 
         return False
