@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
+import os
 import sys
 import time
 from datetime import timedelta
@@ -68,7 +69,12 @@ class FecTimer(object):
     def setup(cls, simulator):
         global _simulator, _provenance_path, _print_timings
         _simulator = simulator
-        _provenance_path = simulator._pacman_executor_provenance_path
+        if get_config_bool("Reports", "write_algorithm_timings"):
+            _provenance_path = os.path.join(
+                simulator._report_default_directory,
+                "algorithm_timings.rpt")
+        else:
+            _provenance_path = None
         _print_timings = get_config_bool(
             "Reports", "display_algorithm_timings")
 
@@ -81,10 +87,9 @@ class FecTimer(object):
         return self
 
     def _report(self, message):
-        if _provenance_path is None:
-            return
-        with open(_provenance_path, "a") as provenance_file:
-            provenance_file.write(f"{message}\n")
+        if _provenance_path is not None:
+            with open(_provenance_path, "a") as provenance_file:
+                provenance_file.write(f"{message}\n")
         if _print_timings:
             logger.info(message)
 
