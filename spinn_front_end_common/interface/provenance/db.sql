@@ -64,11 +64,11 @@ CREATE VIEW IF NOT EXISTS edge_provenance_view AS
     WHERE source_short_name LIKE '%connector%';
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- Show purely pacman level provenance, as most used
-CREATE VIEW IF NOT EXISTS pacman_provenance_view AS
+-- Show purely algorithm_timer provenance, as most used
+CREATE VIEW IF NOT EXISTS algorithm_provenance_view AS
     SELECT source_name, description_name, the_value
     FROM source NATURAL JOIN description NATURAL JOIN provenance
-    WHERE source_short_name = 'pacman';
+    WHERE source_short_name = 'algorithm_timer';
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Show purely version level provenance, as most used
