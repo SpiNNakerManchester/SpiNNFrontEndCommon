@@ -43,8 +43,7 @@ from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import (
     MachineGraph, MachineGraphView, MachineVertex)
-from pacman.model.resources import (
-    ConstantSDRAM, PreAllocatedResourceContainer)
+from pacman.model.resources import (ConstantSDRAM)
 from pacman import __version__ as pacman_version
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.operations.chip_id_allocator_algorithms import (
@@ -125,7 +124,6 @@ from spinn_front_end_common.utility_models import (
     CommandSender, CommandSenderMachineVertex,
     DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities import IOBufExtractor
-from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.provenance import (
     PacmanProvenanceExtractor)
