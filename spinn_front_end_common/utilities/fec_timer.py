@@ -20,7 +20,7 @@ from datetime import timedelta
 # pylint: disable=no-name-in-module
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
-
+from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -77,6 +77,17 @@ class FecTimer(object):
             _provenance_path = None
         _print_timings = get_config_bool(
             "Reports", "display_algorithm_timings")
+        cls.clear_provenance()
+
+    @classmethod
+    def get_provenance(cls):
+        global _provenance_items
+        return _provenance_items
+
+    @classmethod
+    def clear_provenance(cls):
+        global _provenance_items
+        _provenance_items = list()
 
     def __init__(self, name):
         self._start_time = None
@@ -168,23 +179,15 @@ class FecTimer(object):
             self.skip(f"cfg {section}:{option1} and {option2} are False")
             return True
 
-    def stop(self, reason):
+    def error(self, reason):
+        global _provenance_items
         time_taken = self._stop_timer()
-        message = f"{self._name} stopped after {time_taken} as {reason}"
+        message = f"{self._name} failed after {time_taken} as {reason}"
+        _provenance_items.append(ProvenanceDataItem(
+            ["algorithm_error", f"{self._name} failed due to"], reason))
+        _provenance_items.append(ProvenanceDataItem(
+            ["algorithm_timer", f"{self._name} took"], time_taken))
         self._report(message)
-
-    def stop_if_none(self, value, name):
-        if value is None:
-            self.stop(f"{name} is None")
-            return True
-        return False
-
-    def stop_if_virtual_board(self):
-        if _simulator.use_virtual_board:
-            self.stop("simulator.use_virtual_board")
-            return True
-        else:
-            return False
 
     def _stop_timer(self):
         """ Describes how long has elapsed since the instance that the\
@@ -198,13 +201,18 @@ class FecTimer(object):
         return _convert_to_timedelta(diff)
 
     def __exit__(self, type, value, traceback):
+        global _provenance_items
         if self._start_time is None:
             return False
         time_taken = self._stop_timer()
         if type is None:
-            message = f"Time {time_taken} taken by {self._name}"
+            message = f"{self._name} took {time_taken} "
         else:
             message = "{self._name} exited with {type} after {time_taken}"
-        self._report(message)
+            _provenance_items.append(ProvenanceDataItem(
+                ["algorithm_error", f"{self._name} failed due to"], type))
 
+        _provenance_items.append(ProvenanceDataItem(
+            ["algorithm_timer", f"{self._name} took"], time_taken))
+        self._report(message)
         return False

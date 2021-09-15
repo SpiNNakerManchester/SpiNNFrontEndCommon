@@ -248,9 +248,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_java_caller",
 
         #
-        "_pacman_provenance",
-
-        #
         "_none_labelled_edge_count",
 
         #
@@ -452,7 +449,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._executable_types = None
 
         # pacman executor objects
-        self._pacman_provenance = PacmanProvenanceExtractor()
         self._version_provenance = list()
 
         # vertex label safety (used by reports mainly)
@@ -1803,7 +1799,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 if self.use_virtual_board:
                     logger.warning(
                         "Ignoring exectable not found as using virtual")
-                    timer.stop("exectable not found and virtual board")
+                    timer.error("exectable not found and virtual board")
                     return
                 raise
 
@@ -2178,38 +2174,54 @@ class AbstractSpinnakerBase(ConfigHandler):
             reloader = DSGRegionReloader()
             reloader(self._txrx, self._placements, self._hostname)
 
-    def _execute_read_provenance(self):
+    def _execute_graph_provenance_gatherer(self):
+        with FecTimer("Execute Graph Provenance Gatherer") as timer:
+            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+                return []
+            gatherer = GraphProvenanceGatherer()
+            return gatherer(self._machine_graph, self._application_graph)
+
+    def _execute_placements_provenance_gatherer(self):
+        with FecTimer("Execute Placements Provenance Gatherer") as timer:
+            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+                return []
+            if timer.skip_if_virtual_board():
+                return []
+            gatherer = PlacementsProvenanceGatherer()
+            return gatherer(self._txrx, self._placements)
+
+    def _execute_router_provenance_gatherer(self):
+        with FecTimer("Execute Router Provenance Gatherer") as timer:
+            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+                return []
+            if timer.skip_if_virtual_board():
+                return []
+            gatherer = RouterProvenanceGatherer()
+            provenance_data_objects = None
+            return gatherer(
+                self._txrx, self._machine, self._router_tables,
+                provenance_data_objects, self._extra_monitor_vertices,
+                self._placements)
+
+    def _execute_Profile_data_gatherer(self):
+        with FecTimer("Execute Profile Data Gatherer") as timer:
+            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
+                return
+            if timer.skip_if_virtual_board():
+                return
+            gatherer = ProfileDataGatherer()
+            gatherer(self._txrx, self._placements)
+
+    def _do_read_provenance(self):
         prov_items = list()
         if self._version_provenance is not None:
             prov_items.extend(self._version_provenance)
-        prov_items.extend(self._pacman_provenance.data_items)
-
-        with FecTimer("Execute Read Provenance") as timer:
-            if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
-                return prov_items
-
-            gatherer = GraphProvenanceGatherer()
-            prov_items.extend(gatherer(
-                self._machine_graph, self._application_graph))
-
-            if timer.stop_if_virtual_board():
-                return prov_items
-            placement_gather = PlacementsProvenanceGatherer()
-            prov_items.extend(placement_gather(
-                self._txrx, self._placements))
-
-            router_gather = RouterProvenanceGatherer()
-            provenance_data_objects = None
-            prov_items.extend(router_gather(
-                self._txrx, self._machine, self._router_tables,
-                provenance_data_objects, self._extra_monitor_vertices,
-                self._placements))
-
-            profile_data_gatherer = ProfileDataGatherer()
-            profile_data_gatherer(
-                self._txrx, self._placements)
-
-            return prov_items
+        prov_items.extend(FecTimer.get_provenance())
+        prov_items.extend(self._execute_graph_provenance_gatherer())
+        prov_items.extend(self._execute_placements_provenance_gatherer())
+        prov_items.extend(self._execute_router_provenance_gatherer())
+        self._execute_Profile_data_gatherer()
+        return prov_items
 
     def _execute_energy_report(self, router_provenance_items, run_time):
         with FecTimer("Execute energy report") as timer:
@@ -2243,7 +2255,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _report_provenance(self, prov_items):
         with FecTimer("Write Provenance") as timer:
-            self._pacman_provenance.clear()
+            FecTimer.clear_provenance()
             self._version_provenance = list()
             if timer.skip_if_cfg_false("Reports", "write_provenance_data"):
                 return
@@ -2341,7 +2353,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_extract_iobuff()
         self._execute_buffer_extractor()
         # FinaliseTimingData never needed as just pushed self._ to inputs
-        prov_items = self._execute_read_provenance()
+        prov_items = self._do_read_provenance()
         prov_items.extend(self._execute_energy_report(prov_items, run_time))
         self._report_provenance(prov_items)
 
@@ -2502,8 +2514,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 logger.exception("Could not read provenance")
 
         # Finish getting the provenance
-        prov_items.extend(self._pacman_provenance.data_items)
-        self._pacman_provenance.clear()
+        prov_items.extend(FecTimer.get_provenance())
+        FecTimer.clear_provenance()
         self._write_provenance(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
