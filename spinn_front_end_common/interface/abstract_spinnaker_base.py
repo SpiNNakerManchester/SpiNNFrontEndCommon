@@ -248,9 +248,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_java_caller",
 
         #
-        "_ip_address",
-
-        #
         "_pacman_provenance",
 
         #
@@ -464,7 +461,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._txrx = None
         self._buffer_manager = None
         self._java_caller = None
-        self._ip_address = None
         self._executable_types = None
 
         # pacman executor objects
