@@ -299,9 +299,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_do_timings",
 
         #
-        "_provenance_format",
-
-        #
         "_raise_keyboard_interrupt",
 
         #
@@ -494,11 +491,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # timing provenance elements
         self._do_timings = get_config_bool(
             "Reports", "write_algorithm_timings")
-        self._provenance_format = get_config_str(
-            "Reports", "provenance_format")
-        if self._provenance_format not in ["xml", "json", "sql", "auto"]:
-            raise Exception("Unknown provenance format: {}".format(
-                self._provenance_format))
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
@@ -2396,18 +2388,21 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param list(ProvenanceDataItem) provenance_data_items:
         """
-
-        writer = None
-        if self._provenance_format == "xml":
+        provenance_format = get_config_str("Reports", "provenance_format")
+        if provenance_format == "xml":
             writer = ProvenanceXMLWriter()
-        elif self._provenance_format == "json":
+        elif provenance_format == "json":
             writer = ProvenanceJSONWriter()
-        elif self._provenance_format == "sql":
+        elif provenance_format == "sql":
             writer = ProvenanceSQLWriter()
-        elif len(provenance_data_items) < PROVENANCE_TYPE_CUTOFF:
-            writer = ProvenanceXMLWriter()
         else:
-            writer = ProvenanceSQLWriter()
+            if provenance_format != "auto":
+               logger.warning(
+                   f"Unexpected provenance_format {provenance_format}")
+            if len(provenance_data_items) < PROVENANCE_TYPE_CUTOFF:
+                writer = ProvenanceXMLWriter()
+            else:
+                writer = ProvenanceSQLWriter()
         writer(provenance_data_items, self._provenance_file_path)
 
     def _recover_from_error(self, exception, exc_info, executable_targets):
