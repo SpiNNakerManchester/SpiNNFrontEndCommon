@@ -251,9 +251,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_pacman_provenance",
 
         #
-        "_dsg_algorithm",
-
-        #
         "_none_labelled_edge_count",
 
         #
@@ -466,8 +463,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # pacman executor objects
         self._pacman_provenance = PacmanProvenanceExtractor()
         self._version_provenance = list()
-
-        self._dsg_algorithm = "GraphDataSpecificationWriter"
 
         # vertex label safety (used by reports mainly)
         self._none_labelled_edge_count = 0
@@ -2733,22 +2728,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             ~spinn_front_end_common.interface.buffer_management.BufferManager
         """
         return self._buffer_manager
-
-    @property
-    def dsg_algorithm(self):
-        """ The DSG algorithm used by the tools
-
-        :rtype: str
-        """
-        return self._dsg_algorithm
-
-    @dsg_algorithm.setter
-    def dsg_algorithm(self, new_dsg_algorithm):
-        """ Set the DSG algorithm to be used by the tools
-
-        :param str new_dsg_algorithm: the new DSG algorithm name
-        """
-        self._dsg_algorithm = new_dsg_algorithm
 
     @property
     def none_labelled_edge_count(self):
