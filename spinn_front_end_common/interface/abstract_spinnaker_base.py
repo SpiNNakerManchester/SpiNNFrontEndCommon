@@ -67,8 +67,7 @@ from pacman.operations.routing_table_generators import (
     BasicRoutingTableGenerator)
 from pacman.operations.tag_allocator_algorithms import BasicTagAllocator
 from spinn_utilities.config_holder import (
-    get_config_bool, get_config_int, get_config_str, get_config_str_list,
-    set_config)
+    get_config_bool, get_config_int, get_config_str, set_config)
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
@@ -84,7 +83,7 @@ from spinn_front_end_common.interface.interface_functions import (
     HostExecuteDataSpecification, HBPAllocator, HBPMaxMachineGenerator,
     InsertChipPowerMonitorsToGraphs,
     InsertEdgesToExtraMonitorFunctionality, InsertExtraMonitorVerticesToGraphs,
-    interface_xml, LoadExecutableImages, LoadFixedRoutes,
+    LoadExecutableImages, LoadFixedRoutes,
     LocalTDMABuilder, LocateExecutableStartType, MachineGenerator,
     PlacementsProvenanceGatherer,
     ProfileDataGatherer, ProcessPartitionConstraints,
@@ -115,7 +114,7 @@ from spinn_front_end_common.utilities.report_functions import (
     FixedRouteFromMachineReport, MemoryMapOnHostReport,
     MemoryMapOnHostChipReport, NetworkSpecification,
     RouterCollisionPotentialReport,
-    RoutingTableFromMachineReport, TagsFromMachineReport, report_xml,
+    RoutingTableFromMachineReport, TagsFromMachineReport,
     WriteJsonMachine, WriteJsonPartitionNKeysMap, WriteJsonPlacements,
     WriteJsonRoutingTables)
 from spinn_front_end_common.utilities.utility_objs import (
@@ -2399,8 +2398,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             writer = ProvenanceSQLWriter()
         else:
             if provenance_format != "auto":
-               logger.warning(
-                   f"Unexpected provenance_format {provenance_format}")
+                logger.warning(
+                    f"Unexpected provenance_format {provenance_format}")
             if len(provenance_data_items) < PROVENANCE_TYPE_CUTOFF:
                 writer = ProvenanceXMLWriter()
             else:

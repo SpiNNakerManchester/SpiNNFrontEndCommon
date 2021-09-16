@@ -184,9 +184,9 @@ class FecTimer(object):
         time_taken = self._stop_timer()
         message = f"{self._name} failed after {time_taken} as {reason}"
         _provenance_items.append(ProvenanceDataItem(
-            ["algorithm","error", f"{self._name} failed due to"], reason))
+            ["algorithm", "error", f"{self._name} failed due to"], reason))
         _provenance_items.append(ProvenanceDataItem(
-            ["algorithm","timer", f"{self._name} took"], time_taken))
+            ["algorithm", "timer", f"{self._name} took"], time_taken))
         self._report(message)
 
     def _stop_timer(self):
@@ -210,9 +210,9 @@ class FecTimer(object):
         else:
             message = "{self._name} exited with {type} after {time_taken}"
             _provenance_items.append(ProvenanceDataItem(
-                ["algorithm","error", f"{self._name} failed due to"], type))
+                ["algorithm", "error", f"{self._name} failed due to"], type))
 
         _provenance_items.append(ProvenanceDataItem(
-            ["algorithm","timer", f"{self._name} took"], time_taken))
+            ["algorithm", "timer", f"{self._name} took"], time_taken))
         self._report(message)
         return False
