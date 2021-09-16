@@ -752,7 +752,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._run(n_steps, sync_time=0)
         self._run_until_complete = False
 
-
     def run(self, run_time, sync_time=0):
         """ Run a simulation for a fixed amount of time
 
