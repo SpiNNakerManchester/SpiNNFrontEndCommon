@@ -43,7 +43,8 @@ from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import (
     MachineGraph, MachineGraphView, MachineVertex)
-from pacman.model.resources import (ConstantSDRAM)
+from pacman.model.resources import (
+    ConstantSDRAM, PreAllocatedResourceContainer)
 from pacman import __version__ as pacman_version
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.operations.chip_id_allocator_algorithms import (
@@ -86,6 +87,10 @@ from spinn_front_end_common.interface.interface_functions import (
     InsertEdgesToExtraMonitorFunctionality, InsertExtraMonitorVerticesToGraphs,
     LoadExecutableImages, LoadFixedRoutes,
     LocalTDMABuilder, LocateExecutableStartType, MachineGenerator,
+    PreAllocateForBitFieldRouterCompressor,
+    PreAllocateResourcesForChipPowerMonitor,
+    PreAllocateResourcesForLivePacketGatherers,
+    PreAllocateResourcesForExtraMonitorSupport,
     PlacementsProvenanceGatherer,
     ProfileDataGatherer, ProcessPartitionConstraints,
     ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
@@ -157,8 +162,6 @@ ALANS_DEFAULT_RANDOM_APP_ID = 16
 
 # Number of provenace items before auto changes to sql format
 PROVENANCE_TYPE_CUTOFF = 20000
-
-_PREALLOC_NAME = 'PreAllocatedResources'
 
 
 class AbstractSpinnakerBase(ConfigHandler):
@@ -260,7 +263,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_status",
 
         # Condition object used for waiting for stop
-        # Set duing init and the used but never new object
+        # Set during init and the used but never new object
         "_state_condition",
 
         # status flag
@@ -294,14 +297,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         # TODO should this be at this scope
         "_command_sender",
 
-        # iobuf cores
-        "_cores_to_read_iobuf",
-
-        #
+        # dict of exucutable types to cores
         "_executable_types",
 
         # mapping between parameters and the vertices which need to talk to
         # them
+        # Created during init. Added to but never new object
         "_live_packet_recorder_params",
 
         # place holder for checking the vertices being added to the recorders
@@ -354,7 +355,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_routing_table_by_partition",
         "_multicast_routes_loaded",
         "_extra_monitor_to_chip_mapping",
+
+        # Flag to say if current machine is a temporary max machine
         "_max_machine",
+
         "_n_chips_needed",
         "_notification_interface",
     ]
@@ -427,7 +431,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._machine_allocation_controller = None
         self._new_run_clear()
-        self._executable_types = None
 
         # pacman executor objects
         self._version_provenance = list()
@@ -483,7 +486,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._routing_table_by_partition = None
         self._multicast_routes_loaded = False
         self._extra_monitor_to_chip_mapping = None
-        self._max_machine = None
         self._n_chips_needed = None
         self._notification_interface = None
 
@@ -496,10 +498,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         self.__close_allocation_controller()
         self._application_graph = None
         self._buffer_manager = None
+        self._executable_types = None
         self._fixed_routes = None
         self._java_caller = None
         self._machine = None
         self._machine_graph = None
+        self._max_machine = False
         self._max_run_time_steps = None
         self._placements = None
         self._router_tables = None
@@ -1136,7 +1140,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_allocator(self, total_run_time):
         with FecTimer("Execute Allocator") as timer:
-            self._max_machine = None
+            self._max_machine = False
             if timer.skip_if_value_already_set(self._machine, "machine"):
                 return None
             if timer.skip_if_value_not_none(self._hostname, "hostname"):
@@ -1200,19 +1204,21 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _execute_get_max_machine(self, total_run_time):
         with FecTimer("Execute Max Machine Generator") as timer:
             if timer.skip_if_value_already_set(self._machine, "machine"):
+                self._machine = False
                 return self._machine
 
+            self._max_machine = True
             if self._spalloc_server:
                 generator = SpallocMaxMachineGenerator()
                 # TODO fix params
-                self._max_machine = generator(
+                self._machine = generator(
                     self._spalloc_server,
                     max_machine_core_reduction=get_config_int(
                         "Machine", "max_machine_core_reduction"))
 
             elif self._remote_spinnaker_url:
                 generator = HBPMaxMachineGenerator()
-                self._max_machine = generator(
+                self._machine = generator(
                     self._remote_spinnaker_url, total_run_time,
                     get_config_int("Machine", "max_machine_core_reduction"))
 
@@ -1221,7 +1227,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
         if get_config_bool("Buffers", "use_auto_pause_and_resume"):
-            self._plan_n_timesteps =  get_config_int(
+            self._plan_n_timesteps = get_config_int(
                 "Buffers", "minimum_auto_time_steps")
         else:
             self._plan_n_timesteps = n_machine_time_steps
@@ -1236,10 +1242,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         allocator_data = self._execute_allocator(total_run_time)
         self._execute_machine_generator(allocator_data)
         self._execute_get_max_machine(total_run_time)
-        if self._machine:
-            return self._machine
-        else:
-            return self._max_machine
+        return self._machine
 
     def _create_version_provenance(self):
         """ Add the version information to the provenance data at the start.
@@ -1348,7 +1351,48 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return:
         """
 
-    def _execute_splitter_partitioner(self):
+    def _execute_preallocate_for_live_packet_gatherer(
+            self, pre_allocated_resources):
+        with FecTimer("Execute PreAllocate For LivePacketGatherer") as timer:
+            if timer.skip_if_empty(self._live_packet_recorder_params,
+                                   "live_packet_recorder_params"):
+                return
+            pre_allocator = PreAllocateResourcesForLivePacketGatherers()
+            # No need to get the output as same object as input
+            pre_allocator(self._live_packet_gatherer_parameters,
+                          self._machine, pre_allocated_resources)
+
+    def _execute_preallocate_for_chip_power_monitor(
+            self, pre_allocated_resources):
+        with FecTimer(
+                "Execute PreAllocate For Chip Power Monitor") as timer:
+            if timer.skip_if_cfg_false("Reports", "write_energy_report"):
+                return
+            pre_allocator = PreAllocateResourcesForChipPowerMonitor()
+            # No need to get the output as same object as input
+            pre_allocator(
+                self._machine,
+                get_config_int("EnergyMonitor", "sampling_frequency"),
+                pre_allocated_resources)
+
+    def _execute_preallocate_for_extra_monitor_support(
+            self, pre_allocated_resources):
+        with FecTimer("Execute PreAllocate For Extra Monitor Support") \
+                as timer:
+            if timer.skip_if_cfgs_false(
+                    "Machine", "enable_advanced_monitor_support",
+                    "enable_reinjection"):
+                return
+            pre_allocator = PreAllocateResourcesForExtraMonitorSupport()
+            # TODO n_cores_to_allocate param
+            # No need to get the output as same object as input
+            pre_allocator(self._machine, pre_allocated_resources)
+
+    def _execute_pre_allocate_for_bit_field_router_compressor(
+            self, pre_allocated_resources):
+        # TODO
+
+    def _execute_splitter_partitioner(self, pre_allocated_resources):
         """
         overirdden by spynakker
 
@@ -1357,14 +1401,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Execute Splitter Partitioner") as timer:
             if timer.skip_if_application_graph_empty():
                 return
-            if self._machine:
-                machine = self._machine
-            else:
-                machine = self._max_machine
             partitioner = SplitterPartitioner()
             self._machine_graph, self._n_chips_needed = partitioner(
-                self._application_graph, machine, self._plan_n_timesteps,
-                pre_allocated_resources=None)
+                self._application_graph, self._machine, self._plan_n_timesteps,
+                pre_allocated_resources)
 
     def _execute_graph_measurer(self):
         with FecTimer("Execute Graph Measurer") as timer:
@@ -1717,7 +1757,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_splitter_reset()
         self._execute_splitter_selector()
         self._execute_delay_support_adder()
-        self._execute_splitter_partitioner()
+        pre_allocated_resources = PreAllocatedResourceContainer()
+        self.__execute_preallocate_for_live_packet_gatherer(
+            pre_allocated_resources)
+        self._execute_preallocate_for_chip_power_monitor(
+            pre_allocated_resources)
+        self._execute_preallocate_for_extra_monitor_support(
+            pre_allocated_resources)
+        self._execute_splitter_partitioner(pre_allocated_resources)
         self._execute_graph_measurer()
         allocator_data = self._execute_allocator(total_run_time)
         self._execute_machine_generator(allocator_data)

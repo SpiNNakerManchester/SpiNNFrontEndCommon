@@ -142,6 +142,17 @@ class FecTimer(object):
             self.skip(f"{name} is False")
             return True
 
+    def skip_if_empty(self, value, name):
+        if value:
+            return False
+        if value is None:
+            self.skip(f"{name} is None")
+        elif len(value) == 0:
+            self.skip(f"{name} is empty")
+        else:
+            self.skip(f"{name} is False for an unknown reason")
+        return True
+
     def skip_if_value_is_none(self, value, name):
         if value is None:
             self.skip(f"{name} is None")
