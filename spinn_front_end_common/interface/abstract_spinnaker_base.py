@@ -246,58 +246,52 @@ class AbstractSpinnakerBase(ConfigHandler):
         # May be null is configs request not to use Java
         "_java_caller",
 
-        #
+        # vertex label count used to ensure unique names of edges
         "_none_labelled_edge_count",
 
-        #
+        # Set of addresses.
+        # Set created at init. Added to but never new object
         "_database_socket_addresses",
 
-        #
-        "_database_interface",
-
-        #
-        "_create_database",
-
-        #
+        # status flag
         "_has_ran",
 
-        #
+        # Status enum
         "_status",
 
-        #
+        # Condition object used for waiting for stop
+        # Set duing init and the used but never new object
         "_state_condition",
 
-        #
+        # status flag
         "_has_reset_last",
 
-        #
+        # count of time from previous runs since setup/reset
         "_current_run_timesteps",
 
-        #
+        # change number of resets as loading the binary again resets the
+        # sync to 0
         "_no_sync_changes",
 
-        #
+        # max time the run can take without running out of memory
         "_max_run_time_steps",
 
-        #
+        # TODO why is this different to _current_run_timesteps
         "_no_machine_time_steps",
-
-        # The lowest values auto pause resume may use as steps
-        "_minimum_auto_time_steps",
 
         # Set when run_until_complete is specified by the user
         "_run_until_complete",
 
-        #
+        # id for the application from the cfg or the tranceiver
         "_app_id",
 
-        #
+        # set to true it the current thread is not the main thread
         "_raise_keyboard_interrupt",
 
-        #
+        # The run number for the this/next end_user call to run
         "_n_calls_to_run",
 
-        #
+        # TODO should this be at this scope
         "_command_sender",
 
         # iobuf cores
@@ -438,15 +432,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         # pacman executor objects
         self._version_provenance = list()
 
-        # vertex label safety (used by reports mainly)
         self._none_labelled_edge_count = 0
 
         # database objects
         self._database_socket_addresses = set()
         if database_socket_addresses is not None:
             self._database_socket_addresses.update(database_socket_addresses)
-        self._database_interface = None
-        self._create_database = None
 
         # holder for timing and running related values
         self._run_until_complete = False
@@ -457,10 +448,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._n_calls_to_run = 1
         self._current_run_timesteps = 0
         self._no_sync_changes = 0
-        self._max_run_time_steps = None
         self._no_machine_time_steps = None
-        self._minimum_auto_time_steps = get_config_int(
-                "Buffers", "minimum_auto_time_steps")
 
         self._app_id = get_config_int("Machine", "app_id")
 
@@ -512,6 +500,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._java_caller = None
         self._machine = None
         self._machine_graph = None
+        self._max_run_time_steps = None
         self._placements = None
         self._router_tables = None
         self._routing_infos = None
@@ -900,8 +889,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if self._txrx is not None:
                 self._txrx.stop_application(self._app_id)
 
-            # change number of resets as loading the binary again resets the
-            # sync to 0
             self._no_sync_changes = 0
 
         # build the graphs to modify with system requirements
@@ -923,7 +910,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 if self._txrx is not None:
                     self._txrx.close()
                     self._app_id = None
-                self._max_run_time_steps = None
                 self._n_chips_needed = None
 
             if self._machine is None:
@@ -1235,7 +1221,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
         if get_config_bool("Buffers", "use_auto_pause_and_resume"):
-            self._plan_n_timesteps = self._minimum_auto_time_steps
+            self._plan_n_timesteps =  get_config_int(
+                "Buffers", "minimum_auto_time_steps")
         else:
             self._plan_n_timesteps = n_machine_time_steps
 
@@ -2311,8 +2298,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 timer.skip("No Simulation Interface used")
 
     def _execute_create_database_interface(self, run_time, graph_changed):
-        with FecTimer("Execute Create Database Interface") \
-                as timer:
+        with FecTimer("Execute Create Database Interface") as timer:
             if not self._has_ran or graph_changed:
                 interface_maker = DatabaseInterface()
                 # Used to used compressed routing tables if available on host
