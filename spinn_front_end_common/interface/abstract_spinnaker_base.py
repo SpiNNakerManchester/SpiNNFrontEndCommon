@@ -72,6 +72,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
+from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.interface_functions import (
     ApplicationFinisher, ApplicationRunner,  BufferExtractor,
     BufferManagerCreator, ChipIOBufClearer, ChipIOBufExtractor,
@@ -168,31 +169,33 @@ class AbstractSpinnakerBase(ConfigHandler):
     __slots__ = [
         # the object that contains a set of file paths, which should encompass
         # all locations where binaries are for this simulation.
+        # init param and never changed
         "_executable_finder",
 
-        # the number of chips required for this simulation to run, mainly tied
-        # to the spalloc system
-        "_n_chips_required",
-
-        # the number of boards required for this simulation to run, mainly tied
-        # to the spalloc system
+        # the number of boards requested by the user during setup
+        # init param and never changed
         "_n_boards_required",
 
+        # the number of chips requested by the user during setup.
+        # init param and never changed
+        "_n_chips_required",
+
         # The IP-address of the SpiNNaker machine
+        # provided during init and never changed
+        # init or cfg param and never changed
         "_hostname",
 
         # the ip_address of the spalloc server
+        # provided during init and never changed
+        # cfg param and never changed
         "_spalloc_server",
 
         # the URL for the HBP platform interface
+        # cfg param and never changed
         "_remote_spinnaker_url",
 
-        # the algorithm used for allocating machines from the HBP platform
-        #  interface
+        # the connection to allocted spalloc and HBP machines
         "_machine_allocation_controller",
-
-        # the human readable label for the application graph.
-        "_graph_label",
 
         # the pacman application graph, used to hold vertices which need to be
         # split to core sizes
@@ -200,6 +203,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # the end user application graph, used to hold vertices which need to
         # be split to core sizes
+        # Object created by init. Added to but never new object
         "_original_application_graph",
 
         # the pacman machine graph, used to hold vertices which represent cores
@@ -207,10 +211,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # the end user pacman machine graph, used to hold vertices which
         # represent cores.
+        # Object created by init. Added to but never new object
         "_original_machine_graph",
-
-        # boolean for empty graphs
-        "_empty_graphs",
 
         # The holder for where machine graph vertices are placed.
         "_placements",
@@ -409,7 +411,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._hostname = None
         self._spalloc_server = None
         self._remote_spinnaker_url = None
-        self._machine_allocation_controller = None
 
         # command sender vertex
         self._command_sender = None
@@ -420,29 +421,18 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # update graph label if needed
         if graph_label is None:
-            self._graph_label = "Application_graph"
+            graph_label = "Application_graph"
         else:
-            self._graph_label = graph_label
+            graph_label = graph_label
 
         # pacman objects
-        self._original_application_graph = ApplicationGraph(
-            label=self._graph_label)
+        self._original_application_graph = ApplicationGraph(label=graph_label)
         self._original_machine_graph = MachineGraph(
-            label=self._graph_label,
+            label=graph_label,
             application_graph=self._original_application_graph)
-        self._empty_graphs = False
 
-        self._placements = None
-        self._router_tables = None
-        self._routing_infos = None
-        self._fixed_routes = None
-        self._application_graph = None
-        self._machine_graph = None
-        self._tags = None
-        self._machine = None
-        self._txrx = None
-        self._buffer_manager = None
-        self._java_caller = None
+        self._machine_allocation_controller = None
+        self._new_run_clear()
         self._executable_types = None
 
         # pacman executor objects
@@ -513,6 +503,20 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Safety in case a previous run left a bad state
         clear_injectables()
+
+    def _new_run_clear(self):
+        self.__close_allocation_controller()
+        self._application_graph = None
+        self._buffer_manager = None
+        self._fixed_routes = None
+        self._java_caller = None
+        self._machine = None
+        self._machine_graph = None
+        self._placements = None
+        self._router_tables = None
+        self._routing_infos = None
+        self._tags = None
+        self._txrx = None
 
     def __getitem__(self, item):
         """
@@ -685,6 +689,19 @@ class AbstractSpinnakerBase(ConfigHandler):
             if get_config_str("Machine", "spalloc_user") is None:
                 raise Exception(
                     "A spalloc_user must be specified with a spalloc_server")
+
+    def _setup_java_caller(self):
+         if get_config_bool("Java", "use_java"):
+            java_call = get_config_str("Java", "java_call")
+            java_spinnaker_path = get_config_str(
+                "Java", "java_spinnaker_path")
+            java_jar_path = get_config_str(
+                "Java", "java_jar_path")
+            java_properties = get_config_str(
+                "Java", "java_properties")
+            self._java_caller = JavaCaller(
+                self._json_folder, java_call, java_spinnaker_path,
+                java_properties, java_jar_path)
 
     def __signal_handler(self, _signal, _frame):
         """ Handles closing down of script via keyboard interrupt
@@ -902,14 +919,10 @@ class AbstractSpinnakerBase(ConfigHandler):
 
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
-                self._machine = None
-                self._buffer_manager = None
-                self._java_caller = None
+                self._new_run_clear()
                 if self._txrx is not None:
                     self._txrx.close()
                     self._app_id = None
-                if self._machine_allocation_controller is not None:
-                    self._machine_allocation_controller.close()
                 self._max_run_time_steps = None
                 self._n_chips_needed = None
 
@@ -1272,6 +1285,19 @@ class AbstractSpinnakerBase(ConfigHandler):
                 for name, value in self._front_end_versions)
         self._version_provenance = version_provenance
 
+    def _setup_java_caller(self):
+         if get_config_bool("Java", "use_java"):
+            java_call = get_config_str("Java", "java_call")
+            java_spinnaker_path = get_config_str(
+                "Java", "java_spinnaker_path")
+            java_jar_path = get_config_str(
+                "Java", "java_jar_path")
+            java_properties = get_config_str(
+                "Java", "java_properties")
+            self._java_caller = JavaCaller(
+                self._json_folder, java_call, java_spinnaker_path,
+                java_properties, java_jar_path)
+
     def _do_extra_mapping_algorithms(self):
         """
         Allows overriding classes to add algorithms
@@ -1487,7 +1513,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._placements)
 
     def _execute_fixed_route_router(self):
-        # TODO: Why does Master create Fixed routes but not use them when
         # enable_reinjection = True enable_advanced_monitor_support = False
         with FecTimer("Execute Fixed Route Router") as timer:
             if timer.skip_if_cfg_false(
@@ -1699,6 +1724,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         mapping_total_timer.start_timing()
         provide_injectables(self)
 
+        self._setup_java_caller()
         self._do_extra_mapping_algorithms()
         self._report_network_specification()
         self._execute_splitter_reset()
