@@ -479,7 +479,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._minimum_auto_time_steps = get_config_int(
                 "Buffers", "minimum_auto_time_steps")
 
-        self._app_id = get_config_int("Machine", "app_id")
+        self._app_id = None
 
         # folders
         self._pacman_executor_provenance_path = None
