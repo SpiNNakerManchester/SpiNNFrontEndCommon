@@ -87,7 +87,6 @@ from spinn_front_end_common.interface.interface_functions import (
     InsertEdgesToExtraMonitorFunctionality, InsertExtraMonitorVerticesToGraphs,
     LoadExecutableImages, LoadFixedRoutes,
     LocalTDMABuilder, LocateExecutableStartType, MachineGenerator,
-    PreAllocateForBitFieldRouterCompressor,
     PreAllocateResourcesForChipPowerMonitor,
     PreAllocateResourcesForLivePacketGatherers,
     PreAllocateResourcesForExtraMonitorSupport,
@@ -1387,10 +1386,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             # TODO n_cores_to_allocate param
             # No need to get the output as same object as input
             pre_allocator(self._machine, pre_allocated_resources)
-
-    def _execute_pre_allocate_for_bit_field_router_compressor(
-            self, pre_allocated_resources):
-        # TODO
 
     def _execute_splitter_partitioner(self, pre_allocated_resources):
         """
