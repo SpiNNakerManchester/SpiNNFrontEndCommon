@@ -278,9 +278,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # max time the run can take without running out of memory
         "_max_run_time_steps",
 
-        # TODO why is this different to _current_run_timesteps
-        "_no_machine_time_steps",
-
         # Set when run_until_complete is specified by the user
         "_run_until_complete",
 
@@ -342,7 +339,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_extra_monitor_vertices",
         "_first_machine_time_step",
         "_machine_partition_n_keys_map",
-        "_run_until_time_step",
         "_system_multicast_router_timeout_keys",
         "_dsg_targets",
         "_region_sizes",
@@ -450,7 +446,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._n_calls_to_run = 1
         self._current_run_timesteps = 0
         self._no_sync_changes = 0
-        self._no_machine_time_steps = None
 
         self._app_id = get_config_int("Machine", "app_id")
 
@@ -473,7 +468,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._extra_monitor_vertices = None
         self._first_machine_time_step = None
         self._machine_partition_n_keys_map = None
-        self._run_until_time_step = None
         self._system_multicast_router_timeout_keys = None
         self._dsg_targets = None
         self._region_sizes = None
@@ -570,7 +564,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if item == "RoutingInfos":
             return self._routing_infos
         if item == "RunUntilTimeSteps":
-            return self._run_until_time_step
+            return self._current_run_timesteps
         if item == "SystemMulticastRouterTimeoutKeys":
             return self._system_multicast_router_timeout_keys
         if item == "Tags":
@@ -1120,10 +1114,8 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
         if next_run_timesteps is not None:
             total_timesteps = next_run_timesteps + self._current_run_timesteps
-            self._no_machine_time_steps = total_timesteps
             return total_timesteps
 
-        self._no_machine_time_steps = None
         return None
 
     def _execute_get_virtual_machine(self):
@@ -1811,12 +1803,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._max_run_time_steps)
 
     def _do_data_generation(self, n_machine_time_steps):
-        self._run_until_time_step = n_machine_time_steps
         # set up timing
         data_gen_timer = Timer()
         data_gen_timer.start_timing()
 
-        self._run_until_time_step = n_machine_time_steps
         self._first_machine_time_step = self._current_run_timesteps
 
         provide_injectables(self)
@@ -2418,7 +2408,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._first_machine_time_step = self._current_run_timesteps
         self._current_run_timesteps = \
             self._calculate_number_of_machine_time_steps(n_machine_time_steps)
-        self._run_until_time_step = self._current_run_timesteps
 
         # TODO is there a better way to get update_buffer to run
         provide_injectables(self)
@@ -2695,7 +2684,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :rtype: int
         """
-        return self._no_machine_time_steps
+        return self._current_run_timesteps
 
     @property
     def machine_graph(self):
