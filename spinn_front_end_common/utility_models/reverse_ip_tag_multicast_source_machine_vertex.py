@@ -772,9 +772,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int run_until_timesteps:
             The last machine time step in the simulation
         """
-        if self._virtual_key is not None:
-            self._fill_send_buffer(
-                first_machine_time_step, run_until_timesteps)
+        self._fill_send_buffer(
+            first_machine_time_step, run_until_timesteps)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
