@@ -1203,7 +1203,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _execute_get_max_machine(self, total_run_time):
         with FecTimer("Execute Max Machine Generator") as timer:
             if timer.skip_if_value_already_set(self._machine, "machine"):
-                self._machine = False
+                self._max_machine = False
                 return self._machine
 
             self._max_machine = True
@@ -1753,7 +1753,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_splitter_selector()
         self._execute_delay_support_adder()
         pre_allocated_resources = PreAllocatedResourceContainer()
-        self.__execute_preallocate_for_live_packet_gatherer(
+        self._execute_preallocate_for_live_packet_gatherer(
             pre_allocated_resources)
         self._execute_preallocate_for_chip_power_monitor(
             pre_allocated_resources)
