@@ -1674,7 +1674,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
-        inputs["RunUntilTimeSteps"] = n_machine_time_steps
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
         # This is done twice to make things nicer for things which don't have
