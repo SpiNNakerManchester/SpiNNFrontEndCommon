@@ -269,6 +269,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_has_reset_last",
 
         # count of time from previous runs since setup/reset
+        # During do_run points to the end timestep of that cycle
         "_current_run_timesteps",
 
         # change number of resets as loading the binary again resets the
@@ -276,12 +277,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_no_sync_changes",
 
         # max time the run can take without running out of memory
-        "_max_run_time_steps",
+         "_max_run_time_steps",
 
         # Set when run_until_complete is specified by the user
         "_run_until_complete",
 
         # id for the application from the cfg or the tranceiver
+        # TODO check after related PR
         "_app_id",
 
         # set to true it the current thread is not the main thread
@@ -903,10 +905,10 @@ class AbstractSpinnakerBase(ConfigHandler):
 
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
-                self._new_run_clear()
                 if self._txrx is not None:
                     self._txrx.close()
                     self._app_id = None
+                self._new_run_clear()
                 self._n_chips_needed = None
 
             if self._machine is None:
