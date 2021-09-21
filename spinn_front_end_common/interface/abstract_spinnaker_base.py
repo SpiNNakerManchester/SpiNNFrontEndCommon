@@ -332,38 +332,82 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_extraction_time",
 
         # Version information from the front end
+        # TODO provenance cleanup
         "_front_end_versions",
 
+        # Used in exception handling and control c
         "_last_except_hook",
 
+        # status flag
         "_vertices_or_edges_added",
 
         # Version provenance
+        # TODO provenance cleanup
         "_version_provenance",
 
-        # New for no exactor
+        # All beyond this point new for no extractor
+        # The data is not new but now it is held direct and not via inputs
+
+        # Path of the notification interface database
         "_database_file_path",
+
+        # Binaries to run
         "_executable_targets",
+
+        # version of the board to requested or discovered
         "_board_version",
+
+        # vertices added to support Buffer Extractor
         "_extra_monitor_vertices",
+
+        # Start timestep of a do_run cycle
+        # Set by data generation and do_run cleared by do_run
         "_first_machine_time_step",
+
+        # Mapping for partitions to how many keys they need
         "_machine_partition_n_keys_map",
+
+        # system routing timout keys
         "_system_multicast_router_timeout_keys",
+
+        # DSG to be written to the machine
         "_dsg_targets",
+
+        # Sizes of dsg regions
         "_region_sizes",
+
+        # Mapping for vertice to extra monitors
         "_vertex_to_ethernet_connected_chip_mapping",
+
+        # Reinjection routing tables
         "_data_in_multicast_routing_tables",
+
+        # Maps injector keys to chips
         "_data_in_multicast_key_to_chip_map",
+
+        # Number of timesteps to consider when doing partitioning and placement
         "_plan_n_timesteps",
+
+        # TODO provenance cleanup
         "_compressor_provenance",
+
+        # Routing tables
         "_routing_table_by_partition",
+
+        # Flag to say is compressed routing tables are on machine
         "_multicast_routes_loaded",
+
+        # Extra monitors per chip
         "_extra_monitor_to_chip_mapping",
 
         # Flag to say if current machine is a temporary max machine
+        # the temp /max machine is held in the "machine" slot
         "_max_machine",
 
+        # Number of chips computed to be needed
         "_n_chips_needed",
+
+        # Notification interface if needed
         "_notification_interface",
     ]
 
@@ -471,25 +515,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
-        self._database_file_path = None
-        self._executable_targets = None
-        self._board_version = None
-        self._extra_monitor_vertices = None
         self._first_machine_time_step = None
-        self._machine_partition_n_keys_map = None
-        self._system_multicast_router_timeout_keys = None
-        self._dsg_targets = None
-        self._region_sizes = None
-        self._vertex_to_ethernet_connected_chip_mapping = None
-        self._data_in_multicast_routing_tables = None
-        self._data_in_multicast_key_to_chip_map = None
-        self._plan_n_timesteps = None
         self._compressor_provenance = None
-        self._routing_table_by_partition = None
-        self._multicast_routes_loaded = False
-        self._extra_monitor_to_chip_mapping = None
-        self._n_chips_needed = None
-        self._notification_interface = None
 
         FecTimer.setup(self)
 
@@ -499,19 +526,36 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _new_run_clear(self):
         self.__close_allocation_controller()
         self._application_graph = None
+        self._board_version = None
         self._buffer_manager = None
+        self._database_file_path = None
+        self._notification_interface = None
+        self._data_in_multicast_key_to_chip_map = None
+        self._data_in_multicast_routing_tables = None
+        self._dsg_targets = None
+        self._executable_targets = None
         self._executable_types = None
+        self._extra_monitor_to_chip_mapping = None
+        self._extra_monitor_vertices = None
         self._fixed_routes = None
         self._java_caller = None
         self._machine = None
         self._machine_graph = None
+        self._machine_partition_n_keys_map = None
         self._max_machine = False
         self._max_run_time_steps = None
+        self._multicast_routes_loaded = False
+        self._n_chips_needed = None
         self._placements = None
+        self._plan_n_timesteps = None
+        self._region_sizes = None
         self._router_tables = None
+        self._routing_table_by_partition = None
         self._routing_infos = None
+        self._system_multicast_router_timeout_keys = None
         self._tags = None
         self._txrx = None
+        self._vertex_to_ethernet_connected_chip_mapping = None
 
     def __getitem__(self, item):
         """
@@ -2421,6 +2465,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._do_extract_from_machine(run_time)
         self._has_reset_last = False
         self._has_ran = True
+        # reset at the end of each do_run cycle
         self._first_machine_time_step = None
         clear_injectables()
 
