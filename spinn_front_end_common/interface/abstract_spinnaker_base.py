@@ -308,20 +308,27 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_live_packet_recorders_associated_vertex_type",
 
         # the time the process takes to do mapping
+        # TODO energy report cleanup
         "_mapping_time",
 
         # the time the process takes to do load
+        # TODO energy report cleanup
         "_load_time",
 
         # the time takes to execute the simulation
+        # TODO energy report cleanup
         "_execute_time",
+
         # the timer used to log the execute time
+        # TODO energy report cleanup
         "_run_timer",
 
         # time takes to do data generation
+        # TODO energy report cleanup
         "_dsg_time",
 
         # time taken by the front end extracting things
+        # TODO energy report cleanup
         "_extraction_time",
 
         # Version information from the front end
@@ -2177,20 +2184,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._load_time += convert_time_diff_to_total_milliseconds(
             load_timer.take_sample())
 
-    def _end_of_run_timing(self):
-        """
-        :return:
-            mapping_time, dsg_time, load_time, execute_time, extraction_time
-        :rtype: tuple(float, float, float, float, float)
-        """
-        timer = self._run_timer
-        if timer is not None:
-            self._execute_time += convert_time_diff_to_total_milliseconds(
-                self._run_timer.take_sample())
-        return (
-            self._mapping_time, self._dsg_time, self._load_time,
-            self._execute_time, self._extraction_time)
-
     def _execute_sdram_usage_report_per_chip(self):
         # TODO why in do run
         with FecTimer("Execute Sdram Usage Report Per Chip") as timer:
@@ -2397,6 +2390,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_buffer_extractor()
         # FinaliseTimingData never needed as just pushed self._ to inputs
         prov_items = self._do_read_provenance()
+        self._execute_time += convert_time_diff_to_total_milliseconds(
+            self._run_timer.take_sample())
         prov_items.extend(self._execute_energy_report(prov_items, run_time))
         self._report_provenance(prov_items)
 
