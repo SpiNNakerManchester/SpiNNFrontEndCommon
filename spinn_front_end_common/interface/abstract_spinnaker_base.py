@@ -2107,15 +2107,14 @@ class AbstractSpinnakerBase(ConfigHandler):
                 extra_monitor_vertices = self._last_run_outputs[
                     "ExtraMonitorVertices"]
             router_provenance = RouterProvenanceGatherer()
-            prov_item = router_provenance(
+            new_prov_items = router_provenance(
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
+                provenance_data_objects=prov_items,
                 extra_monitor_vertices=extra_monitor_vertices,
-                placements=self._placements,
-                using_reinjection=get_config_bool(
-                    "Machine", "enable_reinjection"))
-            if prov_item is not None:
-                prov_items.extend(prov_item)
+                placements=self._placements)
+            if new_prov_items is not None:
+                prov_items.extend(new_prov_items)
         except Exception:
             logger.exception("Error reading router provenance")
 
@@ -2187,9 +2186,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                     finished_placements.add_placement(
                         self._placements.get_placement_on_processor(x, y, p))
                 extractor = PlacementsProvenanceGatherer()
-                prov_item = extractor(self._txrx, finished_placements)
-                if prov_item is not None:
-                    prov_items.extend(prov_item)
+                new_prov_items = extractor(self._txrx, finished_placements)
+                if new_prov_items is not None:
+                    prov_items.extend(new_prov_items)
             except Exception:
                 logger.exception("Could not read provenance")
 
