@@ -150,12 +150,6 @@ except ImportError:
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-#: Number of cores to be used when using a Virtual Machine and not specified
-DEFAULT_N_VIRTUAL_CORES = 16
-
-#: The minimum time a board is kept in the off state, in seconds
-MINIMUM_OFF_STATE_TIME = 20
-
 # 0-15 are reserved for system use (per lplana)
 ALANS_DEFAULT_RANDOM_APP_ID = 16
 
@@ -478,6 +472,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             application_graph=self._original_application_graph)
 
         self._machine_allocation_controller = None
+        self._txrx = None
         self._new_run_clear()
 
         # pacman executor objects
@@ -524,6 +519,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         clear_injectables()
 
     def _new_run_clear(self):
+        """
+        This clears all data that if no longer valid after a hard reset
+
+        """
         self.__close_allocation_controller()
         self._application_graph = None
         self._board_version = None
@@ -554,30 +553,57 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._routing_infos = None
         self._system_multicast_router_timeout_keys = None
         self._tags = None
+        if self._txrx is not None:
+            self._txrx.close()
+            self._app_id = None
         self._txrx = None
         self._vertex_to_ethernet_connected_chip_mapping = None
 
     def __getitem__(self, item):
         """
-        To allow ASB to work as the injector
+        Provides dict style access to the key data.
+
+        Allow ASB to be passed into the do_injection method
+
+        Values exposed this way are limited to the ones needed for injection
 
         :param str item: key to object wanted
         :return: Object asked for
+        :rtype: Object
+        :raise KeyError: the error message will say if the item is not known
+            now or not provided
         """
         value = self._unchecked_gettiem(item)
         if value or value == 0:
             return value
         if value is None:
             raise KeyError(f"Item {item} is currently not set")
-        else:
-            raise KeyError(f"Unexpected Item {item}")
 
     def __contains__(self, item):
+        """
+        Provides dict style in checks to the key data.
+
+        Keys check this way are limited to the ones needed for injection
+
+        :param str item:
+        :return: True if the items is currently know
+        :rtype: bool
+        """
         if self._unchecked_gettiem(item) is not None:
             return True
         return False
 
     def items(self):
+        """
+        Lists the keys of the data currently available.
+
+        Keys exposed this way are limited to the ones needed for injection
+
+        :return: List of the keys for which there is data
+        :type: list(str)
+        ;raise KeyError:  Amethod this call depends on could raise this
+            exception, but that indicates a programming mismatch
+        """
         results = []
         for key in ["APPID", "ApplicationGraph", "DataInMulticastKeyToChipMap",
                     "DataInMulticastRoutingTables", "DataNTimeSteps",
@@ -586,12 +612,21 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "RunUntilTimeSteps", "SystemMulticastRouterTimeoutKeys",
                     "Tags"]:
             item = self._unchecked_gettiem(key)
-            # Skip None and False but not 0
-            if item or item == 0:
+            if item is not None:
                 results.append((key, item))
         return results
 
     def _unchecked_gettiem(self, item):
+        """
+        Returns the data for this item or None if currently unknown.
+
+        Values exposed this way are limited to the ones needed for injection
+
+        :param str item:
+        :return: The value for this item or None is currently unkwon
+        :rtype: Object or None
+        ;raise KeyError: It the item is one that is never provided
+        """
         if item == "APPID":
             return self._app_id
         if item == "ApplicationGraph":
@@ -622,7 +657,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._system_multicast_router_timeout_keys
         if item == "Tags":
             return self._tags
-        return False
+        raise KeyError(f"Unexpected Item {item}")
 
     def set_n_boards_required(self, n_boards_required):
         """ Sets the machine requirements.
@@ -956,14 +991,16 @@ class AbstractSpinnakerBase(ConfigHandler):
 
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
-                if self._txrx is not None:
-                    self._txrx.close()
-                    self._app_id = None
                 self._new_run_clear()
-                self._n_chips_needed = None
+
+            if get_config_bool("Buffers", "use_auto_pause_and_resume"):
+                self._plan_n_timesteps = get_config_int(
+                    "Buffers", "minimum_auto_time_steps")
+            else:
+                self._plan_n_timesteps = n_machine_time_steps
 
             if self._machine is None:
-                self._get_machine(total_run_time, n_machine_time_steps)
+                self._get_machine(total_run_time)
             self._do_mapping(run_time, total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
@@ -1172,6 +1209,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         return None
 
     def _execute_get_virtual_machine(self):
+        """
+        Runs, times and logs the VirtualMachineGenerator if required
+
+        May set then "machine" value
+        """
         with FecTimer("Execute Virtual Machine Generator") as timer:
             if timer.skip_if_value_already_set(self._machine, "machine"):
                 return
@@ -1183,6 +1225,17 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._machine = generator(get_config_int("Machine", "version"))
 
     def _execute_allocator(self, total_run_time):
+        """
+        Runs, times and logs the SpallocAllocator or HBPAllocator if required
+
+        :param total_run_time: The total run time to request
+        type total_run_time: int or None
+        :return: machine name, machine version, BMP details (if any),
+            reset on startup flag, auto-detect BMP, SCAMP connection details,
+            boot port, allocation controller
+        :rtype: tuple(str, int, object, bool, bool, object, object,
+            MachineAllocationController)
+        """
         with FecTimer("Execute Allocator") as timer:
             self._max_machine = False
             if timer.skip_if_value_already_set(self._machine, "machine"):
@@ -1190,8 +1243,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_value_not_none(self._hostname, "hostname"):
                 return None
             if self._n_chips_needed:
-
-                # TODO check needed vs required
                 n_chips_required = self._n_chips_needed
             else:
                 n_chips_required = self._n_chips_required
@@ -1210,11 +1261,21 @@ class AbstractSpinnakerBase(ConfigHandler):
                     n_chips_required, self._n_boards_required)
 
     def _execute_machine_generator(self, allocator_data):
+        """
+        Runs, times and logs the MachineGenerator if required
+
+        May set the "machine" value if not already set
+
+        :allocator_data: None or
+            (machine name, machine version, BMP details (if any),
+            reset on startup flag, auto-detect BMP, SCAMP connection details,
+            boot port, allocation controller)
+        :type allocator_data: None or
+            tuple(str, int, object, bool, bool, object, object,
+            MachineAllocationController)
+        """
         with FecTimer("Execute Machine Generator") as timer:
             if timer.skip_if_value_already_set(self._machine, "machine"):
-                return
-            if timer.skip_if_value_true(
-                    self._use_virtual_board, "use_virtual_machine"):
                 return
             if self._hostname:
                 bmp_details = get_config_str("Machine", "bmp_names")
@@ -1243,12 +1304,22 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._hostname, bmp_details, self._board_version,
                 auto_detect_bmp, scamp_connection_data, boot_port_num,
                 reset_machine)
-            return self._machine
 
     def _execute_get_max_machine(self, total_run_time):
+        """
+        Runs, times and logs the MachineGenerator if required
+
+        Will set the "machine" value if not already set
+
+        Sets the _max_machine to True if the "machine" value is a temporary
+        max machine.
+
+        :param total_run_time: The total run time to request
+        :type total_run_time: int or None
+        """
         with FecTimer("Execute Max Machine Generator") as timer:
             if timer.skip_if_value_already_set(self._machine, "machine"):
-                self._max_machine = False
+                # Leave _max_machine as is a may be true from an earlier call
                 return self._machine
 
             self._max_machine = True
@@ -1269,13 +1340,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 raise NotImplementedError("No machine generataion possible")
 
-    def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
-        if get_config_bool("Buffers", "use_auto_pause_and_resume"):
-            self._plan_n_timesteps = get_config_int(
-                "Buffers", "minimum_auto_time_steps")
-        else:
-            self._plan_n_timesteps = n_machine_time_steps
+    def _get_machine(self, total_run_time=0.0):
+        """ The python machine description object.
 
+        :param total_run_time: The total run time to request
+        :param n_machine_time_steps:
+        :rtype: ~spinn_machine.Machine
+        """
         if self._app_id is None:
             if self._txrx is None:
                 self._app_id = ALANS_DEFAULT_RANDOM_APP_ID
@@ -1325,6 +1396,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
 
     def _write_json_machine(self):
+        """
+        Runs, times and logs WriteJsonMachine if required
+
+        """
         with FecTimer("Write Json Machine") as timer:
             if timer.skip_if_cfg_false("Reports", "write_json_machine"):
                 return
@@ -1333,6 +1408,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             # TODO output ignored as never used
 
     def _report_network_specification(self):
+        """
+        Runs, times and logs the Network Specification report is requested
+
+        """
         with FecTimer("Report network_specification") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_network_specification_report"):
@@ -1345,6 +1424,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             report(graph)
 
     def _execute_chip_id_allocator(self):
+        """
+        Runs, times and logs the ChipIdAllocator
+
+        """
         with FecTimer("Execute Chip Id Allocator"):
             allocator = MallocBasedChipIdAllocator()
             if self._application_graph is None:
@@ -1355,6 +1438,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             # return ignored as changes done inside original machine object
 
     def _report_board_chip(self):
+        """
+        Runs, times and logs the BoardChipReport is requested
+
+        """
         with FecTimer("Report Write Board Chip Report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_board_chip_report"):
@@ -1363,14 +1450,17 @@ class AbstractSpinnakerBase(ConfigHandler):
             report(self._machine)
 
     def _execute_splitter_reset(self):
+        """
+        Runs, times and logs the splitter_reset
+
+        """
         with FecTimer("Execute Splitter Reset"):
             splitter_reset(self._application_graph)
 
+    # Overriden by spynaker to choose a different algorithm
     def _execute_splitter_selector(self):
         """
-        overirdden by spynakker
-
-        :return:
+        Runs, times and logs the SplitterSelector
         """
         with FecTimer("Execute Splitter Selector"):
             selector = SplitterSelector()
@@ -1379,11 +1469,18 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _execute_delay_support_adder(self):
         """
         Stub to allow spynakker to add delay supports
-        :return:
         """
 
     def _execute_preallocate_for_live_packet_gatherer(
             self, pre_allocated_resources):
+        """
+        Runs, times and logs the PreAllocateResourcesForLivePacketGatherers if\
+        required
+
+        :param pre_allocated_resources: other preallocated resources
+        :type pre_allocated_resources:
+            ~pacman.model.resources.PreAllocatedResourceContainer
+        """
         with FecTimer("Execute PreAllocate For LivePacketGatherer") as timer:
             if timer.skip_if_empty(self._live_packet_recorder_params,
                                    "live_packet_recorder_params"):
@@ -1395,6 +1492,14 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_preallocate_for_chip_power_monitor(
             self, pre_allocated_resources):
+        """
+        Runs, times and logs the PreAllocateResourcesForChipPowerMonitor if\
+        required
+
+        :param pre_allocated_resources: other preallocated resources
+        :type pre_allocated_resources:
+            ~pacman.model.resources.PreAllocatedResourceContainer
+        """
         with FecTimer(
                 "Execute PreAllocate For Chip Power Monitor") as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
@@ -1408,6 +1513,14 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_preallocate_for_extra_monitor_support(
             self, pre_allocated_resources):
+        """
+        Runs, times and logs the PreAllocateResourcesForExtraMonitorSupport if\
+        required
+
+        :param pre_allocated_resources: other preallocated resources
+        :type pre_allocated_resources:
+            ~pacman.model.resources.PreAllocatedResourceContainer
+        """
         with FecTimer("Execute PreAllocate For Extra Monitor Support") \
                 as timer:
             if timer.skip_if_cfgs_false(
@@ -1419,11 +1532,15 @@ class AbstractSpinnakerBase(ConfigHandler):
             # No need to get the output as same object as input
             pre_allocator(self._machine, pre_allocated_resources)
 
+    # Overriden by spynaker to choose a different algorithm
     def _execute_splitter_partitioner(self, pre_allocated_resources):
         """
-        overirdden by spynakker
+        Runs, times and logs the SplitterPartitioner if\
+        required
 
-        :return:
+        :param pre_allocated_resources: other preallocated resources
+        :type pre_allocated_resources:
+            ~pacman.model.resources.PreAllocatedResourceContainer
         """
         with FecTimer("Execute Splitter Partitioner") as timer:
             if timer.skip_if_application_graph_empty():
@@ -1434,15 +1551,30 @@ class AbstractSpinnakerBase(ConfigHandler):
                 pre_allocated_resources)
 
     def _execute_graph_measurer(self):
+        """
+        Rune, times and logs GraphMeasurer is required
+
+        Sets self._n_chips_needed if no machine exists
+
+        Warning if the users has specified a machine size he gets what he
+        asks for and if it is too small the placer will tell him.
+
+        :return:
+        """
         with FecTimer("Execute Graph Measurer") as timer:
-            if timer.skip_if_value_already_set(
-                    self._n_chips_needed, "n_chips_needed"):
+            if not self._max_machine:
+                if timer.skip_if_value_already_set(
+                    self._machine, "machine"):
                 return
             measurer = GraphMeasurer()
             self._n_chips_needed = measurer(
                 self._machine_graph, self._machine, self._plan_n_timesteps)
 
     def _execute_insert_chip_power_monitors(self):
+        """
+        Run, time and log the InsertChipPowerMonitorsToGraphs if required
+
+        """
         with FecTimer("Execute Insert Chip Power Monitors") as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
@@ -1453,6 +1585,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._application_graph)
 
     def _execute_insert_extra_monitor_vertices(self):
+        """
+        Run, time and log the InsertChipPowerMonitorsToGraphs if required
+
+        """
         with FecTimer("Execute Insert Extra Monitor Vertices") as timer:
             if timer.skip_if_cfgs_false(
                     "Machine", "enable_advanced_monitor_support",
