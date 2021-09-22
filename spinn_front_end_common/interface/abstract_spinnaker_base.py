@@ -2334,6 +2334,14 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             return prov_items
 
+    def _do_provenance_reports(self, prov_items):
+        """
+        Can be extended to add more proevance reports
+        :param prov_items:
+        :return:
+        """
+        self._report_provenance(prov_items)
+
     def _report_provenance(self, prov_items):
         with FecTimer("Write Provenance") as timer:
             FecTimer.clear_provenance()
@@ -2437,7 +2445,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_time += convert_time_diff_to_total_milliseconds(
             self._run_timer.take_sample())
         prov_items.extend(self._execute_energy_report(prov_items, run_time))
-        self._report_provenance(prov_items)
+        self._do_provenance_reports(prov_items)
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         # TODO virtual board
