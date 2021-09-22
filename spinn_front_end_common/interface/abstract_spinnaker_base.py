@@ -730,7 +730,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "A spalloc_user must be specified with a spalloc_server")
 
     def _setup_java_caller(self):
-         if get_config_bool("Java", "use_java"):
+        if get_config_bool("Java", "use_java"):
             java_call = get_config_str("Java", "java_call")
             java_spinnaker_path = get_config_str(
                 "Java", "java_spinnaker_path")
@@ -1318,19 +1318,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 ProvenanceDataItem(names=["version_data", name], value=value)
                 for name, value in self._front_end_versions)
         self._version_provenance = version_provenance
-
-    def _setup_java_caller(self):
-         if get_config_bool("Java", "use_java"):
-            java_call = get_config_str("Java", "java_call")
-            java_spinnaker_path = get_config_str(
-                "Java", "java_spinnaker_path")
-            java_jar_path = get_config_str(
-                "Java", "java_jar_path")
-            java_properties = get_config_str(
-                "Java", "java_properties")
-            self._java_caller = JavaCaller(
-                self._json_folder, java_call, java_spinnaker_path,
-                java_properties, java_jar_path)
 
     def _do_extra_mapping_algorithms(self):
         """
