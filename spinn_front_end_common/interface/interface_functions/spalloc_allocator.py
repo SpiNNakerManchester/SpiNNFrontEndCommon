@@ -23,7 +23,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.utilities.spalloc import (
-    SpallocClient, SpallocJob, SpallocState)
+    SpallocClient, SpallocJob, SpallocState, parse_old_spalloc)
 
 
 class _NewSpallocJobController(MachineAllocationController):
@@ -249,14 +249,14 @@ class SpallocAllocator(object):
         :rtype: tuple(str, int, None, bool, bool, None, None,
             MachineAllocationController)
         """
-
+        host, port, user = parse_old_spalloc(
+            spalloc_server, get_config_int("Machine", "spalloc_port"),
+            get_config_str("Machine", "spalloc_user"))
         spalloc_kw_args = {
-            'hostname': spalloc_server,
-            'owner': get_config_str("Machine", "spalloc_user")
+            'hostname': host,
+            'port': port,
+            'owner': user
         }
-        spalloc_port = get_config_int("Machine", "spalloc_port")
-        if spalloc_port is not None:
-            spalloc_kw_args['port'] = spalloc_port
         spalloc_machine = get_config_str("Machine", "spalloc_machine")
         if spalloc_machine is not None:
             spalloc_kw_args['machine'] = spalloc_machine

@@ -16,7 +16,8 @@
 from spalloc import ProtocolClient
 from spinn_machine.virtual_machine import virtual_machine
 from spinn_machine.machine import Machine
-from spinn_front_end_common.utilities.spalloc import SpallocClient
+from spinn_front_end_common.utilities.spalloc import (
+    SpallocClient, parse_old_spalloc)
 
 
 class SpallocMaxMachineGenerator(object):
@@ -108,7 +109,9 @@ class SpallocMaxMachineGenerator(object):
         :return: the dimensions of the maximum machine
         :rtype: tuple(int or None,int or None)
         """
-        with ProtocolClient(spalloc_server, spalloc_port) as client:
+        host, port, _user = parse_old_spalloc(
+            spalloc_server, spalloc_port)
+        with ProtocolClient(host, port) as client:
             machines = client.list_machines()
             # Close the context immediately; don't want to keep this particular
             # connection around as there's not a great chance of this code
