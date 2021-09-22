@@ -2145,15 +2145,14 @@
                 <span class="n">extra_monitor_vertices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_run_outputs</span><span class="p">[</span>
                     <span class="s2">&quot;ExtraMonitorVertices&quot;</span><span class="p">]</span>
             <span class="n">router_provenance</span> <span class="o">=</span> <span class="n">RouterProvenanceGatherer</span><span class="p">()</span>
-            <span class="n">prov_item</span> <span class="o">=</span> <span class="n">router_provenance</span><span class="p">(</span>
+            <span class="n">new_prov_items</span> <span class="o">=</span> <span class="n">router_provenance</span><span class="p">(</span>
                 <span class="n">transceiver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">machine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
                 <span class="n">router_tables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span>
+                <span class="n">provenance_data_objects</span><span class="o">=</span><span class="n">prov_items</span><span class="p">,</span>
                 <span class="n">extra_monitor_vertices</span><span class="o">=</span><span class="n">extra_monitor_vertices</span><span class="p">,</span>
-                <span class="n">placements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span>
-                <span class="n">using_reinjection</span><span class="o">=</span><span class="n">get_config_bool</span><span class="p">(</span>
-                    <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_reinjection&quot;</span><span class="p">))</span>
-            <span class="k">if</span> <span class="n">prov_item</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">prov_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">prov_item</span><span class="p">)</span>
+                <span class="n">placements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">new_prov_items</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">prov_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_prov_items</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Error reading router provenance&quot;</span><span class="p">)</span>
 
@@ -2225,9 +2224,9 @@
                     <span class="n">finished_placements</span><span class="o">.</span><span class="n">add_placement</span><span class="p">(</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="o">.</span><span class="n">get_placement_on_processor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
                 <span class="n">extractor</span> <span class="o">=</span> <span class="n">PlacementsProvenanceGatherer</span><span class="p">()</span>
-                <span class="n">prov_item</span> <span class="o">=</span> <span class="n">extractor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">finished_placements</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">prov_item</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">prov_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">prov_item</span><span class="p">)</span>
+                <span class="n">new_prov_items</span> <span class="o">=</span> <span class="n">extractor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">finished_placements</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">new_prov_items</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">prov_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_prov_items</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Could not read provenance&quot;</span><span class="p">)</span>
 
@@ -2920,7 +2919,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
 </html>
