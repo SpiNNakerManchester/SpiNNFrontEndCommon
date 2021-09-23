@@ -1563,9 +1563,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer("Execute Graph Measurer") as timer:
             if not self._max_machine:
-                if timer.skip_if_value_already_set(
-                    self._machine, "machine"):
-                return
+                if timer.skip_if_value_already_set(self._machine, "machine"):
+                    return
             measurer = GraphMeasurer()
             self._n_chips_needed = measurer(
                 self._machine_graph, self._machine, self._plan_n_timesteps)
@@ -1606,6 +1605,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._machine, self._machine_graph, app_graph)
 
     def _execute_partitioner_report(self):
+        """
+        Write, times and logs the partitioner_report if needed
+
+        """
         with FecTimer("Execute Partitioner Report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_partitioner_reports"):
