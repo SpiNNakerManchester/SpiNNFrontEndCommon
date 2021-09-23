@@ -1616,17 +1616,28 @@ class AbstractSpinnakerBase(ConfigHandler):
             partitioner_report(self._hostname, self._application_graph)
 
     def _execute_edge_to_n_keys_mapper(self):
+        """
+        Runs, times and logs the EdgeToNKeysMapper
+
+        Sets the "machine_partition_n_keys_map" data
+        """
         with FecTimer("Execute Edge To N Keys Mapper"):
             mapper = EdgeToNKeysMapper()
             self._machine_partition_n_keys_map = mapper(self._machine_graph)
 
     def _execute_local_tdma_builder(self):
+        """
+        Runs times and logs the LocalTDMABuilder
+        """
         with FecTimer("Execute Local TDMA Builder"):
             builder = LocalTDMABuilder()
             builder(self._machine_graph, self._machine_partition_n_keys_map,
                     self._application_graph)
 
     def _json_partition_n_keys_map(self):
+        """
+        Writes, times and logs the machine_partition_n_keys_map if required
+        """
         with FecTimer("Json Partition NKeys Map") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_json_partition_n_keys_map"):
@@ -1636,24 +1647,60 @@ class AbstractSpinnakerBase(ConfigHandler):
             # Output ignored as never used
 
     def _execute_connective_based_placer(self):
+        """
+        Runs, times and logs the ConnectiveBasedPlacer
+
+        Sets the "placements" data
+
+        .. note::
+            Calling of this method is based on the cfg placer value
+
+        """
         with FecTimer("Execute Connective Based Placer"):
             placer = ConnectiveBasedPlacer()
             self._placements = placer(
                 self._machine_graph, self._machine, self._plan_n_timesteps)
 
     def _execute_one_to_one_placer(self):
+        """
+        Runs, times and logs the OneToOnePlacer
+
+        Sets the "placements" data
+
+        .. note::
+            Calling of this method is based on the cfg placer value
+
+        """
         with FecTimer("Execute One To One Placer"):
             placer = OneToOnePlacer()
             self._placements = placer(
                 self._machine_graph, self._machine, self._plan_n_timesteps)
 
     def _execute_radial_placer(self):
+        """
+        Runs, times and logs the RadialPlacer
+
+        Sets the "placements" data
+
+        .. note::
+            Calling of this method is based on the cfg placer value
+
+        """
         with FecTimer("Execute Radial Placer"):
             placer = RadialPlacer()
             self._placements = placer(
                 self._machine_graph, self._machine, self._plan_n_timesteps)
 
     def _execute_speader_placer(self):
+        """
+        Runs, times and logs the SpreaderPlacer
+
+        Sets the "placements" data
+
+        .. note::
+            Calling of this method is based on the cfg placer value
+
+        """
         with FecTimer("Execute Spreader Placer"):
             placer = SpreaderPlacer()
             self._placements = placer(
@@ -1661,6 +1708,17 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._machine_partition_n_keys_map, self._plan_n_timesteps)
 
     def _do_placer(self):
+        """
+        Runs, times and logs one of the placers
+
+        Sets the "placements" data
+
+        Which placer is run depends on the cfg placer value
+
+        This method is the entry point for adding a new Placer
+
+        :raise ConfigurationException: if the cfg place value is unexpected
+        """
         name = get_config_str("Mapping", "placer")
         if name == "ConnectiveBasedPlacer":
             return self._execute_connective_based_placer()
@@ -1677,6 +1735,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             f"Unexpected cfg setting placer: {name}")
 
     def _execute_insert_edges_to_extra_monitor(self):
+        """
+        Runs times and logs the InsertEdgesToExtraMonitor is required
+        """
         with FecTimer("Execute Insert Edges To Extra Monitor") as timer:
             if timer.skip_if_cfgs_false(
                     "Machine", "enable_advanced_monitor_support",
@@ -1693,6 +1754,13 @@ class AbstractSpinnakerBase(ConfigHandler):
                      app_graph)
 
     def _execute_system_multicast_routing_generator(self):
+        """
+        Runs, times and logs the SystemMulticastRoutingGenerator is required
+
+        may sets the data "data_in_multicast_routing_tables",
+        "data_in_multicast_key_to_chip_map" and
+        "system_multicast_router_timeout_keys"
+        """
         with FecTimer("Execute System Multicast Routing Generator") as timer:
             if timer.skip_if_cfgs_false(
                     "Machine", "enable_advanced_monitor_support",
@@ -1706,7 +1774,12 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._placements)
 
     def _execute_fixed_route_router(self):
-        # enable_reinjection = True enable_advanced_monitor_support = False
+        """
+        Runs, times and logs the FixedRouteRouter if required
+
+        May set the "fixed_routes" data.
+
+        """
         with FecTimer("Execute Fixed Route Router") as timer:
             if timer.skip_if_cfg_false(
                     "Machine", "enable_advanced_monitor_support"):
@@ -1717,6 +1790,11 @@ class AbstractSpinnakerBase(ConfigHandler):
                 DataSpeedUpPacketGatherMachineVertex)
 
     def _report_placements_with_application_graph(self):
+        """
+        Writes, times and logs the application graph placer report if
+        requested
+
+        """
         with FecTimer("Report Placements With Application Graph") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_application_graph_placer_report"):
