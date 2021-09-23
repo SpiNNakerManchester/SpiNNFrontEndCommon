@@ -52,7 +52,9 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_str_list</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 <span class="kn">from</span> <span class="nn">spalloc</span> <span class="kn">import</span> <span class="n">Job</span>
 <span class="kn">from</span> <span class="nn">spalloc.states</span> <span class="kn">import</span> <span class="n">JobState</span>
@@ -61,6 +63,9 @@
     <span class="n">AbstractMachineAllocationController</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models.impl</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">MachineAllocationController</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
 
 <span class="k">class</span> <span class="nc">_SpallocJobController</span><span class="p">(</span><span class="n">MachineAllocationController</span><span class="p">):</span>
@@ -179,7 +184,7 @@
         <span class="k">if</span> <span class="n">spalloc_machine</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">spalloc_kw_args</span><span class="p">[</span><span class="s1">&#39;machine&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spalloc_machine</span>
 
-        <span class="n">job</span><span class="p">,</span> <span class="n">hostname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_job</span><span class="p">(</span><span class="n">n_boards</span><span class="p">,</span> <span class="n">spalloc_kw_args</span><span class="p">)</span>
+        <span class="n">job</span><span class="p">,</span> <span class="n">hostname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_checked_job</span><span class="p">(</span><span class="n">n_boards</span><span class="p">,</span> <span class="n">spalloc_kw_args</span><span class="p">)</span>
         <span class="n">machine_allocation_controller</span> <span class="o">=</span> <span class="n">_SpallocJobController</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">(</span>
@@ -187,20 +192,34 @@
             <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">machine_allocation_controller</span>
         <span class="p">)</span></div>
 
+    <span class="k">def</span> <span class="nf">_launch_checked_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_boards</span><span class="p">,</span> <span class="n">spalloc_kw_args</span><span class="p">):</span>
+        <span class="n">avoid_boards</span> <span class="o">=</span> <span class="n">get_config_str_list</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;spalloc_avoid_boards&quot;</span><span class="p">)</span>
+        <span class="n">avoid_jobs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">job</span><span class="p">,</span> <span class="n">hostname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_job</span><span class="p">(</span><span class="n">n_boards</span><span class="p">,</span> <span class="n">spalloc_kw_args</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">hostname</span> <span class="ow">in</span> <span class="n">avoid_boards</span><span class="p">:</span>
+            <span class="n">avoid_jobs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Asking for new job as </span><span class="si">{</span><span class="n">hostname</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;as in the spalloc_avoid_boards list&quot;</span><span class="p">)</span>
+            <span class="n">job</span><span class="p">,</span> <span class="n">hostname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_job</span><span class="p">(</span><span class="n">n_boards</span><span class="p">,</span> <span class="n">spalloc_kw_args</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">avoid_job</span> <span class="ow">in</span> <span class="n">avoid_jobs</span><span class="p">:</span>
+            <span class="n">avoid_job</span><span class="o">.</span><span class="n">destroy</span><span class="p">(</span><span class="s2">&quot;Asked to avoid by cfg&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">job</span><span class="p">,</span> <span class="n">hostname</span>
+
     <span class="k">def</span> <span class="nf">_launch_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_boards</span><span class="p">,</span> <span class="n">spalloc_kw_args</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param int n_boards:</span>
 <span class="sd">        :param dict(str, str or int) spalloc_kw_args:</span>
 <span class="sd">        :rtype: tuple(~.Job, str)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">job</span> <span class="o">=</span> <span class="n">Job</span><span class="p">(</span><span class="n">n_boards</span><span class="p">,</span> <span class="o">**</span><span class="n">spalloc_kw_args</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
+            <span class="n">job</span> <span class="o">=</span> <span class="n">Job</span><span class="p">(</span><span class="n">n_boards</span><span class="p">,</span> <span class="o">**</span><span class="n">spalloc_kw_args</span><span class="p">)</span>
             <span class="n">job</span><span class="o">.</span><span class="n">wait_until_ready</span><span class="p">()</span>
             <span class="c1"># get param from jobs before starting, so that hanging doesn&#39;t</span>
             <span class="c1"># occur</span>
             <span class="k">return</span> <span class="n">job</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">hostname</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="n">job</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="n">job</span><span class="o">.</span><span class="n">destroy</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
             <span class="k">raise</span>
 </pre></div>
 
