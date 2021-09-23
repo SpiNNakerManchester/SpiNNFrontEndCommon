@@ -158,7 +158,7 @@ class SpallocAllocator(object):
         avoid_jobs = []
         job, hostname = self._launch_job(n_boards, spalloc_kw_args)
         while hostname in avoid_boards:
-            avoid_jobs.append[job]
+            avoid_jobs.append(job)
             logger.warning(
                 f"Asking for new job as {hostname} "
                 f"as in the spalloc_avoid_boards list")
