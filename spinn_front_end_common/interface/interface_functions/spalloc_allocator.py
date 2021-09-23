@@ -145,7 +145,7 @@ class SpallocAllocator(object):
         if spalloc_machine is not None:
             spalloc_kw_args['machine'] = spalloc_machine
 
-        job, hostname = self._launch_job(n_boards, spalloc_kw_args)
+        job, hostname = self._launch_checked_job(n_boards, spalloc_kw_args)
         machine_allocation_controller = _SpallocJobController(job)
 
         return (
