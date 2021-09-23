@@ -13,7 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import math
+from spinn_utilities.config_holder import get_config_str_list
 from spinn_utilities.overrides import overrides
 from spalloc import Job
 from spalloc.states import JobState
@@ -22,6 +24,9 @@ from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
+from spinn_utilities.log import FormatAdapter
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class _SpallocJobController(MachineAllocationController):
@@ -148,18 +153,32 @@ class SpallocAllocator(object):
             False, None, None, machine_allocation_controller
         )
 
+    def _launch_checked_job(self, n_boards, spalloc_kw_args):
+        avoid_boards = get_config_str_list("Machine", "spalloc_avoid_boards")
+        avoid_jobs = []
+        job, hostname = self._launch_job(n_boards, spalloc_kw_args)
+        while hostname in avoid_boards:
+            avoid_jobs.append[job]
+            logger.warning(
+                f"Asking for new job as {hostname} "
+                f"as in the spalloc_avoid_boards list")
+            job, hostname = self._launch_job(n_boards, spalloc_kw_args)
+        for avoid_job in avoid_jobs:
+            avoid_job.destroy("Asked to avoid by cfg")
+        return job, hostname
+
     def _launch_job(self, n_boards, spalloc_kw_args):
         """
         :param int n_boards:
         :param dict(str, str or int) spalloc_kw_args:
         :rtype: tuple(~.Job, str)
         """
-        job = Job(n_boards, **spalloc_kw_args)
         try:
+            job = Job(n_boards, **spalloc_kw_args)
             job.wait_until_ready()
             # get param from jobs before starting, so that hanging doesn't
             # occur
             return job, job.hostname
-        except Exception:
-            job.destroy()
+        except Exception as ex:
+            job.destroy(str(ex))
             raise
