@@ -601,7 +601,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Keys exposed this way are limited to the ones needed for injection
 
         :return: List of the keys for which there is data
-        :type: list(str)
+        :rtype: list(str)
         :raise KeyError:  Amethod this call depends on could raise this
             exception, but that indicates a programming mismatch
         """
