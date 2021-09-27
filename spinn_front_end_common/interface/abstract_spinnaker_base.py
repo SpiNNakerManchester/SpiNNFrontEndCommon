@@ -602,7 +602,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :return: List of the keys for which there is data
         :type: list(str)
-        ;raise KeyError:  Amethod this call depends on could raise this
+        :raise KeyError:  Amethod this call depends on could raise this
             exception, but that indicates a programming mismatch
         """
         results = []
@@ -626,7 +626,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param str item:
         :return: The value for this item or None is currently unkwon
         :rtype: Object or None
-        ;raise KeyError: It the item is one that is never provided
+        :raise KeyError: It the item is one that is never provided
         """
         if item == "APPID":
             return self._app_id
