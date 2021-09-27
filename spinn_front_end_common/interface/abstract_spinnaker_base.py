@@ -1983,7 +1983,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         This method is the entry point for adding a new Info Allocator
 
         :raise ConfigurationException: if the cfg info_allocator value is
-        unexpected
+            unexpected
         """
         name = get_config_str("Mapping", "info_allocator")
         if name == "GlobalZonedRoutingInfoAllocator ":
