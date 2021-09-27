@@ -271,7 +271,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_no_sync_changes",
 
         # max time the run can take without running out of memory
-         "_max_run_time_steps",
+        "_max_run_time_steps",
 
         # Set when run_until_complete is specified by the user
         "_run_until_complete",
