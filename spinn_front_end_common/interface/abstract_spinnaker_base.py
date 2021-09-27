@@ -292,9 +292,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_print_timings",
 
         #
-        "_provenance_format",
-
-        #
         "_raise_keyboard_interrupt",
 
         #
@@ -490,11 +487,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Reports", "write_algorithm_timings")
         self._print_timings = get_config_bool(
             "Reports", "display_algorithm_timings")
-        self._provenance_format = get_config_str(
-            "Reports", "provenance_format")
-        if self._provenance_format not in ["xml", "json", "sql", "auto"]:
-            raise Exception("Unknown provenance format: {}".format(
-                self._provenance_format))
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
@@ -2071,17 +2063,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param list(ProvenanceDataItem) provenance_data_items:
         """
 
-        writer = None
-        if self._provenance_format == "xml":
-            writer = ProvenanceXMLWriter()
-        elif self._provenance_format == "json":
-            writer = ProvenanceJSONWriter()
-        elif self._provenance_format == "sql":
-            writer = ProvenanceSQLWriter()
-        elif len(provenance_data_items) < PROVENANCE_TYPE_CUTOFF:
-            writer = ProvenanceXMLWriter()
-        else:
-            writer = ProvenanceSQLWriter()
+        writer = ProvenanceSQLWriter()
         writer(provenance_data_items, self._provenance_file_path)
 
     def _recover_from_error(self, exception, exc_info, executable_targets):
