@@ -2064,7 +2064,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
 
         writer = ProvenanceSQLWriter()
-        writer(provenance_data_items, self._provenance_file_path)
+        writer(provenance_data_items)
 
     def _recover_from_error(self, exception, exc_info, executable_targets):
         """

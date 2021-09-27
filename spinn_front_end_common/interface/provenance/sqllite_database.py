@@ -17,6 +17,8 @@ import datetime
 import os
 import re
 from spinn_utilities.ordered_set import OrderedSet
+from spinn_front_end_common.utilities import globals_variables
+from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
@@ -37,14 +39,22 @@ class SqlLiteDatabase(SQLiteDB):
 
     __slots__ = []
 
-    def __init__(self, database_file=None):
+    def __init__(self, database_file=None, memory=False):
         """
-        :param str database_file:
+        :param database_file:
             The name of a file that contains (or will contain) an SQLite
-            database holding the data. If omitted, an unshared in-memory
+            database holding the data.
+            If omitted, either the default file path or an unshared in-memory
             database will be used (suitable only for testing).
-        :type database_file: str
+        :type database_file: str or None
+        :param bool memory:
+            Flag to say unshared in-memory can be used.
+            Otherwise a None file will mean the default should be used
+
         """
+        if database_file is None and not memory:
+            database_file = os.path.join(
+                globals_variables.provenance_file_path(), PROVENANCE_DB)
         super().__init__(database_file, ddl_file=_DDL_FILE)
 
     def insert_items(self, items):

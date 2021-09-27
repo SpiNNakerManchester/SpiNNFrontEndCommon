@@ -24,13 +24,16 @@ class ProvenanceSQLWriter(object):
 
     __slots__ = []
 
-    def __call__(self, provenance_data_items, provenance_data_path):
+    def __call__(self, provenance_data_items, provenance_data_path=None):
         """ Writes provenance in SQL format
 
         :param list(ProvenanceDataItem) provenance_data_items:
         :param str provenance_data_path:
         """
-        database_file = os.path.join(
-            provenance_data_path, PROVENANCE_DB)
+        if provenance_data_path is None:
+            database_file = None
+        else:
+            database_file = os.path.join(
+                provenance_data_path, PROVENANCE_DB)
         with SqlLiteDatabase(database_file) as db:
             db.insert_items(provenance_data_items)
