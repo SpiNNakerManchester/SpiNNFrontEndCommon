@@ -1238,7 +1238,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             MachineAllocationController)
         """
         with FecTimer("Execute Allocator") as timer:
-            self._max_machine = False
             if timer.skip_if_value_already_set(self._machine, "machine"):
                 return None
             if timer.skip_if_value_not_none(self._hostname, "hostname"):
@@ -2140,6 +2139,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             pre_allocated_resources)
         self._execute_splitter_partitioner(pre_allocated_resources)
         self._execute_graph_measurer()
+        if self._max_machine:
+            self._max_machine = False
+            self._machine = None
         allocator_data = self._execute_allocator(total_run_time)
         self._execute_machine_generator(allocator_data)
         assert(self._machine)
