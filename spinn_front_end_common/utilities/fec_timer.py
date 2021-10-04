@@ -219,11 +219,14 @@ class FecTimer(object):
         if type is None:
             message = f"{self._name} took {time_taken} "
         else:
-            message = "{self._name} exited with {type} after {time_taken}"
+            message = f"{self._name} exited with {type} after {time_taken}"
             _provenance_items.append(ProvenanceDataItem(
                 ["algorithm", "error", f"{self._name} failed due to"], type))
 
-        _provenance_items.append(ProvenanceDataItem(
-            ["algorithm", "timer", f"{self._name} took"], time_taken))
+        try:
+            _provenance_items.append(ProvenanceDataItem(
+                ["algorithm", "timer", f"{self._name} took"], time_taken))
+        except NameError:
+            raise Exception("Illegal use of FecTime without calling setup")
         self._report(message)
         return False
