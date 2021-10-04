@@ -111,10 +111,10 @@ class FecTimer(object):
 
     def skip_if_has_not_run(self):
         if _simulator.has_ran:
+            return False
+        else:
             self.skip("simulator.has_run")
             return True
-        else:
-            return False
 
     def skip_if_virtual_board(self):
         if _simulator.use_virtual_board:
