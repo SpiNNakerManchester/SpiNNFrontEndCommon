@@ -84,7 +84,8 @@ from spinn_front_end_common.interface.interface_functions import (
     GraphMeasurer, GraphProvenanceGatherer,  HostBasedBitFieldRouterCompressor,
     HostExecuteDataSpecification, HBPAllocator, HBPMaxMachineGenerator,
     InsertChipPowerMonitorsToGraphs,
-    InsertEdgesToExtraMonitorFunctionality, InsertExtraMonitorVerticesToGraphs,
+    InsertEdgesToExtraMonitorFunctionality, InsertEdgesToLivePacketGatherers,
+    InsertExtraMonitorVerticesToGraphs, InsertLivePacketGatherersToGraphs,
     LoadExecutableImages, LoadFixedRoutes,
     LocalTDMABuilder, LocateExecutableStartType, MachineGenerator,
     PreAllocateResourcesForChipPowerMonitor,
@@ -300,6 +301,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # place holder for checking the vertices being added to the recorders
         # tracker are all of the same vertex type.
         "_live_packet_recorders_associated_vertex_type",
+
+        # mapping of live packet recorder parameters to vertex
+        "_live_packet_recorder_parameters_mapping",
 
         # the time the process takes to do mapping
         # TODO energy report cleanup
@@ -539,6 +543,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._fixed_routes = None
         self._hostname = None
         self._java_caller = None
+        self._live_packet_recorder_parameters_mapping = None
         self._machine = None
         self._machine_graph = None
         self._machine_partition_n_keys_map = None
@@ -1437,6 +1442,19 @@ class AbstractSpinnakerBase(ConfigHandler):
             allocator(self._machine, graph)
             # return ignored as changes done inside original machine object
 
+    def _execute_insert_live_packet_gatherers_to_graphs(self):
+        """
+        Runs, times and logs the InsertLivePacketGatherersToGraphs if required
+        """
+        with FecTimer("Execute Chip Id Allocator") as timer:
+            if timer.skip_if_empty(self._live_packet_recorder_params,
+                                   "live_packet_recorder_params"):
+                return
+            inserter = InsertLivePacketGatherersToGraphs()
+            self._live_packet_recorder_parameters_mapping = inserter(
+                self._live_packet_recorder_params, self._machine,
+                self._machine_graph, self._application_graph)
+
     def _report_board_chip(self):
         """
         Runs, times and logs the BoardChipReport is requested
@@ -1733,6 +1751,21 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Only a single algorithm is supported for placer")
         raise ConfigurationException(
             f"Unexpected cfg setting placer: {name}")
+
+    def _execute_insert_edges_to_live_packet_gatherers(self):
+        """
+        Runs, times and logs the InsertEdgesToLivePacketGatherers if required
+        """
+        with FecTimer("Execute Chip Id Allocator") as timer:
+            if timer.skip_if_empty(self._live_packet_recorder_params,
+                                   "live_packet_recorder_params"):
+                return
+            inserter = InsertEdgesToLivePacketGatherers()
+            inserter(
+                self._live_packet_recorder_params, self._placements,
+                self._live_packet_recorder_parameters_mapping, self._machine,
+                self._machine_graph, self._application_graph,
+                self._machine_partition_n_keys_map)
 
     def _execute_insert_edges_to_extra_monitor(self):
         """
@@ -2147,6 +2180,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         assert(self._machine)
         self._write_json_machine()
         self._execute_chip_id_allocator()
+        self._execute_insert_live_packet_gatherers_to_graphs()
         self._report_board_chip()
         self._execute_insert_chip_power_monitors()
         self._execute_insert_extra_monitor_vertices()
@@ -2155,6 +2189,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_local_tdma_builder()
         self._json_partition_n_keys_map()
         self._do_placer()
+        self._execute_insert_edges_to_live_packet_gatherers()
         self._execute_system_multicast_routing_generator()
         self._execute_fixed_route_router()
         self._report_placements_with_application_graph()
