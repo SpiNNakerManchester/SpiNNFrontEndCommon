@@ -449,7 +449,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             raise ConfigurationException(
                 "Please use at most one of n_chips_required or "
                 "n_boards_required")
-        self._hostname = None
         self._spalloc_server = None
         self._remote_spinnaker_url = None
 
@@ -538,6 +537,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._extra_monitor_to_chip_mapping = None
         self._extra_monitor_vertices = None
         self._fixed_routes = None
+        self._hostname = None
         self._java_caller = None
         self._machine = None
         self._machine_graph = None
