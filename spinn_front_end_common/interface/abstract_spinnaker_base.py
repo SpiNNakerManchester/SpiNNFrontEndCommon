@@ -2976,7 +2976,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     self._machine_graph, self._tags, run_time, self._machine,
                     self._max_run_time_steps, self._placements,
                     self._routing_infos, self._router_tables,
-                    self._application_graph)
+                    self._app_id, self._application_graph)
             else:
                 timer.skip("already run and no graph change")
 
