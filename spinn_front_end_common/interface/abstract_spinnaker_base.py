@@ -979,6 +979,13 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
+            # Reset the machine if the graph has changed
+            if not self._use_virtual_board and self._n_calls_to_run > 1:
+
+                # wipe out stuff associated with a given machine, as these need
+                # to be rebuilt.
+                self._new_run_clear()
+
             if self._has_ran:
                 # create new sub-folder for reporting data
                 self._set_up_output_folders(self._n_calls_to_run)
@@ -986,13 +993,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._build_graphs_for_usage()
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
-
-            # Reset the machine if the graph has changed
-            if not self._use_virtual_board and self._n_calls_to_run > 1:
-
-                # wipe out stuff associated with a given machine, as these need
-                # to be rebuilt.
-                self._new_run_clear()
 
             if get_config_bool("Buffers", "use_auto_pause_and_resume"):
                 self._plan_n_timesteps = get_config_int(
