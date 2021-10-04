@@ -17,7 +17,7 @@ import tempfile
 import unittest
 from testfixtures import LogCapture
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.utilities import FecTimer, globals_variables
+from spinn_front_end_common.utilities import FecTimer
 
 
 class MockSimulator(object):
@@ -33,7 +33,6 @@ class TestFecTimer(unittest.TestCase):
         unittest_setup()
         FecTimer.setup(MockSimulator())
 
-
     def test_simple(self):
         with FecTimer("test"):
             pass
@@ -47,9 +46,10 @@ class TestFecTimer(unittest.TestCase):
                 pass
             found = False
             for record in lc.records:
-                    if "oops" in str(record.msg):
-                        found = True
+                if "oops" in str(record.msg):
+                    found = True
             assert found
+
 
 if __name__ == '__main__':
     unittest.main()
