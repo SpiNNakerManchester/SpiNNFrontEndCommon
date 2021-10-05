@@ -250,6 +250,19 @@ class ProvenanceReader(object):
             for row in self.run_query(query, [int(x), int(y)],
                                       use_sqlite_rows=True))
 
+    def get_provenace_items(self):
+        """
+        Gets the source_full_name, description_name and value for each item
+
+        :return: A list tuples (source_full_name, description_name,value)
+        :rtype: list(tuple(str, str, int))
+        """
+        query = """
+            SELECT source_full_name, description_name, the_value 
+            FROM provenance_view
+            """
+        return self.run_query(query)
+
     @staticmethod
     def _demo():
         """ A demonstration of how to use this class.
