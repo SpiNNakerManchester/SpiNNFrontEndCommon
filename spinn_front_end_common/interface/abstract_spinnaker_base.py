@@ -2907,6 +2907,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Execute energy report") as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return []
+            timer.skip("ComputeEnergyUsed based on old provenance")
+            return []
 
             # TODO runtime is None
             compute_energy_used = ComputeEnergyUsed()
