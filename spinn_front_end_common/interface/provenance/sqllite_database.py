@@ -86,6 +86,41 @@ class SqlLiteDatabase(SQLiteDB):
                 ), ?)
                 """, map(self.__condition_row, items))
 
+    def insert_item(self, names, value, report=False, message=""):
+        """ Does a single insert of the item into the database.
+
+        :param list(str) names:
+            A list of strings representing the naming hierarchy of this item
+        :param value: The value of the item
+        :type value: int or float or str
+        :param bool report: True if the item should be reported to the user
+        :param str message:
+            The message to send to the end user if report is True
+        """
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT OR IGNORE INTO source(
+                    source_name, source_short_name, x, y, p)
+                VALUES(?, ?, ?, ?, ?)
+                """, self.__sources(names, slice(None, -1), "/"))
+            cur.execute(
+                """
+                INSERT OR IGNORE INTO description(description_name)
+                VALUES(?)
+                """, names[-1:])
+            cur.execute(
+                """
+                INSERT INTO provenance(
+                    source_id, description_id, the_value)
+                VALUES((
+                    SELECT source_id FROM source WHERE source_name = ?
+                ), (
+                    SELECT description_id FROM description
+                    WHERE description_name = ?
+                ), ?)
+                """, self.__condition_a_row(names, value))
+
     @classmethod
     def __unique_names(cls, items, index):
         """ Produces an iterable of 1-tuples of the *unique* names in at \
@@ -112,8 +147,24 @@ class SqlLiteDatabase(SQLiteDB):
         if isinstance(index, int):
             return (cls.__coordify(name) for name in OrderedSet(
                 item.names[index] for item in items))
+        a = OrderedSet(joiner.join(item.names[index]) for item in items)
         return (cls.__coordify(name, joiner) for name in OrderedSet(
             joiner.join(item.names[index]) for item in items))
+
+    @classmethod
+    def __sources(cls, names, index, joiner):
+        """ Produces an iterable of 1-tuples of the *unique* names in at \
+            particular index into the provenance items' names.
+
+        :param iterable(ProvenanceDataItem) items: The prov items
+        :param index: The index into the names
+        :type index: int or slice
+        :param str joiner: Used to make compound names when slices are used
+        :rtype: iterable(tuple(str,str,int or None,int or None,int or None))
+        """
+        if isinstance(index, int):
+            return cls.__coordify(names[index])
+        return cls.__coordify(joiner.join(names[index]), joiner)
 
     @staticmethod
     def __coordify(name, joiner=None):
@@ -134,8 +185,8 @@ class SqlLiteDatabase(SQLiteDB):
                 p = int(match.group(4))
         return (name, short_name, x, y, p)
 
-    @staticmethod
-    def __condition_row(item, joiner="/"):
+    @classmethod
+    def __condition_row(cls, item, joiner="/"):
         """ Converts a provenance item into the form ready for insert.
 
         .. note::
@@ -146,7 +197,10 @@ class SqlLiteDatabase(SQLiteDB):
         :param ProvenanceDataItem item: The prov item
         :rtype: tuple(str, str, int or float or str)
         """
-        value = item.value
+        return cls.__condition_a_row(item.names, item.value, joiner)
+
+    @staticmethod
+    def __condition_a_row(names, value, joiner="/"):
         if isinstance(value, datetime.timedelta):
             value = value.microseconds
-        return joiner.join(item.names[:-1]), item.names[-1], value
+        return joiner.join(names[:-1]), names[-1], value

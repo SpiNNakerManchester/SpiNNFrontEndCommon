@@ -37,11 +37,22 @@ class TestProvenanceDatabase(unittest.TestCase):
         return results
 
     def test_insert_items1(self):
-        a = ProvenanceDataItem(["foo", "bar", "gamma for 1,2"], 75)
-        b = ProvenanceDataItem(["foo", "alpha", "gamma for 3,4"], 100)
+        a = ProvenanceDataItem(["foo", "bar for 1,2", "gamma"], 75)
+        b = ProvenanceDataItem(["foo", "alpha for 1,2", "gamma"], 100)
         items = [a, b]
         with SqlLiteDatabase() as db:
             db.insert_items(items)
+        data = set(ProvenanceReader().get_provenace_items())
+        items_set = self.as_set(items)
+        self.assertSetEqual(data, items_set)
+
+    def test_insert_items2(self):
+        a = ProvenanceDataItem(["foo", "bar for 1,2", "gamma"], 75)
+        b = ProvenanceDataItem(["foo", "alpha for 1,2", "gamma"], 100)
+        items = [a, b]
+        with SqlLiteDatabase() as db:
+            db.insert_item(["foo", "bar for 1,2", "gamma"], 75)
+            db.insert_item(["foo", "alpha for 1,2", "gamma"], 100)
         data = set(ProvenanceReader().get_provenace_items())
         items_set = self.as_set(items)
         self.assertSetEqual(data, items_set)
