@@ -1172,6 +1172,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             except Exception as e3:
                 logger.warning("problem when shutting down {}".format(e3),
                                exc_info=True)
+            self.write_errored_file()
+            self.write_finished_file()
             raise e
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
@@ -2105,15 +2107,14 @@ class AbstractSpinnakerBase(ConfigHandler):
                 extra_monitor_vertices = self._last_run_outputs[
                     "ExtraMonitorVertices"]
             router_provenance = RouterProvenanceGatherer()
-            prov_item = router_provenance(
+            new_prov_items = router_provenance(
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
+                provenance_data_objects=prov_items,
                 extra_monitor_vertices=extra_monitor_vertices,
-                placements=self._placements,
-                using_reinjection=get_config_bool(
-                    "Machine", "enable_reinjection"))
-            if prov_item is not None:
-                prov_items.extend(prov_item)
+                placements=self._placements)
+            if new_prov_items is not None:
+                prov_items.extend(new_prov_items)
         except Exception:
             logger.exception("Error reading router provenance")
 
@@ -2185,9 +2186,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                     finished_placements.add_placement(
                         self._placements.get_placement_on_processor(x, y, p))
                 extractor = PlacementsProvenanceGatherer()
-                prov_item = extractor(self._txrx, finished_placements)
-                if prov_item is not None:
-                    prov_items.extend(prov_item)
+                new_prov_items = extractor(self._txrx, finished_placements)
+                if new_prov_items is not None:
+                    prov_items.extend(new_prov_items)
             except Exception:
                 logger.exception("Could not read provenance")
 
@@ -2681,6 +2682,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
 
         if exn is not None:
+            self.write_errored_file()
             raise exn  # pylint: disable=raising-bad-type
         self.write_finished_file()
 

@@ -32,6 +32,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 APP_DIRNAME = 'application_generated_data_files'
 FINISHED_FILENAME = "finished"
+ERRORED_FILENAME = "errored"
 REPORTS_DIRNAME = "reports"
 TIMESTAMP_FILENAME = "time_stamp"
 WARNING_LOGS_FILENAME = "warning_logs.txt"
@@ -182,7 +183,8 @@ class ConfigHandler(object):
             self._make_dirs(child)
         return child
 
-    def _remove_excess_folders(self, max_kept, starting_directory):
+    def _remove_excess_folders(
+            self, max_kept, starting_directory, remove_errored_folders):
         try:
             files_in_report_folder = os.listdir(starting_directory)
 
@@ -203,7 +205,13 @@ class ConfigHandler(object):
                     finished_flag = os.path.join(os.path.join(
                         starting_directory, current_oldest_file),
                         FINISHED_FILENAME)
-                    if os.path.exists(finished_flag):
+                    errored_flag = os.path.join(os.path.join(
+                        starting_directory, current_oldest_file),
+                        ERRORED_FILENAME)
+                    finished_flag_exists = os.path.exists(finished_flag)
+                    errored_flag_exists = os.path.exists(errored_flag)
+                    if finished_flag_exists and (
+                            not errored_flag_exists or remove_errored_folders):
                         shutil.rmtree(os.path.join(
                             starting_directory, current_oldest_file),
                             ignore_errors=True)
@@ -248,7 +256,8 @@ class ConfigHandler(object):
         if os.listdir(report_default_directory):
             self._remove_excess_folders(
                 get_config_int("Reports", "max_reports_kept"),
-                report_default_directory)
+                report_default_directory,
+                get_config_bool("Reports", "remove_errored_folders"))
 
         # determine the time slot for later while also making the report folder
         if self._this_run_time_string is None:
@@ -329,14 +338,25 @@ class ConfigHandler(object):
         if not os.path.exists(self._system_provenance_file_path):
             self._make_dirs(self._system_provenance_file_path)
 
+    def __write_named_file(self, file_name):
+        app_file_name = os.path.join(
+            self._report_simulation_top_directory, file_name)
+        with open(app_file_name, "w") as f:
+            f.writelines("file_name")
+
     def write_finished_file(self):
         """ Write a finished file that allows file removal to only remove
             folders that are finished.
+            :rtype: None
         """
-        report_file_name = os.path.join(self._report_simulation_top_directory,
-                                        FINISHED_FILENAME)
-        with open(report_file_name, "w") as f:
-            f.writelines("finished")
+        self.__write_named_file(FINISHED_FILENAME)
+
+    def write_errored_file(self):
+        """ Writes a errored file that allows file removal to only remove \
+            folders that are errored if requested to do so
+        :rtype:
+        """
+        self.__write_named_file(ERRORED_FILENAME)
 
     def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
         """ Set up timings of the machine
