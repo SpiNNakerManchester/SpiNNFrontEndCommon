@@ -2016,8 +2016,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # add extractor of iobuf if needed
         if (get_config_bool("Reports", "extract_iobuf") and
-                get_config_bool(
-                    "Reports", "extract_iobuf_during_run") and
                 not self._use_virtual_board and
                 n_machine_time_steps is not None):
             algorithms.append("ChipIOBufExtractor")
@@ -2706,8 +2704,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         read_prov = get_config_bool("Reports", "read_provenance_data")
 
         # add extractor of iobuf if needed
-        if get_config_bool("Reports", "extract_iobuf") and \
-                get_config_bool("Reports", "extract_iobuf_during_run"):
+        if get_config_bool("Reports", "extract_iobuf"):
             algorithms.append("ChipIOBufExtractor")
 
         # add extractor of provenance if needed
@@ -2752,8 +2749,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._buffer_manager, power_used)
 
     def _extract_iobufs(self):
-        if get_config_bool("Reports", "extract_iobuf_during_run"):
-            return
         if get_config_bool("Reports", "clear_iobuf_during_run"):
             return
         extractor = IOBufExtractor(
