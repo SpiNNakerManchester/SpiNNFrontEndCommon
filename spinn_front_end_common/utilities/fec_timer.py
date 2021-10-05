@@ -219,7 +219,12 @@ class FecTimer(object):
         if type is None:
             message = f"{self._name} took {time_taken} "
         else:
-            message = f"{self._name} exited with {type} after {time_taken}"
+            try:
+                message = f"{self._name} exited with {type.__name__} " \
+                          f"after {time_taken}"
+            except Exception:
+                message = f"{self._name} exited with an exception" \
+                          f"after {time_taken}"
             _provenance_items.append(ProvenanceDataItem(
                 ["algorithm", "error", f"{self._name} failed due to"], type))
 
