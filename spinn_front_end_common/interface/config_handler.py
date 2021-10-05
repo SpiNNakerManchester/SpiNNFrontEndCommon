@@ -40,9 +40,9 @@ WARNING_LOGS_FILENAME = "warning_logs.txt"
 # options names are all lower without _ inside config
 _DEBUG_ENABLE_OPTS = frozenset([
     "reportsenabled",
-    "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
+    "clear_iobuf_during_run", "extract_iobuf"])
 _REPORT_DISABLE_OPTS = frozenset([
-    "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
+    "clear_iobuf_during_run", "extract_iobuf"])
 
 
 class ConfigHandler(object):

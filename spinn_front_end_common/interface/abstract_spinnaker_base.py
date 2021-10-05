@@ -3059,9 +3059,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_cfg_false(
-                    "Reports", "extract_iobuf_during_run"):
-                return
-            if timer.skip_if_cfg_false(
                     "Reports", "extract_iobuf"):
                 return
             iobuf_extractor = ChipIOBufExtractor()
