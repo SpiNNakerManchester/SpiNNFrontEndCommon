@@ -16,7 +16,7 @@
 import os
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter)
+    ProvenanceJSONWriter, ProvenanceXMLWriter)
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
 
@@ -55,12 +55,4 @@ def test_xml():
     provenance_data_path = check_provenance_data_path(".xml")
     provenance_data_items = _create_provenenace()
     writer = ProvenanceXMLWriter()
-    writer(provenance_data_items, provenance_data_path)
-
-
-def test_database():
-    unittest_setup()
-    provenance_data_path = check_provenance_data_path(".sqlite3")
-    provenance_data_items = _create_provenenace()
-    writer = ProvenanceSQLWriter()
     writer(provenance_data_items, provenance_data_path)

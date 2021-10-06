@@ -75,7 +75,6 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
 from spinn_front_end_common.interface.interface_functions import (
-    ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
     RouterProvenanceGatherer, interface_xml)
 
@@ -1838,7 +1837,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             prov_items.extend(prov_item)
         self._pacman_provenance.clear()
         self._version_provenance = list()
-        self._write_provenance(prov_items)
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """
@@ -2055,15 +2053,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             provenance_path=self._pacman_executor_provenance_path,
             provenance_name="Execution"), run_until_timesteps
 
-    def _write_provenance(self, provenance_data_items):
-        """ Write provenance to disk.
-
-        :param list(ProvenanceDataItem) provenance_data_items:
-        """
-
-        writer = ProvenanceSQLWriter()
-        writer(provenance_data_items)
-
     def _recover_from_error(self, exception, exc_info, executable_targets):
         """
         :param Exception exception:
@@ -2175,7 +2164,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Finish getting the provenance
         prov_items.extend(self._pacman_provenance.data_items)
         self._pacman_provenance.clear()
-        self._write_provenance(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
         iobuf = IOBufExtractor(
