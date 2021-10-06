@@ -263,6 +263,33 @@ class ProvenanceReader(object):
             """
         return self.run_query(query)
 
+    def get_cores_with_provenace(self):
+        """
+        Gets the cores with provenance
+
+        :return: A list tuples (x, y, p)
+        :rtype: list(tuple(int, int, int))
+        """
+        query = """
+            SELECT x, y, p, source_short_name
+            FROM source
+            WHERE p IS NOT NULL
+            """
+        return self.run_query(query)
+
+    def get_provenace_sum_by_core(self, x, y, p, description):
+        query = """
+            SELECT sum(the_value)
+            FROM core_provenance_view
+            WHERE x = ? AND y = ? AND p = ? AND description_name = ?
+            """
+        data = self.run_query(query, [x, y, p, description])
+        try:
+            return data[0][0]
+        except IndexError:
+            return None
+
+
     @staticmethod
     def _demo():
         """ A demonstration of how to use this class.

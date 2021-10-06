@@ -56,3 +56,29 @@ class TestProvenanceDatabase(unittest.TestCase):
         data = set(ProvenanceReader().get_provenace_items())
         items_set = self.as_set(items)
         self.assertSetEqual(data, items_set)
+
+    def test_cores_(self):
+        with SqlLiteDatabase() as db:
+            db.insert_item(["vertex on 1,2", "gamma"], 75)
+            db.insert_item(["another vertex for 2,1", "gamma"], 75)
+            db.insert_item(["vertex for 1,2,1", "gamma"], 100)
+            db.insert_item(["vertex for 1,2,2", "gamma"], 99)
+            db.insert_item(["vertex for 1,2,2", "gamma"], 101)
+            db.insert_item(["vertex alpha for 1,3,1", "gamma"], 100)
+            db.insert_item(["vertex alpha for 1,3,2", "gamma"], 100)
+            db.insert_item(["vertex for 1,3,5", "gamma"], 100)
+            db.insert_item(["pizza", "bacon"], 12)
+        data = set(ProvenanceReader().get_cores_with_provenace())
+        cores_set = {
+            (1, 2, 1, "vertex for 1,2,1"),
+            (1, 2, 2, "vertex for 1,2,2"),
+            (1, 3, 1, "vertex alpha for 1,3,1"),
+            (1, 3, 2, "vertex alpha for 1,3,2"),
+            (1, 3, 5, "vertex for 1,3,5")}
+        self.assertSetEqual(data, cores_set)
+        data = ProvenanceReader().get_provenace_sum_by_core(
+            1, 2, 2, "gamma")
+        self.assertEqual(200, data)
+        data = ProvenanceReader().get_provenace_sum_by_core(
+            1, 1, 2, "gamma")
+        self.assertIsNone(data)
