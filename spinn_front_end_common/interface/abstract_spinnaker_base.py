@@ -2767,23 +2767,24 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._execute_routing_setup(graph_changed)
         self._execute_graph_binary_gatherer(graph_changed)
-        # loading_algorithms
-        compressed, self._compressor_provenance = self._do_compression()
-        self._execute_load_routing_tables(compressed)
         self._report_uncompressed_routing_table()
-        self._report_bit_field_compressor()
         self._execute_load_fixed_routes(graph_changed)
         processor_to_app_data_base_address = \
             self._execute_system_data_specification()
         self._execute_load_system_executable_images()
-
-        # TODO Was master correct to run the report first?
-        self._execute_tags_from_machine_report()
         self._execute_load_tags()
         processor_to_app_data_base_address = \
             self._execute_application_data_specification(
                 processor_to_app_data_base_address)
+
         self._do_extra_load_algorithms()
+        # loading_algorithms
+        compressed, self._compressor_provenance = self._do_compression()
+        self._execute_load_routing_tables(compressed)
+        self._report_bit_field_compressor()
+
+        # TODO Was master correct to run the report first?
+        self._execute_tags_from_machine_report()
         self._report_memory_on_host(
             graph_changed, processor_to_app_data_base_address)
         self._report_memory_on_chip(graph_changed)
