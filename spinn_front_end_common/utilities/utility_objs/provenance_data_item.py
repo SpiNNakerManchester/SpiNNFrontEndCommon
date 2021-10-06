@@ -19,6 +19,8 @@ from spinn_utilities.config_holder import get_config_int
 from spinn_front_end_common.utilities.globals_variables import (
     provenance_file_path)
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.interface.provenance.sqllite_database import SqlLiteDatabase
+
 logger = FormatAdapter(logging.getLogger(__name__))
 
 _report_count = 0
@@ -47,6 +49,8 @@ class ProvenanceDataItem(object):
         self._message = message
         if report:
             self._add_report()
+        with SqlLiteDatabase() as db:
+            db.insert_item(names, value)
 
     @property
     def message(self):
