@@ -150,7 +150,7 @@ class ConfigHandler(object):
         compressor = get_config_str("Mapping", "compressor")
         # For now allow identical loading_algorithms and compressor
         if loading_algorithms and compressor not in loading_algorithms:
-            raise ConfigurationException(
+            logger.error(
                 "cfg setting loading_algorithms is no longer used. "
                 "Ideally remove it from you cfg. "
                 "To use a none default compressor specify a compressor value")
@@ -176,7 +176,7 @@ class ConfigHandler(object):
             if algorithm in old_algorithms:
                 old_algorithms.remove(algorithm)
         if old_algorithms:
-            raise ConfigurationException(
+            logger.error(
                 f"cfg setting {option} is no longer used "
                 f"and contained an unexpected value(s): {old_algorithms}. "
                 "Ideally remove it from you cfg. "
