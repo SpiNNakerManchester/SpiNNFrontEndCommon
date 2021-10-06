@@ -103,7 +103,7 @@ static inline void copy_data(
     }
 }
 
-bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
+bool recording_record(uint8_t channel, const void *data, uint32_t size_bytes) {
     recording_channel_t *rec = &channels[channel];
     if (has_been_initialised(rec)) {
 
@@ -127,10 +127,9 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
     return false;
 }
 
-__attribute__((noreturn)) void recording_bad_offset(
-  void *data, uint32_t size) {
-    log_error("DMA transfer of non-word data quantity in recording! "
-      "(data=0x%08x, size=0x%x)", data, size);
+NORETURN void recording_bad_offset(const void *data, uint32_t size) {
+    log_error("DMA transfer of non-word data quantity in recording! (data=0x%08x, size=0x%x)",
+            data, size);
     rt_error(RTE_SWERR);
 }
 
@@ -177,9 +176,7 @@ bool recording_initialize(
         *recording_flags = 0;
     }
 
-    /* Reserve the actual recording regions.
-     *
-     */
+    // Reserve the actual recording regions.
     for (uint32_t i = 0; i < n_regions; i++) {
         recording_region_t *region = &regions->regions[i];
         uint32_t space = region->space;

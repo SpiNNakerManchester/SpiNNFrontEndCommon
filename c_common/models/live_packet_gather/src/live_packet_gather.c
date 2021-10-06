@@ -175,20 +175,18 @@ static struct lpg_config config;
 //!     _Only guaranteed to be half-word aligned._
 //! \param[in] index: Offset in count of _words_ into the buffer.
 //! \param[in] value: Value to write in (as little-endian).
-static inline void write_word(void *base, uint32_t index, uint32_t value) {
-    uint16_t *ary = base;
-    uint32_t idx = index * 2;
-    ary[idx++] = CLAMP16(value);
-    ary[idx] = CLAMP16(value >> 16);
+static inline void write_word(uint16_t *base, uint32_t index, uint32_t value) {
+    uint32_t *ary = __builtin_assume_aligned(base, 4, 2);
+    ary[index] = value;
 }
 
 //! \brief Simple mirror of write_word() for true 16 bit values.
 //! \param[in] base: place to write to
 //! \param[in] index: location in base to write to
 //! \param[in] value: the value to write to the base.
-static inline void write_short(void *base, uint32_t index, uint32_t value) {
-    uint16_t *ary = base;
-    ary[index] = CLAMP16(value);
+static inline void write_short(
+        uint16_t *base, uint32_t index, uint32_t value) {
+    base[index] = CLAMP16(value);
 }
 
 //! \brief Get how many events there are waiting to be sent

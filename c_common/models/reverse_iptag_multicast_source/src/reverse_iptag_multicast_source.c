@@ -84,10 +84,15 @@ struct config {
 
 //! The memory regions
 enum region_ids {
+    //! Standard system configuration
     SYSTEM,
+    //! The configuration data, format ::config
     CONFIGURATION,
+    //! Sent packet recording
     RECORDING_REGION,
+    //! The working buffer, used to store commands to process in the future
     BUFFER_REGION,
+    //! The provenance data, format ::provenance_t
     PROVENANCE_REGION,
 };
 
@@ -114,27 +119,39 @@ typedef struct ripmcs_provenance_t {
 //! the maximum size of a packet excluding header
 #define MAX_PACKET_SIZE 272
 
-#pragma pack(1)
+#ifndef DOXYGEN
+// No padding bytes, struct itself is aligned
+#define __PACKED_STRUCT         __attribute__((packed, aligned(4)))
+#endif
 
 //! \brief What information is recorded about a packet.
 typedef struct {
     uint32_t length;               //!< The real length of recorded_packet_t::data
     uint32_t time;                 //!< The timestamp of this recording event
     uint8_t data[MAX_PACKET_SIZE]; //!< The content of the packet
-} recorded_packet_t;
+} __PACKED_STRUCT recorded_packet_t;
 
-//! \brief An EIEIO request-for-more-space message
+//! The EIEIO header information
+typedef union eieio_header_bitfields eieio_header_t;
+
+//! \brief An EIEIO ::SPINNAKER_REQUEST_BUFFERS message.
 typedef struct {
-    uint16_t eieio_header_command; //!< The command header
-    uint16_t chip_id;              //!< What chip is making the request
-    uint8_t processor;             //!< What core is making the request
+    eieio_header_t header;      //!< The command header
+    uint16_t chip_id;           //!< What chip is making the request
+    uint8_t processor;          //!< What core is making the request
     uint8_t _pad1;
-    uint8_t region;                //!< What region is full
-    uint8_t sequence;              //!< What sequence number we expect
-    uint32_t space_available;      //!< How much space is available
-} req_packet_sdp_t;
+    uint8_t region;             //!< What region is full
+    uint8_t sequence;           //!< What sequence number we expect
+    uint32_t space_available;   //!< How much space is available
+} __PACKED_STRUCT req_packet_sdp_t;
 
-#pragma pack()
+//! \brief An EIEIO ::HOST_SEND_SEQUENCED_DATA message.
+typedef const struct {
+    eieio_header_t header;      //!< The command header
+    uint8_t region_id;          //!< The region identifier
+    uint8_t sequence_number;    //!< The sequence number
+    uint16_t content[];         //!< The actual data in the message
+} __PACKED_STRUCT req_sequenced_data_t;
 
 // ------------------------------------------------------------------------
 // Globals
@@ -203,7 +220,7 @@ static sdp_msg_t sdp_host_req;
 static req_packet_sdp_t *req_ptr;
 
 //! DTCM buffer holding message copied from ::buffer_region
-static eieio_msg_t msg_from_sdram;
+static eieio_writable_msg_t msg_from_sdram;
 
 //! Does ::msg_from_sdram currently contain a message being processed?
 static bool msg_from_sdram_in_use;
@@ -253,24 +270,51 @@ static recorded_packet_t *recorded_packet;
 
 // ------------------------------------------------------------------------
 
-//! \brief Extract a field from a bitfield value.
-//! \param[in] value: the bitfield value
-//! \param[in] shift: the index of the start of the LSB of the field
-//! \param[in] mask: the mask for the value, once shifted to the bottom of the
-//!                  word
-//! \return The actual field value
-#define BITS(value, shift, mask) \
-    (((value) >> (shift)) & (mask))
+//! \brief Copy by half words
+//! \param[in] dst: Where to copy to
+//! \param[in] src: Where to copy from
+//! \param[in] length: The number of bytes to copy; assumed to be a multiple of 2
+static inline void half_word_copy(
+        void *restrict dst, const void *src, int32_t length) {
+    uint16_t *target = __builtin_assume_aligned(dst, 2);
+    const uint16_t *source = __builtin_assume_aligned(src, 2);
+    while (length > 0) {
+        *target++ = *source++;
+        length -= 2;
+    }
+}
+
+//! \brief Copy by full words
+//! \param[in] dst: Where to copy to
+//! \param[in] src: Where to copy from
+//! \param[in] length: The number of bytes to copy; assumed to be a multiple of 4
+static inline void full_word_copy(
+        void *restrict dst, const void *src, int32_t length) {
+    uint32_t *target = __builtin_assume_aligned(dst, 4);
+    const uint32_t *source = __builtin_assume_aligned(src, 4);
+    while (length > 0) {
+        *target++ = *source++;
+        length -= 4;
+    }
+}
+
+//! \brief Get the header from an EIEIO packet.
+//! \param[in] eieio_msg_ptr: Pointer to the packet
+//! \return The parsed header.
+static inline eieio_header_t eieio_header(eieio_msg_t eieio_msg_ptr) {
+    eieio_header_t hdr;
+    hdr.overall_value = eieio_msg_ptr[0];
+    return hdr;
+}
 
 //! \brief What is the size of a command message?
 //! \param[in] eieio_msg_ptr Pointer to the message
 //! \return The size of the command message, in bytes
 static inline uint16_t calculate_eieio_packet_command_size(
         const eieio_msg_t eieio_msg_ptr) {
-    uint16_t data_hdr_value = eieio_msg_ptr[0];
-    uint16_t command_number = data_hdr_value & ~0xC000;
+    eieio_header_t hdr = eieio_header(eieio_msg_ptr);
 
-    switch (command_number) {
+    switch (hdr.packet_command) {
     case DATABASE_CONFIRMATION:
     case EVENT_PADDING:
     case EVENT_STOP_COMMANDS:
@@ -297,51 +341,42 @@ static inline uint16_t calculate_eieio_packet_command_size(
 //! \return The size of the event message, in bytes
 static inline uint16_t calculate_eieio_packet_event_size(
         const eieio_msg_t eieio_msg_ptr) {
-    uint16_t data_hdr_value = eieio_msg_ptr[0];
-    bool pkt_apply_prefix = (bool) BITS(data_hdr_value, APPLY_PREFIX, 0x1);
-    bool pkt_payload_prefix_apply = (bool)
-            BITS(data_hdr_value, APPLY_PAYLOAD_PREFIX, 0x1);
-    uint8_t pkt_type = (uint8_t) BITS(data_hdr_value, PACKET_TYPE, 0x3);
-    uint8_t event_count = BITS(data_hdr_value, COUNT, 0xFF);
-    uint16_t event_size, total_size;
-    uint16_t header_size = 2;
+    eieio_header_t hdr = eieio_header(eieio_msg_ptr);
+    uint16_t event_size = 2, header_size = 2, payload_extra = 2;
 
-    switch (pkt_type) {
+    switch (hdr.packet_type) {
     case KEY_16_BIT:
-        event_size = 2;
         break;
-    case KEY_PAYLOAD_16_BIT:
     case KEY_32_BIT:
+        payload_extra <<= 1;
+        /* fall through */
+    case KEY_PAYLOAD_16_BIT:
         event_size = 4;
         break;
-    case KEY_PAYLOAD_32_bIT:
+    case KEY_PAYLOAD_32_BIT:
         event_size = 8;
+        payload_extra <<= 1;
         break;
     }
 
-    if (pkt_apply_prefix) {
+    if (hdr.apply_prefix) {
+        // Never used for 32-bit keys
         header_size += 2;
     }
-    if (pkt_payload_prefix_apply) {
-        if (pkt_type == 0 || pkt_type == 1) {
-            header_size += 2;
-        } else {
-            header_size += 4;
-        }
+    if (hdr.apply_payload_prefix) {
+        header_size += payload_extra;
     }
 
-    total_size = event_count * event_size + header_size;
-    return total_size;
+    return hdr.count * event_size + header_size;
 }
 
 //! \brief What is the size of a message?
 //! \param[in] eieio_msg_ptr: Pointer to the message
 //! \return The size of the message, in bytes
 static inline uint16_t calculate_eieio_packet_size(eieio_msg_t eieio_msg_ptr) {
-    uint16_t data_hdr_value = eieio_msg_ptr[0];
-    uint8_t pkt_class = BITS(data_hdr_value, PACKET_CLASS, 0x03);
+    eieio_header_t hdr = eieio_header(eieio_msg_ptr);
 
-    if (pkt_class == 0x01) {
+    if (hdr.packet_class == PACKET_CLASS_COMMAND) {
         return calculate_eieio_packet_command_size(eieio_msg_ptr);
     } else {
         return calculate_eieio_packet_event_size(eieio_msg_ptr);
@@ -356,7 +391,7 @@ static inline void print_packet_bytes(
     __use(eieio_msg_ptr);
     __use(length);
 #if LOG_LEVEL >= LOG_DEBUG
-    uint8_t *ptr = (uint8_t *) eieio_msg_ptr;
+    const uint8_t *ptr = (const uint8_t *) eieio_msg_ptr;
 
     log_debug("packet of %d bytes:", length);
 
@@ -384,9 +419,7 @@ static inline void print_packet(const eieio_msg_t eieio_msg_ptr) {
 }
 
 //! \brief Flags up that bad input was received.
-//!
-//! This triggers an RTE, but only in debug mode.
-//!
+//! \details This triggers an RTE, but only in debug mode.
 //! \param[in] eieio_msg_ptr: The bad message
 //! \param[in] length: The length of the message
 static inline void signal_software_error(
@@ -397,6 +430,12 @@ static inline void signal_software_error(
     print_packet_bytes(eieio_msg_ptr, length);
     rt_error(RTE_SWERR);
 #endif
+}
+
+//! \brief Get the last buffer operation.
+//! \return Whether the last operation was a write
+static inline bool last_op_was_write(void) {
+    return last_buffer_operation == BUFFER_OPERATION_WRITE;
 }
 
 //! \brief Computes how much space is available in the buffer.
@@ -410,7 +449,7 @@ static inline uint32_t get_sdram_buffer_space_available(void) {
         return final_space + initial_space;
     } else if (write_pointer < read_pointer) {
         return (uint32_t) read_pointer - (uint32_t) write_pointer;
-    } else if (last_buffer_operation == BUFFER_OPERATION_WRITE) {
+    } else if (last_op_was_write()) {
         // If pointers are equal, buffer is full if last operation is write
         return 0;
     } else {
@@ -429,46 +468,47 @@ static inline bool is_eieio_packet_in_buffer(void) {
 
     // There are packets as long as the buffer is not empty; the buffer is
     // empty if the pointers are equal and the last operation was read
-    return (write_pointer != read_pointer) ||
-            (last_buffer_operation != BUFFER_OPERATION_READ);
+    return (write_pointer != read_pointer) || last_op_was_write();
+}
+
+//! \brief Read the 32-bit word at the given location.
+//! \param[in] ptr: The pointer, which is 16-bit aligned.
+//! \return The unsigned little-endian word read from that location.
+static inline uint32_t read_word(const uint16_t *ptr) {
+    const uint32_t *p = __builtin_assume_aligned(ptr, 4, 2);
+    return *p;
 }
 
 //! \brief Get the time from a message.
 //! \param[in] eieio_msg_ptr: The EIEIO message.
 //! \return The timestamp from the message, or the current time if the message
-//! did not have a timestamp.
+//!     did not have a timestamp.
 static inline uint32_t extract_time_from_eieio_msg(
         const eieio_msg_t eieio_msg_ptr) {
-    uint16_t data_hdr_value = eieio_msg_ptr[0];
-    bool pkt_has_timestamp = (bool)
-            BITS(data_hdr_value, PAYLOAD_IS_TIMESTAMP, 0x1);
-    bool pkt_apply_prefix = (bool) BITS(data_hdr_value, APPLY_PREFIX, 0x1);
-    bool pkt_class = (bool) BITS(data_hdr_value, PACKET_CLASS, 0x1);
+    eieio_header_t hdr = eieio_header(eieio_msg_ptr);
 
     // If the packet is actually a command packet, return the current time
-    if (!pkt_apply_prefix && pkt_class) {
+    if (hdr.packet_class == PACKET_CLASS_COMMAND) {
         return time;
     }
 
     // If the packet indicates that payloads are timestamps
-    if (pkt_has_timestamp) {
-        bool pkt_payload_prefix_apply = (bool)
-                BITS(data_hdr_value, APPLY_PAYLOAD_PREFIX, 0x1);
-        uint8_t pkt_type = (uint8_t) BITS(data_hdr_value, PACKET_TYPE, 0x3);
+    if (hdr.payload_is_timestamp) {
+        //uint8_t pkt_type = (uint8_t) ;
         uint32_t payload_time = 0;
         bool got_payload_time = false;
-        uint16_t *event_ptr = &eieio_msg_ptr[1];
+        const uint16_t *event_ptr = &eieio_msg_ptr[1];
 
         // If there is a payload prefix
-        if (pkt_payload_prefix_apply) {
+        if (hdr.apply_payload_prefix) {
             // If there is a key prefix, the payload prefix is after that
-            if (pkt_apply_prefix) {
+            if (hdr.apply_prefix) {
                 event_ptr++;
             }
 
-            if (pkt_type & 0x2) {
+            if (hdr.packet_is_32bit) {
                 // 32 bit packet
-                payload_time = (event_ptr[1] << 16) | event_ptr[0];
+                payload_time = read_word(event_ptr);
                 event_ptr += 2;
             } else {
                 // 16 bit packet
@@ -479,10 +519,10 @@ static inline uint32_t extract_time_from_eieio_msg(
         }
 
         // If the packets have a payload
-        if (pkt_type & 0x1) {
-            if (pkt_type & 0x2) {
+        if (hdr.packet_has_payload) {
+            if (hdr.packet_is_32bit) {
                 // 32 bit packet
-                payload_time |= (event_ptr[1] << 16) | event_ptr[0];
+                payload_time |= read_word(event_ptr);
             } else {
                 // 16 bit packet
                 payload_time |= event_ptr[0];
@@ -508,22 +548,19 @@ static inline uint32_t extract_time_from_eieio_msg(
 //!         buffer being full.
 static inline bool add_eieio_packet_to_sdram(
         const eieio_msg_t eieio_msg_ptr, uint32_t length) {
-    uint8_t *msg_ptr = (uint8_t *) eieio_msg_ptr;
+    const uint8_t *msg_ptr = (const uint8_t *) eieio_msg_ptr;
 
     log_debug("read_pointer = 0x%.8x, write_pointer= = 0x%.8x,"
-            "last_buffer_operation == read = %d, packet length = %d",
-            read_pointer,  write_pointer,
-            last_buffer_operation == BUFFER_OPERATION_READ, length);
+            "last_buffer_operation == write = %d, packet length = %d",
+            read_pointer, write_pointer, last_op_was_write(), length);
     if ((read_pointer < write_pointer) ||
-            (read_pointer == write_pointer &&
-                last_buffer_operation == BUFFER_OPERATION_READ)) {
-        uint32_t final_space =
-                (uint32_t) end_of_buffer_region - (uint32_t) write_pointer;
+            (read_pointer == write_pointer && !last_op_was_write())) {
+        uint32_t final_space = end_of_buffer_region - write_pointer;
 
         if (final_space >= length) {
             log_debug("Packet fits in final space of %d", final_space);
 
-            spin1_memcpy(write_pointer, msg_ptr, length);
+            half_word_copy(write_pointer, msg_ptr, length);
             write_pointer += length;
             last_buffer_operation = BUFFER_OPERATION_WRITE;
             if (write_pointer >= end_of_buffer_region) {
@@ -531,8 +568,7 @@ static inline bool add_eieio_packet_to_sdram(
             }
             return true;
         } else {
-            uint32_t total_space = final_space +
-                    ((uint32_t) read_pointer - (uint32_t) buffer_region);
+            uint32_t total_space = final_space + (read_pointer - buffer_region);
             if (total_space < length) {
                 log_debug("Not enough space (%d bytes)", total_space);
                 return false;
@@ -540,13 +576,13 @@ static inline bool add_eieio_packet_to_sdram(
 
             log_debug("Copying first %d bytes to final space of %d",
                     length, final_space);
-            spin1_memcpy(write_pointer, msg_ptr, final_space);
+            half_word_copy(write_pointer, msg_ptr, final_space);
             write_pointer = buffer_region;
             msg_ptr += final_space;
 
             uint32_t final_len = length - final_space;
             log_debug("Copying remaining %d bytes", final_len);
-            spin1_memcpy(write_pointer, msg_ptr, final_len);
+            half_word_copy(write_pointer, msg_ptr, final_len);
             write_pointer += final_len;
             last_buffer_operation = BUFFER_OPERATION_WRITE;
             if (write_pointer == end_of_buffer_region) {
@@ -555,15 +591,14 @@ static inline bool add_eieio_packet_to_sdram(
             return true;
         }
     } else if (write_pointer < read_pointer) {
-        uint32_t middle_space =
-                (uint32_t) read_pointer - (uint32_t) write_pointer;
+        uint32_t middle_space = read_pointer - write_pointer;
         if (middle_space < length) {
             log_debug("Not enough space in middle (%d bytes)", middle_space);
             return false;
         }
 
         log_debug("Packet fits in middle space of %d", middle_space);
-        spin1_memcpy(write_pointer, msg_ptr, length);
+        half_word_copy(write_pointer, msg_ptr, length);
         write_pointer += length;
         last_buffer_operation = BUFFER_OPERATION_WRITE;
         if (write_pointer == end_of_buffer_region) {
@@ -583,30 +618,32 @@ static inline bool add_eieio_packet_to_sdram(
 //! \param[in] pkt_count: The number of events.
 //! \param[in] pkt_key_prefix: The prefix for keys.
 //! \param[in] pkt_payload_prefix: The prefix for payloads.
-//! \param[in] pkt_has_payload: Whether there is a payload.
+//! \param[in] has_payload: Whether there is a payload.
 //! \param[in] pkt_payload_is_timestamp: Whether the payload is a timestamp.
 static inline void process_16_bit_packets(
         const uint16_t* event_pointer, bool pkt_prefix_upper,
         uint32_t pkt_count,
         uint32_t pkt_key_prefix, uint32_t pkt_payload_prefix,
-        bool pkt_has_payload, bool pkt_payload_is_timestamp) {
+        bool has_payload, bool pkt_payload_is_timestamp) {
     log_debug("process_16_bit_packets");
     log_debug("event_pointer: %08x", (uint32_t) event_pointer);
     log_debug("count: %d", pkt_count);
     log_debug("pkt_prefix: %08x", pkt_key_prefix);
     log_debug("pkt_payload_prefix: %08x", pkt_payload_prefix);
-    log_debug("payload on: %d", pkt_has_payload);
+    log_debug("payload on: %d", has_payload);
     log_debug("pkt_format: %d", pkt_prefix_upper);
 
+    if (!has_key) {
+        return;
+    }
+
     for (uint32_t i = 0; i < pkt_count; i++) {
-        uint32_t key = (uint32_t) event_pointer[0];
-        log_debug("Packet key = %d", key);
-        event_pointer++;
+        uint32_t key = *event_pointer++;
         uint32_t payload = 0;
-        if (pkt_has_payload) {
-            payload = (uint32_t) event_pointer[0];
-            event_pointer++;
+        if (has_payload) {
+            payload = *event_pointer++;
         }
+        log_debug("Packet 16-bit: key = 0x%08x, payload = %d", key, payload);
 
         if (!pkt_prefix_upper) {
             key <<= 16;
@@ -614,28 +651,21 @@ static inline void process_16_bit_packets(
         key |= pkt_key_prefix;
         payload |= pkt_payload_prefix;
 
-        log_debug("check before send packet: check_key_in_space=%d, key=0x%08x,"
-                " mask=0x%08x, key_space=%d: %d",
-                check_key_in_space, key, mask, key_space,
-                (!check_key_in_space || (key & mask) == key_space));
+        if (check_key_in_space && (key & mask) != key_space) {
+            provenance.incorrect_keys++;
+            continue;
+        }
 
-        if (has_key) {
-            if (!check_key_in_space || (key & mask) == key_space) {
-                provenance.sent_packets++;
-                if (pkt_has_payload && !pkt_payload_is_timestamp) {
-                    log_debug("mc packet 16-bit key=%d, payload=%d",
-                            key, payload);
-                    while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
-                        spin1_delay_us(1);
-                    }
-                } else {
-                    log_debug("mc packet 16-bit key=%d", key);
-                    while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
-                        spin1_delay_us(1);
-                    }
-                }
-            } else {
-                provenance.incorrect_keys++;
+        provenance.sent_packets++;
+        if (has_payload && !pkt_payload_is_timestamp) {
+            log_debug("mc packet key=0x%08x, payload=%d", key, payload);
+            while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
+                spin1_delay_us(1);
+            }
+        } else {
+            log_debug("mc packet key=0x%08x", key);
+            while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
+                spin1_delay_us(1);
             }
         }
     }
@@ -647,53 +677,50 @@ static inline void process_16_bit_packets(
 //! \param[in] pkt_count: The number of events.
 //! \param[in] pkt_key_prefix: The prefix for keys.
 //! \param[in] pkt_payload_prefix: The prefix for payloads.
-//! \param[in] pkt_has_payload: Whether there is a payload.
+//! \param[in] has_payload: Whether there is a payload.
 //! \param[in] pkt_payload_is_timestamp: Whether the payload is a timestamp.
 static inline void process_32_bit_packets(
         const uint16_t* event_pointer, uint32_t pkt_count,
         uint32_t pkt_key_prefix, uint32_t pkt_payload_prefix,
-        bool pkt_has_payload, bool pkt_payload_is_timestamp) {
-    // Careful! event_pointer is not necessarily word aligned!
+        bool has_payload, bool pkt_payload_is_timestamp) {
     log_debug("process_32_bit_packets");
-    log_debug("event_pointer: %08x", (uint32_t) event_pointer);
+    log_debug("event_pointer: %08x", event_pointer);
     log_debug("count: %d", pkt_count);
     log_debug("pkt_prefix: %08x", pkt_key_prefix);
     log_debug("pkt_payload_prefix: %08x", pkt_payload_prefix);
-    log_debug("payload on: %d", pkt_has_payload);
+    log_debug("payload on: %d", has_payload);
+
+    if (!has_key) {
+        return;
+    }
 
     for (uint32_t i = 0; i < pkt_count; i++) {
-        uint32_t key = (event_pointer[1] << 16) | event_pointer[0];
-        log_debug("Packet key = 0x%08x", key);
+        uint32_t key = read_word(event_pointer);
         event_pointer += 2;
         uint32_t payload = 0;
-        if (pkt_has_payload) {
-            payload = (event_pointer[1] << 16) | event_pointer[0];
+        if (has_payload) {
+            payload = read_word(event_pointer);
             event_pointer += 2;
         }
-
+        log_debug("Packet 32-bit: key = 0x%08x, payload = %d", key, payload);
         key |= pkt_key_prefix;
         payload |= pkt_payload_prefix;
 
-        log_debug("check before send packet: %d",
-                (!check_key_in_space || (key & mask) == key_space));
+        if (check_key_in_space && (key & mask) != key_space) {
+            provenance.incorrect_keys++;
+            continue;
+        }
 
-        if (has_key) {
-            if (!check_key_in_space || (key & mask) == key_space) {
-                provenance.sent_packets++;
-                if (pkt_has_payload && !pkt_payload_is_timestamp) {
-                    log_debug("mc packet 32-bit key=0x%08x, payload=0x%08x",
-                            key, payload);
-                    while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
-                        spin1_delay_us(1);
-                    }
-                } else {
-                    log_debug("mc packet 32-bit key=0x%08x", key);
-                    while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
-                        spin1_delay_us(1);
-                    }
-                }
-            } else {
-                provenance.incorrect_keys++;
+        provenance.sent_packets++;
+        if (has_payload && !pkt_payload_is_timestamp) {
+            log_debug("mc packet key=0x%08x, payload=%d", key, payload);
+            while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
+                spin1_delay_us(1);
+            }
+        } else {
+            log_debug("mc packet key=0x%08x", key);
+            while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
+                spin1_delay_us(1);
             }
         }
     }
@@ -712,7 +739,7 @@ static inline void record_packet(
                 recording_length);
         recorded_packet->length = recording_length;
         recorded_packet->time = time;
-        spin1_memcpy(recorded_packet->data, eieio_msg_ptr, recording_length);
+        full_word_copy(recorded_packet->data, eieio_msg_ptr, recording_length);
 
         // NOTE: recording_length could be bigger than the length of the valid
         // data in eieio_msg_ptr.  This is OK as the data pointed to by
@@ -724,10 +751,9 @@ static inline void record_packet(
 }
 
 //! \brief Parses an EIEIO message.
-//!
-//! This may cause the message to be saved for later, or may cause SpiNNaker
-//! multicast messages to be sent at once.
-//!
+//! \details
+//!     This may cause the message to be saved for later, or may cause SpiNNaker
+//!     multicast messages to be sent at once.
 //! \param[in] eieio_msg_ptr: the message to handle
 //! \param[in] length: the length of the message
 //! \return True if the packet was successfully handled.
@@ -736,54 +762,44 @@ static inline bool eieio_data_parse_packet(
     log_debug("eieio_data_process_data_packet");
     print_packet_bytes(eieio_msg_ptr, length);
 
-    uint16_t data_hdr_value = eieio_msg_ptr[0];
-    const void *event_pointer = (const void *) &eieio_msg_ptr[1];
+    eieio_header_t hdr = eieio_header(eieio_msg_ptr);
+    const uint16_t *event_pointer = &eieio_msg_ptr[1];
 
-    if (data_hdr_value == 0) {
+    if (hdr.count == 0) {
         // Count is 0, so no data
         return true;
     }
 
     log_debug("====================================");
-    log_debug("eieio_msg_ptr: %08x", (uint32_t) eieio_msg_ptr);
-    log_debug("event_pointer: %08x", (uint32_t) event_pointer);
+    log_debug("eieio_msg_ptr: %08x", eieio_msg_ptr);
+    log_debug("event_pointer: %08x", event_pointer);
     print_packet(eieio_msg_ptr);
 
-    bool pkt_apply_prefix = (bool) BITS(data_hdr_value, APPLY_PREFIX, 0x1);
-    bool pkt_prefix_upper = (bool) BITS(data_hdr_value, PREFIX_UPPER, 0x1);
-    bool pkt_payload_apply_prefix = (bool)
-            BITS(data_hdr_value, APPLY_PAYLOAD_PREFIX, 0x1);
-    bool pkt_payload_is_timestamp = (bool)
-            BITS(data_hdr_value, PAYLOAD_IS_TIMESTAMP, 0x1);
-    uint8_t pkt_type = (uint8_t) BITS(data_hdr_value, PACKET_TYPE, 0x3);
-    uint8_t pkt_count = (uint8_t) BITS(data_hdr_value, COUNT, 0xFF);
-    bool pkt_has_payload = (bool) (pkt_type & 0x1);
-    bool pkt_is_32bit = (bool) (pkt_type & 0x2);
+    bool pkt_prefix_upper = hdr.prefix_upper;
+    bool has_payload = hdr.packet_has_payload;
+    bool pkt_is_32bit = hdr.packet_is_32bit;
 
     uint32_t pkt_key_prefix = 0;
     uint32_t pkt_payload_prefix = 0;
 
-    log_debug("data_hdr_value: %04x", data_hdr_value);
-    log_debug("pkt_apply_prefix: %d", pkt_apply_prefix);
+    log_debug("data_hdr_value: %04x", hdr);
+    log_debug("pkt_apply_prefix: %d", hdr.apply_prefix);
     log_debug("pkt_format: %d", pkt_prefix_upper);
-    log_debug("pkt_payload_prefix: %d", pkt_payload_apply_prefix);
-    log_debug("pkt_timestamp: %d", pkt_payload_is_timestamp);
-    log_debug("pkt_type: %d", pkt_type);
-    log_debug("pkt_count: %d", pkt_count);
-    log_debug("payload_on: %d", pkt_has_payload);
+    log_debug("pkt_payload_prefix: %d", hdr.apply_payload_prefix);
+    log_debug("pkt_timestamp: %d", hdr.payload_is_timestamp);
+    log_debug("pkt_type: %d", hdr.packet_type);
+    log_debug("pkt_count: %d", hdr.count);
+    log_debug("payload_on: %d", has_payload);
 
-    const uint16_t *hdr_pointer = (const uint16_t *) event_pointer;
-
-    if (pkt_apply_prefix) {
+    if (hdr.apply_prefix) {
         // Key prefix in the packet
-        pkt_key_prefix = (uint32_t) hdr_pointer[0];
-        hdr_pointer++;
+        pkt_key_prefix = *event_pointer++;
 
         // If the prefix is in the upper part, shift the prefix
         if (pkt_prefix_upper) {
             pkt_key_prefix <<= 16;
         }
-    } else if (!pkt_apply_prefix && apply_prefix) {
+    } else if (!hdr.apply_prefix && apply_prefix) {
         // If there isn't a key prefix, but the config applies a prefix,
         // apply the prefix depending on the key_left_shift
         pkt_key_prefix = prefix;
@@ -794,25 +810,20 @@ static inline bool eieio_data_parse_packet(
         }
     }
 
-    if (pkt_payload_apply_prefix) {
+    if (hdr.apply_payload_prefix) {
         if (!pkt_is_32bit) {
             // If there is a payload prefix and the payload is 16-bit
-            pkt_payload_prefix = (uint32_t) hdr_pointer[0];
-            hdr_pointer++;
+            pkt_payload_prefix = *event_pointer++;
         } else {
             // If there is a payload prefix and the payload is 32-bit
-            pkt_payload_prefix =
-                    ((uint32_t) hdr_pointer[1] << 16) | hdr_pointer[0];
-            hdr_pointer += 2;
+            pkt_payload_prefix = read_word(event_pointer);
+            event_pointer += 2;
         }
     }
 
-    // Take the event pointer to start at the header pointer
-    event_pointer = (const void *) hdr_pointer;
-
     // If the packet has a payload that is a timestamp, but the timestamp
     // is not the current time, buffer it
-    if (pkt_has_payload && pkt_payload_is_timestamp &&
+    if (has_payload && hdr.payload_is_timestamp &&
             pkt_payload_prefix != time) {
         if (pkt_payload_prefix > time) {
             add_eieio_packet_to_sdram(eieio_msg_ptr, length);
@@ -824,12 +835,11 @@ static inline bool eieio_data_parse_packet(
 
     if (!pkt_is_32bit) {
         process_16_bit_packets(
-                event_pointer, pkt_prefix_upper, pkt_count, pkt_key_prefix,
-                pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
+                event_pointer, pkt_prefix_upper, hdr.count, pkt_key_prefix,
+                pkt_payload_prefix, has_payload, hdr.payload_is_timestamp);
     } else {
-        process_32_bit_packets(
-                event_pointer, pkt_count, pkt_key_prefix,
-                pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
+        process_32_bit_packets(event_pointer, hdr.count, pkt_key_prefix,
+                pkt_payload_prefix, has_payload, hdr.payload_is_timestamp);
     }
     record_packet(eieio_msg_ptr, length);
     return true;
@@ -859,32 +869,28 @@ static inline void eieio_command_parse_start_requests(
 //! \param[in] length: The length of the message
 static inline void eieio_command_parse_sequenced_data(
         const eieio_msg_t eieio_msg_ptr, uint16_t length) {
-    uint16_t sequence_value_region_id = eieio_msg_ptr[1];
-    uint16_t region_id = BITS(sequence_value_region_id, 0, 0xFF);
-    uint16_t sequence_value = BITS(sequence_value_region_id, 8, 0xFF);
+    req_sequenced_data_t *msg = (req_sequenced_data_t *) eieio_msg_ptr;
     uint8_t next_expected_sequence_no =
             (pkt_last_sequence_seen + 1) & MAX_SEQUENCE_NO;
-    eieio_msg_t eieio_content_pkt = &eieio_msg_ptr[2];
 
-    if (region_id != BUFFER_REGION) {
+    if (msg->region_id != BUFFER_REGION) {
         log_debug("received sequenced eieio packet with invalid region ID:"
-                " %d.", region_id);
+                " %d.", msg->region_id);
         signal_software_error(eieio_msg_ptr, length);
         provenance.incorrect_packets++;
     }
 
-    log_debug("Received packet sequence number: %d", sequence_value);
+    log_debug("Received packet sequence number: %d", msg->sequence_number);
 
-    if (sequence_value == next_expected_sequence_no) {
+    if (msg->sequence_number == next_expected_sequence_no) {
         // parse_event_pkt returns false in case there is an error and the
         // packet is dropped (i.e. as it was never received)
         log_debug("add_eieio_packet_to_sdram");
-        bool ret_value = add_eieio_packet_to_sdram(
-                eieio_content_pkt, length - 4);
+        bool ret_value = add_eieio_packet_to_sdram(msg->content, length - 4);
         log_debug("add_eieio_packet_to_sdram return value: %d", ret_value);
 
         if (ret_value) {
-            pkt_last_sequence_seen = sequence_value;
+            pkt_last_sequence_seen = msg->sequence_number;
             log_debug("Updating last sequence seen to %d",
                     pkt_last_sequence_seen);
         } else {
@@ -899,12 +905,11 @@ static inline void eieio_command_parse_sequenced_data(
 //! \param[in] eieio_msg_ptr: The command message
 //! \param[in] length: The length of the message
 //! \return True if the message was handled
-static inline bool eieio_commmand_parse_packet(
+static inline bool eieio_command_parse_packet(
         const eieio_msg_t eieio_msg_ptr, uint16_t length) {
-    uint16_t data_hdr_value = eieio_msg_ptr[0];
-    uint16_t pkt_command = BITS(data_hdr_value, PACKET_COMMAND, ~0xC000);
+    eieio_header_t hdr = eieio_header(eieio_msg_ptr);
 
-    switch (pkt_command) {
+    switch (hdr.packet_command) {
     case HOST_SEND_SEQUENCED_DATA:
         log_debug("command: HOST_SEND_SEQUENCED_DATA");
         eieio_command_parse_sequenced_data(eieio_msg_ptr, length);
@@ -936,17 +941,23 @@ static inline bool eieio_commmand_parse_packet(
 static inline bool packet_handler_selector(
         const eieio_msg_t eieio_msg_ptr, uint16_t length) {
     log_debug("packet_handler_selector");
+    eieio_header_t hdr = eieio_header(eieio_msg_ptr);
 
-    uint16_t data_hdr_value = eieio_msg_ptr[0];
-    uint8_t pkt_class = BITS(data_hdr_value, PACKET_CLASS, 0x03);
-
-    if (pkt_class == 0x01) {
+    if (hdr.packet_class == PACKET_CLASS_COMMAND) {
         log_debug("parsing a command packet");
-        return eieio_commmand_parse_packet(eieio_msg_ptr, length);
+        return eieio_command_parse_packet(eieio_msg_ptr, length);
     } else {
         log_debug("parsing an event packet");
         return eieio_data_parse_packet(eieio_msg_ptr, length);
     }
+}
+
+//! \brief Test whether a pointer is only half-word aligned
+//! \note Assumes that the pointer is *minimum* half-word aligned
+//! \return Whether the second bit of the address is set
+static inline bool is_half_aligned(const void *ptr) {
+    uint32_t value = (uint32_t) ptr;
+    return (value & 2) != 0;
 }
 
 //! \brief Process a stored packet.
@@ -974,64 +985,74 @@ static void fetch_and_process_packet(void) {
             if (read_pointer >= end_of_buffer_region) {
                 read_pointer = buffer_region;
             }
-        } else {
-            uint8_t *src_ptr = (uint8_t *) read_pointer;
+            continue;
+        }
+
+        uint8_t *src_ptr = read_pointer;
+        uint32_t len = calculate_eieio_packet_size((eieio_msg_t) read_pointer);
+
+        last_len = len;
+        if (len > MAX_PACKET_SIZE) {
+            log_error("Packet from SDRAM at 0x%08x of %u bytes is too big!",
+                    src_ptr, len);
+            rt_error(RTE_SWERR);
+        }
+        uint32_t final_space = end_of_buffer_region - read_pointer;
+
+        log_debug("packet with length %d, from address: %08x", len,
+                read_pointer);
+
+        if (len > final_space) {
             uint8_t *dst_ptr = (uint8_t *) msg_from_sdram;
-            uint32_t len = calculate_eieio_packet_size(
-                    (eieio_msg_t) read_pointer);
-
-            last_len = len;
-            if (len > MAX_PACKET_SIZE) {
-                log_error("Packet from SDRAM at 0x%08x of %u bytes is too big!",
-                        src_ptr, len);
-                rt_error(RTE_SWERR);
-            }
-            uint32_t final_space = (end_of_buffer_region - read_pointer);
-
-            log_debug("packet with length %d, from address: %08x", len,
-                    read_pointer);
-
-            if (len > final_space) {
-                // If the packet is split, get the bits
-                log_debug("split packet");
-                log_debug("1 - reading packet to %08x from %08x length: %d",
-                        (uint32_t) dst_ptr, (uint32_t) src_ptr, final_space);
-                spin1_memcpy(dst_ptr, src_ptr, final_space);
-
-                uint32_t remaining_len = len - final_space;
-                dst_ptr += final_space;
-                src_ptr = buffer_region;
-                log_debug("2 - reading packet to %08x from %08x length: %d",
-                        (uint32_t) dst_ptr, (uint32_t) src_ptr, remaining_len);
-
-                spin1_memcpy(dst_ptr, src_ptr, remaining_len);
-                read_pointer = buffer_region + remaining_len;
+            // If the packet is split, get the bits
+            log_debug("1 - reading packet to %08x from %08x length: %d",
+                    dst_ptr, src_ptr, final_space);
+            if (is_half_aligned(src_ptr)) { // dst_ptr is known aligned
+                half_word_copy(dst_ptr, src_ptr, final_space);
             } else {
-                // If the packet is whole, get the packet
-                log_debug("full packet");
-                log_debug("1 - reading packet to %08x from %08x length: %d",
-                        (uint32_t) dst_ptr, (uint32_t) src_ptr, len);
-
-                spin1_memcpy(dst_ptr, src_ptr, len);
-                read_pointer += len;
-                if (read_pointer >= end_of_buffer_region) {
-                    read_pointer = buffer_region;
-                }
+                full_word_copy(dst_ptr, src_ptr, final_space);
             }
 
-            last_buffer_operation = BUFFER_OPERATION_READ;
+            uint32_t remaining_len = len - final_space;
+            dst_ptr += final_space;
+            src_ptr = buffer_region;
+            log_debug("2 - reading packet to %08x from %08x length: %d",
+                    dst_ptr, src_ptr, remaining_len);
 
-            print_packet_bytes(msg_from_sdram, len);
-            next_buffer_time = extract_time_from_eieio_msg(msg_from_sdram);
-            log_debug("packet time: %d, current time: %d",
-                    next_buffer_time, time);
-
-            if (next_buffer_time <= time) {
-                packet_handler_selector(msg_from_sdram, len);
+            if (is_half_aligned(dst_ptr)) { // src_ptr is known aligned
+                half_word_copy(dst_ptr, src_ptr, remaining_len);
             } else {
-                msg_from_sdram_in_use = true;
-                msg_from_sdram_length = len;
+                full_word_copy(dst_ptr, src_ptr, remaining_len);
             }
+            read_pointer = buffer_region + remaining_len;
+        } else {
+            // If the packet is whole, get the packet
+            log_debug("0 - reading packet to %08x from %08x length: %d",
+                    msg_from_sdram, src_ptr, len);
+
+            if (is_half_aligned(src_ptr)) { // dst_ptr is known aligned
+                half_word_copy(msg_from_sdram, src_ptr, len);
+            } else {
+                full_word_copy(msg_from_sdram, src_ptr, len);
+            }
+            read_pointer += len;
+            if (read_pointer >= end_of_buffer_region) {
+                read_pointer = buffer_region;
+            }
+        }
+
+        last_buffer_operation = BUFFER_OPERATION_READ;
+
+        print_packet_bytes(msg_from_sdram, len);
+        next_buffer_time = extract_time_from_eieio_msg(msg_from_sdram);
+        log_debug("packet time: %d, current time: %d",
+                next_buffer_time, time);
+
+        if (next_buffer_time <= time) {
+            packet_handler_selector(msg_from_sdram, len);
+        } else {
+            msg_from_sdram_in_use = true;
+            msg_from_sdram_length = len;
         }
     }
 }
@@ -1105,7 +1126,10 @@ static bool read_parameters(struct config *config) {
     sdp_host_req.dest_addr = return_tag_dest;
     sdp_host_req.srce_addr = spin1_get_chip_id();
     req_ptr = (req_packet_sdp_t *) &sdp_host_req.cmd_rc;
-    req_ptr->eieio_header_command = (1 << 14) | SPINNAKER_REQUEST_BUFFERS;
+    req_ptr->header = (eieio_header_t) {
+        .packet_class = PACKET_CLASS_COMMAND,
+        .packet_command = SPINNAKER_REQUEST_BUFFERS
+    };
     req_ptr->chip_id = spin1_get_chip_id();
     req_ptr->processor = spin1_get_core_id() << 3;
     req_ptr->_pad1 = 0;
@@ -1302,6 +1326,8 @@ static void sdp_packet_callback(uint mailbox, UNUSED uint port) {
 
 //! Entry point
 void c_main(void) {
+    static_assert(sizeof(eieio_header_t) == 2, "eieio_header_t sanity");
+
     // Configure system
     uint32_t timer_period = 0;
     if (!initialise(&timer_period)) {

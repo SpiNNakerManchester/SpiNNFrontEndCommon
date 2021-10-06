@@ -32,23 +32,22 @@
 typedef uint8_t channel_index_t;
 
 //! \brief records some data into a specific recording channel.
-//! \param[in] channel the channel to store the data into.
-//! \param[in] data the data to store into the channel.
-//! \param[in] size_bytes the number of bytes that this data will take up.
+//! \param[in] channel: the channel to store the data into.
+//! \param[in] data: the data to store into the channel.
+//! \param[in] size_bytes: the number of bytes that this data will take up.
 //!            This may be any number of bytes, not just whole words.
-//! \return boolean which is True if the data has been stored in the channel,
+//! \return True if the data has been stored in the channel,
 //!         False otherwise.
-bool recording_record(channel_index_t channel, void *data, size_t size_bytes);
+bool recording_record(channel_index_t channel, const void *data, size_t size_bytes);
 
-//! \brief Finishes recording - should only be called if recording_flags is
-//!        not 0
+//! \brief Finishes recording.
+//! \details should only be called if recording_flags is not 0
 void recording_finalise(void);
 
 //! \brief initialises the recording of data
-//! \param[in,out] recording_data_address The start of the data about the
-//!                                       recording, updated to point to just
-//!                                       after the data if return True.
-//!                                       Data is:
+//! \param[in,out] recording_data_address:
+//!     The start of the data about the recording, updated to point to just
+//!     after the data if return True. Data is:
 //! ```
 //! {
 //!    // number of potential recording regions
