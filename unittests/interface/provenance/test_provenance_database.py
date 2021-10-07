@@ -82,3 +82,4 @@ class TestProvenanceDatabase(unittest.TestCase):
         data = ProvenanceReader().get_provenace_sum_by_core(
             1, 1, 2, "gamma")
         self.assertIsNone(data)
+        ProvenanceReader().run_query("select * from core_stats_view")
