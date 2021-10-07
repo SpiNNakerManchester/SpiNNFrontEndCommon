@@ -25,7 +25,7 @@ _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 _RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
 
 
-class SqlLiteDatabase(SQLiteDB):
+class ProvenanceWriter(SQLiteDB):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::

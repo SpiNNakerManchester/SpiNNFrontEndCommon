@@ -16,7 +16,7 @@
 import unittest
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.provenance import (
-    SqlLiteDatabase, ProvenanceReader)
+    ProvenanceWriter, ProvenanceReader)
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
 
@@ -26,8 +26,8 @@ class TestProvenanceDatabase(unittest.TestCase):
         unittest_setup()
 
     def test_create(self):
-        SqlLiteDatabase()
-        SqlLiteDatabase()
+        ProvenanceWriter()
+        ProvenanceWriter()
 
     def as_set(self, items):
         results = set()
@@ -40,7 +40,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         a = ProvenanceDataItem(["foo", "bar for 1,2", "gamma"], 75)
         b = ProvenanceDataItem(["foo", "alpha for 1,2", "gamma"], 100)
         items = [a, b]
-        with SqlLiteDatabase() as db:
+        with ProvenanceWriter() as db:
             db.insert_items(items)
         data = set(ProvenanceReader().get_provenace_items())
         items_set = self.as_set(items)
@@ -50,7 +50,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         a = ProvenanceDataItem(["foo", "bar for 1,2", "gamma"], 75)
         b = ProvenanceDataItem(["foo", "alpha for 1,2", "gamma"], 100)
         items = [a, b]
-        with SqlLiteDatabase() as db:
+        with ProvenanceWriter() as db:
             db.insert_item(["foo", "bar for 1,2", "gamma"], 75)
             db.insert_item(["foo", "alpha for 1,2", "gamma"], 100)
         data = set(ProvenanceReader().get_provenace_items())
@@ -58,7 +58,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         self.assertSetEqual(data, items_set)
 
     def test_cores_(self):
-        with SqlLiteDatabase() as db:
+        with ProvenanceWriter() as db:
             db.insert_item(["vertex on 1,2", "gamma"], 75)
             db.insert_item(["another vertex for 2,1", "gamma"], 75)
             db.insert_item(["vertex for 1,2,1", "gamma"], 100)
