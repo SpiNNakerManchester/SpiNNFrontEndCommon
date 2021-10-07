@@ -2958,18 +2958,13 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             self._write_provenance(prov_items)
 
-    def _execute_clear_io_buf(self, n_machine_time_steps):
+    def _execute_clear_io_buf(self):
         """
         Runs, times and logs the ChipIOBufClearer if required
 
-        :param n_machine_time_steps: Number of timesteps run
-        :type n_machine_time_steps: int or None
         """
         with FecTimer("Execute Clear IO Buffer") as timer:
             if timer.skip_if_virtual_board():
-                return
-            if timer.skip_if_value_is_none(
-                    n_machine_time_steps, "n_machine_time_steps"):
                 return
             # TODO Why check empty_graph is always false??
             if timer.skip_if_cfg_false("Reports", "clear_iobuf_during_run"):
@@ -3090,6 +3085,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._execute_extract_iobuff()
         self._execute_buffer_extractor()
+        self._execute_clear_io_buf()
+
         # FinaliseTimingData never needed as just pushed self._ to inputs
         prov_items = self._do_read_provenance()
         self._execute_time += convert_time_diff_to_total_milliseconds(
@@ -3122,11 +3119,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         do_injection(self)
 
         self._execute_sdram_usage_report_per_chip()
-        self._execute_dsg_region_reloader(graph_changed)
-        self._execute_clear_io_buf(n_machine_time_steps)
-        self._execute_runtime_update(n_sync_steps)
         self._execute_create_database_interface(run_time, graph_changed)
         self._execute_create_notifiaction_protocol()
+        self._execute_dsg_region_reloader(graph_changed)
+        self._execute_runtime_update(n_sync_steps)
         self._execute_runner(n_sync_steps, run_time)
         if n_machine_time_steps is not None or self._run_until_complete:
             self._do_extract_from_machine(run_time)
