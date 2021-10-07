@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['dma_5fburst_5fsize_0',['DMA_BURST_SIZE',['../extra__monitor__support_8c.html#a1770d428fd0221aabcda7aad57a9b586',1,'extra_monitor_support.c']]],
-  ['dse_5fmagic_1',['DSE_MAGIC',['../extra__monitor__support_8c.html#a65e5cfc85f6e1b3e2ada0229794cb1ca',1,'extra_monitor_support.c']]],
-  ['dse_5fversion_2',['DSE_VERSION',['../extra__monitor__support_8c.html#a6451df34fe62a074394822d80b90baa0',1,'extra_monitor_support.c']]]
+  ['dma_5fburst_5fsize_3859',['DMA_BURST_SIZE',['../extra__monitor__support_8c.html#a1770d428fd0221aabcda7aad57a9b586',1,'extra_monitor_support.c']]],
+  ['dse_5fmagic_3860',['DSE_MAGIC',['../extra__monitor__support_8c.html#a65e5cfc85f6e1b3e2ada0229794cb1ca',1,'extra_monitor_support.c']]],
+  ['dse_5fversion_3861',['DSE_VERSION',['../extra__monitor__support_8c.html#a6451df34fe62a074394822d80b90baa0',1,'extra_monitor_support.c']]]
 ];

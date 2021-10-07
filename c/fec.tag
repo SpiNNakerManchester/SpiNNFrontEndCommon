@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-<tagfile doxygen_version="1.9.2">
+<tagfile doxygen_version="1.9.1">
   <compound kind="file">
     <name>buffered_eieio_defs.h</name>
     <path>/github/workspace/c_common/front_end_common_lib/include/</path>
@@ -162,7 +162,7 @@
       <type>data_specification_metadata_t *</type>
       <name>data_specification_get_data_address</name>
       <anchorfile>data__specification_8h.html</anchorfile>
-      <anchor>a0b38bdde71cd69fa12ae7261036ea58d</anchor>
+      <anchor>a77cda8f0103039e98d16777000de889a</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function">
@@ -176,7 +176,7 @@
       <type>static void *</type>
       <name>data_specification_get_region</name>
       <anchorfile>data__specification_8h.html</anchorfile>
-      <anchor>afb8905d1bac7785f232d1abbfea1d2ae</anchor>
+      <anchor>a175053b53e1f0847351bbc0724cf0ae2</anchor>
       <arglist>(uint32_t region, data_specification_metadata_t *ds_regions)</arglist>
     </member>
   </compound>
@@ -531,7 +531,7 @@
       <type>heap_t *</type>
       <name>malloc_extras_get_stolen_heap</name>
       <anchorfile>malloc__extras_8h.html</anchorfile>
-      <anchor>ac4c30ebfaf350f93b16fc2d02c82c674</anchor>
+      <anchor>ac98a576116d9cd8509e0a0d02defc41c</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function">
@@ -601,14 +601,14 @@
       <type>void *</type>
       <name>malloc_extras_sdram_malloc_wrapper</name>
       <anchorfile>malloc__extras_8h.html</anchorfile>
-      <anchor>a7235f5835bd635ab7191fc98b26e4f9b</anchor>
+      <anchor>a978c33d294b156fae2fbc613a4e71f9f</anchor>
       <arglist>(uint bytes)</arglist>
     </member>
     <member kind="function">
       <type>void *</type>
       <name>malloc_extras_malloc</name>
       <anchorfile>malloc__extras_8h.html</anchorfile>
-      <anchor>a46a747129a5efcce20b14cd796db5f06</anchor>
+      <anchor>adf1d52b684bde5add0a5d59f05d08d62</anchor>
       <arglist>(uint bytes)</arglist>
     </member>
     <member kind="function">
@@ -1780,7 +1780,7 @@
       <type>data_specification_metadata_t *</type>
       <name>data_specification_get_data_address</name>
       <anchorfile>data__specification_8c.html</anchorfile>
-      <anchor>a0b38bdde71cd69fa12ae7261036ea58d</anchor>
+      <anchor>a77cda8f0103039e98d16777000de889a</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function">
@@ -1861,6 +1861,13 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>recording_bad_offset</name>
+      <anchorfile>recording_8c.html</anchorfile>
+      <anchor>aed39e1c2631fc1ede077efc548833728</anchor>
+      <arglist>(void *data, uint32_t size)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>recording_finalise</name>
       <anchorfile>recording_8c.html</anchorfile>
       <anchor>a61f4d74e9f18ff231c0b3926cb144b3b</anchor>
@@ -1913,7 +1920,7 @@
       <type>static void *</type>
       <name>simulation_store_provenance_data</name>
       <anchorfile>simulation_8c.html</anchorfile>
-      <anchor>a217eb824702941e0ff2a8734a3f27c2f</anchor>
+      <anchor>a294d6d9f4e2429ed1240419281dae728</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function" static="yes">
@@ -2705,6 +2712,13 @@
       <anchor>abf4394175d87de06a83d8793ace043e4</anchor>
       <arglist>(table_t *table)</arglist>
     </member>
+    <member kind="function" static="yes">
+      <type>static bool</type>
+      <name>compare_entries</name>
+      <anchorfile>bit__field__table__generator_8h.html</anchorfile>
+      <anchor>a9f0eea99e38b25994a74ef5d7c23e84c</anchor>
+      <arglist>(const entry_t *ent_1, const entry_t *ent_2)</arglist>
+    </member>
     <member kind="function">
       <type>void</type>
       <name>sort_table_by_key</name>
@@ -2838,21 +2852,21 @@
       <type>entry_t *</type>
       <name>routing_tables_get_entry_marked</name>
       <anchorfile>routing__tables_8h.html</anchorfile>
-      <anchor>ab8005cba3fab10098077fc13f5963d69</anchor>
+      <anchor>a5e6228d42fe76b84271d6fb7871235a0</anchor>
       <arglist>(uint32_t entry_id_to_find, int marker)</arglist>
     </member>
     <member kind="function">
       <type>entry_t *</type>
       <name>routing_table_get_entry</name>
       <anchorfile>routing__tables_8h.html</anchorfile>
-      <anchor>adb2bcbe2159d55f3e4cc6fceeee791cf</anchor>
+      <anchor>a3791f30c34afdd26bcb911ac598d4c79</anchor>
       <arglist>(uint32_t entry_id_to_find)</arglist>
     </member>
     <member kind="function">
       <type>entry_t *</type>
       <name>routing_tables_append_get_entry</name>
       <anchorfile>routing__tables_8h.html</anchorfile>
-      <anchor>a1d3d1a604b777257714f953feee84e85</anchor>
+      <anchor>acd1a260c2dad38905ab9e57c01cf21fd</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function">
@@ -2965,7 +2979,7 @@
       <type>static table_t *</type>
       <name>routing_tables_utils_convert</name>
       <anchorfile>routing__tables__utils_8h.html</anchorfile>
-      <anchor>a606c1fd7ae6334246c1d892cc8c93920</anchor>
+      <anchor>aa31268404af3ce2f67545fa98bdbd802</anchor>
       <arglist>(multi_table_t *restrict tables)</arglist>
     </member>
   </compound>
@@ -3255,7 +3269,7 @@
       <type>entry_t *</type>
       <name>routing_table_get_entry</name>
       <anchorfile>routing__table_8h.html</anchorfile>
-      <anchor>adb2bcbe2159d55f3e4cc6fceeee791cf</anchor>
+      <anchor>a3791f30c34afdd26bcb911ac598d4c79</anchor>
       <arglist>(uint32_t entry_id_to_find)</arglist>
     </member>
     <member kind="function">
@@ -3481,7 +3495,7 @@
       <type>static alias_list_t *</type>
       <name>alias_list_new</name>
       <anchorfile>aliases_8h.html</anchorfile>
-      <anchor>a56d6ac64d4783c6e06509294742621b9</anchor>
+      <anchor>abd1879eea45f5571b2c42f82329b2979</anchor>
       <arglist>(unsigned int max_size)</arglist>
     </member>
     <member kind="function" static="yes">
@@ -3523,7 +3537,7 @@
       <type>static alias_list_t *</type>
       <name>aliases_find</name>
       <anchorfile>aliases_8h.html</anchorfile>
-      <anchor>a74aba207b06c352a94709e66aa832af7</anchor>
+      <anchor>a9eb763ec2a8808f11d4da3de1d759b1e</anchor>
       <arglist>(aliases_t *a, key_mask_t key)</arglist>
     </member>
     <member kind="function" static="yes">
@@ -3805,7 +3819,7 @@
       <type>entry_t *</type>
       <name>routing_table_get_entry</name>
       <anchorfile>rt__single_8h.html</anchorfile>
-      <anchor>adb2bcbe2159d55f3e4cc6fceeee791cf</anchor>
+      <anchor>a3791f30c34afdd26bcb911ac598d4c79</anchor>
       <arglist>(uint32_t entry_id_to_find)</arglist>
     </member>
     <member kind="function">
@@ -3956,7 +3970,7 @@
       <type>static sorted_bit_fields_t *</type>
       <name>bit_field_reader_initialise</name>
       <anchorfile>bit__field__reader_8h.html</anchorfile>
-      <anchor>a29dcdb24d9f038104f2ee15b07862d3d</anchor>
+      <anchor>a150aaf77d7d542a5e17082829de53086</anchor>
       <arglist>(region_addresses_t *restrict region_addresses)</arglist>
     </member>
     <member kind="variable" static="yes">
@@ -4242,7 +4256,7 @@
       <type>static vcpu_t *</type>
       <name>get_this_vcpu_info</name>
       <anchorfile>bit__field__sorter__and__searcher_8c.html</anchorfile>
-      <anchor>ad1f276497974202116d1b8b98fbd1e53</anchor>
+      <anchor>ab01f3414297cde2079c919d64846e836</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function" static="yes">
@@ -6356,7 +6370,7 @@
       <type>static void *</type>
       <name>dse_block</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>ade9a88cf2d24c66437065f07a525f92b</anchor>
+      <anchor>a625c5983a747ef4877038c46bc1691db</anchor>
       <arglist>(uint index)</arglist>
     </member>
     <member kind="function" static="yes">
@@ -6370,7 +6384,7 @@
       <type>static void *</type>
       <name>sdram_alloc</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a2d13f2aa015974ce279dc08b19396cbb</anchor>
+      <anchor>a1be01cae613050e36c4f549c87ae0a84</anchor>
       <arglist>(uint size)</arglist>
     </member>
     <member kind="function" static="yes">
@@ -6391,7 +6405,7 @@
       <type>static sdp_msg_t *</type>
       <name>get_message_from_mailbox</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a9be93dd33bcfba67cb6c0ad475d42d8d</anchor>
+      <anchor>ad360265d909740de3d1186236c5c897c</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function" static="yes">
