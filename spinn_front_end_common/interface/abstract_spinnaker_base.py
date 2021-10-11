@@ -2300,7 +2300,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             self._multicast_routes_loaded = False
             compressor = HostBasedBitFieldRouterCompressor()
-            compressed, _= compressor(
+            compressed, _ = compressor(
                 self._router_tables, self._machine, self._placements,
                 self._txrx, self._machine_graph, self._routing_infos)
             return compressed
