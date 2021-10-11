@@ -120,3 +120,22 @@ CREATE VIEW IF NOT EXISTS core_stats_view AS
     FROM source NATURAL JOIN description NATURAL JOIN provenance
 	WHERE p is NOT NULL
     GROUP BY x, y, p, description;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- Compute some basic statistics per core over the provenance
+CREATE VIEW IF NOT EXISTS chip_stats_view AS
+    SELECT
+        CASE count(DISTINCT source_name)
+            WHEN 1 THEN source_name
+            ELSE ""
+        END AS source,
+		x, y,
+        description_name AS description,
+        min(the_value) AS min,
+        max(the_value) AS max,
+        avg(the_value) AS avg,
+        sum(the_value) AS total,
+        count(the_value) AS count
+    FROM source NATURAL JOIN description NATURAL JOIN provenance
+	WHERE x IS NOT NULL AND p is NULL
+    GROUP BY x, y, p, description;
