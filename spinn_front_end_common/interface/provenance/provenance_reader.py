@@ -277,7 +277,7 @@ class ProvenanceReader(object):
             """
         return self.run_query(query)
 
-    def get_provenace_sum_by_core(self, x, y, p, description):
+    def get_provenace_sum_for_core(self, x, y, p, description):
         query = """
             SELECT sum(the_value)
             FROM core_provenance_view
@@ -289,6 +289,17 @@ class ProvenanceReader(object):
         except IndexError:
             return None
 
+    def get_provenace_by_chip(self, description):
+        query = """
+            SELECT x, y, the_value
+            FROM provenance_view
+            WHERE description_name = ?
+            """
+        data = self.run_query(query, [description])
+        try:
+            return data
+        except IndexError:
+            return None
 
     @staticmethod
     def _demo():

@@ -59,8 +59,9 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def test_cores_(self):
         with ProvenanceWriter() as db:
-            db.insert_item(["vertex on 1,2", "gamma"], 75)
-            db.insert_item(["another vertex for 2,1", "gamma"], 75)
+            db.insert_item(["vertex on 1,2", "alpha"], 75)
+            db.insert_item(["another vertex for 2,1", "alpha"], 87)
+            db.insert_item(["a vertex on 1,2", "gamma"], 100)
             db.insert_item(["vertex for 1,2,1", "gamma"], 100)
             db.insert_item(["vertex for 1,2,2", "gamma"], 99)
             db.insert_item(["vertex for 1,2,2", "gamma"], 101)
@@ -76,10 +77,16 @@ class TestProvenanceDatabase(unittest.TestCase):
             (1, 3, 2, "vertex alpha for 1,3,2"),
             (1, 3, 5, "vertex for 1,3,5")}
         self.assertSetEqual(data, cores_set)
-        data = ProvenanceReader().get_provenace_sum_by_core(
+        data = ProvenanceReader().get_provenace_sum_for_core(
             1, 2, 2, "gamma")
         self.assertEqual(200, data)
-        data = ProvenanceReader().get_provenace_sum_by_core(
+        data = ProvenanceReader().get_provenace_sum_for_core(
             1, 1, 2, "gamma")
         self.assertIsNone(data)
         ProvenanceReader().run_query("select * from core_stats_view")
+        data = set(ProvenanceReader().get_provenace_by_chip("alpha"))
+        chip_set = {
+            (1, 2, 75),
+            (2, 1, 87)
+        }
+        self.assertEqual(chip_set, data)
