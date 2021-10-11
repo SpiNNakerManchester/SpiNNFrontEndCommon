@@ -2523,14 +2523,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type compressed: MulticastRoutingTables or None
         """
         with FecTimer("Execute Routing Table Loader") as timer:
-            if timer.skip_if_virtual_board():
-                return
             if compressed:
+                self._multicast_routes_loaded = True
+                if timer.skip_if_virtual_board():
+                    return
                 loader = RoutingTableLoader()
                 loader(compressed, self._app_id, self._txrx, self._machine)
-                self._multicast_routes_loaded = True
             else:
-                timer.skip("Tables loaded by compressor")
+                timer.skip("No on host compressed tables to load")
 
     def _report_uncompressed_routing_table(self):
         """
@@ -2784,8 +2784,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 processor_to_app_data_base_address)
 
         self._do_extra_load_algorithms()
-        self._do_delayed_compression(compressor)
         self._execute_load_routing_tables(compressed)
+        self._do_delayed_compression(compressor)
         self._report_bit_field_compressor()
 
         # TODO Was master correct to run the report first?
