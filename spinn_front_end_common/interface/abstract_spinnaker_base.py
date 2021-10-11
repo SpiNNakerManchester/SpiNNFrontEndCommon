@@ -2958,7 +2958,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             self._write_provenance(prov_items)
 
-    def _execute_clear_io_buf(self):
+    def _execute_clear_io_buf(self, runtime):
         """
         Runs, times and logs the ChipIOBufClearer if required
 
@@ -2968,6 +2968,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             # TODO Why check empty_graph is always false??
             if timer.skip_if_cfg_false("Reports", "clear_iobuf_during_run"):
+                return
+            if runtime is None:
+                timer.skip("Run forever mode")
                 return
             clearer = ChipIOBufClearer()
             clearer(self._txrx, self._executable_types)
@@ -3085,7 +3088,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._execute_extract_iobuff()
         self._execute_buffer_extractor()
-        self._execute_clear_io_buf()
+        self._execute_clear_io_buf(run_time)
 
         # FinaliseTimingData never needed as just pushed self._ to inputs
         prov_items = self._do_read_provenance()
