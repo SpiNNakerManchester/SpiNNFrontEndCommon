@@ -2292,17 +2292,18 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg compressor or
             virtual_compressor value
 
-        :return: CompressedRoutingTables and an empty list
-        :rtype: tuple(MulticastRoutingTables, List)
+        :return: CompressedRoutingTables
+        :rtype: MulticastRoutingTables
         """
         with FecTimer("Execute HostBasedBitFieldRouterCompressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
             self._multicast_routes_loaded = False
             compressor = HostBasedBitFieldRouterCompressor()
-            return compressor(
+            compressed, _= compressor(
                 self._router_tables, self._machine, self._placements,
                 self._txrx, self._machine_graph, self._routing_infos)
+            return compressed
 
     def _execute_machine_bitfield_ordered_covering_compressor(self):
         """
@@ -2312,20 +2313,20 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg compressor or
             virtual_compressor value
 
-        :return: None and the provenance list
-        :rtype: tuple(None, list(ProvenanceDataItem))
+        :return: None
+        :rtype: None
         """
         with FecTimer(
                 "Execute MachineBitFieldOrderedCoveringCompressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
             compressor = MachineBitFieldOrderedCoveringCompressor()
-            _, provenance = compressor(
+            self._compressor_provenance = compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
             self._multicast_routes_loaded = True
-            return None, provenance
+            return None
 
     def _execute_machine_bitfield_pair_compressor(self):
         """
@@ -2335,19 +2336,19 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg compressor or
             virtual_compressor value
 
-        :return: None and the provenance list
-        :rtype: tuple(None, list(ProvenanceDataItem))
+        :return: None
+        :rtype: None
          """
         with FecTimer("Execute MachineBitFieldPairRouterCompressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
             self._multicast_routes_loaded = True
             compressor = MachineBitFieldPairRouterCompressor()
-            _, provenance = compressor(
+            self._compressor_provenance = compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
-            return None, provenance
+            return None
 
     def _execute_ordered_covering_compressor(self):
         """
@@ -2357,14 +2358,14 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg compressor or
             virtual_compressor value
 
-        :return: CompressedRoutingTables and an empty list
-        :rtype: tuple(MulticastRoutingTables, List)
+        :return: CompressedRoutingTables
+        :rtype: MulticastRoutingTables
         """
         with FecTimer("Execute OrderedCoveringCompressor"):
             self._multicast_routes_loaded = False
             compressor = OrderedCoveringCompressor()
             compressed = compressor(self._router_tables)
-            return compressed, []
+            return compressed
 
     def _execute_ordered_covering_compression(self):
         """
@@ -2374,8 +2375,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg compressor or
             virtual_compressor value
 
-        :return: None and an empty list
-        :rtype: tuple(None, List)
+        :return: None
+        :rtype: None
         """
         with FecTimer("Execute OrderedCoveringCompressor") as timer:
             if timer.skip_if_virtual_board():
@@ -2384,7 +2385,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._router_tables, self._txrx, self._executable_finder,
                 self._machine, self._app_id)
             self._multicast_routes_loaded = True
-            return None, []
+            return None
 
     def _execute_pair_compressor(self):
         """
@@ -2394,14 +2395,14 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg compressor or
             virtual_compressor value
 
-        :return: CompressedRoutingTables and an empty list
-        :rtype: tuple(MulticastRoutingTables, List)
+        :return: CompressedRoutingTable
+        :rtype: MulticastRoutingTables
         """
         with FecTimer("Execute PairCompressor"):
             compressor = PairCompressor()
             compressed = compressor(self._router_tables)
             self._multicast_routes_loaded = False
-            return compressed, []
+            return compressed
 
     def _execute_pair_compression(self):
         """
@@ -2411,8 +2412,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg compressor or
             virtual_compressor value
 
-        :return: None and an empty list
-        :rtype: tuple(None, List)
+        :return: None
+        :rtype: None
         """
         with FecTimer("Execute PairOnChipRouterCompression") as timer:
             if timer.skip_if_virtual_board():
@@ -2421,7 +2422,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._router_tables, self._txrx, self._executable_finder,
                 self._machine, self._app_id)
             self._multicast_routes_loaded = True
-            return None, []
+            return None
 
     def _execute_pair_unordered_compressor(self):
         """
@@ -2431,33 +2432,16 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg compressor or
             virtual_compressor value
 
-        :return: CompressedRoutingTables and an empty list
-        :rtype: tuple(MulticastRoutingTables, List)
+        :return: CompressedRoutingTables
+        :rtype: MulticastRoutingTables
         """
         with FecTimer("Execute PairUnorderedCompressor"):
             compressor = CheckedUnorderedPairCompressor()
             compressed = compressor(self._router_tables)
             self._multicast_routes_loaded = False
-            return compressed, []
+            return compressed
 
-    def _do_compression(self):
-        """
-        Attempts to run a compressor based on the cfg compressor setting.
-
-        If using a virtual machine it will looks for the
-        cfg virtual_compressor value, otherwise use the compressor value.
-
-        May return on host compressed routing tables
-
-        Will set the multicast_routes_loaded flag if during compression the
-        routing tables have been loaded
-
-        Only some compressors provide provenance
-
-        :return: CompressedRoutingTables (likely to be None),
-            RouterCompressorProvenanceItems (may be an empty list)
-        :rtype: tuple(MulticastRoutingTables or None, list(ProvenanceDataItem))
-        """
+    def _compressor_name(self):
         if self.use_virtual_board:
             name = get_config_str("Mapping", "virtual_compressor")
             if name is None:
@@ -2466,16 +2450,15 @@ class AbstractSpinnakerBase(ConfigHandler):
                 name = get_config_str("Mapping", "compressor")
         else:
             name = get_config_str("Mapping", "compressor")
+        return name
 
-        # Calling a seperate method which can be overidden
-        return self._do_compression_by_name(name)
-
-    def _do_compression_by_name(self, name):
+    def _do_compression(self, name):
         """
         Calls a compressor based on the name provided
 
         .. note::
-            This method is the entry point for adding a new compressor
+            This method is the entry point for adding a new compressor that
+             can or must run early.
 
         :param str name: Name of a compressor
         :raise ConfigurationException: if the name is not expected
@@ -2501,6 +2484,26 @@ class AbstractSpinnakerBase(ConfigHandler):
         if name == "PairUnorderedCompressor":
             return self._execute_pair_unordered_compressor()
 
+        # delay compression until later
+        return None
+
+    def _do_delayed_compression(self, name):
+        """
+        run compression that must be delayed until later
+
+        .. note::
+            This method is the entry point for adding a new compressor that
+            can not run at the normal place
+
+        :param str name: Name of a compressor
+        :raise ConfigurationException: if the name is not expected
+        :return: CompressedRoutingTables (likely to be None),
+            RouterCompressorProvenanceItems (may be an empty list)
+        :rtype: tuple(MulticastRoutingTables or None, list(ProvenanceDataItem))
+        """
+        if self._multicast_routes_loaded:
+            # Already compressed
+            return
         # overridden in spy to handle:
         # SpynnakerMachineBitFieldOrderedCoveringCompressor
         # SpynnakerMachineBitFieldPairRouterCompressor
@@ -2767,7 +2770,10 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._execute_routing_setup(graph_changed)
         self._execute_graph_binary_gatherer(graph_changed)
+        # loading_algorithms
         self._report_uncompressed_routing_table()
+        compressor = self._compressor_name()
+        compressed = self._do_compression(compressor)
         self._execute_load_fixed_routes(graph_changed)
         processor_to_app_data_base_address = \
             self._execute_system_data_specification()
@@ -2778,8 +2784,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 processor_to_app_data_base_address)
 
         self._do_extra_load_algorithms()
-        # loading_algorithms
-        compressed, self._compressor_provenance = self._do_compression()
+        self._do_delayed_compression(compressor)
         self._execute_load_routing_tables(compressed)
         self._report_bit_field_compressor()
 
