@@ -54,13 +54,11 @@ class BitFieldCompressorReport(object):
     """ Generates a report that shows the impact of the compression of \
         bitfields into the routing table.
     """
-    def __call__(
-            self, machine_graph, placements, provenance_items=None):
+    def __call__(self, machine_graph, placements):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph
         :param ~pacman.model.placements.Placements placements: the placements
-        :param list(ProvenanceDataItem) provenance_items: prov items
         :type provenance_items: list(ProvenanceDataItem) or None
         :return: a summary, or `None` if the report file can't be written
         :rtype: BitFieldSummary
@@ -101,6 +99,7 @@ class BitFieldCompressorReport(object):
             if (x, y) not in to_merge_per_chip:
                 continue
             to_merge = to_merge_per_chip[x, y]
+            to_merge_chips.discard((x, y))
             found = True
             writer.write(
                 "Chip {}:{} has {} bitfields out of {} merged into it."
