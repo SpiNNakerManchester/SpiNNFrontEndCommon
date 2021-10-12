@@ -2466,8 +2466,21 @@ class AbstractSpinnakerBase(ConfigHandler):
             RouterCompressorProvenanceItems (may be an empty list)
         :rtype: tuple(MulticastRoutingTables or None, list(ProvenanceDataItem))
         """
+        if name == "MachineBitFieldOrderedCoveringCompressor":
+            return \
+                self._execute_machine_bitfield_ordered_covering_compressor()
+        if name == "MachineBitFieldPairRouterCompressor":
+            return self._execute_machine_bitfield_pair_compressor()
+        if name == "OrderedCoveringCompressor":
+            return self._execute_ordered_covering_compressor()
         if name == "OrderedCoveringOnChipRouterCompression":
             return self._execute_ordered_covering_compression()
+        if name == "PairCompressor":
+            return self._execute_pair_compressor()
+        if name == "PairOnChipRouterCompression":
+            return self._execute_pair_compression()
+        if name == "PairUnorderedCompressor":
+            return self._execute_pair_unordered_compressor()
 
         # delay compression until later
         return None
@@ -2495,19 +2508,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         if name == "HostBasedBitFieldRouterCompressor":
             return self._execute_host_bitfield_compressor()
-        if name == "MachineBitFieldOrderedCoveringCompressor":
-            return \
-                self._execute_machine_bitfield_ordered_covering_compressor()
-        if name == "MachineBitFieldPairRouterCompressor":
-            return self._execute_machine_bitfield_pair_compressor()
-        if name == "OrderedCoveringCompressor":
-            return self._execute_ordered_covering_compressor()
-        if name == "PairCompressor":
-            return self._execute_pair_compressor()
-        if name == "PairOnChipRouterCompression":
-            return self._execute_pair_compression()
-        if name == "PairUnorderedCompressor":
-            return self._execute_pair_unordered_compressor()
         if "," in name:
             raise ConfigurationException(
                 "Only a single algorithm is supported for compressor")
