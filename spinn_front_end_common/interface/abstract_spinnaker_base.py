@@ -2485,7 +2485,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # delay compression until later
         return None
 
-    def _do_delayed_compression(self, name):
+    def _do_delayed_compression(self, name, compressed):
         """
         run compression that must be delayed until later
 
@@ -2499,9 +2499,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             RouterCompressorProvenanceItems (may be an empty list)
         :rtype: tuple(MulticastRoutingTables or None, list(ProvenanceDataItem))
         """
-        if self._multicast_routes_loaded:
+        if self._multicast_routes_loaded or compressed:
             # Already compressed
-            return
+            return compressed
         # overridden in spy to handle:
         # SpynnakerMachineBitFieldOrderedCoveringCompressor
         # SpynnakerMachineBitFieldPairRouterCompressor
@@ -2784,7 +2784,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 processor_to_app_data_base_address)
 
         self._do_extra_load_algorithms()
-        self._do_delayed_compression(compressor)
+        compressed = self._do_delayed_compression(compressor, compressed)
         self._execute_load_routing_tables(compressed)
         self._report_bit_field_compressor()
 
