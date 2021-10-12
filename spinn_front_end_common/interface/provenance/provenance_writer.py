@@ -121,6 +121,15 @@ class ProvenanceWriter(SQLiteDB):
                 ), ?)
                 """, self.__condition_a_row(names, value))
 
+    def insert_version(self, description, the_value):
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO version_provenance(
+                    description, the_value)
+                VALUES(?, ?)
+                """, [description, the_value])
+
     @classmethod
     def __unique_names(cls, items, index):
         """ Produces an iterable of 1-tuples of the *unique* names in at \

@@ -54,6 +54,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
+from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE)
@@ -330,15 +331,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         # time taken by the front end extracting things
         "_extraction_time",
 
-        # Version information from the front end
-        "_front_end_versions",
-
         "_last_except_hook",
 
         "_vertices_or_edges_added",
 
-        # Version provenance
-        "_version_provenance"
     ]
 
     def __init__(
@@ -437,7 +433,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._last_run_outputs = dict()
         self._last_run_tokens = dict()
         self._pacman_provenance = PacmanProvenanceExtractor()
-        self._version_provenance = list()
         self._xml_paths = self._create_xml_paths(extra_algorithm_xml_paths)
 
         # extra algorithms and inputs for runs, should disappear in future
@@ -492,8 +487,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         globals_variables.set_simulator(self)
 
-        # Front End version information
-        self._front_end_versions = front_end_versions
+        self._create_version_provenance(front_end_versions)
 
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
@@ -1371,8 +1365,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         inputs = dict(self._extra_inputs)
         algorithms = list()
 
-        self._create_version_provenance()
-
         if get_config_bool("Buffers", "use_auto_pause_and_resume"):
             inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
         else:
@@ -1413,36 +1405,21 @@ class AbstractSpinnakerBase(ConfigHandler):
             inputs["MachineGraph"] = self._machine_graph
         return inputs, algorithms
 
-    def _create_version_provenance(self):
+    def _create_version_provenance(self, front_end_versions):
         """ Add the version information to the provenance data at the start.
         """
-        version_provenance = [
-            ProvenanceDataItem(
-                ["version_data", "spinn_utilities_version"],
-                spinn_utils_version),
-            ProvenanceDataItem(
-                ["version_data", "spinn_machine_version"],
-                spinn_machine_version),
-            ProvenanceDataItem(
-                ["version_data", "spalloc_version"], spalloc_version),
-            ProvenanceDataItem(
-                ["version_data", "spinnman_version"], spinnman_version),
-            ProvenanceDataItem(
-                ["version_data", "pacman_version"], pacman_version),
-            ProvenanceDataItem(
-                ["version_data", "data_specification_version"],
-                data_spec_version),
-            ProvenanceDataItem(
-                ["version_data", "front_end_common_version"], fec_version),
-            ProvenanceDataItem(
-                ["version_data", "numpy_version"], numpy_version),
-            ProvenanceDataItem(
-                ["version_data", "scipy_version"], scipy_version)]
-        if self._front_end_versions is not None:
-            version_provenance.extend(
-                ProvenanceDataItem(names=["version_data", name], value=value)
-                for name, value in self._front_end_versions)
-        self._version_provenance = version_provenance
+        with ProvenanceWriter() as db:
+            db.insert_version("spinn_utilities_version", spinn_utils_version)
+            db.insert_version("spinn_machine_version", spinn_machine_version)
+            db.insert_version("spalloc_version", spalloc_version)
+            db.insert_version("spinnman_version", spinnman_version)
+            db.insert_version("pacman_version", pacman_version)
+            db.insert_version("data_specification_version", data_spec_version)
+            db.insert_version("front_end_common_version", fec_version)
+            db.insert_version("numpy_version", numpy_version)
+            db.insert_version("scipy_version", scipy_version)
+            for description, the_value in front_end_versions:
+                db.insert_version(description, the_value)
 
     def _do_mapping(self, run_time, total_run_time):
         """
@@ -1820,8 +1797,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return:
         """
         prov_items = list()
-        if self._version_provenance is not None:
-            prov_items.extend(self._version_provenance)
         prov_items.extend(self._pacman_provenance.data_items)
         prov_item = executor.get_item("GraphProvenanceItems")
         if prov_item is not None:
@@ -1836,7 +1811,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         if prov_item is not None:
             prov_items.extend(prov_item)
         self._pacman_provenance.clear()
-        self._version_provenance = list()
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """

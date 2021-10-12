@@ -17,7 +17,7 @@
 PRAGMA main.synchronous = OFF;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table assigning ids to sourcex names
+-- A table assigning ids to source names
 CREATE TABLE IF NOT EXISTS source(
     source_id INTEGER PRIMARY KEY AUTOINCREMENT,
     source_name STRING UNIQUE NOT NULL,
@@ -39,6 +39,13 @@ CREATE TABLE IF NOT EXISTS provenance(
     source_id INTEGER NOT NULL,
     description_id INTEGER NOT NULL,
     the_value INTEGER NOT NULL);
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table holding the values for versions
+CREATE TABLE IF NOT EXISTS version_provenance(
+    version_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    description STRING NOT NULL,
+    the_value STRING NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Glue the bits together to show the information that people think is here
@@ -69,13 +76,6 @@ CREATE VIEW IF NOT EXISTS pacman_provenance_view AS
     SELECT source_name, description_name, the_value
     FROM source NATURAL JOIN description NATURAL JOIN provenance
     WHERE source_short_name = 'pacman';
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- Show purely version level provenance, as most used
-CREATE VIEW IF NOT EXISTS version_provenance_view AS
-    SELECT source_name, description_name, the_value
-    FROM source NATURAL JOIN description NATURAL JOIN provenance
-    WHERE source_short_name = 'version_data';
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Show purely router level provenance, as most used

@@ -90,3 +90,13 @@ class TestProvenanceDatabase(unittest.TestCase):
             (2, 1, 87)
         }
         self.assertEqual(chip_set, data)
+
+    def test_version(self):
+        with ProvenanceWriter() as db:
+            db.insert_version("spinn_utilities_version", "1!6.0.1")
+            db.insert_version("numpy_version", "1.17.4")
+        data = ProvenanceReader().run_query("select * from version_provenance")
+        versions = [
+            (1, 'spinn_utilities_version', '1!6.0.1'),
+            (2, 'numpy_version', '1.17.4')]
+        self.assertListEqual(data, versions)
