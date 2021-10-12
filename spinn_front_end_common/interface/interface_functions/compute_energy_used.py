@@ -14,9 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import itertools
-import re
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.ordered_set import OrderedSet
+from spinn_front_end_common.interface.provenance import ProvenanceReader
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
@@ -80,8 +80,7 @@ class ComputeEnergyUsed(object):
         :param ~spinn_machine.Machine machine:
         :param int version:
             The version of the SpiNNaker boards in use.
-        :param list(ProvenanceDataItem) router_provenance:
-            Provenance information from routers.
+        :param object router_provenance: IGNORED USED ONLY AS A TOKEN
         :param float runtime:
         :param BufferManager buffer_manager:
         :param float mapping_time:
@@ -106,12 +105,6 @@ class ComputeEnergyUsed(object):
 
         power_used = PowerUsed()
 
-        # CHEAT! We call into the guts of AbstractSpinnakerBase to get the
-        # algorithm timing data; it's still being written to at this point...
-        pacman_provenance = get_simulator()._pacman_provenance.data_items
-        # Take a copy of the PACMAN algorithm timing provenance data
-        power_used._algorithm_timing_provenance = list(pacman_provenance)
-
         power_used.num_chips = machine.n_chips
         # One extra per chip for SCAMP
         power_used.num_cores = placements.n_placements + machine.n_chips
@@ -125,7 +118,7 @@ class ComputeEnergyUsed(object):
         runtime_total_ms = runtime * time_scale_factor()
         self._compute_energy_consumption(
              placements, machine, version, using_spalloc,
-             router_provenance, dsg_time, buffer_manager, load_time,
+             dsg_time, buffer_manager, load_time,
              mapping_time, execute_time + load_time + extraction_time,
              machine_allocation_controller,
              runtime_total_ms, power_used)
@@ -134,7 +127,7 @@ class ComputeEnergyUsed(object):
 
     def _compute_energy_consumption(
             self, placements, machine, version, using_spalloc,
-            router_provenance, dsg_time, buffer_manager, load_time,
+            dsg_time, buffer_manager, load_time,
             mapping_time, total_booted_time, job, runtime_total_ms,
             power_used):
         """
@@ -142,7 +135,6 @@ class ComputeEnergyUsed(object):
         :param ~.Machine machine:
         :param int version:
         :param bool using_spalloc:
-        :param list(ProvenanceDataItem) router_provenance:
         :param float dsg_time:
         :param BufferManager buffer_manager:
         :param float load_time:
@@ -156,7 +148,7 @@ class ComputeEnergyUsed(object):
         active_chips = self.__active_chips(machine, placements)
 
         # figure out packet cost
-        self._router_packet_energy(router_provenance, power_used)
+        self._router_packet_energy(power_used)
 
         # figure FPGA cost over all booted and during runtime cost
         self._calculate_fpga_energy(
@@ -169,8 +161,7 @@ class ComputeEnergyUsed(object):
 
         # figure load time cost
         power_used.loading_joules = self._calculate_loading_energy(
-            power_used._algorithm_timing_provenance, machine, load_time,
-            active_chips, power_used.num_frames)
+            machine, load_time, active_chips, power_used.num_frames)
 
         # figure the down time idle cost for mapping
         power_used.mapping_joules = self._calculate_power_down_energy(
@@ -182,8 +173,7 @@ class ComputeEnergyUsed(object):
 
         # figure extraction time cost
         power_used.saving_joules = self._calculate_data_extraction_energy(
-            power_used._algorithm_timing_provenance, machine, active_chips,
-            power_used.num_frames)
+            machine, active_chips, power_used.num_frames)
 
         # figure out active chips cost
         power_used.chip_energy_joules = sum(
@@ -208,56 +198,30 @@ class ComputeEnergyUsed(object):
             for placement in placements
             if isinstance(placement.vertex, ChipPowerMonitorMachineVertex))
 
-    _PER_CHIP_NAMES = frozenset((
-        "expected_routers", "unexpected_routers"))
-    _MULTICAST_COUNTER_NAMES = frozenset((
-        "Local_Multicast_Packets", "External_Multicast_Packets", "Reinjected"))
-    _PEER_TO_PEER_COUNTER_NAMES = frozenset((
-        "Local_P2P_Packets", "External_P2P_Packets"))
-    _NEAREST_NEIGHBOUR_COUNTER_NAMES = frozenset((
-        "Local_NN_Packets", "External_NN_Packets"))
-    _FIXED_ROUTE_COUNTER_NAMES = frozenset((
-        "Local_FR_Packets", "External_FR_Packets"))
+    _COST_PER_TYPE = {
+        "Local_Multicast_Packets": JOULES_PER_SPIKE,
+        "External_Multicast_Packets": JOULES_PER_SPIKE,
+        "Reinjected": JOULES_PER_SPIKE,
+        "Local_P2P_Packets": JOULES_PER_SPIKE * 2,
+        "External_P2P_Packets": JOULES_PER_SPIKE * 2,
+        "Local_NN_Packets": JOULES_PER_SPIKE,
+        "External_NN_Packets": JOULES_PER_SPIKE,
+        "Local_FR_Packets": JOULES_PER_SPIKE * 2,
+        "External_FR_Packets": JOULES_PER_SPIKE * 2
+    }
 
-    def _router_packet_energy(self, router_provenance, power_used):
+    def _router_packet_energy(self, power_used):
         """
-        :param list(ProvenanceDataItem) router_provenance:
         :param PowerUsed power_used:
         """
         energy_cost = 0.0
-        for element in router_provenance:
-            # only process per chip counters, not summary counters.
-            if element.names[1] not in self._PER_CHIP_NAMES:
-                continue
-
-            # process MC packets
-            if element.names[3] in self._MULTICAST_COUNTER_NAMES:
-                this_cost = float(element.value) * self.JOULES_PER_SPIKE
-
-            # process p2p packets
-            elif element.names[3] in self._PEER_TO_PEER_COUNTER_NAMES:
-                this_cost = float(element.value) * self.JOULES_PER_SPIKE * 2
-
-            # process NN packets
-            elif element.names[3] in self._NEAREST_NEIGHBOUR_COUNTER_NAMES:
-                this_cost = float(element.value) * self.JOULES_PER_SPIKE
-
-            # process FR packets
-            elif element.names[3] in self._FIXED_ROUTE_COUNTER_NAMES:
-                this_cost = float(element.value) * self.JOULES_PER_SPIKE * 2
-
-            else:
-                # ???
-                this_cost = 0.0
-
-            energy_cost += this_cost
-
-            # If we can record this against a particular chip, also do so
-            m = re.match(r"router_at_chip_(\d+)_(\d+)", element.names[2])
-            if m and this_cost:
-                x = int(m.group(1))
-                y = int(m.group(2))
-                power_used.add_router_active_energy(x, y, this_cost)
+        for name, cost in self._COST_PER_TYPE.items():
+            data = ProvenanceReader().get_provenace_by_chip(name)
+            for (x, y, value) in data:
+                this_cost = value * cost
+                energy_cost += this_cost
+                if this_cost:
+                    power_used.add_router_active_energy(x, y, this_cost)
 
         power_used.packet_joules = energy_cost
 
@@ -442,18 +406,9 @@ class ComputeEnergyUsed(object):
                 return 1
         return 0
 
-    @staticmethod
-    def __get_running_time_ms(pacman_provenance, filter_rule):
-        return float(sum(
-            convert_time_diff_to_total_milliseconds(element.value)
-            for element in pacman_provenance
-            if filter_rule(element.names)))
-
     def _calculate_loading_energy(
-            self, pacman_provenance, machine, load_time_ms, active_chips,
-            n_frames):
+            self, machine, load_time_ms, active_chips, n_frames):
         """
-        :param list(ProvenanceDataItem) pacman_provenance:
         :param ~.Machine machine:
         :param float load_time_ms: milliseconds
         :param list active_chips:
@@ -463,8 +418,7 @@ class ComputeEnergyUsed(object):
         # pylint: disable=too-many-arguments
 
         # find time in milliseconds
-        total_time_ms = self.__get_running_time_ms(
-            pacman_provenance, lambda names: names[1] == "loading")
+        total_time_ms = get_simulator()._load_time
 
         # handle monitor core active cost
 
@@ -496,7 +450,7 @@ class ComputeEnergyUsed(object):
         return energy_cost
 
     def _calculate_data_extraction_energy(
-            self, pacman_provenance, machine, active_chips, n_frames):
+            self, machine, active_chips, n_frames):
         """ Data extraction cost
 
         :param list(ProvenanceDataItem) pacman_provenance:
@@ -510,10 +464,8 @@ class ComputeEnergyUsed(object):
         # pylint: disable=too-many-arguments
 
         # find time
-        total_time_ms = self.__get_running_time_ms(
-            pacman_provenance, lambda names: (
-                names[1] == "Execution" and names[2] !=
-                "run_time_of_FrontEndCommonApplicationRunner"))
+        # TODO is this what was desired
+        total_time_ms = get_simulator()._execute_time
 
         # min between chips that are active and fixed monitor, as when 1
         # chip is used its one monitor, if more than 1 chip,
