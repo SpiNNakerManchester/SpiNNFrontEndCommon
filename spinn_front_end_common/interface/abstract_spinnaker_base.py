@@ -2452,7 +2452,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             name = get_config_str("Mapping", "compressor")
         return name
 
-    def _do_compression(self, name):
+    def _do_early_compression(self, name):
         """
         Calls a compressor based on the name provided
 
@@ -2466,23 +2466,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             RouterCompressorProvenanceItems (may be an empty list)
         :rtype: tuple(MulticastRoutingTables or None, list(ProvenanceDataItem))
         """
-        if name == "HostBasedBitFieldRouterCompressor":
-            return self._execute_host_bitfield_compressor()
-        if name == "MachineBitFieldOrderedCoveringCompressor":
-            return \
-                self._execute_machine_bitfield_ordered_covering_compressor()
-        if name == "MachineBitFieldPairRouterCompressor":
-            return self._execute_machine_bitfield_pair_compressor()
-        if name == "OrderedCoveringCompressor":
-            return self._execute_ordered_covering_compressor()
         if name == "OrderedCoveringOnChipRouterCompression":
             return self._execute_ordered_covering_compression()
-        if name == "PairCompressor":
-            return self._execute_pair_compressor()
-        if name == "PairOnChipRouterCompression":
-            return self._execute_pair_compression()
-        if name == "PairUnorderedCompressor":
-            return self._execute_pair_unordered_compressor()
 
         # delay compression until later
         return None
@@ -2508,6 +2493,21 @@ class AbstractSpinnakerBase(ConfigHandler):
         # SpynnakerMachineBitFieldOrderedCoveringCompressor
         # SpynnakerMachineBitFieldPairRouterCompressor
 
+        if name == "HostBasedBitFieldRouterCompressor":
+            return self._execute_host_bitfield_compressor()
+        if name == "MachineBitFieldOrderedCoveringCompressor":
+            return \
+                self._execute_machine_bitfield_ordered_covering_compressor()
+        if name == "MachineBitFieldPairRouterCompressor":
+            return self._execute_machine_bitfield_pair_compressor()
+        if name == "OrderedCoveringCompressor":
+            return self._execute_ordered_covering_compressor()
+        if name == "PairCompressor":
+            return self._execute_pair_compressor()
+        if name == "PairOnChipRouterCompression":
+            return self._execute_pair_compression()
+        if name == "PairUnorderedCompressor":
+            return self._execute_pair_unordered_compressor()
         if "," in name:
             raise ConfigurationException(
                 "Only a single algorithm is supported for compressor")
@@ -2773,7 +2773,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # loading_algorithms
         self._report_uncompressed_routing_table()
         compressor = self._compressor_name()
-        compressed = self._do_compression(compressor)
+        compressed = self._do_early_compression(compressor)
         self._execute_load_fixed_routes(graph_changed)
         processor_to_app_data_base_address = \
             self._execute_system_data_specification()
@@ -2784,8 +2784,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 processor_to_app_data_base_address)
 
         self._do_extra_load_algorithms()
-        self._execute_load_routing_tables(compressed)
         self._do_delayed_compression(compressor)
+        self._execute_load_routing_tables(compressed)
         self._report_bit_field_compressor()
 
         # TODO Was master correct to run the report first?
