@@ -130,6 +130,15 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?)
                 """, [description, the_value])
 
+    def insert_timing(self, category, algorithm, the_value):
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO timer_provenance(
+                    category, algorithm, the_value)
+                VALUES(?, ?, ?)
+                """, [category, algorithm, the_value])
+
     @classmethod
     def __unique_names(cls, items, index):
         """ Produces an iterable of 1-tuples of the *unique* names in at \

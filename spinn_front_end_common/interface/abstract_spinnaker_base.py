@@ -1797,7 +1797,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return:
         """
         prov_items = list()
-        prov_items.extend(self._pacman_provenance.data_items)
         prov_item = executor.get_item("GraphProvenanceItems")
         if prov_item is not None:
             prov_items.extend(prov_item)
@@ -1810,7 +1809,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         prov_item = executor.get_item("PowerProvenanceItems")
         if prov_item is not None:
             prov_items.extend(prov_item)
-        self._pacman_provenance.clear()
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """
@@ -2134,10 +2132,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     prov_items.extend(new_prov_items)
             except Exception:
                 logger.exception("Could not read provenance")
-
-        # Finish getting the provenance
-        prov_items.extend(self._pacman_provenance.data_items)
-        self._pacman_provenance.clear()
 
         # Read IOBUF where possible (that should be everywhere)
         iobuf = IOBufExtractor(

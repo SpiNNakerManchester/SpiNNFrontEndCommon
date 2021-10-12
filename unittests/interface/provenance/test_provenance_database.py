@@ -100,3 +100,24 @@ class TestProvenanceDatabase(unittest.TestCase):
             (1, 'spinn_utilities_version', '1!6.0.1'),
             (2, 'numpy_version', '1.17.4')]
         self.assertListEqual(data, versions)
+
+    def test_timings(self):
+        with ProvenanceWriter() as db:
+            db.insert_timing("mapping", "compressor", 12)
+            db.insert_timing("mapping", "router", 123)
+            db.insert_timing("execute", "run", 134)
+            db.insert_timing("execute", "run", 344)
+            db.insert_timing("execute", "clear", 4)
+        reader = ProvenanceReader()
+        data = reader.get_timer_sums_by_category("mapping")
+        self.assertEqual(12 + 123, data)
+        data = reader.get_timer_sums_by_category("execute")
+        self.assertEqual(134 + 344 + 4, data)
+        data = reader.get_timer_sums_by_category("bacon")
+        self.assertIsNone(data)
+        data = reader.get_timer_sum_by_algorithm("router")
+        self.assertEqual(123, data)
+        data = reader.get_timer_sum_by_algorithm("clear")
+        self.assertEqual(4, data)
+        data = reader.get_timer_sum_by_algorithm("junk")
+        self.assertIsNone(data)

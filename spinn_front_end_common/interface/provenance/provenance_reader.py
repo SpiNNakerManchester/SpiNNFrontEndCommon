@@ -301,6 +301,30 @@ class ProvenanceReader(object):
         except IndexError:
             return None
 
+    def get_timer_sums_by_category(self, category):
+        query = """
+             SELECT sum(the_value)
+             FROM timer_provenance
+             WHERE category = ?
+             """
+        data = self.run_query(query, [category])
+        try:
+            return data[0][0]
+        except IndexError:
+            return None
+
+    def get_timer_sum_by_algorithm(self, algorithm):
+        query = """
+             SELECT sum(the_value)
+             FROM timer_provenance
+             WHERE algorithm = ?
+             """
+        data = self.run_query(query, [algorithm])
+        try:
+            return data[0][0]
+        except IndexError:
+            return None
+
     @staticmethod
     def _demo():
         """ A demonstration of how to use this class.
