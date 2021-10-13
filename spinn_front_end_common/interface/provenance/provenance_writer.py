@@ -139,6 +139,15 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?, ?)
                 """, [category, algorithm, the_value])
 
+    def insert_chip(self, x, y, category, description, the_value):
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO chip_provenance(
+                    x, y, category, description, the_value)
+                VALUES(?, ?, ?, ?, ?)
+                """, [x, y, category, description, the_value])
+
     @classmethod
     def __unique_names(cls, items, index):
         """ Produces an iterable of 1-tuples of the *unique* names in at \

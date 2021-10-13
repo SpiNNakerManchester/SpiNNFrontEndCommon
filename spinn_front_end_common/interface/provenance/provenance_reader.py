@@ -292,8 +292,8 @@ class ProvenanceReader(object):
     def get_provenace_by_chip(self, description):
         query = """
             SELECT x, y, the_value
-            FROM provenance_view
-            WHERE description_name = ?
+            FROM chip_provenance
+            WHERE description = ?
             """
         data = self.run_query(query, [description])
         try:

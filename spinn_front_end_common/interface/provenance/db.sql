@@ -56,6 +56,17 @@ CREATE TABLE IF NOT EXISTS timer_provenance(
     the_value INTEGER NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table holding the values for cores
+CREATE TABLE IF NOT EXISTS chip_provenance(
+    chip_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    category STRING NOT NULL,
+    description STRING NOT NULL,
+    the_value INTEGER NOT NULL);
+
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Glue the bits together to show the information that people think is here
 CREATE VIEW IF NOT EXISTS provenance_view AS
     SELECT source_id, description_id, provenance_id,

@@ -121,3 +121,17 @@ class TestProvenanceDatabase(unittest.TestCase):
         self.assertEqual(4, data)
         data = reader.get_timer_sum_by_algorithm("junk")
         self.assertIsNone(data)
+
+    def test_chip(self):
+        with ProvenanceWriter() as db:
+            db.insert_chip(1, 3, "catA", "des1", 34)
+            db.insert_chip(1, 2, "catA", "des1", 45)
+            db.insert_chip(1, 3, "catA", "des2", 67)
+            db.insert_chip(1, 3, "catA", "des1", 48)
+        reader = ProvenanceReader()
+        data = set(reader.get_provenace_by_chip("des1"))
+        chip_set = {(1, 3, 34), (1, 2, 45), (1, 3, 48)}
+        self.assertSetEqual(data, chip_set)
+        data = reader.get_provenace_by_chip("junk")
+        self.assertEqual(0, len(data))
+
