@@ -57,7 +57,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         items_set = self.as_set(items)
         self.assertSetEqual(data, items_set)
 
-    def test_cores_(self):
+    def test_cores_old(self):
         with ProvenanceWriter() as db:
             db.insert_item(["vertex on 1,2", "alpha"], 75)
             db.insert_item(["another vertex for 2,1", "alpha"], 87)
@@ -122,6 +122,10 @@ class TestProvenanceDatabase(unittest.TestCase):
         data = reader.get_timer_sum_by_algorithm("junk")
         self.assertIsNone(data)
 
+    def test_other(self):
+        with ProvenanceWriter() as db:
+            db.insert_other("foo", "bar", 12)
+
     def test_chip(self):
         with ProvenanceWriter() as db:
             db.insert_chip(1, 3, "catA", "des1", 34)
@@ -135,3 +139,9 @@ class TestProvenanceDatabase(unittest.TestCase):
         data = reader.get_provenace_by_chip("junk")
         self.assertEqual(0, len(data))
 
+    def test_cores(self):
+        with ProvenanceWriter() as db:
+            db.insert_core(1, 3, 2, "catA", "des1", 34)
+            db.insert_core(1, 2, 3, "catA", "des1", 45)
+            db.insert_core(1, 3, 2, "catA", "des2", 67)
+            db.insert_core(1, 3, 1, "catA", "des1", 48)

@@ -139,6 +139,15 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?, ?)
                 """, [category, algorithm, the_value])
 
+    def insert_other(self, category, description, the_value):
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO other_provenance(
+                    category, description, the_value)
+                VALUES(?, ?, ?)
+                """, [category, description, the_value])
+
     def insert_chip(self, x, y, category, description, the_value):
         with self.transaction() as cur:
             cur.execute(
@@ -147,6 +156,15 @@ class ProvenanceWriter(SQLiteDB):
                     x, y, category, description, the_value)
                 VALUES(?, ?, ?, ?, ?)
                 """, [x, y, category, description, the_value])
+
+    def insert_core(self, x, y, p, category, description, the_value):
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO core_provenance(
+                    x, y, p, category, description, the_value)
+                VALUES(?, ?, ?, ?, ?)
+                """, [x, y, p, category, description, the_value])
 
     @classmethod
     def __unique_names(cls, items, index):

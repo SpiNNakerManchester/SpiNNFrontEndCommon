@@ -56,6 +56,14 @@ CREATE TABLE IF NOT EXISTS timer_provenance(
     the_value INTEGER NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table holding the values for uncategorised general provenance
+CREATE TABLE IF NOT EXISTS other_provenance(
+    other_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category STRING NOT NULL,
+    description STRING NOT NULL,
+    the_value INTEGER NOT NULL);
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for cores
 CREATE TABLE IF NOT EXISTS chip_provenance(
     chip_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,6 +72,24 @@ CREATE TABLE IF NOT EXISTS chip_provenance(
     category STRING NOT NULL,
     description STRING NOT NULL,
     the_value INTEGER NOT NULL);
+
+CREATE TABLE IF NOT EXISTS core_provenance(
+    core_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    p INTEGER NOT NULL,
+    category STRING NOT NULL,
+    description STRING NOT NULL,
+    the_value INTEGER NOT NULL);
+
+CREATE TABLE IF NOT EXISTS core_mapping(
+    core_name STRING NOT NULL,
+    x INTEGER,
+    y INTEGER,
+    p INTEGER);
+-- Every core has a unique x,y,p location.
+CREATE UNIQUE INDEX IF NOT EXISTS core_sanity ON core_mapping(
+	x ASC, y ASC, p ASC);
 
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
