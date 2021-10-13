@@ -325,6 +325,13 @@ class ProvenanceReader(object):
         except IndexError:
             return None
 
+    def messages(self):
+        query = """
+             SELECT message
+             FROM messages
+             """
+        return self.run_query(query, [])
+
     @staticmethod
     def _demo():
         """ A demonstration of how to use this class.

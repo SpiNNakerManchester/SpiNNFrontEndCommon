@@ -14,12 +14,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import logging
 import os
 import re
+from spinn_utilities.config_holder import get_config_int
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 _RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
@@ -37,7 +42,9 @@ class ProvenanceWriter(SQLiteDB):
         You can't port to a different database engine without a lot of work.
     """
 
-    __slots__ = []
+    __slots__ = [
+        "_database_file"
+    ]
 
     def __init__(self, database_file=None, memory=False):
         """
@@ -55,6 +62,7 @@ class ProvenanceWriter(SQLiteDB):
         if database_file is None and not memory:
             database_file = os.path.join(
                 globals_variables.provenance_file_path(), PROVENANCE_DB)
+        self._database_file = database_file
         super().__init__(database_file, ddl_file=_DDL_FILE)
 
     def insert_items(self, items):
@@ -121,7 +129,8 @@ class ProvenanceWriter(SQLiteDB):
                 ), ?)
                 """, self.__condition_a_row(names, value))
 
-    def insert_version(self, description, the_value):
+    def insert_version(self, description, the_value,
+                       message=None, report=False):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -129,8 +138,10 @@ class ProvenanceWriter(SQLiteDB):
                     description, the_value)
                 VALUES(?, ?)
                 """, [description, the_value])
+        self.insert_message(message, report)
 
-    def insert_timing(self, category, algorithm, the_value):
+    def insert_timing(self, category, algorithm, the_value,
+                      message=None, report=False):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -138,8 +149,10 @@ class ProvenanceWriter(SQLiteDB):
                     category, algorithm, the_value)
                 VALUES(?, ?, ?)
                 """, [category, algorithm, the_value])
+        self.insert_message(message, report)
 
-    def insert_other(self, category, description, the_value):
+    def insert_other(self, category, description, the_value,
+                     message=None, report=False):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -147,8 +160,10 @@ class ProvenanceWriter(SQLiteDB):
                     category, description, the_value)
                 VALUES(?, ?, ?)
                 """, [category, description, the_value])
+        self.insert_message(message, report)
 
-    def insert_chip(self, x, y, category, description, the_value):
+    def insert_chip(self, x, y, category, description, the_value,
+                    message=None, report=False):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -156,15 +171,44 @@ class ProvenanceWriter(SQLiteDB):
                     x, y, category, description, the_value)
                 VALUES(?, ?, ?, ?, ?)
                 """, [x, y, category, description, the_value])
+        self.insert_message(message, report)
 
-    def insert_core(self, x, y, p, category, description, the_value):
+    def insert_core(self, x, y, p, category, description, the_value,
+                    message=None, report=False):
         with self.transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO core_provenance(
                     x, y, p, category, description, the_value)
-                VALUES(?, ?, ?, ?, ?)
+                VALUES(?, ?, ?, ?, ?, ?)
                 """, [x, y, p, category, description, the_value])
+        self.insert_message(message, report)
+
+    def insert_message(self, message=None, report=False):
+        if not message:
+            return
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO messages(
+                    message, report)
+                VALUES(?, ?)
+                """, [message, report])
+            if not report:
+                return
+            cur.execute(
+                """
+                SELECT COUNT(*) as count
+                FROM messages
+                WHERE report > 0
+                """, [])
+            recorded = cur.fetchone()["count"]
+            cutoff = get_config_int("Reports", "provenance_report_cutoff")
+            if cutoff is None or recorded < cutoff:
+                logger.warning(message)
+            elif recorded == cutoff:
+                logger.warning(f"Additional interesting provenace items in "
+                               f"{self._database_file}")
 
     @classmethod
     def __unique_names(cls, items, index):
