@@ -69,7 +69,6 @@ CREATE TABLE IF NOT EXISTS chip_provenance(
     chip_id INTEGER PRIMARY KEY AUTOINCREMENT,
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,
-    category STRING NOT NULL,
     description STRING NOT NULL,
     the_value INTEGER NOT NULL);
 
@@ -78,7 +77,6 @@ CREATE TABLE IF NOT EXISTS core_provenance(
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,
     p INTEGER NOT NULL,
-    category STRING NOT NULL,
     description STRING NOT NULL,
     the_value INTEGER NOT NULL);
 

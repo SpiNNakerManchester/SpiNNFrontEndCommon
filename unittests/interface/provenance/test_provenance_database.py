@@ -130,10 +130,10 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def test_chip(self):
         with ProvenanceWriter() as db:
-            db.insert_chip(1, 3, "catA", "des1", 34)
-            db.insert_chip(1, 2, "catA", "des1", 45, "What message")
-            db.insert_chip(1, 3, "catA", "des2", 67)
-            db.insert_chip(1, 3, "catA", "des1", 48)
+            db.insert_chip(1, 3, "des1", 34)
+            db.insert_chip(1, 2, "des1", 45, "What message")
+            db.insert_chip(1, 3, "des2", 67)
+            db.insert_chip(1, 3, "des1", 48)
         reader = ProvenanceReader()
         data = set(reader.get_provenace_by_chip("des1"))
         chip_set = {(1, 3, 34), (1, 2, 45), (1, 3, 48)}
@@ -143,10 +143,10 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def test_cores(self):
         with ProvenanceWriter() as db:
-            db.insert_core(1, 3, 2, "catA", "des1", 34)
-            db.insert_core(1, 2, 3, "catA", "des1", 45, "ignore me")
-            db.insert_core(1, 3, 2, "catA", "des2", 67)
-            db.insert_core(1, 3, 1, "catA", "des1", 48)
+            db.insert_core(1, 3, 2, "des1", 34)
+            db.insert_core(1, 2, 3, "des1", 45, "ignore me")
+            db.insert_core(1, 3, 2, "des2", 67)
+            db.insert_core(1, 3, 1, "des1", 48)
 
     def test_messages(self):
         set_config("Reports", "provenance_report_cutoff", 3)

@@ -162,26 +162,26 @@ class ProvenanceWriter(SQLiteDB):
                 """, [category, description, the_value])
         self.insert_message(message, report)
 
-    def insert_chip(self, x, y, category, description, the_value,
+    def insert_chip(self, x, y, description, the_value,
                     message=None, report=False):
         with self.transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO chip_provenance(
-                    x, y, category, description, the_value)
-                VALUES(?, ?, ?, ?, ?)
-                """, [x, y, category, description, the_value])
+                    x, y, description, the_value)
+                VALUES(?, ?, ?, ?)
+                """, [x, y, description, the_value])
         self.insert_message(message, report)
 
-    def insert_core(self, x, y, p, category, description, the_value,
+    def insert_core(self, x, y, p, description, the_value,
                     message=None, report=False):
         with self.transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO core_provenance(
-                    x, y, p, category, description, the_value)
-                VALUES(?, ?, ?, ?, ?, ?)
-                """, [x, y, p, category, description, the_value])
+                    x, y, p, description, the_value)
+                VALUES(?, ?, ?, ?, ?)
+                """, [x, y, p, description, the_value])
         self.insert_message(message, report)
 
     def insert_message(self, message=None, report=False):
