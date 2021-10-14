@@ -128,9 +128,10 @@ class ProvenanceWriter(SQLiteDB):
                     WHERE description_name = ?
                 ), ?)
                 """, self.__condition_a_row(names, value))
+        if report:
+            self.insert_report(message)
 
-    def insert_version(self, description, the_value,
-                       message=None, report=False):
+    def insert_version(self, description, the_value, message=None):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -138,10 +139,9 @@ class ProvenanceWriter(SQLiteDB):
                     description, the_value)
                 VALUES(?, ?)
                 """, [description, the_value])
-        self.insert_message(message, report)
+        self.insert_report(message)
 
-    def insert_timing(self, category, algorithm, the_value,
-                      message=None, report=False):
+    def insert_timing(self, category, algorithm, the_value, message=None):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -149,10 +149,9 @@ class ProvenanceWriter(SQLiteDB):
                     category, algorithm, the_value)
                 VALUES(?, ?, ?)
                 """, [category, algorithm, the_value])
-        self.insert_message(message, report)
+        self.insert_report(message)
 
-    def insert_other(self, category, description, the_value,
-                     message=None, report=False):
+    def insert_other(self, category, description, the_value, message=None):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -160,10 +159,9 @@ class ProvenanceWriter(SQLiteDB):
                     category, description, the_value)
                 VALUES(?, ?, ?)
                 """, [category, description, the_value])
-        self.insert_message(message, report)
+        self.insert_report(message)
 
-    def insert_chip(self, x, y, description, the_value,
-                    message=None, report=False):
+    def insert_chip(self, x, y, description, the_value, message=None):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -171,10 +169,9 @@ class ProvenanceWriter(SQLiteDB):
                     x, y, description, the_value)
                 VALUES(?, ?, ?, ?)
                 """, [x, y, description, the_value])
-        self.insert_message(message, report)
+        self.insert_report(message)
 
-    def insert_core(self, x, y, p, description, the_value,
-                    message=None, report=False):
+    def insert_core(self, x, y, p, description, the_value, message=None):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -182,27 +179,18 @@ class ProvenanceWriter(SQLiteDB):
                     x, y, p, description, the_value)
                 VALUES(?, ?, ?, ?, ?)
                 """, [x, y, p, description, the_value])
-        self.insert_message(message, report)
+        self.insert_report(message)
 
-    def insert_message(self, message=None, report=False):
+    def insert_report(self, message=None):
         if not message:
             return
         with self.transaction() as cur:
             cur.execute(
                 """
-                INSERT INTO messages(
-                    message, report)
-                VALUES(?, ?)
-                """, [message, report])
-            if not report:
-                return
-            cur.execute(
-                """
-                SELECT COUNT(*) as count
-                FROM messages
-                WHERE report > 0
-                """, [])
-            recorded = cur.fetchone()["count"]
+                INSERT INTO reports(message)
+                VALUES(?)
+                """, [message])
+            recorded = cur.lastrowid
             cutoff = get_config_int("Reports", "provenance_report_cutoff")
             if cutoff is None or recorded < cutoff:
                 logger.warning(message)

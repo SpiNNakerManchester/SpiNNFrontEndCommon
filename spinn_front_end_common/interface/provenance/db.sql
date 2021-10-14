@@ -89,15 +89,8 @@ CREATE TABLE IF NOT EXISTS core_mapping(
 CREATE UNIQUE INDEX IF NOT EXISTS core_sanity ON core_mapping(
 	x ASC, y ASC, p ASC);
 
-CREATE TABLE IF NOT EXISTS messages(
-    message_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    message STRING NOT NULL,
-    report INTEGER NOT NULL);
-
-CREATE VIEW IF NOT EXISTS report_view AS
-    SELECT message
-    FROM messages
-    WHERE report > 0;
+CREATE TABLE IF NOT EXISTS reports(
+    message STRING NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Glue the bits together to show the information that people think is here

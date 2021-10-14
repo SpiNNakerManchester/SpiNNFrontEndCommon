@@ -107,7 +107,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             db.insert_timing("mapping", "compressor", 12)
             db.insert_timing("mapping", "router", 123)
-            db.insert_timing("execute", "run", 134, "A message", True)
+            db.insert_timing("execute", "run", 134, "A message")
             db.insert_timing("execute", "run", 344)
             db.insert_timing("execute", "clear", 4)
         reader = ProvenanceReader()
@@ -152,14 +152,12 @@ class TestProvenanceDatabase(unittest.TestCase):
         set_config("Reports", "provenance_report_cutoff", 3)
         with LogCapture() as lc:
             with ProvenanceWriter() as db:
-                db.insert_message("Bacon is yummy", True)
-                db.insert_message("Not important", False)
-                db.insert_message(None, False)
-                db.insert_message("", False)
-                # TODO ignore this or go pop?
-                db.insert_message(None, True)
-                db.insert_message("twee", True)
-                db.insert_message("vier", True)
+                db.insert_report("een")
+                db.insert_report(None)
+                db.insert_report("")
+                db.insert_report("twee")
+                db.insert_report("drie")
+                db.insert_report("vier")
             self.assertEqual(3, len(lc.records))
 
         reader = ProvenanceReader()

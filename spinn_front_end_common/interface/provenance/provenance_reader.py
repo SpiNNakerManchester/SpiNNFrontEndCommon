@@ -328,7 +328,7 @@ class ProvenanceReader(object):
     def messages(self):
         query = """
              SELECT message
-             FROM messages
+             FROM reports
              """
         return self.run_query(query, [])
 
