@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from pacman.model.graphs.application import ApplicationVertex
+from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
-from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 from spinn_utilities.abstract_base import abstractmethod
 
 
@@ -137,19 +137,27 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         :rtype: int
         """
 
-    def get_tdma_provenance_item(self, names, desc_label, tdma_slots_missed):
+    def get_tdma_provenance_item(
+            self,  x, y, p, desc_label, tdma_slots_missed):
         """ Get the provenance item used for the TDMA provenance
 
-        :param list(str) names: the names for the provenance data item
+        :param int x: x coordinate of the chip where this core
+        :param int y: y coordinate of the core where this core
+        :param int p: virtual id of the core
         :param str desc_label: a descriptive label for the vertex
         :param int tdma_slots_missed: the number of TDMA slots missed
         :return: the provenance data item
         :rtype:
             ~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem
         """
-        return ProvenanceDataItem(
-            names + [self._TDMA_MISSED_SLOTS_NAME], tdma_slots_missed,
-            (tdma_slots_missed > 0),
-            f"The {desc_label} had the TDMA fall behind by "
-            f"{tdma_slots_missed} times.  Try increasing the "
-            "time_between_cores in the corresponding .cfg")
+        if tdma_slots_missed > 0:
+            message = (
+                f"The {desc_label} had the TDMA fall behind by "
+                f"{tdma_slots_missed} times.  Try increasing the "
+                "time_between_cores in the corresponding .cfg")
+        else:
+            message = None
+        with ProvenanceWriter() as db:
+            db.insert_core(
+                x, y, p, self._TDMA_MISSED_SLOTS_NAME, tdma_slots_missed,
+                message)

@@ -18,7 +18,7 @@ import traceback
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine)
+    AbstractProvidesProvenanceDataFromMachine, ProvenanceWriter)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -44,8 +44,7 @@ class PlacementsProvenanceGatherer(object):
 
         # retrieve provenance data from any cores that provide data
         for placement in progress.over(placements.placements):
-            prov_items.extend(
-                self._add_placement_provenance(placement, transceiver, errors))
+            self._add_placement_provenance(placement, transceiver, errors)
         if errors:
             logger.warning("Errors found during provenance gathering:")
             for error in errors:
@@ -66,7 +65,11 @@ class PlacementsProvenanceGatherer(object):
                 placement.vertex, AbstractProvidesProvenanceDataFromMachine):
             # get data
             try:
-                yield from placement.vertex.get_provenance_data_from_machine(
+                placement.vertex.get_provenance_data_from_machine(
                     txrx, placement)
+                with ProvenanceWriter() as db:
+                    db.add_core_name(placement.x, placement.y, placement.p,
+                                     placement.vertex.label)
+
             except Exception:  # pylint: disable=broad-except
                 errors.append(traceback.format_exc())

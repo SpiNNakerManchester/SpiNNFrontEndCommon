@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS core_mapping(
 CREATE UNIQUE INDEX IF NOT EXISTS core_sanity ON core_mapping(
 	x ASC, y ASC, p ASC);
 
+
 CREATE TABLE IF NOT EXISTS reports(
     message STRING NOT NULL);
 
@@ -103,10 +104,9 @@ CREATE VIEW IF NOT EXISTS provenance_view AS
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Show purely core level provenance, as most used
 CREATE VIEW IF NOT EXISTS core_provenance_view AS
-    SELECT provenance_id AS insertion_order,
-    	source_name, x, y, p, description_name, the_value
-    FROM source NATURAL JOIN description NATURAL JOIN provenance
-    WHERE source_short_name LIKE '%vertex%';
+    SELECT core_id AS insertion_order,
+    	core_name, x, y, p, description, the_value
+    FROM core_provenance NATURAL JOIN core_mapping;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Show purely edge level provenance, as most used

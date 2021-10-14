@@ -181,6 +181,15 @@ class ProvenanceWriter(SQLiteDB):
                 """, [x, y, p, description, the_value])
         self.insert_report(message)
 
+    def add_core_name(self, x, y, p, core_name):
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT OR IGNORE INTO core_mapping(
+                    x, y, p, core_name)
+                VALUES(?, ?, ?, ?) 
+                """, [x, y, p, core_name])
+
     def insert_report(self, message=None):
         if not message:
             return

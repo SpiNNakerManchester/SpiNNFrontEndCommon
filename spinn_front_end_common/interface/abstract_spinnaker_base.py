@@ -341,7 +341,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             n_chips_required=None, n_boards_required=None,
-            front_end_versions=None):
+            front_end_versions=[]):
         """
         :param executable_finder: How to find APLX files to deploy to SpiNNaker
         :type executable_finder:
