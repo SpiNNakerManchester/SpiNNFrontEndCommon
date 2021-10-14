@@ -144,20 +144,25 @@ CREATE VIEW IF NOT EXISTS stats_view AS
 -- Compute some basic statistics per core over the provenance
 CREATE VIEW IF NOT EXISTS core_stats_view AS
     SELECT
-        CASE count(DISTINCT source_name)
-            WHEN 1 THEN source_name
-            ELSE ""
-        END AS source,
-		x, y, p,
-        description_name AS description,
+		core_name, x, y, p, description,
         min(the_value) AS min,
         max(the_value) AS max,
         avg(the_value) AS avg,
         sum(the_value) AS total,
         count(the_value) AS count
-    FROM source NATURAL JOIN description NATURAL JOIN provenance
-	WHERE p is NOT NULL
-    GROUP BY x, y, p, description;
+    FROM core_provenance_view
+    GROUP BY core_name, x, y, p, description;
+
+CREATE VIEW IF NOT EXISTS core_summary_view AS
+    SELECT
+		description,
+        min(the_value) AS min,
+        max(the_value) AS max,
+        avg(the_value) AS avg,
+        sum(the_value) AS total,
+        count(the_value) AS count
+    FROM core_provenance_view
+    GROUP BY description;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Compute some basic statistics per core over the provenance
