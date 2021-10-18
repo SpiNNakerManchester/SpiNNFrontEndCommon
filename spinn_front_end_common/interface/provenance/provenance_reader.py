@@ -277,22 +277,22 @@ class ProvenanceReader(object):
             """
         return self.run_query(query)
 
-    def get_provenace_sum_for_core(self, x, y, p, description):
+    def get_router_by_chip(self, description):
         query = """
-            SELECT sum(the_value)
-            FROM core_provenance_view
-            WHERE x = ? AND y = ? AND p = ? AND description_name = ?
+            SELECT x, y, the_value
+            FROM router_provenance
+            WHERE description = ?
             """
-        data = self.run_query(query, [x, y, p, description])
+        data = self.run_query(query, [description])
         try:
-            return data[0][0]
+            return data
         except IndexError:
             return None
 
-    def get_provenace_by_chip(self, description):
+    def get_monitor_by_chip(self, description):
         query = """
             SELECT x, y, the_value
-            FROM chip_provenance
+            FROM monitor_provenance
             WHERE description = ?
             """
         data = self.run_query(query, [description])

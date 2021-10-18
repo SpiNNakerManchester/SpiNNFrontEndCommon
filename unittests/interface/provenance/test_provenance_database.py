@@ -59,39 +59,6 @@ class TestProvenanceDatabase(unittest.TestCase):
         items_set = self.as_set(items)
         self.assertSetEqual(data, items_set)
 
-    def test_cores_old(self):
-        with ProvenanceWriter() as db:
-            db.insert_item(["vertex on 1,2", "alpha"], 75)
-            db.insert_item(["another vertex for 2,1", "alpha"], 87)
-            db.insert_item(["a vertex on 1,2", "gamma"], 100)
-            db.insert_item(["vertex for 1,2,1", "gamma"], 100)
-            db.insert_item(["vertex for 1,2,2", "gamma"], 99)
-            db.insert_item(["vertex for 1,2,2", "gamma"], 101)
-            db.insert_item(["vertex alpha for 1,3,1", "gamma"], 100)
-            db.insert_item(["vertex alpha for 1,3,2", "gamma"], 100)
-            db.insert_item(["vertex for 1,3,5", "gamma"], 100)
-            db.insert_item(["pizza", "bacon"], 12)
-        data = set(ProvenanceReader().get_cores_with_provenace())
-        cores_set = {
-            (1, 2, 1, "vertex for 1,2,1"),
-            (1, 2, 2, "vertex for 1,2,2"),
-            (1, 3, 1, "vertex alpha for 1,3,1"),
-            (1, 3, 2, "vertex alpha for 1,3,2"),
-            (1, 3, 5, "vertex for 1,3,5")}
-        self.assertSetEqual(data, cores_set)
-        data = ProvenanceReader().get_provenace_sum_for_core(
-            1, 2, 2, "gamma")
-        self.assertEqual(200, data)
-        data = ProvenanceReader().get_provenace_sum_for_core(
-            1, 1, 2, "gamma")
-        self.assertIsNone(data)
-        ProvenanceReader().run_query("select * from core_stats_view")
-        #data = set(ProvenanceReader().get_provenace_by_chip("alpha"))
-        #chip_set = {
-        #    (1, 2, 75),
-        #    (2, 1, 87)
-        #}
-        #self.assertEqual(chip_set, data)
 
     def test_version(self):
         with ProvenanceWriter() as db:
@@ -128,17 +95,31 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             db.insert_other("foo", "bar", 12)
 
-    def test_chip(self):
+    def test_router(self):
         with ProvenanceWriter() as db:
-            db.insert_chip(1, 3, "des1", 34)
-            db.insert_chip(1, 2, "des1", 45, "What message")
-            db.insert_chip(1, 3, "des2", 67)
-            db.insert_chip(1, 3, "des1", 48)
+            db.insert_router(1, 3, "des1", 34, True)
+            db.insert_router(1, 2, "des1", 45, True, "What message")
+            db.insert_router(1, 3, "des2", 67, True)
+            db.insert_router(1, 3, "des1", 48, True)
+            db.insert_router(5, 5, "des1", 48, False)
         reader = ProvenanceReader()
-        data = set(reader.get_provenace_by_chip("des1"))
+        data = set(reader.get_router_by_chip("des1"))
+        chip_set = {(1, 3, 34), (1, 2, 45), (1, 3, 48), (5, 5, 48)}
+        self.assertSetEqual(data, chip_set)
+        data = reader.get_router_by_chip("junk")
+        self.assertEqual(0, len(data))
+
+    def test_monitor(self):
+        with ProvenanceWriter() as db:
+            db.insert_monitor(1, 3, "des1", 34)
+            db.insert_monitor(1, 2, "des1", 45, "What message")
+            db.insert_monitor(1, 3, "des2", 67)
+            db.insert_monitor(1, 3, "des1", 48)
+        reader = ProvenanceReader()
+        data = set(reader.get_monitor_by_chip("des1"))
         chip_set = {(1, 3, 34), (1, 2, 45), (1, 3, 48)}
         self.assertSetEqual(data, chip_set)
-        data = reader.get_provenace_by_chip("junk")
+        data = reader.get_monitor_by_chip("junk")
         self.assertEqual(0, len(data))
 
     def test_cores(self):

@@ -161,14 +161,25 @@ class ProvenanceWriter(SQLiteDB):
                 """, [category, description, the_value])
         self.insert_report(message)
 
-    def insert_chip(self, x, y, description, the_value, message=None):
+    def insert_monitor(self, x, y, description, the_value, message=None):
         with self.transaction() as cur:
             cur.execute(
                 """
-                INSERT INTO chip_provenance(
+                INSERT INTO monitor_provenance(
                     x, y, description, the_value)
                 VALUES(?, ?, ?, ?)
                 """, [x, y, description, the_value])
+        self.insert_report(message)
+
+    def insert_router(
+            self, x, y, description, the_value, expected, message=None):
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO router_provenance(
+                    x, y, description, the_value, expected)
+                VALUES(?, ?, ?, ?, ?)
+                """, [x, y, description, the_value, expected])
         self.insert_report(message)
 
     def insert_core(self, x, y, p, description, the_value, message=None):

@@ -216,7 +216,7 @@ class ComputeEnergyUsed(object):
         """
         energy_cost = 0.0
         for name, cost in self._COST_PER_TYPE.items():
-            data = ProvenanceReader().get_provenace_by_chip(name)
+            data = ProvenanceReader().get_router_by_chip(name)
             for (x, y, value) in data:
                 this_cost = value * cost
                 energy_cost += this_cost
