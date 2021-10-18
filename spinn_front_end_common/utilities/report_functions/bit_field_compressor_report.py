@@ -19,17 +19,16 @@ import sys
 from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 from .bit_field_summary import BitFieldSummary
-from spinn_front_end_common.utilities.utility_objs import (
-    ProvenanceDataItem, ExecutableType)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.interface.provenance import ProvenanceReader
 logger = FormatAdapter(logging.getLogger(__name__))
 _FILE_NAME = "bit_field_compressed_summary.rpt"
 # provenance data item names
-PROV_TOP_NAME = "bit_field_router_provenance"
-PROV_CHIP_NAME = "router_at_chip_{}_{}"
+
 MERGED_NAME = "bit_fields_merged"
 NOT_APPLICABLE = "N/A"
 
@@ -42,12 +41,8 @@ def generate_provenance_item(x, y, bit_fields_merged):
     :param bit_fields_merged:
     :return:
     """
-    # prov names
-    names = list()
-    names.append(PROV_TOP_NAME)
-    names.append(PROV_CHIP_NAME.format(x, y))
-    names.append(MERGED_NAME)
-    return ProvenanceDataItem(names, str(bit_fields_merged))
+    with ProvenanceWriter as db:
+        db.insert_router(x, y, MERGED_NAME, bit_fields_merged, True)
 
 
 class BitFieldCompressorReport(object):
