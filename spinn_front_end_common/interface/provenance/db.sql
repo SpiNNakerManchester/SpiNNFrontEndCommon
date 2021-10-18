@@ -48,6 +48,14 @@ CREATE TABLE IF NOT EXISTS version_provenance(
     the_value STRING NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table holding the values for power provenance
+-- Except for engery used by cores or routers
+CREATE TABLE IF NOT EXISTS power_provenance(
+    power_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    description STRING NOT NULL,
+    the_value FLOAT NOT NULL);
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for versions
 CREATE TABLE IF NOT EXISTS timer_provenance(
     timer_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -103,7 +111,7 @@ CREATE TABLE IF NOT EXISTS router_provenance(
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,
     description STRING NOT NULL,
-    the_value INTEGER NOT NULL,
+    the_value FLOAT NOT NULL,
     expected INTEGER NOT NULL);
 
 -- Compute some basic statistics per router over the router provenance

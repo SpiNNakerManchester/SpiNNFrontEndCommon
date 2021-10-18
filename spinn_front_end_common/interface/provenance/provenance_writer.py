@@ -141,6 +141,16 @@ class ProvenanceWriter(SQLiteDB):
                 """, [description, the_value])
         self.insert_report(message)
 
+    def insert_power(self, description, the_value, message=None):
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO power_provenance(
+                    description, the_value)
+                VALUES(?, ?)
+                """, [description, the_value])
+        self.insert_report(message)
+
     def insert_timing(self, category, algorithm, the_value, message=None):
         with self.transaction() as cur:
             cur.execute(

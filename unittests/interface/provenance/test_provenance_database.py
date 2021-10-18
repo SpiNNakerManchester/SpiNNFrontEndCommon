@@ -63,12 +63,20 @@ class TestProvenanceDatabase(unittest.TestCase):
     def test_version(self):
         with ProvenanceWriter() as db:
             db.insert_version("spinn_utilities_version", "1!6.0.1")
-            db.insert_version("numpy_version", "1.17.4")
+            db.insert_version("numpy_version", "1.17.4", "Test message")
         data = ProvenanceReader().run_query("select * from version_provenance")
         versions = [
             (1, 'spinn_utilities_version', '1!6.0.1'),
             (2, 'numpy_version', '1.17.4')]
         self.assertListEqual(data, versions)
+
+    def test_power(self):
+        with ProvenanceWriter() as db:
+            db.insert_power("num_cores", 34)
+            db.insert_power("total time (seconds)", 6.81, "test message")
+        data = ProvenanceReader().run_query("select * from power_provenance")
+        power = [(1, 'num_cores', 34.0), (2, 'total time (seconds)', 6.81)]
+        self.assertListEqual(data, power)
 
     def test_timings(self):
         with ProvenanceWriter() as db:
