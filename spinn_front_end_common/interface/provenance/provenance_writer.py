@@ -241,7 +241,7 @@ class ProvenanceWriter(SQLiteDB):
 
     def insert_connector(
             self, pre_population, post_population, the_type, description,
-            the_value, message):
+            the_value, message=None):
         with self.transaction() as cur:
             cur.execute(
                 """
