@@ -27,8 +27,7 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
     AbstractSupportsDatabaseInjection)
-from spinn_front_end_common.utilities.utility_objs import (
-    ProvenanceDataItem, ExecutableType)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException

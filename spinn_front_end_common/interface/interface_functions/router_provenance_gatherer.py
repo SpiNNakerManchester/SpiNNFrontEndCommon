@@ -17,7 +17,6 @@ import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanException
-from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 
 logger = FormatAdapter(logging.getLogger(__name__))
