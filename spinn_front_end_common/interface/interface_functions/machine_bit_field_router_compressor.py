@@ -139,7 +139,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             the set of targets and executables
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
-        :param list(ProvenanceDataItem) provenance_data_objects:
         :return: where the compressors ran, and the provenance they generated
         :rtype: tuple(~spinnman.model.ExecutableTargets,
             list(ProvenanceDataItem))

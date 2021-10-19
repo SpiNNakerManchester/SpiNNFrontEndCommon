@@ -45,7 +45,7 @@ class EnergyProvenanceReporter(object):
             The computed basic power consumption information
         :param ~pacman.model.placements.Placements placements:
             Used for describing what a core was actually doing
-        :rtype: list(ProvenanceDataItem)
+        :rtype: object
         """
         with ProvenanceWriter() as db:
             for prop in _BASIC_PROPERTIES:

@@ -453,8 +453,6 @@ class ComputeEnergyUsed(object):
             self, machine, active_chips, n_frames):
         """ Data extraction cost
 
-        :param list(ProvenanceDataItem) pacman_provenance:
-            provenance items from the PACMAN set
         :param ~.Machine machine: machine description
         :param list active_chips:
         :param int n_frames:
