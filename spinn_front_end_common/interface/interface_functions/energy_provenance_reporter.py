@@ -53,18 +53,19 @@ class EnergyProvenanceReporter(object):
                     self.__prop_name(prop), getattr(power_used, prop))
                 for x, y, p in power_used.active_cores:
                     db.insert_core(
-                        x, y, p, "energy (Joules)",
+                        x, y, p, "Energy (Joules)",
                         power_used.get_core_active_energy_joules(x, y, p))
                     if p == 0:
                         db.add_core_name(x, y, p, "SCAMP(OS)")
                 for x, y in power_used.active_routers:
                     db.insert_router(
-                        x, y, "energy (Joules)",
+                        x, y, "Energy (Joules)",
                         power_used.get_router_active_energy_joules(x, y), True)
         return "A TOKEN"
 
     @staticmethod
     def __prop_name(name):
+        name = name.capitalize()
         name = re.sub(r"_time_secs$", r" time (seconds)", name)
         return re.sub(r"(_energy)?_joules", r" energy (Joules)", name)
 

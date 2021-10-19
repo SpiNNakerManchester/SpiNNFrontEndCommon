@@ -171,6 +171,17 @@ class ProvenanceWriter(SQLiteDB):
                 """, [category, description, the_value])
         self.insert_report(message)
 
+    def insert_gatherer(self, x, y, address, bytes, run, description,
+                        the_value, message=None):
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO gatherer_provenance(
+                    x, y, address, bytes, run, description, the_value)
+                VALUES(?, ?, ?, ?, ?, ?, ?)
+                """, [x, y, address, bytes, run, description, the_value])
+        self.insert_report(message)
+
     def insert_monitor(self, x, y, description, the_value, message=None):
         with self.transaction() as cur:
             cur.execute(

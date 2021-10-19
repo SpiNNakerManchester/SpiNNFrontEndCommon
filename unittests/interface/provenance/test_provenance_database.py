@@ -59,7 +59,6 @@ class TestProvenanceDatabase(unittest.TestCase):
         items_set = self.as_set(items)
         self.assertSetEqual(data, items_set)
 
-
     def test_version(self):
         with ProvenanceWriter() as db:
             db.insert_version("spinn_utilities_version", "1!6.0.1")
@@ -102,6 +101,18 @@ class TestProvenanceDatabase(unittest.TestCase):
     def test_other(self):
         with ProvenanceWriter() as db:
             db.insert_other("foo", "bar", 12)
+
+    def test_gatherer(self):
+        with ProvenanceWriter() as db:
+            db.insert_gatherer(
+                1, 3, 1715886360, 80, 1, "Extraction_time", 00.234)
+            db.insert_gatherer(
+                1, 3, 1715886360, 80, 1, "Lost Packets", 12)
+        reader = ProvenanceReader()
+        data = reader.run_query("Select * from gatherer_provenance")
+        expected = [(1, 1, 3, 1715886360, 80, 1, 'Extraction_time', 0.234),
+                    (2, 1, 3, 1715886360, 80, 1, 'Lost Packets', 12.0)]
+        self.assertListEqual(expected, data)
 
     def test_router(self):
         with ProvenanceWriter() as db:

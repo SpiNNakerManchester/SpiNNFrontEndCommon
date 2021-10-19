@@ -72,9 +72,21 @@ CREATE TABLE IF NOT EXISTS other_provenance(
     the_value INTEGER NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table holding the values for data speed up packet gathers
+CREATE TABLE IF NOT EXISTS gatherer_provenance(
+    gather_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    address INTEGER NOT NULL,
+    bytes INTEGER NOT NULL,
+    run INTEGER NOT NULL,
+    description STRING NOT NULL,
+    the_value FLOAT NOT NULL);
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for monitors
 CREATE TABLE IF NOT EXISTS monitor_provenance(
-    chip_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    monitor_id INTEGER PRIMARY KEY AUTOINCREMENT,
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,
     description STRING NOT NULL,
