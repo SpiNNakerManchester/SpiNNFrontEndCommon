@@ -28,8 +28,7 @@ from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from spinn_utilities.config_holder import get_config_bool
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType, ProvenanceDataItem)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
         ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
@@ -46,7 +45,7 @@ from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex as
     Gatherer)
 from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine)
+    AbstractProvidesProvenanceDataFromMachine, ProvenanceWriter)
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -438,16 +437,19 @@ class ExtraMonitorSupportMachineVertex(
         (n_sdp_packets, n_in_streams, n_out_streams, n_router_changes) = \
             _PROVENANCE_FORMAT.unpack_from(data)
         root_name = f"monitor for {placement.x},{placement.y}"
-        return [
-            ProvenanceDataItem(
-                [root_name, "Number_of_Router_Configuration_Changes"],
-                n_router_changes),
-            ProvenanceDataItem(
-                [root_name, "Number_of_Relevant_SDP_Messages"], n_sdp_packets),
-            ProvenanceDataItem(
-                [root_name, "Number_of_Input_Streamlets"], n_in_streams),
-            ProvenanceDataItem(
-                [root_name, "Number_of_Output_Streamlets"], n_out_streams)]
+        with ProvenanceWriter() as db:
+            db.insert_monitor(
+                placement.x, placement.y,
+                "Number_of_Router_Configuration_Changes", n_router_changes),
+            db.insert_monitor(
+                placement.x, placement.y,
+                "Number_of_Relevant_SDP_Messages", n_sdp_packets),
+            db.insert_monitor(
+                placement.x, placement.y,
+                "Number_of_Input_Streamlets", n_in_streams),
+            db.insert_monitor(
+                placement.x, placement.y,
+                "Number_of_Output_Streamlets", n_out_streams)
 
     def set_router_wait1_timeout(
             self, timeout, transceiver, placements,

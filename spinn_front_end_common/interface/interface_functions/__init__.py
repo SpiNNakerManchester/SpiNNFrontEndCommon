@@ -74,8 +74,6 @@ from .preallocate_resources_for_extra_monitor_support import (
     PreAllocateResourcesForExtraMonitorSupport)
 from .process_partition_constraints import ProcessPartitionConstraints
 from .profile_data_gatherer import ProfileDataGatherer
-from .provenance_json_writer import ProvenanceJSONWriter
-from .provenance_xml_writer import ProvenanceXMLWriter
 from .router_provenance_gatherer import RouterProvenanceGatherer
 from .routing_setup import RoutingSetup
 from .routing_table_loader import RoutingTableLoader
@@ -121,7 +119,6 @@ __all__ = [
     "PreAllocateResourcesForExtraMonitorSupport",
     "PreAllocateResourcesForLivePacketGatherers",
     "ProcessPartitionConstraints", "ProfileDataGatherer",
-    "ProvenanceJSONWriter", "ProvenanceXMLWriter",
     "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SDRAMOutgoingPartitionAllocator",
     "SpallocAllocator", "SpallocMaxMachineGenerator", "TagsLoader",
