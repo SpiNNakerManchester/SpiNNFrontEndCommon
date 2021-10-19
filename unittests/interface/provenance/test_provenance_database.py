@@ -19,7 +19,6 @@ from spinn_utilities.config_holder import set_config
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.provenance import (
     ProvenanceWriter, ProvenanceReader)
-from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
 
 class TestProvenanceDatabase(unittest.TestCase):
@@ -37,27 +36,6 @@ class TestProvenanceDatabase(unittest.TestCase):
             results.add(
                 ("/".join(item.names[:-1]), item.names[-1], item.value))
         return results
-
-    def test_insert_items1(self):
-        a = ProvenanceDataItem(["foo", "bar for 1,2", "gamma"], 75)
-        b = ProvenanceDataItem(["foo", "alpha for 1,2", "gamma"], 100)
-        items = [a, b]
-        with ProvenanceWriter() as db:
-            db.insert_items(items)
-        data = set(ProvenanceReader().get_provenace_items())
-        items_set = self.as_set(items)
-        self.assertSetEqual(data, items_set)
-
-    def test_insert_items2(self):
-        a = ProvenanceDataItem(["foo", "bar for 1,2", "gamma"], 75)
-        b = ProvenanceDataItem(["foo", "alpha for 1,2", "gamma"], 100)
-        items = [a, b]
-        with ProvenanceWriter() as db:
-            db.insert_item(["foo", "bar for 1,2", "gamma"], 75)
-            db.insert_item(["foo", "alpha for 1,2", "gamma"], 100)
-        data = set(ProvenanceReader().get_provenace_items())
-        items_set = self.as_set(items)
-        self.assertSetEqual(data, items_set)
 
     def test_version(self):
         with ProvenanceWriter() as db:
@@ -173,3 +151,11 @@ class TestProvenanceDatabase(unittest.TestCase):
         reader = ProvenanceReader()
         data = reader.messages()
         self.assertEqual(4, len(data))
+
+    def test_connector(self):
+        with ProvenanceWriter() as db:
+            db.insert_connector("the pre", "A post", "OneToOne", "foo", 12)
+        reader = ProvenanceReader()
+        data = reader.run_query("Select * from connector_provenance")
+        expected = [(1, 'the pre', 'A post', 'OneToOne', 'foo', 12)]
+        self.assertListEqual(expected, data)
