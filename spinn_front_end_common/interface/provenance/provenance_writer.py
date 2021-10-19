@@ -239,6 +239,18 @@ class ProvenanceWriter(SQLiteDB):
                 logger.warning(f"Additional interesting provenace items in "
                                f"{self._database_file}")
 
+    def insert_connector(
+            self, pre_population, post_population, the_type, description,
+            the_value, message):
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT OR IGNORE INTO connector_provenance(
+                    pre_population, post_population, the_type, description, the_value)
+                VALUES(?, ?, ?, ?, ?) 
+                """, [pre_population, post_population, the_type, description, the_value])
+        self.insert_report(message)
+
     @classmethod
     def __unique_names(cls, items, index):
         """ Produces an iterable of 1-tuples of the *unique* names in at \

@@ -203,27 +203,14 @@ CREATE VIEW IF NOT EXISTS core_summary_view AS
 CREATE TABLE IF NOT EXISTS reports(
     message STRING NOT NULL);
 
-
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- Glue the bits together to show the information that people think is here
-CREATE VIEW IF NOT EXISTS provenance_view AS
-    SELECT source_id, description_id, provenance_id,
-    	source_short_name AS source_name, source_name AS source_full_name,
-    	x, y, p, description_name, the_value
-    FROM source NATURAL JOIN description NATURAL JOIN provenance;
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- Show purely core level provenance, as most used
-CREATE VIEW IF NOT EXISTS core_provenance_view AS
-    SELECT core_id AS insertion_order,
-    	core_name, x, y, p, description, the_value
-    FROM core_provenance NATURAL JOIN core_mapping;
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- Show purely edge level provenance, as most used
-CREATE VIEW IF NOT EXISTS edge_provenance_view AS
-    SELECT source_name, description_name, the_value
-    FROM source NATURAL JOIN description NATURAL JOIN provenance
-    WHERE source_short_name LIKE '%connector%';
+-- A table connector provenance
+CREATE TABLE IF NOT EXISTS connector_provenance(
+    connector_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pre_population STRING NOT NULL,
+    post_population STRING NOT NULL,
+    the_type  STRING NOT NULL,
+    description STRING NOT NULL,
+    the_value INTEGER NOT NULL);
 
 
