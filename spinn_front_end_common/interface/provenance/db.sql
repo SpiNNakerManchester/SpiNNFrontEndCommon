@@ -17,30 +17,6 @@
 PRAGMA main.synchronous = OFF;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table assigning ids to source names
-CREATE TABLE IF NOT EXISTS source(
-    source_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    source_name STRING UNIQUE NOT NULL,
-    source_short_name STRING NOT NULL,
-    x INTEGER,
-    y INTEGER,
-    p INTEGER);
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table assigning ids to description names
-CREATE TABLE IF NOT EXISTS description(
-    description_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    description_name STRING UNIQUE NOT NULL);
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table holding the values
-CREATE TABLE IF NOT EXISTS provenance(
-    provenance_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    source_id INTEGER NOT NULL,
-    description_id INTEGER NOT NULL,
-    the_value INTEGER NOT NULL);
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for versions
 CREATE TABLE IF NOT EXISTS version_provenance(
     version_id INTEGER PRIMARY KEY AUTOINCREMENT,
