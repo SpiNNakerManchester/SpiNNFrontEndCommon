@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS other_provenance(
     other_id INTEGER PRIMARY KEY AUTOINCREMENT,
     category STRING NOT NULL,
     description STRING NOT NULL,
-    the_value INTEGER NOT NULL);
+    the_value STRING NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for data speed up packet gathers
@@ -149,7 +149,11 @@ CREATE TABLE IF NOT EXISTS core_mapping(
 CREATE UNIQUE INDEX IF NOT EXISTS core_sanity ON core_mapping(
 	x ASC, y ASC, p ASC);
 
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- Create a view combining core name and data
+CREATE VIEW IF NOT EXISTS core_provenance_view AS
+    SELECT core_name, x, y, p, description, the_value
+    FROM core_provenance NATURAL JOIN core_mapping;
+
 -- Compute some basic statistics per core over the provenance
 CREATE VIEW IF NOT EXISTS core_stats_view AS
     SELECT

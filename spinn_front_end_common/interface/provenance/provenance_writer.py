@@ -66,6 +66,12 @@ class ProvenanceWriter(SQLiteDB):
         super().__init__(database_file, ddl_file=_DDL_FILE)
 
     def insert_version(self, description, the_value):
+        """
+        Inserts data into the version_provenance table
+
+        :param str description: The package for which the version applies
+        :param str the_value: The version to be recorded
+        """
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -75,6 +81,12 @@ class ProvenanceWriter(SQLiteDB):
                 """, [description, the_value])
 
     def insert_power(self, description, the_value):
+        """
+        Inserts a general power value into the power_provenane table
+
+        :param str description: Type of value
+        :param float the_value: data
+        """
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -84,6 +96,13 @@ class ProvenanceWriter(SQLiteDB):
                 """, [description, the_value])
 
     def insert_timing(self, category, algorithm, the_value):
+        """
+        Inserts algorithms run times into the timer_provenance table
+
+        :param str category: Category of the Algorithm
+        :param str algorithm: Algorithm name
+        :param int the_value: Runtime
+        """
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -93,6 +112,16 @@ class ProvenanceWriter(SQLiteDB):
                 """, [category, algorithm, the_value])
 
     def insert_other(self, category, description, the_value):
+        """
+        Insert unforeseen provenance into the other_provenace_table
+
+        This allows to add provenance that does not readily fit into any of
+        the other categerogies
+
+        :param str category: grouping from this provenance
+        :param str description: Specific provenance being saved
+        :param ste the_value: Data
+        """
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -103,6 +132,17 @@ class ProvenanceWriter(SQLiteDB):
 
     def insert_gatherer(self, x, y, address, bytes, run, description,
                         the_value):
+        """
+        Records provenance into the gatherer_provenance
+
+        :param int x: X coordinate of the chip
+        :param int y: Y coordinate of the chip
+        :param int address: sdram address read from
+        :param int bytes: number of bytes read
+        :param int run: run number
+        :param str description: type of value
+        :param float the_value: data
+        """
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -112,6 +152,14 @@ class ProvenanceWriter(SQLiteDB):
                 """, [x, y, address, bytes, run, description, the_value])
 
     def insert_monitor(self, x, y, description, the_value):
+        """
+        Inserts data into the monitor_provenance table
+
+        :param int x: X coordinate of the chip
+        :param int y: Y coordinate of the chip
+        :param str description: type of value
+        :param int the_value: data
+        """
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -122,6 +170,15 @@ class ProvenanceWriter(SQLiteDB):
 
     def insert_router(
             self, x, y, description, the_value, expected=True):
+        """
+        Inserts data into the router provenance table
+
+        :param int x: X coordinate of the chip
+        :param int y: Y coordinate of the chip
+        :param str description: type of value
+        :param float the_value: data
+        :param bool expected: Flag to say this data was expected
+        """
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -131,6 +188,15 @@ class ProvenanceWriter(SQLiteDB):
                 """, [x, y, description, the_value, expected])
 
     def insert_core(self, x, y, p, description, the_value):
+        """
+        Inserts data for a specific core into the core_provenance table
+
+        :param int x: X coordinate of the chip
+        :param int y: Y coordinate of the chip
+        :param int p: id of the core
+        :param str description: type of value
+        :param int the_value: data
+        """
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -140,6 +206,17 @@ class ProvenanceWriter(SQLiteDB):
                 """, [x, y, p, description, the_value])
 
     def add_core_name(self, x, y, p, core_name):
+        """
+        Adds a vertex or similar name for the core to the core_mapping table
+
+        A second call to the same core is silently ignored even if the name
+        if different.
+
+        :param int x: X coordinate of the chip
+        :param int y: Y coordinate of the chip
+        :param int p: id of the core
+        :param str core_name: Name to assign
+        """
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -149,6 +226,14 @@ class ProvenanceWriter(SQLiteDB):
                 """, [x, y, p, core_name])
 
     def insert_report(self, message):
+        """
+        Save and if applicable logs a message to the report_table
+
+        Only logs the messages up to the cutoff set by
+        cfg provenance_report_cutoff
+
+        :param str message:
+        """
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -165,7 +250,16 @@ class ProvenanceWriter(SQLiteDB):
 
     def insert_connector(
             self, pre_population, post_population, the_type, description,
-            the_value, message=None):
+            the_value):
+        """
+        Inserts edge data into the connector_provenance
+
+        :param str pre_population: Name of the pre population / vertex
+        :param str post_population:  Name of the post population / vertex
+        :param str the_type: Class of the connector
+        :param str description: type of value
+        :param int the_value: data
+        """
         with self.transaction() as cur:
             cur.execute(
                 """
