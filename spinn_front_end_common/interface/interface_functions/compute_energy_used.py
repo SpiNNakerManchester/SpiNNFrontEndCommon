@@ -415,7 +415,8 @@ class ComputeEnergyUsed(object):
         # pylint: disable=too-many-arguments
 
         # find time in milliseconds
-        total_time_ms = get_simulator()._load_time
+        reader = ProvenanceReader()
+        total_time_ms = reader.get_timer_sum_by_category("loading")
 
         # handle monitor core active cost
 

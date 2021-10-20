@@ -300,7 +300,7 @@ class ProvenanceReader(object):
         except IndexError:
             return None
 
-    def get_timer_sums_by_category(self, category):
+    def get_timer_sum_by_category(self, category):
         """
         Get the total runtime for one category of algorithms
 
