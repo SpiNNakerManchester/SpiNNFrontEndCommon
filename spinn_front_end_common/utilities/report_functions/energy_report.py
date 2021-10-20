@@ -19,8 +19,6 @@ from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.interface.provenance import ProvenanceReader
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.helpful_functions import (
-    convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 from spinn_front_end_common.interface.interface_functions import (
@@ -358,7 +356,6 @@ class EnergyReport(object):
         """
 
         # find time
-
         reader = ProvenanceReader()
         total_time_ms = reader.get_timer_sum_by_algorithm("ApplicationRunner")
 

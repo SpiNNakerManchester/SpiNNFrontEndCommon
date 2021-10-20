@@ -220,7 +220,7 @@ class ProvenanceWriter(SQLiteDB):
                 """
                 INSERT OR IGNORE INTO core_mapping(
                     x, y, p, core_name)
-                VALUES(?, ?, ?, ?) 
+                VALUES(?, ?, ?, ?)
                 """, [x, y, p, core_name])
 
     def insert_report(self, message):
