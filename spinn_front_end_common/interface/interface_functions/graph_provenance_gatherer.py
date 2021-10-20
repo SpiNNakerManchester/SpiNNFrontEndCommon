@@ -30,11 +30,9 @@ class GraphProvenanceGatherer(object):
         :param application_graph: The optional application graph
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph
-        :rtype: list(ProvenanceDataItem)
         """
         self._get_machine_graph_provenance(machine_graph)
         self._get_app_graph_provenance(application_graph)
-        return "A Token"
 
     @staticmethod
     def _get_machine_graph_provenance(machine_graph):

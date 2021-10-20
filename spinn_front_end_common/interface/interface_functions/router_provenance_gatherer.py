@@ -50,8 +50,6 @@ class RouterProvenanceGatherer(object):
         :param router_tables: the router tables that have been generated
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
-        :param list(ProvenanceDataItem) provenance_data_objects:
-            any existing provenance information to add to
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
             vertices which represent the extra monitor code
         :param ~pacman.model.placements.Placements placements:
@@ -66,8 +64,6 @@ class RouterProvenanceGatherer(object):
         self._router_tables = router_tables
 
         self._add_router_provenance_data()
-
-        return "A TOKEN"
 
     def _add_router_provenance_data(self):
         """ Writes the provenance data of the router diagnostics

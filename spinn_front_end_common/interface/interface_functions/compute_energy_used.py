@@ -71,7 +71,7 @@ class ComputeEnergyUsed(object):
 
     def __call__(
             self, placements, machine, version,
-            router_provenance, runtime, buffer_manager, mapping_time,
+            runtime, buffer_manager, mapping_time,
             load_time, execute_time, dsg_time, extraction_time,
             spalloc_server=None, remote_spinnaker_url=None,
             machine_allocation_controller=None):
@@ -80,7 +80,6 @@ class ComputeEnergyUsed(object):
         :param ~spinn_machine.Machine machine:
         :param int version:
             The version of the SpiNNaker boards in use.
-        :param object router_provenance: IGNORED USED ONLY AS A TOKEN
         :param float runtime:
         :param BufferManager buffer_manager:
         :param float mapping_time:

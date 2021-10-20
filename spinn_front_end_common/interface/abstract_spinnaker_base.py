@@ -1788,27 +1788,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._mapping_time, self._dsg_time, self._load_time,
             self._execute_time, self._extraction_time)
 
-    def _gather_provenance_for_writing(self, executor):
-        """ Handles the gathering of provenance items for writer.
-
-        :param ~pacman.executor.PACMANAlgorithmExecutor executor:
-            the pacman executor.
-        :return:
-        """
-        prov_items = list()
-        prov_item = executor.get_item("GraphProvenanceItems")
-        if prov_item is not None:
-            prov_items.extend(prov_item)
-        prov_item = executor.get_item("PlacementsProvenanceItems")
-        if prov_item is not None:
-            prov_items.extend(prov_item)
-        prov_item = executor.get_item("RouterProvenanceItems")
-        if prov_item is not None:
-            prov_items.extend(prov_item)
-        prov_item = executor.get_item("PowerProvenanceItems")
-        if prov_item is not None:
-            prov_items.extend(prov_item)
-
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """
         :param n_machine_time_steps: The number of steps to simulate
@@ -1833,11 +1812,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
             run_complete = True
-
-            # write provenance to file if necessary
-            if (get_config_bool("Reports", "write_provenance_data") and
-                    n_machine_time_steps is not None):
-                self._gather_provenance_for_writing(executor)
 
             # move data around
             self._last_run_outputs = executor.get_items()
@@ -2040,21 +2014,17 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Extract router provenance
         extra_monitor_vertices = None
-        prov_items = list()
         try:
             if (get_config_bool("Machine", "enable_advanced_monitor_support")
                     or get_config_bool("Machine", "enable_reinjection")):
                 extra_monitor_vertices = self._last_run_outputs[
                     "ExtraMonitorVertices"]
             router_provenance = RouterProvenanceGatherer()
-            new_prov_items = router_provenance(
+            router_provenance(
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
-                provenance_data_objects=prov_items,
                 extra_monitor_vertices=extra_monitor_vertices,
                 placements=self._placements)
-            if new_prov_items is not None:
-                prov_items.extend(new_prov_items)
         except Exception:
             logger.exception("Error reading router provenance")
 
@@ -2126,9 +2096,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     finished_placements.add_placement(
                         self._placements.get_placement_on_processor(x, y, p))
                 extractor = PlacementsProvenanceGatherer()
-                new_prov_items = extractor(self._txrx, finished_placements)
-                if new_prov_items is not None:
-                    prov_items.extend(new_prov_items)
+                extractor(self._txrx, finished_placements)
             except Exception:
                 logger.exception("Could not read provenance")
 
@@ -2586,9 +2554,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._pacman_provenance.extract_provenance(executor)
                 run_complete = True
 
-                # write provenance to file if necessary
-                if get_config_bool("Reports", "write_provenance_data"):
-                    self._gather_provenance_for_writing(executor)
             except Exception as e:
                 exn = e
                 exc_info = sys.exc_info()
@@ -2674,11 +2639,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._buffer_manager is None or self._last_run_outputs is None:
             return
         # acquire provenance items
-        router_provenance = self._last_run_outputs.get(
-            "RouterProvenanceItems", None)
         power_used = self._last_run_outputs.get("PowerUsed", None)
-        if router_provenance is None or power_used is None:
-            return
 
         # run energy report
         energy_reporter.write_energy_report(

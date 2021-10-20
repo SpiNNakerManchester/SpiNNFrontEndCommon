@@ -34,9 +34,7 @@ class PlacementsProvenanceGatherer(object):
             the SpiNNMan interface object
         :param ~pacman.model.placements.Placements placements:
             The placements of the vertices
-        :rtype: list(ProvenanceDataItem)
         """
-        prov_items = list()
         errors = list()
 
         progress = ProgressBar(
@@ -49,8 +47,6 @@ class PlacementsProvenanceGatherer(object):
             logger.warning("Errors found during provenance gathering:")
             for error in errors:
                 logger.warning("{}", error)
-
-        return prov_items
 
     @staticmethod
     def _add_placement_provenance(placement, txrx, errors):
