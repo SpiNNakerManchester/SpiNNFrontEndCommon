@@ -436,7 +436,6 @@ class ExtraMonitorSupportMachineVertex(
             _PROVENANCE_FORMAT.size)
         (n_sdp_packets, n_in_streams, n_out_streams, n_router_changes) = \
             _PROVENANCE_FORMAT.unpack_from(data)
-        root_name = f"monitor for {placement.x},{placement.y}"
         with ProvenanceWriter() as db:
             db.insert_monitor(
                 placement.x, placement.y,

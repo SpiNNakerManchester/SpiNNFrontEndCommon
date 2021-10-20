@@ -120,12 +120,11 @@ class LivePacketGatherMachineVertex(
             if lost_payload > 0:
                 db.insert_report(
                     f"The {label} has lost {lost_payload} packets "
-                    "which have payloads during its execution. Try increasing "
-                    "the machine time step or increasing the time scale factor. "
-                    "If you are running in real time, try reducing the number of "
-                    "vertices which are feeding this live packet gatherer")
-            else:
-                payload_message = None
+                    "which have payloads during its execution. "
+                    "Try increasing the machine time step or increasing the "
+                    "time scale factor. If you are running in real time, "
+                    "try reducing the number of vertices which are feeding "
+                    "this live packet gatherer")
 
             db.insert_core(x, y, p, "gathered_events", events)
 

@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
 import logging
 import os
 import re
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
-from spinn_utilities.ordered_set import OrderedSet
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
@@ -264,6 +262,9 @@ class ProvenanceWriter(SQLiteDB):
             cur.execute(
                 """
                 INSERT OR IGNORE INTO connector_provenance(
-                    pre_population, post_population, the_type, description, the_value)
-                VALUES(?, ?, ?, ?, ?) 
-                """, [pre_population, post_population, the_type, description, the_value])
+                    pre_population, post_population, the_type, description,
+                    the_value)
+                VALUES(?, ?, ?, ?, ?)
+                """,
+                [pre_population, post_population, the_type, description,
+                 the_value])

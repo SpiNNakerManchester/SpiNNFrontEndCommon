@@ -27,7 +27,7 @@ class RouterProvenanceGatherer(object):
     """
 
     __slots__ = [
-        #Extra monitor vertices if any
+        # Extra monitor vertices if any
         '_extra_monitor_vertices',
         # machine passed in
         '_machine',

@@ -29,5 +29,6 @@ class PacmanProvenanceExtractor(object):
         :rtype: None
         """
         with ProvenanceWriter() as db:
-            for (algorithm, run_time, exec_names) in executor.algorithm_timings:
+            for (algorithm, run_time, exec_names) in \
+                    executor.algorithm_timings:
                 db.insert_timing(exec_names, algorithm, run_time.microseconds)
