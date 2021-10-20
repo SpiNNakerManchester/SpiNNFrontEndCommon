@@ -88,7 +88,7 @@ class BitFieldCompressorReport(object):
         to_merge_chips = set(to_merge_per_chip.keys())
 
         found = False
-        for (x, y, merged) in ProvenanceReader().get_provenace_by_chip(
+        for (x, y, merged) in ProvenanceReader().get_router_by_chip(
                 MERGED_NAME):
             if (x, y) not in to_merge_per_chip:
                 continue
