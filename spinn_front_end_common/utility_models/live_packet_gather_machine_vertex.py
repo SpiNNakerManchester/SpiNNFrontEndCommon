@@ -104,33 +104,32 @@ class LivePacketGatherMachineVertex(
         ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items)
     def parse_extra_provenance_items(self, label, x, y, p, provenance_data):
         (lost, lost_payload, events, messages) = provenance_data
-        if lost > 0:
-            without_message = (
-                f"The {label} has lost {lost} packets which do "
-                "not have payloads during its execution. Try increasing the "
-                "machine time step or increasing the time scale factor. If "
-                "you are running in real time, try reducing the number of "
-                "vertices which are feeding this live packet gatherer")
-        else:
-            without_message = None
-
-        if lost_payload > 0:
-            payload_message = (
-                f"The {label} has lost {lost_payload} packets "
-                "which have payloads during its execution. Try increasing "
-                "the machine time step or increasing the time scale factor. "
-                "If you are running in real time, try reducing the number of "
-                "vertices which are feeding this live packet gatherer")
-        else:
-            payload_message = None
 
         with ProvenanceWriter() as db:
-            db.insert_core(x, y, p, "lost_packets_without_payload", lost,
-                           without_message)
-            db.insert_core(x, y, p, "lost_packets_with_payload", lost_payload,
-                           payload_message)
-            db.insert_core(x, y, p,"gathered_events", events)
-            db.insert_core(x, y, p,"messages_sent_to_host", messages)
+            db.insert_core(x, y, p, "lost_packets_without_payload", lost)
+            if lost > 0:
+                db.insert_report(
+                    f"The {label} has lost {lost} packets which do "
+                    "not have payloads during its execution. "
+                    "Try increasing the machine time step or increasing the "
+                    "time scale factor. If you are running in real time, "
+                    "try reducing the number of vertices which are feeding "
+                    "this live packet gatherer")
+
+            db.insert_core(x, y, p, "lost_packets_with_payload", lost_payload)
+            if lost_payload > 0:
+                db.insert_report(
+                    f"The {label} has lost {lost_payload} packets "
+                    "which have payloads during its execution. Try increasing "
+                    "the machine time step or increasing the time scale factor. "
+                    "If you are running in real time, try reducing the number of "
+                    "vertices which are feeding this live packet gatherer")
+            else:
+                payload_message = None
+
+            db.insert_core(x, y, p, "gathered_events", events)
+
+            db.insert_core(x, y, p, "messages_sent_to_host", messages)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):

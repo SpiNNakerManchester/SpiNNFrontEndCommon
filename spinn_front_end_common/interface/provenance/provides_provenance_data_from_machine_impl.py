@@ -174,89 +174,78 @@ class ProvidesProvenanceDataFromMachineImpl(
         (tx_overflow, cb_overload, dma_overload, user_overload, tic_overruns,
          tic_overrun_max) = provenance_data[:self.N_SYSTEM_PROVENANCE_WORDS]
 
-        if tx_overflow != 0:
-            tx_message = (
-                f"The transmission buffer for {label} was blocked on "
-                f"{tx_overflow} occasions. "
-                f" This is often a sign that the system is experiencing back "
-                f"pressure from the communication fabric. "
-                "Please either: "
-                "1. spread the load over more cores, "
-                "2. reduce your peak transmission load, or "
-                "3. adjust your mapping algorithm.")
-        else:
-            tx_message = None
-
-        if cb_overload != 0:
-            cb_message = (
-            f"The callback queue for {label} overloaded on {cb_overload} "
-            "occasions.  This is often a sign that the system is running "
-            "too quickly for the number of neurons per core. "
-            " Please increase the machine time step or time_scale_factor "
-            "or decrease the number of neurons per core.")
-        else:
-            cb_message = None
-
-        if dma_overload != 0:
-            dma_message = (
-                f"The DMA queue for {label} overloaded on {dma_overload} "
-                "occasions.  This is often a sign that the system is running "
-                "too quickly for the number of neurons per core.  "
-                "Please increase the machine time step or time_scale_factor "
-                "or decrease the number of neurons per core.")
-        else:
-            dma_message = None
-
-        if user_overload != 0:
-            user_message = (
-                f"The USER queue for {label} overloaded on {user_overload} "
-                "occasions.  This is often a sign that the system is running "
-                "too quickly for the number of neurons per core.  "
-                "Please increase the machine time step or time_scale_factor "
-                "or decrease the number of neurons per core.")
-        else:
-            user_message = None
-
-        if tic_overruns != 0:
-            n_tic_message = (
-                f"A Timer tick callback in {label} was still executing when "
-                f"the next timer tick callback was fired off {tic_overruns} "
-                f"times.  This is a sign of the system being overloaded and "
-                f"therefore the results are likely incorrect.  "
-                f"Please increase the machine time step or time_scale_factor "
-                f"or decrease the number of neurons per core")
-        else:
-            n_tic_message = None
-
-        if tic_overrun_max > 0:
-            max_tic_message = (
-                f"The timer for {label} fell behind by up to "
-                f"{tic_overrun_max} ticks.  This is a sign of the system "
-                f"being overloaded and therefore the results are likely "
-                f"incorrect. Please increase the machine time step or "
-                f"time_scale_factor or decrease the number of neurons per core")
-        else:
-            max_tic_message = None
-
         # save provenance data items
         with ProvenanceWriter() as db:
             db.insert_core(
-                x, y, p, self._TIMES_TRANSMISSION_SPIKES_OVERRAN,
-                tx_overflow, tx_message)
+                x, y, p, self._TIMES_TRANSMISSION_SPIKES_OVERRAN, tx_overflow)
+            if tx_overflow != 0:
+                db.insert_report(
+                    f"The transmission buffer for {label} was blocked on "
+                    f"{tx_overflow} occasions. "
+                    f" This is often a sign that the system is experiencing "
+                    f"back pressure from the communication fabric. "
+                    "Please either: "
+                    "1. spread the load over more cores, "
+                    "2. reduce your peak transmission load, or "
+                    "3. adjust your mapping algorithm.")
+
             db.insert_core(
-                x, y, p, self._TIMES_CALLBACK_QUEUE_OVERLOADED, cb_overload,
-                cb_message)
+                x, y, p, self._TIMES_CALLBACK_QUEUE_OVERLOADED, cb_overload)
+            if cb_overload != 0:
+                db.insert_report(
+                    f"The callback queue for {label} overloaded on "
+                    f"{cb_overload} occasions.  "
+                    f"This is often a sign that the system is running "
+                    "too quickly for the number of neurons per core. "
+                    "Please increase the machine time step or "
+                    "time_scale_factor "
+                    "or decrease the number of neurons per core.")
+
             db.insert_core(
-                x, y, p, self._TIMES_DMA_QUEUE_OVERLOADED, dma_overload,
-                dma_message)
+                x, y, p, self._TIMES_DMA_QUEUE_OVERLOADED, dma_overload)
+            if dma_overload != 0:
+                db.insert_report(
+                    f"The DMA queue for {label} overloaded on {dma_overload} "
+                    "occasions.  "
+                    "This is often a sign that the system is running "
+                    "too quickly for the number of neurons per core.  "
+                    "Please increase the machine time step or "
+                    "time_scale_factor "
+                    "or decrease the number of neurons per core.")
+
             db.insert_core(
-                x, y, p, self._TIMES_USER_QUEUE_OVERLOADED, user_overload,
-                user_message)
+                x, y, p, self._TIMES_USER_QUEUE_OVERLOADED, user_overload)
+            if user_overload != 0:
+                db.insert_report(
+                    f"The USER queue for {label} overloaded on "
+                    f"{user_overload} occasions.  "
+                    f"This is often a sign that the system is running too "
+                    f"quickly for the number of neurons per core.  Please "
+                    f"increase the machine time step or time_scale_factor "
+                    "or decrease the number of neurons per core.")
+
             db.insert_core(
-                x, y, p, self._TIMER_TICK_OVERRUN, tic_overruns, n_tic_message)
+                x, y, p, self._TIMER_TICK_OVERRUN, tic_overruns)
+            if tic_overruns != 0:
+                db.insert_report(
+                    f"A Timer tick callback in {label} was still executing "
+                    f"when the next timer tick callback was fired off "
+                    f"{tic_overruns} times.  "
+                    f"This is a sign of the system being overloaded and "
+                    f"therefore the results are likely incorrect.  Please "
+                    f"increase the machine time step or time_scale_factor "
+                    f"or decrease the number of neurons per core")
+
             db.insert_core(
-                x, y, p, self._MAX_TIMER_TICK_OVERRUN, tic_overrun_max,
-                max_tic_message)
+                x, y, p, self._MAX_TIMER_TICK_OVERRUN, tic_overrun_max)
+            if tic_overrun_max > 0:
+                db.insert_report(
+                    f"The timer for {label} fell behind by up to "
+                    f"{tic_overrun_max} ticks.  This is a sign of the system "
+                    f"being overloaded and therefore the results are likely "
+                    f"incorrect. Please increase the machine time step or "
+                    f"time_scale_factor "
+                    f"or decrease the number of neurons per core")
 
     def _get_extra_provenance_words(self, provenance_data):
         """

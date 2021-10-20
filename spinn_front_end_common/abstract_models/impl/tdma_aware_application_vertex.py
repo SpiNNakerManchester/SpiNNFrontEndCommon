@@ -147,14 +147,11 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         :param str desc_label: a descriptive label for the vertex
         :param int tdma_slots_missed: the number of TDMA slots missed
         """
-        if tdma_slots_missed > 0:
-            message = (
-                f"The {desc_label} had the TDMA fall behind by "
-                f"{tdma_slots_missed} times.  Try increasing the "
-                "time_between_cores in the corresponding .cfg")
-        else:
-            message = None
         with ProvenanceWriter() as db:
             db.insert_core(
-                x, y, p, self._TDMA_MISSED_SLOTS_NAME, tdma_slots_missed,
-                message)
+                x, y, p, self._TDMA_MISSED_SLOTS_NAME, tdma_slots_missed)
+            if tdma_slots_missed > 0:
+                db.insert_report(
+                    f"The {desc_label} had the TDMA fall behind by "
+                    f"{tdma_slots_missed} times.  Try increasing the "
+                    "time_between_cores in the corresponding .cfg")

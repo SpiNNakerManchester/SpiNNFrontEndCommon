@@ -1899,9 +1899,6 @@
             <param_name>power_used</param_name>
             <param_name>placements</param_name>
         </required_inputs>
-        <outputs>
-            <param_type>PowerProvenanceItems</param_type>
-        </outputs>
     </algorithm>
     <algorithm name="MundyOnChipRouterCompression">
         <!-- This is a stub that will raise a error do not use -->

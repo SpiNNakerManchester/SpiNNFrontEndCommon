@@ -1199,20 +1199,16 @@ class DataSpeedUpPacketGatherMachineVertex(
                 self._run, "Extraction time", end - start)
             for lost_seq_num in lost_seq_nums:
                 if lost_seq_num > _MINOR_LOSS_THRESHOLD:
-                    minor_message = (
+                    db.insert_report(
                         f"During the extraction of data of {length_in_bytes} "
                         f"bytes from memory address {memory_address} on "
                         f"chip ({placement.x}, {placement.y}), "
                         f"{lost_seq_num} sequences were lost.")
-                else:
-                    minor_message = None
                 if lost_seq_num > 0:
                     db.insert_gatherer(
                         placement.x, placement.y, memory_address,
                         length_in_bytes, self._run, "Lost_seq_nums",
-                        lost_seq_num, minor_message)
-                    # just report the message once
-                    minor_message = None
+                        lost_seq_num)
 
         # create report elements
         if get_config_bool("Reports", "write_data_speed_up_reports"):

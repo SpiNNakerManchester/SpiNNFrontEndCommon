@@ -167,117 +167,52 @@ class RouterProvenanceGatherer(object):
                 status.n_reinjected_packets + status.n_processor_dumps +
                 status.n_link_dumps) < diagnostics.n_dropped_multicast_packets)
 
-        if (has_dropped and not has_reinjection) or (
-                has_dropped and has_reinjection and missing_stuff):
-            dropped_message = (
-                f"The router on {x}, {y} has dropped "
-                f"{diagnostics.n_dropped_multicast_packets} multicast route "
-                "packets. Try increasing the machine_time_step and/or the "
-                "time scale factor or reducing the number of atoms per core.")
-        else:
-            dropped_message = None
-
-        if diagnostics.user_3 > 0:
-            local_message = (
-                f"The router on {x}, {y} has dropped {diagnostics.user_3} "
-                "multicast packets that were transmitted by local cores. This "
-                "occurs where the router has no entry associated with the "
-                "multicast key. Try investigating the keys allocated to the "
-                "vertices and the router table entries for this chip.")
-        else:
-            local_message = None
-
-        if diagnostics.user_2 > 0 and not (
-                table and table.number_of_defaultable_entries):
-            external_message = (
-                f"The router on {x}, {y} has default routed "
-                f"{diagnostics.user_2} multicast packets, but the router "
-                f"table did not expect any default routed packets. "
-                f"This occurs where the router has no entry associated with "
-                f"the multicast key. Try investigating the keys allocated to "
-                f"the vertices and the router table entries for this chip.")
-        else:
-            external_message = None
-
-        if diagnostics.n_dropped_fixed_route_packets > 0:
-            fr_message = (
-                f"The router on chip {x}:{y} dropped "
-                f"{diagnostics.n_dropped_fixed_route_packets} fixed route "
-                "packets. This is indicative of an error within the data "
-                "extraction process as this is the only expected user of "
-                "fixed route packets.")
-        else:
-            fr_message = None
-
-        if diagnostics.error_status > 0:
-            error_message = (
-                f"The router on {x}, {y} has a non-zero error status. "
-                f"This could indicate a hardware fault. The errors set are "
-                f"{diagnostics.errors_set}, and the error count is "
-                f"{diagnostics.error_count}")
-        else:
-            error_message = None
-
-        if status is not None:
-            if status.n_missed_dropped_packets > 0:
-                missed_message = (
-                    f"The extra monitor on {x}, {y} has missed "
-                    f"{status.n_missed_dropped_packets} packets.")
-            else:
-                missed_message = None
-
-            if status.n_dropped_packet_overflows > 0:
-                overflow_messaage = (
-                    f"The extra monitor on {x}, {y} has dropped "
-                    f"{status.n_dropped_packet_overflows} packets.")
-            else:
-                overflow_messaage = None
-
-            if status.n_link_dumps > 0 and (
-                    self.__has_virtual_chip_connected(x, y)):
-                link_message = (
-                    f"The extra monitor on {x}, {y} has detected that "
-                    f"{status.n_link_dumps} packets were dumped from an "
-                    f"outgoing link of this chip's router. This often occurs "
-                    f"when external devices are used in the script but not "
-                    f"connected to the communication fabric correctly. "
-                    f"These packets may have been reinjected multiple times "
-                    f"and so this number may be an overestimate.")
-            else:
-                link_message = None
-
-            if status.n_processor_dumps > 0:
-                processor_message = (
-                    f"The extra monitor on {x}, {y} has detected that "
-                    f"{status.n_processor_dumps} packets were dumped from a "
-                    "core failing to take the packet. This often occurs when "
-                    "the executable has crashed or has not been given a "
-                    "multicast packet callback. It can also result from the "
-                    "core taking too long to process each packet. These "
-                    "packets were reinjected and so this number is likely an "
-                    "overestimate.")
-            else:
-                processor_message = None
-
-
-            #, y, description, the_value, expected, message
         with ProvenanceWriter() as db:
             db.insert_router(
                 x, y, "Local_Multicast_Packets",
                 diagnostics.n_local_multicast_packets, expected)
+
             db.insert_router(
                 x, y, "External_Multicast_Packets",
                 diagnostics.n_external_multicast_packets, expected)
+
             db.insert_router(
                 x, y, "Dropped_Multicast_Packets",
-                diagnostics.n_dropped_multicast_packets, expected,
-                dropped_message)
+                diagnostics.n_dropped_multicast_packets, expected)
+            if (has_dropped and not has_reinjection) or (
+                    has_dropped and has_reinjection and missing_stuff):
+                db.insert_report(
+                    f"The router on {x}, {y} has dropped "
+                    f"{diagnostics.n_dropped_multicast_packets} "
+                    f"multicast route packets. "
+                    f"Try increasing the machine_time_step and/or the time "
+                    f"scale factor or reducing the number of atoms per core.")
+
             db.insert_router(
                 x, y, "Dropped_Multicast_Packets_via_local_transmission",
-                diagnostics.user_3, expected, local_message)
+                diagnostics.user_3, expected)
+            if diagnostics.user_3 > 0:
+                db.insert_report(
+                    f"The router on {x}, {y} has dropped {diagnostics.user_3} "
+                    "multicast packets that were transmitted by local cores. "
+                    "This occurs where the router has no entry associated "
+                    "with the multicast key. "
+                    "Try investigating the keys allocated to the vertices "
+                    "and the router table entries for this chip.")
+
             db.insert_router(
                 x, y, "default_routed_external_multicast_packets",
-                diagnostics.user_2, expected, external_message)
+                diagnostics.user_2, expected)
+            if diagnostics.user_2 > 0 and not (
+                    table and table.number_of_defaultable_entries):
+                db.insert_report(
+                    f"The router on {x}, {y} has default routed "
+                    f"{diagnostics.user_2} multicast packets, but the router "
+                    f"table did not expect any default routed packets. "
+                    f"This occurs where the router has no entry associated "
+                    f"with the multicast key. "
+                    f"Try investigating the keys allocated to the vertices "
+                    f"and the router table entries for this chip.")
 
             if table:
                 db.insert_router(
@@ -290,54 +225,108 @@ class RouterProvenanceGatherer(object):
             db.insert_router(
                 x, y, "Local_P2P_Packets",
                 diagnostics.n_local_peer_to_peer_packets, expected)
+
             db.insert_router(
                 x, y, "External_P2P_Packets",
                 diagnostics.n_external_peer_to_peer_packets, expected)
+
             db.insert_router(
                 x, y, "Dropped_P2P_Packets",
                 diagnostics.n_dropped_peer_to_peer_packets, expected)
+
             db.insert_router(
                 x, y, "Local_NN_Packets",
                 diagnostics.n_local_nearest_neighbour_packets, expected)
+
             db.insert_router(
                 x, y, "External_NN_Packets",
                 diagnostics.n_external_nearest_neighbour_packets, expected)
+
             db.insert_router(
                 x, y, "Dropped_NN_Packets",
                 diagnostics.n_dropped_nearest_neighbour_packets, expected)
+
             db.insert_router(
                 x, y, "Local_FR_Packets",
                 diagnostics.n_local_fixed_route_packets, expected)
+
             db.insert_router(
                 x, y, "External_FR_Packets",
                 diagnostics.n_external_fixed_route_packets, expected)
+
             db.insert_router(
                 x, y, "Dropped_FR_Packets",
-                diagnostics.n_dropped_fixed_route_packets, expected,
-                fr_message)
-            db.insert_router(
-                x, y, "Error status", diagnostics.error_status, expected,
-                error_message)
+                diagnostics.n_dropped_fixed_route_packets, expected)
+            if diagnostics.n_dropped_fixed_route_packets > 0:
+                db.insert_report(
+                    f"The router on chip {x}:{y} dropped "
+                    f"{diagnostics.n_dropped_fixed_route_packets} fixed "
+                    f"route packets. "
+                    f"This is indicative of an error within the data "
+                    f"extraction process as this is the only expected user of "
+                    "fixed route packets.")
 
-            if status is not None:
-                db.insert_router(
-                    x, y, "Received_For_Reinjection",
-                    status.n_dropped_packets, expected)
-                db.insert_router(
-                    x, y, "Missed_For_Reinjection",
-                    status.n_missed_dropped_packets, expected, missed_message)
-                db.insert_router(
-                    x, y, "Reinjection_Overflows",
-                    status.n_dropped_packet_overflows, expected,
-                    overflow_messaage)
-                db.insert_router(
-                    x, y, "Reinjected", status.n_reinjected_packets, expected)
-                db.insert_router(
-                    x, y, "Dumped_from_a_Link", status.n_link_dumps, expected,
-                    link_message)
-                db.insert_router(
-                    x, y, "Dumped_from_a_processor", status.n_processor_dumps,
-                    expected, processor_message)
+            db.insert_router(
+                x, y, "Error status", diagnostics.error_status, expected)
+            if diagnostics.error_status > 0:
+                db.insert_report(
+                    f"The router on {x}, {y} has a non-zero error status. "
+                    f"This could indicate a hardware fault. "
+                    f"The errors set are {diagnostics.errors_set}, and the "
+                    f"error count is {diagnostics.error_count}")
+
+            if status is None:
+                return  # rest depends on status
+
+            db.insert_router(
+                x, y, "Received_For_Reinjection",
+                status.n_dropped_packets, expected)
+
+            db.insert_router(
+                x, y, "Missed_For_Reinjection",
+                status.n_missed_dropped_packets, expected)
+            if status.n_missed_dropped_packets > 0:
+                db.insert_report(
+                    f"The extra monitor on {x}, {y} has missed "
+                    f"{status.n_missed_dropped_packets} packets.")
+
+            db.insert_router(
+                x, y, "Reinjection_Overflows",
+                status.n_dropped_packet_overflows, expected,)
+            if status.n_dropped_packet_overflows > 0:
+                db.insert_report(
+                    f"The extra monitor on {x}, {y} has dropped "
+                    f"{status.n_dropped_packet_overflows} packets.")
+
+            db.insert_router(
+                x, y, "Reinjected", status.n_reinjected_packets, expected)
+
+            db.insert_router(
+                x, y, "Dumped_from_a_Link", status.n_link_dumps, expected)
+            if status.n_link_dumps > 0 and (
+                    self.__has_virtual_chip_connected(x, y)):
+                db.insert_report(
+                    f"The extra monitor on {x}, {y} has detected that "
+                    f"{status.n_link_dumps} packets were dumped from an "
+                    f"outgoing link of this chip's router. This often occurs "
+                    f"when external devices are used in the script but not "
+                    f"connected to the communication fabric correctly. "
+                    f"These packets may have been reinjected multiple times "
+                    f"and so this number may be an overestimate.")
+
+            db.insert_router(
+                x, y, "Dumped_from_a_processor", status.n_processor_dumps,
+                expected)
+            if status.n_processor_dumps > 0:
+                db.insert_report(
+                    f"The extra monitor on {x}, {y} has detected that "
+                    f"{status.n_processor_dumps} packets were dumped from a "
+                    "core failing to take the packet. This often occurs when "
+                    "the executable has crashed or has not been given a "
+                    "multicast packet callback. It can also result from the "
+                    "core taking too long to process each packet. These "
+                    "packets were reinjected and so this number is likely an "
+                    "overestimate.")
 
     def __has_virtual_chip_connected(self, x, y):
         """

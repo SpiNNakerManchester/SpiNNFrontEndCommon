@@ -54,7 +54,6 @@ class PlacementsProvenanceGatherer(object):
         :param ~.Placement placement:
         :param ~.Transceiver txrx:
         :param list(str) errors:
-        :rtype: ~collections.abc.Iterable(ProvenanceDataItem)
         """
         # retrieve provenance data from any cores that provide data
         if isinstance(

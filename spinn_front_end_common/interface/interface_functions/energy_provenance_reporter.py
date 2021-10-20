@@ -45,7 +45,6 @@ class EnergyProvenanceReporter(object):
             The computed basic power consumption information
         :param ~pacman.model.placements.Placements placements:
             Used for describing what a core was actually doing
-        :rtype: object
         """
         with ProvenanceWriter() as db:
             for prop in _BASIC_PROPERTIES:
@@ -60,8 +59,7 @@ class EnergyProvenanceReporter(object):
                 for x, y in power_used.active_routers:
                     db.insert_router(
                         x, y, "Energy (Joules)",
-                        power_used.get_router_active_energy_joules(x, y), True)
-        return "A TOKEN"
+                        power_used.get_router_active_energy_joules(x, y))
 
     @staticmethod
     def __prop_name(name):

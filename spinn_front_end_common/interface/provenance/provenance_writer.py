@@ -65,7 +65,7 @@ class ProvenanceWriter(SQLiteDB):
         self._database_file = database_file
         super().__init__(database_file, ddl_file=_DDL_FILE)
 
-    def insert_version(self, description, the_value, message=None):
+    def insert_version(self, description, the_value):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -73,9 +73,8 @@ class ProvenanceWriter(SQLiteDB):
                     description, the_value)
                 VALUES(?, ?)
                 """, [description, the_value])
-        self.insert_report(message)
 
-    def insert_power(self, description, the_value, message=None):
+    def insert_power(self, description, the_value):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -83,9 +82,8 @@ class ProvenanceWriter(SQLiteDB):
                     description, the_value)
                 VALUES(?, ?)
                 """, [description, the_value])
-        self.insert_report(message)
 
-    def insert_timing(self, category, algorithm, the_value, message=None):
+    def insert_timing(self, category, algorithm, the_value):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -93,9 +91,8 @@ class ProvenanceWriter(SQLiteDB):
                     category, algorithm, the_value)
                 VALUES(?, ?, ?)
                 """, [category, algorithm, the_value])
-        self.insert_report(message)
 
-    def insert_other(self, category, description, the_value, message=None):
+    def insert_other(self, category, description, the_value):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -103,10 +100,9 @@ class ProvenanceWriter(SQLiteDB):
                     category, description, the_value)
                 VALUES(?, ?, ?)
                 """, [category, description, the_value])
-        self.insert_report(message)
 
     def insert_gatherer(self, x, y, address, bytes, run, description,
-                        the_value, message=None):
+                        the_value):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -114,9 +110,8 @@ class ProvenanceWriter(SQLiteDB):
                     x, y, address, bytes, run, description, the_value)
                 VALUES(?, ?, ?, ?, ?, ?, ?)
                 """, [x, y, address, bytes, run, description, the_value])
-        self.insert_report(message)
 
-    def insert_monitor(self, x, y, description, the_value, message=None):
+    def insert_monitor(self, x, y, description, the_value):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -124,10 +119,9 @@ class ProvenanceWriter(SQLiteDB):
                     x, y, description, the_value)
                 VALUES(?, ?, ?, ?)
                 """, [x, y, description, the_value])
-        self.insert_report(message)
 
     def insert_router(
-            self, x, y, description, the_value, expected, message=None):
+            self, x, y, description, the_value, expected=True):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -135,9 +129,8 @@ class ProvenanceWriter(SQLiteDB):
                     x, y, description, the_value, expected)
                 VALUES(?, ?, ?, ?, ?)
                 """, [x, y, description, the_value, expected])
-        self.insert_report(message)
 
-    def insert_core(self, x, y, p, description, the_value, message=None):
+    def insert_core(self, x, y, p, description, the_value):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -145,7 +138,6 @@ class ProvenanceWriter(SQLiteDB):
                     x, y, p, description, the_value)
                 VALUES(?, ?, ?, ?, ?)
                 """, [x, y, p, description, the_value])
-        self.insert_report(message)
 
     def add_core_name(self, x, y, p, core_name):
         with self.transaction() as cur:
@@ -156,9 +148,7 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?, ?, ?) 
                 """, [x, y, p, core_name])
 
-    def insert_report(self, message=None):
-        if not message:
-            return
+    def insert_report(self, message):
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -183,4 +173,3 @@ class ProvenanceWriter(SQLiteDB):
                     pre_population, post_population, the_type, description, the_value)
                 VALUES(?, ?, ?, ?, ?) 
                 """, [pre_population, post_population, the_type, description, the_value])
-        self.insert_report(message)

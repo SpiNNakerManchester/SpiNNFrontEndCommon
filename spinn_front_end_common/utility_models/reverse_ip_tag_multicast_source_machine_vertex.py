@@ -820,51 +820,39 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def parse_extra_provenance_items(self, label, x, y, p, provenance_data):
         n_rcv, n_snt, bad_key, bad_pkt, late = provenance_data
 
-        if n_rcv == 0 and self._send_buffer_times is None:
-            n_rcv_message = (
-                f"No SDP packets were received by {label}. If you expected "
-                "packets to be injected, this could indicate an error")
-        else:
-            n_rcv_message = None
-
-        if n_snt == 0:
-            no_message = (
-                f"No multicast packets were sent by {label}. If you expected "
-                "packets to be sent this could indicate an error")
-        else:
-            no_message = None
-
-        if bad_key > 0:
-            key_message = (
-                f"Keys were received by {label} that did not match the key "
-                f"{self._virtual_key} and mask {self._mask}")
-        else:
-            key_meesage = None
-
-        if bad_pkt > 0:
-            pkt_message = (
-                f"SDP Packets were received by {label} that were not correct")
-        else:
-            pkt_message = None
-
-        if late > 0:
-            late_message=(
-                f"SDP Packets were received by {label} that were too late "
-                "to be transmitted in the simulation")
-        else:
-            late_message = None
-
         with ProvenanceWriter() as db:
+            db.insert_core(x, y, p, "Received_sdp_packets", n_rcv)
+            if n_rcv == 0 and self._send_buffer_times is None:
+                db.insert_report(
+                    f"No SDP packets were received by {label}. "
+                    f"If you expected packets to be injected, "
+                    f"this could indicate an error")
+
             db.insert_core(
-                x, y, p, "Received_sdp_packets", n_rcv, n_rcv_message)
+                x, y, p, "Send_multicast_packets", n_snt)
+            if n_snt == 0:
+                db.insert_report(
+                    f"No multicast packets were sent by {label}. "
+                    f"If you expected packets to be sent "
+                    f"this could indicate an error")
             db.insert_core(
-                x, y, p, "Send_multicast_packets", n_snt, no_message)
-            db.insert_core(
-                x, y, p, "Incorrect_keys", bad_key, key_meesage)
-            db.insert_core(
-                x, y, p, "Incorrect_packets", bad_pkt, pkt_message)
-            db.insert_core(
-             x, y, p, "Late_packets", late, late_message)
+                x, y, p, "Incorrect_keys", bad_key)
+            if bad_key > 0:
+                db.insert_report(
+                    f"Keys were received by {label} that did not match the "
+                    f"key {self._virtual_key} and mask {self._mask}")
+
+            db.insert_core(x, y, p, "Incorrect_packets", bad_pkt)
+            if bad_pkt > 0:
+                db.insert_report(
+                    f"SDP Packets were received by {label} "
+                    f"that were not correct")
+
+            db.insert_core(x, y, p, "Late_packets", late)
+            if late > 0:
+                db.insert_report(
+                    f"SDP Packets were received by {label} that were too "
+                    f"late to be transmitted in the simulation")
 
     def __repr__(self):
         return self._label

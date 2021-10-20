@@ -40,7 +40,7 @@ class TestProvenanceDatabase(unittest.TestCase):
     def test_version(self):
         with ProvenanceWriter() as db:
             db.insert_version("spinn_utilities_version", "1!6.0.1")
-            db.insert_version("numpy_version", "1.17.4", "Test message")
+            db.insert_version("numpy_version", "1.17.4")
         data = ProvenanceReader().run_query("select * from version_provenance")
         versions = [
             (1, 'spinn_utilities_version', '1!6.0.1'),
@@ -50,7 +50,7 @@ class TestProvenanceDatabase(unittest.TestCase):
     def test_power(self):
         with ProvenanceWriter() as db:
             db.insert_power("num_cores", 34)
-            db.insert_power("total time (seconds)", 6.81, "test message")
+            db.insert_power("total time (seconds)", 6.81)
         data = ProvenanceReader().run_query("select * from power_provenance")
         power = [(1, 'num_cores', 34.0), (2, 'total time (seconds)', 6.81)]
         self.assertListEqual(data, power)
@@ -59,7 +59,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             db.insert_timing("mapping", "compressor", 12)
             db.insert_timing("mapping", "router", 123)
-            db.insert_timing("execute", "run", 134, "A message")
+            db.insert_timing("execute", "run", 134)
             db.insert_timing("execute", "run", 344)
             db.insert_timing("execute", "clear", 4)
         reader = ProvenanceReader()
@@ -95,9 +95,9 @@ class TestProvenanceDatabase(unittest.TestCase):
     def test_router(self):
         with ProvenanceWriter() as db:
             db.insert_router(1, 3, "des1", 34, True)
-            db.insert_router(1, 2, "des1", 45, True, "What message")
-            db.insert_router(1, 3, "des2", 67, True)
-            db.insert_router(1, 3, "des1", 48, True)
+            db.insert_router(1, 2, "des1", 45, True)
+            db.insert_router(1, 3, "des2", 67)
+            db.insert_router(1, 3, "des1", 48)
             db.insert_router(5, 5, "des1", 48, False)
         reader = ProvenanceReader()
         data = set(reader.get_router_by_chip("des1"))
@@ -109,7 +109,7 @@ class TestProvenanceDatabase(unittest.TestCase):
     def test_monitor(self):
         with ProvenanceWriter() as db:
             db.insert_monitor(1, 3, "des1", 34)
-            db.insert_monitor(1, 2, "des1", 45, "What message")
+            db.insert_monitor(1, 2, "des1", 45)
             db.insert_monitor(1, 3, "des2", 67)
             db.insert_monitor(1, 3, "des1", 48)
         reader = ProvenanceReader()
@@ -122,7 +122,7 @@ class TestProvenanceDatabase(unittest.TestCase):
     def test_cores(self):
         with ProvenanceWriter() as db:
             db.insert_core(1, 3, 2, "des1", 34)
-            db.insert_core(1, 2, 3, "des1", 45, "ignore me")
+            db.insert_core(1, 2, 3, "des1", 45)
             db.insert_core(1, 3, 2, "des2", 67)
             db.insert_core(1, 3, 1, "des1", 48)
 
@@ -141,8 +141,6 @@ class TestProvenanceDatabase(unittest.TestCase):
         with LogCapture() as lc:
             with ProvenanceWriter() as db:
                 db.insert_report("een")
-                db.insert_report(None)
-                db.insert_report("")
                 db.insert_report("twee")
                 db.insert_report("drie")
                 db.insert_report("vier")

@@ -42,7 +42,7 @@ def generate_provenance_item(x, y, bit_fields_merged):
     :return:
     """
     with ProvenanceWriter as db:
-        db.insert_router(x, y, MERGED_NAME, bit_fields_merged, True)
+        db.insert_router(x, y, MERGED_NAME, bit_fields_merged)
 
 
 class BitFieldCompressorReport(object):
@@ -54,7 +54,6 @@ class BitFieldCompressorReport(object):
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph
         :param ~pacman.model.placements.Placements placements: the placements
-        :type provenance_items: list(ProvenanceDataItem) or None
         :return: a summary, or `None` if the report file can't be written
         :rtype: BitFieldSummary
         """
