@@ -170,7 +170,6 @@ class ProvidesProvenanceDataFromMachineImpl(
         :param int y: y coordinate of the core where this core
         :param int p: virtual id of the core
         :param list(int) provenance_data:
-        :rtype: ~collections.abc.Iterable(ProvenanceDataItem)
         """
         (tx_overflow, cb_overload, dma_overload, user_overload, tic_overruns,
          tic_overrun_max) = provenance_data[:self.N_SYSTEM_PROVENANCE_WORDS]
@@ -285,15 +284,11 @@ class ProvidesProvenanceDataFromMachineImpl(
         :param int p: virtual id of the core
         :param list(int) provenance_data:
             The list of words of raw provenance data.
-        :return: The interpreted provenance items.
-        :rtype:
-            iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
         """
         if self._n_additional_data_items:
             raise NotImplementedError(
                 f"{self} provides {self._n_additional_data_items} but doesn't "
                 "parse them")
-        return []
 
     @overrides(
         AbstractProvidesProvenanceDataFromMachine.
