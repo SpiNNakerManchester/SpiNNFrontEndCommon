@@ -804,7 +804,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         :rtype: dict(int,BufferedSendingRegion)
         """
-        self.update_buffer()
+        self.update_buffer()  # pylint: disable=E1120
         return self._send_buffers
 
     @overrides(SendsBuffersFromHostPreBufferedImpl.buffering_input)
