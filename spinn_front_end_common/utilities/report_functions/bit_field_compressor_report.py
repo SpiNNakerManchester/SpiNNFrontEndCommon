@@ -41,7 +41,7 @@ def generate_provenance_item(x, y, bit_fields_merged):
     :param bit_fields_merged:
     :return:
     """
-    with ProvenanceWriter as db:
+    with ProvenanceWriter() as db:
         db.insert_router(x, y, MERGED_NAME, bit_fields_merged)
 
 
