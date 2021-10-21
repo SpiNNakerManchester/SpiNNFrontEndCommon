@@ -21,8 +21,7 @@ from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from data_specification.enums import DataType
-from pacman.executor.injection_decorator import (
-    inject_items, supports_injection)
+from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource, ResourceContainer, VariableSDRAM)
@@ -54,7 +53,6 @@ DEFAULT_MALLOCS_USED = 3
 CONFIG_SIZE_IN_BYTES = 2 * BYTES_PER_WORD
 
 
-@supports_injection
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost,
