@@ -22,7 +22,8 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
-from pacman.executor.injection_decorator import inject_items
+from pacman.executor.injection_decorator import (
+    inject_items, InjectionException)
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
 from pacman.model.constraints.placer_constraints import BoardConstraint
@@ -806,6 +807,19 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         self.update_buffer()  # pylint: disable=E1120
         return self._send_buffers
+
+    @overrides(SendsBuffersFromHostPreBufferedImpl.get_regions)
+    def get_regions(self):
+        # Avoid update_buffer as not needed and called during reset
+        return self._send_buffers.keys()
+
+    @overrides(SendsBuffersFromHostPreBufferedImpl.rewind)
+    def rewind(self, region):
+        # reset theses so fill send buffer will run when send_buffers called
+        self._first_machine_time_step = None
+        self._run_until_timesteps = None
+        # Avoid update_buffer as not needed and called during reset
+        self._send_buffers[region].rewind()
 
     @overrides(SendsBuffersFromHostPreBufferedImpl.buffering_input)
     def buffering_input(self):
