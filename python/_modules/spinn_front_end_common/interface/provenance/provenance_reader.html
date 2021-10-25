@@ -198,33 +198,32 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">            SELECT x, y, p, the_value AS &quot;value&quot;</span>
-<span class="s2">            FROM provenance_view</span>
-<span class="s2">            WHERE description_name = &#39;Number_of_late_spikes&#39;</span>
+<span class="s2">            FROM core_provenance</span>
+<span class="s2">            WHERE description = &#39;Number_of_late_spikes&#39;</span>
 <span class="s2">                AND the_value &gt; 0</span>
 <span class="s2">            &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ProvenanceReader.get_provenance"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_provenance">[docs]</a>    <span class="k">def</span> <span class="nf">get_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description_name</span><span class="p">):</span>
+<div class="viewcode-block" id="ProvenanceReader.get_timer_provenance"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_provenance">[docs]</a>    <span class="k">def</span> <span class="nf">get_timer_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Gets the provenance item(s) from the last run</span>
+<span class="sd">        Gets the timer provenance item(s) from the last run</span>
 
-<span class="sd">        :param str description_name:</span>
-<span class="sd">            The value to LIKE search for in the description_name column.</span>
+<span class="sd">        :param str algorithm:</span>
+<span class="sd">            The value to LIKE search for in the algorithm column.</span>
 <span class="sd">            Can be the full name, or have ``%``  and ``_`` wildcards.</span>
 <span class="sd">        :return:</span>
 <span class="sd">            A possibly multiline string with for each row which matches the</span>
-<span class="sd">            like a line ``description_name: value``</span>
+<span class="sd">            like a line ``algorithm: value``</span>
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">            SELECT description_name AS description, the_value AS &quot;value&quot;</span>
-<span class="s2">            FROM provenance_view</span>
-<span class="s2">            WHERE description LIKE ?</span>
-<span class="s2">            ORDER BY description</span>
+<span class="s2">            SELECT algorithm, the_value AS &quot;value&quot;</span>
+<span class="s2">            FROM timer_provenance</span>
+<span class="s2">            WHERE algorithm LIKE ?</span>
 <span class="s2">            &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">description_name</span><span class="p">]))</span></div>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">algorithm</span><span class="p">]))</span></div>
 
 <div class="viewcode-block" id="ProvenanceReader.get_run_times"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_times">[docs]</a>    <span class="k">def</span> <span class="nf">get_run_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -239,11 +238,10 @@
         <span class="c1"># We know the database actually stores microseconds for durations</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">            SELECT</span>
-<span class="s2">                description_name AS &quot;description&quot;,</span>
+<span class="s2">                description,</span>
 <span class="s2">                SUM(the_value) / 1000000.0 AS &quot;value&quot;</span>
-<span class="s2">            FROM provenance_view</span>
-<span class="s2">            WHERE description LIKE &#39;run_time_of_%&#39;</span>
-<span class="s2">            GROUP BY description_name</span>
+<span class="s2">            FROM timer_provenance</span>
+<span class="s2">            GROUP BY description</span>
 <span class="s2">            ORDER BY the_value</span>
 <span class="s2">            &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -259,9 +257,9 @@
 <span class="sd">            like %BufferExtractor description_name: value</span>
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_provenance</span><span class="p">(</span><span class="s2">&quot;%BufferExtractor&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_timer_provenance</span><span class="p">(</span><span class="s2">&quot;%BufferExtractor&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ProvenanceReader.get_provenance_for_chip"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_provenance_for_chip">[docs]</a>    <span class="k">def</span> <span class="nf">get_provenance_for_chip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<div class="viewcode-block" id="ProvenanceReader.get_provenance_for_router"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_provenance_for_router">[docs]</a>    <span class="k">def</span> <span class="nf">get_provenance_for_router</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the provenance item(s) from the last run relating to a chip</span>
 
@@ -276,10 +274,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">            SELECT</span>
-<span class="s2">                description_name AS description,</span>
+<span class="s2">                description,</span>
 <span class="s2">                sum(the_value) AS &quot;value&quot;</span>
-<span class="s2">            FROM provenance_view</span>
-<span class="s2">            WHERE x = ? and y = ?</span>
+<span class="s2">            FROM router_provenance</span>
+<span class="s2">            WHERE x = ? AND y = ?</span>
 <span class="s2">            GROUP BY description</span>
 <span class="s2">            ORDER BY description</span>
 <span class="s2">            &quot;&quot;&quot;</span>
@@ -288,9 +286,114 @@
             <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">)],</span>
                                       <span class="n">use_sqlite_rows</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div>
 
+<div class="viewcode-block" id="ProvenanceReader.get_cores_with_provenace"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_cores_with_provenace">[docs]</a>    <span class="k">def</span> <span class="nf">get_cores_with_provenace</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the cores with provenance</span>
+
+<span class="sd">        :return: A list tuples (x, y, p)</span>
+<span class="sd">        :rtype: list(tuple(int, int, int))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT core_name, x, y, p</span>
+<span class="s2">            FROM core_provenance_view</span>
+<span class="s2">            group by x, y, p</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProvenanceReader.get_router_by_chip"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_router_by_chip">[docs]</a>    <span class="k">def</span> <span class="nf">get_router_by_chip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the router values for a specific item</span>
+
+<span class="sd">        :param str description:</span>
+<span class="sd">        :return: list of tuples x, y, value)</span>
+<span class="sd">        :rtype: lits((int, int float))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT x, y, the_value</span>
+<span class="s2">            FROM router_provenance</span>
+<span class="s2">            WHERE description = ?</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">description</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="ProvenanceReader.get_monitor_by_chip"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_monitor_by_chip">[docs]</a>    <span class="k">def</span> <span class="nf">get_monitor_by_chip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the monitor values for a specific item</span>
+
+<span class="sd">        :param str description:</span>
+<span class="sd">        :return: list of tuples x, y, value)</span>
+<span class="sd">        :rtype: lits((int, int float))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT x, y, the_value</span>
+<span class="s2">            FROM monitor_provenance</span>
+<span class="s2">            WHERE description = ?</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">description</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="ProvenanceReader.get_timer_sum_by_category"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_category">[docs]</a>    <span class="k">def</span> <span class="nf">get_timer_sum_by_category</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the total runtime for one category of algorithms</span>
+
+<span class="sd">        :param str category:</span>
+<span class="sd">        :return: total off all runtimes with this category</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">             SELECT sum(the_value)</span>
+<span class="s2">             FROM timer_provenance</span>
+<span class="s2">             WHERE category = ?</span>
+<span class="s2">             &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">category</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="ProvenanceReader.get_timer_sum_by_algorithm"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_algorithm">[docs]</a>    <span class="k">def</span> <span class="nf">get_timer_sum_by_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the total runtime for one algorithm</span>
+
+<span class="sd">        :param str algorithm:</span>
+<span class="sd">        :return: total off all runtimes with this algorithm</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">             SELECT sum(the_value)</span>
+<span class="s2">             FROM timer_provenance</span>
+<span class="s2">             WHERE algorithm = ?</span>
+<span class="s2">             &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">algorithm</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="ProvenanceReader.messages"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.messages">[docs]</a>    <span class="k">def</span> <span class="nf">messages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        List all the provenance messages</span>
+
+<span class="sd">        :return: all messages logged or not</span>
+<span class="sd">        :rtype: list(str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">             SELECT message</span>
+<span class="s2">             FROM reports</span>
+<span class="s2">             &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[])</span></div>
+
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_demo</span><span class="p">():</span>
         <span class="sd">&quot;&quot;&quot; A demonstration of how to use this class.</span>
+
+<span class="sd">        See also unittests/interface/provenance/test_provenance_database.py</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># This uses the example file in the same directory as this script</span>
         <span class="n">pr</span> <span class="o">=</span> <span class="n">ProvenanceReader</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -298,8 +401,8 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DIRECT QUERY:&quot;</span><span class="p">)</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">            SELECT x, y, the_value</span>
-<span class="s2">            FROM provenance_view</span>
-<span class="s2">            WHERE description_name = &#39;Local_P2P_Packets&#39;</span>
+<span class="s2">            FROM router_provenance</span>
+<span class="s2">            WHERE description = &#39;Local_P2P_Packets&#39;</span>
 <span class="s2">            &quot;&quot;&quot;</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
@@ -308,8 +411,10 @@
         <span class="nb">print</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">cores_with_late_spikes</span><span class="p">())</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">RUN TIME OF BUFFER EXTRACTOR:&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">get_run_time_of_BufferExtractor</span><span class="p">())</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">CHIP (0,0) PROVENANCE:&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">get_provenance_for_chip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ROUETER (0,0) PROVENANCE:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">get_provenance_for_router</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">CORES WITH PROVENACE&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">get_cores_with_provenace</span><span class="p">())</span>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>

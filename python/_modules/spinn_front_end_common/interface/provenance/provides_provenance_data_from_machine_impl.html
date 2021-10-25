@@ -60,7 +60,8 @@
     <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">BYTES_PER_WORD</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="n">n_word_struct</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ProvenanceDataItem</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance.provenance_writer</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ProvenanceWriter</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
@@ -102,7 +103,7 @@
     <span class="n">N_SYSTEM_PROVENANCE_WORDS</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">PROVENANCE_DATA_ENTRIES</span><span class="p">)</span>
 
     <span class="n">_TIMER_TICK_OVERRUN</span> <span class="o">=</span> <span class="s2">&quot;Times_the_timer_tic_over_ran&quot;</span>
-    <span class="n">_MAX_TIMER_TICK_OVERRUN</span> <span class="o">=</span> <span class="s2">&quot;max_number_of_times_timer_tic_over_ran&quot;</span>
+    <span class="n">_MAX_TIMER_TICK_OVERRUN</span> <span class="o">=</span> <span class="s2">&quot;Max_number_of_times_timer_tic_over_ran&quot;</span>
     <span class="n">_TIMES_DMA_QUEUE_OVERLOADED</span> <span class="o">=</span> <span class="s2">&quot;Times_the_dma_queue_was_overloaded&quot;</span>
     <span class="n">_TIMES_USER_QUEUE_OVERLOADED</span> <span class="o">=</span> <span class="s2">&quot;Times_the_user_queue_was_overloaded&quot;</span>
     <span class="n">_TIMES_TRANSMISSION_SPIKES_OVERRAN</span> <span class="o">=</span> \
@@ -181,19 +182,18 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
 <span class="sd">        :returns:</span>
-<span class="sd">            A descriptive (human-readable) label and a mechanical label</span>
-<span class="sd">            (or prefix of one) for provenance items from the given placement.</span>
-<span class="sd">        :rtype: tuple(str,list(str))</span>
+<span class="sd">            A descriptive (human-readable) label and the x, y, p ocoordiantes</span>
+<span class="sd">            for provenance items from the given placement.</span>
+<span class="sd">        :rtype: tuple(str, init, int, int)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">label</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">label</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span>
-        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;vertex_</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
         <span class="n">desc_label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">return</span> <span class="n">desc_label</span><span class="p">,</span> <span class="n">names</span>
+        <span class="k">return</span> <span class="n">desc_label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span>
 
-<div class="viewcode-block" id="ProvidesProvenanceDataFromMachineImpl.parse_system_provenance_items"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_system_provenance_items">[docs]</a>    <span class="k">def</span> <span class="nf">parse_system_provenance_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">provenance_data</span><span class="p">):</span>
+<div class="viewcode-block" id="ProvidesProvenanceDataFromMachineImpl.parse_system_provenance_items"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_system_provenance_items">[docs]</a>    <span class="k">def</span> <span class="nf">parse_system_provenance_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">provenance_data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Given some words of provenance data, convert the portion of them that</span>
 <span class="sd">        describes the system provenance into proper provenance items.</span>
@@ -204,67 +204,86 @@
 <span class="sd">        :param str label:</span>
 <span class="sd">            A descriptive label for the vertex (derived from label and placed</span>
 <span class="sd">            position) to be used for provenance error reporting to the user.</span>
-<span class="sd">        :param list(str) names:</span>
-<span class="sd">            The base names describing the location of the machine vertex</span>
-<span class="sd">            producing the provenance.</span>
+<span class="sd">        :param int x: x coordinate of the chip where this core</span>
+<span class="sd">        :param int y: y coordinate of the core where this core</span>
+<span class="sd">        :param int p: virtual id of the core</span>
 <span class="sd">        :param list(int) provenance_data:</span>
-<span class="sd">        :rtype: ~collections.abc.Iterable(ProvenanceDataItem)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="p">(</span><span class="n">tx_overflow</span><span class="p">,</span> <span class="n">cb_overload</span><span class="p">,</span> <span class="n">dma_overload</span><span class="p">,</span> <span class="n">user_overload</span><span class="p">,</span> <span class="n">tic_overruns</span><span class="p">,</span>
          <span class="n">tic_overrun_max</span><span class="p">)</span> <span class="o">=</span> <span class="n">provenance_data</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">N_SYSTEM_PROVENANCE_WORDS</span><span class="p">]</span>
 
-        <span class="c1"># create provenance data items for returning</span>
-        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_TRANSMISSION_SPIKES_OVERRAN</span><span class="p">],</span> <span class="n">tx_overflow</span><span class="p">,</span>
-            <span class="p">(</span><span class="n">tx_overflow</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">),</span>
-            <span class="sa">f</span><span class="s2">&quot;The transmission buffer for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> was blocked on &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tx_overflow</span><span class="si">}</span><span class="s2"> occasions.  This is often a sign that the system &quot;</span>
-            <span class="s2">&quot;is experiencing back pressure from the communication fabric. &quot;</span>
-            <span class="s2">&quot;Please either: &quot;</span>
-            <span class="s2">&quot;1. spread the load over more cores, &quot;</span>
-            <span class="s2">&quot;2. reduce your peak transmission load, or &quot;</span>
-            <span class="s2">&quot;3. adjust your mapping algorithm.&quot;</span><span class="p">)</span>
-        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_CALLBACK_QUEUE_OVERLOADED</span><span class="p">],</span>
-            <span class="n">cb_overload</span><span class="p">,</span> <span class="p">(</span><span class="n">cb_overload</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">),</span>
-            <span class="sa">f</span><span class="s2">&quot;The callback queue for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> overloaded on </span><span class="si">{</span><span class="n">cb_overload</span><span class="si">}</span><span class="s2"> &quot;</span>
-            <span class="s2">&quot;occasions.  This is often a sign that the system is running too &quot;</span>
-            <span class="s2">&quot;quickly for the number of neurons per core.  Please increase the &quot;</span>
-            <span class="s2">&quot;machine time step or time_scale_factor or decrease the number of &quot;</span>
-            <span class="s2">&quot;neurons per core.&quot;</span><span class="p">)</span>
-        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_DMA_QUEUE_OVERLOADED</span><span class="p">],</span> <span class="n">dma_overload</span><span class="p">,</span>
-            <span class="p">(</span><span class="n">dma_overload</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">),</span>
-            <span class="sa">f</span><span class="s2">&quot;The DMA queue for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> overloaded on </span><span class="si">{</span><span class="n">dma_overload</span><span class="si">}</span><span class="s2"> &quot;</span>
-            <span class="s2">&quot;occasions.  This is often a sign that the system is running too &quot;</span>
-            <span class="s2">&quot;quickly for the number of neurons per core.  Please increase the &quot;</span>
-            <span class="s2">&quot;machine time step or time_scale_factor or decrease the number of &quot;</span>
-            <span class="s2">&quot;neurons per core.&quot;</span><span class="p">)</span>
-        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_USER_QUEUE_OVERLOADED</span><span class="p">],</span> <span class="n">user_overload</span><span class="p">,</span>
-            <span class="p">(</span><span class="n">dma_overload</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">),</span>
-            <span class="sa">f</span><span class="s2">&quot;The USER queue for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> overloaded on </span><span class="si">{</span><span class="n">user_overload</span><span class="si">}</span><span class="s2"> &quot;</span>
-            <span class="s2">&quot;occasions.  This is often a sign that the system is running too &quot;</span>
-            <span class="s2">&quot;quickly for the number of neurons per core.  Please increase the &quot;</span>
-            <span class="s2">&quot;machine time step or time_scale_factor or decrease the number of &quot;</span>
-            <span class="s2">&quot;neurons per core.&quot;</span><span class="p">)</span>
-        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_TIMER_TICK_OVERRUN</span><span class="p">],</span> <span class="n">tic_overruns</span><span class="p">,</span>
-            <span class="p">(</span><span class="n">tic_overruns</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">),</span>
-            <span class="sa">f</span><span class="s2">&quot;A Timer tick callback in </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> was still executing when the &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;next timer tick callback was fired off </span><span class="si">{</span><span class="n">tic_overruns</span><span class="si">}</span><span class="s2"> times.  &quot;</span>
-            <span class="s2">&quot;This is a sign of the system being overloaded and therefore the &quot;</span>
-            <span class="s2">&quot;results are likely incorrect.  Please increase the machine time &quot;</span>
-            <span class="s2">&quot;step or time_scale_factor or decrease the number of neurons per &quot;</span>
-            <span class="s2">&quot;core&quot;</span><span class="p">)</span>
-        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_MAX_TIMER_TICK_OVERRUN</span><span class="p">],</span> <span class="n">tic_overrun_max</span><span class="p">,</span>
-            <span class="p">(</span><span class="n">tic_overrun_max</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span>
-            <span class="sa">f</span><span class="s2">&quot;The timer for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> fell behind by up to </span><span class="si">{</span><span class="n">tic_overrun_max</span><span class="si">}</span><span class="s2"> &quot;</span>
-            <span class="s2">&quot;ticks.  This is a sign of the system being overloaded and &quot;</span>
-            <span class="s2">&quot;therefore the results are likely incorrect. Please increase the &quot;</span>
-            <span class="s2">&quot;machine time step or time_scale_factor or decrease the number &quot;</span>
-            <span class="s2">&quot;of neurons per core&quot;</span><span class="p">)</span></div>
+        <span class="c1"># save provenance data items</span>
+        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_core</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_TRANSMISSION_SPIKES_OVERRAN</span><span class="p">,</span> <span class="n">tx_overflow</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tx_overflow</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">insert_report</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;The transmission buffer for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> was blocked on &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tx_overflow</span><span class="si">}</span><span class="s2"> occasions. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; This is often a sign that the system is experiencing &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;back pressure from the communication fabric. &quot;</span>
+                    <span class="s2">&quot;Please either: &quot;</span>
+                    <span class="s2">&quot;1. spread the load over more cores, &quot;</span>
+                    <span class="s2">&quot;2. reduce your peak transmission load, or &quot;</span>
+                    <span class="s2">&quot;3. adjust your mapping algorithm.&quot;</span><span class="p">)</span>
+
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_core</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_CALLBACK_QUEUE_OVERLOADED</span><span class="p">,</span> <span class="n">cb_overload</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cb_overload</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">insert_report</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;The callback queue for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> overloaded on &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cb_overload</span><span class="si">}</span><span class="s2"> occasions.  &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;This is often a sign that the system is running &quot;</span>
+                    <span class="s2">&quot;too quickly for the number of neurons per core. &quot;</span>
+                    <span class="s2">&quot;Please increase the machine time step or &quot;</span>
+                    <span class="s2">&quot;time_scale_factor &quot;</span>
+                    <span class="s2">&quot;or decrease the number of neurons per core.&quot;</span><span class="p">)</span>
+
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_core</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_DMA_QUEUE_OVERLOADED</span><span class="p">,</span> <span class="n">dma_overload</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dma_overload</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">insert_report</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;The DMA queue for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> overloaded on </span><span class="si">{</span><span class="n">dma_overload</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;occasions.  &quot;</span>
+                    <span class="s2">&quot;This is often a sign that the system is running &quot;</span>
+                    <span class="s2">&quot;too quickly for the number of neurons per core.  &quot;</span>
+                    <span class="s2">&quot;Please increase the machine time step or &quot;</span>
+                    <span class="s2">&quot;time_scale_factor &quot;</span>
+                    <span class="s2">&quot;or decrease the number of neurons per core.&quot;</span><span class="p">)</span>
+
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_core</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_USER_QUEUE_OVERLOADED</span><span class="p">,</span> <span class="n">user_overload</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">user_overload</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">insert_report</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;The USER queue for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> overloaded on &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">user_overload</span><span class="si">}</span><span class="s2"> occasions.  &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;This is often a sign that the system is running too &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;quickly for the number of neurons per core.  Please &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;increase the machine time step or time_scale_factor &quot;</span>
+                    <span class="s2">&quot;or decrease the number of neurons per core.&quot;</span><span class="p">)</span>
+
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_core</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMER_TICK_OVERRUN</span><span class="p">,</span> <span class="n">tic_overruns</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tic_overruns</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">insert_report</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;A Timer tick callback in </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> was still executing &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;when the next timer tick callback was fired off &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tic_overruns</span><span class="si">}</span><span class="s2"> times.  &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;This is a sign of the system being overloaded and &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;therefore the results are likely incorrect.  Please &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;increase the machine time step or time_scale_factor &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;or decrease the number of neurons per core&quot;</span><span class="p">)</span>
+
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_core</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MAX_TIMER_TICK_OVERRUN</span><span class="p">,</span> <span class="n">tic_overrun_max</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tic_overrun_max</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">insert_report</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;The timer for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> fell behind by up to &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tic_overrun_max</span><span class="si">}</span><span class="s2"> ticks.  This is a sign of the system &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;being overloaded and therefore the results are likely &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;incorrect. Please increase the machine time step or &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;time_scale_factor &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;or decrease the number of neurons per core&quot;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_get_extra_provenance_words</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provenance_data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -275,7 +294,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">N_SYSTEM_PROVENANCE_WORDS</span><span class="p">:]</span>
 
-<div class="viewcode-block" id="ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items">[docs]</a>    <span class="k">def</span> <span class="nf">parse_extra_provenance_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">provenance_data</span><span class="p">):</span>
+<div class="viewcode-block" id="ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items">[docs]</a>    <span class="k">def</span> <span class="nf">parse_extra_provenance_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">provenance_data</span><span class="p">):</span>
         <span class="c1"># pylint: disable=unused-argument</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert the remaining provenance words (those not in the standard set)</span>
@@ -287,20 +306,16 @@
 <span class="sd">        :param str label:</span>
 <span class="sd">            A descriptive label for the vertex (derived from label and placed</span>
 <span class="sd">            position) to be used for provenance error reporting to the user.</span>
-<span class="sd">        :param list(str) names:</span>
-<span class="sd">            The base names describing the location of the machine vertex</span>
-<span class="sd">            producing the provenance.</span>
+<span class="sd">        :param int x: x coordinate of the chip where this core</span>
+<span class="sd">        :param int y: y coordinate of the core where this core</span>
+<span class="sd">        :param int p: virtual id of the core</span>
 <span class="sd">        :param list(int) provenance_data:</span>
 <span class="sd">            The list of words of raw provenance data.</span>
-<span class="sd">        :return: The interpreted provenance items.</span>
-<span class="sd">        :rtype:</span>
-<span class="sd">            iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_additional_data_items</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2"> provides </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_additional_data_items</span><span class="si">}</span><span class="s2"> but doesn&#39;t &quot;</span>
-                <span class="s2">&quot;parse them&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[]</span></div>
+                <span class="s2">&quot;parse them&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ProvidesProvenanceDataFromMachineImpl.get_provenance_data_from_machine"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.get_provenance_data_from_machine">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span>
         <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="o">.</span>
@@ -313,15 +328,13 @@
 <span class="sd">            How to talk to the machine</span>
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
 <span class="sd">            Which vertex are we retrieving from, and where was it</span>
-<span class="sd">        :rtype:</span>
-<span class="sd">            ~collections.abc.Iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">provenance_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_provenance_data</span><span class="p">(</span><span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
-        <span class="n">label</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_provenance_placement_description</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
-        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_system_provenance_items</span><span class="p">(</span>
-            <span class="n">label</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">provenance_data</span><span class="p">)</span>
-        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_extra_provenance_items</span><span class="p">(</span>
-            <span class="n">label</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_extra_provenance_words</span><span class="p">(</span><span class="n">provenance_data</span><span class="p">))</span></div>
+        <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_provenance_placement_description</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse_system_provenance_items</span><span class="p">(</span>
+            <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">provenance_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse_extra_provenance_items</span><span class="p">(</span>
+            <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_extra_provenance_words</span><span class="p">(</span><span class="n">provenance_data</span><span class="p">))</span></div>
 </pre></div>
 
             <div class="clearer"></div>

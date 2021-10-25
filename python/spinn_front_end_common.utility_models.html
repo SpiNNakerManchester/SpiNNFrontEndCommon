@@ -119,7 +119,7 @@ and <code class="xref py py-class docutils literal notranslate"><span class="pre
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utility_models.</span></span><span class="sig-name descname"><span class="pre">ChipPowerMonitorMachineVertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pacman.model.graphs.machine.MachineVertex</span></code></a>, <a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary" title="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary</span></code></a>, <a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification" title="spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification</span></code></a>, <a class="reference internal" href="spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost" title="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost</span></code></a>, <a class="reference internal" href="spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData" title="spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pacman.model.graphs.machine.MachineVertex</span></code></a>, <a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary" title="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary</span></code></a>, <a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification" title="spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification</span></code></a>, <a class="reference internal" href="spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost" title="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost</span></code></a></p>
 <p>Machine vertex for C code representing functionality to record        idle times in a machine graph.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -203,20 +203,6 @@ Supports the application vertex calling this directly</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.get_local_provenance_data">
-<span class="sig-name descname"><span class="pre">get_local_provenance_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/chip_power_monitor_machine_vertex.html#ChipPowerMonitorMachineVertex.get_local_provenance_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.get_local_provenance_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an iterable of provenance data items.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>the provenance items</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>iterable(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -526,7 +512,7 @@ running</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.CommandSenderMachineVertex.parse_extra_provenance_items">
-<span class="sig-name descname"><span class="pre">parse_extra_provenance_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provenance_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender_machine_vertex.html#CommandSenderMachineVertex.parse_extra_provenance_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex.parse_extra_provenance_items" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">parse_extra_provenance_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provenance_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender_machine_vertex.html#CommandSenderMachineVertex.parse_extra_provenance_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex.parse_extra_provenance_items" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the remaining provenance words (those not in the standard set)
 into provenance items.</p>
 <p>Called by
@@ -536,16 +522,11 @@ into provenance items.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – A descriptive label for the vertex (derived from label and placed
 position) to be used for provenance error reporting to the user.</p></li>
-<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em>) – The base names describing the location of the machine vertex
-producing the provenance.</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip where this core</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the core where this core</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – virtual id of the core</p></li>
 <li><p><strong>provenance_data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em>) – The list of words of raw provenance data.</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The interpreted provenance items.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>iterable(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -584,7 +565,7 @@ producing the provenance.</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utility_models.</span></span><span class="sig-name descname"><span class="pre">DataSpeedUpPacketGatherMachineVertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_monitors_by_chip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ip_address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_vertex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pacman.model.graphs.machine.MachineVertex</span></code></a>, <a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification" title="spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification</span></code></a>, <a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary" title="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary</span></code></a>, <a class="reference internal" href="spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData" title="spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData</span></code></a>, <a class="reference internal" href="spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine" title="spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pacman.model.graphs.machine.MachineVertex</span></code></a>, <a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification" title="spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification</span></code></a>, <a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary" title="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary</span></code></a>, <a class="reference internal" href="spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine" title="spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine</span></code></a></p>
 <p>Machine vertex for handling fast data transfer between host and         SpiNNaker. This machine vertex is only ever placed on chips with a         working Ethernet connection; it collaborates with the         <a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtraMonitorSupportMachineVertex</span></code></a> to write data on other         chips..</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -745,13 +726,13 @@ created. If None, there is no such application vertex.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_data">
-<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_monitor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_monitor_placement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory_address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_in_bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_routes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_data" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_monitor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory_address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_in_bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_routes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets data from a given core and memory address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>extra_monitor</strong> (<a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a>) – the extra monitor used for this data</p></li>
-<li><p><strong>extra_monitor_placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – placement object for where to get data from</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – placement object for where to get data from</p></li>
 <li><p><strong>memory_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the address in SDRAM to start reading from</p></li>
 <li><p><strong>length_in_bytes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the length of data to read in bytes</p></li>
 <li><p><strong>fixed_routes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em>,</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.FixedRouteEntry" title="(in SpiNNMachine v6.0)"><em>FixedRouteEntry</em></a><em>)</em>) – the fixed routes, used in the report of which
@@ -768,20 +749,6 @@ chips were used by the speed up process</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_local_provenance_data">
-<span class="sig-name descname"><span class="pre">get_local_provenance_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.get_local_provenance_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_local_provenance_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an iterable of provenance data items.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>the provenance items</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>iterable(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_provenance_data_from_machine">
 <span class="sig-name descname"><span class="pre">get_provenance_data_from_machine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.get_provenance_data_from_machine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_provenance_data_from_machine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an iterable of provenance data items.</p>
@@ -791,12 +758,6 @@ chips were used by the speed up process</p></li>
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – the SpinnMan interface object</p></li>
 <li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – the placement of the object</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the provenance items</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>iterable(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1089,12 +1050,6 @@ if <code class="docutils literal notranslate"><span class="pre">is_filename</spa
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – the SpinnMan interface object</p></li>
 <li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – the placement of the object</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the provenance items</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>iterable(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1534,7 +1489,7 @@ and <code class="xref py py-class docutils literal notranslate"><span class="pre
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.parse_extra_provenance_items">
-<span class="sig-name descname"><span class="pre">parse_extra_provenance_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provenance_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather_machine_vertex.html#LivePacketGatherMachineVertex.parse_extra_provenance_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.parse_extra_provenance_items" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">parse_extra_provenance_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provenance_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather_machine_vertex.html#LivePacketGatherMachineVertex.parse_extra_provenance_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.parse_extra_provenance_items" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the remaining provenance words (those not in the standard set)
 into provenance items.</p>
 <p>Called by
@@ -1544,16 +1499,11 @@ into provenance items.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – A descriptive label for the vertex (derived from label and placed
 position) to be used for provenance error reporting to the user.</p></li>
-<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em>) – The base names describing the location of the machine vertex
-producing the provenance.</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip where this core</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the core where this core</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – virtual id of the core</p></li>
 <li><p><strong>provenance_data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em>) – The list of words of raw provenance data.</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The interpreted provenance items.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>iterable(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1900,7 +1850,7 @@ implements.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.parse_extra_provenance_items">
-<span class="sig-name descname"><span class="pre">parse_extra_provenance_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provenance_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multicast_source_machine_vertex.html#ReverseIPTagMulticastSourceMachineVertex.parse_extra_provenance_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.parse_extra_provenance_items" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">parse_extra_provenance_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provenance_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multicast_source_machine_vertex.html#ReverseIPTagMulticastSourceMachineVertex.parse_extra_provenance_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.parse_extra_provenance_items" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the remaining provenance words (those not in the standard set)
 into provenance items.</p>
 <p>Called by
@@ -1910,16 +1860,11 @@ into provenance items.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – A descriptive label for the vertex (derived from label and placed
 position) to be used for provenance error reporting to the user.</p></li>
-<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em>) – The base names describing the location of the machine vertex
-producing the provenance.</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip where this core</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the core where this core</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – virtual id of the core</p></li>
 <li><p><strong>provenance_data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em>) – The list of words of raw provenance data.</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The interpreted provenance items.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>iterable(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a>)</p>
 </dd>
 </dl>
 </dd></dl>

@@ -53,7 +53,7 @@
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ProvenanceDataItem</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="n">ProvenanceWriter</span>
 
 <span class="c1">#: The simple properties of PowerUsed object to be reported</span>
 <span class="n">_BASIC_PROPERTIES</span> <span class="o">=</span> <span class="p">(</span>
@@ -84,27 +84,25 @@
 <span class="sd">            The computed basic power consumption information</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">            Used for describing what a core was actually doing</span>
-<span class="sd">        :rtype: list(ProvenanceDataItem)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">prov_items</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">_PROV_KEY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__prop_name</span><span class="p">(</span><span class="n">prop</span><span class="p">)],</span>
-                <span class="nb">getattr</span><span class="p">(</span><span class="n">power_used</span><span class="p">,</span> <span class="n">prop</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">_BASIC_PROPERTIES</span><span class="p">]</span>
-        <span class="n">prov_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">_PROV_KEY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__core_name</span><span class="p">(</span><span class="n">placements</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)],</span>
-                <span class="n">power_used</span><span class="o">.</span><span class="n">get_core_active_energy_joules</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">power_used</span><span class="o">.</span><span class="n">active_cores</span><span class="p">)</span>
-        <span class="n">prov_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">_PROV_KEY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__router_name</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)],</span>
-                <span class="n">power_used</span><span class="o">.</span><span class="n">get_router_active_energy_joules</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">power_used</span><span class="o">.</span><span class="n">active_routers</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">prov_items</span></div>
+        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">_BASIC_PROPERTIES</span><span class="p">:</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">insert_power</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__prop_name</span><span class="p">(</span><span class="n">prop</span><span class="p">),</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">power_used</span><span class="p">,</span> <span class="n">prop</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">power_used</span><span class="o">.</span><span class="n">active_cores</span><span class="p">:</span>
+                    <span class="n">db</span><span class="o">.</span><span class="n">insert_core</span><span class="p">(</span>
+                        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="s2">&quot;Energy (Joules)&quot;</span><span class="p">,</span>
+                        <span class="n">power_used</span><span class="o">.</span><span class="n">get_core_active_energy_joules</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">db</span><span class="o">.</span><span class="n">add_core_name</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="s2">&quot;SCAMP(OS)&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">power_used</span><span class="o">.</span><span class="n">active_routers</span><span class="p">:</span>
+                    <span class="n">db</span><span class="o">.</span><span class="n">insert_router</span><span class="p">(</span>
+                        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s2">&quot;Energy (Joules)&quot;</span><span class="p">,</span>
+                        <span class="n">power_used</span><span class="o">.</span><span class="n">get_router_active_energy_joules</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__prop_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;_time_secs$&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot; time (seconds)&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(_energy)?_joules&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot; energy (Joules)&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 

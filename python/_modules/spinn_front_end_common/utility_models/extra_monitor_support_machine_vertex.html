@@ -67,8 +67,7 @@
 <span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_bool</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ExecutableType</span><span class="p">,</span> <span class="n">ProvenanceDataItem</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs.</span>\
     <span class="n">extra_monitor_scp_processes</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">ReadStatusProcess</span><span class="p">,</span> <span class="n">ResetCountersProcess</span><span class="p">,</span> <span class="n">SetPacketTypesProcess</span><span class="p">,</span>
@@ -85,7 +84,7 @@
     <span class="n">DataSpeedUpPacketGatherMachineVertex</span> <span class="k">as</span>
     <span class="n">Gatherer</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">)</span>
+    <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">,</span> <span class="n">ProvenanceWriter</span><span class="p">)</span>
 
 <span class="n">log</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -476,17 +475,19 @@
             <span class="n">_PROVENANCE_FORMAT</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
         <span class="p">(</span><span class="n">n_sdp_packets</span><span class="p">,</span> <span class="n">n_in_streams</span><span class="p">,</span> <span class="n">n_out_streams</span><span class="p">,</span> <span class="n">n_router_changes</span><span class="p">)</span> <span class="o">=</span> \
             <span class="n">_PROVENANCE_FORMAT</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">root_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;monitor for </span><span class="si">{</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">return</span> <span class="p">[</span>
-            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">root_name</span><span class="p">,</span> <span class="s2">&quot;Number_of_Router_Configuration_Changes&quot;</span><span class="p">],</span>
-                <span class="n">n_router_changes</span><span class="p">),</span>
-            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">root_name</span><span class="p">,</span> <span class="s2">&quot;Number_of_Relevant_SDP_Messages&quot;</span><span class="p">],</span> <span class="n">n_sdp_packets</span><span class="p">),</span>
-            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">root_name</span><span class="p">,</span> <span class="s2">&quot;Number_of_Input_Streamlets&quot;</span><span class="p">],</span> <span class="n">n_in_streams</span><span class="p">),</span>
-            <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">root_name</span><span class="p">,</span> <span class="s2">&quot;Number_of_Output_Streamlets&quot;</span><span class="p">],</span> <span class="n">n_out_streams</span><span class="p">)]</span></div>
+        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_monitor</span><span class="p">(</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                <span class="s2">&quot;Number_of_Router_Configuration_Changes&quot;</span><span class="p">,</span> <span class="n">n_router_changes</span><span class="p">),</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_monitor</span><span class="p">(</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                <span class="s2">&quot;Number_of_Relevant_SDP_Messages&quot;</span><span class="p">,</span> <span class="n">n_sdp_packets</span><span class="p">),</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_monitor</span><span class="p">(</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                <span class="s2">&quot;Number_of_Input_Streamlets&quot;</span><span class="p">,</span> <span class="n">n_in_streams</span><span class="p">),</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_monitor</span><span class="p">(</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                <span class="s2">&quot;Number_of_Output_Streamlets&quot;</span><span class="p">,</span> <span class="n">n_out_streams</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.set_router_wait1_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_wait1_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait1_timeout</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>

@@ -52,7 +52,6 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">logging</span>
@@ -74,6 +73,7 @@
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span>
 <span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">IPtagResource</span><span class="p">,</span> <span class="n">ResourceContainer</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="n">ProvenanceWriter</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">get_simulator</span><span class="p">,</span> <span class="n">report_default_directory</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
@@ -83,10 +83,9 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AbstractProvidesLocalProvenanceData</span><span class="p">,</span>
     <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ExecutableType</span><span class="p">,</span> <span class="n">ProvenanceDataItem</span><span class="p">)</span>
+    <span class="n">ExecutableType</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">SDP_PORTS</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">,</span> <span class="n">BYTES_PER_KB</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">SpinnFrontEndException</span>
@@ -102,17 +101,7 @@
 <span class="n">TIMEOUT_RETRY_LIMIT</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="n">TIMEOUT_MESSAGE</span> <span class="o">=</span> <span class="s2">&quot;Failed to hear from the machine during </span><span class="si">{}</span><span class="s2"> attempts. &quot;</span>\
     <span class="s2">&quot;Please try removing firewalls.&quot;</span>
-<span class="n">_MINOR_LOSS_MESSAGE</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="s2">&quot;During the extraction of data of </span><span class="si">{}</span><span class="s2"> bytes from memory address </span><span class="si">{}</span><span class="s2">, &quot;</span>
-    <span class="s2">&quot;attempt </span><span class="si">{}</span><span class="s2"> had </span><span class="si">{}</span><span class="s2"> sequences that were lost.&quot;</span><span class="p">)</span>
 <span class="n">_MINOR_LOSS_THRESHOLD</span> <span class="o">=</span> <span class="mi">10</span>
-<span class="n">_MAJOR_LOSS_MESSAGE</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="s2">&quot;During the extraction of data from chip </span><span class="si">{}</span><span class="s2">, there were </span><span class="si">{}</span><span class="s2"> cases of &quot;</span>
-    <span class="s2">&quot;serious data loss. The system recovered, but the speed of download &quot;</span>
-    <span class="s2">&quot;was compromised. Reduce the number of executing applications and remove &quot;</span>
-    <span class="s2">&quot;routers between yourself and the SpiNNaker machine to reduce the chance &quot;</span>
-    <span class="s2">&quot;of this occurring.&quot;</span><span class="p">)</span>
-<span class="n">_MAJOR_LOSS_THRESHOLD</span> <span class="o">=</span> <span class="mi">100</span>
 
 <span class="c1"># cap for stopping wrap arounds</span>
 <span class="n">TRANSACTION_ID_CAP</span> <span class="o">=</span> <span class="mh">0xFFFFFFFF</span>
@@ -232,7 +221,7 @@
 
 <span class="k">class</span> <span class="nc">DataSpeedUpPacketGatherMachineVertex</span><span class="p">(</span>
         <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span>
-        <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractProvidesLocalProvenanceData</span><span class="p">,</span>
+        <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span>
         <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Machine vertex for handling fast data transfer between host and \</span>
 <span class="sd">        SpiNNaker. This machine vertex is only ever placed on chips with a \</span>
@@ -269,8 +258,6 @@
         <span class="s2">&quot;_output&quot;</span><span class="p">,</span>
         <span class="c1"># my placement for future lookup</span>
         <span class="s2">&quot;_placement&quot;</span><span class="p">,</span>
-        <span class="c1"># provenance holder</span>
-        <span class="s2">&quot;_provenance_data_items&quot;</span><span class="p">,</span>
         <span class="c1"># Count of the runs for provenance data</span>
         <span class="s2">&quot;_run&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_remote_tag&quot;</span><span class="p">,</span>
@@ -374,7 +361,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># local provenance storage</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_data_items</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="kc">None</span>
@@ -543,58 +529,6 @@
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.get_binary_file_name"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_binary_file_name">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractHasAssociatedBinary</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_binary_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;data_speed_up_packet_gatherer.aplx&quot;</span></div>
-
-<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.get_local_provenance_data"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_local_provenance_data">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractProvidesLocalProvenanceData</span><span class="o">.</span><span class="n">get_local_provenance_data</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">get_local_provenance_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_run</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">prov_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">significant_losses</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-        <span class="n">top_level_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Provenance_for_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">for</span> <span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">memory_address</span><span class="p">,</span> <span class="n">length_in_bytes</span><span class="p">)</span> <span class="ow">in</span> \
-                <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_data_items</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-
-            <span class="c1"># handle duplicates of the same calls</span>
-            <span class="n">times_extracted_the_same_thing</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">for</span> <span class="n">time_taken</span><span class="p">,</span> <span class="n">lost_seq_nums</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_data_items</span><span class="p">[</span>
-                    <span class="n">placement</span><span class="p">,</span> <span class="n">memory_address</span><span class="p">,</span> <span class="n">length_in_bytes</span><span class="p">]:</span>
-                <span class="c1"># handle time</span>
-                <span class="n">chip_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;chip</span><span class="si">{</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="n">last_name</span> <span class="o">=</span> <span class="s2">&quot;Memory_address:</span><span class="si">{}</span><span class="s2">:Length_in_bytes:</span><span class="si">{}</span><span class="s2">&quot;</span>\
-                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">memory_address</span><span class="p">,</span> <span class="n">length_in_bytes</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">times_extracted_the_same_thing</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">iteration_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;run</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">iteration_name</span> <span class="o">=</span> <span class="s2">&quot;run</span><span class="si">{}</span><span class="s2">iteration</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">,</span> <span class="n">times_extracted_the_same_thing</span><span class="p">)</span>
-                <span class="n">prov_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                    <span class="p">[</span><span class="n">top_level_name</span><span class="p">,</span> <span class="s2">&quot;extraction_time&quot;</span><span class="p">,</span> <span class="n">chip_name</span><span class="p">,</span> <span class="n">last_name</span><span class="p">,</span>
-                     <span class="n">iteration_name</span><span class="p">],</span>
-                    <span class="n">time_taken</span><span class="p">,</span> <span class="n">report</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-                <span class="n">times_extracted_the_same_thing</span> <span class="o">+=</span> <span class="mi">1</span>
-
-                <span class="c1"># handle lost sequence numbers</span>
-                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">n_lost_seq_nums</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lost_seq_nums</span><span class="p">):</span>
-                    <span class="c1"># Zeroes are not reported at all</span>
-                    <span class="k">if</span> <span class="n">n_lost_seq_nums</span><span class="p">:</span>
-                        <span class="n">prov_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                            <span class="p">[</span><span class="n">top_level_name</span><span class="p">,</span> <span class="s2">&quot;lost_seq_nums&quot;</span><span class="p">,</span> <span class="n">chip_name</span><span class="p">,</span>
-                             <span class="n">last_name</span><span class="p">,</span> <span class="n">iteration_name</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;iteration_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span>
-                            <span class="n">n_lost_seq_nums</span><span class="p">,</span> <span class="n">report</span><span class="o">=</span><span class="p">(</span>
-                                <span class="n">n_lost_seq_nums</span> <span class="o">&gt;</span> <span class="n">_MINOR_LOSS_THRESHOLD</span><span class="p">),</span>
-                            <span class="n">message</span><span class="o">=</span><span class="n">_MINOR_LOSS_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">length_in_bytes</span><span class="p">,</span> <span class="n">memory_address</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span>
-                                <span class="n">n_lost_seq_nums</span><span class="p">)))</span>
-                    <span class="k">if</span> <span class="n">n_lost_seq_nums</span> <span class="o">&gt;</span> <span class="n">_MAJOR_LOSS_THRESHOLD</span><span class="p">:</span>
-                        <span class="n">significant_losses</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">significant_losses</span><span class="p">:</span>
-            <span class="n">n_times</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">significant_losses</span><span class="p">[</span><span class="n">chip</span><span class="p">])</span>
-            <span class="n">chip_name</span> <span class="o">=</span> <span class="s2">&quot;chip</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">chip</span><span class="p">)</span>
-            <span class="n">prov_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">top_level_name</span><span class="p">,</span> <span class="s2">&quot;serious_lost_seq_num_count&quot;</span><span class="p">,</span> <span class="n">chip_name</span><span class="p">],</span>
-                <span class="n">n_times</span><span class="p">,</span> <span class="n">report</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">_MAJOR_LOSS_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">chip</span><span class="p">,</span> <span class="n">n_times</span><span class="p">)))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_data_items</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">prov_items</span></div>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.locate_correct_write_data_function_for_chip_location"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.locate_correct_write_data_function_for_chip_location">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">locate_correct_write_data_function_for_chip_location</span><span class="p">(</span>
@@ -1236,13 +1170,13 @@
         <span class="k">raise</span> <span class="n">exn</span> <span class="ow">or</span> <span class="n">SpinnmanTimeoutException</span>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.get_data"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">extra_monitor</span><span class="p">,</span> <span class="n">extra_monitor_placement</span><span class="p">,</span> <span class="n">memory_address</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">extra_monitor</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">memory_address</span><span class="p">,</span>
             <span class="n">length_in_bytes</span><span class="p">,</span> <span class="n">fixed_routes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Gets data from a given core and memory address.</span>
 
 <span class="sd">        :param ExtraMonitorSupportMachineVertex extra_monitor:</span>
 <span class="sd">            the extra monitor used for this data</span>
-<span class="sd">        :param ~pacman.model.placements.Placement extra_monitor_placement:</span>
+<span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
 <span class="sd">            placement object for where to get data from</span>
 <span class="sd">        :param int memory_address: the address in SDRAM to start reading from</span>
 <span class="sd">        :param int length_in_bytes: the length of data to read in bytes</span>
@@ -1258,9 +1192,11 @@
         <span class="k">if</span> <span class="n">length_in_bytes</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">end</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_data_items</span><span class="p">[</span>
-                <span class="n">extra_monitor_placement</span><span class="p">,</span> <span class="n">memory_address</span><span class="p">,</span>
-                <span class="n">length_in_bytes</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+                <span class="c1"># TODO Why log the time to not read???</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">insert_gatherer</span><span class="p">(</span>
+                    <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">memory_address</span><span class="p">,</span> <span class="n">length_in_bytes</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">,</span> <span class="s2">&quot;No Extraction time&quot;</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">data</span>
 
         <span class="n">transceiver</span> <span class="o">=</span> <span class="n">get_simulator</span><span class="p">()</span><span class="o">.</span><span class="n">transceiver</span>
@@ -1276,8 +1212,7 @@
 
         <span class="c1"># send</span>
         <span class="n">connection</span><span class="o">.</span><span class="n">send_sdp_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__make_sdp_message</span><span class="p">(</span>
-            <span class="n">extra_monitor_placement</span><span class="p">,</span>
-            <span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">EXTRA_MONITOR_CORE_DATA_SPEED_UP</span><span class="p">,</span>
+            <span class="n">placement</span><span class="p">,</span> <span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">EXTRA_MONITOR_CORE_DATA_SPEED_UP</span><span class="p">,</span>
             <span class="n">_FOUR_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
                 <span class="n">DATA_OUT_COMMANDS</span><span class="o">.</span><span class="n">START_SENDING</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">,</span>
                 <span class="n">memory_address</span><span class="p">,</span> <span class="n">length_in_bytes</span><span class="p">)))</span>
@@ -1287,28 +1222,40 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="nb">memoryview</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_seq_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_max_seq_num</span><span class="p">()</span>
         <span class="n">lost_seq_nums</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_receive_data</span><span class="p">(</span>
-            <span class="n">transceiver</span><span class="p">,</span> <span class="n">extra_monitor_placement</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">)</span>
+            <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">)</span>
 
         <span class="c1"># Stop anything else getting through (and reduce traffic)</span>
         <span class="n">connection</span><span class="o">.</span><span class="n">send_sdp_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__make_sdp_message</span><span class="p">(</span>
-            <span class="n">extra_monitor_placement</span><span class="p">,</span>
-            <span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">EXTRA_MONITOR_CORE_DATA_SPEED_UP</span><span class="p">,</span>
+            <span class="n">placement</span><span class="p">,</span> <span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">EXTRA_MONITOR_CORE_DATA_SPEED_UP</span><span class="p">,</span>
             <span class="n">_TWO_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">DATA_OUT_COMMANDS</span><span class="o">.</span><span class="n">CLEAR</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">)))</span>
         <span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
         <span class="n">end</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_data_items</span><span class="p">[</span>
-            <span class="n">extra_monitor_placement</span><span class="p">,</span> <span class="n">memory_address</span><span class="p">,</span> <span class="n">length_in_bytes</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">lost_seq_nums</span><span class="p">))</span>
+        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_gatherer</span><span class="p">(</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">memory_address</span><span class="p">,</span> <span class="n">length_in_bytes</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">,</span> <span class="s2">&quot;Extraction time&quot;</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">lost_seq_num</span> <span class="ow">in</span> <span class="n">lost_seq_nums</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">lost_seq_num</span> <span class="o">&gt;</span> <span class="n">_MINOR_LOSS_THRESHOLD</span><span class="p">:</span>
+                    <span class="n">db</span><span class="o">.</span><span class="n">insert_report</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;During the extraction of data of </span><span class="si">{</span><span class="n">length_in_bytes</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;bytes from memory address </span><span class="si">{</span><span class="n">memory_address</span><span class="si">}</span><span class="s2"> on &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;chip (</span><span class="si">{</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="si">}</span><span class="s2">), &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lost_seq_num</span><span class="si">}</span><span class="s2"> sequences were lost.&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">lost_seq_num</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">db</span><span class="o">.</span><span class="n">insert_gatherer</span><span class="p">(</span>
+                        <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">memory_address</span><span class="p">,</span>
+                        <span class="n">length_in_bytes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">,</span> <span class="s2">&quot;Lost_seq_nums&quot;</span><span class="p">,</span>
+                        <span class="n">lost_seq_num</span><span class="p">)</span>
 
         <span class="c1"># create report elements</span>
         <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_data_speed_up_reports&quot;</span><span class="p">):</span>
             <span class="n">routers_been_in_use</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_determine_which_routers_were_used</span><span class="p">(</span>
-                <span class="n">extra_monitor_placement</span><span class="p">,</span> <span class="n">fixed_routes</span><span class="p">,</span>
+                <span class="n">placement</span><span class="p">,</span> <span class="n">fixed_routes</span><span class="p">,</span>
                 <span class="n">transceiver</span><span class="o">.</span><span class="n">get_machine_details</span><span class="p">())</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_routers_used_into_report</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_out_report_path</span><span class="p">,</span> <span class="n">routers_been_in_use</span><span class="p">,</span>
-                <span class="n">extra_monitor_placement</span><span class="p">)</span>
+                <span class="n">placement</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output</span></div>
 
@@ -1710,15 +1657,21 @@
             <span class="n">_PROVENANCE_DATA_SIZE</span><span class="p">)</span>
         <span class="n">n_sdp_sent</span><span class="p">,</span> <span class="n">n_sdp_recvd</span><span class="p">,</span> <span class="n">n_in_streams</span><span class="p">,</span> <span class="n">n_out_streams</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">_FOUR_WORDS</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
-        <span class="n">label</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">label</span>
-        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">location</span>
-        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;vertex_</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
-        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span><span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Sent_SDP_Packets&quot;</span><span class="p">],</span> <span class="n">n_sdp_sent</span><span class="p">)</span>
-        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span><span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Received_SDP_Packets&quot;</span><span class="p">],</span> <span class="n">n_sdp_recvd</span><span class="p">)</span>
-        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Speed_Up_Input_Streams&quot;</span><span class="p">],</span> <span class="n">n_in_streams</span><span class="p">)</span>
-        <span class="k">yield</span> <span class="n">ProvenanceDataItem</span><span class="p">(</span>
-            <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Speed_Up_Output_Streams&quot;</span><span class="p">],</span> <span class="n">n_out_streams</span><span class="p">)</span></div>
+        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">add_core_name</span><span class="p">(</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_core</span><span class="p">(</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
+                <span class="s2">&quot;Sent_SDP_Packets&quot;</span><span class="p">,</span> <span class="n">n_sdp_sent</span><span class="p">)</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_core</span><span class="p">(</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
+                <span class="s2">&quot;Received_SDP_Packets&quot;</span><span class="p">,</span> <span class="n">n_sdp_recvd</span><span class="p">)</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_core</span><span class="p">(</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
+                <span class="s2">&quot;Speed_Up_Input_Streams&quot;</span><span class="p">,</span> <span class="n">n_in_streams</span><span class="p">)</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_core</span><span class="p">(</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
+                <span class="s2">&quot;Speed_Up_Output_Streams&quot;</span><span class="p">,</span> <span class="n">n_out_streams</span><span class="p">)</span></div>
 
 
 <span class="k">class</span> <span class="nc">_StreamingContextManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>

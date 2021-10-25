@@ -231,17 +231,15 @@
         <span class="n">key_atom_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_key_to_atom_map</span><span class="p">(</span>
             <span class="n">machine_graph</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">)</span>
 
-        <span class="n">prov_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-
         <span class="c1"># start the routing table choice conversion</span>
         <span class="k">for</span> <span class="n">router_table</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">router_tables</span><span class="o">.</span><span class="n">routing_tables</span><span class="p">):</span>
-            <span class="n">prov_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_compression_selection_process</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_compression_selection_process</span><span class="p">(</span>
                 <span class="n">router_table</span><span class="p">,</span> <span class="n">report_folder_path</span><span class="p">,</span>
                 <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span>
-                <span class="n">compressed_pacman_router_tables</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">))</span>
+                <span class="n">compressed_pacman_router_tables</span><span class="p">,</span> <span class="n">key_atom_map</span><span class="p">)</span>
 
         <span class="c1"># return compressed tables</span>
-        <span class="k">return</span> <span class="n">compressed_pacman_router_tables</span><span class="p">,</span> <span class="n">prov_items</span></div>
+        <span class="k">return</span> <span class="n">compressed_pacman_router_tables</span></div>
 
 <div class="viewcode-block" id="HostBasedBitFieldRouterCompressor.get_bit_field_sdram_base_addresses"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.get_bit_field_sdram_base_addresses">[docs]</a>    <span class="k">def</span> <span class="nf">get_bit_field_sdram_base_addresses</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
@@ -370,7 +368,7 @@
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_file_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">report_out</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_create_table_report</span><span class="p">(</span><span class="n">router_table</span><span class="p">,</span> <span class="n">report_out</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">generate_provenance_item</span><span class="p">(</span>
+        <span class="n">generate_provenance_item</span><span class="p">(</span>
             <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_midpoint</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_convert_bitfields_into_router_table</span><span class="p">(</span>

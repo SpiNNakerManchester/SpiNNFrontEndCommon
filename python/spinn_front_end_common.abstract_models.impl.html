@@ -209,21 +209,17 @@ placed on a core, used in partitioning.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_tdma_provenance_item">
-<span class="sig-name descname"><span class="pre">get_tdma_provenance_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desc_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdma_slots_missed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/tdma_aware_application_vertex.html#TDMAAwareApplicationVertex.get_tdma_provenance_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_tdma_provenance_item" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_tdma_provenance_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desc_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdma_slots_missed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/tdma_aware_application_vertex.html#TDMAAwareApplicationVertex.get_tdma_provenance_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_tdma_provenance_item" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the provenance item used for the TDMA provenance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em>) – the names for the provenance data item</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – x coordinate of the chip where this core</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – y coordinate of the core where this core</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – virtual id of the core</p></li>
 <li><p><strong>desc_label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – a descriptive label for the vertex</p></li>
 <li><p><strong>tdma_slots_missed</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the number of TDMA slots missed</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the provenance data item</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem">ProvenanceDataItem</a></p>
 </dd>
 </dl>
 </dd></dl>
