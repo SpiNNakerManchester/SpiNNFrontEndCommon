@@ -20,6 +20,7 @@ from datetime import timedelta
 # pylint: disable=no-name-in-module
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.interface.provenance import ProvenanceWriter
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -59,8 +60,11 @@ class FecTimer(object):
         # The start time when the timer was set off
         "_start_time",
 
-        # Name of what is being times
-        "_name",
+        # Name of algorithm what is being timed
+        "_algorithm",
+
+        # Name of category what is being timed
+        "_category",
         ]
 
     @classmethod
@@ -76,9 +80,10 @@ class FecTimer(object):
         _print_timings = get_config_bool(
             "Reports", "display_algorithm_timings")
 
-    def __init__(self, name):
+    def __init__(self, category, algorithm):
         self._start_time = None
-        self._name = name
+        self._category = category
+        self._algorithm = algorithm
 
     def __enter__(self):
         self._start_time = _now()
@@ -92,9 +97,12 @@ class FecTimer(object):
             logger.info(message)
 
     def skip(self, reason):
-        message = f"{self._name} skipped as {reason}"
+        message = f"{self._algorithm} skipped as {reason}"
+        time_taken = self._stop_timer()
+        with ProvenanceWriter() as db:
+            db.insert_timing(
+                self._category, self._algorithm, time_taken.microseconds)
         self._report(message)
-        self._start_time = None
 
     def skip_if_has_not_run(self):
         if _simulator.has_ran:
@@ -179,11 +187,12 @@ class FecTimer(object):
 
     def error(self, reason):
         time_taken = self._stop_timer()
-        message = f"{self._name} failed after {time_taken} as {reason}"
+        message = f"{self._algorithm} failed after {time_taken} as {reason}"
         #_provenance_items.append(ProvenanceDataItem(
         #    ["algorithm", "error", f"{self._name} failed due to"], reason))
-        #_provenance_items.append(ProvenanceDataItem(
-        #    ["algorithm", "timer", f"{self._name} took"], time_taken))
+        with ProvenanceWriter() as db:
+            db.insert_timing(
+                self._category, self._algorithm, time_taken.microseconds)
         self._report(message)
 
     def _stop_timer(self):
@@ -203,21 +212,19 @@ class FecTimer(object):
             return False
         time_taken = self._stop_timer()
         if type is None:
-            message = f"{self._name} took {time_taken} "
+            message = f"{self._algorithm} took {time_taken} "
         else:
             try:
-                message = f"{self._name} exited with {type.__name__} " \
+                message = f"{self._algorithm} exited with {type.__name__} " \
                           f"after {time_taken}"
             except Exception:
-                message = f"{self._name} exited with an exception" \
+                message = f"{self._algorithm} exited with an exception" \
                           f"after {time_taken}"
             #_provenance_items.append(ProvenanceDataItem(
             #    ["algorithm", "error", f"{self._name} failed due to"], type))
 
-        #try:
-            #_provenance_items.append(ProvenanceDataItem(
-            #    ["algorithm", "timer", f"{self._name} took"], time_taken))
-        #except NameError:
-        #    raise Exception("Illegal use of FecTime without calling setup")
+        with ProvenanceWriter() as db:
+            db.insert_timing(
+                self._category, self._algorithm, time_taken.microseconds)
         self._report(message)
         return False

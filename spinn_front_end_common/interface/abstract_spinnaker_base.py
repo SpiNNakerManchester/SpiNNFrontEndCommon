@@ -162,8 +162,13 @@ logger = FormatAdapter(logging.getLogger(__name__))
 # 0-15 are reserved for system use (per lplana)
 ALANS_DEFAULT_RANDOM_APP_ID = 16
 
-# Number of provenace items before auto changes to sql format
-PROVENANCE_TYPE_CUTOFF = 20000
+# STAGE NAMES
+GET_MACHINE = "machine_generation"
+MAPPING = "mapping"
+DATA_GENERATION = "data_generation"
+LOADING = "loading"
+RUN_LOOP = "running"
+APPLICATION_RUNNER = "Application runner"
 
 
 class AbstractSpinnakerBase(ConfigHandler):
@@ -1232,7 +1237,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         May set then "machine" value
         """
-        with FecTimer("Execute Virtual Machine Generator") as timer:
+        with FecTimer(GET_MACHINE, "Get Virtual Machine") as timer:
             if timer.skip_if_value_already_set(self._machine, "machine"):
                 return
             if timer.skip_if_value_false(
@@ -1242,10 +1247,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             # TODO fix params
             self._machine = generator(get_config_int("Machine", "version"))
 
-    def _execute_allocator(self, total_run_time):
+    def _execute_allocator(self, category, total_run_time):
         """
         Runs, times and logs the SpallocAllocator or HBPAllocator if required
 
+        :param str category: Algorithm category for provenance
         :param total_run_time: The total run time to request
         type total_run_time: int or None
         :return: machine name, machine version, BMP details (if any),
@@ -1254,7 +1260,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: tuple(str, int, object, bool, bool, object, object,
             MachineAllocationController)
         """
-        with FecTimer("Execute Allocator") as timer:
+        with FecTimer(category, "Allocator") as timer:
             if timer.skip_if_value_already_set(self._machine, "machine"):
                 return None
             if timer.skip_if_value_not_none(self._hostname, "hostname"):
@@ -1277,12 +1283,13 @@ class AbstractSpinnakerBase(ConfigHandler):
                     self._remote_spinnaker_url, total_run_time,
                     n_chips_required, self._n_boards_required)
 
-    def _execute_machine_generator(self, allocator_data):
+    def _execute_machine_generator(self, category, allocator_data):
         """
         Runs, times and logs the MachineGenerator if required
 
         May set the "machine" value if not already set
 
+        :param str category: Algorithm category for provenance
         :allocator_data: None or
             (machine name, machine version, BMP details (if any),
             reset on startup flag, auto-detect BMP, SCAMP connection details,
@@ -1291,7 +1298,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             tuple(str, int, object, bool, bool, object, object,
             MachineAllocationController)
         """
-        with FecTimer("Execute Machine Generator") as timer:
+        with FecTimer(category, "Machine generator") as timer:
             if timer.skip_if_value_already_set(self._machine, "machine"):
                 return
             if self._hostname:
@@ -1334,7 +1341,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param total_run_time: The total run time to request
         :type total_run_time: int or None
         """
-        with FecTimer("Execute Max Machine Generator") as timer:
+        with FecTimer(GET_MACHINE, "Get max machine") as timer:
             if timer.skip_if_value_already_set(self._machine, "machine"):
                 # Leave _max_machine as is a may be true from an earlier call
                 return self._machine
@@ -1371,8 +1378,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._app_id = self._txrx.app_id_tracker.get_new_id()
 
         self._execute_get_virtual_machine()
-        allocator_data = self._execute_allocator(total_run_time)
-        self._execute_machine_generator(allocator_data)
+        allocator_data = self._execute_allocator(GET_MACHINE, total_run_time)
+        self._execute_machine_generator(GET_MACHINE, allocator_data)
         self._execute_get_max_machine(total_run_time)
         return self._machine
 
@@ -1397,12 +1404,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         Allows overriding classes to add algorithms
         """
 
-    def _write_json_machine(self):
+    def _json_machine(self):
         """
         Runs, times and logs WriteJsonMachine if required
 
         """
-        with FecTimer("Write Json Machine") as timer:
+        with FecTimer(MAPPING, "Json machine") as timer:
             if timer.skip_if_cfg_false("Reports", "write_json_machine"):
                 return
             writer = WriteJsonMachine()
@@ -1414,7 +1421,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the Network Specification report is requested
 
         """
-        with FecTimer("Report network_specification") as timer:
+        with FecTimer(MAPPING, "Network Specification report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_network_specification_report"):
                 return
@@ -1430,7 +1437,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the ChipIdAllocator
 
         """
-        with FecTimer("Execute Chip Id Allocator"):
+        with FecTimer(MAPPING, "Chip ID allocator"):
             allocator = MallocBasedChipIdAllocator()
             if self._application_graph is None:
                 graph = self._machine_graph
@@ -1443,7 +1450,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the InsertLivePacketGatherersToGraphs if required
         """
-        with FecTimer("Execute Chip Id Allocator") as timer:
+        with FecTimer(
+                MAPPING, "Insert live packet gatherers to graphs") as timer:
             if timer.skip_if_empty(self._live_packet_recorder_params,
                                    "live_packet_recorder_params"):
                 return
@@ -1457,7 +1465,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the BoardChipReport is requested
 
         """
-        with FecTimer("Report Write Board Chip Report") as timer:
+        with FecTimer(MAPPING, "Board chip report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_board_chip_report"):
                 return
@@ -1469,7 +1477,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the splitter_reset
 
         """
-        with FecTimer("Execute Splitter Reset"):
+        with FecTimer(MAPPING, "Splitter reset"):
             splitter_reset(self._application_graph)
 
     # Overriden by spynaker to choose a different algorithm
@@ -1477,7 +1485,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the SplitterSelector
         """
-        with FecTimer("Execute Splitter Selector"):
+        with FecTimer(MAPPING, "Splitter selector"):
             selector = SplitterSelector()
             selector(self._application_graph)
 
@@ -1496,7 +1504,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type pre_allocated_resources:
             ~pacman.model.resources.PreAllocatedResourceContainer
         """
-        with FecTimer("Execute PreAllocate For LivePacketGatherer") as timer:
+        with FecTimer(MAPPING, "Preallocate for live packet gatherer") as timer:
             if timer.skip_if_empty(self._live_packet_recorder_params,
                                    "live_packet_recorder_params"):
                 return
@@ -1515,8 +1523,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type pre_allocated_resources:
             ~pacman.model.resources.PreAllocatedResourceContainer
         """
-        with FecTimer(
-                "Execute PreAllocate For Chip Power Monitor") as timer:
+        with FecTimer(MAPPING, "Preallocate for chip power monitor") as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
             pre_allocator = PreAllocateResourcesForChipPowerMonitor()
@@ -1536,7 +1543,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type pre_allocated_resources:
             ~pacman.model.resources.PreAllocatedResourceContainer
         """
-        with FecTimer("Execute PreAllocate For Extra Monitor Support") \
+        with FecTimer(MAPPING, "Preallocate for extra monitor support") \
                 as timer:
             if timer.skip_if_cfgs_false(
                     "Machine", "enable_advanced_monitor_support",
@@ -1557,7 +1564,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type pre_allocated_resources:
             ~pacman.model.resources.PreAllocatedResourceContainer
         """
-        with FecTimer("Execute Splitter Partitioner") as timer:
+        with FecTimer(MAPPING, "Splitter partitioner") as timer:
             if timer.skip_if_application_graph_empty():
                 return
             partitioner = SplitterPartitioner()
@@ -1576,7 +1583,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :return:
         """
-        with FecTimer("Execute Graph Measurer") as timer:
+        with FecTimer(MAPPING, "Graph measurer") as timer:
             if not self._max_machine:
                 if timer.skip_if_value_already_set(self._machine, "machine"):
                     return
@@ -1589,7 +1596,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Run, time and log the InsertChipPowerMonitorsToGraphs if required
 
         """
-        with FecTimer("Execute Insert Chip Power Monitors") as timer:
+        with FecTimer(MAPPING, "Insert chip power monitors") as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
             inserter = InsertChipPowerMonitorsToGraphs()
@@ -1603,7 +1610,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Run, time and log the InsertChipPowerMonitorsToGraphs if required
 
         """
-        with FecTimer("Execute Insert Extra Monitor Vertices") as timer:
+        with FecTimer(MAPPING, "Insert extra monitor vertices") as timer:
             if timer.skip_if_cfgs_false(
                     "Machine", "enable_advanced_monitor_support",
                     "enable_reinjection"):
@@ -1624,7 +1631,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Write, times and logs the partitioner_report if needed
 
         """
-        with FecTimer("Execute Partitioner Report") as timer:
+        with FecTimer(MAPPING, "Partitioner report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_partitioner_reports"):
                 return
@@ -1636,7 +1643,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         Sets the "machine_partition_n_keys_map" data
         """
-        with FecTimer("Execute Edge To N Keys Mapper"):
+        with FecTimer(MAPPING, "Edge to n keys mapper"):
             mapper = EdgeToNKeysMapper()
             self._machine_partition_n_keys_map = mapper(self._machine_graph)
 
@@ -1644,7 +1651,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs times and logs the LocalTDMABuilder
         """
-        with FecTimer("Execute Local TDMA Builder"):
+        with FecTimer(MAPPING, "Local TDMA builder"):
             builder = LocalTDMABuilder()
             builder(self._machine_graph, self._machine_partition_n_keys_map,
                     self._application_graph)
@@ -1653,7 +1660,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Writes, times and logs the machine_partition_n_keys_map if required
         """
-        with FecTimer("Json Partition NKeys Map") as timer:
+        with FecTimer(MAPPING, "Json partition n keys map") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_json_partition_n_keys_map"):
                 return
@@ -1671,7 +1678,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg placer value
 
         """
-        with FecTimer("Execute Connective Based Placer"):
+        with FecTimer(MAPPING, "Connective based placer"):
             placer = ConnectiveBasedPlacer()
             self._placements = placer(
                 self._machine_graph, self._machine, self._plan_n_timesteps)
@@ -1686,7 +1693,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg placer value
 
         """
-        with FecTimer("Execute One To One Placer"):
+        with FecTimer(MAPPING, "One to one placer"):
             placer = OneToOnePlacer()
             self._placements = placer(
                 self._machine_graph, self._machine, self._plan_n_timesteps)
@@ -1701,7 +1708,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg placer value
 
         """
-        with FecTimer("Execute Radial Placer"):
+        with FecTimer(MAPPING, "Radial placer"):
             placer = RadialPlacer()
             self._placements = placer(
                 self._machine_graph, self._machine, self._plan_n_timesteps)
@@ -1716,7 +1723,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg placer value
 
         """
-        with FecTimer("Execute Spreader Placer"):
+        with FecTimer(MAPPING, "Spreader placer"):
             placer = SpreaderPlacer()
             self._placements = placer(
                 self._machine_graph, self._machine,
@@ -1753,7 +1760,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the InsertEdgesToLivePacketGatherers if required
         """
-        with FecTimer("Execute Chip Id Allocator") as timer:
+        with FecTimer(MAPPING, "Insert edges to live packet gatherers") as timer:
             if timer.skip_if_empty(self._live_packet_recorder_params,
                                    "live_packet_recorder_params"):
                 return
@@ -1768,7 +1775,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs times and logs the InsertEdgesToExtraMonitor is required
         """
-        with FecTimer("Execute Insert Edges To Extra Monitor") as timer:
+        with FecTimer(MAPPING, "Insert Edges To Extra Monitor") as timer:
             if timer.skip_if_cfgs_false(
                     "Machine", "enable_advanced_monitor_support",
                     "enable_reinjection"):
@@ -1791,7 +1798,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         "data_in_multicast_key_to_chip_map" and
         "system_multicast_router_timeout_keys"
         """
-        with FecTimer("Execute System Multicast Routing Generator") as timer:
+        with FecTimer(MAPPING, "System multicast routing generator") as timer:
             if timer.skip_if_cfgs_false(
                     "Machine", "enable_advanced_monitor_support",
                     "enable_reinjection"):
@@ -1809,7 +1816,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         May set the "fixed_routes" data.
         """
-        with FecTimer("Execute Fixed Route Router") as timer:
+        with FecTimer(MAPPING, "Fixed route router") as timer:
             if timer.skip_if_cfg_false(
                     "Machine", "enable_advanced_monitor_support"):
                 return
@@ -1823,7 +1830,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Writes, times and logs the application graph placer report if
         requested
         """
-        with FecTimer("Report Placements With Application Graph") as timer:
+        with FecTimer(MAPPING, "Placements wth application graph report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_application_graph_placer_report"):
                 return
@@ -1838,7 +1845,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Writes, times and logs the machine graph placer report if
         requested
         """
-        with FecTimer("Report Placements With Machine Graph") as timer:
+        with FecTimer(MAPPING, "Placements wthout machine graaph") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_machine_graph_placer_report"):
                 return
@@ -1846,12 +1853,12 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._hostname, self._machine_graph, self._placements,
                 self._machine)
 
-    def _write_json_placements(self):
+    def _json_placements(self):
         """
         Does, times and logs the writing of placements as json if requested
         :return:
         """
-        with FecTimer("Write Json Placements") as timer:
+        with FecTimer(MAPPING, "Json placements") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_json_placements"):
                 return
@@ -1868,7 +1875,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         .. note::
             Calling of this method is based on the cfg router value
         """
-        with FecTimer("Execute Ner Route Traffic Aware"):
+        with FecTimer(MAPPING, "Ner route traffic aware"):
             router = NerRouteTrafficAware()
             self._routing_table_by_partition = router(
                 self._machine_graph, self._machine, self._placements)
@@ -1882,7 +1889,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         .. note::
             Calling of this method is based on the cfg router value
         """
-        with FecTimer("Execute Ner Route"):
+        with FecTimer(MAPPING, "Ner route"):
             router = NerRoute()
             self._routing_table_by_partition = router(
                 self._machine_graph, self._machine, self._placements)
@@ -1896,7 +1903,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         .. note::
             Calling of this method is based on the cfg router value
         """
-        with FecTimer("Execute Basic Dijkstra Routing"):
+        with FecTimer(MAPPING, "Basic dijkstra routing"):
             router = BasicDijkstraRouting()
             self._routing_table_by_partition = router(
                 self._machine_graph, self._machine, self._placements)
@@ -1932,7 +1939,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         Sets the "tag" data
         """
-        with FecTimer("Execute Basic Tag Allocator"):
+        with FecTimer(MAPPING, "Basic tag allocator"):
             allocator = BasicTagAllocator()
             self._tags = allocator(
                 self._machine, self._plan_n_timesteps, self._placements)
@@ -1941,7 +1948,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Write, times and logs the tag allocator report if requested
         """
-        with FecTimer("Report Tag Allocations") as timer:
+        with FecTimer(MAPPING, "Tag allocator report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_tag_allocation_reports"):
                 return
@@ -1951,7 +1958,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the ProcessPartitionConstraints
         """
-        with FecTimer("Execute Process Partition Constraints"):
+        with FecTimer(MAPPING, "Process partition constraints"):
             processor = ProcessPartitionConstraints()
             processor(self._machine_graph)
 
@@ -1966,7 +1973,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :return:
         """
-        with FecTimer("Execute Global Zoned Routing Info Allocator"):
+        with FecTimer(MAPPING, "Global allocate"):
             self._routing_infos = global_allocate(
                 self._machine_graph, self._machine_partition_n_keys_map)
 
@@ -1981,7 +1988,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :return:
         """
-        with FecTimer("Execute Zoned Routing Info Allocator"):
+        with FecTimer(MAPPING, "Zoned routing info allocator"):
             self._routing_infos = flexible_allocate(
                 self._machine_graph, self._machine_partition_n_keys_map)
 
@@ -1996,7 +2003,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :return:
         """
-        with FecTimer("Execute Malloc Based Routing Info Allocator"):
+        with FecTimer(MAPPING, "Malloc based routing info allocator"):
             allocator = MallocBasedRoutingInfoAllocator()
             self._routing_infos = allocator(
                 self._machine_graph, self._machine_partition_n_keys_map)
@@ -2031,7 +2038,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Writes, times and logs the router iinfo report if requested
         """
-        with FecTimer("Report Router Info") as timer:
+        with FecTimer(MAPPING, "Router info report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_info_report"):
                 return
@@ -2045,7 +2052,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Currently no other Routing Table Generator supported.
             To add an additional Generator copy the pattern of do_placer
         """
-        with FecTimer("Execute Basic Routing Table Generator"):
+        with FecTimer(MAPPING, "Basic routing table generator"):
             generator = BasicRoutingTableGenerator()
             self._router_tables = generator(
                 self._routing_infos, self._routing_table_by_partition,
@@ -2056,7 +2063,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Write, times and logs the router report if requested
         """
-        with FecTimer("Report Router") as timer:
+        with FecTimer(MAPPING, "Router report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_reports"):
                 return
@@ -2068,7 +2075,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Write, times and logs the router summary report if requested
         """
-        with FecTimer("Report Router Summary") as timer:
+        with FecTimer(MAPPING, "Router summary report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_summary_report"):
                 return
@@ -2079,7 +2086,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Write, time and log the routing tables as json if requested
         """
-        with FecTimer("Write Json Routing Tables") as timer:
+        with FecTimer(MAPPING, "Json routing tables") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_json_routing_tables"):
                 return
@@ -2091,7 +2098,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Write, time and log the router collision report
         """
-        with FecTimer("Report Router Collision Potential"):
+        with FecTimer(MAPPING, "Router collision potential report"):
             # TODO cfg flag!
             report = RouterCollisionPotentialReport()
             report(self._routing_table_by_partition,
@@ -2103,7 +2110,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         May set the executable_types data.
         """
-        with FecTimer("Execute Locate Executable Start Type") as timer:
+        with FecTimer(MAPPING, "Locate executable start type") as timer:
             # TODO why skip if virtual ?
             if timer.skip_if_virtual_board():
                 return
@@ -2117,7 +2124,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         May set the buffer_manager data
         """
-        with FecTimer("Execute Buffer Manager Creator") as timer:
+        with FecTimer(MAPPING, "Buffer manager creator") as timer:
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_value_already_set(
@@ -2136,7 +2143,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the SDRAMOutgoingPartitionAllocator
         """
-        with FecTimer("Execute SDRAM Outgoing Partition Allocator"):
+        with FecTimer(MAPPING, "SDRAM outgoing partition allocator"):
             allocator = SDRAMOutgoingPartitionAllocator()
             # Ok if transceiver = None
             allocator(
@@ -2172,10 +2179,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._max_machine:
             self._max_machine = False
             self._machine = None
-        allocator_data = self._execute_allocator(total_run_time)
-        self._execute_machine_generator(allocator_data)
+        allocator_data = self._execute_allocator(MAPPING, total_run_time)
+        self._execute_machine_generator(MAPPING, allocator_data)
         assert(self._machine)
-        self._write_json_machine()
+        self._json_machine()
         self._execute_chip_id_allocator()
         self._execute_insert_live_packet_gatherers_to_graphs()
         self._report_board_chip()
@@ -2187,11 +2194,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._json_partition_n_keys_map()
         self._do_placer()
         self._execute_insert_edges_to_live_packet_gatherers()
+        self._execute_insert_edges_to_extra_monitor()
         self._execute_system_multicast_routing_generator()
         self._execute_fixed_route_router()
         self._report_placements_with_application_graph()
         self._report_placements_with_machine_graph()
-        self._write_json_placements()
+        self._json_placements()
         self._do_routing()
         self._execute_basic_tag_allocator()
         self._report_tag_allocations()
@@ -2218,7 +2226,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         Sets the dsg_targets data
         """
-        with FecTimer("Execute Graph Data Specification Writer"):
+        with FecTimer(
+                DATA_GENERATION, "Graph data specification writer"):
             writer = GraphDataSpecificationWriter()
             self._dsg_targets, self._region_sizes = writer(
                 self._placements, self._hostname, self._machine,
@@ -2247,7 +2256,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param bool graph_changed: Flag to say the graph changed,
         """
-        with FecTimer("Execute Routing Setup") as timer:
+        with FecTimer(LOADING, "Routing setup") as timer:
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_value_false(graph_changed, "graph_changed"):
@@ -2265,7 +2274,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param bool graph_changed: Flag to say the graph changed,
         """
-        with FecTimer("Execute Graph Binary Gatherer") as timer:
+        with FecTimer(LOADING, "Graph binary gatherer") as timer:
             if timer.skip_if_value_false(graph_changed, "graph_changed"):
                 return
             try:
@@ -2292,7 +2301,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: CompressedRoutingTables
         :rtype: MulticastRoutingTables
         """
-        with FecTimer("Execute HostBasedBitFieldRouterCompressor") as timer:
+        with FecTimer(
+                LOADING, "Host based bitfield router compressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
             self._multicast_routes_loaded = False
@@ -2314,7 +2324,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: None
         """
         with FecTimer(
-                "Execute MachineBitFieldOrderedCoveringCompressor") as timer:
+                LOADING,
+                "Machine bitfield ordered covering compressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
             compressor = MachineBitFieldOrderedCoveringCompressor()
@@ -2336,7 +2347,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: None
         :rtype: None
          """
-        with FecTimer("Execute MachineBitFieldPairRouterCompressor") as timer:
+        with FecTimer(
+                LOADING, "Machine bitfield pair router compressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
             self._multicast_routes_loaded = True
@@ -2358,7 +2370,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: CompressedRoutingTables
         :rtype: MulticastRoutingTables
         """
-        with FecTimer("Execute OrderedCoveringCompressor"):
+        with FecTimer(LOADING, "Ordered covering compressor"):
             self._multicast_routes_loaded = False
             compressor = OrderedCoveringCompressor()
             compressed = compressor(self._router_tables)
@@ -2375,7 +2387,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: None
         :rtype: None
         """
-        with FecTimer("Execute OrderedCoveringCompressor") as timer:
+        with FecTimer(LOADING, "Ordered covering compressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
             ordered_covering_compression(
@@ -2395,7 +2407,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: CompressedRoutingTable
         :rtype: MulticastRoutingTables
         """
-        with FecTimer("Execute PairCompressor"):
+        with FecTimer(LOADING, "Pair compressor"):
             compressor = PairCompressor()
             compressed = compressor(self._router_tables)
             self._multicast_routes_loaded = False
@@ -2412,7 +2424,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: None
         :rtype: None
         """
-        with FecTimer("Execute PairOnChipRouterCompression") as timer:
+        with FecTimer(LOADING, "Pair on chip router compression") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
             pair_compression(
@@ -2432,7 +2444,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: CompressedRoutingTables
         :rtype: MulticastRoutingTables
         """
-        with FecTimer("Execute PairUnorderedCompressor"):
+        with FecTimer(LOADING, "Pair unordered compressor"):
             compressor = CheckedUnorderedPairCompressor()
             compressed = compressor(self._router_tables)
             self._multicast_routes_loaded = False
@@ -2519,7 +2531,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param compressed:
         :type compressed: MulticastRoutingTables or None
         """
-        with FecTimer("Execute Routing Table Loader") as timer:
+        with FecTimer(LOADING, "Routing table loader") as timer:
             if compressed:
                 self._multicast_routes_loaded = True
                 if timer.skip_if_virtual_board():
@@ -2534,7 +2546,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the router report from router tables if requested
         """
         # TODO why not during mapping?
-        with FecTimer("Report Uncompressed RoutingTable") as timer:
+        with FecTimer(LOADING, "Uncompressed routing table report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_routing_table_reports"):
                 return
@@ -2544,7 +2556,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the BitFieldCompressorReport if requested
         """
-        with FecTimer("Report BitField Compressor") as timer:
+        with FecTimer(LOADING, "Bitfield compressor report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports",  "write_bit_field_compressor_report"):
                 return
@@ -2560,7 +2572,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param bool graph_changed: Flag to say the graph changed,
         """
-        with FecTimer("Execute Load Fixed Routes") as timer:
+        with FecTimer(LOADING, "Load fixed routes") as timer:
             if timer.skip_if_cfg_false(
                     "Machine", "enable_advanced_monitor_support"):
                 return
@@ -2579,7 +2591,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: map of placement and DSG data, and loaded data flag.
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
-        with FecTimer("Execute System Data Specification") \
+        with FecTimer(LOADING, "Execute system data specification") \
                 as timer:
             if timer.skip_if_virtual_board():
                 return None
@@ -2593,7 +2605,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the loading of exectuable images
         """
-        with FecTimer("Execute Load Executable System Images") as timer:
+        with FecTimer(LOADING, "Load executable system Images") as timer:
             if timer.skip_if_virtual_board():
                 return
             loader = LoadExecutableImages()
@@ -2608,7 +2620,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: map of placement and DSG data, and loaded data flag.
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
-        with FecTimer("Execute Host Data Specification") as timer:
+        with FecTimer(LOADING, "Host data specification") as timer:
             if timer.skip_if_virtual_board():
                 return processor_to_app_data_base_address
             specifier = HostExecuteDataSpecification()
@@ -2624,7 +2636,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Run, times and logs the TagsFromMachineReport if requested
         :return:
         """
-        with FecTimer("Execute Tags From Machine Report") as timer:
+        with FecTimer(LOADING, "Tags from machine report") as timer:
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_cfg_false(
@@ -2638,7 +2650,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the Tags Loader if required
         """
         # TODO why: if graph_changed or data_changed:
-        with FecTimer("Execute Tags Loader") as timer:
+        with FecTimer(LOADING, "Tags Loader") as timer:
             if timer.skip_if_virtual_board():
                 return
             loader = TagsLoader()
@@ -2659,7 +2671,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param bool graph_changed: Flag to say the graph changed,
         """
-        with FecTimer("Execute Memory Report") as timer:
+        with FecTimer(LOADING, "Memory report") as timer:
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_value_false(graph_changed, "graph_changed"):
@@ -2676,7 +2688,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param bool graph_changed: Flag to say the graph changed,
         """
-        with FecTimer("Execute Memory Report") as timer:
+        with FecTimer(LOADING, "Memory report") as timer:
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_value_false(graph_changed, "graph_changed"):
@@ -2689,7 +2701,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             report(self._dsg_targets, self._txrx)
 
     # TODO consider different cfg flags
-    def _execute_compressed_reports(self, graph_changed, compressed):
+    def _report_compressed(self, graph_changed, compressed):
         """
         Runs, times and logs the compressor reports if requested
 
@@ -2697,7 +2709,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param compressed:
         :type compressed: MulticastRoutingTables or None
         """
-        with FecTimer("Execute Compressor Report") as timer:
+        with FecTimer(LOADING, "Compressor report") as timer:
             if timer.skip_if_value_false(graph_changed, "graph_changed"):
                 return
             if timer.skip_if_cfg_false(
@@ -2724,13 +2736,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             report = RoutingTableFromMachineReport()
             report(compressed)
 
-    def _execute_fixed_route_report(self, graph_changed):
+    def _report_fixed_routes(self, graph_changed):
         """
         Runs, times and logs the FixedRouteFromMachineReport is requested
 
         :param bool graph_changed: Flag to say the graph changed,
         """
-        with FecTimer("Execute Fixed Route Report") as timer:
+        with FecTimer(LOADING, "Fixed route report") as timer:
             if timer.skip_if_virtual_board():
                 return
             if self._has_ran and not graph_changed:
@@ -2748,7 +2760,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :return:
         """
-        with FecTimer("Execute Load Executable App Images") as timer:
+        with FecTimer(LOADING, "Load executable app images") as timer:
             if timer.skip_if_virtual_board():
                 return
             loader = LoadExecutableImages()
@@ -2790,8 +2802,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_memory_on_host(
             graph_changed, processor_to_app_data_base_address)
         self._report_memory_on_chip(graph_changed)
-        self._execute_compressed_reports(graph_changed, compressed)
-        self._execute_fixed_route_report(graph_changed)
+        self._report_compressed(graph_changed, compressed)
+        self._report_fixed_routes(graph_changed)
         self._execute_application_load_executables()
 
         self._load_time += convert_time_diff_to_total_milliseconds(
@@ -2799,7 +2811,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_sdram_usage_report_per_chip(self):
         # TODO why in do run
-        with FecTimer("Execute Sdram Usage Report Per Chip") as timer:
+        with FecTimer(RUN_LOOP, "Sdram usage per chip report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_sdram_usage_report_per_chip"):
                 return
@@ -2818,7 +2830,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param bool graph_changed: Flag to say the graph changed,
         """
-        with FecTimer("Execute DSG Region Reloader") as timer:
+        with FecTimer(RUN_LOOP, "DSG region reloader") as timer:
             if timer.skip_if_has_not_run():
                 return
             if timer.skip_if_virtual_board():
@@ -2833,7 +2845,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and log the GraphProvenanceGatherer if requested
 
         """
-        with FecTimer("Execute Graph Provenance Gatherer") as timer:
+        with FecTimer(RUN_LOOP, "Graph provenance gatherer") as timer:
             if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
                 return []
             gatherer = GraphProvenanceGatherer()
@@ -2843,7 +2855,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and log the PlacementsProvenanceGatherer if requested
         """
-        with FecTimer("Execute Placements Provenance Gatherer") as timer:
+        with FecTimer(RUN_LOOP, "Placements provenance gatherer") as timer:
             if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
                 return []
             if timer.skip_if_virtual_board():
@@ -2855,7 +2867,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and log the RouterProvenanceGatherer if requested
         """
-        with FecTimer("Execute Router Provenance Gatherer") as timer:
+        with FecTimer(RUN_LOOP, "Router provenance gatherer") as timer:
             if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
                 return []
             if timer.skip_if_virtual_board():
@@ -2869,7 +2881,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the ProfileDataGatherer if requested
         """
-        with FecTimer("Execute Profile Data Gatherer") as timer:
+        with FecTimer(RUN_LOOP, "Profile data gatherer") as timer:
             if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
                 return
             if timer.skip_if_virtual_board():
@@ -2894,7 +2906,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param int run_time: the run duration in milliseconds.
         """
-        with FecTimer("Execute energy report") as timer:
+        with FecTimer(RUN_LOOP, "Energy report") as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return []
             timer.skip("ComputeEnergyUsed based on old provenance")
@@ -2937,7 +2949,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the ChipIOBufClearer if required
 
         """
-        with FecTimer("Execute Clear IO Buffer") as timer:
+        with FecTimer(RUN_LOOP, "Clear IO buffer") as timer:
             if timer.skip_if_virtual_board():
                 return
             # TODO Why check empty_graph is always false??
@@ -2956,7 +2968,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param int n_sync_steps:
             The number of timesteps between synchronisations
         """
-        with FecTimer("Execute Runtime Update") as timer:
+        with FecTimer(RUN_LOOP, "Runtime Update") as timer:
             if timer.skip_if_virtual_board():
                 return
             if (ExecutableType.USES_SIMULATION_INTERFACE in
@@ -2977,7 +2989,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param int run_time: the run duration in milliseconds.
         :param bool graph_changed: Flag to say the graph changed,
         """
-        with FecTimer("Execute Create Database Interface") as timer:
+        with FecTimer(RUN_LOOP, "Create database interface") as timer:
             if not self._has_ran or graph_changed:
                 interface_maker = DatabaseInterface()
                 # Used to used compressed routing tables if available on host
@@ -2996,7 +3008,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         Sets the notification_interface data object
         """
-        with FecTimer("Execute Create Notification Protocol"):
+        with FecTimer(RUN_LOOP, "Create notification protocol"):
             creator = CreateNotificationProtocol()
             self._notification_interface = creator(
                 self._database_socket_addresses, self._database_file_path)
@@ -3010,7 +3022,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param int run_time: the run duration in milliseconds.
         :return:
         """
-        with FecTimer("Execute Runner") as timer:
+        with FecTimer(RUN_LOOP, APPLICATION_RUNNER) as timer:
             if timer.skip_if_virtual_board():
                 return
             runner = ApplicationRunner()
@@ -3030,7 +3042,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the ChipIOBufExtractor if required
         """
-        with FecTimer("Execute Extract IO Buff") as timer:
+        with FecTimer(RUN_LOOP, "Extract IO buff") as timer:
             if timer.skip_if_virtual_board():
                 return
             if timer.skip_if_cfg_false(
@@ -3045,7 +3057,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the BufferExtractor if required
         """
-        with FecTimer("Execute Buffer Extractor") as timer:
+        with FecTimer(RUN_LOOP, "Buffer extractor") as timer:
             if timer.skip_if_virtual_board():
                 return
             buffer_extractor = BufferExtractor()
@@ -3622,7 +3634,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self.write_finished_file()
 
     def _execute_application_finisher(self):
-        with FecTimer("Execute Application Finisher"):
+        with FecTimer(RUN_LOOP, "Application finisher"):
             finisher = ApplicationFinisher()
             finisher(self._app_id, self._txrx, self._executable_types)
 
