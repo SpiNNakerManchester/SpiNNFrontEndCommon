@@ -24,29 +24,37 @@ import sys
 import threading
 from threading import Condition
 from numpy import __version__ as numpy_version
-from spinn_utilities.timer import Timer
-from spinn_utilities.log import FormatAdapter
+
 from spinn_utilities import __version__ as spinn_utils_version
-from spinn_machine import CoreSubsets
+from spinn_utilities.config_holder import (
+    get_config_bool, get_config_int, get_config_str, set_config)
+from spinn_utilities.log import FormatAdapter
+from spinn_utilities.timer import Timer
+
 from spinn_machine import __version__ as spinn_machine_version
-from spinnman.model.enums.cpu_state import CPUState
+from spinn_machine import CoreSubsets
+
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
-from spinnman.model.cpu_infos import CPUInfos
 from spinnman.messages.scp.enums.signal import Signal
+from spinnman.model.cpu_infos import CPUInfos
+from spinnman.model.enums.cpu_state import CPUState
+
 from data_specification import __version__ as data_spec_version
+
 from spalloc import __version__ as spalloc_version
-from pacman.model.placements import Placements
+
+from pacman import __version__ as pacman_version
 from pacman.executor.injection_decorator import (
     clear_injectables, provide_injectables, do_injection)
 from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import (
     MachineGraph, MachineGraphView, MachineVertex)
+from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
+from pacman.model.placements import Placements
 from pacman.model.resources import (
     ConstantSDRAM, PreAllocatedResourceContainer)
-from pacman import __version__ as pacman_version
-from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.operations.chip_id_allocator_algorithms import (
     MallocBasedChipIdAllocator)
 from pacman.operations.fixed_route_router import FixedRouteRouter
@@ -55,11 +63,11 @@ from pacman.operations.placer_algorithms import (
     ConnectiveBasedPlacer, OneToOnePlacer, RadialPlacer, SpreaderPlacer)
 from pacman.operations.router_algorithms import (
     BasicDijkstraRouting, NerRoute, NerRouteTrafficAware)
-from pacman.operations.router_compressors.ordered_covering_router_compressor \
-    import OrderedCoveringCompressor
+from pacman.operations.router_compressors import PairCompressor
 from pacman.operations.router_compressors.checked_unordered_pair_compressor \
     import CheckedUnorderedPairCompressor
-from pacman.operations.router_compressors import PairCompressor
+from pacman.operations.router_compressors.ordered_covering_router_compressor \
+    import OrderedCoveringCompressor
 from pacman.operations.routing_info_allocator_algorithms.\
     malloc_based_routing_allocator import MallocBasedRoutingInfoAllocator
 from pacman.operations.routing_info_allocator_algorithms.\
@@ -67,13 +75,13 @@ from pacman.operations.routing_info_allocator_algorithms.\
 from pacman.operations.routing_table_generators import (
     BasicRoutingTableGenerator)
 from pacman.operations.tag_allocator_algorithms import BasicTagAllocator
-from spinn_utilities.config_holder import (
-    get_config_bool, get_config_int, get_config_str, set_config)
+
+from spinn_front_end_common import __version__ as fec_version
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
-from spinn_front_end_common.interface.java_caller import JavaCaller
+from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     ApplicationFinisher, ApplicationRunner,  BufferExtractor,
     BufferManagerCreator, ChipIOBufClearer, ChipIOBufExtractor,
@@ -108,7 +116,10 @@ from spinn_front_end_common.interface.interface_functions.\
         ordered_covering_compression, pair_compression)
 from spinn_front_end_common.interface.splitter_selectors import (
     SplitterSelector)
+from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
+from spinn_front_end_common.interface.simulator_status import (
+    RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE)
@@ -123,22 +134,12 @@ from spinn_front_end_common.utilities.report_functions import (
     RoutingTableFromMachineReport, TagsFromMachineReport,
     WriteJsonMachine, WriteJsonPartitionNKeysMap, WriteJsonPlacements,
     WriteJsonRoutingTables)
+from spinn_front_end_common.utilities import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType)
 from spinn_front_end_common.utility_models import (
     CommandSender, CommandSenderMachineVertex,
     DataSpeedUpPacketGatherMachineVertex)
-from spinn_front_end_common.utilities import IOBufExtractor (
-    EnergyReport, TagsFromMachineReport)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.utility_models import (
-    CommandSender, CommandSenderMachineVertex,
-    DataSpeedUpPacketGatherMachineVertex)
-from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
-from spinn_front_end_common.interface.java_caller import JavaCaller
-from spinn_front_end_common.interface.config_handler import ConfigHandler
-from spinn_front_end_common.interface.simulator_status import (
-    RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
 from spinn_front_end_common.utilities import FecTimer
 from spinn_front_end_common.utilities.report_functions.reports import (
     generate_comparison_router_report, partitioner_report,
@@ -150,11 +151,7 @@ from spinn_front_end_common.utilities.report_functions.reports import (
     router_report_from_router_tables, router_summary_report,
     sdram_usage_report_per_chip,
     tag_allocator_report)
-from spinn_front_end_common.interface.interface_functions import (
-    ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
-    RouterProvenanceGatherer, interface_xml)
 
-from spinn_front_end_common import __version__ as fec_version
 try:
     from scipy import __version__ as scipy_version
 except ImportError:
@@ -2835,19 +2832,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and log the GraphProvenanceGatherer if requested
 
-        :rtype: list(ProvenanceDataItem)
         """
         with FecTimer("Execute Graph Provenance Gatherer") as timer:
             if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
                 return []
             gatherer = GraphProvenanceGatherer()
-            return gatherer(self._machine_graph, self._application_graph)
+            gatherer(self._machine_graph, self._application_graph)
 
     def _execute_placements_provenance_gatherer(self):
         """
         Runs, times and log the PlacementsProvenanceGatherer if requested
-
-        :rtype: list(ProvenanceDataItem)
         """
         with FecTimer("Execute Placements Provenance Gatherer") as timer:
             if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
@@ -2855,13 +2849,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return []
             gatherer = PlacementsProvenanceGatherer()
-            return gatherer(self._txrx, self._placements)
+            gatherer(self._txrx, self._placements)
 
     def _execute_router_provenance_gatherer(self):
         """
         Runs, times and log the RouterProvenanceGatherer if requested
-
-        :rtype: list(ProvenanceDataItem)
         """
         with FecTimer("Execute Router Provenance Gatherer") as timer:
             if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
@@ -2869,11 +2861,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return []
             gatherer = RouterProvenanceGatherer()
-            provenance_data_objects = None
-            return gatherer(
+            gatherer(
                 self._txrx, self._machine, self._router_tables,
-                provenance_data_objects, self._extra_monitor_vertices,
-                self._placements)
+                self._extra_monitor_vertices, self._placements)
 
     def _execute_Profile_data_gatherer(self):
         """
@@ -2893,21 +2883,15 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :rtype: list(ProvenanceDataItem)
         """
-        prov_items = list()
-        if self._version_provenance is not None:
-            prov_items.extend(self._version_provenance)
-        prov_items.extend(FecTimer.get_provenance())
-        prov_items.extend(self._execute_graph_provenance_gatherer())
-        prov_items.extend(self._execute_placements_provenance_gatherer())
-        prov_items.extend(self._execute_router_provenance_gatherer())
+        self._execute_graph_provenance_gatherer()
+        self._execute_placements_provenance_gatherer()
+        self._execute_router_provenance_gatherer()
         self._execute_Profile_data_gatherer()
-        return prov_items
 
-    def _report_energy(self, router_provenance_items, run_time):
+    def _report_energy(self, run_time):
         """
         Runs, times and logs the energy report if requested
 
-        :param list(ProvenanceDataItem) router_provenance_items:
         :param int run_time: the run duration in milliseconds.
         """
         with FecTimer("Execute energy report") as timer:
@@ -2927,7 +2911,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._machine_allocation_controller)
 
             energy_prov_reporter = EnergyProvenanceReporter()
-            prov_items = energy_prov_reporter(power_used, self._placements)
+            energy_prov_reporter(power_used, self._placements)
 
             # create energy reporter
             energy_reporter = EnergyReport(
@@ -2940,28 +2924,13 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._current_run_timesteps,
                 self._buffer_manager, power_used)
 
-            return prov_items
 
-    def _do_provenance_reports(self, prov_items):
+    def _do_provenance_reports(self):
         """
-        Can be extended to add more provance reports
+        Runs any reports based on provenance
 
-        :param list(ProvenanceDataItem) prov_items:
         """
-        self._report_provenance(prov_items)
-
-    def _report_provenance(self, prov_items):
-        """
-        Runs, times and logs the writing of provenance
-
-        :param list(ProvenanceDataItem) prov_items:
-        """
-        with FecTimer("Write Provenance") as timer:
-            FecTimer.clear_provenance()
-            self._version_provenance = list()
-            if timer.skip_if_cfg_false("Reports", "write_provenance_data"):
-                return
-            self._write_provenance(prov_items)
+        pass
 
     def _execute_clear_io_buf(self, runtime):
         """
@@ -3096,11 +3065,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_clear_io_buf(run_time)
 
         # FinaliseTimingData never needed as just pushed self._ to inputs
-        prov_items = self._do_read_provenance()
+        self._do_read_provenance()
         self._execute_time += convert_time_diff_to_total_milliseconds(
             self._run_timer.take_sample())
-        prov_items.extend(self._report_energy(prov_items, run_time))
-        self._do_provenance_reports(prov_items)
+        self._report_energy(run_time)
+        self._do_provenance_reports()
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """

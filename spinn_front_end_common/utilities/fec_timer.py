@@ -20,7 +20,6 @@ from datetime import timedelta
 # pylint: disable=no-name-in-module
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -62,7 +61,6 @@ class FecTimer(object):
 
         # Name of what is being times
         "_name",
-
         ]
 
     @classmethod
@@ -191,13 +189,13 @@ class FecTimer(object):
             return True
 
     def error(self, reason):
-        global _provenance_items
+        #global _provenance_items
         time_taken = self._stop_timer()
         message = f"{self._name} failed after {time_taken} as {reason}"
-        _provenance_items.append(ProvenanceDataItem(
-            ["algorithm", "error", f"{self._name} failed due to"], reason))
-        _provenance_items.append(ProvenanceDataItem(
-            ["algorithm", "timer", f"{self._name} took"], time_taken))
+        #_provenance_items.append(ProvenanceDataItem(
+        #    ["algorithm", "error", f"{self._name} failed due to"], reason))
+        #_provenance_items.append(ProvenanceDataItem(
+        #    ["algorithm", "timer", f"{self._name} took"], time_taken))
         self._report(message)
 
     def _stop_timer(self):
@@ -212,7 +210,7 @@ class FecTimer(object):
         return _convert_to_timedelta(diff)
 
     def __exit__(self, type, value, traceback):
-        global _provenance_items
+        #global _provenance_items
         if self._start_time is None:
             return False
         time_taken = self._stop_timer()
@@ -225,13 +223,13 @@ class FecTimer(object):
             except Exception:
                 message = f"{self._name} exited with an exception" \
                           f"after {time_taken}"
-            _provenance_items.append(ProvenanceDataItem(
-                ["algorithm", "error", f"{self._name} failed due to"], type))
+            #_provenance_items.append(ProvenanceDataItem(
+            #    ["algorithm", "error", f"{self._name} failed due to"], type))
 
-        try:
-            _provenance_items.append(ProvenanceDataItem(
-                ["algorithm", "timer", f"{self._name} took"], time_taken))
-        except NameError:
-            raise Exception("Illegal use of FecTime without calling setup")
+        #try:
+            #_provenance_items.append(ProvenanceDataItem(
+            #    ["algorithm", "timer", f"{self._name} took"], time_taken))
+        #except NameError:
+        #    raise Exception("Illegal use of FecTime without calling setup")
         self._report(message)
         return False
