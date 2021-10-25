@@ -30,15 +30,10 @@ class GraphProvenanceGatherer(object):
         :param application_graph: The optional application graph
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph
-        :rtype: list(ProvenanceDataItem)
         """
-        prov_items = list()
-        prov_items.extend(
-            self._get_machine_graph_provenance(machine_graph))
+        self._get_machine_graph_provenance(machine_graph)
         if application_graph is not None:
-            prov_items.extend(
-                self._get_app_graph_provenance(application_graph))
-        return prov_items
+            self._get_app_graph_provenance(application_graph)
 
     @staticmethod
     def _get_machine_graph_provenance(machine_graph):
@@ -49,12 +44,12 @@ class GraphProvenanceGatherer(object):
 
         for vertex in progress.over(machine_graph.vertices, False):
             if isinstance(vertex, AbstractProvidesLocalProvenanceData):
-                yield from vertex.get_local_provenance_data()
+                vertex.get_local_provenance_data()
 
         for partition in progress.over(machine_graph.outgoing_edge_partitions):
             for edge in partition.edges:
                 if isinstance(edge, AbstractProvidesLocalProvenanceData):
-                    yield from edge.get_local_provenance_data()
+                    edge.get_local_provenance_data()
 
     @staticmethod
     def _get_app_graph_provenance(application_graph):
@@ -65,10 +60,10 @@ class GraphProvenanceGatherer(object):
 
         for vertex in progress.over(application_graph.vertices, False):
             if isinstance(vertex, AbstractProvidesLocalProvenanceData):
-                yield from vertex.get_local_provenance_data()
+                vertex.get_local_provenance_data()
 
         for partition in progress.over(
                 application_graph.outgoing_edge_partitions):
             for edge in partition.edges:
                 if isinstance(edge, AbstractProvidesLocalProvenanceData):
-                    yield from edge.get_local_provenance_data()
+                    edge.get_local_provenance_data()

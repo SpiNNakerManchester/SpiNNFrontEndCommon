@@ -54,6 +54,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
+from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE)
@@ -62,12 +63,11 @@ from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import (
     EnergyReport, TagsFromMachineReport, report_xml)
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType, ProvenanceDataItem)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
     CommandSender, CommandSenderMachineVertex,
     DataSpeedUpPacketGatherMachineVertex)
-from spinn_front_end_common.utilities import IOBufExtractor
+from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.provenance import (
@@ -75,7 +75,6 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
 from spinn_front_end_common.interface.interface_functions import (
-    ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
     ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
     RouterProvenanceGatherer, interface_xml)
 
@@ -292,9 +291,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_print_timings",
 
         #
-        "_provenance_format",
-
-        #
         "_raise_keyboard_interrupt",
 
         #
@@ -334,22 +330,17 @@ class AbstractSpinnakerBase(ConfigHandler):
         # time taken by the front end extracting things
         "_extraction_time",
 
-        # Version information from the front end
-        "_front_end_versions",
-
         "_last_except_hook",
 
         "_vertices_or_edges_added",
 
-        # Version provenance
-        "_version_provenance"
     ]
 
     def __init__(
             self, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             n_chips_required=None, n_boards_required=None,
-            front_end_versions=None):
+            front_end_versions=[]):
         """
         :param executable_finder: How to find APLX files to deploy to SpiNNaker
         :type executable_finder:
@@ -441,7 +432,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._last_run_outputs = dict()
         self._last_run_tokens = dict()
         self._pacman_provenance = PacmanProvenanceExtractor()
-        self._version_provenance = list()
         self._xml_paths = self._create_xml_paths(extra_algorithm_xml_paths)
 
         # extra algorithms and inputs for runs, should disappear in future
@@ -490,19 +480,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Reports", "write_algorithm_timings")
         self._print_timings = get_config_bool(
             "Reports", "display_algorithm_timings")
-        self._provenance_format = get_config_str(
-            "Reports", "provenance_format")
-        if self._provenance_format not in ["xml", "json", "sql", "auto"]:
-            raise Exception("Unknown provenance format: {}".format(
-                self._provenance_format))
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
 
         globals_variables.set_simulator(self)
 
-        # Front End version information
-        self._front_end_versions = front_end_versions
+        self._create_version_provenance(front_end_versions)
 
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
@@ -1380,8 +1364,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         inputs = dict(self._extra_inputs)
         algorithms = list()
 
-        self._create_version_provenance()
-
         if get_config_bool("Buffers", "use_auto_pause_and_resume"):
             inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
         else:
@@ -1422,36 +1404,21 @@ class AbstractSpinnakerBase(ConfigHandler):
             inputs["MachineGraph"] = self._machine_graph
         return inputs, algorithms
 
-    def _create_version_provenance(self):
+    def _create_version_provenance(self, front_end_versions):
         """ Add the version information to the provenance data at the start.
         """
-        version_provenance = [
-            ProvenanceDataItem(
-                ["version_data", "spinn_utilities_version"],
-                spinn_utils_version),
-            ProvenanceDataItem(
-                ["version_data", "spinn_machine_version"],
-                spinn_machine_version),
-            ProvenanceDataItem(
-                ["version_data", "spalloc_version"], spalloc_version),
-            ProvenanceDataItem(
-                ["version_data", "spinnman_version"], spinnman_version),
-            ProvenanceDataItem(
-                ["version_data", "pacman_version"], pacman_version),
-            ProvenanceDataItem(
-                ["version_data", "data_specification_version"],
-                data_spec_version),
-            ProvenanceDataItem(
-                ["version_data", "front_end_common_version"], fec_version),
-            ProvenanceDataItem(
-                ["version_data", "numpy_version"], numpy_version),
-            ProvenanceDataItem(
-                ["version_data", "scipy_version"], scipy_version)]
-        if self._front_end_versions is not None:
-            version_provenance.extend(
-                ProvenanceDataItem(names=["version_data", name], value=value)
-                for name, value in self._front_end_versions)
-        self._version_provenance = version_provenance
+        with ProvenanceWriter() as db:
+            db.insert_version("spinn_utilities_version", spinn_utils_version)
+            db.insert_version("spinn_machine_version", spinn_machine_version)
+            db.insert_version("spalloc_version", spalloc_version)
+            db.insert_version("spinnman_version", spinnman_version)
+            db.insert_version("pacman_version", pacman_version)
+            db.insert_version("data_specification_version", data_spec_version)
+            db.insert_version("front_end_common_version", fec_version)
+            db.insert_version("numpy_version", numpy_version)
+            db.insert_version("scipy_version", scipy_version)
+            for description, the_value in front_end_versions:
+                db.insert_version(description, the_value)
 
     def _do_mapping(self, run_time, total_run_time):
         """
@@ -1821,33 +1788,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._mapping_time, self._dsg_time, self._load_time,
             self._execute_time, self._extraction_time)
 
-    def _gather_provenance_for_writing(self, executor):
-        """ Handles the gathering of provenance items for writer.
-
-        :param ~pacman.executor.PACMANAlgorithmExecutor executor:
-            the pacman executor.
-        :return:
-        """
-        prov_items = list()
-        if self._version_provenance is not None:
-            prov_items.extend(self._version_provenance)
-        prov_items.extend(self._pacman_provenance.data_items)
-        prov_item = executor.get_item("GraphProvenanceItems")
-        if prov_item is not None:
-            prov_items.extend(prov_item)
-        prov_item = executor.get_item("PlacementsProvenanceItems")
-        if prov_item is not None:
-            prov_items.extend(prov_item)
-        prov_item = executor.get_item("RouterProvenanceItems")
-        if prov_item is not None:
-            prov_items.extend(prov_item)
-        prov_item = executor.get_item("PowerProvenanceItems")
-        if prov_item is not None:
-            prov_items.extend(prov_item)
-        self._pacman_provenance.clear()
-        self._version_provenance = list()
-        self._write_provenance(prov_items)
-
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """
         :param n_machine_time_steps: The number of steps to simulate
@@ -1872,11 +1812,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
             run_complete = True
-
-            # write provenance to file if necessary
-            if (get_config_bool("Reports", "write_provenance_data") and
-                    n_machine_time_steps is not None):
-                self._gather_provenance_for_writing(executor)
 
             # move data around
             self._last_run_outputs = executor.get_items()
@@ -2063,25 +1998,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             provenance_path=self._pacman_executor_provenance_path,
             provenance_name="Execution"), run_until_timesteps
 
-    def _write_provenance(self, provenance_data_items):
-        """ Write provenance to disk.
-
-        :param list(ProvenanceDataItem) provenance_data_items:
-        """
-
-        writer = None
-        if self._provenance_format == "xml":
-            writer = ProvenanceXMLWriter()
-        elif self._provenance_format == "json":
-            writer = ProvenanceJSONWriter()
-        elif self._provenance_format == "sql":
-            writer = ProvenanceSQLWriter()
-        elif len(provenance_data_items) < PROVENANCE_TYPE_CUTOFF:
-            writer = ProvenanceXMLWriter()
-        else:
-            writer = ProvenanceSQLWriter()
-        writer(provenance_data_items, self._provenance_file_path)
-
     def _recover_from_error(self, exception, exc_info, executable_targets):
         """
         :param Exception exception:
@@ -2098,21 +2014,17 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Extract router provenance
         extra_monitor_vertices = None
-        prov_items = list()
         try:
             if (get_config_bool("Machine", "enable_advanced_monitor_support")
                     or get_config_bool("Machine", "enable_reinjection")):
                 extra_monitor_vertices = self._last_run_outputs[
                     "ExtraMonitorVertices"]
             router_provenance = RouterProvenanceGatherer()
-            new_prov_items = router_provenance(
+            router_provenance(
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
-                provenance_data_objects=prov_items,
                 extra_monitor_vertices=extra_monitor_vertices,
                 placements=self._placements)
-            if new_prov_items is not None:
-                prov_items.extend(new_prov_items)
         except Exception:
             logger.exception("Error reading router provenance")
 
@@ -2184,16 +2096,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                     finished_placements.add_placement(
                         self._placements.get_placement_on_processor(x, y, p))
                 extractor = PlacementsProvenanceGatherer()
-                new_prov_items = extractor(self._txrx, finished_placements)
-                if new_prov_items is not None:
-                    prov_items.extend(new_prov_items)
+                extractor(self._txrx, finished_placements)
             except Exception:
                 logger.exception("Could not read provenance")
-
-        # Finish getting the provenance
-        prov_items.extend(self._pacman_provenance.data_items)
-        self._pacman_provenance.clear()
-        self._write_provenance(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
         iobuf = IOBufExtractor(
@@ -2649,9 +2554,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._pacman_provenance.extract_provenance(executor)
                 run_complete = True
 
-                # write provenance to file if necessary
-                if get_config_bool("Reports", "write_provenance_data"):
-                    self._gather_provenance_for_writing(executor)
             except Exception as e:
                 exn = e
                 exc_info = sys.exc_info()
@@ -2737,11 +2639,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._buffer_manager is None or self._last_run_outputs is None:
             return
         # acquire provenance items
-        router_provenance = self._last_run_outputs.get(
-            "RouterProvenanceItems", None)
         power_used = self._last_run_outputs.get("PowerUsed", None)
-        if router_provenance is None or power_used is None:
-            return
 
         # run energy report
         energy_reporter.write_energy_report(

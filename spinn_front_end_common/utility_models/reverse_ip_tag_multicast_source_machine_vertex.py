@@ -43,6 +43,7 @@ from spinn_front_end_common.interface.buffer_management.storage_objects\
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BufferedSendingRegion)
+from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD,
     MICRO_TO_MILLISECOND_CONVERSION)
@@ -60,8 +61,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.buffer_management.recording_utilities \
     import (get_recording_header_array, get_recording_header_size,
             get_recording_data_constant_size)
-from spinn_front_end_common.utilities.utility_objs import (
-    ProvenanceDataItem, ExecutableType)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -841,37 +841,42 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @overrides(
         ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items)
-    def parse_extra_provenance_items(self, label, names, provenance_data):
+    def parse_extra_provenance_items(self, label, x, y, p, provenance_data):
         n_rcv, n_snt, bad_key, bad_pkt, late = provenance_data
-        yield ProvenanceDataItem(
-            names + ["received_sdp_packets"], n_rcv,
-            report=(n_rcv == 0 and self._send_buffer_times is None),
-            message=(
-                f"No SDP packets were received by {label}. If you expected "
-                "packets to be injected, this could indicate an error"))
-        yield ProvenanceDataItem(
-            names + ["send_multicast_packets"], n_snt,
-            report=(n_snt == 0),
-            message=(
-                f"No multicast packets were sent by {label}. If you expected "
-                "packets to be sent this could indicate an error"))
-        yield ProvenanceDataItem(
-            names + ["incorrect_keys"], bad_key,
-            report=(bad_key > 0),
-            message=(
-                f"Keys were received by {label} that did not match the key "
-                f"{self._virtual_key} and mask {self._mask}"))
-        yield ProvenanceDataItem(
-            names + ["incorrect_packets"], bad_pkt,
-            report=(bad_pkt > 0),
-            message=(
-                f"SDP Packets were received by {label} that were not correct"))
-        yield ProvenanceDataItem(
-            names + ["late_packets"], late,
-            report=(late > 0),
-            message=(
-                f"SDP Packets were received by {label} that were too late "
-                "to be transmitted in the simulation"))
+
+        with ProvenanceWriter() as db:
+            db.insert_core(x, y, p, "Received_sdp_packets", n_rcv)
+            if n_rcv == 0 and self._send_buffer_times is None:
+                db.insert_report(
+                    f"No SDP packets were received by {label}. "
+                    f"If you expected packets to be injected, "
+                    f"this could indicate an error")
+
+            db.insert_core(
+                x, y, p, "Send_multicast_packets", n_snt)
+            if n_snt == 0:
+                db.insert_report(
+                    f"No multicast packets were sent by {label}. "
+                    f"If you expected packets to be sent "
+                    f"this could indicate an error")
+            db.insert_core(
+                x, y, p, "Incorrect_keys", bad_key)
+            if bad_key > 0:
+                db.insert_report(
+                    f"Keys were received by {label} that did not match the "
+                    f"key {self._virtual_key} and mask {self._mask}")
+
+            db.insert_core(x, y, p, "Incorrect_packets", bad_pkt)
+            if bad_pkt > 0:
+                db.insert_report(
+                    f"SDP Packets were received by {label} "
+                    f"that were not correct")
+
+            db.insert_core(x, y, p, "Late_packets", late)
+            if late > 0:
+                db.insert_report(
+                    f"SDP Packets were received by {label} that were too "
+                    f"late to be transmitted in the simulation")
 
     def __repr__(self):
         return self._label
