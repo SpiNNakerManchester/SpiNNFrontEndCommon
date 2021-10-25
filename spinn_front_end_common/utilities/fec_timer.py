@@ -75,17 +75,6 @@ class FecTimer(object):
             _provenance_path = None
         _print_timings = get_config_bool(
             "Reports", "display_algorithm_timings")
-        cls.clear_provenance()
-
-    @classmethod
-    def get_provenance(cls):
-        global _provenance_items
-        return _provenance_items
-
-    @classmethod
-    def clear_provenance(cls):
-        global _provenance_items
-        _provenance_items = list()
 
     def __init__(self, name):
         self._start_time = None
@@ -189,7 +178,6 @@ class FecTimer(object):
             return True
 
     def error(self, reason):
-        #global _provenance_items
         time_taken = self._stop_timer()
         message = f"{self._name} failed after {time_taken} as {reason}"
         #_provenance_items.append(ProvenanceDataItem(

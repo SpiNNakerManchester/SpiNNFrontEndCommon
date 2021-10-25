@@ -3206,9 +3206,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             except Exception:
                 logger.exception("Could not read provenance")
 
-        # TODO NUKE THIS
-        FecTimer.clear_provenance()
-
         # Read IOBUF where possible (that should be everywhere)
         iobuf = IOBufExtractor(
             self._txrx, executable_targets, self._executable_finder)
