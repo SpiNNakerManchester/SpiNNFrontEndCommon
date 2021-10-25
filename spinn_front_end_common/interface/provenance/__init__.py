@@ -20,9 +20,9 @@ from .abstract_provides_provenance_data_from_machine import (
 from .provenance_reader import ProvenanceReader
 from .provides_provenance_data_from_machine_impl import (
     ProvidesProvenanceDataFromMachineImpl)
-from .sqllite_database import SqlLiteDatabase
+from .provenance_writer import ProvenanceWriter
 
 __all__ = ["AbstractProvidesLocalProvenanceData",
            "AbstractProvidesProvenanceDataFromMachine",
-           "ProvenanceReader", "ProvidesProvenanceDataFromMachineImpl",
-           "SqlLiteDatabase"]
+           "ProvenanceReader", "ProvenanceWriter",
+           "ProvidesProvenanceDataFromMachineImpl"]
