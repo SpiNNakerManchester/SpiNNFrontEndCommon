@@ -17,7 +17,7 @@ from spinnman.exceptions import SpinnmanException
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.utilities import IOBufExtractor
+from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 
 
 def run_system_application(

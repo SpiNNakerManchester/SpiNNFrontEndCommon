@@ -35,7 +35,4 @@ class AbstractProvidesProvenanceDataFromMachine(
             the SpinnMan interface object
         :param ~pacman.model.placements.Placement placement:
             the placement of the object
-        :return: the provenance items
-        :rtype:
-            iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
         """

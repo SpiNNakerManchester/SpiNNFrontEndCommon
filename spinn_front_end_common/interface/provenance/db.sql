@@ -17,87 +17,180 @@
 PRAGMA main.synchronous = OFF;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table assigning ids to sourcex names
-CREATE TABLE IF NOT EXISTS source(
-    source_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    source_name STRING UNIQUE NOT NULL,
-    source_short_name STRING NOT NULL,
-    x INTEGER,
-    y INTEGER,
-    p INTEGER);
+-- A table holding the values for versions
+CREATE TABLE IF NOT EXISTS version_provenance(
+    version_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    description STRING NOT NULL,
+    the_value STRING NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table assigning ids to description names
-CREATE TABLE IF NOT EXISTS description(
-    description_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    description_name STRING UNIQUE NOT NULL);
+-- A table holding the values for power provenance
+-- Except for engery used by cores or routers
+CREATE TABLE IF NOT EXISTS power_provenance(
+    power_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    description STRING NOT NULL,
+    the_value FLOAT NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table holding the values
-CREATE TABLE IF NOT EXISTS provenance(
-    provenance_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    source_id INTEGER NOT NULL,
-    description_id INTEGER NOT NULL,
+-- A table holding the values for versions
+CREATE TABLE IF NOT EXISTS timer_provenance(
+    timer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category STRING NOT NULL,
+    algorithm STRING NOT NULL,
     the_value INTEGER NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- Glue the bits together to show the information that people think is here
-CREATE VIEW IF NOT EXISTS provenance_view AS
-    SELECT source_id, description_id, provenance_id,
-    	source_short_name AS source_name, source_name AS source_full_name,
-    	x, y, p, description_name, the_value
-    FROM source NATURAL JOIN description NATURAL JOIN provenance;
+-- A table holding the values for uncategorised general provenance
+CREATE TABLE IF NOT EXISTS other_provenance(
+    other_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category STRING NOT NULL,
+    description STRING NOT NULL,
+    the_value STRING NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- Show purely core level provenance, as most used
-CREATE VIEW IF NOT EXISTS core_provenance_view AS
-    SELECT provenance_id AS insertion_order,
-    	source_name, x, y, p, description_name, the_value
-    FROM source NATURAL JOIN description NATURAL JOIN provenance
-    WHERE source_short_name LIKE '%vertex%';
+-- A table holding the values for data speed up packet gathers
+CREATE TABLE IF NOT EXISTS gatherer_provenance(
+    gather_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    address INTEGER NOT NULL,
+    bytes INTEGER NOT NULL,
+    run INTEGER NOT NULL,
+    description STRING NOT NULL,
+    the_value FLOAT NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- Show purely edge level provenance, as most used
-CREATE VIEW IF NOT EXISTS edge_provenance_view AS
-    SELECT source_name, description_name, the_value
-    FROM source NATURAL JOIN description NATURAL JOIN provenance
-    WHERE source_short_name LIKE '%connector%';
+-- A table holding the values for monitors
+CREATE TABLE IF NOT EXISTS monitor_provenance(
+    monitor_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    description STRING NOT NULL,
+    the_value INTEGER NOT NULL);
 
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- Show purely pacman level provenance, as most used
-CREATE VIEW IF NOT EXISTS pacman_provenance_view AS
-    SELECT source_name, description_name, the_value
-    FROM source NATURAL JOIN description NATURAL JOIN provenance
-    WHERE source_short_name = 'pacman';
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- Show purely version level provenance, as most used
-CREATE VIEW IF NOT EXISTS version_provenance_view AS
-    SELECT source_name, description_name, the_value
-    FROM source NATURAL JOIN description NATURAL JOIN provenance
-    WHERE source_short_name = 'version_data';
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- Show purely router level provenance, as most used
-CREATE VIEW IF NOT EXISTS router_provenance_view AS
-    SELECT source_name, x, y, description_name, the_value
-    FROM source NATURAL JOIN description NATURAL JOIN provenance
-    WHERE source_short_name = 'router_provenance';
-
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- Compute some basic statistics over the provenance
-CREATE VIEW IF NOT EXISTS stats_view AS
+-- Compute some basic statistics per monitor over the monitorr provenance
+CREATE VIEW IF NOT EXISTS monitor_stats_view AS
     SELECT
-        CASE count(DISTINCT source_name)
-            WHEN 1 THEN source_name
-            ELSE ""
-        END AS source,
-        description_name AS description,
+		x, y, description,
         min(the_value) AS min,
         max(the_value) AS max,
         avg(the_value) AS avg,
         sum(the_value) AS total,
         count(the_value) AS count
-    FROM source NATURAL JOIN description NATURAL JOIN provenance
+    FROM monitor_provenance
+    GROUP BY x, y, description;
+
+-- Compute some basic statistics for all monitors over the monitor provenance
+CREATE VIEW IF NOT EXISTS monitor_summary_view AS
+    SELECT
+		description,
+        min(the_value) AS min,
+        max(the_value) AS max,
+        avg(the_value) AS avg,
+        sum(the_value) AS total,
+        count(the_value) AS count
+    FROM monitor_provenance
     GROUP BY description;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table holding the values for routers
+CREATE TABLE IF NOT EXISTS router_provenance(
+    chip_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    description STRING NOT NULL,
+    the_value FLOAT NOT NULL,
+    expected INTEGER NOT NULL);
+
+-- Compute some basic statistics per router over the router provenance
+CREATE VIEW IF NOT EXISTS router_stats_view AS
+    SELECT
+		x, y, description,
+        min(the_value) AS min,
+        max(the_value) AS max,
+        avg(the_value) AS avg,
+        sum(the_value) AS total,
+        count(the_value) AS count,
+        avg(expected) as expected
+    FROM router_provenance
+    GROUP BY x, y, description;
+
+-- Compute some basic statistics for all router over the router provenance
+CREATE VIEW IF NOT EXISTS router_summary_view AS
+    SELECT
+		description,
+        min(the_value) AS min,
+        max(the_value) AS max,
+        avg(the_value) AS avg,
+        sum(the_value) AS total,
+        count(the_value) AS count,
+        avg(expected) as expected
+    FROM router_provenance
+    GROUP BY description;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table holding the values for each core
+CREATE TABLE IF NOT EXISTS core_provenance(
+    core_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    p INTEGER NOT NULL,
+    description STRING NOT NULL,
+    the_value INTEGER NOT NULL);
+
+-- A table holding the mapping from vertex name to core x, y, p
+CREATE TABLE IF NOT EXISTS core_mapping(
+    core_name STRING NOT NULL,
+    x INTEGER,
+    y INTEGER,
+    p INTEGER);
+
+-- Every core has a unique x,y,p location.
+CREATE UNIQUE INDEX IF NOT EXISTS core_sanity ON core_mapping(
+	x ASC, y ASC, p ASC);
+
+-- Create a view combining core name and data
+CREATE VIEW IF NOT EXISTS core_provenance_view AS
+    SELECT core_name, x, y, p, description, the_value
+    FROM core_provenance NATURAL JOIN core_mapping;
+
+-- Compute some basic statistics per core over the provenance
+CREATE VIEW IF NOT EXISTS core_stats_view AS
+    SELECT
+		core_name, x, y, p, description,
+        min(the_value) AS min,
+        max(the_value) AS max,
+        avg(the_value) AS avg,
+        sum(the_value) AS total,
+        count(the_value) AS count
+    FROM core_provenance_view
+    GROUP BY core_name, x, y, p, description;
+
+-- Compute some basic statistics for all cores over the core provenance
+CREATE VIEW IF NOT EXISTS core_summary_view AS
+    SELECT
+		description,
+        min(the_value) AS min,
+        max(the_value) AS max,
+        avg(the_value) AS avg,
+        sum(the_value) AS total,
+        count(the_value) AS count
+    FROM core_provenance_view
+    GROUP BY description;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table holding the import reports
+CREATE TABLE IF NOT EXISTS reports(
+    message STRING NOT NULL);
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table connector provenance
+CREATE TABLE IF NOT EXISTS connector_provenance(
+    connector_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pre_population STRING NOT NULL,
+    post_population STRING NOT NULL,
+    the_type  STRING NOT NULL,
+    description STRING NOT NULL,
+    the_value INTEGER NOT NULL);
+
+
