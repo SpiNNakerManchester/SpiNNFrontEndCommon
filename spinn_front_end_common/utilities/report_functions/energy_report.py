@@ -16,6 +16,8 @@
 import logging
 import os
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.interface.abstract_spinnaker_base import (
+    APPLICATION_RUNNER, LOADING)
 from spinn_front_end_common.interface.provenance import ProvenanceReader
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -330,7 +332,7 @@ class EnergyReport(object):
 
         # find time in milliseconds
         reader = ProvenanceReader()
-        total_time_ms = reader.get_timer_sum_by_category("loading")
+        total_time_ms = reader.get_timer_sum_by_category(LOADING)
 
         # handle active routers etc
         active_router_cost = (
@@ -357,7 +359,7 @@ class EnergyReport(object):
 
         # find time
         reader = ProvenanceReader()
-        total_time_ms = reader.get_timer_sum_by_algorithm("ApplicationRunner")
+        total_time_ms = reader.get_timer_sum_by_algorithm(APPLICATION_RUNNER)
 
         # handle active routers etc
         energy_cost_of_active_router = (
