@@ -42,8 +42,7 @@ from pacman.executor.injection_decorator import (
     clear_injectables, provide_injectables)
 from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex)
-from pacman.model.graphs.machine import (
-    MachineGraph, MachineGraphView, MachineVertex)
+from pacman.model.graphs.machine import (MachineGraphView, MachineVertex)
 from pacman.model.resources import (
     ConstantSDRAM, PreAllocatedResourceContainer)
 from pacman import __version__ as pacman_version
@@ -739,10 +738,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._run(run_time, sync_time)
 
-    def _build_graphs_for_usage(self):
-        self._application_graph = self._original_application_graph.clone()
-        self._machine_graph = None
-
     def __timesteps(self, time_in_ms):
         """ Get a number of timesteps for a given time in milliseconds.
 
@@ -862,7 +857,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 # create new sub-folder for reporting data
                 self._set_up_output_folders(self._n_calls_to_run)
 
-            self._build_graphs_for_usage()
+            self._application_graph = self._original_application_graph.clone()
+            self._machine_graph = None
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
 
