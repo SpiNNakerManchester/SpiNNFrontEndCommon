@@ -117,7 +117,9 @@ from spinn_front_end_common.interface.interface_functions.\
 from spinn_front_end_common.interface.splitter_selectors import (
     SplitterSelector)
 from spinn_front_end_common.interface.java_caller import JavaCaller
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
+from spinn_front_end_common.interface.provenance import (
+    APPLICATION_RUNNER, DATA_GENERATION, GET_MACHINE, LOADING,
+    ProvenanceWriter, MAPPING, RUN_LOOP)
 from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
 from spinn_front_end_common.utilities import globals_variables
@@ -162,13 +164,6 @@ logger = FormatAdapter(logging.getLogger(__name__))
 # 0-15 are reserved for system use (per lplana)
 ALANS_DEFAULT_RANDOM_APP_ID = 16
 
-# STAGE NAMES
-GET_MACHINE = "machine_generation"
-MAPPING = "mapping"
-DATA_GENERATION = "data_generation"
-LOADING = "loading"
-RUN_LOOP = "running"
-APPLICATION_RUNNER = "Application runner"
 
 
 class AbstractSpinnakerBase(ConfigHandler):
@@ -305,6 +300,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # The run number for the this/next end_user call to run
         "_n_calls_to_run",
+
+        # The loop number for the this/next loop in the end_user run
+        "_n_loops"
 
         # TODO should this be at this scope
         "_command_sender",
@@ -514,6 +512,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._state_condition = Condition()
         self._has_reset_last = False
         self._n_calls_to_run = 1
+        self._n_loops = None
         self._current_run_timesteps = 0
         self._no_sync_changes = 0
 
@@ -533,6 +532,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._vertices_or_edges_added = False
         self._first_machine_time_step = None
         self._compressor_provenance = None
+        self._hostname = None
+
 
         FecTimer.setup(self)
 
@@ -558,7 +559,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._extra_monitor_to_chip_mapping = None
         self._extra_monitor_vertices = None
         self._fixed_routes = None
-        self._hostname = None
         self._java_caller = None
         self._live_packet_recorder_parameters_mapping = None
         self._machine = None
@@ -1078,9 +1078,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         if run_time is not None:
             logger.info("Running for {} steps for a total of {}ms",
                         len(steps), run_time)
-            for i, step in enumerate(steps):
-                logger.info("Run {} of {}", i + 1, len(steps))
+            for self._n_loops, step in enumerate(steps):
+                logger.info("Run {} of {}", self._n_loops + 1, len(steps))
                 self._do_run(step, graph_changed, n_sync_steps)
+            self._n_loops = None
         elif run_time is None and self._run_until_complete:
             logger.info("Running until complete")
             self._do_run(None, graph_changed, n_sync_steps)
@@ -1096,12 +1097,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         else:
             logger.info("Running forever in steps of {}ms".format(
                 self._max_run_time_steps))
-            i = 0
+            self._n_loops = 1
             while self._status != Simulator_Status.STOP_REQUESTED:
-                logger.info("Run {}".format(i + 1))
+                logger.info("Run {}".format(self._n_loops))
                 self._do_run(
                     self._max_run_time_steps, graph_changed, n_sync_steps)
-                i += 1
+                self._n_loops += 1
 
         # Indicate that the signal handler needs to act
         if isinstance(threading.current_thread(), threading._MainThread):
@@ -1111,6 +1112,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # update counter for runs (used by reports and app data)
         self._n_calls_to_run += 1
+        self._n_loops = None
         self._status = Simulator_Status.FINISHED
 
     def _is_per_timestep_sdram(self):
@@ -2909,16 +2911,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "Energy report") as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return []
-            timer.skip("ComputeEnergyUsed based on old provenance")
-            return []
 
             # TODO runtime is None
             compute_energy_used = ComputeEnergyUsed()
             power_used = compute_energy_used(
                 self._placements, self._machine, self._board_version,
-                router_provenance_items, run_time,
-                self._buffer_manager, self._mapping_time, self._load_time,
-                self._execute_time, self._dsg_time, self._extraction_time,
+                run_time, self._buffer_manager, self._mapping_time,
+                self._load_time, self._execute_time, self._dsg_time,
+                self._extraction_time,
                 self._spalloc_server, self._remote_spinnaker_url,
                 self._machine_allocation_controller)
 
@@ -3443,6 +3443,24 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: bool
         """
         return self._use_virtual_board
+
+    @property
+    def n_calls_to_run(self):
+        """
+        The number for this or the next end_user call to run
+
+        :rtype: int
+        """
+        return self._n_calls_to_run
+
+    @property
+    def n_loops(self):
+        """
+        The number for this or the net loop within an end_user run
+
+        :rtype: int or None
+        """
+        return self._n_loops
 
     def get_current_time(self):
         """ Get the current simulation time.

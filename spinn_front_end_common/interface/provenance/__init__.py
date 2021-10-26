@@ -22,6 +22,15 @@ from .provides_provenance_data_from_machine_impl import (
     ProvidesProvenanceDataFromMachineImpl)
 from .provenance_writer import ProvenanceWriter
 
+# TIMER categories
+GET_MACHINE = "machine_generation"
+MAPPING = "mapping"
+DATA_GENERATION = "data_generation"
+LOADING = "loading"
+RUN_LOOP = "running"
+# Algorithm Names used elsewhere
+APPLICATION_RUNNER = "Application runner"
+
 __all__ = ["AbstractProvidesLocalProvenanceData",
            "AbstractProvidesProvenanceDataFromMachine",
            "ProvenanceReader", "ProvenanceWriter",

@@ -101,7 +101,8 @@ class FecTimer(object):
         time_taken = self._stop_timer()
         with ProvenanceWriter() as db:
             db.insert_timing(
-                self._category, self._algorithm, time_taken.microseconds)
+                self._category, self._algorithm, time_taken.microseconds,
+                _simulator.n_calls_to_run, _simulator.n_loops, reason)
         self._report(message)
 
     def skip_if_has_not_run(self):
@@ -192,7 +193,8 @@ class FecTimer(object):
         #    ["algorithm", "error", f"{self._name} failed due to"], reason))
         with ProvenanceWriter() as db:
             db.insert_timing(
-                self._category, self._algorithm, time_taken.microseconds)
+                self._category, self._algorithm, time_taken.microseconds,
+                _simulator.n_calls_to_run, _simulator.n_loops, reason)
         self._report(message)
 
     def _stop_timer(self):
@@ -207,24 +209,27 @@ class FecTimer(object):
         return _convert_to_timedelta(diff)
 
     def __exit__(self, type, value, traceback):
-        #global _provenance_items
         if self._start_time is None:
             return False
         time_taken = self._stop_timer()
         if type is None:
             message = f"{self._algorithm} took {time_taken} "
+            skip = None
         else:
             try:
                 message = f"{self._algorithm} exited with {type.__name__} " \
                           f"after {time_taken}"
+                skip = type.__name__
             except Exception:
                 message = f"{self._algorithm} exited with an exception" \
                           f"after {time_taken}"
+                skip = "An Exception"
             #_provenance_items.append(ProvenanceDataItem(
             #    ["algorithm", "error", f"{self._name} failed due to"], type))
 
         with ProvenanceWriter() as db:
             db.insert_timing(
-                self._category, self._algorithm, time_taken.microseconds)
+                self._category, self._algorithm, time_taken.microseconds,
+                _simulator.n_calls_to_run, _simulator.n_loops, skip)
         self._report(message)
         return False

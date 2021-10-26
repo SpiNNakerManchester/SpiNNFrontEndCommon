@@ -16,9 +16,8 @@
 import logging
 import os
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.interface.abstract_spinnaker_base import (
-    APPLICATION_RUNNER, LOADING)
-from spinn_front_end_common.interface.provenance import ProvenanceReader
+from spinn_front_end_common.interface.provenance import (
+    APPLICATION_RUNNER, LOADING, ProvenanceReader)
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.globals_variables import (
