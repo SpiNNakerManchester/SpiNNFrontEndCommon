@@ -27,7 +27,7 @@ class InsertChipPowerMonitorsToGraphs(object):
 
     def __call__(
             self, machine, machine_graph,
-            sampling_frequency, application_graph=None):
+            sampling_frequency, application_graph):
         """ Adds chip power monitor vertices on Ethernet connected chips as\
             required.
 
@@ -46,13 +46,9 @@ class InsertChipPowerMonitorsToGraphs(object):
         progress = ProgressBar(
             machine.n_chips, "Adding Chip power monitors to Graph")
 
-        if application_graph is not None:
-            self.__add_app(
-                application_graph, machine_graph, machine,
-                sampling_frequency, progress)
-        else:
-            self.__add_mach_only(
-                machine_graph, machine, sampling_frequency, progress)
+        self.__add_app(
+            application_graph, machine_graph, machine,
+            sampling_frequency, progress)
 
     @staticmethod
     def __add_app(
@@ -68,14 +64,3 @@ class InsertChipPowerMonitorsToGraphs(object):
                     vertex_slice=None, resources_required=None,
                     label=_LABEL.format("machine", chip.x, chip.y),
                     constraints=[ChipAndCoreConstraint(chip.x, chip.y)]))
-
-    @staticmethod
-    def __add_mach_only(
-            machine_graph, machine, sampling_frequency, progress):
-        for chip in progress.over(machine.chips):
-            if not chip.virtual:
-                machine_graph.add_vertex(ChipPowerMonitorMachineVertex(
-                    label=_LABEL.format("machine", chip.x, chip.y),
-                    constraints=[ChipAndCoreConstraint(chip.x, chip.y)],
-                    app_vertex=None,
-                    sampling_frequency=sampling_frequency))

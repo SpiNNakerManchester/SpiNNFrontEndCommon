@@ -452,10 +452,8 @@
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
             <param_name>vertex_to_ethernet_connected_chip_mapping</param_name>
-        </required_inputs>
-        <optional_inputs>
             <param_name>application_graph</param_name>
-        </optional_inputs>
+        </required_inputs>
     </algorithm>
     <algorithm name="InsertExtraMonitorVerticesToGraphs">
         <python_module>spinn_front_end_common.interface.interface_functions.insert_extra_monitor_vertices_to_graphs</python_module>
@@ -477,10 +475,8 @@
         <required_inputs>
             <param_name>machine</param_name>
             <param_name>machine_graph</param_name>
-        </required_inputs>
-        <optional_inputs>
             <param_name>application_graph</param_name>
-        </optional_inputs>
+        </required_inputs>
         <outputs>
             <param_type>VertexToEthernetConnectedChipMapping</param_type>
             <param_type>ExtraMonitorVertices</param_type>
@@ -574,10 +570,8 @@
             <param_name>machine</param_name>
             <param_name>machine_graph</param_name>
             <param_name>sampling_frequency</param_name>
-        </required_inputs>
-        <optional_inputs>
             <param_name>application_graph</param_name>
-        </optional_inputs>
+        </required_inputs>
     </algorithm>
     <algorithm name="PreAllocateResourcesForLivePacketGatherers">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -646,9 +640,9 @@
             <param_name>machine</param_name>
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
+            <param_name>application_graph</param_name>
         </required_inputs>
         <optional_inputs>
-            <param_name>application_graph</param_name>
             <param_name>n_keys_map</param_name>
         </optional_inputs>
     </algorithm>
@@ -677,10 +671,8 @@
             <param_name>live_packet_gatherer_parameters</param_name>
             <param_name>machine_graph</param_name>
             <param_name>machine</param_name>
-        </required_inputs>
-        <optional_inputs>
             <param_name>application_graph</param_name>
-        </optional_inputs>
+        </required_inputs>
         <outputs>
             <param_type>LivePacketRecorderParametersToVertexMapping</param_type>
         </outputs>

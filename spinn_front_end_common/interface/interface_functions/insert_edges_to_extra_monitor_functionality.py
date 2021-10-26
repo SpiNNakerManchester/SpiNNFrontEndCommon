@@ -40,7 +40,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
 
     def __call__(self, machine_graph, placements, machine,
                  vertex_to_ethernet_connected_chip_mapping,
-                 application_graph=None):
+                 application_graph):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph instance
@@ -55,9 +55,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
             ~pacman.model.graphs.application.ApplicationGraph
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
-        n_app_vertices = 0
-        if application_graph is not None:
-            n_app_vertices = application_graph.n_vertices
+        n_app_vertices = application_graph.n_vertices
         self._chip_to_gatherer_map = vertex_to_ethernet_connected_chip_mapping
         self._machine = machine
         self._placements = placements
@@ -67,15 +65,10 @@ class InsertEdgesToExtraMonitorFunctionality(object):
             "Inserting edges between vertices which require FR speed up "
             "functionality.")
 
-        if application_graph is None:
-            for vertex in progress.over(machine_graph.vertices):
-                if isinstance(vertex, ExtraMonitorSupportMachineVertex):
-                    self._process_mach_graph_vertex(vertex, machine_graph)
-        else:
-            for vertex in progress.over(machine_graph.vertices, False):
-                if isinstance(vertex, ExtraMonitorSupportMachineVertex):
-                    self._process_app_graph_vertex(
-                        vertex, machine_graph, application_graph)
+        for vertex in progress.over(machine_graph.vertices, False):
+            if isinstance(vertex, ExtraMonitorSupportMachineVertex):
+                self._process_app_graph_vertex(
+                    vertex, machine_graph, application_graph)
 
     def _process_app_graph_vertex(
             self, vertex, machine_graph, application_graph):
@@ -103,24 +96,6 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 vertex, gatherer, traffic_type=DataSpeedUp.TRAFFIC_TYPE,
                 label=self.EDGE_LABEL.format(vertex, gatherer),
                 app_edge=app_edge)
-            machine_graph.add_edge(
-                edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
-
-    def _process_mach_graph_vertex(self, vertex, machine_graph):
-        """ Inserts edges as required for a given vertex
-
-        :param ExtraMonitorSupportMachineVertex vertex: the extra monitor core
-        :param ~.MachineGraph machine_graph:
-            machine graph object, which is not associated with any application
-            graph
-        :rtype: None
-        """
-        gatherer = self._get_gatherer_vertex(vertex)
-
-        # locate if edge is already built; if not, build it and do mapping
-        if not self.__has_edge_already(vertex, gatherer, machine_graph):
-            edge = MachineEdge(
-                vertex, gatherer, traffic_type=DataSpeedUp.TRAFFIC_TYPE)
             machine_graph.add_edge(
                 edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 

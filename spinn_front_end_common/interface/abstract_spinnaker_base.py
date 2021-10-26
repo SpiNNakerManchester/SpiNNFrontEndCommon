@@ -1376,9 +1376,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # add the application and machine graphs as needed
         # Both could be None if call from other than self._run
-        if self._application_graph and self._application_graph.n_vertices:
-            inputs["ApplicationGraph"] = self._application_graph
-        elif self._machine_graph and self._machine_graph.n_vertices:
+        inputs["ApplicationGraph"] = self._application_graph
+        if self._machine_graph and self._machine_graph.n_vertices:
             inputs["MachineGraph"] = self._machine_graph
         return inputs, algorithms
 
@@ -1418,10 +1417,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         inputs["TotalRunTime"] = total_run_time
 
         # handle graph additions
-        if self._application_graph.n_vertices:
-            inputs["ApplicationGraph"] = self._application_graph
-        else:
-            inputs['MachineGraph'] = self._machine_graph
+        inputs["ApplicationGraph"] = self._application_graph
+        # inputs['MachineGraph'] = self._machine_graph
 
         inputs["JsonFolder"] = self._json_folder
         inputs["APPID"] = self._app_id
