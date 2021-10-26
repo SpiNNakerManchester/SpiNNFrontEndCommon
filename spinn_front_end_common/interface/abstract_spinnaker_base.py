@@ -147,9 +147,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the pacman machine graph, used to hold vertices which represent cores
         "_machine_graph",
 
-        # boolean for empty graphs
-        "_empty_graphs",
-
         # The holder for where machine graph vertices are placed.
         "_placements",
 
@@ -400,8 +397,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # pacman objects
         self._original_application_graph = ApplicationGraph(
             label=self._graph_label)
-        self._empty_graphs = False
-
         self._placements = None
         self._router_tables = None
         self._routing_infos = None
@@ -1890,7 +1885,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Clear iobuf from machine
         if (n_machine_time_steps is not None and
-                not self._use_virtual_board and not self._empty_graphs and
+                not self._use_virtual_board and
                 get_config_bool("Reports", "clear_iobuf_during_run")):
             algorithms.append("ChipIOBufClearer")
 
