@@ -1478,21 +1478,14 @@ class AbstractSpinnakerBase(ConfigHandler):
                 algorithms.append("BoardChipReport")
 
             # only add partitioner report if using an application graph
-            if (get_config_bool(
-                    "Reports", "write_partitioner_reports") and
-                    self._application_graph.n_vertices):
+            if get_config_bool("Reports", "write_partitioner_reports"):
                 algorithms.append("PartitionerReport")
 
             # only add write placer report with application graph when
             # there's application vertices
             if (get_config_bool(
-                    "Reports", "write_application_graph_placer_report") and
-                    self._application_graph.n_vertices):
+                    "Reports", "write_application_graph_placer_report"):
                 algorithms.append("PlacerReportWithApplicationGraph")
-
-            if get_config_bool(
-                    "Reports", "write_machine_graph_placer_report"):
-                algorithms.append("PlacerReportWithoutApplicationGraph")
 
             if get_config_bool(
                     "Reports", "write_json_machine"):

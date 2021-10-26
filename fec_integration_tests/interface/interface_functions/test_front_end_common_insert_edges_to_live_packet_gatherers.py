@@ -39,93 +39,6 @@ class TestInsertLPGEdges(unittest.TestCase):
     def setUp(self):
         unittest_setup()
 
-    def test_local_verts_go_to_local_lpgs(self):
-        machine = virtual_machine(width=12, height=12)
-        graph = MachineGraph("Test")
-
-        default_params = {
-            'use_prefix': False,
-            'key_prefix': None,
-            'prefix_type': None,
-            'message_type': EIEIOType.KEY_32_BIT,
-            'right_shift': 0,
-            'payload_as_time_stamps': True,
-            'use_payload_prefix': True,
-            'payload_prefix': None,
-            'payload_right_shift': 0,
-            'number_of_packets_sent_per_time_step': 0,
-            'hostname': None,
-            'port': None,
-            'strip_sdp': None,
-            'tag': None,
-            'label': "Test"}
-
-        # data stores needed by algorithm
-        live_packet_gatherers = dict()
-        default_params_holder = LivePacketGatherParameters(**default_params)
-        live_packet_gatherers[default_params_holder] = list()
-
-        live_packet_gatherers_to_vertex_mapping = dict()
-        mac_vtxs = dict()
-        live_packet_gatherers_to_vertex_mapping[default_params_holder] = (
-            None, mac_vtxs)
-
-        placements = Placements()
-
-        # add LPG's (1 for each Ethernet connected chip)
-        for chip in machine.ethernet_connected_chips:
-            extended = dict(default_params)
-            extended["label"] = "test"
-            vertex = LivePacketGatherMachineVertex(
-                LivePacketGatherParameters(**extended))
-            graph.add_vertex(vertex)
-            placements.add_placement(
-                Placement(x=chip.x, y=chip.y, p=2, vertex=vertex))
-            mac_vtxs[chip.x, chip.y] = vertex
-
-        # tracker of wirings
-        verts_expected = defaultdict(list)
-        positions = list()
-        positions.append([0, 0, 0, 0])
-        positions.append([4, 4, 0, 0])
-        positions.append([1, 1, 0, 0])
-        positions.append([2, 2, 0, 0])
-        positions.append([8, 4, 8, 4])
-        positions.append([11, 4, 8, 4])
-        positions.append([4, 11, 4, 8])
-        positions.append([4, 8, 4, 8])
-        positions.append([0, 11, 8, 4])
-        positions.append([11, 11, 4, 8])
-        positions.append([8, 8, 4, 8])
-        positions.append([4, 0, 0, 0])
-        positions.append([7, 7, 0, 0])
-
-        # add graph vertices which reside on areas of the machine to ensure
-        #  spread over boards.
-        for x, y, eth_x, eth_y in positions:
-            vertex = SimpleMachineVertex(resources=ResourceContainer())
-            graph.add_vertex(vertex)
-            partition_ids = ["EVENTS"]
-            live_packet_gatherers[default_params_holder].append(
-                (vertex, partition_ids))
-            verts_expected[eth_x, eth_y].append(vertex)
-            placements.add_placement(Placement(x=x, y=y, p=5, vertex=vertex))
-
-        # run edge inserter that should go boom
-        edge_inserter = InsertEdgesToLivePacketGatherers()
-        edge_inserter(
-            live_packet_gatherer_parameters=live_packet_gatherers,
-            placements=placements,
-            live_packet_gatherers_to_vertex_mapping=(
-                live_packet_gatherers_to_vertex_mapping),
-            machine=machine, machine_graph=graph, application_graph=None)
-
-        # verify edges are in the right place
-        for chip in machine.ethernet_connected_chips:
-            edges = graph.get_edges_ending_at_vertex(mac_vtxs[chip.x, chip.y])
-            for edge in edges:
-                self.assertIn(edge.pre_vertex, verts_expected[chip.x, chip.y])
-
     def test_local_verts_go_to_local_lpgs_app_graph(self):
         machine = virtual_machine(width=12, height=12)
         app_graph = ApplicationGraph("Test")
@@ -214,7 +127,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             placements.add_placement(
                 Placement(x=x, y=y, p=5, vertex=mac_vertex))
 
-        # run edge inserter that should go boom
+        # run edge inserter that should NOT go boom
         edge_inserter = InsertEdgesToLivePacketGatherers()
         edge_inserter(
             live_packet_gatherer_parameters=live_packet_gatherers,

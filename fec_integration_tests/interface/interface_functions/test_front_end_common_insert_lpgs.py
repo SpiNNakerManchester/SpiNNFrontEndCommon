@@ -32,52 +32,6 @@ class TestInsertLPGs(unittest.TestCase):
     def setUp(self):
         unittest_setup()
 
-    def test_that_3_lpgs_are_generated_on_3_board(self):
-        machine = virtual_machine(width=12, height=12)
-        graph = MachineGraph("Test")
-
-        default_params = {
-            'use_prefix': False,
-            'key_prefix': None,
-            'prefix_type': None,
-            'message_type': EIEIOType.KEY_32_BIT,
-            'right_shift': 0,
-            'payload_as_time_stamps': True,
-            'use_payload_prefix': True,
-            'payload_prefix': None,
-            'payload_right_shift': 0,
-            'number_of_packets_sent_per_time_step': 0,
-            'hostname': None,
-            'port': None,
-            'strip_sdp': None,
-            'tag': None,
-            'label': "Test"}
-
-        # data stores needed by algorithm
-        live_packet_gatherers = dict()
-        default_params_holder = LivePacketGatherParameters(**default_params)
-        live_packet_gatherers[default_params_holder] = list()
-
-        # run edge inserter that should go boom
-        edge_inserter = InsertLivePacketGatherersToGraphs()
-        lpg_verts_mapping = edge_inserter(
-            live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine, machine_graph=graph, application_graph=None)
-
-        self.assertEqual(len(lpg_verts_mapping[default_params_holder][1]), 3)
-        locs = [(0, 0), (4, 8), (8, 4)]
-        for vertex in lpg_verts_mapping[default_params_holder][1].values():
-            x = list(vertex.constraints)[0].x
-            y = list(vertex.constraints)[0].y
-            key = (x, y)
-            locs.remove(key)
-
-        self.assertEqual(len(locs), 0)
-
-        verts = lpg_verts_mapping[default_params_holder][1].values()
-        for vertex in graph.vertices:
-            self.assertIn(vertex, verts)
-
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
         machine = virtual_machine(width=12, height=12)
         app_graph = ApplicationGraph("Test")
