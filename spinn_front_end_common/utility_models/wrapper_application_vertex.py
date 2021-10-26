@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from pacman.model.graphs import AbstractSupportsSDRAMEdges, AbstractVirtual
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
 
@@ -30,7 +31,13 @@ class WrapperApplicationVertex(AbstractOneAppOneMachineVertex):
         :raise PacmanInvalidParameterException:
             If one of the constraints is not valid
         """
-
+        if isinstance(machine_vertex, AbstractSupportsSDRAMEdges):
+            raise NotImplementedError(
+                "Wrapping a vertex which implements "
+                "AbstractSupportsSDRAMEdges is not supported yet")
+        if isinstance(machine_vertex, AbstractVirtual):
+            raise NotImplementedError(
+                "Wrapping a virtual vertex is not supported yet")
         super().__init__(
             machine_vertex, machine_vertex.label, constraints,
             machine_vertex.vertex_slice.n_atoms)
