@@ -29,6 +29,8 @@ from .multi_cast_command import MultiCastCommand
 from .reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
+from .wrapper_application_edge import WrapperApplicationEdge
+from .wrapper_application_vertex import WrapperApplicationVertex
 
 __all__ = ["CommandSender", "CommandSenderMachineVertex",
            "ChipPowerMonitor", "ChipPowerMonitorMachineVertex",
@@ -36,4 +38,5 @@ __all__ = ["CommandSender", "CommandSenderMachineVertex",
            "ExtraMonitorSupport", "ExtraMonitorSupportMachineVertex",
            "LivePacketGather", "LivePacketGatherMachineVertex",
            "MultiCastCommand", "ReverseIpTagMultiCastSource",
-           "ReverseIPTagMulticastSourceMachineVertex"]
+           "ReverseIPTagMulticastSourceMachineVertex",
+           "WrapperApplicationEdge", "WrapperApplicationVertex"]

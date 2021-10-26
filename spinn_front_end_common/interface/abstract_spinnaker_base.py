@@ -77,6 +77,8 @@ from spinn_front_end_common.interface.simulator_status import (
 from spinn_front_end_common.interface.interface_functions import (
     ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
     RouterProvenanceGatherer, interface_xml)
+from spinn_front_end_common.utility_models import (
+    WrapperApplicationEdge, WrapperApplicationVertex)
 
 from spinn_front_end_common import __version__ as fec_version
 try:
@@ -2409,12 +2411,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             If there is an attempt to add the same vertex more than once
         """
         # check that there's no application vertices added so far
-        if self._original_application_graph.n_vertices:
-            raise ConfigurationException(
-                "Cannot add vertices to both the machine and application"
-                " graphs")
-        self._original_machine_graph.add_vertex(vertex)
-        self._vertices_or_edges_added = True
+        wrapped = WrapperApplicationVertex(vertex)
+        self.add_application_vertex(wrapped)
 
     def add_application_edge(self, edge_to_add, partition_identifier):
         """
@@ -2434,8 +2432,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param str partition_id:
             the partition identifier for the outgoing edge partition
         """
-        self._original_machine_graph.add_edge(edge, partition_id)
-        self._vertices_or_edges_added = True
+        wrapper = WrapperApplicationEdge(edge)
+        self.add_application_edge(wrapper, partition_id)
 
     def _shutdown(
             self, turn_off_machine=None, clear_routing_tables=None,
