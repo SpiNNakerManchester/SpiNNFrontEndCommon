@@ -26,6 +26,14 @@ class MockSimulator(object):
     def _report_default_directory(self):
         return tempfile.mkdtemp()
 
+    @property
+    def n_calls_to_run(self):
+        return 1
+
+    @property
+    def n_loops(self):
+        return 1
+
 
 class TestFecTimer(unittest.TestCase):
 
@@ -34,13 +42,13 @@ class TestFecTimer(unittest.TestCase):
         FecTimer.setup(MockSimulator())
 
     def test_simple(self):
-        with FecTimer("test"):
+        with FecTimer("cat", "test"):
             pass
 
     def test_error(self):
         with LogCapture() as lc:
             try:
-                with FecTimer("oops"):
+                with FecTimer("cat", "oops"):
                     1/0
             except ZeroDivisionError:
                 pass
