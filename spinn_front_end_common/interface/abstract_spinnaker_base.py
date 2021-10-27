@@ -302,7 +302,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_n_calls_to_run",
 
         # The loop number for the this/next loop in the end_user run
-        "_n_loops"
+        "_n_loops",
 
         # TODO should this be at this scope
         "_command_sender",
@@ -430,7 +430,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __init__(
             self, executable_finder, graph_label=None,
             database_socket_addresses=None, n_chips_required=None,
-            n_boards_required=None, front_end_versions=None):
+            n_boards_required=None, front_end_versions=[]):
         """
         :param executable_finder: How to find APLX files to deploy to SpiNNaker
         :type executable_finder:
