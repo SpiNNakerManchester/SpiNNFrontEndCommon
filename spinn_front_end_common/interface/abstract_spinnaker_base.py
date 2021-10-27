@@ -2564,9 +2564,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             report = BitFieldCompressorReport()
             # BitFieldSummary output ignored as never used
-            report(self._machine_graph, self._placements,
-                   self._compressor_provenance)
-            # TODO get provenance out of report.
+            report(self._machine_graph, self._placements)
 
     def _execute_load_fixed_routes(self, graph_changed):
         """
