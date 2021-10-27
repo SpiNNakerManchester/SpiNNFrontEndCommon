@@ -42,7 +42,8 @@ from pacman.executor.injection_decorator import (
     clear_injectables, provide_injectables)
 from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex)
-from pacman.model.graphs.machine import (MachineGraphView, MachineVertex)
+from pacman.model.graphs.machine import (
+    MachineGraphView, MachineVertex)
 from pacman.model.resources import (
     ConstantSDRAM, PreAllocatedResourceContainer)
 from pacman import __version__ as pacman_version
@@ -1527,8 +1528,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         algorithms.append("MallocBasedChipIDAllocator")
         if _PREALLOC_NAME not in inputs:
             inputs[_PREALLOC_NAME] = PreAllocatedResourceContainer()
-        algorithms.extend(get_config_str_list(
-            "Mapping", "application_to_machine_graph_algorithms"))
+        if not self._machine_graph:
+            algorithms.extend(get_config_str_list(
+                "Mapping", "application_to_machine_graph_algorithms"))
 
         if self._use_virtual_board:
             algorithms.extend(get_config_str_list(
