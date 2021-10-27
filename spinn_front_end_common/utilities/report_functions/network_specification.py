@@ -16,7 +16,6 @@
 import logging
 import os.path
 from spinn_utilities.log import FormatAdapter
-from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 from spinn_front_end_common.utility_models import WrapperApplicationVertex

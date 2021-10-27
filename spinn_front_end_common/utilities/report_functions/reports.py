@@ -89,7 +89,6 @@ def placer_reports_with_application_graph(
         hostname, placements, machine)
 
 
-
 def router_summary_report(routing_tables,  hostname, machine):
     """ Generates a text file of routing summaries
 
@@ -429,6 +428,7 @@ def _write_one_chip_application_placement(f, chip, placements):
             f.write("              Slice on this core: {}:{} ({} atoms)\n"
                     .format(lo_atom, hi_atom, num_atoms))
             f.write("              Model: {}\n\n".format(vertex_model))
+
 
 def _write_one_chip_machine_placement(f, c, placements):
     """
