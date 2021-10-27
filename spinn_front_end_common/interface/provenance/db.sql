@@ -200,6 +200,6 @@ CREATE TABLE IF NOT EXISTS app_vertex_provenance(
     population STRING NOT NULL,
     the_type  STRING NOT NULL,
     description STRING NOT NULL,
-    the_value INTEGER NOT NULL);
+    the_value FLOAT NOT NULL);
 
 
