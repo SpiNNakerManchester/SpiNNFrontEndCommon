@@ -1308,7 +1308,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return False
 
         # only add machine graph is it has vertices.
-        if self._machine_graph.n_vertices:
+        if self._machine_graph and self._machine_graph.n_vertices:
             inputs["MachineGraph"] = self._machine_graph
             algorithms.append("GraphMeasurer")
             do_partitioning = False
