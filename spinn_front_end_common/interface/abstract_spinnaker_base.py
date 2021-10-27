@@ -165,7 +165,6 @@ logger = FormatAdapter(logging.getLogger(__name__))
 ALANS_DEFAULT_RANDOM_APP_ID = 16
 
 
-
 class AbstractSpinnakerBase(ConfigHandler):
     """ Main interface into the tools logic flow.
     """
@@ -533,7 +532,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._first_machine_time_step = None
         self._compressor_provenance = None
         self._hostname = None
-
 
         FecTimer.setup(self)
 
@@ -1506,7 +1504,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type pre_allocated_resources:
             ~pacman.model.resources.PreAllocatedResourceContainer
         """
-        with FecTimer(MAPPING, "Preallocate for live packet gatherer") as timer:
+        with FecTimer(
+                MAPPING, "Preallocate for live packet gatherer") as timer:
             if timer.skip_if_empty(self._live_packet_recorder_params,
                                    "live_packet_recorder_params"):
                 return
@@ -1762,7 +1761,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the InsertEdgesToLivePacketGatherers if required
         """
-        with FecTimer(MAPPING, "Insert edges to live packet gatherers") as timer:
+        with FecTimer(
+                MAPPING, "Insert edges to live packet gatherers") as timer:
             if timer.skip_if_empty(self._live_packet_recorder_params,
                                    "live_packet_recorder_params"):
                 return
@@ -1832,7 +1832,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Writes, times and logs the application graph placer report if
         requested
         """
-        with FecTimer(MAPPING, "Placements wth application graph report") as timer:
+        with FecTimer(
+                MAPPING, "Placements wth application graph report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_application_graph_placer_report"):
                 return
@@ -2933,7 +2934,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._placements, self._machine,
                 self._current_run_timesteps,
                 self._buffer_manager, power_used)
-
 
     def _do_provenance_reports(self):
         """
