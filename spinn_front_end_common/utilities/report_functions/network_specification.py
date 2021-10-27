@@ -19,6 +19,7 @@ from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
+from spinn_front_end_common.utility_models import WrapperApplicationVertex
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -52,12 +53,12 @@ class NetworkSpecification(object):
         :type vertex: ApplicationVertex or MachineVertex
         :param ApplicationGraph graph:
         """
-        if isinstance(vertex, ApplicationVertex):
+        if isinstance(vertex, WrapperApplicationVertex):
+            f.write("(Wrapped)Vertex {}, model: {}\n".format(
+                vertex.label, vertex.machine_vertex.__class__.__name__))
+        else:
             f.write("Vertex {}, size: {}, model: {}\n".format(
                 vertex.label, vertex.n_atoms, vertex.__class__.__name__))
-        else:
-            f.write("Vertex {}, model: {}\n".format(
-                vertex.label, vertex.__class__.__name__))
 
         f.write("    Constraints:\n")
         for constraint in vertex.constraints:
