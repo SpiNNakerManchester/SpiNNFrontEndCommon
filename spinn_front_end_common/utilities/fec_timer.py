@@ -189,8 +189,6 @@ class FecTimer(object):
     def error(self, reason):
         time_taken = self._stop_timer()
         message = f"{self._algorithm} failed after {time_taken} as {reason}"
-        #_provenance_items.append(ProvenanceDataItem(
-        #    ["algorithm", "error", f"{self._name} failed due to"], reason))
         with ProvenanceWriter() as db:
             db.insert_timing(
                 self._category, self._algorithm, time_taken.microseconds,
@@ -220,12 +218,10 @@ class FecTimer(object):
                 message = f"{self._algorithm} exited with {type.__name__} " \
                           f"after {time_taken}"
                 skip = type.__name__
-            except Exception:
+            except Exception as ex:
                 message = f"{self._algorithm} exited with an exception" \
                           f"after {time_taken}"
-                skip = "An Exception"
-            #_provenance_items.append(ProvenanceDataItem(
-            #    ["algorithm", "error", f"{self._name} failed due to"], type))
+                skip = f"Exception {ex}"
 
         with ProvenanceWriter() as db:
             db.insert_timing(
