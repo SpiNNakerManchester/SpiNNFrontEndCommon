@@ -41,7 +41,7 @@ class DatabaseInterface(object):
     def __call__(
             self, machine_graph, tags, runtime, machine, data_n_timesteps,
             placements, routing_infos, router_tables, app_id,
-            application_graph=None):
+            application_graph):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.tags.Tags tags:
@@ -129,12 +129,11 @@ class DatabaseInterface(object):
             p.update()
             w.add_tags(machine_graph, tags)
             p.update()
-            if app_graph is not None:
-                if get_config_bool(
-                        "Database",
-                        "create_routing_info_to_neuron_id_mapping"):
-                    w.create_atom_to_event_id_mapping(
-                        application_graph=app_graph,
-                        machine_graph=machine_graph,
-                        routing_infos=routing_infos)
+            if get_config_bool(
+                    "Database",
+                    "create_routing_info_to_neuron_id_mapping"):
+                w.create_atom_to_event_id_mapping(
+                    application_graph=app_graph,
+                    machine_graph=machine_graph,
+                    routing_infos=routing_infos)
             p.update()

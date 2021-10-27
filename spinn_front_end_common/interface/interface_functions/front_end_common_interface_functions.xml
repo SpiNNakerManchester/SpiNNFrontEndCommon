@@ -1278,10 +1278,8 @@
         </input_definitions>
         <required_inputs>
             <param_name>machine_graph</param_name>
-        </required_inputs>
-        <optional_inputs>
             <param_name>application_graph</param_name>
-        </optional_inputs>
+        </required_inputs>
     </algorithm>
     <algorithm name="RouterProvenanceGatherer">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -1379,10 +1377,8 @@
             <param_name>routing_infos</param_name>
             <param_name>router_tables</param_name>
             <param_name>app_id</param_name>
-        </required_inputs>
-        <optional_inputs>
             <param_name>application_graph</param_name>
-        </optional_inputs>
+        </required_inputs>
         <outputs>
             <param_type>DatabaseInterface</param_type>
             <param_type>DatabaseFilePath</param_type>

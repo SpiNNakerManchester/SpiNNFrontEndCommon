@@ -459,7 +459,6 @@
             <parameter>
                 <param_name>graph</param_name>
                 <param_type>ApplicationGraph</param_type>
-                <param_type>MachineGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>

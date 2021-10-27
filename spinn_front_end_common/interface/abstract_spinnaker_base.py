@@ -1484,7 +1484,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # only add write placer report with application graph when
             # there's application vertices
-            if (get_config_bool(
+            if get_config_bool(
                     "Reports", "write_application_graph_placer_report"):
                 algorithms.append("PlacerReportWithApplicationGraph")
 
