@@ -268,3 +268,22 @@ class ProvenanceWriter(SQLiteDB):
                 """,
                 [pre_population, post_population, the_type, description,
                  the_value])
+
+    def insert_app_vertex(
+            self, population, the_type, description, the_value):
+        """
+        Inserts population level data into the app_vertex_provenance
+
+        :param str population:  Name of the post population / vertex
+        :param str the_type: Class of the app_vertex
+        :param str description: type of value
+        :param float the_value: data
+        """
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT OR IGNORE INTO app_vertex_provenance(
+                    population, the_type, description, the_value)
+                VALUES(?, ?, ?, ?)
+                """,
+                [population, the_type, description, the_value])
