@@ -28,6 +28,12 @@ class Data_Status(Enum):
         1, SimulatorDataNotMocked)
     SETUP = (
         2, SimulatorDataNotYetAvialable)
+    IN_RUN = (
+        3, SimulatorDataNotYetAvialable)
+    FINISHED = (
+        4, SimulatorDataNotYetAvialable)
+    SHUTDOWN = (
+        5, SimulatorShutdownException)
 
     def __new__(cls, value, exception):
         # pylint: disable=protected-access

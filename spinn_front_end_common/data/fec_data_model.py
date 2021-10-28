@@ -31,14 +31,13 @@ class FecDataModel(object):
 
     __slots__ = [
         # Data values cached
-        #"__app_provenance_file_path",
         "__machine_time_step",
         "__provenance_file_path",
         "__machine_time_step_ms",
-        #"__machine_time_step_per_ms",
+        "__n_calls_to_run",
         "__report_default_directory",
         "__time_scale_factor",
-        #
+        # Data status mainly to raise best Exception
         "__status"
     ]
 
@@ -57,6 +56,7 @@ class FecDataModel(object):
         """
         self.__machine_time_step = None
         self.__provenance_file_path = None
+        self.__n_calls_to_run = None
         self.__machine_time_step_ms = None
         self.__report_default_directory = None
         self.__time_scale_factor = None

@@ -27,7 +27,22 @@ class TestSimulatorData(unittest.TestCase):
         # What happens before setup depends on the previous test
         # Use manual_check to verify this without dependency
         writer.setup()
+        self.assertIn("run_1", view.report_default_directory)
+        self.assertIn("provenance_data", view.provenance_file_path)
         with self.assertRaises(SimulatorDataNotYetAvialable):
             view.machine_time_step
         writer.set_machine_time_step(10)
         view.machine_time_step
+
+    def test_run(self):
+        view = FecDataView()
+        writer = FecDataWriter()
+        writer.setup()
+        self.assertEqual(1, view.n_calls_to_run)
+        writer.start_run()
+        self.assertEqual(1, view.n_calls_to_run)
+        writer.finish_run()
+        self.assertEqual(2, view.n_calls_to_run)
+        writer.start_run()
+        self.assertEqual(2, view.n_calls_to_run)
+
