@@ -13,12 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import os
 from spinn_utilities.config_holder import get_config_int
+from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from .data_status import Data_Status
 from .fec_data_view import FecDataView
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class FecDataWriter(FecDataView):
@@ -34,11 +38,11 @@ class FecDataWriter(FecDataView):
         self._fec_data._FecDataModel__clear()
         self._fec_data._FecDataModel__n_calls_to_run = 0
         self._fec_data._FecDataModel__status = Data_Status.SETUP
+        self.__set_up_report_specifics()
 
     def start_run(self):
         self._fec_data._FecDataModel__n_calls_to_run += 1
         self._fec_data._FecDataModel__status = Data_Status.IN_RUN
-        self.__set_up_report_specifics()
 
     def finish_run(self):
         self._fec_data._FecDataModel__status = Data_Status.FINISHED
@@ -52,6 +56,7 @@ class FecDataWriter(FecDataView):
         report_simulation_top_directory = os.getcwd()
         self._fec_data._FecDataModel__report_default_directory = os.path.join(
             report_simulation_top_directory, f"run_{self.n_calls_to_run}")
+        logger.info(self.report_default_directory)
         self._fec_data._FecDataModel__provenance_file_path = os.path.join(
             self._fec_data._FecDataModel__report_default_directory,
             "provenance_data")

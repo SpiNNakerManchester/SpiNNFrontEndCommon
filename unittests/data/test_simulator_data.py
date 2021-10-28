@@ -45,4 +45,5 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(2, view.n_calls_to_run)
         writer.start_run()
         self.assertEqual(2, view.n_calls_to_run)
+        self.assertIn("run_1", view.report_default_directory)
 
