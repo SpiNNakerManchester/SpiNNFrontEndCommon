@@ -17,4 +17,4 @@ from .fec_data_view import FecDataView
 from .fec_data_writer import FecDataWriter
 
 
-__all__ = ["FecDataView"]
+__all__ = ["FecDataView", "FecDataWriter"]

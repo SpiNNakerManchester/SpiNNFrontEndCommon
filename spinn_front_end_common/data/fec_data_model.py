@@ -61,4 +61,3 @@ class FecDataModel(object):
         self.__report_default_directory = None
         self.__time_scale_factor = None
         self.__status = Data_Status.NOT_SETUP
-
