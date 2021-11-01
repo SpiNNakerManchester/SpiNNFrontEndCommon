@@ -18,6 +18,7 @@ import re
 from spinn_utilities.log import FormatAdapter
 from spinnman.connections import SocketAddressWithChip
 from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
+from spinnman.exceptions import SpinnmanIOException
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -88,6 +89,11 @@ class MachineGenerator(object):
                 self._parse_scamp_connection(piece)
                 for piece in scamp_connection_data.split(":")]
 
+        if board_version is None:
+            raise ConfigurationException(
+                "Please set a machine version number in the "
+                "corresponding configuration (cfg) file")
+
         txrx = create_transceiver_from_hostname(
             hostname=hostname,
             bmp_connection_data=self._parse_bmp_details(bmp_details),
@@ -96,23 +102,24 @@ class MachineGenerator(object):
             scamp_connections=scamp_connection_data,
             default_report_directory=report_default_directory())
 
-        if reset_machine_on_start_up:
-            success = txrx.power_off_machine()
-            if success:
-                logger.warning(self.POWER_CYCLE_WARNING)
-                time.sleep(POWER_CYCLE_WAIT_TIME_IN_SECONDS)
-                logger.warning("Power cycle wait complete")
-            else:
-                logger.warning(self.POWER_CYCLE_FAILURE_WARNING)
+        try:
+            if reset_machine_on_start_up:
+                success = txrx.power_off_machine()
+                if success:
+                    logger.warning(self.POWER_CYCLE_WARNING)
+                    time.sleep(POWER_CYCLE_WAIT_TIME_IN_SECONDS)
+                    logger.warning("Power cycle wait complete")
+                else:
+                    logger.warning(self.POWER_CYCLE_FAILURE_WARNING)
 
-        # do auto boot if possible
-        if board_version is None:
+            # do auto boot if possible
+            txrx.ensure_board_is_ready()
+            txrx.discover_scamp_connections()
+            return txrx.get_machine_details(), txrx
+        except SpinnmanIOException as e:
             raise ConfigurationException(
-                "Please set a machine version number in the "
-                "corresponding configuration (cfg) file")
-        txrx.ensure_board_is_ready()
-        txrx.discover_scamp_connections()
-        return txrx.get_machine_details(), txrx
+                "could not talk to machine; "
+                "do you need to configure your VPN?") from e
 
     @staticmethod
     def _parse_scamp_connection(scamp_connection):
