@@ -62,3 +62,26 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(6, view.app_id)
         self.assertEqual(6, view["APPID"])
         self.assertTrue("APPID" in view)
+
+    def test_mock(self):
+        view = FecDataView()
+        writer = FecDataWriter()
+        writer.mock()
+        # check there is a value not what it is
+        self.assertIsNotNone(view.app_id)
+        self.assertIsNotNone(view.machine_time_step)
+        self.assertIsNotNone(view.machine_time_step_ms)
+        self.assertIsNotNone(view.machine_time_step_per_ms)
+        self.assertIsNotNone(view.report_default_directory)
+        self.assertIsNotNone(view.provenance_file_path)
+
+    def test_multiple(self):
+        view = FecDataView()
+        writer = FecDataWriter()
+        view2 = FecDataView()
+        writer2 = FecDataWriter()
+        writer2.set_app_id(7)
+        self.assertEqual(7, view.app_id)
+        self.assertEqual(7, view2.app_id)
+        self.assertEqual(7, writer.app_id)
+        self.assertEqual(7, writer2.app_id)

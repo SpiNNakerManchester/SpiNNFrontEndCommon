@@ -15,6 +15,7 @@
 
 import logging
 import os
+import tempfile
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.constants import (
@@ -23,6 +24,7 @@ from .data_status import Data_Status
 from .fec_data_view import FecDataView
 
 logger = FormatAdapter(logging.getLogger(__name__))
+__temp_dir = None
 
 
 class FecDataWriter(FecDataView):
@@ -30,10 +32,32 @@ class FecDataWriter(FecDataView):
     Writer class for the Fec Data
 
     """
+
+    def mock(self):
+        """
+        Clears out all data and adds mock values where needed.
+
+        This should set the most likely defaults values.
+        But be aware that what is considered the most likely default could
+        change over time.
+
+        Unittests that depend on any valid value being set should be able to
+        depend on Mock.
+
+        Unittest that depend on a specific value should call mock and then
+        set that value.
+        """
+        self._fec_data._FecDataModel__clear()
+        self._fec_data._FecDataModel__n_calls_to_run = 0
+        self._fec_data._FecDataModel__status = Data_Status.MOCKED
+        self.__set_up_report_mocked()
+        self.set_app_id(6)
+        self.set_machine_time_step(1000)
+
     def setup(self):
         """
-        Clears out all data
-        :return:
+        Puts all data back into the state expected at sim.setup time
+
         """
         self._fec_data._FecDataModel__clear()
         self._fec_data._FecDataModel__n_calls_to_run = 0
@@ -47,11 +71,16 @@ class FecDataWriter(FecDataView):
     def finish_run(self):
         self._fec_data._FecDataModel__status = Data_Status.FINISHED
 
+    def __set_up_report_mocked(self):
+        """
+        Sets all the directories used to a Temporary Directory
+        """
+        temp_dir = tempfile.TemporaryDirectory()
+
+        self._fec_data._FecDataModel__report_default_directory = temp_dir
+        self._fec_data._FecDataModel__provenance_file_path = temp_dir
+
     def __set_up_report_specifics(self):
-        """
-        :param int n_calls_to_run:
-            the counter of how many times run has been called.
-        """
         # This is a highly simplified example
         report_simulation_top_directory = os.getcwd()
         self._fec_data._FecDataModel__report_default_directory = os.path.join(
