@@ -77,6 +77,7 @@ from spinn_front_end_common.interface.simulator_status import (
 from spinn_front_end_common.interface.interface_functions import (
     ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
     RouterProvenanceGatherer, interface_xml)
+from spinn_front_end_common.utilities.spalloc import SpallocClient
 
 from spinn_front_end_common import __version__ as fec_version
 try:
@@ -663,7 +664,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "remote_spinnaker_url and virtual_board should be specified "
                 "in your configuration files")
 
-        if self._spalloc_server is not None:
+        if self._spalloc_server is not None and (
+                not SpallocClient.is_server_address(self._spalloc_server)):
+            # New-style spalloc encodes credentials in URL; old does not
             if get_config_str("Machine", "spalloc_user") is None:
                 raise Exception(
                     "A spalloc_user must be specified with a spalloc_server")

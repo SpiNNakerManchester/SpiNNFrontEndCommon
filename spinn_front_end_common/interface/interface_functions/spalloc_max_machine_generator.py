@@ -72,12 +72,12 @@ class SpallocMaxMachineGenerator(object):
         :type spalloc_machine: str or None
         :param bearer_token: The bearer token to use
         :type bearer_token: str or None
-        :return: the dimensions of the maximum machine
+        :return: the dimensions of the maximum machine, in chips
         :rtype: tuple(int or None,int or None)
         """
-        max_width = None
-        max_height = None
+        max_dimensions = None
         max_area = -1
+        num_dead = 0
 
         with SpallocClient(spalloc_server, bearer_token=bearer_token) as c:
             for machine in c.list_machines().values():
@@ -89,12 +89,15 @@ class SpallocMaxMachineGenerator(object):
                         continue
 
                 # The "biggest" board is the one with the most chips
-                if machine.area > max_area:
-                    max_area = machine.area
-                    max_width = machine.width
-                    max_height = machine.height
+                if machine.width * machine.height > max_area:
+                    max_area = machine.width * machine.height
+                    max_dimensions = (machine.width * 12, machine.height * 12)
+                    num_dead = len(machine.dead_boards)
 
-        return max_width, max_height
+        # Handle special case of a single board
+        if max_area == 1 and num_dead == 2:
+            return 8, 8
+        return max_dimensions
 
     def discover_max_machine_area_old(
             self, spalloc_server, spalloc_port, spalloc_machine):
