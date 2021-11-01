@@ -251,11 +251,23 @@ class SpallocClient:
                  "__machines_url", "__jobs_url", "version")
 
     @staticmethod
-    def is_server_address(address):
+    def is_server_address(address, additional_schemes=()):
+        """ Test if the given address is a likely spalloc server URL.
+
+        :param str address: The address to check
+        :param ~collections.abc.Iterable(str) additional_schemes:
+            Any additional URL schemes that should be considered to be
+            successes; typically ``{"spalloc"}`` when looser matching is
+            required.
+        :rtype: bool
+        """
+        schemes = {"http", "https"}
+        if additional_schemes:
+            schemes.update(additional_schemes)
         try:
             pieces = urlparse(address)
             scheme = pieces.scheme.lower()
-            return scheme in ("http", "https") and pieces.netloc is not None
+            return scheme in schemes and pieces.netloc is not None
         except Exception:  # pylint: disable=broad-except
             return False
 

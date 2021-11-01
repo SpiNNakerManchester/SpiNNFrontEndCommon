@@ -665,7 +665,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "in your configuration files")
 
         if self._spalloc_server is not None and (
-                not SpallocClient.is_server_address(self._spalloc_server)):
+                not SpallocClient.is_server_address(
+                    self._spalloc_server, {"spalloc"})):
             # New-style spalloc encodes credentials in URL; old does not
             if get_config_str("Machine", "spalloc_user") is None:
                 raise Exception(
