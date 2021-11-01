@@ -61,6 +61,16 @@ class FecDataWriter(FecDataView):
             self._fec_data._FecDataModel__report_default_directory,
             "provenance_data")
 
+    def set_app_id(self, app_id):
+        """
+        Sets the app_id value
+
+        :param int app_id: new value
+        """
+        if not isinstance(app_id, int):
+            raise TypeError("app_id should be an int")
+        self._fec_data._FecDataModel__app_id = app_id
+
     def set_machine_time_step(self, machine_time_step):
         if machine_time_step is None:
             machine_time_step = get_config_int("Machine", "machine_time_step")

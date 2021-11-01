@@ -39,6 +39,22 @@ class FecDataView(object):
         return self._fec_data._FecDataModel__status
 
     @property
+    def app_id(self):
+        """
+        The current application id
+
+        :rtype: int
+        :raises SpinnFrontEndException:
+            If the app_id is currently unavailable
+        """
+        if self._fec_data._FecDataModel__app_id is None:
+            raise self.status.exception("machine_time_step")
+        return self._fec_data._FecDataModel__app_id
+
+    def has_app_id(self):
+        return self._fec_data._FecDataModel__app_id is not None
+
+    @property
     def machine_time_step(self):
         """ The machine timestep, in microseconds
 
@@ -129,7 +145,7 @@ class FecDataView(object):
         :raise KeyError: the error message will say if the item is not known
             now or not provided
         """
-        value = self.__unchecked_gettiem(item)
+        value = self._unchecked_getitem(item)
         if value is None:
             raise KeyError(f"Item {item} is currently not set")
         return value
@@ -144,7 +160,7 @@ class FecDataView(object):
         :return: True if the items is currently know
         :rtype: bool
         """
-        if self.__unchecked_gettiem(item) is not None:
+        if self._unchecked_getitem(item) is not None:
             return True
         return False
 
@@ -166,12 +182,12 @@ class FecDataView(object):
                     "MachinePartitionNKeysMap", "Placements", "RoutingInfos",
                     "RunUntilTimeSteps", "SystemMulticastRouterTimeoutKeys",
                     "Tags"]:
-            item = self.__unchecked_gettiem(key)
+            item = self._unchecked_getitem(key)
             if item is not None:
                 results.append((key, item))
         return results
 
-    def __unchecked_gettiem(self, item):
+    def _unchecked_getitem(self, item):
         """
         Returns the data for this item or None if currently unknown.
 
@@ -182,11 +198,15 @@ class FecDataView(object):
         :rtype: Object or None
         :raise KeyError: It the item is one that is never provided
         """
+        if item == "APPID":
+            if self.has_app_id():
+                return self.app_id
+            else:
+                return None
+
         # TODO Actually add these items to this code
 
         """
-        if item == "APPID":
-            return self.__app_id
         if item == "ApplicationGraph":
             return self.__application_graph
         if item == "DataInMulticastKeyToChipMap":

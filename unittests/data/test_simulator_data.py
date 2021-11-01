@@ -46,3 +46,19 @@ class TestSimulatorData(unittest.TestCase):
         writer.start_run()
         self.assertEqual(2, view.n_calls_to_run)
         self.assertIn("run_1", view.report_default_directory)
+
+    def test_dict(self):
+        view = FecDataView()
+        writer = FecDataWriter()
+        writer.setup()
+        self.assertFalse(view.has_app_id())
+        self.assertFalse("APPID" in view)
+        with self.assertRaises(KeyError):
+            view["APPID"]
+        with self.assertRaises(SimulatorDataNotYetAvialable):
+            view.app_id
+        writer.set_app_id(6)
+        self.assertTrue(view.has_app_id())
+        self.assertEqual(6, view.app_id)
+        self.assertEqual(6, view["APPID"])
+        self.assertTrue("APPID" in view)

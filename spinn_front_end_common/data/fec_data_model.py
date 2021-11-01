@@ -24,6 +24,10 @@ class FecDataModel(object):
     DataWriter classes.
     Accessing or editing the data held here directly is NOT SUPPORTED
 
+    There may be other DataModel classes which sit next to this one and hold
+    additional data. The DataView and DataWriter classes will combine these
+    as needed.
+
     What data is held where and how can change without notice.
     """
 
@@ -31,6 +35,7 @@ class FecDataModel(object):
 
     __slots__ = [
         # Data values cached
+        "__app_id",
         "__machine_time_step",
         "__provenance_file_path",
         "__machine_time_step_ms",
@@ -54,6 +59,7 @@ class FecDataModel(object):
         """
         Clears out all data returns to the NOT_SETUP state
         """
+        self.__app_id = None
         self.__machine_time_step = None
         self.__provenance_file_path = None
         self.__n_calls_to_run = None
