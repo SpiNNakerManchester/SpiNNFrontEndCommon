@@ -17,10 +17,10 @@ import os
 import sys
 import time
 from datetime import timedelta
-# pylint: disable=no-name-in-module
-from spinn_utilities.config_holder import (get_config_bool)
+# pylint: disable=no-name-in-modulefrom spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
+from spinn_front_end_common.interface.provenance.provenance_writer import (
+    ProvenanceWriter)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
