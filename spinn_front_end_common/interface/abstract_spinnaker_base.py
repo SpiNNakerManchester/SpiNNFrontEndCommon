@@ -1270,7 +1270,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if n_chips_required is None and self._n_boards_required is None:
             return None
         if self._spalloc_server is not None:
-            with FecTimer(category, "SpallocAllocator") as timer:
+            with FecTimer(category, "SpallocAllocator"):
                 allocator = SpallocAllocator()
                 return allocator(
                     self._spalloc_server, n_chips_required,
@@ -1345,7 +1345,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._max_machine = True
         if self._spalloc_server:
-            with FecTimer(GET_MACHINE, "SpallocMaxMachineGenerator") as timer:
+            with FecTimer(GET_MACHINE, "SpallocMaxMachineGenerator"):
                 generator = SpallocMaxMachineGenerator()
                 # TODO fix params
                 self._machine = generator(
