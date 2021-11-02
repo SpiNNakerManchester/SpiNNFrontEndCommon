@@ -119,25 +119,6 @@ class FecTimer(object):
         else:
             return False
 
-    def skip_if_application_graph_empty(self):
-        if _simulator._application_graph.n_vertices:
-            return False
-        else:
-            self.skip("Application graph is empty")
-            return True
-
-    def skip_if_value_true(self, value, name):
-        if value:
-            self.skip(f"{name} is True")
-        return value
-
-    def skip_if_value_false(self, value, name):
-        if value:
-            return False
-        else:
-            self.skip(f"{name} is False")
-            return True
-
     def skip_if_empty(self, value, name):
         if value:
             return False
@@ -148,27 +129,6 @@ class FecTimer(object):
         else:
             self.skip(f"{name} is False for an unknown reason")
         return True
-
-    def skip_if_value_is_none(self, value, name):
-        if value is None:
-            self.skip(f"{name} is None")
-            return True
-        else:
-            return False
-
-    def skip_if_value_not_none(self, value, name):
-        if value is None:
-            return False
-        else:
-            self.skip(f"{name} is provided")
-            return True
-
-    def skip_if_value_already_set(self, value, name):
-        if value is None:
-            return False
-        else:
-            self.skip(f"{name} already set")
-            return True
 
     def skip_if_cfg_false(self, section, option):
         if get_config_bool(section, option):

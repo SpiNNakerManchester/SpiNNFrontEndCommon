@@ -1237,12 +1237,11 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         May set then "machine" value
         """
+        if self._machine:
+            return
+        if not self._use_virtual_board:
+            return
         with FecTimer(GET_MACHINE, "Get Virtual Machine") as timer:
-            if timer.skip_if_value_already_set(self._machine, "machine"):
-                return
-            if timer.skip_if_value_false(
-                    self._use_virtual_board, "use_virtual_board"):
-                return
             generator = VirtualMachineGenerator()
             # TODO fix params
             self._machine = generator(get_config_int("Machine", "version"))
@@ -1260,24 +1259,24 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: tuple(str, int, object, bool, bool, object, object,
             MachineAllocationController)
         """
-        with FecTimer(category, "Allocator") as timer:
-            if timer.skip_if_value_already_set(self._machine, "machine"):
-                return None
-            if timer.skip_if_value_not_none(self._hostname, "hostname"):
-                return None
-            if self._n_chips_needed:
-                n_chips_required = self._n_chips_needed
-            else:
-                n_chips_required = self._n_chips_required
-            if n_chips_required is None and self._n_boards_required is None:
-                timer.skip("Size of required machine not yet known")
-                return None
-            if self._spalloc_server is not None:
+        if self._machine:
+            return None
+        if self._hostname:
+            return None
+        if self._n_chips_needed:
+            n_chips_required = self._n_chips_needed
+        else:
+            n_chips_required = self._n_chips_required
+        if n_chips_required is None and self._n_boards_required is None:
+            return None
+        if self._spalloc_server is not None:
+            with FecTimer(category, "SpallocAllocator") as timer:
                 allocator = SpallocAllocator()
                 return allocator(
                     self._spalloc_server, n_chips_required,
                     self._n_boards_required)
-            else:
+        else:
+            with FecTimer(category, "HBPAllocator") as timer:
                 allocator = HBPAllocator()
                 return allocator(
                     self._remote_spinnaker_url, total_run_time,
@@ -1298,31 +1297,30 @@ class AbstractSpinnakerBase(ConfigHandler):
             tuple(str, int, object, bool, bool, object, object,
             MachineAllocationController)
         """
+        if self._machine:
+            return
+        if self._hostname:
+            bmp_details = get_config_str("Machine", "bmp_names")
+            auto_detect_bmp = get_config_bool(
+                "Machine", "auto_detect_bmp")
+            scamp_connection_data = get_config_str(
+                "Machine", "scamp_connections_data")
+            boot_port_num = get_config_int(
+                "Machine", "boot_connection_port_num")
+            reset_machine = get_config_bool(
+                "Machine", "reset_machine_on_startup")
+            self._board_version = get_config_int(
+                "Machine", "version")
+
+        elif allocator_data:
+            (self._hostname, self._board_version, bmp_details,
+             reset_machine, auto_detect_bmp, scamp_connection_data,
+             boot_port_num, self._machine_allocation_controller
+             ) = allocator_data
+        else:
+            return
+
         with FecTimer(category, "Machine generator") as timer:
-            if timer.skip_if_value_already_set(self._machine, "machine"):
-                return
-            if self._hostname:
-                bmp_details = get_config_str("Machine", "bmp_names")
-                auto_detect_bmp = get_config_bool(
-                    "Machine", "auto_detect_bmp")
-                scamp_connection_data = get_config_str(
-                    "Machine", "scamp_connections_data")
-                boot_port_num = get_config_int(
-                    "Machine", "boot_connection_port_num")
-                reset_machine = get_config_bool(
-                    "Machine", "reset_machine_on_startup")
-                self._board_version = get_config_int(
-                    "Machine", "version")
-
-            elif allocator_data:
-                (self._hostname, self._board_version, bmp_details,
-                 reset_machine, auto_detect_bmp, scamp_connection_data,
-                 boot_port_num, self._machine_allocation_controller
-                 ) = allocator_data
-            else:
-                timer.skip("Size of required machine not yet known")
-                return
-
             generator = MachineGenerator()
             self._machine, self._txrx = generator(
                 self._hostname, bmp_details, self._board_version,
@@ -1341,13 +1339,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param total_run_time: The total run time to request
         :type total_run_time: int or None
         """
-        with FecTimer(GET_MACHINE, "Get max machine") as timer:
-            if timer.skip_if_value_already_set(self._machine, "machine"):
-                # Leave _max_machine as is a may be true from an earlier call
-                return self._machine
+        if self._machine:
+            # Leave _max_machine as is a may be true from an earlier call
+            return self._machine
 
-            self._max_machine = True
-            if self._spalloc_server:
+        self._max_machine = True
+        if self._spalloc_server:
+            with FecTimer(GET_MACHINE, "SpallocMaxMachineGenerator") as timer:
                 generator = SpallocMaxMachineGenerator()
                 # TODO fix params
                 self._machine = generator(
@@ -1355,14 +1353,15 @@ class AbstractSpinnakerBase(ConfigHandler):
                     max_machine_core_reduction=get_config_int(
                         "Machine", "max_machine_core_reduction"))
 
-            elif self._remote_spinnaker_url:
+        elif self._remote_spinnaker_url:
+            with FecTimer(GET_MACHINE, "HBPMaxMachineGenerator") as timer:
                 generator = HBPMaxMachineGenerator()
                 self._machine = generator(
                     self._remote_spinnaker_url, total_run_time,
                     get_config_int("Machine", "max_machine_core_reduction"))
 
-            else:
-                raise NotImplementedError("No machine generataion possible")
+        else:
+            raise NotImplementedError("No machine generataion possible")
 
     def _get_machine(self, total_run_time=0.0):
         """ The python machine description object.
@@ -1565,9 +1564,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type pre_allocated_resources:
             ~pacman.model.resources.PreAllocatedResourceContainer
         """
-        with FecTimer(MAPPING, "Splitter partitioner") as timer:
-            if timer.skip_if_application_graph_empty():
-                return
+        if self._application_graph.n_vertices:
+            return
+        with FecTimer(MAPPING, "Splitter partitioner"):
             partitioner = SplitterPartitioner()
             self._machine_graph, self._n_chips_needed = partitioner(
                 self._application_graph, self._machine, self._plan_n_timesteps,
@@ -1584,10 +1583,10 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :return:
         """
-        with FecTimer(MAPPING, "Graph measurer") as timer:
-            if not self._max_machine:
-                if timer.skip_if_value_already_set(self._machine, "machine"):
-                    return
+        if not self._max_machine:
+            if self._machine:
+                return
+        with FecTimer(MAPPING, "Graph measurer"):
             measurer = GraphMeasurer()
             self._n_chips_needed = measurer(
                 self._machine_graph, self._machine, self._plan_n_timesteps)
@@ -1832,12 +1831,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         Writes, times and logs the application graph placer report if
         requested
         """
+        if not self._application_graph.n_vertices:
+            return
         with FecTimer(
                 MAPPING, "Placements wth application graph report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_application_graph_placer_report"):
-                return
-            if timer.skip_if_application_graph_empty():
                 return
             placer_reports_with_application_graph(
                 self._hostname, self._application_graph, self._placements,
@@ -2127,11 +2126,10 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         May set the buffer_manager data
         """
+        if self._buffer_manager:
+            return
         with FecTimer(MAPPING, "Buffer manager creator") as timer:
             if timer.skip_if_virtual_board():
-                return
-            if timer.skip_if_value_already_set(
-                    self._buffer_manager, "Buffer Manager"):
                 return
 
             creator = BufferManagerCreator()
@@ -2253,33 +2251,26 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._dsg_time += convert_time_diff_to_total_milliseconds(
             data_gen_timer.take_sample())
 
-    def _execute_routing_setup(self, graph_changed):
+    def _execute_routing_setup(self,):
         """
         Runs, times and logs the RoutingSetup if required.
 
-        :param bool graph_changed: Flag to say the graph changed,
         """
+        if self._multicast_routes_loaded:
+            return
         with FecTimer(LOADING, "Routing setup") as timer:
             if timer.skip_if_virtual_board():
-                return
-            if timer.skip_if_value_false(graph_changed, "graph_changed"):
-                return
-            if self._multicast_routes_loaded:
-                timer.skip("Routing tables already loaded")
                 return
             setup = RoutingSetup()
             # Only needs the x and y of chips with routing tables
             setup(self._router_tables, self._app_id, self._txrx, self._machine)
 
-    def _execute_graph_binary_gatherer(self, graph_changed):
+    def _execute_graph_binary_gatherer(self):
         """
         Runs, times and logs the GraphBinaryGatherer if required.
 
-        :param bool graph_changed: Flag to say the graph changed,
         """
         with FecTimer(LOADING, "Graph binary gatherer") as timer:
-            if timer.skip_if_value_false(graph_changed, "graph_changed"):
-                return
             try:
                 gather = GraphBinaryGatherer()
                 self._executable_targets = gather(
@@ -2534,15 +2525,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param compressed:
         :type compressed: MulticastRoutingTables or None
         """
+        if not compressed:
+            return
         with FecTimer(LOADING, "Routing table loader") as timer:
-            if compressed:
-                self._multicast_routes_loaded = True
-                if timer.skip_if_virtual_board():
-                    return
-                loader = RoutingTableLoader()
-                loader(compressed, self._app_id, self._txrx, self._machine)
-            else:
-                timer.skip("No on host compressed tables to load")
+            self._multicast_routes_loaded = True
+            if timer.skip_if_virtual_board():
+                return
+            loader = RoutingTableLoader()
+            loader(compressed, self._app_id, self._txrx, self._machine)
 
     def _report_uncompressed_routing_table(self):
         """
@@ -2567,11 +2557,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             # BitFieldSummary output ignored as never used
             report(self._machine_graph, self._placements)
 
-    def _execute_load_fixed_routes(self, graph_changed):
+    def _execute_load_fixed_routes(self):
         """
         Runs, times and logs Load Fixed Routes is required
-
-        :param bool graph_changed: Flag to say the graph changed,
         """
         with FecTimer(LOADING, "Load fixed routes") as timer:
             if timer.skip_if_cfg_false(
@@ -2579,11 +2567,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             if timer.skip_if_virtual_board():
                 return
-            if graph_changed or not self._has_ran:
-                loader = LoadFixedRoutes()
-                loader(self._fixed_routes, self._txrx, self._app_id)
-            else:
-                timer.skip("Graph not changed since last run")
+            loader = LoadFixedRoutes()
+            loader(self._fixed_routes, self._txrx, self._app_id)
 
     def _execute_system_data_specification(self):
         """
@@ -2661,21 +2646,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs any extra load algorithms
 
-        :param bool graph_changed: Flag to say the graph changed,
         """
         pass
 
-    def _report_memory_on_host(
-            self, graph_changed, processor_to_app_data_base_address):
+    def _report_memory_on_host(self, processor_to_app_data_base_address):
         """
         Runs, times and logs MemoryMapOnHostReport is requested
 
-        :param bool graph_changed: Flag to say the graph changed,
         """
         with FecTimer(LOADING, "Memory report") as timer:
             if timer.skip_if_virtual_board():
-                return
-            if timer.skip_if_value_false(graph_changed, "graph_changed"):
                 return
             if timer.skip_if_cfg_false(
                     "Reports", "write_memory_map_report"):
@@ -2683,16 +2663,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             report = MemoryMapOnHostReport()
             report(processor_to_app_data_base_address)
 
-    def _report_memory_on_chip(self, graph_changed):
+    def _report_memory_on_chip(self):
         """
         Runs, times and logs MemoryMapOnHostChipReport is requested
 
-        :param bool graph_changed: Flag to say the graph changed,
         """
         with FecTimer(LOADING, "Memory report") as timer:
             if timer.skip_if_virtual_board():
-                return
-            if timer.skip_if_value_false(graph_changed, "graph_changed"):
                 return
             if timer.skip_if_cfg_false(
                     "Reports", "write_memory_map_report"):
@@ -2702,17 +2679,14 @@ class AbstractSpinnakerBase(ConfigHandler):
             report(self._dsg_targets, self._txrx)
 
     # TODO consider different cfg flags
-    def _report_compressed(self, graph_changed, compressed):
+    def _report_compressed(self, compressed):
         """
         Runs, times and logs the compressor reports if requested
 
-        :param bool graph_changed: Flag to say the graph changed,
         :param compressed:
         :type compressed: MulticastRoutingTables or None
         """
         with FecTimer(LOADING, "Compressor report") as timer:
-            if timer.skip_if_value_false(graph_changed, "graph_changed"):
-                return
             if timer.skip_if_cfg_false(
                     "Reports", "write_routing_table_reports"):
                 return
@@ -2737,17 +2711,12 @@ class AbstractSpinnakerBase(ConfigHandler):
             report = RoutingTableFromMachineReport()
             report(compressed)
 
-    def _report_fixed_routes(self, graph_changed):
+    def _report_fixed_routes(self):
         """
         Runs, times and logs the FixedRouteFromMachineReport is requested
-
-        :param bool graph_changed: Flag to say the graph changed,
         """
         with FecTimer(LOADING, "Fixed route report") as timer:
             if timer.skip_if_virtual_board():
-                return
-            if self._has_ran and not graph_changed:
-                timer.skip("graph not changed since last run")
                 return
             if timer.skip_if_cfg_false(
                     "Machine", "enable_advanced_monitor_support"):
@@ -2778,13 +2747,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         load_timer = Timer()
         load_timer.start_timing()
 
-        self._execute_routing_setup(graph_changed)
-        self._execute_graph_binary_gatherer(graph_changed)
+        if graph_changed:
+            self._execute_routing_setup()
+            self._execute_graph_binary_gatherer()
         # loading_algorithms
         self._report_uncompressed_routing_table()
         compressor = self._compressor_name()
         compressed = self._do_early_compression(compressor)
-        self._execute_load_fixed_routes(graph_changed)
+        if graph_changed or not self._has_ran:
+            self._execute_load_fixed_routes()
         processor_to_app_data_base_address = \
             self._execute_system_data_specification()
         self._execute_load_system_executable_images()
@@ -2800,11 +2771,11 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # TODO Was master correct to run the report first?
         self._execute_tags_from_machine_report()
-        self._report_memory_on_host(
-            graph_changed, processor_to_app_data_base_address)
-        self._report_memory_on_chip(graph_changed)
-        self._report_compressed(graph_changed, compressed)
-        self._report_fixed_routes(graph_changed)
+        if graph_changed:
+            self._report_memory_on_host(processor_to_app_data_base_address)
+            self._report_memory_on_chip()
+            self._report_compressed(compressed)
+            self._report_fixed_routes()
         self._execute_application_load_executables()
 
         self._load_time += convert_time_diff_to_total_milliseconds(
@@ -2821,7 +2792,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._plan_n_timesteps,
                 data_n_timesteps=self._max_run_time_steps)
 
-    def _execute_dsg_region_reloader(self, graph_changed):
+    def _execute_dsg_region_reloader(self):
         """
             Runs, times and logs the DSGRegionReloader if required
 
@@ -2829,14 +2800,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             run and not using a virtual board and the data hasn't already
             been regenerated
 
-        :param bool graph_changed: Flag to say the graph changed,
         """
+        if not self.has_ran:
+            return
         with FecTimer(RUN_LOOP, "DSG region reloader") as timer:
-            if timer.skip_if_has_not_run():
-                return
             if timer.skip_if_virtual_board():
-                return
-            if timer.skip_if_value_true(graph_changed, "graph changed"):
                 return
             reloader = DSGRegionReloader()
             reloader(self._txrx, self._placements, self._hostname)
@@ -2947,14 +2915,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the ChipIOBufClearer if required
 
         """
+        if runtime is None:
+            return
         with FecTimer(RUN_LOOP, "Clear IO buffer") as timer:
             if timer.skip_if_virtual_board():
                 return
             # TODO Why check empty_graph is always false??
             if timer.skip_if_cfg_false("Reports", "clear_iobuf_during_run"):
-                return
-            if runtime is None:
-                timer.skip("Run forever mode")
                 return
             clearer = ChipIOBufClearer()
             clearer(self._txrx, self._executable_types)
@@ -2978,27 +2945,23 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 timer.skip("No Simulation Interface used")
 
-    def _execute_create_database_interface(self, run_time, graph_changed):
+    def _execute_create_database_interface(self, run_time):
         """
         Runs, times and logs Database Interface Creater
 
         Sets the _database_file_path data object
 
         :param int run_time: the run duration in milliseconds.
-        :param bool graph_changed: Flag to say the graph changed,
         """
         with FecTimer(RUN_LOOP, "Create database interface") as timer:
-            if not self._has_ran or graph_changed:
-                interface_maker = DatabaseInterface()
-                # Used to used compressed routing tables if available on host
-                # TODO consider not saving router tabes.
-                _, self._database_file_path = interface_maker(
-                    self._machine_graph, self._tags, run_time, self._machine,
-                    self._max_run_time_steps, self._placements,
-                    self._routing_infos, self._router_tables,
-                    self._app_id, self._application_graph)
-            else:
-                timer.skip("already run and no graph change")
+            interface_maker = DatabaseInterface()
+            # Used to used compressed routing tables if available on host
+            # TODO consider not saving router tabes.
+            _, self._database_file_path = interface_maker(
+                self._machine_graph, self._tags, run_time, self._machine,
+                self._max_run_time_steps, self._placements,
+                self._routing_infos, self._router_tables,
+                self._app_id, self._application_graph)
 
     def _execute_create_notifiaction_protocol(self):
         """
@@ -3106,9 +3069,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         do_injection(self)
 
         self._execute_sdram_usage_report_per_chip()
-        self._execute_create_database_interface(run_time, graph_changed)
+        if not self._has_ran or graph_changed:
+            self._execute_create_database_interface(run_time)
         self._execute_create_notifiaction_protocol()
-        self._execute_dsg_region_reloader(graph_changed)
+        if graph_changed:
+            self._execute_dsg_region_reloader()
         self._execute_runtime_update(n_sync_steps)
         self._execute_runner(n_sync_steps, run_time)
         if n_machine_time_steps is not None or self._run_until_complete:
