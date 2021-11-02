@@ -35,7 +35,6 @@ class FecDataWriter(FecDataView):
     __fec_data2 = _FecDataModel()
     __slots__ = []
 
-
     def mock(self):
         """
         Clears out all data and adds mock values where needed.
