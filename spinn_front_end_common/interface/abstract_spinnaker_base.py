@@ -1241,7 +1241,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return
         if not self._use_virtual_board:
             return
-        with FecTimer(GET_MACHINE, "Get Virtual Machine") as timer:
+        with FecTimer(GET_MACHINE, "Get Virtual Machine"):
             generator = VirtualMachineGenerator()
             # TODO fix params
             self._machine = generator(get_config_int("Machine", "version"))
@@ -1276,7 +1276,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     self._spalloc_server, n_chips_required,
                     self._n_boards_required)
         else:
-            with FecTimer(category, "HBPAllocator") as timer:
+            with FecTimer(category, "HBPAllocator"):
                 allocator = HBPAllocator()
                 return allocator(
                     self._remote_spinnaker_url, total_run_time,
@@ -1320,7 +1320,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         else:
             return
 
-        with FecTimer(category, "Machine generator") as timer:
+        with FecTimer(category, "Machine generator"):
             generator = MachineGenerator()
             self._machine, self._txrx = generator(
                 self._hostname, bmp_details, self._board_version,
@@ -1354,7 +1354,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                         "Machine", "max_machine_core_reduction"))
 
         elif self._remote_spinnaker_url:
-            with FecTimer(GET_MACHINE, "HBPMaxMachineGenerator") as timer:
+            with FecTimer(GET_MACHINE, "HBPMaxMachineGenerator"):
                 generator = HBPMaxMachineGenerator()
                 self._machine = generator(
                     self._remote_spinnaker_url, total_run_time,
@@ -2953,7 +2953,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param int run_time: the run duration in milliseconds.
         """
-        with FecTimer(RUN_LOOP, "Create database interface") as timer:
+        with FecTimer(RUN_LOOP, "Create database interface"):
             interface_maker = DatabaseInterface()
             # Used to used compressed routing tables if available on host
             # TODO consider not saving router tabes.
