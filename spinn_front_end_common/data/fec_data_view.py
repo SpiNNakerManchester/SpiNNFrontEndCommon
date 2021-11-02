@@ -13,10 +13,62 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .fec_data_model import FecDataModel
 from .data_status import Data_Status
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
+
+
+class _FecDataModel(object):
+    """
+    Singleton data model
+
+    This class should not be accessed directly please use the DataView and
+    DataWriter classes.
+    Accessing or editing the data held here directly is NOT SUPPORTED
+
+    There may be other DataModel classes which sit next to this one and hold
+    additional data. The DataView and DataWriter classes will combine these
+    as needed.
+
+    What data is held where and how can change without notice.
+    """
+
+    __singleton = None
+
+    __slots__ = [
+        # Data values cached
+        "_app_id",
+        "_machine_time_step",
+        "_provenance_file_path",
+        "_machine_time_step_ms",
+        "_n_calls_to_run",
+        "_report_default_directory",
+        "_time_scale_factor",
+        # Data status mainly to raise best Exception
+        "_status"
+    ]
+
+    def __new__(cls):
+        if cls.__singleton:
+            return cls.__singleton
+        # pylint: disable=protected-access
+        obj = object.__new__(cls)
+        cls.__singleton = obj
+        obj._clear()
+        obj._status = Data_Status.NOT_SETUP
+        return obj
+
+    def _clear(self):
+        """
+        Clears out all data returns to the NOT_SETUP state
+        """
+        self._app_id = None
+        self._machine_time_step = None
+        self._provenance_file_path = None
+        self._n_calls_to_run = None
+        self._machine_time_step_ms = None
+        self._report_default_directory = None
+        self._time_scale_factor = None
 
 
 class FecDataView(object):
@@ -30,13 +82,12 @@ class FecDataView(object):
     without notice, methods in this class can be considered a supported API
     """
 
-    _fec_data = FecDataModel()
-
+    __fec_data = _FecDataModel()
     __slots__ = []
 
     @property
     def status(self):
-        return self._fec_data._FecDataModel__status
+        return self.__fec_data._status
 
     @property
     def app_id(self):
@@ -47,12 +98,12 @@ class FecDataView(object):
         :raises SpinnFrontEndException:
             If the app_id is currently unavailable
         """
-        if self._fec_data._FecDataModel__app_id is None:
+        if self.__fec_data._app_id is None:
             raise self.status.exception("machine_time_step")
-        return self._fec_data._FecDataModel__app_id
+        return self.__fec_data._app_id
 
     def has_app_id(self):
-        return self._fec_data._FecDataModel__app_id is not None
+        return self.__fec_data._app_id is not None
 
     @property
     def machine_time_step(self):
@@ -62,12 +113,12 @@ class FecDataView(object):
         :raises SpinnFrontEndException:
             If the machine_time_step is currently unavailable
         """
-        if self._fec_data._FecDataModel__machine_time_step is None:
+        if self.__fec_data._machine_time_step is None:
             raise self.status.exception("machine_time_step")
-        return self._fec_data._FecDataModel__machine_time_step
+        return self.__fec_data._machine_time_step
 
     def has_machine_time_step(self):
-        return self._fec_data._FecDataModel__machine_time_step is not None
+        return self.__fec_data._machine_time_step is not None
 
     @property
     def machine_time_step_ms(self):
@@ -79,12 +130,12 @@ class FecDataView(object):
         :raises SpinnFrontEndException:
             If the machine_time_step_ms is currently unavailable
         """
-        if self._fec_data._FecDataModel__machine_time_step_ms is None:
+        if self.__fec_data._machine_time_step_ms is None:
             raise self.status.exception("machine_time_step_ms")
-        return self._fec_data._FecDataModel__machine_time_step_ms
+        return self.__fec_data._machine_time_step_ms
 
     def has_machine_time_step_ms(self):
-        return self._fec_data._FecDataModel__machine_time_step_ms is not None
+        return self.__fec_data._machine_time_step_ms is not None
 
     # semantic sugar without caching
     @property
@@ -100,7 +151,7 @@ class FecDataView(object):
         return MICRO_TO_MILLISECOND_CONVERSION / self.machine_time_step
 
     def has_machine_time_step_per_ms(self):
-        return self._fec_data._FecDataModel__machine_time_step is not None
+        return self.__fec_data._machine_time_step is not None
 
     # The data the user gets needs not be the exact data cached
     @property
@@ -110,25 +161,25 @@ class FecDataView(object):
 
         :rtpye: int
         """
-        if self._fec_data._FecDataModel__n_calls_to_run is None:
+        if self.__fec_data._n_calls_to_run is None:
             raise self.status.exception("n_calls_to_run")
-        if self._fec_data._FecDataModel__status == Data_Status.IN_RUN:
-            return self._fec_data._FecDataModel__n_calls_to_run
+        if self.__fec_data._status == Data_Status.IN_RUN:
+            return self.__fec_data._n_calls_to_run
         else:
             # This is the current behaviour in ASB
-            return self._fec_data._FecDataModel__n_calls_to_run + 1
+            return self.__fec_data._n_calls_to_run + 1
 
     @property
     def report_default_directory(self):
-        if self._fec_data._FecDataModel__report_default_directory is None:
+        if self.__fec_data._report_default_directory is None:
             raise self.status.exception("report_default_directory")
-        return self._fec_data._FecDataModel__report_default_directory
+        return self.__fec_data._report_default_directory
 
     @property
     def provenance_file_path(self):
-        if self._fec_data._FecDataModel__provenance_file_path is None:
+        if self.__fec_data._provenance_file_path is None:
             raise self.status.exception("provenance_file_path")
-        return self._fec_data._FecDataModel__provenance_file_path
+        return self.__fec_data._provenance_file_path
 
     def __getitem__(self, item):
         """
