@@ -79,7 +79,7 @@ from .routing_table_loader import RoutingTableLoader
 from .spalloc_allocator import SpallocAllocator
 from .spalloc_max_machine_generator import SpallocMaxMachineGenerator
 from .tags_loader import TagsLoader
-from .virtual_machine_generator import VirtualMachineGenerator
+from .virtual_machine_generator import virtual_machine_generator
 from .read_routing_tables_from_machine import ReadRoutingTablesFromMachine
 from .sdram_outgoing_partition_allocator import SDRAMOutgoingPartitionAllocator
 
@@ -121,4 +121,5 @@ __all__ = [
     "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SDRAMOutgoingPartitionAllocator",
     "SpallocAllocator", "SpallocMaxMachineGenerator", "TagsLoader",
-    "VirtualMachineGenerator"]
+    "virtual_machine_generator",
+]

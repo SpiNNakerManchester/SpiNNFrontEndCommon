@@ -83,13 +83,13 @@ from spinn_front_end_common.abstract_models import (
     AbstractCanReset)
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
-    ApplicationFinisher, ApplicationRunner,  BufferExtractor,
+    ApplicationFinisher, ApplicationRunner, BufferExtractor,
     BufferManagerCreator, ChipIOBufClearer, ChipIOBufExtractor,
     ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
     CreateNotificationProtocol, DatabaseInterface,
     DSGRegionReloader, EdgeToNKeysMapper, EnergyProvenanceReporter,
     GraphBinaryGatherer, GraphDataSpecificationWriter,
-    GraphMeasurer, GraphProvenanceGatherer,  HostBasedBitFieldRouterCompressor,
+    GraphMeasurer, GraphProvenanceGatherer, HostBasedBitFieldRouterCompressor,
     HostExecuteDataSpecification, HBPAllocator, HBPMaxMachineGenerator,
     InsertChipPowerMonitorsToGraphs,
     InsertEdgesToExtraMonitorFunctionality, InsertEdgesToLivePacketGatherers,
@@ -106,7 +106,7 @@ from spinn_front_end_common.interface.interface_functions import (
     SDRAMOutgoingPartitionAllocator, SpallocAllocator,
     SpallocMaxMachineGenerator,
     SystemMulticastRoutingGenerator,
-    TagsLoader, VirtualMachineGenerator)
+    TagsLoader, virtual_machine_generator)
 from spinn_front_end_common.interface.interface_functions.\
     machine_bit_field_router_compressor import (
         MachineBitFieldOrderedCoveringCompressor,
@@ -1241,10 +1241,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             return
         if not self._use_virtual_board:
             return
-        with FecTimer(GET_MACHINE, "Get Virtual Machine"):
-            generator = VirtualMachineGenerator()
-            # TODO fix params
-            self._machine = generator(get_config_int("Machine", "version"))
+        with FecTimer(GET_MACHINE, "Virtual machine generator"):
+            self._machine = virtual_machine_generator()
 
     def _execute_allocator(self, category, total_run_time):
         """
