@@ -2307,7 +2307,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             self._multicast_routes_loaded = False
             compressor = HostBasedBitFieldRouterCompressor()
-            compressed, _ = compressor(
+            compressed = compressor(
                 self._router_tables, self._machine, self._placements,
                 self._txrx, self._machine_graph, self._routing_infos)
             return compressed
@@ -2329,7 +2329,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             compressor = MachineBitFieldOrderedCoveringCompressor()
-            self._compressor_provenance = compressor(
+            compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
@@ -2353,7 +2353,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             self._multicast_routes_loaded = True
             compressor = MachineBitFieldPairRouterCompressor()
-            self._compressor_provenance = compressor(
+            compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
