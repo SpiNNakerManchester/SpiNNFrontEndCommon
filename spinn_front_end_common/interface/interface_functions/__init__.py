@@ -60,7 +60,7 @@ from .local_tdma_builder import LocalTDMABuilder
 from .locate_executable_start_type import LocateExecutableStartType
 from .machine_bit_field_router_compressor import (
     MachineBitFieldRouterCompressor)
-from .machine_generator import MachineGenerator
+from .machine_generator import machine_generator
 from .create_notification_protocol import CreateNotificationProtocol
 from .placements_provenance_gatherer import PlacementsProvenanceGatherer
 from .pre_allocate_for_bit_field_router_compressor import (
@@ -112,7 +112,7 @@ __all__ = [
     "InsertLivePacketGatherersToGraphs", "interface_xml",
     "LoadExecutableImages", "LoadFixedRoutes", "LocalTDMABuilder",
     "LocateExecutableStartType", "MachineBitFieldRouterCompressor",
-    "MachineGenerator", "PlacementsProvenanceGatherer",
+    "machine_generator", "PlacementsProvenanceGatherer",
     "PreAllocateForBitFieldRouterCompressor",
     "PreAllocateResourcesForChipPowerMonitor",
     "PreAllocateResourcesForExtraMonitorSupport",

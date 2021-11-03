@@ -95,7 +95,7 @@ from spinn_front_end_common.interface.interface_functions import (
     InsertEdgesToExtraMonitorFunctionality, InsertEdgesToLivePacketGatherers,
     InsertExtraMonitorVerticesToGraphs, InsertLivePacketGatherersToGraphs,
     LoadExecutableImages, LoadFixedRoutes,
-    LocalTDMABuilder, LocateExecutableStartType, MachineGenerator,
+    LocalTDMABuilder, LocateExecutableStartType, machine_generator,
     PreAllocateResourcesForChipPowerMonitor,
     PreAllocateResourcesForLivePacketGatherers,
     PreAllocateResourcesForExtraMonitorSupport,
@@ -1323,15 +1323,14 @@ class AbstractSpinnakerBase(ConfigHandler):
             return
 
         with FecTimer(category, "Machine generator"):
-            generator = MachineGenerator()
-            self._machine, self._txrx = generator(
+            self._machine, self._txrx = machine_generator(
                 self._ipaddress, bmp_details, self._board_version,
                 auto_detect_bmp, scamp_connection_data, boot_port_num,
                 reset_machine)
 
     def _execute_get_max_machine(self, total_run_time):
         """
-        Runs, times and logs the MachineGenerator if required
+        Runs, times and logs the a MaxMachineGenerator if required
 
         Will set the "machine" value if not already set
 
