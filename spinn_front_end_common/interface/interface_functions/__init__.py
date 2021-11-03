@@ -77,7 +77,7 @@ from .router_provenance_gatherer import RouterProvenanceGatherer
 from .routing_setup import RoutingSetup
 from .routing_table_loader import RoutingTableLoader
 from .spalloc_allocator import spalloc_allocator
-from .spalloc_max_machine_generator import SpallocMaxMachineGenerator
+from .spalloc_max_machine_generator import spalloc_max_machine_generator
 from .tags_loader import TagsLoader
 from .virtual_machine_generator import virtual_machine_generator
 from .read_routing_tables_from_machine import ReadRoutingTablesFromMachine
@@ -120,6 +120,6 @@ __all__ = [
     "ProcessPartitionConstraints", "ProfileDataGatherer",
     "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SDRAMOutgoingPartitionAllocator",
-    "spalloc_allocator", "SpallocMaxMachineGenerator", "TagsLoader",
+    "spalloc_allocator", "spalloc_max_machine_generator", "TagsLoader",
     "virtual_machine_generator",
 ]

@@ -137,6 +137,7 @@ def spalloc_allocator(spalloc_server, n_chips=None, n_boards=None):
     if spalloc_port is not None:
         spalloc_kw_args['port'] = spalloc_port
     spalloc_machine = get_config_str("Machine", "spalloc_machine")
+
     if spalloc_machine is not None:
         spalloc_kw_args['machine'] = spalloc_machine
 

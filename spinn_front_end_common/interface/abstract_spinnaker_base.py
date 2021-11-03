@@ -104,7 +104,7 @@ from spinn_front_end_common.interface.interface_functions import (
     ReadRoutingTablesFromMachine,
     RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader,
     SDRAMOutgoingPartitionAllocator, spalloc_allocator,
-    SpallocMaxMachineGenerator,
+    spalloc_max_machine_generator,
     SystemMulticastRoutingGenerator,
     TagsLoader, virtual_machine_generator)
 from spinn_front_end_common.interface.interface_functions.\
@@ -1346,13 +1346,10 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._max_machine = True
         if self._spalloc_server:
-            with FecTimer(GET_MACHINE, "SpallocMaxMachineGenerator"):
-                generator = SpallocMaxMachineGenerator()
+            with FecTimer(GET_MACHINE, "Spalloc max machine generator"):
                 # TODO fix params
-                self._machine = generator(
-                    self._spalloc_server,
-                    max_machine_core_reduction=get_config_int(
-                        "Machine", "max_machine_core_reduction"))
+                self._machine = spalloc_max_machine_generator(
+                    self._spalloc_server)
 
         elif self._remote_spinnaker_url:
             with FecTimer(GET_MACHINE, "HBPMaxMachineGenerator"):
