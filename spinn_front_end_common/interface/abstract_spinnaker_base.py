@@ -134,7 +134,7 @@ from spinn_front_end_common.utilities.report_functions import (
     MemoryMapOnHostChipReport, NetworkSpecification,
     RouterCollisionPotentialReport,
     RoutingTableFromMachineReport, TagsFromMachineReport,
-    WriteJsonMachine, WriteJsonPartitionNKeysMap, WriteJsonPlacements,
+    write_json_machine, WriteJsonPartitionNKeysMap, WriteJsonPlacements,
     WriteJsonRoutingTables)
 from spinn_front_end_common.utilities import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import (
@@ -1407,9 +1407,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(MAPPING, "Json machine") as timer:
             if timer.skip_if_cfg_false("Reports", "write_json_machine"):
                 return
-            writer = WriteJsonMachine()
-            writer(self._machine, self._json_folder)
-            # TODO output ignored as never used
+            write_json_machine(self._machine, self._json_folder, True)
 
     def _report_network_specification(self):
         """
