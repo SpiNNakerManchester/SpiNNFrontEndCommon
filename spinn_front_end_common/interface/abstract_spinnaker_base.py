@@ -90,7 +90,7 @@ from spinn_front_end_common.interface.interface_functions import (
     DSGRegionReloader, EdgeToNKeysMapper, EnergyProvenanceReporter,
     GraphBinaryGatherer, GraphDataSpecificationWriter,
     GraphMeasurer, GraphProvenanceGatherer, HostBasedBitFieldRouterCompressor,
-    HostExecuteDataSpecification, hbp_allocator, HBPMaxMachineGenerator,
+    HostExecuteDataSpecification, hbp_allocator, hbp_max_machine_generator,
     InsertChipPowerMonitorsToGraphs,
     InsertEdgesToExtraMonitorFunctionality, InsertEdgesToLivePacketGatherers,
     InsertExtraMonitorVerticesToGraphs, InsertLivePacketGatherersToGraphs,
@@ -1347,16 +1347,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._max_machine = True
         if self._spalloc_server:
             with FecTimer(GET_MACHINE, "Spalloc max machine generator"):
-                # TODO fix params
                 self._machine = spalloc_max_machine_generator(
                     self._spalloc_server)
 
         elif self._remote_spinnaker_url:
             with FecTimer(GET_MACHINE, "HBPMaxMachineGenerator"):
-                generator = HBPMaxMachineGenerator()
-                self._machine = generator(
+                self._machine = hbp_max_machine_generator(
                     self._remote_spinnaker_url, total_run_time,
-                    get_config_int("Machine", "max_machine_core_reduction"))
+                    )
 
         else:
             raise NotImplementedError("No machine generataion possible")

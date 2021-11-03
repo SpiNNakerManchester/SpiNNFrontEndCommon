@@ -41,7 +41,7 @@ from .graph_data_specification_writer import (
 from .graph_measurer import GraphMeasurer
 from .graph_provenance_gatherer import GraphProvenanceGatherer
 from .hbp_allocator import hbp_allocator
-from .hbp_max_machine_generator import HBPMaxMachineGenerator
+from .hbp_max_machine_generator import hbp_max_machine_generator
 from .host_bit_field_router_compressor import HostBasedBitFieldRouterCompressor
 from .host_execute_data_specification import HostExecuteDataSpecification
 from .insert_chip_power_monitors_to_graphs import (
@@ -103,7 +103,7 @@ __all__ = [
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
     "hbp_allocator", "HostBasedBitFieldRouterCompressor",
-    "HBPMaxMachineGenerator",
+    "hbp_max_machine_generator",
     "HostExecuteDataSpecification",
     "InsertChipPowerMonitorsToGraphs",
     "InsertEdgesToExtraMonitorFunctionality",
