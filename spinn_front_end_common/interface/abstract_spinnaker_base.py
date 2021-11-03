@@ -90,7 +90,7 @@ from spinn_front_end_common.interface.interface_functions import (
     DSGRegionReloader, EdgeToNKeysMapper, EnergyProvenanceReporter,
     GraphBinaryGatherer, GraphDataSpecificationWriter,
     GraphMeasurer, GraphProvenanceGatherer, HostBasedBitFieldRouterCompressor,
-    HostExecuteDataSpecification, HBPAllocator, HBPMaxMachineGenerator,
+    HostExecuteDataSpecification, hbp_allocator, HBPMaxMachineGenerator,
     InsertChipPowerMonitorsToGraphs,
     InsertEdgesToExtraMonitorFunctionality, InsertEdgesToLivePacketGatherers,
     InsertExtraMonitorVerticesToGraphs, InsertLivePacketGatherersToGraphs,
@@ -1279,8 +1279,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     self._n_boards_required)
         else:
             with FecTimer(category, "HBPAllocator"):
-                allocator = HBPAllocator()
-                return allocator(
+                return hbp_allocator(
                     self._remote_spinnaker_url, total_run_time,
                     n_chips_required, self._n_boards_required)
 
