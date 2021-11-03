@@ -2304,7 +2304,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             self._multicast_routes_loaded = False
             compressor = HostBasedBitFieldRouterCompressor()
-            compressed, _ = compressor(
+            compressed = compressor(
                 self._router_tables, self._machine, self._placements,
                 self._txrx, self._machine_graph, self._routing_infos)
             return compressed
@@ -2326,7 +2326,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             compressor = MachineBitFieldOrderedCoveringCompressor()
-            self._compressor_provenance = compressor(
+            compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
@@ -2350,7 +2350,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             self._multicast_routes_loaded = True
             compressor = MachineBitFieldPairRouterCompressor()
-            self._compressor_provenance = compressor(
+            compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
@@ -3075,7 +3075,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._has_ran or graph_changed:
             self._execute_create_database_interface(run_time)
         self._execute_create_notifiaction_protocol()
-        if graph_changed:
+        if self._has_ran and not graph_changed:
             self._execute_dsg_region_reloader()
         self._execute_runtime_update(n_sync_steps)
         self._execute_runner(n_sync_steps, run_time)
