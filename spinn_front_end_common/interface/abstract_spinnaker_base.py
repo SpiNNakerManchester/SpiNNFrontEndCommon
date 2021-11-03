@@ -3078,7 +3078,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._has_ran or graph_changed:
             self._execute_create_database_interface(run_time)
         self._execute_create_notifiaction_protocol()
-        if graph_changed:
+        if self._has_ran and not graph_changed:
             self._execute_dsg_region_reloader()
         self._execute_runtime_update(n_sync_steps)
         self._execute_runner(n_sync_steps, run_time)
