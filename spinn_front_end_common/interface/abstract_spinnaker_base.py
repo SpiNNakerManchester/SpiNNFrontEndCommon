@@ -103,7 +103,7 @@ from spinn_front_end_common.interface.interface_functions import (
     ProfileDataGatherer, ProcessPartitionConstraints,
     ReadRoutingTablesFromMachine,
     RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader,
-    SDRAMOutgoingPartitionAllocator, SpallocAllocator,
+    SDRAMOutgoingPartitionAllocator, spalloc_allocator,
     SpallocMaxMachineGenerator,
     SystemMulticastRoutingGenerator,
     TagsLoader, virtual_machine_generator)
@@ -1274,8 +1274,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return None
         if self._spalloc_server is not None:
             with FecTimer(category, "SpallocAllocator"):
-                allocator = SpallocAllocator()
-                return allocator(
+                return spalloc_allocator(
                     self._spalloc_server, n_chips_required,
                     self._n_boards_required)
         else:
