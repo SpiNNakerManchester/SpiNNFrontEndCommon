@@ -96,7 +96,7 @@ from spinn_front_end_common.interface.interface_functions import (
     InsertExtraMonitorVerticesToGraphs, insert_live_packet_gatherers_to_graphs,
     LoadExecutableImages, LoadFixedRoutes,
     LocalTDMABuilder, LocateExecutableStartType, machine_generator,
-    PreAllocateResourcesForChipPowerMonitor,
+    preallocate_resources_for_chip_power_monitor,
     preallocate_resources_for_live_packet_gatherers,
     PreAllocateResourcesForExtraMonitorSupport,
     PlacementsProvenanceGatherer,
@@ -1515,9 +1515,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(MAPPING, "Preallocate for chip power monitor") as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
-            pre_allocator = PreAllocateResourcesForChipPowerMonitor()
-            # No need to get the output as same object as input
-            pre_allocator(
+            preallocate_resources_for_chip_power_monitor(
                 self._machine,
                 get_config_int("EnergyMonitor", "sampling_frequency"),
                 pre_allocated_resources)

@@ -66,7 +66,7 @@ from .placements_provenance_gatherer import PlacementsProvenanceGatherer
 from .pre_allocate_for_bit_field_router_compressor import (
     PreAllocateForBitFieldRouterCompressor)
 from .pre_allocate_resources_for_chip_power_monitor import (
-    PreAllocateResourcesForChipPowerMonitor)
+    preallocate_resources_for_chip_power_monitor)
 from .pre_allocate_resources_for_live_packet_gatherers import (
     preallocate_resources_for_live_packet_gatherers)
 from .preallocate_resources_for_extra_monitor_support import (
@@ -114,7 +114,7 @@ __all__ = [
     "LocateExecutableStartType", "MachineBitFieldRouterCompressor",
     "machine_generator", "PlacementsProvenanceGatherer",
     "PreAllocateForBitFieldRouterCompressor",
-    "PreAllocateResourcesForChipPowerMonitor",
+    "preallocate_resources_for_chip_power_monitor",
     "PreAllocateResourcesForExtraMonitorSupport",
     "preallocate_resources_for_live_packet_gatherers",
     "ProcessPartitionConstraints", "ProfileDataGatherer",
