@@ -45,7 +45,7 @@ from .hbp_max_machine_generator import hbp_max_machine_generator
 from .host_bit_field_router_compressor import HostBasedBitFieldRouterCompressor
 from .host_execute_data_specification import HostExecuteDataSpecification
 from .insert_chip_power_monitors_to_graphs import (
-    InsertChipPowerMonitorsToGraphs)
+    insert_chip_power_monitors_to_graphs)
 from .insert_edges_to_extra_monitor_functionality import (
     InsertEdgesToExtraMonitorFunctionality)
 from .insert_edges_to_live_packet_gatherers import (
@@ -105,7 +105,7 @@ __all__ = [
     "hbp_allocator", "HostBasedBitFieldRouterCompressor",
     "hbp_max_machine_generator",
     "HostExecuteDataSpecification",
-    "InsertChipPowerMonitorsToGraphs",
+    "insert_chip_power_monitors_to_graphs",
     "InsertEdgesToExtraMonitorFunctionality",
     "InsertEdgesToLivePacketGatherers",
     "InsertExtraMonitorVerticesToGraphs",

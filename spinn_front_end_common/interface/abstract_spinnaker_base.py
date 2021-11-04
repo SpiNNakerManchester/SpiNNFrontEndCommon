@@ -91,7 +91,7 @@ from spinn_front_end_common.interface.interface_functions import (
     GraphBinaryGatherer, GraphDataSpecificationWriter,
     graph_measurer, GraphProvenanceGatherer, HostBasedBitFieldRouterCompressor,
     HostExecuteDataSpecification, hbp_allocator, hbp_max_machine_generator,
-    InsertChipPowerMonitorsToGraphs,
+    insert_chip_power_monitors_to_graphs,
     InsertEdgesToExtraMonitorFunctionality, InsertEdgesToLivePacketGatherers,
     InsertExtraMonitorVerticesToGraphs, insert_live_packet_gatherers_to_graphs,
     LoadExecutableImages, LoadFixedRoutes,
@@ -1580,15 +1580,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(MAPPING, "Insert chip power monitors") as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
-            inserter = InsertChipPowerMonitorsToGraphs()
-            inserter(
+            insert_chip_power_monitors_to_graphs(
                 self._machine, self._machine_graph,
                 get_config_int("EnergyMonitor", "sampling_frequency"),
                 self._application_graph)
 
     def _execute_insert_extra_monitor_vertices(self):
         """
-        Run, time and log the InsertChipPowerMonitorsToGraphs if required
+        Run, time and log the InsertExtraMonitorVerticesToGraphs if required
 
         """
         with FecTimer(MAPPING, "Insert extra monitor vertices") as timer:
