@@ -68,7 +68,7 @@ from .pre_allocate_for_bit_field_router_compressor import (
 from .pre_allocate_resources_for_chip_power_monitor import (
     PreAllocateResourcesForChipPowerMonitor)
 from .pre_allocate_resources_for_live_packet_gatherers import (
-    PreAllocateResourcesForLivePacketGatherers)
+    preallocate_resources_for_live_packet_gatherers)
 from .preallocate_resources_for_extra_monitor_support import (
     PreAllocateResourcesForExtraMonitorSupport)
 from .process_partition_constraints import ProcessPartitionConstraints
@@ -116,7 +116,7 @@ __all__ = [
     "PreAllocateForBitFieldRouterCompressor",
     "PreAllocateResourcesForChipPowerMonitor",
     "PreAllocateResourcesForExtraMonitorSupport",
-    "PreAllocateResourcesForLivePacketGatherers",
+    "preallocate_resources_for_live_packet_gatherers",
     "ProcessPartitionConstraints", "ProfileDataGatherer",
     "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SDRAMOutgoingPartitionAllocator",

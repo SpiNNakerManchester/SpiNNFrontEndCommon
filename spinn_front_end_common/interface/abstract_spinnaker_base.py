@@ -97,7 +97,7 @@ from spinn_front_end_common.interface.interface_functions import (
     LoadExecutableImages, LoadFixedRoutes,
     LocalTDMABuilder, LocateExecutableStartType, machine_generator,
     PreAllocateResourcesForChipPowerMonitor,
-    PreAllocateResourcesForLivePacketGatherers,
+    preallocate_resources_for_live_packet_gatherers,
     PreAllocateResourcesForExtraMonitorSupport,
     PlacementsProvenanceGatherer,
     ProfileDataGatherer, ProcessPartitionConstraints,
@@ -1498,10 +1498,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_empty(self._live_packet_recorder_params,
                                    "live_packet_recorder_params"):
                 return
-            pre_allocator = PreAllocateResourcesForLivePacketGatherers()
-            # No need to get the output as same object as input
-            pre_allocator(self._live_packet_recorder_params,
-                          self._machine, pre_allocated_resources)
+            preallocate_resources_for_live_packet_gatherers(
+                self._live_packet_recorder_params,
+                self._machine, pre_allocated_resources)
 
     def _execute_preallocate_for_chip_power_monitor(
             self, pre_allocated_resources):
