@@ -144,7 +144,7 @@ def hbp_allocator(hbp_server_url, total_run_time, n_chips=None, n_boards=None):
         hbp_job_controller)
 
 
-def _get_machine(self, url, n_chips, n_boards, total_run_time):
+def _get_machine(url, n_chips, n_boards, total_run_time):
     """
     :param str url:
     :param int n_chips:
