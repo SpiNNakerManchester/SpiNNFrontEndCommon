@@ -131,7 +131,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.utilities.report_functions import (
     BitFieldCompressorReport, BoardChipReport, EnergyReport,
     FixedRouteFromMachineReport, MemoryMapOnHostReport,
-    MemoryMapOnHostChipReport, NetworkSpecification,
+    MemoryMapOnHostChipReport, network_specification,
     RouterCollisionPotentialReport,
     RoutingTableFromMachineReport, TagsFromMachineReport,
     write_json_machine, WriteJsonPartitionNKeysMap, WriteJsonPlacements,
@@ -1422,8 +1422,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 graph = self._machine_graph
             else:
                 graph = self._application_graph
-            report = NetworkSpecification()
-            report(graph)
+            network_specification(graph)
 
     def _execute_chip_id_allocator(self):
         """
