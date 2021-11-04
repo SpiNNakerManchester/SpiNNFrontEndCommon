@@ -70,7 +70,7 @@ from .pre_allocate_resources_for_chip_power_monitor import (
 from .pre_allocate_resources_for_live_packet_gatherers import (
     preallocate_resources_for_live_packet_gatherers)
 from .preallocate_resources_for_extra_monitor_support import (
-    PreAllocateResourcesForExtraMonitorSupport)
+    pre_allocate_resources_for_extra_monitor_support)
 from .process_partition_constraints import ProcessPartitionConstraints
 from .profile_data_gatherer import ProfileDataGatherer
 from .router_provenance_gatherer import RouterProvenanceGatherer
@@ -115,7 +115,7 @@ __all__ = [
     "machine_generator", "PlacementsProvenanceGatherer",
     "PreAllocateForBitFieldRouterCompressor",
     "preallocate_resources_for_chip_power_monitor",
-    "PreAllocateResourcesForExtraMonitorSupport",
+    "pre_allocate_resources_for_extra_monitor_support",
     "preallocate_resources_for_live_packet_gatherers",
     "ProcessPartitionConstraints", "ProfileDataGatherer",
     "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "RoutingSetup",

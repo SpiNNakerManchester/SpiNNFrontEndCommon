@@ -98,7 +98,7 @@ from spinn_front_end_common.interface.interface_functions import (
     LocalTDMABuilder, LocateExecutableStartType, machine_generator,
     preallocate_resources_for_chip_power_monitor,
     preallocate_resources_for_live_packet_gatherers,
-    PreAllocateResourcesForExtraMonitorSupport,
+    pre_allocate_resources_for_extra_monitor_support,
     PlacementsProvenanceGatherer,
     ProfileDataGatherer, ProcessPartitionConstraints,
     ReadRoutingTablesFromMachine,
@@ -1534,10 +1534,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Machine", "enable_advanced_monitor_support",
                     "enable_reinjection"):
                 return
-            pre_allocator = PreAllocateResourcesForExtraMonitorSupport()
-            # TODO n_cores_to_allocate param
-            # No need to get the output as same object as input
-            pre_allocator(self._machine, pre_allocated_resources)
+            pre_allocate_resources_for_extra_monitor_support(
+                pre_allocated_resources)
 
     # Overriden by spynaker to choose a different algorithm
     def _execute_splitter_partitioner(self, pre_allocated_resources):
