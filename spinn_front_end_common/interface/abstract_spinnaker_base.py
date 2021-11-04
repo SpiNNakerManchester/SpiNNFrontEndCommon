@@ -93,7 +93,8 @@ from spinn_front_end_common.interface.interface_functions import (
     HostExecuteDataSpecification, hbp_allocator, hbp_max_machine_generator,
     insert_chip_power_monitors_to_graphs,
     InsertEdgesToExtraMonitorFunctionality, InsertEdgesToLivePacketGatherers,
-    InsertExtraMonitorVerticesToGraphs, insert_live_packet_gatherers_to_graphs,
+    insert_extra_monitor_vertices_to_graphs,
+    insert_live_packet_gatherers_to_graphs,
     LoadExecutableImages, LoadFixedRoutes,
     LocalTDMABuilder, LocateExecutableStartType, machine_generator,
     preallocate_resources_for_chip_power_monitor,
@@ -1595,7 +1596,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Machine", "enable_advanced_monitor_support",
                     "enable_reinjection"):
                 return
-            inserter = InsertExtraMonitorVerticesToGraphs()
             # inserter checks for None app graph not an empty one
             if self._application_graph.n_vertices > 0:
                 app_graph = self._application_graph
@@ -1603,8 +1603,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 app_graph = None
         (self._vertex_to_ethernet_connected_chip_mapping,
          self._extra_monitor_vertices,
-         self._extra_monitor_to_chip_mapping) = inserter(
-            self._machine, self._machine_graph, app_graph)
+         self._extra_monitor_to_chip_mapping) = \
+            insert_extra_monitor_vertices_to_graphs(
+                self._machine, self._machine_graph, app_graph)
 
     def _execute_partitioner_report(self):
         """

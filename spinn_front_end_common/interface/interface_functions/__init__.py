@@ -51,7 +51,7 @@ from .insert_edges_to_extra_monitor_functionality import (
 from .insert_edges_to_live_packet_gatherers import (
     InsertEdgesToLivePacketGatherers)
 from .insert_extra_monitor_vertices_to_graphs import (
-    InsertExtraMonitorVerticesToGraphs)
+    insert_extra_monitor_vertices_to_graphs)
 from .insert_live_packet_gatherers_to_graphs import (
     insert_live_packet_gatherers_to_graphs)
 from .load_executable_images import LoadExecutableImages
@@ -108,7 +108,7 @@ __all__ = [
     "insert_chip_power_monitors_to_graphs",
     "InsertEdgesToExtraMonitorFunctionality",
     "InsertEdgesToLivePacketGatherers",
-    "InsertExtraMonitorVerticesToGraphs",
+    "insert_extra_monitor_vertices_to_graphs",
     "insert_live_packet_gatherers_to_graphs", "interface_xml",
     "LoadExecutableImages", "LoadFixedRoutes", "LocalTDMABuilder",
     "LocateExecutableStartType", "MachineBitFieldRouterCompressor",
