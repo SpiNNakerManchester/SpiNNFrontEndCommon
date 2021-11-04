@@ -1558,7 +1558,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type pre_allocated_resources:
             ~pacman.model.resources.PreAllocatedResourceContainer
         """
-        if self._application_graph.n_vertices:
+        if not self._application_graph.n_vertices:
             return
         with FecTimer(MAPPING, "Splitter partitioner"):
             partitioner = SplitterPartitioner()
