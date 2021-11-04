@@ -20,7 +20,7 @@ from spinn_front_end_common.utility_models import (
     LivePacketGather, LivePacketGatherMachineVertex)
 
 
-class InsertLivePacketGatherersToGraphs(object):
+class _InsertLivePacketGatherersToGraphs(object):
     """ Adds LPGs as required into a given graph.
     """
 
@@ -113,3 +113,31 @@ class InsertLivePacketGatherersToGraphs(object):
             params, constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
         self._machine_graph.add_vertex(vtx)
         return vtx
+
+
+def insert_live_packet_gatherers_to_graphs(
+    live_packet_gatherer_parameters, machine, machine_graph,
+    application_graph=None):
+    """ Add LPG vertices on Ethernet connected chips as required.
+
+    :param live_packet_gatherer_parameters:
+        the Live Packet Gatherer parameters requested by the script
+    :type live_packet_gatherer_parameters:
+        dict(LivePacketGatherParameters,
+        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
+    :param ~spinn_machine.Machine machine:
+        the SpiNNaker machine as discovered
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph
+    :param application_graph: the application graph
+    :type application_graph:
+        ~pacman.model.graphs.application.ApplicationGraph
+    :return: mapping between LPG parameters and LPG application and
+        machine vertices
+    :rtype: dict(LivePacketGatherParameters,
+        tuple(LivePacketGather or None,
+        dict(tuple(int,int),LivePacketGatherMachineVertex)))
+    """
+    inserter = _InsertLivePacketGatherersToGraphs()
+    return inserter(live_packet_gatherer_parameters, machine, machine_graph,
+                    application_graph)

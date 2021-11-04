@@ -93,7 +93,7 @@ from spinn_front_end_common.interface.interface_functions import (
     HostExecuteDataSpecification, hbp_allocator, hbp_max_machine_generator,
     InsertChipPowerMonitorsToGraphs,
     InsertEdgesToExtraMonitorFunctionality, InsertEdgesToLivePacketGatherers,
-    InsertExtraMonitorVerticesToGraphs, InsertLivePacketGatherersToGraphs,
+    InsertExtraMonitorVerticesToGraphs, insert_live_packet_gatherers_to_graphs,
     LoadExecutableImages, LoadFixedRoutes,
     LocalTDMABuilder, LocateExecutableStartType, machine_generator,
     PreAllocateResourcesForChipPowerMonitor,
@@ -1446,10 +1446,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_empty(self._live_packet_recorder_params,
                                    "live_packet_recorder_params"):
                 return
-            inserter = InsertLivePacketGatherersToGraphs()
-            self._live_packet_recorder_parameters_mapping = inserter(
-                self._live_packet_recorder_params, self._machine,
-                self._machine_graph, self._application_graph)
+            self._live_packet_recorder_parameters_mapping = \
+                insert_live_packet_gatherers_to_graphs(
+                    self._live_packet_recorder_params, self._machine,
+                    self._machine_graph, self._application_graph)
 
     def _report_board_chip(self):
         """
