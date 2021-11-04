@@ -58,7 +58,7 @@ from pacman.model.resources import (
 from pacman.operations.chip_id_allocator_algorithms import (
     malloc_based_chip_id_allocator)
 from pacman.operations.fixed_route_router import FixedRouteRouter
-from pacman.operations.partition_algorithms import SplitterPartitioner
+from pacman.operations.partition_algorithms import splitter_partitioner
 from pacman.operations.placer_algorithms import (
     ConnectiveBasedPlacer, OneToOnePlacer, RadialPlacer, SpreaderPlacer)
 from pacman.operations.router_algorithms import (
@@ -1550,8 +1550,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._application_graph.n_vertices:
             return
         with FecTimer(MAPPING, "Splitter partitioner"):
-            partitioner = SplitterPartitioner()
-            self._machine_graph, self._n_chips_needed = partitioner(
+            self._machine_graph, self._n_chips_needed = splitter_partitioner(
                 self._application_graph, self._machine, self._plan_n_timesteps,
                 pre_allocated_resources)
 
