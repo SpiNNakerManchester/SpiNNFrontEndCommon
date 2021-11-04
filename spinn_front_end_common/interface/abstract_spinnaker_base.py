@@ -56,7 +56,7 @@ from pacman.model.placements import Placements
 from pacman.model.resources import (
     ConstantSDRAM, PreAllocatedResourceContainer)
 from pacman.operations.chip_id_allocator_algorithms import (
-    MallocBasedChipIdAllocator)
+    malloc_based_chip_id_allocator)
 from pacman.operations.fixed_route_router import FixedRouteRouter
 from pacman.operations.partition_algorithms import SplitterPartitioner
 from pacman.operations.placer_algorithms import (
@@ -1430,12 +1430,11 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         with FecTimer(MAPPING, "Chip ID allocator"):
-            allocator = MallocBasedChipIdAllocator()
             if self._application_graph is None:
                 graph = self._machine_graph
             else:
                 graph = self._application_graph
-            allocator(self._machine, graph)
+            malloc_based_chip_id_allocator(self._machine, graph)
             # return ignored as changes done inside original machine object
 
     def _execute_insert_live_packet_gatherers_to_graphs(self):
