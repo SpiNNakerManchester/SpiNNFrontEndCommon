@@ -1516,8 +1516,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
             preallocate_resources_for_chip_power_monitor(
-                self._machine,
-                get_config_int("EnergyMonitor", "sampling_frequency"),
                 pre_allocated_resources)
 
     def _execute_preallocate_for_extra_monitor_support(

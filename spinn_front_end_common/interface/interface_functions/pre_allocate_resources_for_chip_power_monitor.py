@@ -13,12 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinn_utilities.config_holder import get_config_int
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
 
 
 def preallocate_resources_for_chip_power_monitor(
-    sampling_frequency, pre_allocated_resources):
+    pre_allocated_resources):
     """  Adds chip power monitor resources as required
 
     :param int sampling_frequency: the frequency of sampling
@@ -30,6 +31,8 @@ def preallocate_resources_for_chip_power_monitor(
     """
     # pylint: disable=too-many-arguments
 
+    sampling_frequency,  = get_config_int(
+        "EnergyMonitor", "sampling_frequency"),
     # store how much SDRAM the power monitor uses per core
     resources = ChipPowerMonitorMachineVertex.get_resources(
         sampling_frequency=sampling_frequency)
