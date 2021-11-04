@@ -89,7 +89,7 @@ from spinn_front_end_common.interface.interface_functions import (
     CreateNotificationProtocol, DatabaseInterface,
     DSGRegionReloader, EdgeToNKeysMapper, EnergyProvenanceReporter,
     GraphBinaryGatherer, GraphDataSpecificationWriter,
-    GraphMeasurer, GraphProvenanceGatherer, HostBasedBitFieldRouterCompressor,
+    graph_measurer, GraphProvenanceGatherer, HostBasedBitFieldRouterCompressor,
     HostExecuteDataSpecification, hbp_allocator, hbp_max_machine_generator,
     InsertChipPowerMonitorsToGraphs,
     InsertEdgesToExtraMonitorFunctionality, InsertEdgesToLivePacketGatherers,
@@ -1569,8 +1569,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if self._machine:
                 return
         with FecTimer(MAPPING, "Graph measurer"):
-            measurer = GraphMeasurer()
-            self._n_chips_needed = measurer(
+            self._n_chips_needed = graph_measurer(
                 self._machine_graph, self._machine, self._plan_n_timesteps)
 
     def _execute_insert_chip_power_monitors(self):
