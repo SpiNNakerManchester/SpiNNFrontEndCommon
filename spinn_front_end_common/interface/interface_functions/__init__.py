@@ -32,7 +32,7 @@ from .database_interface import DatabaseInterface
 from .system_multicast_routing_generator import (
     SystemMulticastRoutingGenerator)
 from .dsg_region_reloader import DSGRegionReloader
-from .edge_to_n_keys_mapper import EdgeToNKeysMapper
+from .edge_to_n_keys_mapper import edge_to_n_keys_mapper
 from .energy_provenance_reporter import EnergyProvenanceReporter
 from .find_application_chips_used import FindApplicationChipsUsed
 from .graph_binary_gatherer import GraphBinaryGatherer
@@ -97,7 +97,7 @@ __all__ = [
     "ChipRuntimeUpdater", "CreateNotificationProtocol",
     "ComputeEnergyUsed", "DatabaseInterface",
     "SystemMulticastRoutingGenerator",
-    "DSGRegionReloader", "EdgeToNKeysMapper",
+    "DSGRegionReloader", "edge_to_n_keys_mapper",
     "EnergyProvenanceReporter",
     "FindApplicationChipsUsed",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",

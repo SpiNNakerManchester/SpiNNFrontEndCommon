@@ -87,7 +87,7 @@ from spinn_front_end_common.interface.interface_functions import (
     BufferManagerCreator, ChipIOBufClearer, ChipIOBufExtractor,
     ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
     CreateNotificationProtocol, DatabaseInterface,
-    DSGRegionReloader, EdgeToNKeysMapper, EnergyProvenanceReporter,
+    DSGRegionReloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
     GraphBinaryGatherer, GraphDataSpecificationWriter,
     graph_measurer, GraphProvenanceGatherer, HostBasedBitFieldRouterCompressor,
     HostExecuteDataSpecification, hbp_allocator, hbp_max_machine_generator,
@@ -1625,8 +1625,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the "machine_partition_n_keys_map" data
         """
         with FecTimer(MAPPING, "Edge to n keys mapper"):
-            mapper = EdgeToNKeysMapper()
-            self._machine_partition_n_keys_map = mapper(self._machine_graph)
+            self._machine_partition_n_keys_map = edge_to_n_keys_mapper(
+                self._machine_graph)
 
     def _execute_local_tdma_builder(self):
         """
