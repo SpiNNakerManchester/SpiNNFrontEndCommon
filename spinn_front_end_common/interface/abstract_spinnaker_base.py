@@ -129,7 +129,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import (
-    BitFieldCompressorReport, BoardChipReport, EnergyReport,
+    BitFieldCompressorReport, board_chip_report, EnergyReport,
     FixedRouteFromMachineReport, MemoryMapOnHostReport,
     MemoryMapOnHostChipReport, network_specification,
     RouterCollisionPotentialReport,
@@ -1460,8 +1460,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_board_chip_report"):
                 return
-            report = BoardChipReport()
-            report(self._machine)
+            board_chip_report(self._machine)
 
     def _execute_splitter_reset(self):
         """

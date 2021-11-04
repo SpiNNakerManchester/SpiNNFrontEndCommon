@@ -21,7 +21,7 @@ PACMAN Executor.
 import os
 from .bit_field_compressor_report import BitFieldCompressorReport
 from .bit_field_summary import BitFieldSummary
-from .board_chip_report import BoardChipReport
+from .board_chip_report import board_chip_report
 from .energy_report import EnergyReport
 from .fixed_route_from_machine_report import FixedRouteFromMachineReport
 from .memory_map_on_host_chip_report import MemoryMapOnHostChipReport
@@ -44,7 +44,7 @@ def report_xml():
 __all__ = [
     "BitFieldCompressorReport",
     "BitFieldSummary",
-    "BoardChipReport",
+    "board_chip_report",
     "EnergyReport",
     "FixedRouteFromMachineReport",
     "network_specification",
