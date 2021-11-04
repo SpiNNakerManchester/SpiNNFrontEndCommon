@@ -115,7 +115,7 @@ from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression, pair_compression)
 from spinn_front_end_common.interface.splitter_selectors import (
-    SplitterSelector)
+    splitter_selector)
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.provenance import (
     APPLICATION_RUNNER, DATA_GENERATION, GET_MACHINE, LOADING,
@@ -1470,14 +1470,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(MAPPING, "Splitter reset"):
             splitter_reset(self._application_graph)
 
-    # Overriden by spynaker to choose a different algorithm
+    # Overriden by spynaker to choose an extended algorithm
     def _execute_splitter_selector(self):
         """
         Runs, times and logs the SplitterSelector
         """
         with FecTimer(MAPPING, "Splitter selector"):
-            selector = SplitterSelector()
-            selector(self._application_graph)
+            splitter_selector(self._application_graph)
 
     def _execute_delay_support_adder(self):
         """
