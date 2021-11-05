@@ -25,14 +25,14 @@ from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractProvidesOutgoingPartitionConstraints,
     AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
-    ProvidesProvenanceDataFromMachineImpl)
+    ProvidesProvenanceDataFromMachineImpl, ProvenanceWriter)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType, ProvenanceDataItem)
+    ExecutableType)
 
 
 class CommandSenderMachineVertex(
@@ -364,7 +364,8 @@ class CommandSenderMachineVertex(
 
     @overrides(ProvidesProvenanceDataFromMachineImpl.
                parse_extra_provenance_items)
-    def parse_extra_provenance_items(self, label, names, provenance_data):
+    def parse_extra_provenance_items(self, label, x, y, p, provenance_data):
         # pylint: disable=unused-argument
         n_commands_sent, = provenance_data
-        yield ProvenanceDataItem(names + ["Sent_Commands"], n_commands_sent)
+        with ProvenanceWriter() as db:
+            db.insert_core(x, y, p, "Sent_Commands", n_commands_sent)

@@ -34,7 +34,6 @@ from .system_multicast_routing_generator import (
 from .dsg_region_reloader import DSGRegionReloader
 from .edge_to_n_keys_mapper import EdgeToNKeysMapper
 from .energy_provenance_reporter import EnergyProvenanceReporter
-from .finalise_timing_data import FinaliseTimingData
 from .find_application_chips_used import FindApplicationChipsUsed
 from .graph_binary_gatherer import GraphBinaryGatherer
 from .graph_data_specification_writer import (
@@ -74,9 +73,6 @@ from .preallocate_resources_for_extra_monitor_support import (
     PreAllocateResourcesForExtraMonitorSupport)
 from .process_partition_constraints import ProcessPartitionConstraints
 from .profile_data_gatherer import ProfileDataGatherer
-from .provenance_json_writer import ProvenanceJSONWriter
-from .provenance_sql_writer import ProvenanceSQLWriter
-from .provenance_xml_writer import ProvenanceXMLWriter
 from .router_provenance_gatherer import RouterProvenanceGatherer
 from .routing_setup import RoutingSetup
 from .routing_table_loader import RoutingTableLoader
@@ -102,7 +98,7 @@ __all__ = [
     "ComputeEnergyUsed", "DatabaseInterface",
     "SystemMulticastRoutingGenerator",
     "DSGRegionReloader", "EdgeToNKeysMapper",
-    "EnergyProvenanceReporter", "FinaliseTimingData",
+    "EnergyProvenanceReporter",
     "FindApplicationChipsUsed",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
@@ -122,7 +118,6 @@ __all__ = [
     "PreAllocateResourcesForExtraMonitorSupport",
     "PreAllocateResourcesForLivePacketGatherers",
     "ProcessPartitionConstraints", "ProfileDataGatherer",
-    "ProvenanceJSONWriter", "ProvenanceSQLWriter", "ProvenanceXMLWriter",
     "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SDRAMOutgoingPartitionAllocator",
     "SpallocAllocator", "SpallocMaxMachineGenerator", "TagsLoader",
