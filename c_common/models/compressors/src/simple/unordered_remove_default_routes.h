@@ -44,7 +44,8 @@ static inline bool _opposite_links(entry_t *entry) {
 }
 
 //! \brief Remove defaultable routes from a routing table if that helps.
-//! \param[in,out] table: The table to remove the routes from.
+//! \param[in] target_length: What size of table to try to create
+//! \return Whether we succeeded in making a table that fits
 static inline bool remove_default_routes_minimise(int target_length) {
     if (routing_table_get_n_entries() <= target_length) {
         log_info("No Minimise needed as size %u, is below target of %u",
