@@ -485,9 +485,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # pacman objects
         self._original_application_graph = ApplicationGraph(label=graph_label)
-        self._original_machine_graph = MachineGraph(
-            label=graph_label,
-            application_graph=self._original_application_graph)
 
         self._machine_allocation_controller = None
         self._txrx = None
@@ -3269,13 +3266,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: ~pacman.model.graphs.machine.MachineGraph
         """
         return MachineGraphView(self._machine_graph)
-
-    @property
-    def original_machine_graph(self):
-        """
-        :rtype: ~pacman.model.graphs.machine.MachineGraph
-        """
-        return self._original_machine_graph
 
     @property
     def original_application_graph(self):
