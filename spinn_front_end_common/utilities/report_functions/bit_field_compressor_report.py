@@ -18,17 +18,16 @@ import os
 import sys
 from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 from .bit_field_summary import BitFieldSummary
-from spinn_front_end_common.utilities.utility_objs import (
-    ProvenanceDataItem)
+from spinn_front_end_common.interface.provenance import ProvenanceReader
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _FILE_NAME = "bit_field_compressed_summary.rpt"
 # provenance data item names
-PROV_TOP_NAME = "bit_field_router_provenance"
-PROV_CHIP_NAME = "router_at_chip_{}_{}"
+
 MERGED_NAME = "bit_fields_merged"
 NOT_APPLICABLE = "N/A"
 
@@ -41,46 +40,35 @@ def generate_provenance_item(x, y, bit_fields_merged):
     :param bit_fields_merged:
     :return:
     """
-    # prov names
-    names = list()
-    names.append(PROV_TOP_NAME)
-    names.append(PROV_CHIP_NAME.format(x, y))
-    names.append(MERGED_NAME)
-    return ProvenanceDataItem(names, str(bit_fields_merged))
+    with ProvenanceWriter() as db:
+        db.insert_router(x, y, MERGED_NAME, bit_fields_merged)
 
 
 class BitFieldCompressorReport(object):
     """ Generates a report that shows the impact of the compression of \
         bitfields into the routing table.
     """
-    def __call__(
-            self, machine_graph, placements, provenance_items=None):
+    def __call__(self, machine_graph, placements):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph
         :param ~pacman.model.placements.Placements placements: the placements
-        :param list(ProvenanceDataItem) provenance_items: prov items
-        :type provenance_items: list(ProvenanceDataItem) or None
         :return: a summary, or `None` if the report file can't be written
         :rtype: BitFieldSummary
         """
         file_name = os.path.join(report_default_directory(), _FILE_NAME)
-        if provenance_items is None:
-            provenance_items = []
         try:
             with open(file_name, "w") as f:
-                return self._write_report(
-                    f, provenance_items, machine_graph, placements)
+                return self._write_report(f, machine_graph, placements)
         except IOError:
             logger.exception("Generate_placement_reports: Can't open file"
                              " {} for writing.", _FILE_NAME)
             return None
 
     @staticmethod
-    def _merged_component(provenance_items, to_merge_per_chip, writer):
+    def _merged_component(to_merge_per_chip, writer):
         """ Report how many bitfields were merged into the router.
 
-        :param list(ProvenanceDataItem) provenance_items: prov items
         :param dict([int, int], int: to_merge_per_chip: number of bitfields
             that could be merged per chip
         :param ~io.FileIO writer: file writer.
@@ -99,27 +87,24 @@ class BitFieldCompressorReport(object):
         to_merge_chips = set(to_merge_per_chip.keys())
 
         found = False
-        for prov_item in provenance_items:
-            if prov_item.names[0] == PROV_TOP_NAME:
-                bits = prov_item.names[1].split("_")
-                x = int(bits[3])
-                y = int(bits[4])
-                if (x, y) not in to_merge_per_chip:
-                    continue
-                to_merge = to_merge_per_chip[x, y]
-                merged = int(prov_item.value)
-                found = True
-                writer.write(
-                    "Chip {}:{} has {} bitfields out of {} merged into it."
-                    " Which is {:.2%}\n".format(
-                        x, y, merged, to_merge, merged / to_merge))
-                total_bit_fields_merged += int(prov_item.value)
-                if merged > top_bit_field:
-                    top_bit_field = merged
-                if merged < min_bit_field:
-                    min_bit_field = merged
-                average_per_chip_merged += merged
-                n_chips += 1
+        for (x, y, merged) in ProvenanceReader().get_router_by_chip(
+                MERGED_NAME):
+            if (x, y) not in to_merge_per_chip:
+                continue
+            to_merge = to_merge_per_chip[x, y]
+            to_merge_chips.discard((x, y))
+            found = True
+            writer.write(
+                "Chip {}:{} has {} bitfields out of {} merged into it."
+                " Which is {:.2%}\n".format(
+                    x, y, merged, to_merge, merged / to_merge))
+            total_bit_fields_merged += int(merged)
+            if merged > top_bit_field:
+                top_bit_field = merged
+            if merged < min_bit_field:
+                min_bit_field = merged
+            average_per_chip_merged += merged
+            n_chips += 1
 
         if found:
             average_per_chip_merged = (
@@ -179,11 +164,10 @@ class BitFieldCompressorReport(object):
         return max_bit_fields_on_chip, min_bit_fields_on_chip, average
 
     def _write_report(
-            self, writer, provenance_items, machine_graph, placements):
+            self, writer, machine_graph, placements):
         """ writes the report
 
         :param ~io.FileIO writer: the file writer
-        :param list(ProvenanceDataItem) provenance_items: the prov items
         :param ~.MachineGraph machine_graph: the machine graph
         :param ~.Placements placements: the placements
         :return: a summary
@@ -196,7 +180,7 @@ class BitFieldCompressorReport(object):
             total_to_merge, to_merge_per_chip)
         (min_bit_field, top_bit_field, total_bit_fields_merged,
          average_per_chip_merged) = self._merged_component(
-            provenance_items, to_merge_per_chip, writer)
+            to_merge_per_chip, writer)
         writer.write(
             "\n\nBefore merge there where {} bitfields on {} Chips "
             "ranging from {} to {} bitfields per chip with an average of {}"

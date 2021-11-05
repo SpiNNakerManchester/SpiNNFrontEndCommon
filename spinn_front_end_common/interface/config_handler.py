@@ -23,7 +23,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
 from spinn_utilities.config_holder import (
     config_options, load_config, get_config_bool, get_config_int,
-    get_config_str, set_config)
+    get_config_str, get_config_str_list, set_config)
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -40,9 +40,9 @@ WARNING_LOGS_FILENAME = "warning_logs.txt"
 # options names are all lower without _ inside config
 _DEBUG_ENABLE_OPTS = frozenset([
     "reportsenabled",
-    "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
+    "clear_iobuf_during_run", "extract_iobuf"])
 _REPORT_DISABLE_OPTS = frozenset([
-    "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
+    "clear_iobuf_during_run", "extract_iobuf"])
 
 
 class ConfigHandler(object):
@@ -75,9 +75,6 @@ class ConfigHandler(object):
         #
         "_use_virtual_board",
 
-        # If not None, path to append pacman executor provenance info to
-        "_pacman_executor_provenance_path",
-
         # The machine timestep, in microseconds
         "__machine_time_step",
 
@@ -99,6 +96,7 @@ class ConfigHandler(object):
         # set up machine targeted data
         self._use_virtual_board = get_config_bool("Machine", "virtual_board")
         self._debug_configs()
+        self._deprication_handler()
 
         # Pass max_machine_cores to Machine so if effects everything!
         max_machine_core = get_config_int("Machine", "max_machine_core")
@@ -137,6 +135,7 @@ class ConfigHandler(object):
                             "As reportsEnabled == \"False\", [Reports] {} "
                             "has been set to False", option)
         if self._use_virtual_board:
+            # TODO handle in the execute methods
             if get_config_bool("Reports", "write_energy_report"):
                 set_config("Reports", "write_energy_report", "False")
                 logger.info("[Reports]write_energy_report has been set to "
@@ -145,6 +144,45 @@ class ConfigHandler(object):
                 set_config("Reports", "write_board_chip_report", "False")
                 logger.info("[Reports]write_board_chip_report has been set to"
                             " False as using virtual boards")
+
+    def _deprication_handler(self):
+        loading_algorithms = get_config_str("Mapping", "loading_algorithms")
+        compressor = get_config_str("Mapping", "compressor")
+        # For now allow identical loading_algorithms and compressor
+        if loading_algorithms and compressor not in loading_algorithms:
+            logger.error(
+                "cfg setting loading_algorithms is no longer used. "
+                "Ideally remove it from you cfg. "
+                "To use a none default compressor specify a compressor value")
+        self._deprication_list("application_to_machine_graph_algorithms")
+        self._deprication_list("machine_graph_to_machine_algorithms")
+        self._deprication_list("machine_graph_to_virtual_machine_algorithms")
+
+    def _deprication_list(self, option):
+        old_algorithms = get_config_str_list("Mapping", option)
+        if not old_algorithms:
+            return
+        expected = [
+            "BasicRoutingTableGenerator", "BasicTagAllocator",
+            "DelaySupportAdder", "EdgeToNKeysMapper",
+            "ProcessPartitionConstraints", "RouterCollisionPotentialReport",
+            "SplitterReset", "SpynnakerSplitterSelector",
+            "SpYNNakerSplitterPartitioner"]
+        expected.append(get_config_str("Mapping", "placer"))
+        expected.append(get_config_str("Mapping", "info_allocator"))
+        expected.append(get_config_str("Mapping", "router"))
+        expected.append(get_config_str("Mapping", "compressor"))
+        for algorithm in expected:
+            if algorithm in old_algorithms:
+                old_algorithms.remove(algorithm)
+        if old_algorithms:
+            logger.error(
+                f"cfg setting {option} is no longer used "
+                f"and contained an unexpected value(s): {old_algorithms}. "
+                "Ideally remove it from you cfg. "
+                "To use a none default placer, info_allocator, router or "
+                "compressor use that cfg value. "
+                "For any other algorithm please contact the software team.")
 
     def _adjust_config(self, runtime,):
         """ Adjust and checks config based on runtime
@@ -309,11 +347,6 @@ class ConfigHandler(object):
 
         # set up reports default folder
         self._set_up_report_specifics(n_calls_to_run)
-
-        if get_config_bool("Reports", "writePacmanExecutorProvenance"):
-            self._pacman_executor_provenance_path = os.path.join(
-                self._report_default_directory,
-                "pacman_executor_provenance.rpt")
 
         self._json_folder = os.path.join(
             self._report_default_directory, "json_files")

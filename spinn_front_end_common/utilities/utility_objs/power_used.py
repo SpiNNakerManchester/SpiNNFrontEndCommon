@@ -40,8 +40,7 @@ class PowerUsed(object):
         "__loading_energy",
         "__saving_energy",
         "__core_energy",
-        "__router_energy",
-        "_algorithm_timing_provenance"]
+        "__router_energy"]
 
     def __init__(self):
         self.__num_chips = 0
@@ -64,8 +63,6 @@ class PowerUsed(object):
         self.__saving_energy = 0.0
         self.__core_energy = defaultdict(float)
         self.__router_energy = defaultdict(float)
-        # Sneaky backdoor
-        self._algorithm_timing_provenance = list()
 
     @property
     def num_chips(self):
