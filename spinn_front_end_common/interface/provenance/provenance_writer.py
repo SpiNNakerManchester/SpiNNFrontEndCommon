@@ -93,21 +93,29 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?)
                 """, [description, the_value])
 
-    def insert_timing(self, category, algorithm, the_value):
+    def insert_timing(
+            self, category, algorithm, the_value, n_run, n_loop, skip_reason):
         """
         Inserts algorithms run times into the timer_provenance table
 
         :param str category: Category of the Algorithm
         :param str algorithm: Algorithm name
         :param int the_value: Runtime
+        :param int n_run: The end user run number
+        :param n_loop: The run loop within the ned user run
+        :type n_loop: int or None
+        :param skip_reason: The reason the algorthm was skipped or None if
+            it was not skipped
+        :tpye skip_reason: str or None
         """
         with self.transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO timer_provenance(
-                    category, algorithm, the_value)
-                VALUES(?, ?, ?)
-                """, [category, algorithm, the_value])
+                    category, algorithm, the_value, n_run, n_loop, skip_reason)
+                VALUES(?, ?, ?, ?, ?, ?)
+                """,
+                [category, algorithm, the_value, n_run, n_loop, skip_reason])
 
     def insert_other(self, category, description, the_value):
         """

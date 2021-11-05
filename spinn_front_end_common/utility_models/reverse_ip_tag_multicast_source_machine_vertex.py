@@ -681,30 +681,23 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @inject_items({
         "machine_graph": "MachineGraph",
         "routing_info": "RoutingInfos",
-        "first_machine_time_step": "FirstMachineTimeStep",
-        "data_n_time_steps": "DataNTimeSteps",
-        "run_until_timesteps": "RunUntilTimeSteps"
+        "data_n_time_steps": "DataNTimeSteps"
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_graph", "routing_info", "first_machine_time_step",
-            "data_n_time_steps", "run_until_timesteps"
+            "machine_graph", "routing_info", "data_n_time_steps"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_graph, routing_info, first_machine_time_step,
-            data_n_time_steps, run_until_timesteps):
+            machine_graph, routing_info, data_n_time_steps):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.routing_info.RoutingInfo routing_info:
-        :param int first_machine_time_step:
         :param int data_n_time_steps:
-        :param int run_until_timesteps:
         """
         # pylint: disable=too-many-arguments, arguments-differ
         self._update_virtual_key(routing_info, machine_graph)
-        self._fill_send_buffer(first_machine_time_step, run_until_timesteps)
 
         # Reserve regions
         self._reserve_regions(spec, data_n_time_steps)
@@ -765,12 +758,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def is_in_injection_mode(self):
         return self._in_injection_mode
 
-    @inject("FirstMachineTimeStep")
+    @inject("RunUntilTimeSteps")
     @inject_items({
-        "run_until_timesteps": "RunUntilTimeSteps"
+        "first_machine_time_step": "FirstMachineTimeStep"
     })
     def update_buffer(
-            self, first_machine_time_step, run_until_timesteps):
+            self, run_until_timesteps, first_machine_time_step):
         """ Updates the buffers on specification of the first machine timestep.
             Note: This is called by injection.
 
@@ -779,9 +772,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int run_until_timesteps:
             The last machine time step in the simulation
         """
-        if self._virtual_key is not None:
-            self._fill_send_buffer(
-                first_machine_time_step, run_until_timesteps)
+        self._fill_send_buffer(
+            first_machine_time_step, run_until_timesteps)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):

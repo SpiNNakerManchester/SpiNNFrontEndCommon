@@ -34,7 +34,6 @@ from .system_multicast_routing_generator import (
 from .dsg_region_reloader import DSGRegionReloader
 from .edge_to_n_keys_mapper import EdgeToNKeysMapper
 from .energy_provenance_reporter import EnergyProvenanceReporter
-from .finalise_timing_data import FinaliseTimingData
 from .find_application_chips_used import FindApplicationChipsUsed
 from .graph_binary_gatherer import GraphBinaryGatherer
 from .graph_data_specification_writer import (
@@ -99,7 +98,7 @@ __all__ = [
     "ComputeEnergyUsed", "DatabaseInterface",
     "SystemMulticastRoutingGenerator",
     "DSGRegionReloader", "EdgeToNKeysMapper",
-    "EnergyProvenanceReporter", "FinaliseTimingData",
+    "EnergyProvenanceReporter",
     "FindApplicationChipsUsed",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
