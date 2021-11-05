@@ -519,7 +519,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._current_run_timesteps = 0
         self._no_sync_changes = 0
 
-        self._app_id = get_config_int("Machine", "app_id")
+        self._app_id = None
 
         # folders
         self._set_up_output_folders(self._n_calls_to_run)
