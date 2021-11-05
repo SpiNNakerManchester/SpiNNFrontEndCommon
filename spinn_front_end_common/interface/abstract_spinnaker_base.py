@@ -92,7 +92,8 @@ from spinn_front_end_common.interface.interface_functions import (
     graph_measurer, GraphProvenanceGatherer, HostBasedBitFieldRouterCompressor,
     HostExecuteDataSpecification, hbp_allocator, hbp_max_machine_generator,
     insert_chip_power_monitors_to_graphs,
-    InsertEdgesToExtraMonitorFunctionality, InsertEdgesToLivePacketGatherers,
+    insert_edges_to_extra_monitor_functionality,
+    InsertEdgesToLivePacketGatherers,
     insert_extra_monitor_vertices_to_graphs,
     insert_live_packet_gatherers_to_graphs,
     LoadExecutableImages, LoadFixedRoutes,
@@ -1758,10 +1759,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 app_graph = self._application_graph
             else:
                 app_graph = None
-            inserter = InsertEdgesToExtraMonitorFunctionality()
-            inserter(self._machine_graph, self._placements, self._machine,
-                     self._vertex_to_ethernet_connected_chip_mapping,
-                     app_graph)
+            insert_edges_to_extra_monitor_functionality(
+                self._machine_graph, self._placements, self._machine,
+                self._vertex_to_ethernet_connected_chip_mapping, app_graph)
 
     def _execute_system_multicast_routing_generator(self):
         """

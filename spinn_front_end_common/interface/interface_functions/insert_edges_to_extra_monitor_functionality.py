@@ -22,7 +22,29 @@ from spinn_front_end_common.utility_models import (
     ExtraMonitorSupportMachineVertex)
 
 
-class InsertEdgesToExtraMonitorFunctionality(object):
+def insert_edges_to_extra_monitor_functionality(
+        machine_graph, placements, machine,
+        vertex_to_ethernet_connected_chip_mapping, application_graph=None):
+    """
+        Inserts edges between vertices who use MC speed up and its local\
+            MC data gatherer.
+
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph instance
+        :param ~pacman.model.placements.Placements placements: the placements
+        :param ~spinn_machine.Machine machine: the machine object
+        :param vertex_to_ethernet_connected_chip_mapping:
+            mapping between ethernet connected chips and packet gatherers
+        :type vertex_to_ethernet_connected_chip_mapping:
+            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+        :param application_graph: the application graph
+    """
+    inserter = _InsertEdgesToExtraMonitorFunctionality()
+    inserter(machine_graph, placements, machine,
+             vertex_to_ethernet_connected_chip_mapping, application_graph)
+
+
+class _InsertEdgesToExtraMonitorFunctionality(object):
     """ Inserts edges between vertices who use MC speed up and its local\
         MC data gatherer.
     """
