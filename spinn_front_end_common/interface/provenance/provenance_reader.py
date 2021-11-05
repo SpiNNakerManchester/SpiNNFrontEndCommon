@@ -160,33 +160,32 @@ class ProvenanceReader(object):
         """
         query = """
             SELECT x, y, p, the_value AS "value"
-            FROM provenance_view
-            WHERE description_name = 'Number_of_late_spikes'
+            FROM core_provenance
+            WHERE description = 'Number_of_late_spikes'
                 AND the_value > 0
             """
         return self.run_query(query)
 
-    def get_provenance(self, description_name):
+    def get_timer_provenance(self, algorithm):
         """
-        Gets the provenance item(s) from the last run
+        Gets the timer provenance item(s) from the last run
 
-        :param str description_name:
-            The value to LIKE search for in the description_name column.
+        :param str algorithm:
+            The value to LIKE search for in the algorithm column.
             Can be the full name, or have ``%``  and ``_`` wildcards.
         :return:
             A possibly multiline string with for each row which matches the
-            like a line ``description_name: value``
+            like a line ``algorithm: value``
         :rtype: str
         """
         query = """
-            SELECT description_name AS description, the_value AS "value"
-            FROM provenance_view
-            WHERE description LIKE ?
-            ORDER BY description
+            SELECT algorithm, the_value AS "value"
+            FROM timer_provenance
+            WHERE algorithm LIKE ?
             """
         return "\n".join(
             f"{row[0]}: {row[1]}"
-            for row in self.run_query(query, [description_name]))
+            for row in self.run_query(query, [algorithm]))
 
     def get_run_times(self):
         """
@@ -201,11 +200,10 @@ class ProvenanceReader(object):
         # We know the database actually stores microseconds for durations
         query = """
             SELECT
-                description_name AS "description",
+                description,
                 SUM(the_value) / 1000000.0 AS "value"
-            FROM provenance_view
-            WHERE description LIKE 'run_time_of_%'
-            GROUP BY description_name
+            FROM timer_provenance
+            GROUP BY description
             ORDER BY the_value
             """
         return "\n".join(
@@ -221,9 +219,9 @@ class ProvenanceReader(object):
             like %BufferExtractor description_name: value
         :rtype: str
         """
-        return self.get_provenance("%BufferExtractor")
+        return self.get_timer_provenance("%BufferExtractor")
 
-    def get_provenance_for_chip(self, x, y):
+    def get_provenance_for_router(self, x, y):
         """
         Gets the provenance item(s) from the last run relating to a chip
 
@@ -238,10 +236,10 @@ class ProvenanceReader(object):
         """
         query = """
             SELECT
-                description_name AS description,
+                description,
                 sum(the_value) AS "value"
-            FROM provenance_view
-            WHERE x = ? and y = ?
+            FROM router_provenance
+            WHERE x = ? AND y = ?
             GROUP BY description
             ORDER BY description
             """
@@ -250,9 +248,114 @@ class ProvenanceReader(object):
             for row in self.run_query(query, [int(x), int(y)],
                                       use_sqlite_rows=True))
 
+    def get_cores_with_provenace(self):
+        """
+        Gets the cores with provenance
+
+        :return: A list tuples (x, y, p)
+        :rtype: list(tuple(int, int, int))
+        """
+        query = """
+            SELECT core_name, x, y, p
+            FROM core_provenance_view
+            group by x, y, p
+            """
+        return self.run_query(query)
+
+    def get_router_by_chip(self, description):
+        """
+        Gets the router values for a specific item
+
+        :param str description:
+        :return: list of tuples x, y, value)
+        :rtype: lits((int, int float))
+        """
+        query = """
+            SELECT x, y, the_value
+            FROM router_provenance
+            WHERE description = ?
+            """
+        data = self.run_query(query, [description])
+        try:
+            return data
+        except IndexError:
+            return None
+
+    def get_monitor_by_chip(self, description):
+        """
+        Gets the monitor values for a specific item
+
+        :param str description:
+        :return: list of tuples x, y, value)
+        :rtype: lits((int, int float))
+        """
+        query = """
+            SELECT x, y, the_value
+            FROM monitor_provenance
+            WHERE description = ?
+            """
+        data = self.run_query(query, [description])
+        try:
+            return data
+        except IndexError:
+            return None
+
+    def get_timer_sum_by_category(self, category):
+        """
+        Get the total runtime for one category of algorithms
+
+        :param str category:
+        :return: total off all runtimes with this category
+        :rtype: int
+        """
+        query = """
+             SELECT sum(the_value)
+             FROM timer_provenance
+             WHERE category = ?
+             """
+        data = self.run_query(query, [category])
+        try:
+            return data[0][0]
+        except IndexError:
+            return None
+
+    def get_timer_sum_by_algorithm(self, algorithm):
+        """
+        Get the total runtime for one algorithm
+
+        :param str algorithm:
+        :return: total off all runtimes with this algorithm
+        :rtype: int
+        """
+        query = """
+             SELECT sum(the_value)
+             FROM timer_provenance
+             WHERE algorithm = ?
+             """
+        data = self.run_query(query, [algorithm])
+        try:
+            return data[0][0]
+        except IndexError:
+            return None
+
+    def messages(self):
+        """
+        List all the provenance messages
+
+        :return: all messages logged or not
+        :rtype: list(str)
+        """
+        query = """
+             SELECT message
+             FROM reports
+             """
+        return self.run_query(query, [])
+
     @staticmethod
     def _demo():
         """ A demonstration of how to use this class.
+
+        See also unittests/interface/provenance/test_provenance_database.py
         """
         # This uses the example file in the same directory as this script
         pr = ProvenanceReader(os.path.join(
@@ -260,8 +363,8 @@ class ProvenanceReader(object):
         print("DIRECT QUERY:")
         query = """
             SELECT x, y, the_value
-            FROM provenance_view
-            WHERE description_name = 'Local_P2P_Packets'
+            FROM router_provenance
+            WHERE description = 'Local_P2P_Packets'
             """
         results = pr.run_query(query)
         for row in results:
@@ -270,8 +373,10 @@ class ProvenanceReader(object):
         print(pr.cores_with_late_spikes())
         print("\nRUN TIME OF BUFFER EXTRACTOR:")
         print(pr.get_run_time_of_BufferExtractor())
-        print("\nCHIP (0,0) PROVENANCE:")
-        print(pr.get_provenance_for_chip(0, 0))
+        print("\nROUETER (0,0) PROVENANCE:")
+        print(pr.get_provenance_for_router(0, 0))
+        print("\nCORES WITH PROVENACE")
+        print(pr.get_cores_with_provenace())
 
 
 if __name__ == '__main__':

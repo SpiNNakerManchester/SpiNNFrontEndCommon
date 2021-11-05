@@ -199,6 +199,10 @@ void print_table(table_t *table) {
    }
 }
 
+//! \brief How to compare two entries
+//! \param[in] ent_1: The first entry
+//! \param[in] ent_2: The second entry
+//! \return Whether the first entry is greater than the second
 static inline bool compare_entries(const entry_t *ent_1, const entry_t *ent_2) {
     return ent_1->key_mask.key > ent_2->key_mask.key;
 }

@@ -92,7 +92,8 @@ void compress_start(UNUSED uint unused0, UNUSED uint unused1) {
     }
 }
 
-//! \brief bool to say this is a standalone compressor.
+//! \brief Whether this is a standalone compressor.
+//! \return Always true
 bool standalone(void) {
     return true;
 }
