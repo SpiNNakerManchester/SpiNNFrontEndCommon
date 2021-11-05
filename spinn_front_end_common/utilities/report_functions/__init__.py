@@ -31,7 +31,7 @@ from .router_collision_potential_report import RouterCollisionPotentialReport
 from .routing_table_from_machine_report import RoutingTableFromMachineReport
 from .real_tags_report import TagsFromMachineReport
 from .write_json_machine import write_json_machine
-from .write_json_partition_n_keys_map import WriteJsonPartitionNKeysMap
+from .write_json_partition_n_keys_map import write_json_partition_n_keys_map
 from .write_json_placements import WriteJsonPlacements
 from .write_json_routing_tables import WriteJsonRoutingTables
 
@@ -55,6 +55,6 @@ __all__ = [
     "RoutingTableFromMachineReport",
     "TagsFromMachineReport",
     "write_json_machine",
-    "WriteJsonPartitionNKeysMap",
+    "write_json_partition_n_keys_map",
     "WriteJsonPlacements",
     "WriteJsonRoutingTables"]
