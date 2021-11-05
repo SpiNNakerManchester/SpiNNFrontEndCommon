@@ -16,10 +16,10 @@
 import logging
 import os
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.interface.provenance import (
+    APPLICATION_RUNNER, LOADING, ProvenanceReader)
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.helpful_functions import (
-    convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 from spinn_front_end_common.interface.interface_functions import (
@@ -330,11 +330,8 @@ class EnergyReport(object):
         """
 
         # find time in milliseconds
-        total_time_ms = 0.0
-        for element in power_used._algorithm_timing_provenance:
-            if element.names[1] == "loading":
-                total_time_ms += convert_time_diff_to_total_milliseconds(
-                    element.value)
+        reader = ProvenanceReader()
+        total_time_ms = reader.get_timer_sum_by_category(LOADING)
 
         # handle active routers etc
         active_router_cost = (
@@ -360,12 +357,8 @@ class EnergyReport(object):
         """
 
         # find time
-        total_time_ms = 0.0
-        for element in power_used._algorithm_timing_provenance:
-            if (element.names[1] == "Execution" and element.names[2] !=
-                    "run_time_of_FrontEndCommonApplicationRunner"):
-                total_time_ms += convert_time_diff_to_total_milliseconds(
-                    element.value)
+        reader = ProvenanceReader()
+        total_time_ms = reader.get_timer_sum_by_algorithm(APPLICATION_RUNNER)
 
         # handle active routers etc
         energy_cost_of_active_router = (

@@ -85,7 +85,7 @@ static inline bool has_been_initialised(recording_channel_t *rec) {
 
 //----------------------------------------
 //! \brief closes a channel
-//! \param[in] channel the channel to close
+//! \param[in] rec: the channel to close
 static inline void close_channel(recording_channel_t *rec) {
     rec->start = NULL;
 }
@@ -127,10 +127,13 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
     return false;
 }
 
-__attribute__((noreturn)) void recording_bad_offset(
-  void *data, uint32_t size) {
+__attribute__((noreturn))
+//! \brief Stop the program because of a bad recording request
+//! \param[in] data: The address we were seeking to record from
+//! \param[in] size: The amount of data we were seeking to record
+void recording_bad_offset(void *data, uint32_t size) {
     log_error("DMA transfer of non-word data quantity in recording! "
-      "(data=0x%08x, size=0x%x)", data, size);
+            "(data=0x%08x, size=0x%x)", data, size);
     rt_error(RTE_SWERR);
 }
 

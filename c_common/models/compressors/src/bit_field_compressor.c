@@ -381,7 +381,8 @@ static void initialise(void) {
     log_info("my processor id is %d", spin1_get_core_id());
 }
 
-//! \brief bool to say this is NOT a standalone compressor.
+//! \brief says this is NOT a standalone compressor.
+//! \return Always false
 bool standalone(void) {
     return false;
 }
