@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import defaultdict
 import os
 import datetime
 import logging
@@ -35,6 +34,7 @@ from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
+from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.globals_variables import (
     get_simulator, report_default_directory)
 from spinn_front_end_common.utilities.helpful_functions import (
@@ -44,10 +44,9 @@ from spinn_front_end_common.utilities.emergency_recovery import (
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesLocalProvenanceData,
     AbstractProvidesProvenanceDataFromMachine)
 from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType, ProvenanceDataItem)
+    ExecutableType)
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BYTES_PER_WORD, BYTES_PER_KB)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
@@ -63,17 +62,7 @@ DEST_X_SHIFT = 16
 TIMEOUT_RETRY_LIMIT = 100
 TIMEOUT_MESSAGE = "Failed to hear from the machine during {} attempts. "\
     "Please try removing firewalls."
-_MINOR_LOSS_MESSAGE = (
-    "During the extraction of data of {} bytes from memory address {}, "
-    "attempt {} had {} sequences that were lost.")
 _MINOR_LOSS_THRESHOLD = 10
-_MAJOR_LOSS_MESSAGE = (
-    "During the extraction of data from chip {}, there were {} cases of "
-    "serious data loss. The system recovered, but the speed of download "
-    "was compromised. Reduce the number of executing applications and remove "
-    "routers between yourself and the SpiNNaker machine to reduce the chance "
-    "of this occurring.")
-_MAJOR_LOSS_THRESHOLD = 100
 
 # cap for stopping wrap arounds
 TRANSACTION_ID_CAP = 0xFFFFFFFF
@@ -193,7 +182,7 @@ SDRAM_FOR_MISSING_SDP_SEQ_NUMS = ceildiv(
 
 class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData,
+        AbstractHasAssociatedBinary,
         AbstractProvidesProvenanceDataFromMachine):
     """ Machine vertex for handling fast data transfer between host and \
         SpiNNaker. This machine vertex is only ever placed on chips with a \
@@ -230,8 +219,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_output",
         # my placement for future lookup
         "_placement",
-        # provenance holder
-        "_provenance_data_items",
         # Count of the runs for provenance data
         "_run",
         "_remote_tag",
@@ -335,7 +322,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._connection = None
 
         # local provenance storage
-        self._provenance_data_items = defaultdict(list)
         self._run = 0
         self._placement = None
         self._app_id = None
@@ -504,58 +490,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return "data_speed_up_packet_gatherer.aplx"
-
-    @overrides(AbstractProvidesLocalProvenanceData.get_local_provenance_data)
-    def get_local_provenance_data(self):
-        self._run += 1
-        prov_items = list()
-        significant_losses = defaultdict(list)
-        top_level_name = f"Provenance_for_{self._label}"
-        for (placement, memory_address, length_in_bytes) in \
-                self._provenance_data_items.keys():
-
-            # handle duplicates of the same calls
-            times_extracted_the_same_thing = 0
-            for time_taken, lost_seq_nums in self._provenance_data_items[
-                    placement, memory_address, length_in_bytes]:
-                # handle time
-                chip_name = f"chip{placement.x}:{placement.y}"
-                last_name = "Memory_address:{}:Length_in_bytes:{}"\
-                    .format(memory_address, length_in_bytes)
-                if times_extracted_the_same_thing == 0:
-                    iteration_name = f"run{self._run}"
-                else:
-                    iteration_name = "run{}iteration{}".format(
-                        self._run, times_extracted_the_same_thing)
-                prov_items.append(ProvenanceDataItem(
-                    [top_level_name, "extraction_time", chip_name, last_name,
-                     iteration_name],
-                    time_taken, report=False))
-                times_extracted_the_same_thing += 1
-
-                # handle lost sequence numbers
-                for i, n_lost_seq_nums in enumerate(lost_seq_nums):
-                    # Zeroes are not reported at all
-                    if n_lost_seq_nums:
-                        prov_items.append(ProvenanceDataItem(
-                            [top_level_name, "lost_seq_nums", chip_name,
-                             last_name, iteration_name, f"iteration_{i}"],
-                            n_lost_seq_nums, report=(
-                                n_lost_seq_nums > _MINOR_LOSS_THRESHOLD),
-                            message=_MINOR_LOSS_MESSAGE.format(
-                                length_in_bytes, memory_address, i,
-                                n_lost_seq_nums)))
-                    if n_lost_seq_nums > _MAJOR_LOSS_THRESHOLD:
-                        significant_losses[placement.x, placement.y] += [i]
-        for chip in significant_losses:
-            n_times = len(significant_losses[chip])
-            chip_name = "chip{}:{}".format(*chip)
-            prov_items.append(ProvenanceDataItem(
-                [top_level_name, "serious_lost_seq_num_count", chip_name],
-                n_times, report=True, message=_MAJOR_LOSS_MESSAGE.format(
-                    chip, n_times)))
-        self._provenance_data_items = defaultdict(list)
-        return prov_items
 
     @staticmethod
     def locate_correct_write_data_function_for_chip_location(
@@ -1197,13 +1131,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         raise exn or SpinnmanTimeoutException
 
     def get_data(
-            self, extra_monitor, extra_monitor_placement, memory_address,
+            self, extra_monitor, placement, memory_address,
             length_in_bytes, fixed_routes):
         """ Gets data from a given core and memory address.
 
         :param ExtraMonitorSupportMachineVertex extra_monitor:
             the extra monitor used for this data
-        :param ~pacman.model.placements.Placement extra_monitor_placement:
+        :param ~pacman.model.placements.Placement placement:
             placement object for where to get data from
         :param int memory_address: the address in SDRAM to start reading from
         :param int length_in_bytes: the length of data to read in bytes
@@ -1219,9 +1153,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         if length_in_bytes == 0:
             data = bytearray(0)
             end = float(time.time())
-            self._provenance_data_items[
-                extra_monitor_placement, memory_address,
-                length_in_bytes].append((end - start, [0]))
+            with ProvenanceWriter() as db:
+                # TODO Why log the time to not read???
+                db.insert_gatherer(
+                    placement.x, placement.y, memory_address, length_in_bytes,
+                    self._run, "No Extraction time", end - start)
             return data
 
         transceiver = get_simulator().transceiver
@@ -1237,8 +1173,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # send
         connection.send_sdp_message(self.__make_sdp_message(
-            extra_monitor_placement,
-            SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
+            placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
             _FOUR_WORDS.pack(
                 DATA_OUT_COMMANDS.START_SENDING.value, transaction_id,
                 memory_address, length_in_bytes)))
@@ -1248,28 +1183,40 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._view = memoryview(self._output)
         self._max_seq_num = self.calculate_max_seq_num()
         lost_seq_nums = self._receive_data(
-            transceiver, extra_monitor_placement, connection, transaction_id)
+            transceiver, placement, connection, transaction_id)
 
         # Stop anything else getting through (and reduce traffic)
         connection.send_sdp_message(self.__make_sdp_message(
-            extra_monitor_placement,
-            SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
+            placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
             _TWO_WORDS.pack(DATA_OUT_COMMANDS.CLEAR.value, transaction_id)))
         connection.close()
 
         end = float(time.time())
-        self._provenance_data_items[
-            extra_monitor_placement, memory_address, length_in_bytes].append(
-                (end - start, lost_seq_nums))
+        with ProvenanceWriter() as db:
+            db.insert_gatherer(
+                placement.x, placement.y, memory_address, length_in_bytes,
+                self._run, "Extraction time", end - start)
+            for lost_seq_num in lost_seq_nums:
+                if lost_seq_num > _MINOR_LOSS_THRESHOLD:
+                    db.insert_report(
+                        f"During the extraction of data of {length_in_bytes} "
+                        f"bytes from memory address {memory_address} on "
+                        f"chip ({placement.x}, {placement.y}), "
+                        f"{lost_seq_num} sequences were lost.")
+                if lost_seq_num > 0:
+                    db.insert_gatherer(
+                        placement.x, placement.y, memory_address,
+                        length_in_bytes, self._run, "Lost_seq_nums",
+                        lost_seq_num)
 
         # create report elements
         if get_config_bool("Reports", "write_data_speed_up_reports"):
             routers_been_in_use = self._determine_which_routers_were_used(
-                extra_monitor_placement, fixed_routes,
+                placement, fixed_routes,
                 transceiver.get_machine_details())
             self._write_routers_used_into_report(
                 self._out_report_path, routers_been_in_use,
-                extra_monitor_placement)
+                placement)
 
         return self._output
 
@@ -1671,15 +1618,21 @@ class DataSpeedUpPacketGatherMachineVertex(
             _PROVENANCE_DATA_SIZE)
         n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams = (
             _FOUR_WORDS.unpack_from(data))
-        label = placement.vertex.label
-        x, y, p = placement.location
-        names = [f"vertex_{x}_{y}_{p}_{label}"]
-        yield ProvenanceDataItem(names + ["Sent_SDP_Packets"], n_sdp_sent)
-        yield ProvenanceDataItem(names + ["Received_SDP_Packets"], n_sdp_recvd)
-        yield ProvenanceDataItem(
-            names + ["Speed_Up_Input_Streams"], n_in_streams)
-        yield ProvenanceDataItem(
-            names + ["Speed_Up_Output_Streams"], n_out_streams)
+        with ProvenanceWriter() as db:
+            db.add_core_name(
+                placement.x, placement.y, placement.p, placement.vertex.label)
+            db.insert_core(
+                placement.x, placement.y, placement.p,
+                "Sent_SDP_Packets", n_sdp_sent)
+            db.insert_core(
+                placement.x, placement.y, placement.p,
+                "Received_SDP_Packets", n_sdp_recvd)
+            db.insert_core(
+                placement.x, placement.y, placement.p,
+                "Speed_Up_Input_Streams", n_in_streams)
+            db.insert_core(
+                placement.x, placement.y, placement.p,
+                "Speed_Up_Output_Streams", n_out_streams)
 
 
 class _StreamingContextManager(object):
