@@ -131,21 +131,29 @@
 <span class="sd">                VALUES(?, ?)</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="ProvenanceWriter.insert_timing"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_timing">[docs]</a>    <span class="k">def</span> <span class="nf">insert_timing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">,</span> <span class="n">the_value</span><span class="p">):</span>
+<div class="viewcode-block" id="ProvenanceWriter.insert_timing"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_timing">[docs]</a>    <span class="k">def</span> <span class="nf">insert_timing</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">,</span> <span class="n">the_value</span><span class="p">,</span> <span class="n">n_run</span><span class="p">,</span> <span class="n">n_loop</span><span class="p">,</span> <span class="n">skip_reason</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Inserts algorithms run times into the timer_provenance table</span>
 
 <span class="sd">        :param str category: Category of the Algorithm</span>
 <span class="sd">        :param str algorithm: Algorithm name</span>
 <span class="sd">        :param int the_value: Runtime</span>
+<span class="sd">        :param int n_run: The end user run number</span>
+<span class="sd">        :param n_loop: The run loop within the ned user run</span>
+<span class="sd">        :type n_loop: int or None</span>
+<span class="sd">        :param skip_reason: The reason the algorthm was skipped or None if</span>
+<span class="sd">            it was not skipped</span>
+<span class="sd">        :tpye skip_reason: str or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
             <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
                 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                INSERT INTO timer_provenance(</span>
-<span class="sd">                    category, algorithm, the_value)</span>
-<span class="sd">                VALUES(?, ?, ?)</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">category</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">,</span> <span class="n">the_value</span><span class="p">])</span></div>
+<span class="sd">                    category, algorithm, the_value, n_run, n_loop, skip_reason)</span>
+<span class="sd">                VALUES(?, ?, ?, ?, ?, ?)</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span>
+                <span class="p">[</span><span class="n">category</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">,</span> <span class="n">the_value</span><span class="p">,</span> <span class="n">n_run</span><span class="p">,</span> <span class="n">n_loop</span><span class="p">,</span> <span class="n">skip_reason</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="ProvenanceWriter.insert_other"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_other">[docs]</a>    <span class="k">def</span> <span class="nf">insert_other</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
