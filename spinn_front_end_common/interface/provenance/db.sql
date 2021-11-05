@@ -37,7 +37,16 @@ CREATE TABLE IF NOT EXISTS timer_provenance(
     timer_id INTEGER PRIMARY KEY AUTOINCREMENT,
     category STRING NOT NULL,
     algorithm STRING NOT NULL,
-    the_value INTEGER NOT NULL);
+    the_value INTEGER NOT NULL,
+    n_run INTEGER NOT NULL,
+    n_loop INTEGER,
+    skip_reason STRING);
+
+CREATE VIEW IF NOT EXISTS timer_view AS
+    SELECT category, algorithm, the_value, n_run, n_loop
+    FROM timer_provenance
+    WHERE skip_reason is NULL
+    ORDER BY timer_id;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for uncategorised general provenance
