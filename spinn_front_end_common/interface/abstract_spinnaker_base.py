@@ -308,9 +308,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # The loop number for the this/next loop in the end_user run
         "_n_loops",
 
-        # TODO should this be at this scope
-        "_command_sender",
-
         # dict of exucutable types to cores
         "_executable_types",
 
@@ -476,9 +473,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "n_boards_required")
         self._spalloc_server = None
         self._remote_spinnaker_url = None
-
-        # command sender vertex
-        self._command_sender = None
 
         # store for Live Packet Gatherers
         self._live_packet_recorder_params = defaultdict(list)
@@ -1126,6 +1120,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         return False
 
     def _add_commands_to_command_sender(self):
+        command_sender = None
         vertices = self._application_graph.vertices
         graph = self._application_graph
         command_sender_vertex = CommandSender
@@ -1136,20 +1131,20 @@ class AbstractSpinnakerBase(ConfigHandler):
         for vertex in vertices:
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
                 # if there's no command sender yet, build one
-                if self._command_sender is None:
-                    self._command_sender = command_sender_vertex(
+                if command_sender is None:
+                    command_sender = command_sender_vertex(
                         "auto_added_command_sender", None)
-                    graph.add_vertex(self._command_sender)
+                    graph.add_vertex(command_sender)
 
                 # allow the command sender to create key to partition map
-                self._command_sender.add_commands(
+                command_sender.add_commands(
                     vertex.start_resume_commands,
                     vertex.pause_stop_commands,
                     vertex.timed_commands, vertex)
 
         # add the edges from the command sender to the dependent vertices
-        if self._command_sender is not None:
-            edges, partition_ids = self._command_sender.edges_and_partitions()
+        if command_sender is not None:
+            edges, partition_ids = command_sender.edges_and_partitions()
             for edge, partition_id in zip(edges, partition_ids):
                 graph.add_edge(edge, partition_id)
 
