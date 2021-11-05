@@ -60,7 +60,7 @@ from pacman.operations.chip_id_allocator_algorithms import (
 from pacman.operations.fixed_route_router import FixedRouteRouter
 from pacman.operations.partition_algorithms import splitter_partitioner
 from pacman.operations.placer_algorithms import (
-    ConnectiveBasedPlacer, OneToOnePlacer, RadialPlacer, SpreaderPlacer)
+    ConnectiveBasedPlacer, OneToOnePlacer, radial_placer, SpreaderPlacer)
 from pacman.operations.router_algorithms import (
     BasicDijkstraRouting, NerRoute, NerRouteTrafficAware)
 from pacman.operations.router_compressors import PairCompressor
@@ -1685,8 +1685,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         with FecTimer(MAPPING, "Radial placer"):
-            placer = RadialPlacer()
-            self._placements = placer(
+            self._placements = radial_placer(
                 self._machine_graph, self._machine, self._plan_n_timesteps)
 
     def _execute_speader_placer(self):
