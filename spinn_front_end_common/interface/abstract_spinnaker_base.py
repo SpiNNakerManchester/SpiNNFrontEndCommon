@@ -96,7 +96,7 @@ from spinn_front_end_common.interface.interface_functions import (
     insert_extra_monitor_vertices_to_graphs,
     insert_live_packet_gatherers_to_graphs,
     LoadExecutableImages, LoadFixedRoutes,
-    LocalTDMABuilder, LocateExecutableStartType, machine_generator,
+    local_tdma_builder, LocateExecutableStartType, machine_generator,
     preallocate_resources_for_chip_power_monitor,
     preallocate_resources_for_live_packet_gatherers,
     pre_allocate_resources_for_extra_monitor_support,
@@ -1633,9 +1633,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs times and logs the LocalTDMABuilder
         """
         with FecTimer(MAPPING, "Local TDMA builder"):
-            builder = LocalTDMABuilder()
-            builder(self._machine_graph, self._machine_partition_n_keys_map,
-                    self._application_graph)
+            local_tdma_builder(
+                self._machine_graph, self._machine_partition_n_keys_map,
+                self._application_graph)
 
     def _json_partition_n_keys_map(self):
         """

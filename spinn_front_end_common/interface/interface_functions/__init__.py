@@ -56,7 +56,7 @@ from .insert_live_packet_gatherers_to_graphs import (
     insert_live_packet_gatherers_to_graphs)
 from .load_executable_images import LoadExecutableImages
 from .load_fixed_routes import LoadFixedRoutes
-from .local_tdma_builder import LocalTDMABuilder
+from .local_tdma_builder import local_tdma_builder
 from .locate_executable_start_type import LocateExecutableStartType
 from .machine_bit_field_router_compressor import (
     MachineBitFieldRouterCompressor)
@@ -110,7 +110,7 @@ __all__ = [
     "InsertEdgesToLivePacketGatherers",
     "insert_extra_monitor_vertices_to_graphs",
     "insert_live_packet_gatherers_to_graphs", "interface_xml",
-    "LoadExecutableImages", "LoadFixedRoutes", "LocalTDMABuilder",
+    "LoadExecutableImages", "LoadFixedRoutes", "local_tdma_builder",
     "LocateExecutableStartType", "MachineBitFieldRouterCompressor",
     "machine_generator", "PlacementsProvenanceGatherer",
     "PreAllocateForBitFieldRouterCompressor",
