@@ -93,7 +93,7 @@ from spinn_front_end_common.interface.interface_functions import (
     HostExecuteDataSpecification, hbp_allocator, hbp_max_machine_generator,
     insert_chip_power_monitors_to_graphs,
     insert_edges_to_extra_monitor_functionality,
-    InsertEdgesToLivePacketGatherers,
+    insert_edges_to_live_packet_gatherers,
     insert_extra_monitor_vertices_to_graphs,
     insert_live_packet_gatherers_to_graphs,
     LoadExecutableImages, LoadFixedRoutes,
@@ -1738,8 +1738,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_empty(self._live_packet_recorder_params,
                                    "live_packet_recorder_params"):
                 return
-            inserter = InsertEdgesToLivePacketGatherers()
-            inserter(
+            insert_edges_to_live_packet_gatherers(
                 self._live_packet_recorder_params, self._placements,
                 self._live_packet_recorder_parameters_mapping, self._machine,
                 self._machine_graph, self._application_graph,

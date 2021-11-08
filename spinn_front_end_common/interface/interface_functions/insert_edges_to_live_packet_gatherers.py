@@ -19,7 +19,40 @@ from pacman.model.graphs.machine import MachineEdge
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
-class InsertEdgesToLivePacketGatherers(object):
+def insert_edges_to_live_packet_gatherers(
+        live_packet_gatherer_parameters, placements, live_packet_gatherers_to_vertex_mapping, machine,
+        machine_graph, application_graph=None, n_keys_map=None):
+    """
+        Add edges from the recorded vertices to the local Live PacketGatherers.
+
+        :param live_packet_gatherer_parameters: the set of parameters
+        :type live_packet_gatherer_parameters:
+            dict(LivePacketGatherParameters,
+            list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
+        :param ~pacman.model.placements.Placements placements:
+            the placements object
+        :param live_packet_gatherers_to_vertex_mapping:
+            the mapping of LPG parameters and the machine vertices associated
+            with it
+        :type live_packet_gatherers_to_vertex_mapping:
+            dict(LivePacketGatherParameters,
+            tuple(LivePacketGather or None,
+            dict(tuple(int,int),LivePacketGatherMachineVertex)))
+        :param ~spinn_machine.Machine machine: the SpiNNaker machine
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph
+        :param application_graph: the application graph
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
+        :param n_keys_map: key map
+        :type n_keys_map:
+            ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
+    """
+    inserter = _InsertEdgesToLivePacketGatherers()
+    inserter(live_packet_gatherer_parameters, placements, live_packet_gatherers_to_vertex_mapping, machine,
+             machine_graph, application_graph, n_keys_map)
+
+class _InsertEdgesToLivePacketGatherers(object):
     """ Add edges from the recorded vertices to the local Live PacketGatherers.
     """
 

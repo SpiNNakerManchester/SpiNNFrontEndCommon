@@ -49,7 +49,7 @@ from .insert_chip_power_monitors_to_graphs import (
 from .insert_edges_to_extra_monitor_functionality import (
     insert_edges_to_extra_monitor_functionality)
 from .insert_edges_to_live_packet_gatherers import (
-    InsertEdgesToLivePacketGatherers)
+    insert_edges_to_live_packet_gatherers)
 from .insert_extra_monitor_vertices_to_graphs import (
     insert_extra_monitor_vertices_to_graphs)
 from .insert_live_packet_gatherers_to_graphs import (
@@ -107,7 +107,7 @@ __all__ = [
     "HostExecuteDataSpecification",
     "insert_chip_power_monitors_to_graphs",
     "insert_edges_to_extra_monitor_functionality",
-    "InsertEdgesToLivePacketGatherers",
+    "insert_edges_to_live_packet_gatherers",
     "insert_extra_monitor_vertices_to_graphs",
     "insert_live_packet_gatherers_to_graphs", "interface_xml",
     "LoadExecutableImages", "LoadFixedRoutes", "local_tdma_builder",

@@ -24,7 +24,7 @@ from pacman.model.placements import Placements, Placement
 from pacman.model.resources import ResourceContainer
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    InsertEdgesToLivePacketGatherers)
+    insert_edges_to_live_packet_gatherers
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.utility_models import (
@@ -112,8 +112,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             placements.add_placement(Placement(x=x, y=y, p=5, vertex=vertex))
 
         # run edge inserter that should go boom
-        edge_inserter = InsertEdgesToLivePacketGatherers()
-        edge_inserter(
+        insert_edges_to_live_packet_gatherers(
             live_packet_gatherer_parameters=live_packet_gatherers,
             placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
@@ -215,8 +214,7 @@ class TestInsertLPGEdges(unittest.TestCase):
                 Placement(x=x, y=y, p=5, vertex=mac_vertex))
 
         # run edge inserter that should go boom
-        edge_inserter = InsertEdgesToLivePacketGatherers()
-        edge_inserter(
+        insert_edges_to_live_packet_gatherers(
             live_packet_gatherer_parameters=live_packet_gatherers,
             placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
