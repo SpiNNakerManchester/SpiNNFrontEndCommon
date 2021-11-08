@@ -57,7 +57,7 @@ from pacman.model.resources import (
     ConstantSDRAM, PreAllocatedResourceContainer)
 from pacman.operations.chip_id_allocator_algorithms import (
     malloc_based_chip_id_allocator)
-from pacman.operations.fixed_route_router import FixedRouteRouter
+from pacman.operations.fixed_route_router import fixed_route_router
 from pacman.operations.partition_algorithms import splitter_partitioner
 from pacman.operations.placer_algorithms import (
     connective_based_placer, one_to_one_placer, radial_placer, spreader_placer)
@@ -1792,8 +1792,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Machine", "enable_advanced_monitor_support"):
                 return
-            router = FixedRouteRouter()
-            self._fixed_routes = router(
+            self._fixed_routes = fixed_route_router(
                 self._machine, self._placements,
                 DataSpeedUpPacketGatherMachineVertex)
 
