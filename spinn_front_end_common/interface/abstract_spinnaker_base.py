@@ -107,7 +107,7 @@ from spinn_front_end_common.interface.interface_functions import (
     RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader,
     SDRAMOutgoingPartitionAllocator, spalloc_allocator,
     spalloc_max_machine_generator,
-    SystemMulticastRoutingGenerator,
+    system_multicast_routing_generator,
     TagsLoader, virtual_machine_generator)
 from spinn_front_end_common.interface.interface_functions.\
     machine_bit_field_router_compressor import (
@@ -1775,12 +1775,12 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Machine", "enable_advanced_monitor_support",
                     "enable_reinjection"):
                 return
-            generator = SystemMulticastRoutingGenerator()
             (self._data_in_multicast_routing_tables,
              self._data_in_multicast_key_to_chip_map,
-             self._system_multicast_router_timeout_keys) = generator(
+             self._system_multicast_router_timeout_keys) = (
+                system_multicast_routing_generator(
                 self._machine, self._extra_monitor_to_chip_mapping,
-                self._placements)
+                self._placements))
 
     def _execute_fixed_route_router(self):
         """

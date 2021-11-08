@@ -31,7 +31,26 @@ ROUTING_MASK = 0xFFFFFFF8
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class SystemMulticastRoutingGenerator(object):
+def system_multicast_routing_generator(
+        machine, extra_monitor_cores, placements):
+    """ Generates routing table entries used by the data in processes with the\
+        extra monitor cores.
+
+    :param ~spinn_machine.Machine machine:
+    :param extra_monitor_cores:
+    :type extra_monitor_cores:
+        dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
+    :param ~pacman.model.placements.Placements placements:
+    :return: routing tables, destination-to-key map,
+        board-locn-to-timeout-key map
+    :rtype: tuple(MulticastRoutingTables,
+        dict(tuple(int,int),int), dict(tuple(int,int),int))
+    """
+    generator = _SystemMulticastRoutingGenerator()
+    return generator(machine, extra_monitor_cores, placements)
+
+
+class _SystemMulticastRoutingGenerator(object):
     """ Generates routing table entries used by the data in processes with the\
         extra monitor cores.
     """

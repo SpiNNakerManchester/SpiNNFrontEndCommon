@@ -30,7 +30,7 @@ from .chip_runtime_updater import ChipRuntimeUpdater
 from .compute_energy_used import ComputeEnergyUsed
 from .database_interface import DatabaseInterface
 from .system_multicast_routing_generator import (
-    SystemMulticastRoutingGenerator)
+    system_multicast_routing_generator)
 from .dsg_region_reloader import DSGRegionReloader
 from .edge_to_n_keys_mapper import edge_to_n_keys_mapper
 from .energy_provenance_reporter import EnergyProvenanceReporter
@@ -96,7 +96,6 @@ __all__ = [
     "ChipIOBufExtractor", "ChipProvenanceUpdater",
     "ChipRuntimeUpdater", "CreateNotificationProtocol",
     "ComputeEnergyUsed", "DatabaseInterface",
-    "SystemMulticastRoutingGenerator",
     "DSGRegionReloader", "edge_to_n_keys_mapper",
     "EnergyProvenanceReporter",
     "FindApplicationChipsUsed",
@@ -120,6 +119,7 @@ __all__ = [
     "ProcessPartitionConstraints", "ProfileDataGatherer",
     "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SDRAMOutgoingPartitionAllocator",
-    "spalloc_allocator", "spalloc_max_machine_generator", "TagsLoader",
+    "spalloc_allocator", "spalloc_max_machine_generator",
+    "system_multicast_routing_generator", "TagsLoader",
     "virtual_machine_generator",
 ]
