@@ -301,8 +301,8 @@ class SpallocAllocator(object):
         :param dict(str, str or int) spalloc_kw_args:
         :rtype: tuple(~.Job, str)
         """
+        job = Job(n_boards, **spalloc_kw_args)
         try:
-            job = Job(n_boards, **spalloc_kw_args)
             job.wait_until_ready()
             # get param from jobs before starting, so that hanging doesn't
             # occur
