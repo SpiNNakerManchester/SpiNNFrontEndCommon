@@ -69,7 +69,7 @@ from pacman.operations.router_compressors.checked_unordered_pair_compressor \
 from pacman.operations.router_compressors.ordered_covering_router_compressor \
     import OrderedCoveringCompressor
 from pacman.operations.routing_info_allocator_algorithms.\
-    malloc_based_routing_allocator import MallocBasedRoutingInfoAllocator
+    malloc_based_routing_allocator import malloc_based_routing_info_allocator
 from pacman.operations.routing_info_allocator_algorithms.\
     zoned_routing_info_allocator import (flexible_allocate, global_allocate)
 from pacman.operations.routing_table_generators import (
@@ -102,7 +102,7 @@ from spinn_front_end_common.interface.interface_functions import (
     preallocate_resources_for_live_packet_gatherers,
     pre_allocate_resources_for_extra_monitor_support,
     PlacementsProvenanceGatherer,
-    ProfileDataGatherer, ProcessPartitionConstraints,
+    ProfileDataGatherer, process_partition_constraints,
     ReadRoutingTablesFromMachine,
     RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader,
     SDRAMOutgoingPartitionAllocator, spalloc_allocator,
@@ -1926,8 +1926,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the ProcessPartitionConstraints
         """
         with FecTimer(MAPPING, "Process partition constraints"):
-            processor = ProcessPartitionConstraints()
-            processor(self._machine_graph)
+            process_partition_constraints(self._machine_graph)
 
     def _execute_global_allocate(self):
         """
@@ -1971,8 +1970,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return:
         """
         with FecTimer(MAPPING, "Malloc based routing info allocator"):
-            allocator = MallocBasedRoutingInfoAllocator()
-            self._routing_infos = allocator(
+            self._routing_infos = malloc_based_routing_info_allocator(
                 self._machine_graph, self._machine_partition_n_keys_map)
 
     def do_info_allocator(self):

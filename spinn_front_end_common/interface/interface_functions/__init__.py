@@ -71,7 +71,7 @@ from .pre_allocate_resources_for_live_packet_gatherers import (
     preallocate_resources_for_live_packet_gatherers)
 from .preallocate_resources_for_extra_monitor_support import (
     pre_allocate_resources_for_extra_monitor_support)
-from .process_partition_constraints import ProcessPartitionConstraints
+from .process_partition_constraints import process_partition_constraints
 from .profile_data_gatherer import ProfileDataGatherer
 from .router_provenance_gatherer import RouterProvenanceGatherer
 from .routing_setup import RoutingSetup
@@ -116,7 +116,7 @@ __all__ = [
     "preallocate_resources_for_chip_power_monitor",
     "pre_allocate_resources_for_extra_monitor_support",
     "preallocate_resources_for_live_packet_gatherers",
-    "ProcessPartitionConstraints", "ProfileDataGatherer",
+    "process_partition_constraints", "ProfileDataGatherer",
     "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SDRAMOutgoingPartitionAllocator",
     "spalloc_allocator", "spalloc_max_machine_generator",
