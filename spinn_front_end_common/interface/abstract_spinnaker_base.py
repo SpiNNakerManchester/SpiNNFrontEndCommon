@@ -74,7 +74,7 @@ from pacman.operations.routing_info_allocator_algorithms.\
     zoned_routing_info_allocator import (flexible_allocate, global_allocate)
 from pacman.operations.routing_table_generators import (
     BasicRoutingTableGenerator)
-from pacman.operations.tag_allocator_algorithms import BasicTagAllocator
+from pacman.operations.tag_allocator_algorithms import basic_tag_allocator
 
 from spinn_front_end_common import __version__ as fec_version
 from spinn_front_end_common.abstract_models import (
@@ -1908,8 +1908,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the "tag" data
         """
         with FecTimer(MAPPING, "Basic tag allocator"):
-            allocator = BasicTagAllocator()
-            self._tags = allocator(
+           self._tags = basic_tag_allocator(
                 self._machine, self._plan_n_timesteps, self._placements)
 
     def _report_tag_allocations(self):
