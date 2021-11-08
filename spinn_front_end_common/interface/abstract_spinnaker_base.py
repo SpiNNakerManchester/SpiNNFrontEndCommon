@@ -62,7 +62,7 @@ from pacman.operations.partition_algorithms import splitter_partitioner
 from pacman.operations.placer_algorithms import (
     connective_based_placer, one_to_one_placer, radial_placer, spreader_placer)
 from pacman.operations.router_algorithms import (
-    BasicDijkstraRouting, ner_route, ner_route_traffic_aware)
+    basic_dijkstra_routing, ner_route, ner_route_traffic_aware)
 from pacman.operations.router_compressors import PairCompressor
 from pacman.operations.router_compressors.checked_unordered_pair_compressor \
     import CheckedUnorderedPairCompressor
@@ -1873,8 +1873,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg router value
         """
         with FecTimer(MAPPING, "Basic dijkstra routing"):
-            router = BasicDijkstraRouting()
-            self._routing_table_by_partition = router(
+            self._routing_table_by_partition = basic_dijkstra_routing(
                 self._machine_graph, self._machine, self._placements)
 
     def _do_routing(self):
