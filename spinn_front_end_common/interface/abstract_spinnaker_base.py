@@ -136,7 +136,7 @@ from spinn_front_end_common.utilities.report_functions import (
     MemoryMapOnHostChipReport, network_specification,
     RouterCollisionPotentialReport,
     RoutingTableFromMachineReport, TagsFromMachineReport,
-    write_json_machine, write_json_partition_n_keys_map, WriteJsonPlacements,
+    write_json_machine, write_json_partition_n_keys_map, write_json_placements,
     WriteJsonRoutingTables)
 from spinn_front_end_common.utilities import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import (
@@ -1834,8 +1834,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_json_placements"):
                 return
-            writer = WriteJsonPlacements()
-            writer(self._placements, self._json_folder)
+            write_json_placements(self._placements, self._json_folder)
             # Output ignored as never used
 
     def _execute_ner_route_traffic_aware(self):

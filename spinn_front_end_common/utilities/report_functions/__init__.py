@@ -32,7 +32,7 @@ from .routing_table_from_machine_report import RoutingTableFromMachineReport
 from .real_tags_report import TagsFromMachineReport
 from .write_json_machine import write_json_machine
 from .write_json_partition_n_keys_map import write_json_partition_n_keys_map
-from .write_json_placements import WriteJsonPlacements
+from .write_json_placements import write_json_placements
 from .write_json_routing_tables import WriteJsonRoutingTables
 
 
@@ -56,5 +56,5 @@ __all__ = [
     "TagsFromMachineReport",
     "write_json_machine",
     "write_json_partition_n_keys_map",
-    "WriteJsonPlacements",
+    "write_json_placements",
     "WriteJsonRoutingTables"]
