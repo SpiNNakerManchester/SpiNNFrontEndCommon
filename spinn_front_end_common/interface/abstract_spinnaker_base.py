@@ -134,7 +134,7 @@ from spinn_front_end_common.utilities.report_functions import (
     BitFieldCompressorReport, board_chip_report, EnergyReport,
     FixedRouteFromMachineReport, MemoryMapOnHostReport,
     MemoryMapOnHostChipReport, network_specification,
-    RouterCollisionPotentialReport,
+    router_collision_potential_report,
     RoutingTableFromMachineReport, TagsFromMachineReport,
     write_json_machine, write_json_partition_n_keys_map, write_json_placements,
     write_json_routing_tables)
@@ -2063,9 +2063,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Router collision potential report"):
             # TODO cfg flag!
-            report = RouterCollisionPotentialReport()
-            report(self._routing_table_by_partition,
-                   self._machine_partition_n_keys_map, self._machine)
+            router_collision_potential_report(
+                self._routing_table_by_partition,
+                self._machine_partition_n_keys_map, self._machine)
 
     def _execute_locate_executable_start_type(self):
         """
