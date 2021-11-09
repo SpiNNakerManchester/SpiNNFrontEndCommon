@@ -30,7 +30,7 @@ from spinn_front_end_common.utilities.utility_objs import (
 from spinn_front_end_common.utility_models import (
     LivePacketGather, LivePacketGatherMachineVertex)
 from pacman_test_objects import SimpleTestVertex
-from pacman.model.partitioner_splitters import SplitterSliceLegacy
+from pacman.model.partitioner_splitters import SplitterFixedLegacy
 
 
 class TestInsertLPGEdges(unittest.TestCase):
@@ -198,7 +198,7 @@ class TestInsertLPGEdges(unittest.TestCase):
         #  spread over boards.
         for x, y, eth_x, eth_y in positions:
             vertex = SimpleTestVertex(1)
-            vertex.splitter = SplitterSliceLegacy()
+            vertex.splitter = SplitterFixedLegacy()
             app_graph.add_vertex(vertex)
             vertex_slice = Slice(0, 0)
             resources_required = vertex.get_resources_used_by_atoms(

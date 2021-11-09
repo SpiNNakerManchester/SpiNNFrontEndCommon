@@ -16,7 +16,7 @@ import logging
 
 from spinn_utilities.log import FormatAdapter
 from pacman.model.partitioner_splitters import (
-    SplitterOneAppOneMachine, SplitterOneToOneLegacy, SplitterSliceLegacy)
+    SplitterOneAppOneMachine, SplitterOneToOneLegacy, SplitterFixedLegacy)
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
 from spinn_front_end_common.utility_models import (
@@ -59,7 +59,7 @@ class SplitterSelector(object):
         if isinstance(app_vertex, AbstractOneAppOneMachineVertex):
             app_vertex.splitter = SplitterOneAppOneMachine()
         elif isinstance(app_vertex, ReverseIpTagMultiCastSource):
-            app_vertex.splitter = SplitterSliceLegacy()
+            app_vertex.splitter = SplitterFixedLegacy()
         elif isinstance(app_vertex, LivePacketGather):
             app_vertex.splitter = SplitterOneToOneLegacy()
         elif isinstance(app_vertex, ChipPowerMonitor):
@@ -67,4 +67,4 @@ class SplitterSelector(object):
         else:
             logger.warning(
                 self.NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE.format(app_vertex))
-            app_vertex.splitter = SplitterSliceLegacy()
+            app_vertex.splitter = SplitterFixedLegacy()
