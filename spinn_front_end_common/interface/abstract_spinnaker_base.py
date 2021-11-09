@@ -88,7 +88,7 @@ from spinn_front_end_common.interface.interface_functions import (
     ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
     CreateNotificationProtocol, DatabaseInterface,
     DSGRegionReloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
-    GraphBinaryGatherer, graph_data_specification_writer,
+    graph_binary_gatherer, graph_data_specification_writer,
     graph_measurer, GraphProvenanceGatherer, HostBasedBitFieldRouterCompressor,
     HostExecuteDataSpecification, hbp_allocator, hbp_max_machine_generator,
     insert_chip_power_monitors_to_graphs,
@@ -2230,8 +2230,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(LOADING, "Graph binary gatherer") as timer:
             try:
-                gather = GraphBinaryGatherer()
-                self._executable_targets = gather(
+                self._executable_targets = graph_binary_gatherer(
                     self._placements, self._machine_graph,
                     self._executable_finder)
             except KeyError:

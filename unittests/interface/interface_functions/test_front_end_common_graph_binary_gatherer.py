@@ -21,7 +21,7 @@ from pacman.model.graphs.machine import (
 from pacman.model.placements import Placements, Placement
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    GraphBinaryGatherer, LocateExecutableStartType)
+    graph_binary_gatherer, LocateExecutableStartType)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
@@ -75,8 +75,8 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             Placement(vertex_3, 0, 0, 2),
             Placement(vertex_4, 0, 0, 3)])
 
-        gatherer = GraphBinaryGatherer()
-        targets = gatherer.__call__(placements, graph, _TestExecutableFinder())
+        targets = graph_binary_gatherer(
+            placements, graph, _TestExecutableFinder())
         gatherer = LocateExecutableStartType()
         start_type = gatherer.__call__(graph, placements)
         self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
