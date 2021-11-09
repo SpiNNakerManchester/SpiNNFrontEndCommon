@@ -89,7 +89,8 @@ from spinn_front_end_common.interface.interface_functions import (
     CreateNotificationProtocol, DatabaseInterface,
     DSGRegionReloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
     graph_binary_gatherer, graph_data_specification_writer,
-    graph_measurer, GraphProvenanceGatherer, HostBasedBitFieldRouterCompressor,
+    graph_measurer, GraphProvenanceGatherer,
+    host_based_bit_field_router_compressor,
     HostExecuteDataSpecification, hbp_allocator, hbp_max_machine_generator,
     insert_chip_power_monitors_to_graphs,
     insert_edges_to_extra_monitor_functionality,
@@ -2257,8 +2258,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             self._multicast_routes_loaded = False
-            compressor = HostBasedBitFieldRouterCompressor()
-            compressed = compressor(
+            compressed = host_based_bit_field_router_compressor(
                 self._router_tables, self._machine, self._placements,
                 self._txrx, self._machine_graph, self._routing_infos)
             return compressed

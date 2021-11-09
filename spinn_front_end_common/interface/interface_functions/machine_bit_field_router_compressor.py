@@ -47,7 +47,9 @@ from spinn_front_end_common.utilities.system_control_logic import (
     run_system_application)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .load_executable_images import LoadExecutableImages
-from .host_bit_field_router_compressor import HostBasedBitFieldRouterCompressor
+from .host_bit_field_router_compressor import (
+    generate_key_to_atom_map, generate_report_path,
+    start_compression_selection_process)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -206,21 +208,20 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             progress_bar = ProgressBar(
                 total_number_of_things_to_do=len(on_host_chips),
                 string_describing_what_being_progressed=self._HOST_BAR_TEXT)
-            host_compressor = HostBasedBitFieldRouterCompressor()
             compressed_pacman_router_tables = MulticastRoutingTables()
 
-            key_atom_map = host_compressor.generate_key_to_atom_map(
+            key_atom_map = generate_key_to_atom_map(
                 machine_graph, routing_infos)
 
             for (chip_x, chip_y) in progress_bar.over(on_host_chips, False):
                 if get_config_bool(
                         "Reports",
                         "write_router_compression_with_bitfield_report"):
-                    report_folder_path = host_compressor.generate_report_path()
+                    report_folder_path = generate_report_path()
                 else:
                     report_folder_path = None
 
-                host_compressor.start_compression_selection_process(
+                start_compression_selection_process(
                     router_table=routing_tables.get_routing_table_for_chip(
                         chip_x, chip_y),
                     report_folder_path=report_folder_path,
