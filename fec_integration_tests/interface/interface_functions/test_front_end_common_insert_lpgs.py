@@ -59,8 +59,7 @@ class TestInsertLPGs(unittest.TestCase):
         live_packet_gatherers[default_params_holder] = list()
 
         # run edge inserter that should go boom
-        edge_inserter = insert_live_packet_gatherers_to_graphs()
-        lpg_verts_mapping = edge_inserter(
+        lpg_verts_mapping = insert_live_packet_gatherers_to_graphs(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine, machine_graph=graph, application_graph=None)
 

@@ -24,7 +24,7 @@ from pacman.model.placements import Placements, Placement
 from pacman.model.resources import ResourceContainer
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    insert_edges_to_live_packet_gatherers
+    insert_edges_to_live_packet_gatherers)
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.utility_models import (

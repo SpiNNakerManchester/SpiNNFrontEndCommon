@@ -130,7 +130,7 @@ class TestWriteJson(unittest.TestCase):
 
         folder = "spinn4_fiddle"
         self._remove_old_json(folder)
-        filename = write_json_machine(machine, folder)
+        filename = write_json_machine(machine, folder, True)
 
         self.json_compare(filename, "spinn4_fiddle.json")
         trans.close()
@@ -156,7 +156,7 @@ class TestWriteJson(unittest.TestCase):
 
         folder = "spinn2"
         self._remove_old_json(folder)
-        filename = write_json_machine(machine, folder)
+        filename = write_json_machine(machine, folder, False)
 
         self.json_compare(filename, "spinn2.json")
         trans.close()
