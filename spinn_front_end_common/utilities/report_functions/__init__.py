@@ -33,8 +33,7 @@ from .real_tags_report import TagsFromMachineReport
 from .write_json_machine import write_json_machine
 from .write_json_partition_n_keys_map import write_json_partition_n_keys_map
 from .write_json_placements import write_json_placements
-from .write_json_routing_tables import WriteJsonRoutingTables
-
+from .write_json_routing_tables import write_json_routing_tables
 
 def report_xml():
     return os.path.join(
@@ -57,4 +56,4 @@ __all__ = [
     "write_json_machine",
     "write_json_partition_n_keys_map",
     "write_json_placements",
-    "WriteJsonRoutingTables"]
+    "write_json_routing_tables"]
