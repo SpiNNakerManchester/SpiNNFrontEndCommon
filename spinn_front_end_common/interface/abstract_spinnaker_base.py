@@ -46,7 +46,7 @@ from spalloc import __version__ as spalloc_version
 
 from pacman import __version__ as pacman_version
 from pacman.executor.injection_decorator import (
-    clear_injectables, provide_injectables, do_injection)
+    clear_injectables, provide_injectables)
 from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import (
@@ -3065,9 +3065,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._current_run_timesteps = \
             self._calculate_number_of_machine_time_steps(n_machine_time_steps)
 
-        # TODO is there a better way to get update_buffer to run
         provide_injectables(self)
-        do_injection(self)
 
         self._execute_sdram_usage_report_per_chip()
         if not self._has_ran or graph_changed:

@@ -22,8 +22,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
-from pacman.executor.injection_decorator import (
-    inject_items, supports_injection, inject)
+from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
 from pacman.model.constraints.placer_constraints import BoardConstraint
@@ -73,7 +72,6 @@ _TWO_SHORTS = struct.Struct("<HH")
 _MAX_OFFSET_DENOMINATOR = 10
 
 
-@supports_injection
 class ReverseIPTagMulticastSourceMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractSupportsDatabaseInjection,
@@ -211,6 +209,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Work out if buffers are being sent
         self._send_buffer = None
+        self._first_machine_time_step = None
+        self._run_until_timesteps = None
         self._send_buffer_partition_id = send_buffer_partition_id
         self._send_buffer_size = 0
         n_buffer_times = 0
@@ -486,6 +486,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int first_machine_time_step:
         :param int run_until_timesteps:
         """
+        if (self._first_machine_time_step == first_machine_time_step and
+                self._run_until_timesteps == run_until_timesteps):
+            return
+        self._first_machine_time_step = first_machine_time_step
+        self._run_until_timesteps = run_until_timesteps
         key_to_send = self._virtual_key
         if self._virtual_key is None:
             key_to_send = 0
@@ -758,9 +763,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def is_in_injection_mode(self):
         return self._in_injection_mode
 
-    @inject("RunUntilTimeSteps")
     @inject_items({
-        "first_machine_time_step": "FirstMachineTimeStep"
+        "first_machine_time_step": "FirstMachineTimeStep",
+        "run_until_timesteps": "RunUntilTimeSteps"
     })
     def update_buffer(
             self, run_until_timesteps, first_machine_time_step):
@@ -791,7 +796,25 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         :rtype: dict(int,BufferedSendingRegion)
         """
+        self.update_buffer()  # pylint: disable=E1120
         return self._send_buffers
+
+    @overrides(SendsBuffersFromHostPreBufferedImpl.get_regions)
+    def get_regions(self):
+        # Avoid update_buffer as not needed and called during reset
+        return self._send_buffers.keys()
+
+    @overrides(SendsBuffersFromHostPreBufferedImpl.rewind)
+    def rewind(self, region):
+        # reset theses so fill send buffer will run when send_buffers called
+        self._first_machine_time_step = None
+        self._run_until_timesteps = None
+        # Avoid update_buffer as not needed and called during reset
+        self._send_buffers[region].rewind()
+
+    @overrides(SendsBuffersFromHostPreBufferedImpl.buffering_input)
+    def buffering_input(self):
+        return self._send_buffers is not None
 
     @send_buffers.setter
     def send_buffers(self, value):
