@@ -61,8 +61,7 @@
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio</span> <span class="kn">import</span> <span class="n">EIEIOPrefix</span><span class="p">,</span> <span class="n">EIEIOType</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio.data_messages</span> <span class="kn">import</span> <span class="n">EIEIODataHeader</span>
-<span class="kn">from</span> <span class="nn">pacman.executor.injection_decorator</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">inject_items</span><span class="p">,</span> <span class="n">supports_injection</span><span class="p">,</span> <span class="n">inject</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.executor.injection_decorator</span> <span class="kn">import</span> <span class="n">inject_items</span>
 <span class="kn">from</span> <span class="nn">pacman.model.constraints.key_allocator_constraints</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">FixedKeyAndMaskConstraint</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman.model.constraints.placer_constraints</span> <span class="kn">import</span> <span class="n">BoardConstraint</span>
@@ -112,7 +111,6 @@
 <span class="n">_MAX_OFFSET_DENOMINATOR</span> <span class="o">=</span> <span class="mi">10</span>
 
 
-<span class="nd">@supports_injection</span>
 <span class="k">class</span> <span class="nc">ReverseIPTagMulticastSourceMachineVertex</span><span class="p">(</span>
         <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span>
         <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractSupportsDatabaseInjection</span><span class="p">,</span>
@@ -250,6 +248,8 @@
 
         <span class="c1"># Work out if buffers are being sent</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_first_machine_time_step</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_timesteps</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_partition_id</span> <span class="o">=</span> <span class="n">send_buffer_partition_id</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_size</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">n_buffer_times</span> <span class="o">=</span> <span class="mi">0</span>
@@ -525,6 +525,11 @@
 <span class="sd">        :param int first_machine_time_step:</span>
 <span class="sd">        :param int run_until_timesteps:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_first_machine_time_step</span> <span class="o">==</span> <span class="n">first_machine_time_step</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_timesteps</span> <span class="o">==</span> <span class="n">run_until_timesteps</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_first_machine_time_step</span> <span class="o">=</span> <span class="n">first_machine_time_step</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_timesteps</span> <span class="o">=</span> <span class="n">run_until_timesteps</span>
         <span class="n">key_to_send</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">key_to_send</span> <span class="o">=</span> <span class="mi">0</span>
@@ -797,9 +802,9 @@
     <span class="k">def</span> <span class="nf">is_in_injection_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_in_injection_mode</span>
 
-<div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.update_buffer"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.update_buffer">[docs]</a>    <span class="nd">@inject</span><span class="p">(</span><span class="s2">&quot;RunUntilTimeSteps&quot;</span><span class="p">)</span>
-    <span class="nd">@inject_items</span><span class="p">({</span>
-        <span class="s2">&quot;first_machine_time_step&quot;</span><span class="p">:</span> <span class="s2">&quot;FirstMachineTimeStep&quot;</span>
+<div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.update_buffer"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.update_buffer">[docs]</a>    <span class="nd">@inject_items</span><span class="p">({</span>
+        <span class="s2">&quot;first_machine_time_step&quot;</span><span class="p">:</span> <span class="s2">&quot;FirstMachineTimeStep&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;run_until_timesteps&quot;</span><span class="p">:</span> <span class="s2">&quot;RunUntilTimeSteps&quot;</span>
     <span class="p">})</span>
     <span class="k">def</span> <span class="nf">update_buffer</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">run_until_timesteps</span><span class="p">,</span> <span class="n">first_machine_time_step</span><span class="p">):</span>
@@ -830,7 +835,25 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :rtype: dict(int,BufferedSendingRegion)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_buffer</span><span class="p">()</span>  <span class="c1"># pylint: disable=E1120</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffers</span>
+
+<div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.get_regions"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_regions">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SendsBuffersFromHostPreBufferedImpl</span><span class="o">.</span><span class="n">get_regions</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Avoid update_buffer as not needed and called during reset</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffers</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.rewind"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.rewind">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SendsBuffersFromHostPreBufferedImpl</span><span class="o">.</span><span class="n">rewind</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">rewind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="c1"># reset theses so fill send buffer will run when send_buffers called</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_first_machine_time_step</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_timesteps</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Avoid update_buffer as not needed and called during reset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffers</span><span class="p">[</span><span class="n">region</span><span class="p">]</span><span class="o">.</span><span class="n">rewind</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.buffering_input"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.buffering_input">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SendsBuffersFromHostPreBufferedImpl</span><span class="o">.</span><span class="n">buffering_input</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">buffering_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
 
     <span class="nd">@send_buffers</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">send_buffers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
