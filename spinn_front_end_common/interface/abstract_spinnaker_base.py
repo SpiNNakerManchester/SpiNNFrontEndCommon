@@ -73,7 +73,7 @@ from pacman.operations.routing_info_allocator_algorithms.\
 from pacman.operations.routing_info_allocator_algorithms.\
     zoned_routing_info_allocator import (flexible_allocate, global_allocate)
 from pacman.operations.routing_table_generators import (
-    BasicRoutingTableGenerator)
+    basic_routing_table_generator)
 from pacman.operations.tag_allocator_algorithms import basic_tag_allocator
 
 from spinn_front_end_common import __version__ as fec_version
@@ -2018,8 +2018,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             To add an additional Generator copy the pattern of do_placer
         """
         with FecTimer(MAPPING, "Basic routing table generator"):
-            generator = BasicRoutingTableGenerator()
-            self._router_tables = generator(
+            self._router_tables = basic_routing_table_generator(
                 self._routing_infos, self._routing_table_by_partition,
                 self._machine)
         # TODO Nuke ZonedRoutingTableGenerator
