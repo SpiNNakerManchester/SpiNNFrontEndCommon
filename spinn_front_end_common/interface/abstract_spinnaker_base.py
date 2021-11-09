@@ -1779,8 +1779,8 @@ class AbstractSpinnakerBase(ConfigHandler):
              self._data_in_multicast_key_to_chip_map,
              self._system_multicast_router_timeout_keys) = (
                 system_multicast_routing_generator(
-                self._machine, self._extra_monitor_to_chip_mapping,
-                self._placements))
+                    self._machine, self._extra_monitor_to_chip_mapping,
+                    self._placements))
 
     def _execute_fixed_route_router(self):
         """
@@ -1860,7 +1860,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg router value
         """
         with FecTimer(MAPPING, "Ner route"):
-             self._routing_table_by_partition = ner_route(
+            self._routing_table_by_partition = ner_route(
                 self._machine_graph, self._machine, self._placements)
 
     def _execute_basic_dijkstra_routing(self):
@@ -1908,7 +1908,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the "tag" data
         """
         with FecTimer(MAPPING, "Basic tag allocator"):
-           self._tags = basic_tag_allocator(
+            self._tags = basic_tag_allocator(
                 self._machine, self._plan_n_timesteps, self._placements)
 
     def _report_tag_allocations(self):

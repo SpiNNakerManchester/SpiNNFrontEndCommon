@@ -178,7 +178,6 @@ def __add_data_extraction_vertices_mach_graph(
         chip_to_gatherer_map[chip.x, chip.y] = machine_vertex
 
 
-
 def __new_app_monitor(chip):
     """
     :param ~.Chip chip:

@@ -18,8 +18,7 @@ from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
 
 
-def preallocate_resources_for_chip_power_monitor(
-    pre_allocated_resources):
+def preallocate_resources_for_chip_power_monitor(pre_allocated_resources):
     """  Adds chip power monitor resources as required
 
     :param int sampling_frequency: the frequency of sampling
