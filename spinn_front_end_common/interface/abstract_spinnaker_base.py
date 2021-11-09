@@ -97,7 +97,7 @@ from spinn_front_end_common.interface.interface_functions import (
     insert_extra_monitor_vertices_to_graphs,
     insert_live_packet_gatherers_to_graphs,
     LoadExecutableImages, LoadFixedRoutes,
-    local_tdma_builder, LocateExecutableStartType, machine_generator,
+    local_tdma_builder, locate_executable_start_type, machine_generator,
     preallocate_resources_for_chip_power_monitor,
     preallocate_resources_for_live_packet_gatherers,
     pre_allocate_resources_for_extra_monitor_support,
@@ -2077,8 +2077,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # TODO why skip if virtual ?
             if timer.skip_if_virtual_board():
                 return
-            locator = LocateExecutableStartType()
-            self._executable_types = locator(
+            self._executable_types = locate_executable_start_type(
                 self._machine_graph, self._placements)
 
     def _execute_buffer_manager_creator(self):
