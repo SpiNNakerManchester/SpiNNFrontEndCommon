@@ -84,7 +84,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     ApplicationFinisher, ApplicationRunner, BufferExtractor,
-    BufferManagerCreator, ChipIOBufClearer, ChipIOBufExtractor,
+    buffer_manager_creator, ChipIOBufClearer, ChipIOBufExtractor,
     ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
     CreateNotificationProtocol, DatabaseInterface,
     DSGRegionReloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
@@ -2092,8 +2092,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
 
-            creator = BufferManagerCreator()
-            self._buffer_manager = creator(
+            self._buffer_manager = buffer_manager_creator(
                 self._placements, self._tags, self._txrx,
                 self._extra_monitor_vertices,
                 self._extra_monitor_to_chip_mapping,
