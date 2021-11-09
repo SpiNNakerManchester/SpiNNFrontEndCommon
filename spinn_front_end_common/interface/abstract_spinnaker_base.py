@@ -104,7 +104,7 @@ from spinn_front_end_common.interface.interface_functions import (
     PlacementsProvenanceGatherer,
     ProfileDataGatherer, process_partition_constraints,
     ReadRoutingTablesFromMachine,
-    RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader,
+    RouterProvenanceGatherer, routing_setup, RoutingTableLoader,
     sdram_outgoing_partition_allocator, spalloc_allocator,
     spalloc_max_machine_generator,
     system_multicast_routing_generator,
@@ -2219,9 +2219,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Routing setup") as timer:
             if timer.skip_if_virtual_board():
                 return
-            setup = RoutingSetup()
             # Only needs the x and y of chips with routing tables
-            setup(self._router_tables, self._app_id, self._txrx, self._machine)
+            routing_setup(
+                self._router_tables, self._app_id, self._txrx, self._machine)
 
     def _execute_graph_binary_gatherer(self):
         """
