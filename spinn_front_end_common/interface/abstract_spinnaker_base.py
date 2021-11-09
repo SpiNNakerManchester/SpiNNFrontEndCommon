@@ -105,7 +105,7 @@ from spinn_front_end_common.interface.interface_functions import (
     ProfileDataGatherer, process_partition_constraints,
     ReadRoutingTablesFromMachine,
     RouterProvenanceGatherer, RoutingSetup, RoutingTableLoader,
-    SDRAMOutgoingPartitionAllocator, spalloc_allocator,
+    sdram_outgoing_partition_allocator, spalloc_allocator,
     spalloc_max_machine_generator,
     system_multicast_routing_generator,
     TagsLoader, virtual_machine_generator)
@@ -2104,9 +2104,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the SDRAMOutgoingPartitionAllocator
         """
         with FecTimer(MAPPING, "SDRAM outgoing partition allocator"):
-            allocator = SDRAMOutgoingPartitionAllocator()
             # Ok if transceiver = None
-            allocator(
+            sdram_outgoing_partition_allocator(
                 self._machine_graph, self._placements, self._app_id,
                 self._txrx)
 

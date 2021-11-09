@@ -81,8 +81,8 @@ from .spalloc_max_machine_generator import spalloc_max_machine_generator
 from .tags_loader import TagsLoader
 from .virtual_machine_generator import virtual_machine_generator
 from .read_routing_tables_from_machine import ReadRoutingTablesFromMachine
-from .sdram_outgoing_partition_allocator import SDRAMOutgoingPartitionAllocator
-
+from .sdram_outgoing_partition_allocator import (
+    sdram_outgoing_partition_allocator)
 
 def interface_xml():
     return os.path.join(
@@ -118,7 +118,7 @@ __all__ = [
     "preallocate_resources_for_live_packet_gatherers",
     "process_partition_constraints", "ProfileDataGatherer",
     "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "RoutingSetup",
-    "RoutingTableLoader", "SDRAMOutgoingPartitionAllocator",
+    "RoutingTableLoader", "sdram_outgoing_partition_allocator",
     "spalloc_allocator", "spalloc_max_machine_generator",
     "system_multicast_routing_generator", "TagsLoader",
     "virtual_machine_generator",
