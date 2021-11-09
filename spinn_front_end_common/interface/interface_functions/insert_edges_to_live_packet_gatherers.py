@@ -52,7 +52,7 @@ def insert_edges_to_live_packet_gatherers(
     inserter = _InsertEdgesToLivePacketGatherers(
         placements, live_packet_gatherers_to_vertex_mapping, machine)
     inserter._run(live_packet_gatherer_parameters, machine_graph,
-             application_graph, n_keys_map)
+                  application_graph, n_keys_map)
 
 
 class _InsertEdgesToLivePacketGatherers(object):
@@ -88,9 +88,8 @@ class _InsertEdgesToLivePacketGatherers(object):
         self._machine = machine
         self._placements = placements
 
-
     def _run(self, live_packet_gatherer_parameters,
-            machine_graph, application_graph=None, n_keys_map=None):
+             machine_graph, application_graph=None, n_keys_map=None):
         """
         :param live_packet_gatherer_parameters: the set of parameters
         :type live_packet_gatherer_parameters:
