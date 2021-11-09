@@ -37,7 +37,7 @@ from .energy_provenance_reporter import EnergyProvenanceReporter
 from .find_application_chips_used import FindApplicationChipsUsed
 from .graph_binary_gatherer import GraphBinaryGatherer
 from .graph_data_specification_writer import (
-    GraphDataSpecificationWriter)
+    graph_data_specification_writer)
 from .graph_measurer import graph_measurer
 from .graph_provenance_gatherer import GraphProvenanceGatherer
 from .hbp_allocator import hbp_allocator
@@ -99,7 +99,7 @@ __all__ = [
     "DSGRegionReloader", "edge_to_n_keys_mapper",
     "EnergyProvenanceReporter",
     "FindApplicationChipsUsed",
-    "GraphBinaryGatherer", "GraphDataSpecificationWriter",
+    "GraphBinaryGatherer", "graph_data_specification_writer",
     "graph_measurer", "GraphProvenanceGatherer",
     "hbp_allocator", "HostBasedBitFieldRouterCompressor",
     "hbp_max_machine_generator",
