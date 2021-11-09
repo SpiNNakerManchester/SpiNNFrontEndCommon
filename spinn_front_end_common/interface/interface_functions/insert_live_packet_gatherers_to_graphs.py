@@ -21,8 +21,8 @@ from spinn_front_end_common.utility_models import (
 
 
 def insert_live_packet_gatherers_to_graphs(
-    live_packet_gatherer_parameters, machine, machine_graph,
-    application_graph=None):
+        live_packet_gatherer_parameters, machine, machine_graph,
+        application_graph=None):
     """ Add LPG vertices on Ethernet connected chips as required.
 
     :param live_packet_gatherer_parameters:
