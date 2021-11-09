@@ -21,7 +21,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractProvidesIncomingPartitionConstraints)
 
 
-def process_partition_constraints():
+def process_partition_constraints(machine_graph):
     """
     Adds constraints to partitions if the vertices at either end of the\
         partition request it.
