@@ -20,7 +20,8 @@ from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 
 
-def router_collision_potential_report(router_tables_by_partition, n_keys_map, machine):
+def router_collision_potential_report(
+        router_tables_by_partition, n_keys_map, machine):
     """
     :param MulticastRoutingTableByPartition router_tables_by_partition:
     :param AbstractMachinePartitionNKeysMap n_keys_map:

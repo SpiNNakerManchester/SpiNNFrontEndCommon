@@ -17,10 +17,8 @@ import functools
 import logging
 import struct
 from collections import defaultdict
-from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
-from spinn_utilities.overrides import overrides
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets, Router
 from spinnman.exceptions import (
@@ -62,7 +60,7 @@ SIZE_OF_COMMS_SDRAM = 7 * 4 * 18
 SECOND_TO_MICRO_SECOND = 1000000
 
 
-class _MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
+class _MachineBitFieldRouterCompressor(object):
     """ On-machine bitfield-aware routing table compression.
     """
 

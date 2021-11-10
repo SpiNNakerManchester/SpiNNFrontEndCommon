@@ -1642,8 +1642,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_json_partition_n_keys_map"):
                 return
-            writer = write_json_partition_n_keys_map()
-            writer(self._machine_partition_n_keys_map, self._json_folder)
+            write_json_partition_n_keys_map(
+                self._machine_partition_n_keys_map, self._json_folder)
             # Output ignored as never used
 
     def _execute_connective_based_placer(self):

@@ -83,6 +83,7 @@ from .read_routing_tables_from_machine import ReadRoutingTablesFromMachine
 from .sdram_outgoing_partition_allocator import (
     sdram_outgoing_partition_allocator)
 
+
 def interface_xml():
     return os.path.join(
         os.path.dirname(__file__), "front_end_common_interface_functions.xml")
@@ -100,7 +101,7 @@ __all__ = [
     "FindApplicationChipsUsed",
     "graph_binary_gatherer", "graph_data_specification_writer",
     "graph_measurer", "GraphProvenanceGatherer",
-    "hbp_allocator", "host_bit_field_router_compressor",
+    "hbp_allocator", "host_based_bit_field_router_compressor",
     "hbp_max_machine_generator",
     "HostExecuteDataSpecification",
     "insert_chip_power_monitors_to_graphs",
@@ -109,14 +110,15 @@ __all__ = [
     "insert_extra_monitor_vertices_to_graphs",
     "insert_live_packet_gatherers_to_graphs", "interface_xml",
     "LoadExecutableImages", "LoadFixedRoutes", "local_tdma_builder",
-    "locate_executable_start_type", "MachineBitFieldRouterCompressor",
+    "locate_executable_start_type",
     "machine_generator", "PlacementsProvenanceGatherer",
     "PreAllocateForBitFieldRouterCompressor",
     "preallocate_resources_for_chip_power_monitor",
     "pre_allocate_resources_for_extra_monitor_support",
     "preallocate_resources_for_live_packet_gatherers",
     "process_partition_constraints", "ProfileDataGatherer",
-    "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "routing_setup",
+    "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer",
+    "routing_setup",
     "RoutingTableLoader", "sdram_outgoing_partition_allocator",
     "spalloc_allocator", "spalloc_max_machine_generator",
     "system_multicast_routing_generator", "TagsLoader",
