@@ -34,8 +34,6 @@ logger = logging.getLogger(__name__)
 def graph_data_specification_writer(
         placements, hostname, machine, data_n_timesteps, placement_order=None):
     """
-    Executes the data specification generation step.
-
     :param ~pacman.model.placements.Placements placements:
         placements of machine graph to cores
     :param str hostname: SpiNNaker machine name
@@ -51,10 +49,12 @@ def graph_data_specification_writer(
         If the DSG asks to use more SDRAM than is available.
     """
     writer = _GraphDataSpecificationWriter(hostname, machine)
-    return writer._run(placements, data_n_timesteps, placement_order=None)
+    return writer._run(placements, data_n_timesteps, placement_order)
 
 
 class _GraphDataSpecificationWriter(object):
+    """ Executes the data specification generation step.
+    """
 
     __slots__ = (
         # Dict of SDRAM usage by chip coordinates
@@ -68,24 +68,22 @@ class _GraphDataSpecificationWriter(object):
         # hostname
         "_hostname")
 
-    def __init__(self, hostname, machine):
-        """
-
-        :param str hostname: SpiNNaker machine name
-        :param ~spinn_machine.Machine machine:
-            the python representation of the SpiNNaker machine
-        """
+    def __init__(self, hostname, machine, ):
         self._sdram_usage = defaultdict(lambda: 0)
         self._region_sizes = dict()
         self._vertices_by_chip = defaultdict(list)
-        self._hostname = hostname
         self._machine = machine
+        self._hostname = hostname
 
     def _run(
-            self, placements, data_n_timesteps, placement_order=None):
+            self, placements, data_n_timesteps,
+            placement_order=None):
         """
         :param ~pacman.model.placements.Placements placements:
             placements of machine graph to cores
+        :param str hostname: SpiNNaker machine name
+        :param ~spinn_machine.Machine machine:
+            the python representation of the SpiNNaker machine
         :param int data_n_timesteps:
             The number of timesteps for which data space will been reserved
         :param list(~pacman.model.placements.Placement) placement_order:
@@ -96,6 +94,7 @@ class _GraphDataSpecificationWriter(object):
             If the DSG asks to use more SDRAM than is available.
         """
         # pylint: disable=too-many-arguments, too-many-locals
+        # pylint: disable=attribute-defined-outside-init
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
