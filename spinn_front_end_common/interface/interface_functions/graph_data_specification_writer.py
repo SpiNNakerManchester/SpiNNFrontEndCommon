@@ -48,8 +48,8 @@ def graph_data_specification_writer(
     :raises ConfigurationException:
         If the DSG asks to use more SDRAM than is available.
     """
-    writer = _GraphDataSpecificationWriter()
-    return writer(placements, hostname, machine, data_n_timesteps, placement_order)
+    writer = _GraphDataSpecificationWriter(hostname, machine)
+    return writer._run(placements, data_n_timesteps, placement_order)
 
 
 class _GraphDataSpecificationWriter(object):
@@ -68,13 +68,15 @@ class _GraphDataSpecificationWriter(object):
         # hostname
         "_hostname")
 
-    def __init__(self):
+    def __init__(self, hostname, machine, ):
         self._sdram_usage = defaultdict(lambda: 0)
         self._region_sizes = dict()
         self._vertices_by_chip = defaultdict(list)
+        self._machine = machine
+        self._hostname = hostname
 
-    def __call__(
-            self, placements, hostname, machine, data_n_timesteps,
+    def _run(
+            self, placements, data_n_timesteps,
             placement_order=None):
         """
         :param ~pacman.model.placements.Placements placements:
@@ -93,12 +95,10 @@ class _GraphDataSpecificationWriter(object):
         """
         # pylint: disable=too-many-arguments, too-many-locals
         # pylint: disable=attribute-defined-outside-init
-        self._machine = machine
-        self._hostname = hostname
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        targets = DataSpecificationTargets(machine)
+        targets = DataSpecificationTargets(self._machine)
 
         if placement_order is None:
             placement_order = placements.placements
