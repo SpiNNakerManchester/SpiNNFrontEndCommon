@@ -31,7 +31,28 @@ from spinn_front_end_common.utilities.utility_calls import get_report_writer
 logger = logging.getLogger(__name__)
 
 
-class GraphDataSpecificationWriter(object):
+def graph_data_specification_writer(
+        placements, hostname, machine, data_n_timesteps, placement_order=None):
+    """
+    :param ~pacman.model.placements.Placements placements:
+        placements of machine graph to cores
+    :param str hostname: SpiNNaker machine name
+    :param ~spinn_machine.Machine machine:
+        the python representation of the SpiNNaker machine
+    :param int data_n_timesteps:
+        The number of timesteps for which data space will been reserved
+    :param list(~pacman.model.placements.Placement) placement_order:
+        the optional order in which placements should be examined
+    :return: DSG targets (map of placement tuple and filename)
+    :rtype: tuple(DataSpecificationTargets, dict(tuple(int,int,int), int))
+    :raises ConfigurationException:
+        If the DSG asks to use more SDRAM than is available.
+    """
+    writer = _GraphDataSpecificationWriter()
+    return writer(placements, hostname, machine, data_n_timesteps, placement_order)
+
+
+class _GraphDataSpecificationWriter(object):
     """ Executes the data specification generation step.
     """
 

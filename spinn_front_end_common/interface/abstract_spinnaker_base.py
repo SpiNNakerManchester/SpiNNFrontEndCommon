@@ -88,7 +88,7 @@ from spinn_front_end_common.interface.interface_functions import (
     ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
     CreateNotificationProtocol, DatabaseInterface,
     DSGRegionReloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
-    GraphBinaryGatherer, GraphDataSpecificationWriter,
+    GraphBinaryGatherer, graph_data_specification_writer,
     graph_measurer, GraphProvenanceGatherer, HostBasedBitFieldRouterCompressor,
     HostExecuteDataSpecification, hbp_allocator, hbp_max_machine_generator,
     insert_chip_power_monitors_to_graphs,
@@ -2187,10 +2187,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 DATA_GENERATION, "Graph data specification writer"):
-            writer = GraphDataSpecificationWriter()
-            self._dsg_targets, self._region_sizes = writer(
-                self._placements, self._ipaddress, self._machine,
-                self._max_run_time_steps)
+            self._dsg_targets, self._region_sizes = \
+                graph_data_specification_writer(
+                    self._placements, self._ipaddress, self._machine,
+                    self._max_run_time_steps)
 
     def _do_data_generation(self):
         """
