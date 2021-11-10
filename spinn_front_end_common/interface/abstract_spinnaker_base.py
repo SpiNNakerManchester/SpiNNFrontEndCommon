@@ -112,8 +112,8 @@ from spinn_front_end_common.interface.interface_functions import (
     TagsLoader, virtual_machine_generator)
 from spinn_front_end_common.interface.interface_functions.\
     machine_bit_field_router_compressor import (
-        MachineBitFieldOrderedCoveringCompressor,
-        MachineBitFieldPairRouterCompressor)
+        machine_bit_field_ordered_covering_compressor,
+        machine_bit_field_pair_router_compressor)
 from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression, pair_compression)
@@ -2279,8 +2279,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Machine bitfield ordered covering compressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
-            compressor = MachineBitFieldOrderedCoveringCompressor()
-            compressor(
+            machine_bit_field_ordered_covering_compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
@@ -2303,8 +2302,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             self._multicast_routes_loaded = True
-            compressor = MachineBitFieldPairRouterCompressor()
-            compressor(
+            machine_bit_field_pair_router_compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)

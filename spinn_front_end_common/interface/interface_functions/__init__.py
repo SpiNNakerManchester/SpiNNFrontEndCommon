@@ -59,8 +59,6 @@ from .load_executable_images import LoadExecutableImages
 from .load_fixed_routes import LoadFixedRoutes
 from .local_tdma_builder import local_tdma_builder
 from .locate_executable_start_type import locate_executable_start_type
-from .machine_bit_field_router_compressor import (
-    MachineBitFieldRouterCompressor)
 from .machine_generator import machine_generator
 from .create_notification_protocol import CreateNotificationProtocol
 from .placements_provenance_gatherer import PlacementsProvenanceGatherer
