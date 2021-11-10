@@ -63,9 +63,7 @@ from pacman.operations.placer_algorithms import (
     connective_based_placer, one_to_one_placer, radial_placer, spreader_placer)
 from pacman.operations.router_algorithms import (
     basic_dijkstra_routing, ner_route, ner_route_traffic_aware)
-from pacman.operations.router_compressors import PairCompressor
-from pacman.operations.router_compressors.checked_unordered_pair_compressor \
-    import CheckedUnorderedPairCompressor
+from pacman.operations.router_compressors import pair_compressor
 from pacman.operations.router_compressors.ordered_covering_router_compressor \
     import OrderedCoveringCompressor
 from pacman.operations.routing_info_allocator_algorithms.\
@@ -2357,8 +2355,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: MulticastRoutingTables
         """
         with FecTimer(LOADING, "Pair compressor"):
-            compressor = PairCompressor()
-            compressed = compressor(self._router_tables)
+            compressed = pair_compressor(self._router_tables)
             self._multicast_routes_loaded = False
             return compressed
 
@@ -2394,8 +2391,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: MulticastRoutingTables
         """
         with FecTimer(LOADING, "Pair unordered compressor"):
-            compressor = CheckedUnorderedPairCompressor()
-            compressed = compressor(self._router_tables)
+            compressed = pair_compressor(self._router_tables, ordered=False)
             self._multicast_routes_loaded = False
             return compressed
 

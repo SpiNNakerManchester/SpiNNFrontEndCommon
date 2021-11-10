@@ -39,7 +39,7 @@ from spinn_front_end_common.utilities.report_functions.\
         generate_provenance_item)
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
-from pacman.operations.router_compressors import PairCompressor
+from pacman.operations.router_compressors import pair_compressor
 
 _REPORT_FOLDER_NAME = "router_compressor_with_bitfield"
 
