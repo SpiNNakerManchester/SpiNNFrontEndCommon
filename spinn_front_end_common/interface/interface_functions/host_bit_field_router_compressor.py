@@ -92,7 +92,7 @@ def host_based_bit_field_router_compressor(
     return compressed_pacman_router_tables
 
 
-def generate_report_path(self):
+def generate_report_path():
     """
     :rtype: str
     """
@@ -267,7 +267,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         self._best_routing_entries = None
         self._best_midpoint = -1
         self._bit_fields_by_key = None
-        self._compression_attempts = None
+        self._compression_attempts = dict()
 
     def get_bit_field_sdram_base_addresses(
             self, chip_x, chip_y, machine, placements, transceiver):
