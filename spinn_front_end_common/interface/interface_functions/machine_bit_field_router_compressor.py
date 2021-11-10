@@ -797,7 +797,7 @@ def machine_bit_field_ordered_covering_compressor(
         """
     compressor = _MachineBitFieldRouterCompressor(
         "bit_field_ordered_covering_compressor.aplx", "OrderedCovering")
-    compressor.run(
+    return compressor.run(
         routing_tables, transceiver, machine, app_id, machine_graph,
         placements, executable_finder, routing_infos, executable_targets,
         compress_as_much_as_possible)
@@ -832,7 +832,7 @@ def machine_bit_field_pair_router_compressor(
         """
     compressor = _MachineBitFieldRouterCompressor(
         "bit_field_pair_compressor.aplx", "Pair")
-    compressor.run(
+    return compressor.run(
         routing_tables, transceiver, machine, app_id, machine_graph,
         placements, executable_finder, routing_infos, executable_targets,
         compress_as_much_as_possible)
