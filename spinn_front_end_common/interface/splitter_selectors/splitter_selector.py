@@ -24,11 +24,6 @@ from spinn_front_end_common.utility_models import (
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE = (
-    "The SplitterSelector has not seen the {} vertex before. Therefore "
-    "there is no known splitter to allocate to this app vertex and so "
-    "will use the SplitterSliceLegacy Splitter.")
-
 
 def splitter_selector(app_graph):
     """ basic selector which puts the legacy splitter object on\
@@ -42,7 +37,7 @@ def splitter_selector(app_graph):
             vertex_selector(app_vertex)
 
 
-def vertex_selector(self, app_vertex):
+def vertex_selector(app_vertex):
     """ main point for selecting a splitter object for a given app vertex.
 
     Will assume the SplitterSliceLegacy if no heuristic is known for the
@@ -62,5 +57,7 @@ def vertex_selector(self, app_vertex):
         app_vertex.splitter = SplitterOneToOneLegacy()
     else:
         logger.warning(
-            self.NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE.format(app_vertex))
+            f"The SplitterSelector has not seen the {app_vertex} vertex "
+            f"before. Therefore there is no known splitter to allocate to "
+            f"this app vertex and so will use the SplitterSliceLegacy.")
         app_vertex.splitter = SplitterSliceLegacy()

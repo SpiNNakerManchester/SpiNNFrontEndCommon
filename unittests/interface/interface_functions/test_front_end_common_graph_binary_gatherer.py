@@ -21,7 +21,7 @@ from pacman.model.graphs.machine import (
 from pacman.model.placements import Placements, Placement
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    graph_binary_gatherer, LocateExecutableStartType)
+    graph_binary_gatherer, locate_executable_start_type)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
@@ -77,8 +77,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
 
         targets = graph_binary_gatherer(
             placements, graph, _TestExecutableFinder())
-        gatherer = LocateExecutableStartType()
-        start_type = gatherer.__call__(graph, placements)
+        start_type = locate_executable_start_type(graph, placements)
         self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
         self.assertEqual(targets.total_processors, 3)
 
@@ -106,8 +105,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         graph = MachineGraph("Test")
         graph.add_vertices([vertex_1, vertex_2])
 
-        gatherer = LocateExecutableStartType()
-        results = gatherer.__call__(graph, placements)
+        results = locate_executable_start_type(graph, placements)
         self.assertIn(ExecutableType.RUNNING, results)
         self.assertIn(ExecutableType.SYNC, results)
         self.assertNotIn(ExecutableType.USES_SIMULATION_INTERFACE, results)

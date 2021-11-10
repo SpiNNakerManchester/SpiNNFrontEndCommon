@@ -37,7 +37,7 @@ def graph_binary_gatherer(placements, graph, executable_finder):
     :rtype: ExecutableTargets
     """
     gatherer = _GraphBinaryGatherer(executable_finder)
-    return gatherer.__run(placements, graph)
+    return gatherer._run(placements, graph)
 
 
 class _GraphBinaryGatherer(object):
@@ -56,7 +56,7 @@ class _GraphBinaryGatherer(object):
         self._exe_finder = executable_finder
         self._exe_targets = ExecutableTargets()
 
-    def __run(self, placements, graph, executable_finder):
+    def _run(self, placements, graph):
         """
         :param ~pacman.model.placements.Placements placements:
         :param ~pacman.model.graphs.machine.MachineGraph graph:
