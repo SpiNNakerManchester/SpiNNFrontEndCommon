@@ -272,7 +272,82 @@ class _ExecutionContext(object):
         return ref_to_use.pointer
 
 
-class HostExecuteDataSpecification(object):
+def execute_system_data_specs(
+        self, transceiver, machine, app_id, dsg_targets, region_sizes,
+        executable_targets,
+        java_caller=None, processor_to_app_data_base_address=None):
+    """ Execute the data specs for all system targets.
+
+    :param ~spinnman.transceiver.Transceiver transceiver:
+        the spinnman instance
+    :param ~spinn_machine.Machine machine:
+        the python representation of the spinnaker machine
+    :param int app_id: the application ID of the simulation
+    :param dict(tuple(int,int,int),str) dsg_targets:
+        map of placement to file path
+    :param dict(tuple(int,int,int),int) region_sizes:
+        the coordinates for region sizes for each core
+    :param ~spinnman.model.ExecutableTargets executable_targets:
+        the map between binaries and locations and executable types
+    :param JavaCaller java_caller:
+    :param processor_to_app_data_base_address:
+    :type processor_to_app_data_base_address:
+        dict(tuple(int,int,int),DataWritten)
+    :return: map of placement and DSG data, and loaded data flag.
+    :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
+    """
+    specifier = _HostExecuteDataSpecification(
+        transceiver, machine, app_id, java_caller,
+        processor_to_app_data_base_address)
+    specifier.execute_system_data_specs(
+        dsg_targets, region_sizes, executable_targets)
+
+
+def execute_application_data_specs(
+        transceiver, machine, app_id, dsg_targets,
+        executable_targets, region_sizes,
+        placements=None, extra_monitor_cores=None,
+        extra_monitor_cores_to_ethernet_connection_map=None,
+        java_caller=None, processor_to_app_data_base_address=None):
+    """ Execute the data specs for all non-system targets.
+
+    :param ~spinn_machine.Machine machine:
+        the python representation of the SpiNNaker machine
+    :param ~spinnman.transceiver.Transceiver transceiver:
+        the spinnman instance
+    :param int app_id: the application ID of the simulation
+    :param dict(tuple(int,int,int),int) region_sizes:
+        the coord for region sizes for each core
+    :param DataSpecificationTargets dsg_targets:
+        map of placement to file path
+    :param bool uses_advanced_monitors:
+        whether to use fast data in protocol
+    :param ~spinnman.model.ExecutableTargets executable_targets:
+        what core will running what binary
+    :param ~pacman.model.placements.Placements placements:
+        where vertices are located
+    :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+        the deployed extra monitors, if any
+    :param extra_monitor_cores_to_ethernet_connection_map:
+        how to talk to extra monitor cores
+    :type extra_monitor_cores_to_ethernet_connection_map:
+        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+    :param processor_to_app_data_base_address:
+        map of placement and DSG data
+    :type processor_to_app_data_base_address:
+        dict(tuple(int,int,int), DsWriteInfo)
+    :return: map of placement and DSG data
+    :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
+    """
+    specifier = _HostExecuteDataSpecification(
+        transceiver, machine, app_id, java_caller,
+        processor_to_app_data_base_address)
+    specifier.execute_application_data_specs(
+        dsg_targets, executable_targets, region_sizes, placements,
+        extra_monitor_cores, extra_monitor_cores_to_ethernet_connection_map)
+
+
+class _HostExecuteDataSpecification(object):
     """ Executes the host based data specification.
     """
 
@@ -294,14 +369,28 @@ class HostExecuteDataSpecification(object):
 
     first = True
 
-    def __init__(self):
-        self._app_id = None
+    def __init__(self, transceiver, machine, app_id, java_caller,
+                 processor_to_app_data_base_address):
+        """
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnman instance
+        :param ~spinn_machine.Machine machine:
+            the python representation of the spinnaker machine
+        :param int app_id: the application ID of the simulation
+        :param JavaCaller java_caller:
+        :param processor_to_app_data_base_address:
+            map of placement and DSG data
+        """
+        self._app_id = app_id
         self._core_to_conn_map = None
-        self._java = None
-        self._machine = None
+        self._java = java_caller
+        self._machine = machine
         self._monitors = None
         self._placements = None
-        self._txrx = None
+        self._txrx = transceiver
+        if processor_to_app_data_base_address is None:
+            processor_to_app_data_base_address = dict()
+        self._write_info_map = processor_to_app_data_base_address
         self._write_info_map = None
 
     def __java_database(self, dsg_targets, progress, region_sizes):
@@ -385,18 +474,13 @@ class HostExecuteDataSpecification(object):
         return results
 
     def execute_application_data_specs(
-            self, transceiver, machine, app_id, dsg_targets,
+            self, dsg_targets,
             executable_targets, region_sizes,
             placements=None, extra_monitor_cores=None,
             extra_monitor_cores_to_ethernet_connection_map=None,
-            java_caller=None, processor_to_app_data_base_address=None):
+            processor_to_app_data_base_address=None):
         """ Execute the data specs for all non-system targets.
 
-        :param ~spinn_machine.Machine machine:
-            the python representation of the SpiNNaker machine
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnman instance
-        :param int app_id: the application ID of the simulation
         :param dict(tuple(int,int,int),int) region_sizes:
             the coord for region sizes for each core
         :param DataSpecificationTargets dsg_targets:
@@ -413,21 +497,12 @@ class HostExecuteDataSpecification(object):
             how to talk to extra monitor cores
         :type extra_monitor_cores_to_ethernet_connection_map:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-        :param processor_to_app_data_base_address:
-            map of placement and DSG data
         :type processor_to_app_data_base_address:
             dict(tuple(int,int,int), DsWriteInfo)
         :return: map of placement and DSG data
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         # pylint: disable=too-many-arguments
-        if processor_to_app_data_base_address is None:
-            processor_to_app_data_base_address = dict()
-        self._write_info_map = processor_to_app_data_base_address
-        self._java = java_caller
-        self._machine = machine
-        self._txrx = transceiver
-        self._app_id = app_id
         self._monitors = extra_monitor_cores
         self._placements = placements
         self._core_to_conn_map = extra_monitor_cores_to_ethernet_connection_map
@@ -439,7 +514,8 @@ class HostExecuteDataSpecification(object):
                 "Machine", "disable_advanced_monitor_usage_for_data_in"):
             uses_advanced_monitors = False
 
-        impl_method = self.__java_app if java_caller else self.__python_app
+        impl_method = self.__java_app if self._java_caller else\
+            self.__python_app
         try:
             return impl_method(
                 dsg_targets, executable_targets, uses_advanced_monitors,
@@ -547,23 +623,17 @@ class HostExecuteDataSpecification(object):
         return dw_write_info
 
     def execute_system_data_specs(
-            self, transceiver, machine, app_id, dsg_targets, region_sizes,
+            self, dsg_targets, region_sizes,
             executable_targets,
-            java_caller=None, processor_to_app_data_base_address=None):
+            processor_to_app_data_base_address=None):
         """ Execute the data specs for all system targets.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnman instance
-        :param ~spinn_machine.Machine machine:
-            the python representation of the spinnaker machine
-        :param int app_id: the application ID of the simulation
         :param dict(tuple(int,int,int),str) dsg_targets:
             map of placement to file path
         :param dict(tuple(int,int,int),int) region_sizes:
             the coordinates for region sizes for each core
         :param ~spinnman.model.ExecutableTargets executable_targets:
             the map between binaries and locations and executable types
-        :param JavaCaller java_caller:
         :param processor_to_app_data_base_address:
         :type processor_to_app_data_base_address:
             dict(tuple(int,int,int),DataWritten)
@@ -572,13 +642,6 @@ class HostExecuteDataSpecification(object):
         """
         # pylint: disable=too-many-arguments
 
-        if processor_to_app_data_base_address is None:
-            processor_to_app_data_base_address = dict()
-        self._write_info_map = processor_to_app_data_base_address
-        self._machine = machine
-        self._txrx = transceiver
-        self._app_id = app_id
-        self._java = java_caller
         impl_method = self.__java_sys if java_caller else self.__python_sys
         return impl_method(dsg_targets, executable_targets, region_sizes)
 
