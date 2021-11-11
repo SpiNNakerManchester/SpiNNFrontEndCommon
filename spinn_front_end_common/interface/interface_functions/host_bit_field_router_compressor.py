@@ -39,7 +39,8 @@ from spinn_front_end_common.utilities.report_functions.\
         generate_provenance_item)
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
-from pacman.operations.router_compressors import pair_compressor
+from pacman.operations.router_compressors.pair_compressor import (
+    _PairCompressor)
 
 _REPORT_FOLDER_NAME = "router_compressor_with_bitfield"
 
@@ -632,7 +633,7 @@ class _HostBasedBitFieldRouterCompressor(object):
             compress to the correct length.
 
         """
-        compressor = PairCompressor(ordered=True)
+        compressor = _PairCompressor(ordered=True)
         compressed_entries = compressor.compress_table(router_table)
         if len(compressed_entries) > Machine.ROUTER_ENTRIES:
             raise MinimisationFailedError(
