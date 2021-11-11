@@ -753,9 +753,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         if (self._hostname is None and self._spalloc_server is None and
                 self._remote_spinnaker_url is None and
                 not self._use_virtual_board):
-            raise Exception(
-                "A SpiNNaker machine must be specified your configuration"
-                " file")
+            raise ConfigurationException(
+                "See http://spinnakermanchester.github.io/spynnaker/"
+                "PyNNOnSpinnakerInstall.html Configuration Section")
 
         n_items_specified = sum(
             item is not None
