@@ -65,7 +65,7 @@ from pacman.operations.router_algorithms import (
     basic_dijkstra_routing, ner_route, ner_route_traffic_aware)
 from pacman.operations.router_compressors import pair_compressor
 from pacman.operations.router_compressors.ordered_covering_router_compressor \
-    import OrderedCoveringCompressor
+    import ordered_covering_compressor
 from pacman.operations.routing_info_allocator_algorithms.\
     malloc_based_routing_allocator import malloc_based_routing_info_allocator
 from pacman.operations.routing_info_allocator_algorithms.\
@@ -2319,8 +2319,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(LOADING, "Ordered covering compressor"):
             self._multicast_routes_loaded = False
-            compressor = OrderedCoveringCompressor()
-            compressed = compressor(self._router_tables)
+            compressed = ordered_covering_compressor(self._router_tables)
             return compressed
 
     def _execute_ordered_covering_compression(self):
