@@ -86,10 +86,11 @@ from spinn_front_end_common.interface.interface_functions import (
     ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
     CreateNotificationProtocol, DatabaseInterface,
     DSGRegionReloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
+    execute_application_data_specs, execute_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
     graph_measurer, GraphProvenanceGatherer,
     host_based_bit_field_router_compressor,
-    HostExecuteDataSpecification, hbp_allocator, hbp_max_machine_generator,
+    hbp_allocator, hbp_max_machine_generator,
     insert_chip_power_monitors_to_graphs,
     insert_edges_to_extra_monitor_functionality,
     insert_edges_to_live_packet_gatherers,
@@ -2529,8 +2530,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 as timer:
             if timer.skip_if_virtual_board():
                 return None
-            specifier = HostExecuteDataSpecification()
-            return specifier.execute_system_data_specs(
+            return execute_system_data_specs(
                 self._txrx, self._machine, self._app_id, self._dsg_targets,
                 self._region_sizes, self._executable_targets,
                 self._java_caller)
@@ -2557,8 +2557,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Host data specification") as timer:
             if timer.skip_if_virtual_board():
                 return processor_to_app_data_base_address
-            specifier = HostExecuteDataSpecification()
-            return specifier.execute_application_data_specs(
+            return execute_application_data_specs(
                 self._txrx, self._machine, self._app_id, self._dsg_targets,
                 self._executable_targets, self._region_sizes, self._placements,
                 self._extra_monitor_vertices,

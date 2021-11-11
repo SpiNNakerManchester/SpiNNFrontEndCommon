@@ -44,7 +44,8 @@ from .hbp_allocator import hbp_allocator
 from .hbp_max_machine_generator import hbp_max_machine_generator
 from .host_bit_field_router_compressor import (
     host_based_bit_field_router_compressor)
-from .host_execute_data_specification import HostExecuteDataSpecification
+from .host_execute_data_specification import (
+    execute_application_data_specs, execute_system_data_specs)
 from .insert_chip_power_monitors_to_graphs import (
     insert_chip_power_monitors_to_graphs)
 from .insert_edges_to_extra_monitor_functionality import (
@@ -97,13 +98,12 @@ __all__ = [
     "ChipRuntimeUpdater", "CreateNotificationProtocol",
     "ComputeEnergyUsed", "DatabaseInterface",
     "DSGRegionReloader", "edge_to_n_keys_mapper",
-    "EnergyProvenanceReporter",
-    "FindApplicationChipsUsed",
+    "EnergyProvenanceReporter", "execute_application_data_specs",
+    "execute_system_data_specs", "FindApplicationChipsUsed",
     "graph_binary_gatherer", "graph_data_specification_writer",
     "graph_measurer", "GraphProvenanceGatherer",
     "hbp_allocator", "host_based_bit_field_router_compressor",
     "hbp_max_machine_generator",
-    "HostExecuteDataSpecification",
     "insert_chip_power_monitors_to_graphs",
     "insert_edges_to_extra_monitor_functionality",
     "insert_edges_to_live_packet_gatherers",

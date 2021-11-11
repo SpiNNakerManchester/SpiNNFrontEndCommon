@@ -273,9 +273,9 @@ class _ExecutionContext(object):
 
 
 def execute_system_data_specs(
-        self, transceiver, machine, app_id, dsg_targets, region_sizes,
-        executable_targets,
-        java_caller=None, processor_to_app_data_base_address=None):
+        transceiver, machine, app_id, dsg_targets, region_sizes,
+        executable_targets,  java_caller=None,
+        processor_to_app_data_base_address=None):
     """ Execute the data specs for all system targets.
 
     :param ~spinnman.transceiver.Transceiver transceiver:
@@ -299,7 +299,7 @@ def execute_system_data_specs(
     specifier = _HostExecuteDataSpecification(
         transceiver, machine, app_id, java_caller,
         processor_to_app_data_base_address)
-    specifier.execute_system_data_specs(
+    return specifier.execute_system_data_specs(
         dsg_targets, region_sizes, executable_targets)
 
 
@@ -342,7 +342,7 @@ def execute_application_data_specs(
     specifier = _HostExecuteDataSpecification(
         transceiver, machine, app_id, java_caller,
         processor_to_app_data_base_address)
-    specifier.execute_application_data_specs(
+    return specifier.execute_application_data_specs(
         dsg_targets, executable_targets, region_sizes, placements,
         extra_monitor_cores, extra_monitor_cores_to_ethernet_connection_map)
 
@@ -388,10 +388,10 @@ class _HostExecuteDataSpecification(object):
         self._monitors = None
         self._placements = None
         self._txrx = transceiver
-        if processor_to_app_data_base_address is None:
-            processor_to_app_data_base_address = dict()
-        self._write_info_map = processor_to_app_data_base_address
-        self._write_info_map = None
+        if processor_to_app_data_base_address:
+            self._write_info_map = processor_to_app_data_base_address
+        else:
+            self._write_info_map = dict()
 
     def __java_database(self, dsg_targets, progress, region_sizes):
         """
@@ -514,8 +514,7 @@ class _HostExecuteDataSpecification(object):
                 "Machine", "disable_advanced_monitor_usage_for_data_in"):
             uses_advanced_monitors = False
 
-        impl_method = self.__java_app if self._java_caller else\
-            self.__python_app
+        impl_method = self.__java_app if self._java else self.__python_app
         try:
             return impl_method(
                 dsg_targets, executable_targets, uses_advanced_monitors,
@@ -642,7 +641,7 @@ class _HostExecuteDataSpecification(object):
         """
         # pylint: disable=too-many-arguments
 
-        impl_method = self.__java_sys if java_caller else self.__python_sys
+        impl_method = self.__java_sys if self._java else self.__python_sys
         return impl_method(dsg_targets, executable_targets, region_sizes)
 
     def __java_sys(self, dsg_targets, executable_targets, region_sizes):
