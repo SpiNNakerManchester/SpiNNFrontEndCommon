@@ -800,9 +800,9 @@
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hostname</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spalloc_server</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_remote_spinnaker_url</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span>
                 <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                <span class="s2">&quot;A SpiNNaker machine must be specified your configuration&quot;</span>
-                <span class="s2">&quot; file&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                <span class="s2">&quot;See http://spinnakermanchester.github.io/spynnaker/&quot;</span>
+                <span class="s2">&quot;PyNNOnSpinnakerInstall.html Configuration Section&quot;</span><span class="p">)</span>
 
         <span class="n">n_items_specified</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
             <span class="n">item</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -3785,7 +3785,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.0.
     </div>
   </body>
 </html>
