@@ -154,7 +154,7 @@ class ConfigHandler(object):
 
     def _error_on_previous(self, option):
         try:
-            old_algorithms = get_config_str_list("Mapping", option)
+            get_config_str_list("Mapping", option)
         except NoOptionError:
             # GOOD!
             return
