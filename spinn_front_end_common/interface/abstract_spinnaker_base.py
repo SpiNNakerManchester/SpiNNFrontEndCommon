@@ -95,7 +95,7 @@ from spinn_front_end_common.interface.interface_functions import (
     insert_edges_to_live_packet_gatherers,
     insert_extra_monitor_vertices_to_graphs,
     insert_live_packet_gatherers_to_graphs,
-    LoadExecutableImages, LoadFixedRoutes,
+    LoadExecutableImages, load_fixed_routes,
     local_tdma_builder, locate_executable_start_type, machine_generator,
     preallocate_resources_for_chip_power_monitor,
     preallocate_resources_for_live_packet_gatherers,
@@ -2516,8 +2516,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             if timer.skip_if_virtual_board():
                 return
-            loader = LoadFixedRoutes()
-            loader(self._fixed_routes, self._txrx, self._app_id)
+            load_fixed_routes(self._fixed_routes, self._txrx, self._app_id)
 
     def _execute_system_data_specification(self):
         """
