@@ -19,7 +19,7 @@ PACMAN Executor.
 """
 
 import os
-from .bit_field_compressor_report import BitFieldCompressorReport
+from .bit_field_compressor_report import bitfield_compressor_report
 from .bit_field_summary import BitFieldSummary
 from .board_chip_report import board_chip_report
 from .energy_report import EnergyReport
@@ -43,7 +43,7 @@ def report_xml():
 
 
 __all__ = [
-    "BitFieldCompressorReport",
+    "bitfield_compressor_report",
     "BitFieldSummary",
     "board_chip_report",
     "EnergyReport",

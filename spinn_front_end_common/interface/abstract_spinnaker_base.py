@@ -130,7 +130,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import (
-    BitFieldCompressorReport, board_chip_report, EnergyReport,
+    bitfield_compressor_report, board_chip_report, EnergyReport,
     FixedRouteFromMachineReport, MemoryMapOnHostReport,
     MemoryMapOnHostChipReport, network_specification,
     router_collision_potential_report,
@@ -2503,9 +2503,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports",  "write_bit_field_compressor_report"):
                 return
-            report = BitFieldCompressorReport()
             # BitFieldSummary output ignored as never used
-            report(self._machine_graph, self._placements)
+            bitfield_compressor_report(self._machine_graph, self._placements)
 
     def _execute_load_fixed_routes(self):
         """
