@@ -103,7 +103,7 @@ from spinn_front_end_common.interface.interface_functions import (
     PlacementsProvenanceGatherer,
     ProfileDataGatherer, process_partition_constraints,
     ReadRoutingTablesFromMachine,
-    RouterProvenanceGatherer, routing_setup, RoutingTableLoader,
+    RouterProvenanceGatherer, routing_setup, routing_table_loader,
     sdram_outgoing_partition_allocator, spalloc_allocator,
     spalloc_max_machine_generator,
     system_multicast_routing_generator,
@@ -2481,8 +2481,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._multicast_routes_loaded = True
             if timer.skip_if_virtual_board():
                 return
-            loader = RoutingTableLoader()
-            loader(compressed, self._app_id, self._txrx, self._machine)
+            routing_table_loader(
+                compressed, self._app_id, self._txrx, self._machine)
 
     def _report_uncompressed_routing_table(self):
         """

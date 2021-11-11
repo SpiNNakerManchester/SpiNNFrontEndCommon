@@ -16,13 +16,9 @@
 from spinn_utilities.progress_bar import ProgressBar
 
 
-class RoutingTableLoader(object):
-    """ Loads routes into initialised routers.
-    """
-    __slots__ = []
+def routing_table_loader(router_tables, app_id, transceiver, machine):
+        """ Loads routes into initialised routers.
 
-    def __call__(self, router_tables, app_id, transceiver, machine):
-        """
         :param router_tables:
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
