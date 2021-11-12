@@ -60,7 +60,8 @@ from pacman.operations.chip_id_allocator_algorithms import (
 from pacman.operations.fixed_route_router import FixedRouteRouter
 from pacman.operations.partition_algorithms import SplitterPartitioner
 from pacman.operations.placer_algorithms import (
-    ConnectiveBasedPlacer, OneToOnePlacer, RadialPlacer, SpreaderPlacer)
+    ConnectiveBasedPlacer, OneToOnePlacer, RadialPlacer, SpreaderPlacer,
+    place_application_graph)
 from pacman.operations.router_algorithms import (
     BasicDijkstraRouting, NerRoute, NerRouteTrafficAware)
 from pacman.operations.router_compressors import PairCompressor
@@ -1556,22 +1557,16 @@ class AbstractSpinnakerBase(ConfigHandler):
             pre_allocator(self._machine, pre_allocated_resources)
 
     # Overriden by spynaker to choose a different algorithm
-    def _execute_splitter_partitioner(self, pre_allocated_resources):
+    def _execute_splitter_partitioner(self):
         """
-        Runs, times and logs the SplitterPartitioner if\
-        required
-
-        :param pre_allocated_resources: other preallocated resources
-        :type pre_allocated_resources:
-            ~pacman.model.resources.PreAllocatedResourceContainer
+        Runs, times and logs the SplitterPartitioner if required
         """
         if not self._application_graph.n_vertices:
             return
         with FecTimer(MAPPING, "Splitter partitioner"):
             partitioner = SplitterPartitioner()
             self._machine_graph, self._n_chips_needed = partitioner(
-                self._application_graph, self._machine, self._plan_n_timesteps,
-                pre_allocated_resources)
+                self._application_graph, self._plan_n_timesteps)
 
     def _execute_graph_measurer(self):
         """
@@ -1730,6 +1725,20 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._machine_graph, self._machine,
                 self._machine_partition_n_keys_map, self._plan_n_timesteps)
 
+    def _execute_application_placer(self):
+        """
+        Runs, times and logs the Application Placer
+
+        Sets the "placements" data
+
+        .. note::
+            Calling of this method is based on the cfg placer value
+
+        """
+        with FecTimer(MAPPING, "Spreader placer"):
+            self._placements = place_application_graph(
+                self._machine, self._application_graph, self._plan_n_timesteps)
+
     def _do_placer(self):
         """
         Runs, times and logs one of the placers
@@ -1751,6 +1760,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._execute_radial_placer()
         if name == "SpreaderPlacer":
             return self._execute_speader_placer()
+        if name == "ApplicationPlacer":
+            return self._execute_application_placer()
         if "," in name:
             raise ConfigurationException(
                 "Only a single algorithm is supported for placer")
@@ -2176,7 +2187,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             pre_allocated_resources)
         self._execute_preallocate_for_extra_monitor_support(
             pre_allocated_resources)
-        self._execute_splitter_partitioner(pre_allocated_resources)
+        self._execute_splitter_partitioner()
         self._execute_graph_measurer()
         if self._max_machine:
             self._max_machine = False
