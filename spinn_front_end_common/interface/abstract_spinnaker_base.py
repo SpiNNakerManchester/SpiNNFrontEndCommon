@@ -102,7 +102,7 @@ from spinn_front_end_common.interface.interface_functions import (
     preallocate_resources_for_live_packet_gatherers,
     pre_allocate_resources_for_extra_monitor_support,
     placements_provenance_gatherer,
-    ProfileDataGatherer, process_partition_constraints,
+    profile_data_gatherer, process_partition_constraints,
     read_routing_tables_from_machine,
     router_provenance_gatherer, routing_setup, routing_table_loader,
     sdram_outgoing_partition_allocator, spalloc_allocator,
@@ -2782,7 +2782,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._txrx, self._machine, self._router_tables,
                 self._extra_monitor_vertices, self._placements)
 
-    def _execute_Profile_data_gatherer(self):
+    def _execute_profile_data_gatherer(self):
         """
         Runs, times and logs the ProfileDataGatherer if requested
         """
@@ -2791,8 +2791,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             if timer.skip_if_virtual_board():
                 return
-            gatherer = ProfileDataGatherer()
-            gatherer(self._txrx, self._placements)
+            profile_data_gatherer(self._txrx, self._placements)
 
     def _do_read_provenance(self):
         """
@@ -2803,7 +2802,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_graph_provenance_gatherer()
         self._execute_placements_provenance_gatherer()
         self._execute_router_provenance_gatherer()
-        self._execute_Profile_data_gatherer()
+        self._execute_profile_data_gatherer()
 
     def _report_energy(self, run_time):
         """
