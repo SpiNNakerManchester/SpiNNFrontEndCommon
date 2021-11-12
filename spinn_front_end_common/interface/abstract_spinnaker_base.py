@@ -3553,7 +3553,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_application_finisher(self):
         with FecTimer(RUN_LOOP, "Application finisher"):
-            application_finisher(self._app_id, self._txrx, self._executable_types)
+            application_finisher(
+                self._app_id, self._txrx, self._executable_types)
 
     def _do_stop_workflow(self):
         """

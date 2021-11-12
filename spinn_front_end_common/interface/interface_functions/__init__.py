@@ -13,12 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-The code in this module is intended primarily for being invoked via the
-PACMAN Executor.
-"""
-
-import os
 from .application_finisher import application_finisher
 from .application_runner import ApplicationRunner
 from .buffer_extractor import BufferExtractor
