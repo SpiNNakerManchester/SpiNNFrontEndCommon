@@ -17,7 +17,7 @@ from .application_finisher import application_finisher
 from .application_runner import application_runner
 from .buffer_extractor import BufferExtractor
 from .chip_iobuf_clearer import chip_io_buf_clearer
-from .chip_iobuf_extractor import ChipIOBufExtractor
+from .chip_iobuf_extractor import chip_io_buf_extractor
 from .buffer_manager_creator import buffer_manager_creator
 from .chip_provenance_updater import ChipProvenanceUpdater
 from .chip_runtime_updater import chip_runtime_updater
@@ -81,9 +81,9 @@ from .sdram_outgoing_partition_allocator import (
 
 __all__ = [
     "application_finisher",
-    "ApplicationRunner", "BufferExtractor",
+    "application_runner", "BufferExtractor",
     "buffer_manager_creator", "chip_io_buf_clearer",
-    "ChipIOBufExtractor", "ChipProvenanceUpdater",
+    "chip_io_buf_extractor", "ChipProvenanceUpdater",
     "chip_runtime_updater", "create_notification_protocol",
     "compute_energy_used", "database_interface",
     "dsg_region_reloader", "edge_to_n_keys_mapper",

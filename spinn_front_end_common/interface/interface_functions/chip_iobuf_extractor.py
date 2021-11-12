@@ -16,22 +16,16 @@
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 
 
-class ChipIOBufExtractor(object):
+def chip_io_buf_extractor(transceiver, executable_targets, executable_finder):
     """ Extract the logging output buffers from the machine, and separates\
         lines based on their prefix.
+
+    :param ~spinnman.transceiver.Transceiver transceiver:
+    :param ~spinnman.model.ExecutableTargets executable_targets:
+    :param ExecutableFinder executable_finder:
+    :return: error_entries, warn_entries
+    :rtype: tuple(list(str),list(str))
     """
-
-    __slots__ = []
-
-    def __call__(
-            self, transceiver, executable_targets, executable_finder):
-        """
-        :param ~spinnman.transceiver.Transceiver transceiver:
-        :param ~spinnman.model.ExecutableTargets executable_targets:
-        :param ExecutableFinder executable_finder:
-        :return: error_entries, warn_entries
-        :rtype: tuple(list(str),list(str))
-        """
-        extractor = IOBufExtractor(
-            transceiver, executable_targets, executable_finder)
-        return extractor.extract_iobuf()
+    extractor = IOBufExtractor(
+        transceiver, executable_targets, executable_finder)
+    return extractor.extract_iobuf()
