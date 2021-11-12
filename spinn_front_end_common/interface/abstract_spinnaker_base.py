@@ -81,7 +81,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractCanReset)
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
-    application_finisher, ApplicationRunner, BufferExtractor,
+    application_finisher, application_runner, BufferExtractor,
     buffer_manager_creator, chip_io_buf_clearer, ChipIOBufExtractor,
     ChipProvenanceUpdater, chip_runtime_updater, compute_energy_used,
     create_notification_protocol, database_interface,
@@ -2917,7 +2917,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, APPLICATION_RUNNER) as timer:
             if timer.skip_if_virtual_board():
                 return
-            runner = ApplicationRunner()
+            runner = application_runner()
             # Don't timeout if a stepped mode is in operation
             if n_sync_steps:
                 time_threshold = None

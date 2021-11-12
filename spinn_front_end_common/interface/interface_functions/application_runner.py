@@ -29,17 +29,54 @@ SAFETY_FINISH_TIME = 0.1
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class ApplicationRunner(object):
+def application_runner(
+        buffer_manager, notification_interface, executable_types,
+        app_id, txrx, runtime, no_sync_changes, time_threshold, machine,
+        run_until_complete=False):
+    """ Ensures all cores are initialised correctly, ran, and completed\
+        successfully.
+
+        :param BufferManager buffer_manager:
+        :param NotificationProtocol notification_interface:
+        :param executable_types:
+        :type executable_types:
+            dict(ExecutableType,~spinn_machine.CoreSubsets)
+        :param int app_id:
+        :param ~spinnman.transceiver.Transceiver txrx:
+        :param int runtime:
+        :param int no_sync_changes: Number of synchronisation changes
+        :param int time_threshold:
+        :param ~spinn_machine.Machine machine:
+            the spinn machine instance
+        :param bool run_until_complete:
+        :return: Number of synchronisation changes
+        :rtype: int
+        :raises ConfigurationException:
+    """
+    runner = _ApplicationRunner(
+        executable_types, app_id, txrx, no_sync_changes)
+    runner._run(buffer_manager, notification_interface, runtime,
+                time_threshold, machine, run_until_complete)
+
+
+class _ApplicationRunner(object):
     """ Ensures all cores are initialised correctly, ran, and completed\
         successfully.
     """
 
     __slots__ = ["__txrx", "__app_id", "__executable_types", "__syncs"]
 
+    def __init__(
+            self, executable_types, app_id, txrx, no_sync_changes):
+        self.__txrx = txrx
+        self.__app_id = app_id
+        self.__executable_types = executable_types
+        self.__syncs = no_sync_changes
+
+
     # Wraps up as a PACMAN algorithm
-    def __call__(
-            self, buffer_manager, notification_interface, executable_types,
-            app_id, txrx, runtime, no_sync_changes,
+    def _run(
+            self, buffer_manager, notification_interface, runtime,
             time_threshold, machine, run_until_complete=False):
         """
         :param BufferManager buffer_manager:
@@ -62,11 +99,6 @@ class ApplicationRunner(object):
         # pylint: disable=too-many-arguments
         logger.info("*** Running simulation... *** ")
 
-        self.__txrx = txrx
-        self.__app_id = app_id
-        self.__executable_types = executable_types
-        self.__syncs = no_sync_changes
-
         # wait for all cores to be ready
         self._wait_for_start()
 
@@ -81,7 +113,7 @@ class ApplicationRunner(object):
         # loading applications
         for chip in machine.chips:
             if not chip.virtual:
-                txrx.clear_router_diagnostic_counters(chip.x, chip.y)
+                self.__txrx.clear_router_diagnostic_counters(chip.x, chip.y)
 
         # wait till external app is ready for us to start if required
         notification_interface.wait_for_confirmation()

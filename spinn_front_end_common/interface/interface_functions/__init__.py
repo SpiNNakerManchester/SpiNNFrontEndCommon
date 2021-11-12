@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .application_finisher import application_finisher
-from .application_runner import ApplicationRunner
+from .application_runner import application_runner
 from .buffer_extractor import BufferExtractor
 from .chip_iobuf_clearer import chip_io_buf_clearer
 from .chip_iobuf_extractor import ChipIOBufExtractor
