@@ -39,7 +39,7 @@ from .graph_binary_gatherer import graph_binary_gatherer
 from .graph_data_specification_writer import (
     graph_data_specification_writer)
 from .graph_measurer import graph_measurer
-from .graph_provenance_gatherer import GraphProvenanceGatherer
+from .graph_provenance_gatherer import graph_provenance_gatherer
 from .hbp_allocator import hbp_allocator
 from .hbp_max_machine_generator import hbp_max_machine_generator
 from .host_bit_field_router_compressor import (
@@ -96,7 +96,7 @@ __all__ = [
     "EnergyProvenanceReporter", "execute_application_data_specs",
     "execute_system_data_specs", "FindApplicationChipsUsed",
     "graph_binary_gatherer", "graph_data_specification_writer",
-    "graph_measurer", "GraphProvenanceGatherer",
+    "graph_measurer", "graph_provenance_gatherer",
     "hbp_allocator", "host_based_bit_field_router_compressor",
     "hbp_max_machine_generator",
     "insert_chip_power_monitors_to_graphs",

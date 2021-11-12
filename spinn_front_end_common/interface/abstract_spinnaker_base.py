@@ -88,7 +88,7 @@ from spinn_front_end_common.interface.interface_functions import (
     dsg_region_reloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
     execute_application_data_specs, execute_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
-    graph_measurer, GraphProvenanceGatherer,
+    graph_measurer, graph_provenance_gatherer,
     host_based_bit_field_router_compressor,
     hbp_allocator, hbp_max_machine_generator,
     insert_chip_power_monitors_to_graphs,
@@ -2756,8 +2756,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "Graph provenance gatherer") as timer:
             if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
                 return []
-            gatherer = GraphProvenanceGatherer()
-            gatherer(self._machine_graph, self._application_graph)
+            graph_provenance_gatherer(
+                self._machine_graph, self._application_graph)
 
     def _execute_placements_provenance_gatherer(self):
         """
