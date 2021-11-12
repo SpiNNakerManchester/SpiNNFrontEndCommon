@@ -27,7 +27,7 @@ from .system_multicast_routing_generator import (
     system_multicast_routing_generator)
 from .dsg_region_reloader import dsg_region_reloader
 from .edge_to_n_keys_mapper import edge_to_n_keys_mapper
-from .energy_provenance_reporter import EnergyProvenanceReporter
+from .energy_provenance_reporter import energy_provenance_reporter
 from .find_application_chips_used import FindApplicationChipsUsed
 from .graph_binary_gatherer import graph_binary_gatherer
 from .graph_data_specification_writer import (
@@ -87,7 +87,7 @@ __all__ = [
     "chip_runtime_updater", "create_notification_protocol",
     "compute_energy_used", "database_interface",
     "dsg_region_reloader", "edge_to_n_keys_mapper",
-    "EnergyProvenanceReporter", "execute_application_data_specs",
+    "energy_provenance_reporter", "execute_application_data_specs",
     "execute_system_data_specs", "FindApplicationChipsUsed",
     "graph_binary_gatherer", "graph_data_specification_writer",
     "graph_measurer", "graph_provenance_gatherer",

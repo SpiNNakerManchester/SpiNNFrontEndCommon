@@ -85,7 +85,7 @@ from spinn_front_end_common.interface.interface_functions import (
     buffer_manager_creator, chip_io_buf_clearer, chip_io_buf_extractor,
     ChipProvenanceUpdater, chip_runtime_updater, compute_energy_used,
     create_notification_protocol, database_interface,
-    dsg_region_reloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
+    dsg_region_reloader, edge_to_n_keys_mapper, energy_provenance_reporter,
     execute_application_data_specs, execute_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
     graph_measurer, graph_provenance_gatherer,
@@ -2823,8 +2823,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._spalloc_server, self._remote_spinnaker_url,
                 self._machine_allocation_controller)
 
-            energy_prov_reporter = EnergyProvenanceReporter()
-            energy_prov_reporter(power_used, self._placements)
+            energy_provenance_reporter(power_used, self._placements)
 
             # create energy reporter
             energy_reporter = EnergyReport(
