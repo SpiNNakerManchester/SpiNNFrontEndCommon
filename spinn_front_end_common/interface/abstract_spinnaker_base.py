@@ -101,7 +101,7 @@ from spinn_front_end_common.interface.interface_functions import (
     preallocate_resources_for_chip_power_monitor,
     preallocate_resources_for_live_packet_gatherers,
     pre_allocate_resources_for_extra_monitor_support,
-    PlacementsProvenanceGatherer,
+    placements_provenance_gatherer,
     ProfileDataGatherer, process_partition_constraints,
     read_routing_tables_from_machine,
     RouterProvenanceGatherer, routing_setup, routing_table_loader,
@@ -2768,8 +2768,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return []
             if timer.skip_if_virtual_board():
                 return []
-            gatherer = PlacementsProvenanceGatherer()
-            gatherer(self._txrx, self._placements)
+            placements_provenance_gatherer(self._txrx, self._placements)
 
     def _execute_router_provenance_gatherer(self):
         """
@@ -3113,8 +3112,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 for (x, y, p) in finished_cores:
                     finished_placements.add_placement(
                         self._placements.get_placement_on_processor(x, y, p))
-                extractor = PlacementsProvenanceGatherer()
-                extractor(self._txrx, finished_placements)
+                placements_provenance_gatherer(self._txrx, finished_placements)
             except Exception:
                 logger.exception("Could not read provenance")
 

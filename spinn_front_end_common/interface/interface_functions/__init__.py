@@ -62,7 +62,7 @@ from .local_tdma_builder import local_tdma_builder
 from .locate_executable_start_type import locate_executable_start_type
 from .machine_generator import machine_generator
 from .create_notification_protocol import CreateNotificationProtocol
-from .placements_provenance_gatherer import PlacementsProvenanceGatherer
+from .placements_provenance_gatherer import placements_provenance_gatherer
 from .pre_allocate_for_bit_field_router_compressor import (
     PreAllocateForBitFieldRouterCompressor)
 from .pre_allocate_resources_for_chip_power_monitor import (
@@ -106,7 +106,7 @@ __all__ = [
     "insert_live_packet_gatherers_to_graphs",
     "load_app_images", "load_fixed_routes", "load_sys_images",
     "local_tdma_builder", "locate_executable_start_type",
-    "machine_generator", "PlacementsProvenanceGatherer",
+    "machine_generator", "placements_provenance_gatherer",
     "PreAllocateForBitFieldRouterCompressor",
     "preallocate_resources_for_chip_power_monitor",
     "pre_allocate_resources_for_extra_monitor_support",
