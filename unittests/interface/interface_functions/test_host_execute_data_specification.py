@@ -25,7 +25,7 @@ from data_specification.constants import (
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
 from spinn_front_end_common.interface.interface_functions import (
-    execute_application_data_specs, execute_system_data_specs)
+    execute_application_data_specs)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.utility_objs import (ExecutableType)
 from spinn_front_end_common.interface.ds import DataSpecificationTargets

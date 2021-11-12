@@ -30,8 +30,8 @@ def load_app_images(executable_targets, app_id, transceiver):
     :param ~spinnman.transceiver.Transceiver transceiver:
     """
     __load_images(executable_targets, app_id, transceiver,
-                       lambda ty: ty is not ExecutableType.SYSTEM,
-                       "Loading executables onto the machine")
+                  lambda ty: ty is not ExecutableType.SYSTEM,
+                  "Loading executables onto the machine")
 
 
 def load_sys_images(executable_targets, app_id, transceiver):
@@ -43,8 +43,8 @@ def load_sys_images(executable_targets, app_id, transceiver):
     :param ~spinnman.transceiver.Transceiver transceiver:
     """
     __load_images(executable_targets, app_id, transceiver,
-                       lambda ty: ty is ExecutableType.SYSTEM,
-                       "Loading system executables onto the machine")
+                  lambda ty: ty is ExecutableType.SYSTEM,
+                  "Loading system executables onto the machine")
 
 
 def __load_images(executable_targets, app_id, txrx, filt, label):

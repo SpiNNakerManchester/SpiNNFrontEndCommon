@@ -172,6 +172,7 @@ def _before_merge_component(total_to_merge, to_merge_per_chip):
 
     return max_bit_fields_on_chip, min_bit_fields_on_chip, average
 
+
 def _write_report(writer, machine_graph, placements):
     """ writes the report
 
