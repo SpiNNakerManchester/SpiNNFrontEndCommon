@@ -2604,8 +2604,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_memory_map_report"):
                 return
-            report = memory_map_on_host_report()
-            report(processor_to_app_data_base_address)
+            memory_map_on_host_report(processor_to_app_data_base_address)
 
     def _report_memory_on_chip(self):
         """
