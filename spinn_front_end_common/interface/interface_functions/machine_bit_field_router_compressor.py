@@ -44,7 +44,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.utilities.system_control_logic import (
     run_system_application)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from .load_executable_images import LoadExecutableImages
+from .load_executable_images import filter_targets
 from .host_bit_field_router_compressor import (
     generate_key_to_atom_map, generate_report_path,
     start_compression_selection_process)
@@ -263,7 +263,7 @@ class _MachineBitFieldRouterCompressor(object):
         bit_field_sorter_cores = CoreSubsets()
         bit_field_compressor_cores = CoreSubsets()
 
-        _, cores = LoadExecutableImages.filter_targets(
+        _, cores = filter_targets(
             system_executable_targets, lambda ty: ty is ExecutableType.SYSTEM)
 
         for routing_table in progress_bar.over(routing_tables, False):

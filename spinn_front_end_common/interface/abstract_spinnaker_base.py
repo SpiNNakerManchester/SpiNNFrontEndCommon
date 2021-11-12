@@ -96,7 +96,7 @@ from spinn_front_end_common.interface.interface_functions import (
     insert_edges_to_live_packet_gatherers,
     insert_extra_monitor_vertices_to_graphs,
     insert_live_packet_gatherers_to_graphs,
-    LoadExecutableImages, load_fixed_routes,
+    load_app_images, load_fixed_routes, load_sys_images,
     local_tdma_builder, locate_executable_start_type, machine_generator,
     preallocate_resources_for_chip_power_monitor,
     preallocate_resources_for_live_packet_gatherers,
@@ -2542,8 +2542,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Load executable system Images") as timer:
             if timer.skip_if_virtual_board():
                 return
-            loader = LoadExecutableImages()
-            loader.load_sys_images(
+            load_sys_images(
                 self._executable_targets, self._app_id, self._txrx)
 
     def _execute_application_data_specification(
@@ -2680,8 +2679,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Load executable app images") as timer:
             if timer.skip_if_virtual_board():
                 return
-            loader = LoadExecutableImages()
-            loader.load_app_images(
+            load_app_images(
                 self._executable_targets, self._app_id, self._txrx)
 
     def _do_load(self, graph_changed):
