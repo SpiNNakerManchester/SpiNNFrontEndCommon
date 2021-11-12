@@ -143,8 +143,9 @@ static inline void print_structs(
 }
 
 //! \brief Sort a subset of the bit fields by the redundancy
-//! \param[in/out] sorted_bit_fields: The bit fields to sort.  The bit field order
-//!                                   is actually changed by this function.
+//! \param[in,out] sorted_bit_fields:
+//!     The bit fields to sort.
+//!     The bit field order is actually changed by this function.
 //! \param[in] start: The index of the first bit field to sort
 //! \param[in] end: The index after the last bit field to sort
 static inline void sort_by_redundancy(sorted_bit_fields_t *sorted_bit_fields,

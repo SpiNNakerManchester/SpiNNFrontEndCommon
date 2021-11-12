@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from configparser import NoOptionError
 import datetime
 import logging
 import os
@@ -23,7 +24,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
 from spinn_utilities.config_holder import (
     config_options, load_config, get_config_bool, get_config_int,
-    get_config_str, set_config)
+    get_config_str, get_config_str_list, set_config)
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -32,6 +33,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 APP_DIRNAME = 'application_generated_data_files'
 FINISHED_FILENAME = "finished"
+ERRORED_FILENAME = "errored"
 REPORTS_DIRNAME = "reports"
 TIMESTAMP_FILENAME = "time_stamp"
 WARNING_LOGS_FILENAME = "warning_logs.txt"
@@ -39,9 +41,9 @@ WARNING_LOGS_FILENAME = "warning_logs.txt"
 # options names are all lower without _ inside config
 _DEBUG_ENABLE_OPTS = frozenset([
     "reportsenabled",
-    "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
+    "clear_iobuf_during_run", "extract_iobuf"])
 _REPORT_DISABLE_OPTS = frozenset([
-    "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
+    "clear_iobuf_during_run", "extract_iobuf"])
 
 
 class ConfigHandler(object):
@@ -74,9 +76,6 @@ class ConfigHandler(object):
         #
         "_use_virtual_board",
 
-        # If not None, path to append pacman executor provenance info to
-        "_pacman_executor_provenance_path",
-
         # The machine timestep, in microseconds
         "__machine_time_step",
 
@@ -98,6 +97,7 @@ class ConfigHandler(object):
         # set up machine targeted data
         self._use_virtual_board = get_config_bool("Machine", "virtual_board")
         self._debug_configs()
+        self._previous_handler()
 
         # Pass max_machine_cores to Machine so if effects everything!
         max_machine_core = get_config_int("Machine", "max_machine_core")
@@ -136,6 +136,7 @@ class ConfigHandler(object):
                             "As reportsEnabled == \"False\", [Reports] {} "
                             "has been set to False", option)
         if self._use_virtual_board:
+            # TODO handle in the execute methods
             if get_config_bool("Reports", "write_energy_report"):
                 set_config("Reports", "write_energy_report", "False")
                 logger.info("[Reports]write_energy_report has been set to "
@@ -144,6 +145,23 @@ class ConfigHandler(object):
                 set_config("Reports", "write_board_chip_report", "False")
                 logger.info("[Reports]write_board_chip_report has been set to"
                             " False as using virtual boards")
+
+    def _previous_handler(self):
+        self._error_on_previous("loading_algorithms")
+        self._error_on_previous("application_to_machine_graph_algorithms")
+        self._error_on_previous("machine_graph_to_machine_algorithms")
+        self._error_on_previous("machine_graph_to_virtual_machine_algorithms")
+
+    def _error_on_previous(self, option):
+        try:
+            get_config_str_list("Mapping", option)
+        except NoOptionError:
+            # GOOD!
+            return
+        raise ConfigurationException(
+            f"cfg setting {option} is no longer supported! "
+            "See https://spinnakermanchester.github.io/common_pages/"
+            "Algorithms.html.")
 
     def _adjust_config(self, runtime,):
         """ Adjust and checks config based on runtime
@@ -182,7 +200,8 @@ class ConfigHandler(object):
             self._make_dirs(child)
         return child
 
-    def _remove_excess_folders(self, max_kept, starting_directory):
+    def _remove_excess_folders(
+            self, max_kept, starting_directory, remove_errored_folders):
         try:
             files_in_report_folder = os.listdir(starting_directory)
 
@@ -203,7 +222,13 @@ class ConfigHandler(object):
                     finished_flag = os.path.join(os.path.join(
                         starting_directory, current_oldest_file),
                         FINISHED_FILENAME)
-                    if os.path.exists(finished_flag):
+                    errored_flag = os.path.join(os.path.join(
+                        starting_directory, current_oldest_file),
+                        ERRORED_FILENAME)
+                    finished_flag_exists = os.path.exists(finished_flag)
+                    errored_flag_exists = os.path.exists(errored_flag)
+                    if finished_flag_exists and (
+                            not errored_flag_exists or remove_errored_folders):
                         shutil.rmtree(os.path.join(
                             starting_directory, current_oldest_file),
                             ignore_errors=True)
@@ -248,7 +273,8 @@ class ConfigHandler(object):
         if os.listdir(report_default_directory):
             self._remove_excess_folders(
                 get_config_int("Reports", "max_reports_kept"),
-                report_default_directory)
+                report_default_directory,
+                get_config_bool("Reports", "remove_errored_folders"))
 
         # determine the time slot for later while also making the report folder
         if self._this_run_time_string is None:
@@ -301,11 +327,6 @@ class ConfigHandler(object):
         # set up reports default folder
         self._set_up_report_specifics(n_calls_to_run)
 
-        if get_config_bool("Reports", "writePacmanExecutorProvenance"):
-            self._pacman_executor_provenance_path = os.path.join(
-                self._report_default_directory,
-                "pacman_executor_provenance.rpt")
-
         self._json_folder = os.path.join(
             self._report_default_directory, "json_files")
         if not os.path.exists(self._json_folder):
@@ -329,14 +350,25 @@ class ConfigHandler(object):
         if not os.path.exists(self._system_provenance_file_path):
             self._make_dirs(self._system_provenance_file_path)
 
+    def __write_named_file(self, file_name):
+        app_file_name = os.path.join(
+            self._report_simulation_top_directory, file_name)
+        with open(app_file_name, "w") as f:
+            f.writelines("file_name")
+
     def write_finished_file(self):
         """ Write a finished file that allows file removal to only remove
             folders that are finished.
+            :rtype: None
         """
-        report_file_name = os.path.join(self._report_simulation_top_directory,
-                                        FINISHED_FILENAME)
-        with open(report_file_name, "w") as f:
-            f.writelines("finished")
+        self.__write_named_file(FINISHED_FILENAME)
+
+    def write_errored_file(self):
+        """ Writes a errored file that allows file removal to only remove \
+            folders that are errored if requested to do so
+        :rtype:
+        """
+        self.__write_named_file(ERRORED_FILENAME)
 
     def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
         """ Set up timings of the machine

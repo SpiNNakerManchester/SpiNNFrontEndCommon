@@ -43,6 +43,10 @@ jobs:
       - name: Set dynamic environment variables
         run: |
           echo "SPINN_DIRS=$PWD/spinnaker_tools" >> $GITHUB_ENV
+      - name: Install pip, etc
+        uses: ./support/actions/python-tools
+        with:
+          coverage: false
       - name: Checkout SpiNNaker Dependencies
         uses: ./support/actions/checkout-spinn-deps
         with:
@@ -62,7 +66,7 @@ jobs:
         with:
           directory: doc/source
       - name: Build C documentation
-        uses: mattnotmitt/doxygen-action@v1.1.0
+        uses: mattnotmitt/doxygen-action@v1.3.1
         with:
           working-directory: c_common
 
