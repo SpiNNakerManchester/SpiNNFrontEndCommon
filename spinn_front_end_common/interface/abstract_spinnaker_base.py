@@ -133,7 +133,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.utilities.report_functions import (
     bitfield_compressor_report, board_chip_report, EnergyReport,
     FixedRouteFromMachineReport, memory_map_on_host_report,
-    MemoryMapOnHostChipReport, network_specification,
+    memory_map_on_host_chip_report, network_specification,
     router_collision_potential_report,
     RoutingTableFromMachineReport, tags_from_machine_report,
     write_json_machine, write_json_partition_n_keys_map, write_json_placements,
@@ -2619,8 +2619,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "write_memory_map_report"):
                 return
 
-            report = MemoryMapOnHostChipReport()
-            report(self._dsg_targets, self._txrx)
+            memory_map_on_host_chip_report(self._dsg_targets, self._txrx)
 
     # TODO consider different cfg flags
     def _report_compressed(self, compressed):
