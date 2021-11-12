@@ -30,7 +30,7 @@ from .network_specification import network_specification
 from .router_collision_potential_report import (
     router_collision_potential_report)
 from .routing_table_from_machine_report import RoutingTableFromMachineReport
-from .real_tags_report import TagsFromMachineReport
+from .real_tags_report import tags_from_machine_report
 from .write_json_machine import write_json_machine
 from .write_json_partition_n_keys_map import write_json_partition_n_keys_map
 from .write_json_placements import write_json_placements
@@ -54,7 +54,7 @@ __all__ = [
     "report_xml",
     "router_collision_potential_report",
     "RoutingTableFromMachineReport",
-    "TagsFromMachineReport",
+    "tags_from_machine_report",
     "write_json_machine",
     "write_json_partition_n_keys_map",
     "write_json_placements",

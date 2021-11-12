@@ -135,7 +135,7 @@ from spinn_front_end_common.utilities.report_functions import (
     FixedRouteFromMachineReport, MemoryMapOnHostReport,
     MemoryMapOnHostChipReport, network_specification,
     router_collision_potential_report,
-    RoutingTableFromMachineReport, TagsFromMachineReport,
+    RoutingTableFromMachineReport, tags_from_machine_report,
     write_json_machine, write_json_partition_n_keys_map, write_json_placements,
     write_json_routing_tables)
 from spinn_front_end_common.utilities import IOBufExtractor
@@ -2574,8 +2574,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_tag_allocation_reports"):
                 return
-            report = TagsFromMachineReport()
-            report(self._txrx)
+            tags_from_machine_report(self._txrx)
 
     def _execute_load_tags(self):
         """
