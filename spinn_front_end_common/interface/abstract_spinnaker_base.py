@@ -81,7 +81,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractCanReset)
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
-    ApplicationFinisher, ApplicationRunner, BufferExtractor,
+    application_finisher, ApplicationRunner, BufferExtractor,
     buffer_manager_creator, ChipIOBufClearer, ChipIOBufExtractor,
     ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
     CreateNotificationProtocol, DatabaseInterface,
@@ -3553,8 +3553,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_application_finisher(self):
         with FecTimer(RUN_LOOP, "Application finisher"):
-            finisher = ApplicationFinisher()
-            finisher(self._app_id, self._txrx, self._executable_types)
+            application_finisher(self._app_id, self._txrx, self._executable_types)
 
     def _do_stop_workflow(self):
         """

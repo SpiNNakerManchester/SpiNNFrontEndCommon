@@ -19,7 +19,7 @@ PACMAN Executor.
 """
 
 import os
-from .application_finisher import ApplicationFinisher
+from .application_finisher import application_finisher
 from .application_runner import ApplicationRunner
 from .buffer_extractor import BufferExtractor
 from .chip_iobuf_clearer import ChipIOBufClearer
@@ -86,7 +86,7 @@ from .sdram_outgoing_partition_allocator import (
 
 
 __all__ = [
-    "ApplicationFinisher",
+    "application_finisher",
     "ApplicationRunner", "BufferExtractor",
     "buffer_manager_creator", "ChipIOBufClearer",
     "ChipIOBufExtractor", "ChipProvenanceUpdater",
