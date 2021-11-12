@@ -103,7 +103,7 @@ from spinn_front_end_common.interface.interface_functions import (
     pre_allocate_resources_for_extra_monitor_support,
     PlacementsProvenanceGatherer,
     ProfileDataGatherer, process_partition_constraints,
-    ReadRoutingTablesFromMachine,
+    read_routing_tables_from_machine,
     RouterProvenanceGatherer, routing_setup, routing_table_loader,
     sdram_outgoing_partition_allocator, spalloc_allocator,
     spalloc_max_machine_generator,
@@ -2640,9 +2640,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             if compressed is None:
                 if timer.skip_if_virtual_board():
                     return
-                reader = ReadRoutingTablesFromMachine()
-                compressed = reader(self._txrx, self._router_tables,
-                                    self._app_id)
+                compressed = read_routing_tables_from_machine(
+                    self._txrx, self._router_tables, self._app_id)
 
             router_report_from_compressed_router_tables(compressed)
 
