@@ -2691,10 +2691,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_routing_table_reports"):
                 return
-            if timer.skip_if_cfg_false(
-                    "Reports", "write_routing_tables_from_machine_reports"):
-                return
-
             if compressed is None:
                 if timer.skip_if_virtual_board():
                     return
