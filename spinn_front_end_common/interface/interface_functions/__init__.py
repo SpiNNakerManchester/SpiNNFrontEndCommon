@@ -67,7 +67,7 @@ from .preallocate_resources_for_extra_monitor_support import (
     pre_allocate_resources_for_extra_monitor_support)
 from .process_partition_constraints import process_partition_constraints
 from .profile_data_gatherer import ProfileDataGatherer
-from .router_provenance_gatherer import RouterProvenanceGatherer
+from .router_provenance_gatherer import router_provenance_gatherer
 from .routing_setup import routing_setup
 from .routing_table_loader import routing_table_loader
 from .spalloc_allocator import spalloc_allocator
@@ -106,7 +106,7 @@ __all__ = [
     "pre_allocate_resources_for_extra_monitor_support",
     "preallocate_resources_for_live_packet_gatherers",
     "process_partition_constraints", "ProfileDataGatherer",
-    "read_routing_tables_from_machine", "RouterProvenanceGatherer",
+    "read_routing_tables_from_machine", "router_provenance_gatherer",
     "routing_setup",
     "routing_table_loader", "sdram_outgoing_partition_allocator",
     "spalloc_allocator", "spalloc_max_machine_generator",

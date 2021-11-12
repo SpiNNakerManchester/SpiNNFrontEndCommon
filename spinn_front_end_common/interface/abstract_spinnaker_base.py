@@ -104,7 +104,7 @@ from spinn_front_end_common.interface.interface_functions import (
     placements_provenance_gatherer,
     ProfileDataGatherer, process_partition_constraints,
     read_routing_tables_from_machine,
-    RouterProvenanceGatherer, routing_setup, routing_table_loader,
+    router_provenance_gatherer, routing_setup, routing_table_loader,
     sdram_outgoing_partition_allocator, spalloc_allocator,
     spalloc_max_machine_generator,
     system_multicast_routing_generator,
@@ -2779,8 +2779,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return []
             if timer.skip_if_virtual_board():
                 return []
-            gatherer = RouterProvenanceGatherer()
-            gatherer(
+            router_provenance_gatherer(
                 self._txrx, self._machine, self._router_tables,
                 self._extra_monitor_vertices, self._placements)
 
@@ -3036,8 +3035,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Extract router provenance
         try:
-            router_provenance = RouterProvenanceGatherer()
-            router_provenance(
+            router_provenance_gatherer(
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
                 extra_monitor_vertices=self._extra_monitor_vertices,
