@@ -29,7 +29,8 @@ from .memory_map_on_host_report import memory_map_on_host_report
 from .network_specification import network_specification
 from .router_collision_potential_report import (
     router_collision_potential_report)
-from .routing_table_from_machine_report import RoutingTableFromMachineReport
+from .routing_table_from_machine_report import (
+    routing_table_from_machine_report)
 from .real_tags_report import tags_from_machine_report
 from .write_json_machine import write_json_machine
 from .write_json_partition_n_keys_map import write_json_partition_n_keys_map
@@ -47,7 +48,7 @@ __all__ = [
     "memory_map_on_host_chip_report",
     "memory_map_on_host_report",
     "router_collision_potential_report",
-    "RoutingTableFromMachineReport",
+    "routing_table_from_machine_report",
     "tags_from_machine_report",
     "write_json_machine",
     "write_json_partition_n_keys_map",

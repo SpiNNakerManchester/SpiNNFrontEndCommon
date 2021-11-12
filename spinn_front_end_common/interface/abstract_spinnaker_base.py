@@ -135,7 +135,7 @@ from spinn_front_end_common.utilities.report_functions import (
     FixedRouteFromMachineReport, memory_map_on_host_report,
     memory_map_on_host_chip_report, network_specification,
     router_collision_potential_report,
-    RoutingTableFromMachineReport, tags_from_machine_report,
+    routing_table_from_machine_report, tags_from_machine_report,
     write_json_machine, write_json_partition_n_keys_map, write_json_placements,
     write_json_routing_tables)
 from spinn_front_end_common.utilities import IOBufExtractor
@@ -2650,8 +2650,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             router_compressed_summary_report(
                 self._router_tables, self._ipaddress, self._machine)
 
-            report = RoutingTableFromMachineReport()
-            report(compressed)
+            routing_table_from_machine_report(compressed)
 
     def _report_fixed_routes(self):
         """
