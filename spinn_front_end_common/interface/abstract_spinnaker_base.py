@@ -132,7 +132,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import (
     bitfield_compressor_report, board_chip_report, EnergyReport,
-    FixedRouteFromMachineReport, MemoryMapOnHostReport,
+    FixedRouteFromMachineReport, memory_map_on_host_report,
     MemoryMapOnHostChipReport, network_specification,
     router_collision_potential_report,
     RoutingTableFromMachineReport, tags_from_machine_report,
@@ -2604,7 +2604,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_memory_map_report"):
                 return
-            report = MemoryMapOnHostReport()
+            report = memory_map_on_host_report()
             report(processor_to_app_data_base_address)
 
     def _report_memory_on_chip(self):

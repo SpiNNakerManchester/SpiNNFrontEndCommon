@@ -25,7 +25,7 @@ from .board_chip_report import board_chip_report
 from .energy_report import EnergyReport
 from .fixed_route_from_machine_report import FixedRouteFromMachineReport
 from .memory_map_on_host_chip_report import MemoryMapOnHostChipReport
-from .memory_map_on_host_report import MemoryMapOnHostReport
+from .memory_map_on_host_report import memory_map_on_host_report
 from .network_specification import network_specification
 from .router_collision_potential_report import (
     router_collision_potential_report)
@@ -50,7 +50,7 @@ __all__ = [
     "FixedRouteFromMachineReport",
     "network_specification",
     "MemoryMapOnHostChipReport",
-    "MemoryMapOnHostReport",
+    "memory_map_on_host_report",
     "report_xml",
     "router_collision_potential_report",
     "RoutingTableFromMachineReport",
