@@ -21,7 +21,7 @@ from .chip_iobuf_extractor import ChipIOBufExtractor
 from .buffer_manager_creator import buffer_manager_creator
 from .chip_provenance_updater import ChipProvenanceUpdater
 from .chip_runtime_updater import ChipRuntimeUpdater
-from .compute_energy_used import ComputeEnergyUsed
+from .compute_energy_used import compute_energy_used
 from .database_interface import DatabaseInterface
 from .system_multicast_routing_generator import (
     system_multicast_routing_generator)

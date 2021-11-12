@@ -83,7 +83,7 @@ from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, ApplicationRunner, BufferExtractor,
     buffer_manager_creator, ChipIOBufClearer, ChipIOBufExtractor,
-    ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
+    ChipProvenanceUpdater, ChipRuntimeUpdater, compute_energy_used,
     CreateNotificationProtocol, DatabaseInterface,
     dsg_region_reloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
     execute_application_data_specs, execute_system_data_specs,
@@ -2815,7 +2815,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return []
 
             # TODO runtime is None
-            compute_energy_used = ComputeEnergyUsed()
             power_used = compute_energy_used(
                 self._placements, self._machine, self._board_version,
                 run_time, self._buffer_manager, self._mapping_time,
