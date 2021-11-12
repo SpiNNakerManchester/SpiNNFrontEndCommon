@@ -83,7 +83,7 @@ from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, application_runner, buffer_extractor,
     buffer_manager_creator, chip_io_buf_clearer, chip_io_buf_extractor,
-    ChipProvenanceUpdater, chip_runtime_updater, compute_energy_used,
+    chip_provenance_updater, chip_runtime_updater, compute_energy_used,
     create_notification_protocol, database_interface,
     dsg_region_reloader, edge_to_n_keys_mapper, energy_provenance_reporter,
     execute_application_data_specs, execute_system_data_specs,
@@ -3088,8 +3088,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # Attempt to force the cores to write provenance and exit
             try:
-                updater = ChipProvenanceUpdater()
-                updater(self._txrx, self._app_id, non_rte_core_subsets)
+                chip_provenance_updater(
+                    self._txrx, self._app_id, non_rte_core_subsets)
             except Exception:
                 logger.exception("Could not update provenance on chip")
 
