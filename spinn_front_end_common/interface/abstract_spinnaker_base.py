@@ -84,7 +84,7 @@ from spinn_front_end_common.interface.interface_functions import (
     application_finisher, ApplicationRunner, BufferExtractor,
     buffer_manager_creator, chip_io_buf_clearer, ChipIOBufExtractor,
     ChipProvenanceUpdater, chip_runtime_updater, compute_energy_used,
-    CreateNotificationProtocol, database_interface,
+    create_notification_protocol, database_interface,
     dsg_region_reloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
     execute_application_data_specs, execute_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
@@ -2902,8 +2902,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the notification_interface data object
         """
         with FecTimer(RUN_LOOP, "Create notification protocol"):
-            creator = CreateNotificationProtocol()
-            self._notification_interface = creator(
+            self._notification_interface = create_notification_protocol(
                 self._database_socket_addresses, self._database_file_path)
 
     def _execute_runner(self, n_sync_steps, run_time):

@@ -55,7 +55,7 @@ from .load_fixed_routes import load_fixed_routes
 from .local_tdma_builder import local_tdma_builder
 from .locate_executable_start_type import locate_executable_start_type
 from .machine_generator import machine_generator
-from .create_notification_protocol import CreateNotificationProtocol
+from .create_notification_protocol import create_notification_protocol
 from .placements_provenance_gatherer import placements_provenance_gatherer
 from .pre_allocate_for_bit_field_router_compressor import (
     PreAllocateForBitFieldRouterCompressor)
@@ -82,10 +82,10 @@ from .sdram_outgoing_partition_allocator import (
 __all__ = [
     "application_finisher",
     "ApplicationRunner", "BufferExtractor",
-    "buffer_manager_creator", "ChipIOBufClearer",
+    "buffer_manager_creator", "chip_io_buf_clearer",
     "ChipIOBufExtractor", "ChipProvenanceUpdater",
-    "ChipRuntimeUpdater", "CreateNotificationProtocol",
-    "ComputeEnergyUsed", "DatabaseInterface",
+    "chip_runtime_updater", "create_notification_protocol",
+    "compute_energy_used", "database_interface",
     "dsg_region_reloader", "edge_to_n_keys_mapper",
     "EnergyProvenanceReporter", "execute_application_data_specs",
     "execute_system_data_specs", "FindApplicationChipsUsed",
