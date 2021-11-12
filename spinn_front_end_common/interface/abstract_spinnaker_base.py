@@ -82,7 +82,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, ApplicationRunner, BufferExtractor,
-    buffer_manager_creator, ChipIOBufClearer, ChipIOBufExtractor,
+    buffer_manager_creator, chip_io_buf_clearer, ChipIOBufExtractor,
     ChipProvenanceUpdater, ChipRuntimeUpdater, compute_energy_used,
     CreateNotificationProtocol, DatabaseInterface,
     dsg_region_reloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
@@ -2857,8 +2857,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # TODO Why check empty_graph is always false??
             if timer.skip_if_cfg_false("Reports", "clear_iobuf_during_run"):
                 return
-            clearer = ChipIOBufClearer()
-            clearer(self._txrx, self._executable_types)
+            chip_io_buf_clearer(self._txrx, self._executable_types)
 
     def _execute_runtime_update(self, n_sync_steps):
         """
