@@ -51,6 +51,7 @@ from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import (
     MachineGraph, MachineGraphView, MachineVertex)
+from pacman.model.graphs import AbstractVirtual
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.model.placements import Placements
 from pacman.model.resources import (
@@ -1176,6 +1177,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         seen_partitions = set()
 
         for placement in self._placements.placements:
+            if isinstance(placement.vertex, AbstractVirtual):
+                continue
             sdram_required = placement.vertex.resources_required.sdram
             if (placement.x, placement.y) in usage_by_chip:
                 usage_by_chip[placement.x, placement.y] += sdram_required
@@ -2212,7 +2215,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_routers()
         self._report_router_summary()
         self._json_routing_tables()
-        self._report_router_collision_potential()
+        # self._report_router_collision_potential()
         self._execute_locate_executable_start_type()
         self._execute_buffer_manager_creator()
         self._execute_sdram_outgoing_partition_allocator()
