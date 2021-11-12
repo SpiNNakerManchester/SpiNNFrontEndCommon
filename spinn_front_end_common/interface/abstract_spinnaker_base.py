@@ -81,7 +81,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractCanReset)
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
-    application_finisher, application_runner, BufferExtractor,
+    application_finisher, application_runner, buffer_extractor,
     buffer_manager_creator, chip_io_buf_clearer, chip_io_buf_extractor,
     ChipProvenanceUpdater, chip_runtime_updater, compute_energy_used,
     create_notification_protocol, database_interface,
@@ -2951,7 +2951,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "Buffer extractor") as timer:
             if timer.skip_if_virtual_board():
                 return
-            buffer_extractor = BufferExtractor()
             buffer_extractor(
                 self._machine_graph, self._placements,
                 self._buffer_manager)
