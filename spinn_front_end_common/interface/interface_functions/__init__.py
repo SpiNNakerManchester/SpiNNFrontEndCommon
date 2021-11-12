@@ -85,11 +85,6 @@ from .sdram_outgoing_partition_allocator import (
     sdram_outgoing_partition_allocator)
 
 
-def interface_xml():
-    return os.path.join(
-        os.path.dirname(__file__), "front_end_common_interface_functions.xml")
-
-
 __all__ = [
     "ApplicationFinisher",
     "ApplicationRunner", "BufferExtractor",
@@ -108,7 +103,7 @@ __all__ = [
     "insert_edges_to_extra_monitor_functionality",
     "insert_edges_to_live_packet_gatherers",
     "insert_extra_monitor_vertices_to_graphs",
-    "insert_live_packet_gatherers_to_graphs", "interface_xml",
+    "insert_live_packet_gatherers_to_graphs",
     "load_app_images", "load_fixed_routes", "load_sys_images",
     "local_tdma_builder", "locate_executable_start_type",
     "machine_generator", "PlacementsProvenanceGatherer",

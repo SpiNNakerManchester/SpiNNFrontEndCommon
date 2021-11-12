@@ -37,11 +37,6 @@ from .write_json_placements import write_json_placements
 from .write_json_routing_tables import write_json_routing_tables
 
 
-def report_xml():
-    return os.path.join(
-        os.path.dirname(__file__), "front_end_common_reports.xml")
-
-
 __all__ = [
     "bitfield_compressor_report",
     "BitFieldSummary",
@@ -51,7 +46,6 @@ __all__ = [
     "network_specification",
     "memory_map_on_host_chip_report",
     "memory_map_on_host_report",
-    "report_xml",
     "router_collision_potential_report",
     "RoutingTableFromMachineReport",
     "tags_from_machine_report",
