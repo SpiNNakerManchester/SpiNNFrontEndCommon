@@ -85,7 +85,7 @@ from spinn_front_end_common.interface.interface_functions import (
     buffer_manager_creator, ChipIOBufClearer, ChipIOBufExtractor,
     ChipProvenanceUpdater, ChipRuntimeUpdater, ComputeEnergyUsed,
     CreateNotificationProtocol, DatabaseInterface,
-    DSGRegionReloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
+    dsg_region_reloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
     execute_application_data_specs, execute_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
     graph_measurer, GraphProvenanceGatherer,
@@ -2746,8 +2746,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "DSG region reloader") as timer:
             if timer.skip_if_virtual_board():
                 return
-            reloader = DSGRegionReloader()
-            reloader(self._txrx, self._placements, self._ipaddress)
+            dsg_region_reloader(self._txrx, self._placements, self._ipaddress)
 
     def _execute_graph_provenance_gatherer(self):
         """
