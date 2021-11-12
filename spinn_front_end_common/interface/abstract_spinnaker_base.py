@@ -84,7 +84,7 @@ from spinn_front_end_common.interface.interface_functions import (
     application_finisher, ApplicationRunner, BufferExtractor,
     buffer_manager_creator, chip_io_buf_clearer, ChipIOBufExtractor,
     ChipProvenanceUpdater, chip_runtime_updater, compute_energy_used,
-    CreateNotificationProtocol, DatabaseInterface,
+    CreateNotificationProtocol, database_interface,
     dsg_region_reloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
     execute_application_data_specs, execute_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
@@ -2887,10 +2887,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param int run_time: the run duration in milliseconds.
         """
         with FecTimer(RUN_LOOP, "Create database interface"):
-            interface_maker = DatabaseInterface()
             # Used to used compressed routing tables if available on host
             # TODO consider not saving router tabes.
-            _, self._database_file_path = interface_maker(
+            _, self._database_file_path = database_interface(
                 self._machine_graph, self._tags, run_time, self._machine,
                 self._max_run_time_steps, self._placements,
                 self._routing_infos, self._router_tables,

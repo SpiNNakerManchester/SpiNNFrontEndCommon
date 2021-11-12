@@ -22,7 +22,7 @@ from .buffer_manager_creator import buffer_manager_creator
 from .chip_provenance_updater import ChipProvenanceUpdater
 from .chip_runtime_updater import chip_runtime_updater
 from .compute_energy_used import compute_energy_used
-from .database_interface import DatabaseInterface
+from .database_interface import database_interface
 from .system_multicast_routing_generator import (
     system_multicast_routing_generator)
 from .dsg_region_reloader import dsg_region_reloader
