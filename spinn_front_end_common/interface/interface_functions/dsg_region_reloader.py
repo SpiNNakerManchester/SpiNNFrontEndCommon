@@ -60,7 +60,7 @@ class _DSGRegionReloader(object):
 
         # build file paths for reloaded stuff
         if not os.path.exists(self._data_dir):
-            os.makedirs(self._data_dirr)
+            os.makedirs(self._data_dir)
 
         report_dir = None
         if get_config_bool("Reports", "write_text_specs"):
