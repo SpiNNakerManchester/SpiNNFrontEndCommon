@@ -80,7 +80,7 @@ from .spalloc_allocator import spalloc_allocator
 from .spalloc_max_machine_generator import spalloc_max_machine_generator
 from .tags_loader import tags_loader
 from .virtual_machine_generator import virtual_machine_generator
-from .read_routing_tables_from_machine import ReadRoutingTablesFromMachine
+from .read_routing_tables_from_machine import read_routing_tables_from_machine
 from .sdram_outgoing_partition_allocator import (
     sdram_outgoing_partition_allocator)
 
@@ -117,7 +117,7 @@ __all__ = [
     "pre_allocate_resources_for_extra_monitor_support",
     "preallocate_resources_for_live_packet_gatherers",
     "process_partition_constraints", "ProfileDataGatherer",
-    "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer",
+    "read_routing_tables_from_machine", "RouterProvenanceGatherer",
     "routing_setup",
     "routing_table_loader", "sdram_outgoing_partition_allocator",
     "spalloc_allocator", "spalloc_max_machine_generator",
