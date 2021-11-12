@@ -83,7 +83,7 @@ from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, ApplicationRunner, BufferExtractor,
     buffer_manager_creator, chip_io_buf_clearer, ChipIOBufExtractor,
-    ChipProvenanceUpdater, ChipRuntimeUpdater, compute_energy_used,
+    ChipProvenanceUpdater, chip_runtime_updater, compute_energy_used,
     CreateNotificationProtocol, DatabaseInterface,
     dsg_region_reloader, edge_to_n_keys_mapper, EnergyProvenanceReporter,
     execute_application_data_specs, execute_system_data_specs,
@@ -2871,10 +2871,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             if (ExecutableType.USES_SIMULATION_INTERFACE in
                     self._executable_types):
-                updater = ChipRuntimeUpdater()
-                updater(self._txrx,  self._app_id, self._executable_types,
-                        self._current_run_timesteps,
-                        self._first_machine_time_step, n_sync_steps)
+                chip_runtime_updater(
+                    self._txrx,  self._app_id, self._executable_types,
+                    self._current_run_timesteps,
+                    self._first_machine_time_step, n_sync_steps)
             else:
                 timer.skip("No Simulation Interface used")
 
