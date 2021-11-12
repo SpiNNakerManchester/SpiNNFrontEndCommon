@@ -132,7 +132,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import (
     bitfield_compressor_report, board_chip_report, EnergyReport,
-    FixedRouteFromMachineReport, memory_map_on_host_report,
+    fixed_route_from_machine_report, memory_map_on_host_report,
     memory_map_on_host_chip_report, network_specification,
     router_collision_potential_report,
     routing_table_from_machine_report, tags_from_machine_report,
@@ -2663,8 +2663,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Machine", "enable_advanced_monitor_support"):
                 return
             # TODO at the same time as LoadFixedRoutes?
-            report = FixedRouteFromMachineReport()
-            report(self._txrx, self._machine, self._app_id)
+            fixed_route_from_machine_report(
+                self._txrx, self._machine, self._app_id)
 
     def _execute_application_load_executables(self):
         """ algorithms needed for loading the binaries to the SpiNNaker machine

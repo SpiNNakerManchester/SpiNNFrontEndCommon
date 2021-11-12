@@ -18,12 +18,11 @@ Much of the code in this module is intended primarily for being invoked via the
 PACMAN Executor.
 """
 
-import os
 from .bit_field_compressor_report import bitfield_compressor_report
 from .bit_field_summary import BitFieldSummary
 from .board_chip_report import board_chip_report
 from .energy_report import EnergyReport
-from .fixed_route_from_machine_report import FixedRouteFromMachineReport
+from .fixed_route_from_machine_report import fixed_route_from_machine_report
 from .memory_map_on_host_chip_report import memory_map_on_host_chip_report
 from .memory_map_on_host_report import memory_map_on_host_report
 from .network_specification import network_specification
@@ -43,7 +42,7 @@ __all__ = [
     "BitFieldSummary",
     "board_chip_report",
     "EnergyReport",
-    "FixedRouteFromMachineReport",
+    "fixed_route_from_machine_report",
     "network_specification",
     "memory_map_on_host_chip_report",
     "memory_map_on_host_report",
