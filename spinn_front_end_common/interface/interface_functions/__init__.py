@@ -78,7 +78,7 @@ from .routing_setup import routing_setup
 from .routing_table_loader import routing_table_loader
 from .spalloc_allocator import spalloc_allocator
 from .spalloc_max_machine_generator import spalloc_max_machine_generator
-from .tags_loader import TagsLoader
+from .tags_loader import tags_loader
 from .virtual_machine_generator import virtual_machine_generator
 from .read_routing_tables_from_machine import ReadRoutingTablesFromMachine
 from .sdram_outgoing_partition_allocator import (
@@ -121,6 +121,6 @@ __all__ = [
     "routing_setup",
     "routing_table_loader", "sdram_outgoing_partition_allocator",
     "spalloc_allocator", "spalloc_max_machine_generator",
-    "system_multicast_routing_generator", "TagsLoader",
+    "system_multicast_routing_generator", "tags_loader",
     "virtual_machine_generator",
 ]

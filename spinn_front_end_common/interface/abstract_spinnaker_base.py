@@ -108,7 +108,7 @@ from spinn_front_end_common.interface.interface_functions import (
     sdram_outgoing_partition_allocator, spalloc_allocator,
     spalloc_max_machine_generator,
     system_multicast_routing_generator,
-    TagsLoader, virtual_machine_generator)
+    tags_loader, virtual_machine_generator)
 from spinn_front_end_common.interface.interface_functions.\
     machine_bit_field_router_compressor import (
         machine_bit_field_ordered_covering_compressor,
@@ -2584,8 +2584,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Tags Loader") as timer:
             if timer.skip_if_virtual_board():
                 return
-            loader = TagsLoader()
-            loader(self._txrx, self._tags)
+            tags_loader(self._txrx, self._tags)
 
     def _do_extra_load_algorithms(self):
         """
