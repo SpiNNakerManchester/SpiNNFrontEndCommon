@@ -64,7 +64,7 @@ class _ChipProvenanceUpdater(object):
 
         error_cores = self.__txrx.get_cores_in_state(
             self.__all_cores, CPUState.RUN_TIME_EXCEPTION)
-        watchdog_cores = self.__get_cores_in_state(
+        watchdog_cores = self.__txrx.get_cores_in_state(
             self.__all_cores, CPUState.WATCHDOG)
         idle_cores = self.__txrx.get_cores_in_state(
             self.__all_cores, CPUState.IDLE)
