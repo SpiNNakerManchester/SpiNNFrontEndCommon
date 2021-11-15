@@ -32,8 +32,7 @@ class GraphProvenanceGatherer(object):
             ~pacman.model.graphs.application.ApplicationGraph
         """
         self._get_machine_graph_provenance(machine_graph)
-        if application_graph is not None:
-            self._get_app_graph_provenance(application_graph)
+        self._get_app_graph_provenance(application_graph)
 
     @staticmethod
     def _get_machine_graph_provenance(machine_graph):
