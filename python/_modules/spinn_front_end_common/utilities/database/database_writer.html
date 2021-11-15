@@ -298,7 +298,7 @@
                     <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">machine_graph</span><span class="o">.</span><span class="n">get_edges_starting_at_vertex</span><span class="p">(</span>
                         <span class="n">vertex</span><span class="p">)))</span>
 
-            <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
                     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                    INSERT INTO graph_mapper_vertex (</span>
@@ -428,7 +428,7 @@
 <span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
 <span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_infos:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
             <span class="c1"># We will be asking application vertices for key/atom mappings</span>
             <span class="n">vertices_and_partitions</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">partition</span><span class="p">)</span>

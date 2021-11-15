@@ -95,7 +95,7 @@
         <span class="n">vertex_to_chip_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="c1"># handle reinjector and chip based data extractor functionality.</span>
-        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">extra_monitors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_second_monitors_application_graph</span><span class="p">(</span>
                 <span class="n">progress</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
                 <span class="n">vertex_to_chip_map</span><span class="p">)</span>
@@ -104,7 +104,7 @@
                 <span class="n">progress</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">)</span>
 
         <span class="c1"># progress data receiver for data extraction functionality</span>
-        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_data_extraction_vertices_app_graph</span><span class="p">(</span>
                 <span class="n">progress</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
                 <span class="n">chip_to_gatherer_map</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">)</span>

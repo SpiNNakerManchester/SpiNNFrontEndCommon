@@ -94,9 +94,7 @@
 <span class="sd">            ~pacman.model.graphs.application.ApplicationGraph</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments, attribute-defined-outside-init</span>
-        <span class="n">n_app_vertices</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">n_app_vertices</span> <span class="o">=</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">n_vertices</span>
+        <span class="n">n_app_vertices</span> <span class="o">=</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">n_vertices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_chip_to_gatherer_map</span> <span class="o">=</span> <span class="n">vertex_to_ethernet_connected_chip_mapping</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">placements</span>
@@ -106,7 +104,7 @@
             <span class="s2">&quot;Inserting edges between vertices which require FR speed up &quot;</span>
             <span class="s2">&quot;functionality.&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">):</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">ExtraMonitorSupportMachineVertex</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_process_mach_graph_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">)</span>

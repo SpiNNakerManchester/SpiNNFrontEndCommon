@@ -1655,15 +1655,10 @@
                     <span class="s2">&quot;enable_reinjection&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
             <span class="n">inserter</span> <span class="o">=</span> <span class="n">InsertExtraMonitorVerticesToGraphs</span><span class="p">()</span>
-            <span class="c1"># inserter checks for None app graph not an empty one</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">app_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">app_graph</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
          <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_vertices</span><span class="p">,</span>
          <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_to_chip_mapping</span><span class="p">)</span> <span class="o">=</span> <span class="n">inserter</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="n">app_graph</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_partitioner_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1820,15 +1815,10 @@
                     <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;enable_reinjection&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="c1"># inserter checks for None app graph not an empty one</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">app_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">app_graph</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">inserter</span> <span class="o">=</span> <span class="n">InsertEdgesToExtraMonitorFunctionality</span><span class="p">()</span>
             <span class="n">inserter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
                      <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
-                     <span class="n">app_graph</span><span class="p">)</span>
+                     <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_system_multicast_routing_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
