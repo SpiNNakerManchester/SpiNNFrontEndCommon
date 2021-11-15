@@ -3076,10 +3076,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_create_notifiaction_protocol()
         if self._has_ran and not graph_changed:
             self._execute_dsg_region_reloader()
-        self._execute_runtime_update(n_sync_steps)
-        self._execute_runner(n_sync_steps, run_time)
-        if n_machine_time_steps is not None or self._run_until_complete:
-            self._do_extract_from_machine(run_time)
+        try:
+            self._execute_runtime_update(n_sync_steps)
+            self._execute_runner(n_sync_steps, run_time)
+            if n_machine_time_steps is not None or self._run_until_complete:
+                self._do_extract_from_machine(run_time)
+        except Exception as exception:
+            self._recover_from_error(
+                exception, sys.exc_info(), self._executable_targets)
         self._has_reset_last = False
         self._has_ran = True
         # reset at the end of each do_run cycle
