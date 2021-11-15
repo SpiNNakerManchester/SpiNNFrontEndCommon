@@ -3083,7 +3083,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_energy</span><span class="p">(</span><span class="n">run_time</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_do_provenance_reports</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_do_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__do_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the do run steps.</span>
 
@@ -3121,17 +3121,56 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_first_machine_time_step</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">clear_injectables</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_recover_from_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="p">,</span> <span class="n">exc_info</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_do_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Runs, times and logs the do run steps.</span>
+
+<span class="sd">        :param n_machine_time_steps: Number of timesteps run</span>
+<span class="sd">        :type n_machine_time_steps: int or None</span>
+<span class="sd">        :param int n_sync_steps:</span>
+<span class="sd">            The number of timesteps between synchronisations</span>
+<span class="sd">        :param bool graph_changed: Flag to say the graph changed,</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__do_run</span><span class="p">(</span>
+                <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;User has aborted the simulation&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span><span class="p">()</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">run_e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_recover_from_error</span><span class="p">(</span><span class="n">run_e</span><span class="p">)</span>
+
+            <span class="c1"># if in debug mode, do not shut down machine</span>
+            <span class="k">if</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Mode&quot;</span><span class="p">,</span> <span class="s2">&quot;mode&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;Debug&quot;</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span>
+                        <span class="n">turn_off_machine</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">clear_routing_tables</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">clear_tags</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">stop_e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error </span><span class="si">{</span><span class="n">stop_e</span><span class="si">}</span><span class="s2"> when attempting to stop&quot;</span><span class="p">)</span>
+
+            <span class="c1"># reraise exception</span>
+            <span class="k">raise</span> <span class="n">run_e</span>
+
+    <span class="k">def</span> <span class="nf">_recover_from_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param Exception exception:</span>
-<span class="sd">        :param tuple(type,Exception,traceback) exc_info:</span>
-<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__recover_from_error</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">rec_e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Error </span><span class="si">{</span><span class="n">rec_e</span><span class="si">}</span><span class="s2"> when attempting to recover from error&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__recover_from_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param Exception exception:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># if exception has an exception, print to system</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;An error has occurred during simulation&quot;</span><span class="p">)</span>
         <span class="c1"># Print the detail including the traceback</span>
-        <span class="n">real_exception</span> <span class="o">=</span> <span class="n">exception</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">exception</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">exc_info</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Attempting to extract data</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -3148,8 +3187,8 @@
 
         <span class="c1"># Find the cores that are not in an expected state</span>
         <span class="n">unsuccessful_cores</span> <span class="o">=</span> <span class="n">CPUInfos</span><span class="p">()</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">real_exception</span><span class="p">,</span> <span class="n">SpiNNManCoresNotInStateException</span><span class="p">):</span>
-            <span class="n">unsuccessful_cores</span> <span class="o">=</span> <span class="n">real_exception</span><span class="o">.</span><span class="n">failed_core_states</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exception</span><span class="p">,</span> <span class="n">SpiNNManCoresNotInStateException</span><span class="p">):</span>
+            <span class="n">unsuccessful_cores</span> <span class="o">=</span> <span class="n">exception</span><span class="o">.</span><span class="n">failed_core_states</span><span class="p">()</span>
 
         <span class="c1"># If there are no cores in a bad state, find those not yet in</span>
         <span class="c1"># their finished state</span>
@@ -3215,12 +3254,12 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="o">.</span><span class="n">get_placement_on_processor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
                 <span class="n">extractor</span> <span class="o">=</span> <span class="n">PlacementsProvenanceGatherer</span><span class="p">()</span>
                 <span class="n">extractor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">finished_placements</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Could not read provenance&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">pro_e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not read provenance due to </span><span class="si">{</span><span class="n">pro_e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Read IOBUF where possible (that should be everywhere)</span>
         <span class="n">iobuf</span> <span class="o">=</span> <span class="n">IOBufExtractor</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">errors</span><span class="p">,</span> <span class="n">warnings</span> <span class="o">=</span> <span class="n">iobuf</span><span class="o">.</span><span class="n">extract_iobuf</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
@@ -3640,10 +3679,11 @@
 
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_has_ran</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_run_timesteps</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span>
                 <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_complete</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_do_stop_workflow</span><span class="p">()</span>
-            <span class="c1"># TODO recover from errors?</span>
-            <span class="c1"># self._recover_from_error(</span>
-            <span class="c1"># e, exc_info[2], executor.get_item(&quot;ExecutableTargets&quot;))</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_do_stop_workflow</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">exn</span> <span class="o">=</span> <span class="n">e</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_recover_from_error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 
         <span class="c1"># shut down the machine properly</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span><span class="p">(</span><span class="n">turn_off_machine</span><span class="p">,</span> <span class="n">clear_routing_tables</span><span class="p">,</span> <span class="n">clear_tags</span><span class="p">)</span>
