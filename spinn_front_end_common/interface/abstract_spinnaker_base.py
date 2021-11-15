@@ -3609,10 +3609,11 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         if (self._has_ran and self._current_run_timesteps is None and
                 not self._use_virtual_board and not self._run_until_complete):
-            self._do_stop_workflow()
-            # TODO recover from errors?
-            # self._recover_from_error(
-            # e, exc_info[2], executor.get_item("ExecutableTargets"))
+            try:
+                self._do_stop_workflow()
+            except Exception as exception:
+                self._recover_from_error(
+                    exception, sys.exc_info(), self._executable_targets)
 
         # shut down the machine properly
         self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
