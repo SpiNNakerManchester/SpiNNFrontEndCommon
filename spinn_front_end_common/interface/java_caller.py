@@ -302,9 +302,10 @@ class JavaCaller(object):
         by_ethernet = defaultdict(lambda: defaultdict(list))
         for placement in placements:
             chip = self._machine.get_chip_at(placement.x, placement.y)
-            chip_xy = (placement.x, placement.y)
-            ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-            by_ethernet[ethernet][chip_xy].append(placement)
+            if not chip.is_virtual:
+                chip_xy = (placement.x, placement.y)
+                ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
+                by_ethernet[ethernet][chip_xy].append(placement)
         return by_ethernet
 
     def _write_gather(self, placements, transceiver, path):
