@@ -95,7 +95,7 @@ def local_tdma_builder(machine_graph, n_keys_map, application_graph=None):
     :type application_graph:
         ~pacman.model.graphs.application.ApplicationGraph or None
     """
-    if application_graph.n_vertices > 0:
+    if application_graph.n_vertices == 0:
         return
 
     # get config params
