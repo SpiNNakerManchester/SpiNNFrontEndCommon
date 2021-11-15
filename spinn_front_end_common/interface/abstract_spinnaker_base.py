@@ -2916,14 +2916,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, APPLICATION_RUNNER) as timer:
             if timer.skip_if_virtual_board():
                 return
-            runner = application_runner()
             # Don't timeout if a stepped mode is in operation
             if n_sync_steps:
                 time_threshold = None
             else:
                 time_threshold = get_config_int(
                     "Machine", "post_simulation_overrun_before_error")
-            self._no_sync_changes = runner(
+            self._no_sync_changes = application_runner(
                 self._buffer_manager, self._notification_interface,
                 self._executable_types, self._app_id, self._txrx, run_time,
                 self._no_sync_changes, time_threshold, self._machine,
