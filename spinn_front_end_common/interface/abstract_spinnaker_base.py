@@ -2888,7 +2888,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "Create database interface"):
             # Used to used compressed routing tables if available on host
             # TODO consider not saving router tabes.
-            _, self._database_file_path = database_interface(
+            self._database_file_path = database_interface(
                 self._machine_graph, self._tags, run_time, self._machine,
                 self._max_run_time_steps, self._placements,
                 self._routing_infos, self._router_tables,

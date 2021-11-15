@@ -45,7 +45,7 @@ def database_interface(
         :rtype: tuple(DatabaseInterface, str)
     """
     interface = _DatabaseInterface(machine_graph)
-    interface._run(
+    return interface._run(
         machine_graph, tags, runtime, machine, data_n_timesteps, placements,
         routing_infos, router_tables, app_id, application_graph)
 
@@ -105,6 +105,10 @@ class _DatabaseInterface(object):
                 machine, runtime, application_graph, machine_graph,
                 data_n_timesteps, placements, routing_infos, router_tables,
                 tags, app_id)
+
+        if self._needs_db:
+            return self._writer.database_path
+        return None
 
     def _write_to_db(
             self, machine, runtime, app_graph, machine_graph,
