@@ -20,6 +20,7 @@ from spinn_front_end_common.interface.provenance import (
 
 def graph_provenance_gatherer(machine_graph, application_graph=None):
     """ Gets provenance information from the graphs.
+
     :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         The machine graph to inspect
     :param application_graph: The optional application graph
