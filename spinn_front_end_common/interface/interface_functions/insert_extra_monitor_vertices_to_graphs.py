@@ -51,7 +51,7 @@ def insert_extra_monitor_vertices_to_graphs(
     vertex_to_chip_map = dict()
 
     # handle reinjector and chip based data extractor functionality.
-    if application_graph is not None:
+    if application_graph.n_vertices > 0:
         extra_monitors = __add_second_monitors_application_graph(
             progress, machine, application_graph, machine_graph,
             vertex_to_chip_map)
@@ -60,7 +60,7 @@ def insert_extra_monitor_vertices_to_graphs(
             progress, machine, machine_graph, vertex_to_chip_map)
 
     # progress data receiver for data extraction functionality
-    if application_graph is not None:
+    if application_graph.n_vertices > 0:
         __add_data_extraction_vertices_app_graph(
             progress, machine, application_graph, machine_graph,
             chip_to_gatherer_map, vertex_to_chip_map)

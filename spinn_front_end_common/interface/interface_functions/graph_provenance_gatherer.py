@@ -27,8 +27,7 @@ def graph_provenance_gatherer(machine_graph, application_graph=None):
         ~pacman.model.graphs.application.ApplicationGraph
     """
     _get_machine_graph_provenance(machine_graph)
-    if application_graph is not None:
-        _get_app_graph_provenance(application_graph)
+    _get_app_graph_provenance(application_graph)
 
 
 def _get_machine_graph_provenance(machine_graph):

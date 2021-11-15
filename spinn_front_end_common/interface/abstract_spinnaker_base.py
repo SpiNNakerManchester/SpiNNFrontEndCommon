@@ -1593,15 +1593,11 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "enable_reinjection"):
                 return
             # inserter checks for None app graph not an empty one
-            if self._application_graph.n_vertices > 0:
-                app_graph = self._application_graph
-            else:
-                app_graph = None
         (self._vertex_to_ethernet_connected_chip_mapping,
          self._extra_monitor_vertices,
          self._extra_monitor_to_chip_mapping) = \
             insert_extra_monitor_vertices_to_graphs(
-                self._machine, self._machine_graph, app_graph)
+                self._machine, self._machine_graph, self._application_graph)
 
     def _execute_partitioner_report(self):
         """
@@ -1753,14 +1749,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Machine", "enable_advanced_monitor_support",
                     "enable_reinjection"):
                 return
-            # inserter checks for None app graph not an empty one
-            if self._application_graph.n_vertices > 0:
-                app_graph = self._application_graph
-            else:
-                app_graph = None
             insert_edges_to_extra_monitor_functionality(
                 self._machine_graph, self._placements, self._machine,
-                self._vertex_to_ethernet_connected_chip_mapping, app_graph)
+                self._vertex_to_ethernet_connected_chip_mapping,
+                self._application_graph)
 
     def _execute_system_multicast_routing_generator(self):
         """

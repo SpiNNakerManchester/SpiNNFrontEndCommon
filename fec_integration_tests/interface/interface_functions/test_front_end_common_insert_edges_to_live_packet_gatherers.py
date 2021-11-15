@@ -117,7 +117,8 @@ class TestInsertLPGEdges(unittest.TestCase):
             placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
                 live_packet_gatherers_to_vertex_mapping),
-            machine=machine, machine_graph=graph, application_graph=None)
+            machine=machine, machine_graph=graph,
+            application_graph=ApplicationGraph("Empty"))
 
         # verify edges are in the right place
         for chip in machine.ethernet_connected_chips:

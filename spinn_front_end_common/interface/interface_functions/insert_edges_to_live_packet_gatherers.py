@@ -113,7 +113,7 @@ class _InsertEdgesToLivePacketGatherers(object):
                 "which live output has been requested and its local Live "
                 "Packet Gatherer"))
 
-        if application_graph is None:
+        if application_graph.n_vertices == 0:
             for lpg_params in progress.over(live_packet_gatherer_parameters):
                 # locate vertices to connect to a LPG with these params
                 for vertex, p_ids in live_packet_gatherer_parameters[
@@ -121,7 +121,6 @@ class _InsertEdgesToLivePacketGatherers(object):
                     self._connect_lpg_vertex_in_machine_graph(
                         machine_graph, vertex, lpg_params, p_ids, n_keys_map)
         else:
-
             for lpg_params in progress.over(live_packet_gatherer_parameters):
                 # locate vertices to connect to a LPG with these params
                 for vertex, p_ids in live_packet_gatherer_parameters[

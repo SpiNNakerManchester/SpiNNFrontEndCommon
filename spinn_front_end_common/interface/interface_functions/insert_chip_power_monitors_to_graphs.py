@@ -41,7 +41,7 @@ def insert_chip_power_monitors_to_graphs(
     progress = ProgressBar(
         machine.n_chips, "Adding Chip power monitors to Graph")
 
-    if application_graph is not None:
+    if application_graph.n_vertices > 0:
         __add_app(
             application_graph, machine_graph, machine, sampling_frequency,
             progress)
