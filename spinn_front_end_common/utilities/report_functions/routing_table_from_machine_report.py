@@ -23,6 +23,7 @@ _FOLDER_NAME = "routing_tables_from_machine"
 
 def routing_table_from_machine_report(routing_tables):
     """ Report the routing table that was actually on the machine.
+    
     :param routing_tables:
     :type routing_tables:
         ~pacman.model.routing_tables.MulticastRoutingTables
