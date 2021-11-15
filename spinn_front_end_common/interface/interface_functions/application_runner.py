@@ -73,7 +73,6 @@ class _ApplicationRunner(object):
         self.__executable_types = executable_types
         self.__syncs = no_sync_changes
 
-
     # Wraps up as a PACMAN algorithm
     def _run(
             self, buffer_manager, notification_interface, runtime,

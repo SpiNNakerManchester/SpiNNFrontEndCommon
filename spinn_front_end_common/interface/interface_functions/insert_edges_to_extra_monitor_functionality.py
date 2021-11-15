@@ -73,8 +73,7 @@ class _InsertEdgesToExtraMonitorFunctionality(object):
         self._machine = machine
         self._placements = placements
 
-    def _run(self, machine_graph,
-                 application_graph=None):
+    def _run(self, machine_graph, application_graph=None):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph instance

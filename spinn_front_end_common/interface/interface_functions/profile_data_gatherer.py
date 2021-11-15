@@ -20,6 +20,11 @@ from spinn_front_end_common.utilities.globals_variables import (
     app_provenance_file_path)
 
 
+_FMT_A = "{: <{}s} {: <7s} {: <14s} {: <14s} {: <14s}\n"
+_FMT_B = "{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n"
+_FMT_C = "{: <{}s} {: >7d} {: >14.6f} {: >14.6f} {: >14.6f}\n"
+
+
 def profile_data_gatherer(transceiver, placements):
     """ Gets all the profiling data recorded by vertices and writes it to\
         files.
@@ -43,10 +48,6 @@ def profile_data_gatherer(transceiver, placements):
                 transceiver, placement)
             if profile_data.tags:
                 _write(placement, profile_data, provenance_file_path)
-
-_FMT_A = "{: <{}s} {: <7s} {: <14s} {: <14s} {: <14s}\n"
-_FMT_B = "{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n"
-_FMT_C = "{: <{}s} {: >7d} {: >14.6f} {: >14.6f} {: >14.6f}\n"
 
 
 def _write(p, profile_data, directory):

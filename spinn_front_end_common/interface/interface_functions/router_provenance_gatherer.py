@@ -23,7 +23,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def router_provenance_gatherer(transceiver, machine, router_tables,
-        extra_monitor_vertices=None, placements=None):
+                               extra_monitor_vertices=None, placements=None):
     """
     :param ~spinnman.transceiver.Transceiver transceiver:
         the SpiNNMan interface object
@@ -38,8 +38,8 @@ def router_provenance_gatherer(transceiver, machine, router_tables,
         the placements object
     """
     gather = _RouterProvenanceGatherer(
-        transceiver, machine, router_tables,
-        extra_monitor_vertices=None, placements=None)
+        transceiver, machine, router_tables, extra_monitor_vertices,
+        placements)
     gather._add_router_provenance_data()
 
 
@@ -82,7 +82,6 @@ class _RouterProvenanceGatherer(object):
         self._machine = machine
         self._placements = placements
         self._router_tables = router_tables
-
 
     def _add_router_provenance_data(self):
         """ Writes the provenance data of the router diagnostics
