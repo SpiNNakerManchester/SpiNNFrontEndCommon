@@ -16,6 +16,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities.utility_objs import ResourceTracker
 from pacman.utilities.algorithm_utilities.placer_algorithm_utilities import (
     sort_vertices_by_known_constraints)
+from pacman.model.graphs import AbstractVirtual
 
 
 class GraphMeasurer(object):
@@ -47,6 +48,7 @@ class GraphMeasurer(object):
 
         resource_tracker = ResourceTracker(machine, plan_n_timesteps)
         for vertex in progress.over(ordered_vertices):
-            resource_tracker.allocate_constrained_resources(
-                vertex.resources_required, vertex.constraints)
+            if not isinstance(vertex, AbstractVirtual):
+                resource_tracker.allocate_constrained_resources(
+                    vertex.resources_required, vertex.constraints)
         return resource_tracker.chips_used
