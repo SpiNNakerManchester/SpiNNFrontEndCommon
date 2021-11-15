@@ -65,7 +65,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
                 progress, machine, machine_graph, vertex_to_chip_map)
 
         # progress data receiver for data extraction functionality
-        if application_graph.n_verticese > 0:
+        if application_graph.n_vertices > 0:
             self._add_data_extraction_vertices_app_graph(
                 progress, machine, application_graph, machine_graph,
                 chip_to_gatherer_map, vertex_to_chip_map)

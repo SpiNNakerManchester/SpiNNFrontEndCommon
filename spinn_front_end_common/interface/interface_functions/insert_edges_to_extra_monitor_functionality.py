@@ -65,7 +65,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
             "Inserting edges between vertices which require FR speed up "
             "functionality.")
 
-        if application_graph == 0:
+        if application_graph.n_vertices == 0:
             for vertex in progress.over(machine_graph.vertices):
                 if isinstance(vertex, ExtraMonitorSupportMachineVertex):
                     self._process_mach_graph_vertex(vertex, machine_graph)
