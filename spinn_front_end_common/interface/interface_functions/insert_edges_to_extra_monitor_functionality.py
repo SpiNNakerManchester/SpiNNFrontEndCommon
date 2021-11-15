@@ -39,9 +39,9 @@ def insert_edges_to_extra_monitor_functionality(
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
         :param application_graph: the application graph
     """
-    inserter = _InsertEdgesToExtraMonitorFunctionality()
-    inserter(machine_graph, placements, machine,
-             vertex_to_ethernet_connected_chip_mapping, application_graph)
+    inserter = _InsertEdgesToExtraMonitorFunctionality(
+        placements, machine, vertex_to_ethernet_connected_chip_mapping)
+    inserter._run(machine_graph, application_graph)
 
 
 class _InsertEdgesToExtraMonitorFunctionality(object):
@@ -60,16 +60,24 @@ class _InsertEdgesToExtraMonitorFunctionality(object):
 
     EDGE_LABEL = "edge between {} and {}"
 
-    def __call__(self, machine_graph, placements, machine,
-                 vertex_to_ethernet_connected_chip_mapping,
-                 application_graph=None):
+    def __init__(self, placements, machine,
+                 vertex_to_ethernet_connected_chip_mapping):
         """
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            the machine graph instance
+
         :param ~pacman.model.placements.Placements placements: the placements
         :param ~spinn_machine.Machine machine: the machine object
         :param vertex_to_ethernet_connected_chip_mapping:
             mapping between ethernet connected chips and packet gatherers
+        """
+        self._chip_to_gatherer_map = vertex_to_ethernet_connected_chip_mapping
+        self._machine = machine
+        self._placements = placements
+
+    def _run(self, machine_graph,
+                 application_graph=None):
+        """
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph instance
         :type vertex_to_ethernet_connected_chip_mapping:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
         :param application_graph: the application graph
@@ -80,9 +88,6 @@ class _InsertEdgesToExtraMonitorFunctionality(object):
         n_app_vertices = 0
         if application_graph is not None:
             n_app_vertices = application_graph.n_vertices
-        self._chip_to_gatherer_map = vertex_to_ethernet_connected_chip_mapping
-        self._machine = machine
-        self._placements = placements
 
         progress = ProgressBar(
             machine_graph.n_vertices + n_app_vertices,
