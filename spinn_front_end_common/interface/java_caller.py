@@ -20,6 +20,7 @@ import os
 import subprocess
 from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
+from pacman.model.graphs import AbstractVirtual
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
     import WriteJsonMachine
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -301,8 +302,8 @@ class JavaCaller(object):
         """
         by_ethernet = defaultdict(lambda: defaultdict(list))
         for placement in placements:
-            chip = self._machine.get_chip_at(placement.x, placement.y)
-            if not chip.is_virtual:
+            if not isinstance(placement.vertex, AbstractVirtual):
+                chip = self._machine.get_chip_at(placement.x, placement.y)
                 chip_xy = (placement.x, placement.y)
                 ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
                 by_ethernet[ethernet][chip_xy].append(placement)
