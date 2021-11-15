@@ -3045,7 +3045,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_energy(run_time)
         self._do_provenance_reports()
 
-    def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
+    def __do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """
         Runs, times and logs the do run steps.
 
@@ -3083,7 +3083,47 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._first_machine_time_step = None
         clear_injectables()
 
-    def _recover_from_error(self, exception, exc_info, executable_targets):
+    def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
+        """
+        Runs, times and logs the do run steps.
+
+        :param n_machine_time_steps: Number of timesteps run
+        :type n_machine_time_steps: int or None
+        :param int n_sync_steps:
+            The number of timesteps between synchronisations
+        :param bool graph_changed: Flag to say the graph changed,
+        """
+        try:
+            self.__do_run(
+                n_machine_time_steps, graph_changed, n_sync_steps)
+        except KeyboardInterrupt:
+            logger.error("User has aborted the simulation")
+            self._shutdown()
+            sys.exit(1)
+        except Exception as run_e:
+            e_inf = sys.exc_info()
+            self._recover_from_error(run_e, e_inf)
+
+            # if in debug mode, do not shut down machine
+            if get_config_str("Mode", "mode") != "Debug":
+                try:
+                    self.stop(
+                        turn_off_machine=False, clear_routing_tables=False,
+                        clear_tags=False)
+                except Exception as stop_e:
+                    logger.exception(f"Error {stop_e} when attempting to stop")
+
+                # reraise exception
+                raise run_e
+
+    def _recover_from_error(self, exception, exc_info):
+        try:
+            self.__recover_from_error(self, exception, exc_info)
+        except Exception as rec_e:
+            logger.exception(
+                f"Error {rec_e} when attempting to recover from error")
+
+    def __recover_from_error(self, exception, exc_info):
         """
         :param Exception exception:
         :param tuple(type,Exception,traceback) exc_info:
@@ -3177,12 +3217,12 @@ class AbstractSpinnakerBase(ConfigHandler):
                         self._placements.get_placement_on_processor(x, y, p))
                 extractor = PlacementsProvenanceGatherer()
                 extractor(self._txrx, finished_placements)
-            except Exception:
-                logger.exception("Could not read provenance")
+            except Exception as pro_e:
+                logger.exception(f"Could not read provenance due to {pro_e}")
 
         # Read IOBUF where possible (that should be everywhere)
         iobuf = IOBufExtractor(
-            self._txrx, executable_targets, self._executable_finder)
+            self._txrx, self._executable_targets, self._executable_finder)
         try:
             errors, warnings = iobuf.extract_iobuf()
         except Exception:
@@ -3602,10 +3642,12 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         if (self._has_ran and self._current_run_timesteps is None and
                 not self._use_virtual_board and not self._run_until_complete):
-            self._do_stop_workflow()
-            # TODO recover from errors?
-            # self._recover_from_error(
-            # e, exc_info[2], executor.get_item("ExecutableTargets"))
+            try:
+                self._do_stop_workflow()
+            except Exception as e:
+                exn = e
+                exc_info = sys.exc_info()
+                self._recover_from_error(e, exc_info[2])
 
         # shut down the machine properly
         self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
