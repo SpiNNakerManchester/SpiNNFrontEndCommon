@@ -3112,8 +3112,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 except Exception as stop_e:
                     logger.exception(f"Error {stop_e} when attempting to stop")
 
-                # reraise exception
-                raise run_e
+            # reraise exception
+            raise run_e
 
     def _recover_from_error(self, exception):
         """
