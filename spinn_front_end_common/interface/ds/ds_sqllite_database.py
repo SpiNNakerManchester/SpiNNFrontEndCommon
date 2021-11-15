@@ -16,53 +16,46 @@
 import logging
 import os
 import sqlite3
-from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.utilities.utility_objs import DataWritten
 
 DB_NAME = "ds.sqlite3"
-DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
+_DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class DsSqlliteDatabase(AbstractContextManager):
+class DsSqlliteDatabase(SQLiteDB):
     __slots__ = [
-        # the database holding the data to store, if used
-        "_db",
         # The machine cached for getting the "ethernet"s
         "_machine",
         # The root ethernet id if required
         "_root_ethernet_id"
     ]
 
-    def __init__(self, machine, report_folder, init=None):
+    def __init__(self, machine, init=None):
         """
         :param ~spinn_machine.Machine machine:
-        :param str report_folder:
         :param init:
         :type init: bool or None
         """
         self._machine = machine
-        database_file = os.path.join(report_folder, DB_NAME)
+        database_file = os.path.join(report_default_directory(), DB_NAME)
 
         if init is None:
             init = not os.path.exists(database_file)
 
-        self._db = sqlite3.connect(database_file)
-        self._db.text_factory = memoryview
-        self._db.row_factory = sqlite3.Row
+        super().__init__(database_file, ddl_file=_DDL_FILE if init else None)
         if init:
-            self.__init_db()
+            self.__init_db_contents()
         self._root_ethernet_id = self.__find_root_id()
 
-    def __init_db(self):
-        """ Set up the database if required. """
-        with open(DDL_FILE) as f:
-            sql = f.read()
-        self._db.executescript(sql)
-
-        with self._db:
-            self._db.executemany(
+    def __init_db_contents(self):
+        """ Set up the database contents from the machine. """
+        with self.transaction() as cursor:
+            cursor.executemany(
                 """
                 INSERT INTO ethernet(
                     ethernet_x, ethernet_y, ip_address)
@@ -73,8 +66,8 @@ class DsSqlliteDatabase(AbstractContextManager):
 
     def __find_root_id(self):
         first_x = first_y = root_id = None
-        with self._db:
-            for row in self._db.execute(
+        with self.transaction() as cursor:
+            for row in cursor.execute(
                     """
                     SELECT ethernet_id, ethernet_x, ethernet_y FROM ethernet
                     ORDER BY ethernet_x, ethernet_y
@@ -92,25 +85,11 @@ class DsSqlliteDatabase(AbstractContextManager):
                 "for all boards with no IP address.", first_x, first_y)
         return root_id
 
-    def __del__(self):
-        self.close()
-
-    def close(self):
-        """ Signals that the database can be closed and will not be reused.
-
-        .. note::
-            Once this is called any other method in this API is allowed to
-            raise any kind of exception.
-        """
-        if self._db is not None:
-            self._db.close()
-            self._db = None
-
     def clear_ds(self):
         """ Clear all saved data specification data
         """
-        with self._db:
-            self._db.execute(
+        with self.transaction() as cursor:
+            cursor.execute(
                 """
                 DELETE FROM core
                 """)
@@ -123,8 +102,8 @@ class DsSqlliteDatabase(AbstractContextManager):
         :param bytearray ds: the data spec as byte code
         """
         chip = self._machine.get_chip_at(core_x, core_y)
-        with self._db:
-            self._db.execute(
+        with self.transaction() as cursor:
+            cursor.execute(
                 """
                 INSERT INTO core(
                     x, y, processor, content, ethernet_id)
@@ -147,8 +126,8 @@ class DsSqlliteDatabase(AbstractContextManager):
         :return: data spec as byte code
         :rtype: bytearray
         """
-        with self._db:
-            for row in self._db.execute(
+        with self.transaction() as cursor:
+            for row in cursor.execute(
                     """
                     SELECT content FROM core
                     WHERE x = ? AND y = ? AND processor = ?
@@ -166,8 +145,8 @@ class DsSqlliteDatabase(AbstractContextManager):
         :return: Yields the (x, y, p) and saved ds pairs
         :rtype: iterable(tuple(tuple(int, int, int), bytearray))
         """
-        with self._db:
-            for row in self._db.execute(
+        with self.transaction() as cursor:
+            for row in cursor.execute(
                     """
                     SELECT x, y, processor, content FROM core
                     WHERE content IS NOT NULL
@@ -179,8 +158,8 @@ class DsSqlliteDatabase(AbstractContextManager):
 
         :rtype: int
         """
-        with self._db:
-            for row in self._db.execute(
+        with self.transaction() as cursor:
+            for row in cursor.execute(
                     """
                     SELECT COUNT(*) as count FROM core
                     WHERE content IS NOT NULL
@@ -194,8 +173,8 @@ class DsSqlliteDatabase(AbstractContextManager):
 
         :param int app_id: value to set
         """
-        with self._db:
-            self._db.execute(
+        with self.transaction() as cursor:
+            cursor.execute(
                 """
                 UPDATE core SET
                     app_id = ?
@@ -210,8 +189,8 @@ class DsSqlliteDatabase(AbstractContextManager):
         :param int p: core
         :rtype: int
         """
-        with self._db:
-            for row in self._db.execute(
+        with self.transaction() as cursor:
+            for row in cursor.execute(
                     """
                     SELECT app_id FROM core
                     WHERE x = ? AND y = ? AND processor = ?
@@ -226,8 +205,8 @@ class DsSqlliteDatabase(AbstractContextManager):
         :param iterable(tuple(int,int,int)) core_list:
             list of (core x, core y, core p)
         """
-        with self._db:
-            self._db.executemany(
+        with self.transaction() as cursor:
+            cursor.executemany(
                 """
                 UPDATE core SET
                     is_system = 1
@@ -251,8 +230,8 @@ class DsSqlliteDatabase(AbstractContextManager):
         :param int p: core p
         :rtype: DataWritten
         """
-        with self._db:
-            for row in self._db.execute(
+        with self.transaction() as cursor:
+            for row in cursor.execute(
                     """
                     SELECT start_address, memory_used, memory_written
                     FROM core
@@ -260,7 +239,7 @@ class DsSqlliteDatabase(AbstractContextManager):
                     LIMIT 1
                     """, (x, y, p)):
                 return self._row_to_info(row)
-        raise ValueError("No info for {}:{}:{}".format(x, y, p))
+        raise ValueError(f"No info for {x}:{y}:{p}")
 
     def set_write_info(self, x, y, p, info):
         """ Sets the provenance returned by the Data Spec executor.
@@ -278,8 +257,7 @@ class DsSqlliteDatabase(AbstractContextManager):
             start = info["start_address"]
             used = info["memory_used"]
             written = info["memory_written"]
-        with self._db:
-            cursor = self._db.cursor()
+        with self.transaction() as cursor:
             cursor.execute(
                 """
                 UPDATE core SET
@@ -305,8 +283,7 @@ class DsSqlliteDatabase(AbstractContextManager):
                         chip.nearest_ethernet_y, self._root_ethernet_id))
 
     def set_size_info(self, x, y, p, memory_used):
-        with self._db:
-            cursor = self._db.cursor()
+        with self.transaction() as cursor:
             cursor.execute(
                 """
                 UPDATE core SET
@@ -332,8 +309,8 @@ class DsSqlliteDatabase(AbstractContextManager):
     def clear_write_info(self):
         """ Clears the provenance for all rows.
         """
-        with self._db:
-            self._db.execute(
+        with self.transaction() as cursor:
+            cursor.execute(
                 """
                 UPDATE core SET
                     start_address = NULL,
@@ -346,8 +323,8 @@ class DsSqlliteDatabase(AbstractContextManager):
 
         :rtype: int
         """
-        with self._db:
-            for row in self._db.execute(
+        with self.transaction() as cursor:
+            for row in cursor.execute(
                     """
                     SELECT count(*) as count FROM core
                     WHERE start_address IS NOT NULL
@@ -366,8 +343,8 @@ class DsSqlliteDatabase(AbstractContextManager):
         :return: Yields the (x, y, p) and DataWritten
         :rtype: iterable(tuple(tuple(int, int, int), DataWritten))
         """
-        with self._db:
-            for row in self._db.execute(
+        with self.transaction() as cursor:
+            for row in cursor.execute(
                     """
                     SELECT
                         x, y, processor,

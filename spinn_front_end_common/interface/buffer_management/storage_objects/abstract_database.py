@@ -13,13 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
-from spinn_utilities.abstract_base import (
-    AbstractBase, abstractmethod)
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
-@add_metaclass(AbstractBase)
-class AbstractDatabase(object):
+class AbstractDatabase(object, metaclass=AbstractBase):
     """
     This API separates the required database calls from the implementation.
 
@@ -51,7 +48,7 @@ class AbstractDatabase(object):
         """
 
     @abstractmethod
-    def store_data_in_region_buffer(self, x, y, p, region, data):
+    def store_data_in_region_buffer(self, x, y, p, region, missing, data):
         """ Store some information in the corresponding buffer for a\
             specific chip, core and recording region.
 
@@ -59,6 +56,7 @@ class AbstractDatabase(object):
         :param int y: y coordinate of the chip
         :param int p: Core within the specified chip
         :param int region: Region containing the data to be stored
+        :param bool missing: Whether any data is missing
         :param bytearray data: data to be stored
 
             .. note::
@@ -77,7 +75,7 @@ class AbstractDatabase(object):
             simulation, and a flag indicating if any data was missing
 
             .. note::
-                Implementations should not assume that the total buffer is \
+                Implementations should not assume that the total buffer is
                 necessarily shorter than 1GB.
 
         :rtype: tuple(memoryview, bool)

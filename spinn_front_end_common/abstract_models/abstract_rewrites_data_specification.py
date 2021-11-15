@@ -13,17 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_utilities.require_subclass import require_subclass
+from pacman.model.graphs.machine import MachineVertex
 
 
-@add_metaclass(AbstractBase)
-class AbstractRewritesDataSpecification(object):
+@require_subclass(MachineVertex)
+class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
     """ Indicates an object that allows data to be changed after run,\
         and so can rewrite the data specification
     """
 
-    __slots__ = ()
+    __slots__ = []
 
     @abstractmethod
     def regenerate_data_specification(self, spec, placement):
@@ -37,13 +38,16 @@ class AbstractRewritesDataSpecification(object):
         """
 
     @abstractmethod
-    def requires_memory_regions_to_be_reloaded(self):
+    def reload_required(self):
         """ Return true if any data region needs to be reloaded
 
         :rtype: bool
         """
 
     @abstractmethod
-    def mark_regions_reloaded(self):
+    def set_reload_required(self, new_value):
         """ Indicate that the regions have been reloaded
+
+        :param new_value: the new value
+        :rtype: None
         """

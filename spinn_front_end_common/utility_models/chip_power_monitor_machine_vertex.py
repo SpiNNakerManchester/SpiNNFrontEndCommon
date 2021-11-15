@@ -17,9 +17,11 @@ import math
 import logging
 from enum import IntEnum
 import numpy
+from spinn_utilities.config_holder import get_config_int
+from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from data_specification.enums import DataType
-from pacman.executor.injection_decorator import (
-    inject_items, supports_injection)
+from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource, ResourceContainer, VariableSDRAM)
@@ -29,12 +31,12 @@ from spinn_front_end_common.interface.buffer_management import (
     recording_utilities)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
-from spinn_front_end_common.utilities import globals_variables
+from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
+from spinn_front_end_common.utilities.globals_variables import (
+    machine_time_step, time_scale_factor)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_utilities.log import FormatAdapter
-from spinn_utilities.overrides import overrides
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
@@ -42,20 +44,21 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
+PROVENANCE_KEY = "Power_Monitor_Total_Activity_Count"
 
 RECORDING_SIZE_PER_ENTRY = 18 * BYTES_PER_WORD
 DEFAULT_MALLOCS_USED = 3
 CONFIG_SIZE_IN_BYTES = 2 * BYTES_PER_WORD
 
 
-@supports_injection
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
     """ Machine vertex for C code representing functionality to record\
         idle times in a machine graph.
     """
-    __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
+    __slots__ = [
+        "_sampling_frequency"]
 
     class _REGIONS(IntEnum):
         # data regions
@@ -67,23 +70,20 @@ class ChipPowerMonitorMachineVertex(
     _SAMPLE_RECORDING_CHANNEL = 0
 
     def __init__(
-            self, label, constraints, n_samples_per_recording,
+            self, label, constraints,
             sampling_frequency, app_vertex=None, vertex_slice=None):
         """
         :param str label: vertex label
-        :param iterable(~pacman.model.constraints.AbstractConstraint) \
-                constraints:
-            constraints on this vertex
-        :param int n_samples_per_recording:
-            how may samples between recording entry
+        :param constraints: constraints on this vertex
+        :type constraints:
+            iterable(~pacman.model.constraints.AbstractConstraint)
         :param int sampling_frequency: how often to sample, in microseconds
         :param ChipPowerMonitor app_vertex: associated application vertex
         :param ~pacman.model.graphs.common.Slice vertex_slice:
         """
-        super(ChipPowerMonitorMachineVertex, self).__init__(
+        super().__init__(
             label=label, constraints=constraints, app_vertex=app_vertex,
             vertex_slice=vertex_slice)
-        self._n_samples_per_recording = n_samples_per_recording
         self._sampling_frequency = sampling_frequency
 
     @property
@@ -95,38 +95,24 @@ class ChipPowerMonitorMachineVertex(
         return self._sampling_frequency
 
     @property
-    def n_samples_per_recording(self):
-        """ how may samples to take between making recording entries
-
-        :rtype: int
-        """
-        return self._n_samples_per_recording
-
-    @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         # pylint: disable=arguments-differ
-        sim = globals_variables.get_simulator()
-        return self.get_resources(
-            sim.machine_time_step, sim.time_scale_factor,
-            self._n_samples_per_recording, self._sampling_frequency)
+        return self.get_resources(self._sampling_frequency)
 
     @staticmethod
-    def get_resources(
-            time_step, time_scale_factor,
-            n_samples_per_recording, sampling_frequency):
+    def get_resources(sampling_frequency):
         """ Get the resources used by this vertex
 
-        :param int time_step:
-        :param int time_scale_factor:
-        :param int n_samples_per_recording:
         :param float sampling_frequency:
         :rtype: ~pacman.model.resources.ResourceContainer
         """
         # pylint: disable=too-many-locals
-        step_in_microseconds = (time_step * time_scale_factor)
+        step_in_microseconds = machine_time_step() * time_scale_factor()
         # The number of sample per step CB believes does not have to be an int
         samples_per_step = (step_in_microseconds / sampling_frequency)
+        n_samples_per_recording = get_config_int(
+            "EnergyMonitor", "n_samples_per_recording_entry")
         recording_per_step = (samples_per_step / n_samples_per_recording)
         max_recording_per_step = math.ceil(recording_per_step)
         overflow_recordings = max_recording_per_step - recording_per_step
@@ -156,33 +142,15 @@ class ChipPowerMonitorMachineVertex(
         """
         return BINARY_FILE_NAME
 
-    @inject_items({"time_scale_factor": "TimeScaleFactor",
-                   "machine_time_step": "MachineTimeStep",
-                   "data_n_time_steps": "DataNTimeSteps"})
+    @inject_items({"data_n_time_steps": "DataNTimeSteps"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
-               additional_arguments={
-                   "machine_time_step", "time_scale_factor",
-                   "data_n_time_steps"})
+               additional_arguments={"data_n_time_steps"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_time_step, time_scale_factor, data_n_time_steps):
-        """
-        :param int machine_time_step: machine time step
-        :param int time_scale_factor: time scale factor
-        :param int data_n_time_steps: timesteps to reserve data for
-        """
-        # pylint: disable=too-many-arguments, arguments-differ
-        self._generate_data_specification(
-            spec, machine_time_step, time_scale_factor, data_n_time_steps)
-
-    def _generate_data_specification(
-            self, spec, machine_time_step, time_scale_factor,
             data_n_time_steps):
         """ Supports the application vertex calling this directly
 
         :param ~data_specification.DataSpecificationGenerator spec: data spec
-        :param int machine_time_step: machine time step
-        :param int time_scale_factor: time scale factor
         :param int data_n_time_steps: timesteps to reserve data for
         """
         # pylint: disable=too-many-arguments
@@ -190,8 +158,7 @@ class ChipPowerMonitorMachineVertex(
 
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
-        self._write_setup_info(
-            spec, machine_time_step, time_scale_factor, data_n_time_steps)
+        self._write_setup_info(spec, data_n_time_steps)
         self._write_configuration_region(spec)
 
         # End-of-Spec:
@@ -204,29 +171,26 @@ class ChipPowerMonitorMachineVertex(
             spec object
         """
         spec.switch_write_focus(region=self._REGIONS.CONFIG)
-        spec.write_value(self._n_samples_per_recording,
-                         data_type=DataType.UINT32)
+        n_samples_per_recording = get_config_int(
+            "EnergyMonitor", "n_samples_per_recording_entry")
+        spec.write_value(n_samples_per_recording, data_type=DataType.UINT32)
         spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
 
-    def _write_setup_info(
-            self, spec, machine_time_step, time_scale_factor,
-            n_machine_time_steps):
+    def _write_setup_info(self, spec, n_machine_time_steps):
         """ Writes the system data as required.
 
         :param ~data_specification.DataSpecificationGenerator spec:
             the DSG spec writer
-        :param int machine_time_step: the machine time step
-        :param int time_scale_factor: the time scale factor
         """
         # pylint: disable=too-many-arguments
         spec.switch_write_focus(region=self._REGIONS.SYSTEM)
         spec.write_array(get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step, time_scale_factor))
+            self.get_binary_file_name()))
 
         spec.switch_write_focus(region=self._REGIONS.RECORDING)
         recorded_region_sizes = [
-            self._deduce_sdram_requirements_per_timer_tick(
-                machine_time_step, time_scale_factor) * n_machine_time_steps]
+            self._deduce_sdram_requirements_per_timer_tick()
+            * n_machine_time_steps]
         spec.write_array(recording_utilities.get_recording_header_array(
             recorded_region_sizes))
 
@@ -273,23 +237,24 @@ class ChipPowerMonitorMachineVertex(
     def get_recorded_region_ids(self):
         return [0]
 
-    def _deduce_sdram_requirements_per_timer_tick(
-            self, machine_time_step, time_scale_factor):
+    def _deduce_sdram_requirements_per_timer_tick(self):
         """ Deduce SDRAM usage per timer tick
 
-        :param int machine_time_step: the machine time step
-        :param float time_scale_factor: the time scale factor
         :return: the SDRAM usage
         :rtype: int
         """
-        timer_tick_in_micro_seconds = machine_time_step * time_scale_factor
+        timer_tick_in_micro_seconds = (
+                machine_time_step() * time_scale_factor())
+
         recording_time = \
-            self._sampling_frequency * self._n_samples_per_recording
+            self._sampling_frequency * get_config_int(
+                "EnergyMonitor", "n_samples_per_recording_entry")
         n_entries = math.floor(timer_tick_in_micro_seconds / recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
     def get_recorded_data(self, placement, buffer_manager):
-        """ Get data from SDRAM given placement and buffer manager
+        """ Get data from SDRAM given placement and buffer manager. \
+            Also arranges for provenance data to be available.
 
         :param ~pacman.model.placements.Placement placement:
             the location on machine to get data from
@@ -307,7 +272,14 @@ class ChipPowerMonitorMachineVertex(
                 "Chip Power monitor has lost data on chip({}, {})",
                 placement.x, placement.y)
 
+        n_samples_per_recording = get_config_int(
+            "EnergyMonitor", "n_samples_per_recording_entry")
         results = (
             numpy.frombuffer(record_raw, dtype="uint32").reshape(-1, 18) /
-            self.n_samples_per_recording)
+            n_samples_per_recording)
+        activity_count = int(
+            numpy.frombuffer(record_raw, dtype="uint32").sum())
+        with ProvenanceWriter() as db:
+            db.insert_monitor(
+                placement.x, placement.y, PROVENANCE_KEY, activity_count)
         return results

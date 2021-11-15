@@ -15,25 +15,23 @@
 
 import os
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 
 
 class FixedRouteFromMachineReport(object):
-    """ Generate a report of the fixed routes from the machine. **Callable.**
-
-    :param ~spinnman.transceiver.Transceiver transceiver: spinnMan instance
-    :param ~spinn_machine.Machine machine: SpiNNMachine instance
-    :param str report_default_directory: folder where reports reside
-    :param int app_id: the application ID the fixed routes were loaded with
-    :rtype: None
+    """ Generate a report of the fixed routes from the machine.
     """
 
-    def __call__(self, transceiver, machine, report_default_directory,
-                 app_id):
+    def __call__(self, transceiver, machine, app_id):
         """ Writes the fixed routes from the machine
-        """
 
+        :param ~spinnman.transceiver.Transceiver transceiver: spinnMan instance
+        :param ~spinn_machine.Machine machine: SpiNNMachine instance
+        :param int app_id: the application ID the fixed routes were loaded with
+        """
         file_name = os.path.join(
-            report_default_directory, "fixed_route_routers")
+            report_default_directory(), "fixed_route_routers")
 
         with open(file_name, "w") as output:
             self._write_fixed_routers(output, transceiver, machine, app_id)

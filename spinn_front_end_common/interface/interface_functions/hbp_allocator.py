@@ -51,7 +51,7 @@ class _HBPJobController(MachineAllocationController):
         self._power_on = True
         # Lower the level of requests to WARNING to avoid extra messages
         logging.getLogger("requests").setLevel(logging.WARNING)
-        super(_HBPJobController, self).__init__("HBPJobController")
+        super().__init__("HBPJobController")
 
     @overrides(AbstractMachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time):
@@ -84,7 +84,7 @@ class _HBPJobController(MachineAllocationController):
 
     @overrides(AbstractMachineAllocationController.close)
     def close(self):
-        super(_HBPJobController, self).close()
+        super().close()
         self._release(self._machine_name)
 
     @overrides(MachineAllocationController._teardown)
@@ -111,32 +111,24 @@ class _HBPJobController(MachineAllocationController):
 class HBPAllocator(object):
     """ Request a machine from the HBP remote access server that will fit\
         a number of chips.
-
-    :param str hbp_server_url:
-        The URL of the HBP server from which to get the machine
-    :param int total_run_time: The total run time to request
-    :param int n_chips: The number of chips required.
-        Only used if n_boards is None
-    :param int n_boards: The number of boards required
-    :return: machine name, machine version, BMP details (if any),
-        reset on startup flag, auto-detect BMP, SCAMP connection details,
-        boot port, allocation controller
-    :rtype: tuple(str, int, object, bool, bool, object, object,
-        MachineAllocationController)
-    :raises PacmanConfigurationException:
-        If neither `n_chips` or `n_boards` provided
     """
 
     def __call__(
             self, hbp_server_url, total_run_time, n_chips=None, n_boards=None):
         """
         :param str hbp_server_url:
-        :param int total_run_time:
-        :param int n_chips:
-        :param int n_boards:
+            The URL of the HBP server from which to get the machine
+        :param int total_run_time: The total run time to request
+        :param int n_chips: The number of chips required.
+            Only used if n_boards is None
+        :param int n_boards: The number of boards required
+        :return: machine name, machine version, BMP details (if any),
+            reset on startup flag, auto-detect BMP, SCAMP connection details,
+            boot port, allocation controller
         :rtype: tuple(str, int, object, bool, bool, object, object,
             MachineAllocationController)
-        :raises PacmanConfigurationException:
+        :raises ~pacman.exceptions.PacmanConfigurationException:
+            If neither `n_chips` or `n_boards` provided
         """
 
         url = hbp_server_url

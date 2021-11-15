@@ -14,13 +14,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 
 _REPORT_FILENAME = "tags_on_machine.txt"
 
 
 class TagsFromMachineReport(object):
-    def __call__(self, report_default_directory, transceiver):
-        filename = os.path.join(report_default_directory, _REPORT_FILENAME)
+    """ Describes what the tags actually present on the machine are.
+    """
+
+    def __call__(self, transceiver):
+        """
+        :param str report_default_directory:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        """
+        filename = os.path.join(report_default_directory(), _REPORT_FILENAME)
         tags = self._get_tags(transceiver)
         with open(filename, "w") as f:
             f.write("Tags actually read off the machine\n")

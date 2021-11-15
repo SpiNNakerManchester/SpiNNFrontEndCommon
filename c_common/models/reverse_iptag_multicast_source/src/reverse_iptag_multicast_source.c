@@ -92,13 +92,13 @@ enum region_ids {
 };
 
 //! The provenance data items
-struct provenance_t {
+typedef struct ripmcs_provenance_t {
     uint32_t received_packets;  //!< How many EIEIO packets were received
     uint32_t sent_packets;      //!< How many MC packets were sent
     uint32_t incorrect_keys;    //!< Number of bad keys
     uint32_t incorrect_packets; //!< Number of bad packets (in non-debug mode)
     uint32_t late_packets;      //!< Number of packets dropped for being late
-};
+} ripmcs_provenance_t;
 
 //! The number of regions that can be recorded
 #define NUMBER_OF_REGIONS_TO_RECORD 1
@@ -179,7 +179,7 @@ static uint32_t buffer_region_size;
 static uint32_t space_before_data_request;
 
 //! The provenance information that we're collecting
-static struct provenance_t provenance = {0};
+static ripmcs_provenance_t provenance = {0};
 
 //! Keeps track of which types of recording should be done to this model.
 static uint32_t recording_flags = 0;
@@ -247,9 +247,6 @@ static uint32_t last_request_tick;
 
 //! Whether this app has been asked to stop running
 static bool stopped = false;
-
-//! True while a recording by record_packet() is busy
-static bool recording_in_progress = false;
 
 //! Buffer used for recording inbound packets
 static recorded_packet_t *recorded_packet;
@@ -702,25 +699,17 @@ static inline void process_32_bit_packets(
     }
 }
 
-static void _recording_done_callback(void) {
-    recording_in_progress = false;
-}
-
 //! \brief Asynchronously record an EIEIO message.
 //! \param[in] eieio_msg_ptr: The message to record.
 //! \param[in] length: The length of the message.
 static inline void record_packet(
         const eieio_msg_t eieio_msg_ptr, uint32_t length) {
     if (recording_flags > 0) {
-        while (recording_in_progress) {
-            wait_for_interrupt();
-        }
 
         // Ensure that the recorded data size is a multiple of 4
         uint32_t recording_length = 4 * ((length + 3) / 4);
         log_debug("recording a EIEIO message with length %u",
                 recording_length);
-        recording_in_progress = true;
         recorded_packet->length = recording_length;
         recorded_packet->time = time;
         spin1_memcpy(recorded_packet->data, eieio_msg_ptr, recording_length);
@@ -730,9 +719,7 @@ static inline void record_packet(
         // eieio_msg_ptr is always big enough to have extra space in it.  The
         // bytes in this data will be random, but are also ignored by
         // whatever reads the data.
-        recording_record_and_notify(
-                SPIKE_HISTORY_CHANNEL, recorded_packet, recording_length + 8,
-                _recording_done_callback);
+        recording_record(SPIKE_HISTORY_CHANNEL, recorded_packet, recording_length + 8);
     }
 }
 
@@ -1172,7 +1159,7 @@ static bool initialise_recording(void) {
 //! \brief Writes our provenance data into the provenance region.
 //! \param[in] address: Where to write
 static void provenance_callback(address_t address) {
-    struct provenance_t *prov = (void *) address;
+    ripmcs_provenance_t *prov = (void *) address;
 
     prov->received_packets = provenance.received_packets;
     prov->sent_packets = provenance.sent_packets;
@@ -1257,14 +1244,9 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
             "next packet buffer time: %d",
             simulation_ticks, time, next_buffer_time);
 
-    if (stopped || ((infinite_run != TRUE) && (time >= simulation_ticks))) {
+    if (stopped || simulation_is_finished()) {
         // Enter pause and resume state to avoid another tick
         simulation_handle_pause_resume(resume_callback);
-
-        // Wait for recording to finish
-        while (recording_in_progress) {
-            wait_for_interrupt();
-        }
 
         // close recording channels
         if (recording_flags > 0) {
@@ -1296,10 +1278,6 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
     } else if (next_buffer_time == time) {
         eieio_data_parse_packet(msg_from_sdram, msg_from_sdram_length);
         fetch_and_process_packet();
-    }
-
-    if (recording_flags > 0) {
-        recording_do_timestep_update(time);
     }
 }
 

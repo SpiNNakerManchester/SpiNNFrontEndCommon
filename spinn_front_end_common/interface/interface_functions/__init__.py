@@ -13,6 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+The code in this module is intended primarily for being invoked via the
+PACMAN Executor.
+"""
+
+import os
 from .application_finisher import ApplicationFinisher
 from .application_runner import ApplicationRunner
 from .buffer_extractor import BufferExtractor
@@ -28,7 +34,7 @@ from .system_multicast_routing_generator import (
 from .dsg_region_reloader import DSGRegionReloader
 from .edge_to_n_keys_mapper import EdgeToNKeysMapper
 from .energy_provenance_reporter import EnergyProvenanceReporter
-from .finalise_timing_data import FinaliseTimingData
+from .find_application_chips_used import FindApplicationChipsUsed
 from .graph_binary_gatherer import GraphBinaryGatherer
 from .graph_data_specification_writer import (
     GraphDataSpecificationWriter)
@@ -67,18 +73,21 @@ from .preallocate_resources_for_extra_monitor_support import (
     PreAllocateResourcesForExtraMonitorSupport)
 from .process_partition_constraints import ProcessPartitionConstraints
 from .profile_data_gatherer import ProfileDataGatherer
-from .provenance_json_writer import ProvenanceJSONWriter
-from .provenance_sql_writer import ProvenanceSQLWriter
-from .provenance_xml_writer import ProvenanceXMLWriter
 from .router_provenance_gatherer import RouterProvenanceGatherer
 from .routing_setup import RoutingSetup
 from .routing_table_loader import RoutingTableLoader
 from .spalloc_allocator import SpallocAllocator
 from .spalloc_max_machine_generator import SpallocMaxMachineGenerator
 from .tags_loader import TagsLoader
-from .tdma_agenda_builder import TDMAAgendaBuilder
 from .virtual_machine_generator import VirtualMachineGenerator
 from .read_routing_tables_from_machine import ReadRoutingTablesFromMachine
+from .sdram_outgoing_partition_allocator import SDRAMOutgoingPartitionAllocator
+
+
+def interface_xml():
+    return os.path.join(
+        os.path.dirname(__file__), "front_end_common_interface_functions.xml")
+
 
 __all__ = [
     "ApplicationFinisher",
@@ -89,7 +98,8 @@ __all__ = [
     "ComputeEnergyUsed", "DatabaseInterface",
     "SystemMulticastRoutingGenerator",
     "DSGRegionReloader", "EdgeToNKeysMapper",
-    "EnergyProvenanceReporter", "FinaliseTimingData",
+    "EnergyProvenanceReporter",
+    "FindApplicationChipsUsed",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
     "HBPAllocator", "HostBasedBitFieldRouterCompressor",
@@ -99,17 +109,16 @@ __all__ = [
     "InsertEdgesToExtraMonitorFunctionality",
     "InsertEdgesToLivePacketGatherers",
     "InsertExtraMonitorVerticesToGraphs",
-    "InsertLivePacketGatherersToGraphs", "LoadExecutableImages",
-    "LoadFixedRoutes", "LocalTDMABuilder", "LocateExecutableStartType",
-    "MachineBitFieldRouterCompressor", "MachineGenerator",
-    "PlacementsProvenanceGatherer",
+    "InsertLivePacketGatherersToGraphs", "interface_xml",
+    "LoadExecutableImages", "LoadFixedRoutes", "LocalTDMABuilder",
+    "LocateExecutableStartType", "MachineBitFieldRouterCompressor",
+    "MachineGenerator", "PlacementsProvenanceGatherer",
     "PreAllocateForBitFieldRouterCompressor",
     "PreAllocateResourcesForChipPowerMonitor",
     "PreAllocateResourcesForExtraMonitorSupport",
     "PreAllocateResourcesForLivePacketGatherers",
     "ProcessPartitionConstraints", "ProfileDataGatherer",
-    "ProvenanceJSONWriter", "ProvenanceSQLWriter", "ProvenanceXMLWriter",
     "ReadRoutingTablesFromMachine", "RouterProvenanceGatherer", "RoutingSetup",
-    "RoutingTableLoader", "SpallocAllocator",
-    "SpallocMaxMachineGenerator", "TagsLoader",
-    "TDMAAgendaBuilder", "VirtualMachineGenerator"]
+    "RoutingTableLoader", "SDRAMOutgoingPartitionAllocator",
+    "SpallocAllocator", "SpallocMaxMachineGenerator", "TagsLoader",
+    "VirtualMachineGenerator"]

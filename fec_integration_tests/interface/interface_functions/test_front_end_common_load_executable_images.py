@@ -15,8 +15,10 @@
 
 import unittest
 from collections import defaultdict
+from spinn_utilities.overrides import overrides
 from spinnman.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType)
 from spinn_front_end_common.interface.interface_functions import (
@@ -32,6 +34,7 @@ class _MockTransceiver(Transceiver):
         self._n_cores_in_app = defaultdict(lambda: 0)
         self._executable_on_core = dict()
 
+    @overrides(Transceiver.execute_flood)
     def execute_flood(
             self, core_subsets, executable, app_id,
             n_bytes=None, wait=False, is_filename=False):  # @UnusedVariable
@@ -44,14 +47,19 @@ class _MockTransceiver(Transceiver):
                 self._executable_on_core[x, y, p] = executable
         self._n_cores_in_app[app_id] += len(core_subsets)
 
+    @overrides(Transceiver.get_core_state_count)
     def get_core_state_count(self, app_id, state):  # @UnusedVariable
         return self._n_cores_in_app[app_id]
 
+    @overrides(Transceiver.send_signal)
     def send_signal(self, app_id, signal):
         pass
 
 
 class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
+
+    def setUp(self):
+        unittest_setup()
 
     def test_front_end_common_load_executable_images(self):
         transceiver = _MockTransceiver(self)

@@ -16,14 +16,10 @@
 import os
 import sqlite3
 import time
-import sys
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.overrides import overrides
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from .abstract_database import AbstractDatabase
-
-if sys.version_info < (3,):
-    # pylint: disable=redefined-builtin, undefined-variable
-    memoryview = buffer  # noqa
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
@@ -33,7 +29,7 @@ def _timestamp():
     return int(time.time() * _SECONDS_TO_MICRO_SECONDS_CONVERSION)
 
 
-class SqlLiteDatabase(AbstractDatabase, AbstractContextManager):
+class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::
@@ -41,10 +37,7 @@ class SqlLiteDatabase(AbstractDatabase, AbstractContextManager):
         Threads can access different DBs just fine.
     """
 
-    __slots__ = [
-        # the database holding the data to store
-        "_db",
-    ]
+    __slots__ = []
 
     def __init__(self, database_file=None):
         """
@@ -53,24 +46,11 @@ class SqlLiteDatabase(AbstractDatabase, AbstractContextManager):
             database holding the data. If omitted, an unshared in-memory
             database will be used.
         """
-        if database_file is None:
-            database_file = ":memory:"  # Magic name!
-        self._db = sqlite3.connect(database_file)
-        self.__init_db()
-
-    def __del__(self):
-        self.close()
-
-    @overrides(AbstractDatabase.close)
-    def close(self):
-        if self._db is not None:
-            self._db.close()
-            self._db = None
+        super().__init__(database_file, ddl_file=_DDL_FILE)
 
     @overrides(AbstractDatabase.clear)
     def clear(self):
-        with self._db:
-            cursor = self._db.cursor()
+        with self.transaction() as cursor:
             cursor.execute(
                 """
                 UPDATE region SET
@@ -81,8 +61,7 @@ class SqlLiteDatabase(AbstractDatabase, AbstractContextManager):
 
     @overrides(AbstractDatabase.clear_region)
     def clear_region(self, x, y, p, region):
-        with self._db:
-            cursor = self._db.cursor()
+        with self.transaction() as cursor:
             for row in cursor.execute(
                     """
                     SELECT region_id FROM region_view
@@ -105,14 +84,6 @@ class SqlLiteDatabase(AbstractDatabase, AbstractContextManager):
                 DELETE FROM region_extra WHERE region_id = ?
                 """, locus)
             return True
-
-    def __init_db(self):
-        """ Set up the database if required. """
-        self._db.row_factory = sqlite3.Row
-        self._db.text_factory = memoryview
-        with open(_DDL_FILE) as f:
-            sql = f.read()
-        self._db.executescript(sql)
 
     def __read_contents(self, cursor, x, y, p, region):
         """
@@ -208,11 +179,11 @@ class SqlLiteDatabase(AbstractDatabase, AbstractContextManager):
         return cursor.lastrowid
 
     @overrides(AbstractDatabase.store_data_in_region_buffer)
-    def store_data_in_region_buffer(self, x, y, p, region, data):
+    def store_data_in_region_buffer(self, x, y, p, region, missing, data):
         # pylint: disable=too-many-arguments
+        # TODO: Use missing
         datablob = sqlite3.Binary(data)
-        with self._db:
-            cursor = self._db.cursor()
+        with self.transaction() as cursor:
             region_id = self.__get_region_id(cursor, x, y, p, region)
             if self.__use_main_table(cursor, region_id):
                 cursor.execute(
@@ -259,9 +230,8 @@ class SqlLiteDatabase(AbstractDatabase, AbstractContextManager):
     @overrides(AbstractDatabase.get_region_data)
     def get_region_data(self, x, y, p, region):
         try:
-            with self._db:
-                c = self._db.cursor()
-                data = self.__read_contents(c, x, y, p, region)
+            with self.transaction() as cursor:
+                data = self.__read_contents(cursor, x, y, p, region)
                 # TODO missing data
                 return data, False
         except LookupError:

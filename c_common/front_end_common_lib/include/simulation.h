@@ -49,6 +49,7 @@ struct simulation_provenance {
     uint32_t transmission_event_overflow;
     uint32_t callback_queue_overloads;
     uint32_t dma_queue_overloads;
+    uint32_t user_queue_overloads;
     uint32_t timer_tic_has_overrun;
     uint32_t max_num_timer_tic_overrun;
     uint32_t provenance_data_elements[];
@@ -132,7 +133,7 @@ bool simulation_initialise(
 //! \param[in] sdp_packet_callback_priority The priority to use for the
 //!            SDP packet reception
 //! \param[in] dma_transfer_complete_priority The priority to use for the
-//!            DMA transfer complete callbacks
+//!            DMA transfer complete callbacks or <= -2 to disable
 //! \return True if the data was found, false otherwise
 static inline bool simulation_steps_initialise(
         address_t address, uint32_t expected_application_magic_number,
@@ -219,5 +220,17 @@ void simulation_dma_transfer_done_callback_off(uint tag);
 //! \param[in] sim_uses_timer: Whether the simulation uses the timer (true)
 //!                            or not (false)
 void simulation_set_uses_timer(bool sim_uses_timer);
+
+//! \brief sets the simulation to enter a synchronization barrier repeatedly
+//!        during the simulation.  The synchronization message must be sent
+//!        from the host.  Note simulation_is_finished() must be used each
+//!        timestep to cause the pause to happen.
+//! \param[in] n_steps: The number of steps of simulation between synchronisations
+void simulation_set_sync_steps(uint32_t n_steps);
+
+//! \brief determine if the simulation is finished.  Will also pause the simulation
+//!        for resynchronisation if requested (see simulation_set_sync_steps).
+//! \return true if the simulation is finished, false if not.
+bool simulation_is_finished(void);
 
 #endif // _SIMULATION_H_

@@ -17,6 +17,7 @@ import unittest
 import socket
 from threading import Thread
 import json
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     SpallocMaxMachineGenerator)
 
@@ -24,7 +25,7 @@ from spinn_front_end_common.interface.interface_functions import (
 class _MockSpallocServer(Thread):
 
     def __init__(self, name, width, height, dead_boards, dead_links, tags):
-        super(_MockSpallocServer, self).__init__()
+        super().__init__()
         self._name = name
         self._width = width
         self._height = height
@@ -54,6 +55,9 @@ class _MockSpallocServer(Thread):
 
 
 class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
+
+    def setUp(self):
+        unittest_setup()
 
     def test_single_board(self):
         server = _MockSpallocServer(

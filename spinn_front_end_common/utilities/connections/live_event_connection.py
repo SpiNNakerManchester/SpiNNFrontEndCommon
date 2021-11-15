@@ -15,10 +15,8 @@
 
 import logging
 import struct
-import sys
 from threading import Thread
 from collections import OrderedDict
-from six import iterkeys, iteritems, reraise
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.data_messages import (
     EIEIODataMessage, KeyPayloadDataElement)
@@ -93,7 +91,7 @@ class LiveEventConnection(DatabaseConnection):
             by default)
         """
         # pylint: disable=too-many-arguments
-        super(LiveEventConnection, self).__init__(
+        super().__init__(
             self.__do_start_resume, self.__do_stop_pause,
             local_host=local_host, local_port=local_port)
 
@@ -156,10 +154,10 @@ class LiveEventConnection(DatabaseConnection):
         :param str label:
             The label of the vertex to be notified about. Must be one of the
             vertices listed in the constructor
-        :param init_callback: A function to be called to initialise the\
-            vertex. This should take as parameters the label of the vertex,\
-            the number of neurons in the population, the run time of the\
-            simulation in milliseconds, and the simulation timestep in\
+        :param init_callback: A function to be called to initialise the
+            vertex. This should take as parameters the label of the vertex,
+            the number of neurons in the population, the run time of the
+            simulation in milliseconds, and the simulation timestep in
             milliseconds
         :type init_callback: callable(str, int, float, float) -> None
         """
@@ -171,9 +169,9 @@ class LiveEventConnection(DatabaseConnection):
 
         :param str label: The label of the vertex to be notified about.
             Must be one of the vertices listed in the constructor
-        :param live_event_callback: A function to be called when events are\
-            received. This should take as parameters the label of the vertex,\
-            the simulation timestep when the event occurred, and an\
+        :param live_event_callback: A function to be called when events are
+            received. This should take as parameters the label of the vertex,
+            the simulation timestep when the event occurred, and an
             array-like of atom IDs.
         :type live_event_callback: callable(str, int, list(int)) -> None
         :param bool translate_key:
@@ -189,9 +187,9 @@ class LiveEventConnection(DatabaseConnection):
     def add_start_callback(self, label, start_callback):
         """ Add a callback for the start of the simulation
 
-        :param start_callback: A function to be called when the start\
-            message has been received. This function should take the label of\
-            the referenced vertex, and an instance of this class, which can\
+        :param start_callback: A function to be called when the start
+            message has been received. This function should take the label of
+            the referenced vertex, and an instance of this class, which can
             be used to send events
         :type start_callback: callable(str, LiveEventConnection) -> None
         :param str label: the label of the function to be sent
@@ -207,9 +205,9 @@ class LiveEventConnection(DatabaseConnection):
         """ Add a callback for the start and resume state of the simulation
 
         :param str label: the label of the function to be sent
-        :param start_resume_callback: A function to be called when the start\
-            or resume message has been received. This function should take \
-            the label of the referenced vertex, and an instance of this \
+        :param start_resume_callback: A function to be called when the start
+            or resume message has been received. This function should take
+            the label of the referenced vertex, and an instance of this
             class, which can be used to send events.
         :type start_resume_callback: callable(str, LiveEventConnection) -> None
         :rtype: None
@@ -220,9 +218,9 @@ class LiveEventConnection(DatabaseConnection):
         """ Add a callback for the pause and stop state of the simulation
 
         :param str label: the label of the function to be sent
-        :param pause_stop_callback: A function to be called when the pause\
-            or stop message has been received. This function should take the\
-            label of the referenced  vertex, and an instance of this class,\
+        :param pause_stop_callback: A function to be called when the pause
+            or stop message has been received. This function should take the
+            label of the referenced  vertex, and an instance of this class,
             which can be used to send events.
         :type pause_stop_callback: callable(str, LiveEventConnection) -> None
         :rtype: None
@@ -230,6 +228,9 @@ class LiveEventConnection(DatabaseConnection):
         self.__pause_stop_callbacks[label].append(pause_stop_callback)
 
     def __read_database_callback(self, db_reader):
+        """
+        :param DatabaseReader db_reader:
+        """
         self.__handle_possible_rerun_state()
 
         vertex_sizes = OrderedDict()
@@ -244,12 +245,16 @@ class LiveEventConnection(DatabaseConnection):
         if self.__receive_labels is not None:
             self.__init_receivers(db_reader, vertex_sizes)
 
-        for label, vertex_size in iteritems(vertex_sizes):
+        for label, vertex_size in vertex_sizes.items():
             for init_callback in self.__init_callbacks[label]:
                 init_callback(
                     label, vertex_size, run_time_ms, machine_timestep_ms)
 
     def __init_sender(self, db, vertex_sizes):
+        """
+        :param DatabaseReader db:
+        :param dict(str,int) vertex_sizes:
+        """
         if self.__sender_connection is None:
             self.__sender_connection = UDPConnection()
         for label in self.__send_labels:
@@ -265,6 +270,10 @@ class LiveEventConnection(DatabaseConnection):
                 vertex_sizes[label] = len(self._atom_id_to_key[label])
 
     def __init_receivers(self, db, vertex_sizes):
+        """
+        :param DatabaseReader db:
+        :param dict(str,int) vertex_sizes:
+        """
         # Set up a single connection for receive
         if self.__receiver_connection is None:
             self.__receiver_connection = EIEIOConnection()
@@ -282,8 +291,9 @@ class LiveEventConnection(DatabaseConnection):
                     self.__receiver_connection, board_address)
 
             logger.info(
-                "Listening for traffic from {} on {}:{}",
-                label, self.__receiver_connection.local_ip_address,
+                "Listening for traffic from {} on board {} on {}:{}",
+                label, board_address,
+                self.__receiver_connection.local_ip_address,
                 self.__receiver_connection.local_port)
 
             if self.__machine_vertices:
@@ -293,7 +303,7 @@ class LiveEventConnection(DatabaseConnection):
                 vertex_sizes[label] = 1
             else:
                 key_to_atom_id = db.get_key_to_atom_id_mapping(label)
-                for key, atom_id in iteritems(key_to_atom_id):
+                for key, atom_id in key_to_atom_id.items():
                     self.__key_to_atom_id_and_label[key] = (atom_id, label_id)
                 vertex_sizes[label] = len(key_to_atom_id)
 
@@ -307,6 +317,11 @@ class LiveEventConnection(DatabaseConnection):
             self.__receiver_listener.start()
 
     def __get_live_input_details(self, db_reader, send_label):
+        """
+        :param DatabaseReader db_reader:
+        :param str send_label:
+        :rtype: tuple(int,int,int,str or None)
+        """
         if self.__machine_vertices:
             x, y, p = db_reader.get_placement(send_label)
         else:
@@ -355,10 +370,10 @@ class LiveEventConnection(DatabaseConnection):
                 request.get_scp_response().read_bytestring(
                     response_data, _TWO_SKIP.size)
                 sent = True
-            except SpinnmanTimeoutException:
+            except SpinnmanTimeoutException as e:
                 if not tries_to_go:
                     logger.info("No more tries - Error!")
-                    reraise(*sys.exc_info())
+                    raise e
 
                 logger.info("Timeout, retrying")
                 tries_to_go -= 1
@@ -384,12 +399,12 @@ class LiveEventConnection(DatabaseConnection):
         thread.start()
 
     def __do_start_resume(self):
-        for label, callbacks in iteritems(self.__start_resume_callbacks):
+        for label, callbacks in self.__start_resume_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("start_resume", label, callback)
 
     def __do_stop_pause(self):
-        for label, callbacks in iteritems(self.__pause_stop_callbacks):
+        for label, callbacks in self.__pause_stop_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("pause_stop", label, callback)
 
@@ -424,8 +439,8 @@ class LiveEventConnection(DatabaseConnection):
             else:
                 self.__handle_unknown_key(key)
 
-        for time in iterkeys(key_times_labels):
-            for label_id in iterkeys(key_times_labels[time]):
+        for time in key_times_labels:
+            for label_id in key_times_labels[time]:
                 label = self.__receive_labels[label_id]
                 for c_back, use_atom in self.__live_event_callbacks[label_id]:
                     if use_atom:
@@ -560,7 +575,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def close(self):
         self.__handle_possible_rerun_state()
-        super(LiveEventConnection, self).close()
+        super().close()
 
     @staticmethod
     def __get_sdp_data(message, x, y, p):

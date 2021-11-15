@@ -13,55 +13,47 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from abc import abstractmethod
+from spinn_utilities.abstract_base import abstractmethod
 from spinn_utilities.overrides import overrides
-from pacman.executor.injection_decorator import (
-    supports_injection, inject_items)
+from pacman.executor.injection_decorator import inject_items
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification)
 
 
-@supports_injection
-class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
+class MachineDataSpecableVertex(
+        AbstractGeneratesDataSpecification, allow_derivation=True):
     """ Support for a vertex that simplifies generating a data specification.
     """
     __slots__ = ()
 
     @inject_items({
-        "machine_graph": "MemoryMachineGraph",
-        "routing_info": "MemoryRoutingInfos",
-        "tags": "MemoryTags",
-        "machine_time_step": "MachineTimeStep",
-        "time_scale_factor": "TimeScaleFactor"
-    })
+        "machine_graph": "MachineGraph",
+        "routing_info": "RoutingInfos",
+        "tags": "Tags"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "machine_graph", "routing_info", "tags",
-            "machine_time_step", "time_scale_factor"
         })
     def generate_data_specification(
-            self, spec, placement, machine_graph, routing_info, tags,
-            machine_time_step, time_scale_factor):
+            self, spec, placement, machine_graph, routing_info, tags):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             (Injected)
         :param ~pacman.model.routing_info.RoutingInfo routing_info: (Injected)
         :param ~pacman.model.tags.Tags tags: (Injected)
-        :param int machine_time_step: (Injected)
-        :param int time_scale_factor: (Injected)
         """
         # pylint: disable=too-many-arguments, arguments-differ
         iptags = tags.get_ip_tags_for_vertex(placement.vertex)
         reverse_iptags = tags.get_reverse_ip_tags_for_vertex(placement.vertex)
         self.generate_machine_data_specification(
             spec, placement, machine_graph, routing_info, iptags,
-            reverse_iptags, machine_time_step, time_scale_factor)
+            reverse_iptags)
 
     @abstractmethod
     def generate_machine_data_specification(
             self, spec, placement, machine_graph, routing_info, iptags,
-            reverse_iptags, machine_time_step, time_scale_factor):
+            reverse_iptags):
         """
         :param ~data_specification.DataSpecificationGenerator spec:
             The data specification to write into.
@@ -76,8 +68,6 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
         :param reverse_iptags: The reverse IP tags for the vertex, if any
         :type reverse_iptags:
             iterable(~spinn_machine.tags.ReverseIPTag) or None
-        :param int machine_time_step: The machine time step
-        :param int time_scale_factor: The time step scaling factor
         :rtype: None
         """
         # pylint: disable=too-many-arguments

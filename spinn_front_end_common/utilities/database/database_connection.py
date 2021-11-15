@@ -15,7 +15,6 @@
 
 import logging
 from threading import Thread
-from six import raise_from
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import (
     SpinnmanIOException, SpinnmanInvalidPacketException,
@@ -34,6 +33,10 @@ class DatabaseConnection(UDPConnection):
         database has been written, and can then respond when the database \
         has been read, and further wait for notification that the simulation \
         has started.
+
+    .. note::
+        The machine description database reader can only be used while the
+        registered database callbacks are running.
     """
 
     __slots__ = [
@@ -57,7 +60,7 @@ class DatabaseConnection(UDPConnection):
             the port that the toolchain will send the notification on (19999
             by default)
         """
-        super(DatabaseConnection, self).__init__(
+        super().__init__(
             local_host=local_host, local_port=local_port,
             remote_host=None, remote_port=None)
         thread = Thread(name="SpyNNakerDatabaseConnection:{}:{}".format(
@@ -76,9 +79,8 @@ class DatabaseConnection(UDPConnection):
             A function to be called when the database message has been
             received.  This function should take a single parameter, which
             will be a DatabaseReader object. Once the function returns, it
-            will be assumed that the database has been read, and the return
-            response will be sent.
-        :raises SpinnmanIOException: If anything goes wrong
+            will be assumed that the database has been read and will not be
+            needed further, and the return response will be sent.
         """
         self.__database_callbacks.append(database_callback_function)
 
@@ -106,7 +108,7 @@ class DatabaseConnection(UDPConnection):
         except Exception as e:
             logger.error("Failure processing database callback",
                          exc_info=True)
-            raise_from(SpinnmanIOException(str(e)), e)
+            raise SpinnmanIOException(str(e)) from e
         finally:
             self.__running = False
 
@@ -163,4 +165,4 @@ class DatabaseConnection(UDPConnection):
 
     def close(self):
         self.__running = False
-        UDPConnection.close(self)
+        super().close()

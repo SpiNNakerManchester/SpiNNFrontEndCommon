@@ -13,6 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Much of the code in this module is intended primarily for being invoked via the
+PACMAN Executor.
+"""
+
+import os
 from .bit_field_compressor_report import BitFieldCompressorReport
 from .bit_field_summary import BitFieldSummary
 from .board_chip_report import BoardChipReport
@@ -20,8 +26,20 @@ from .energy_report import EnergyReport
 from .fixed_route_from_machine_report import FixedRouteFromMachineReport
 from .memory_map_on_host_chip_report import MemoryMapOnHostChipReport
 from .memory_map_on_host_report import MemoryMapOnHostReport
+from .network_specification import NetworkSpecification
+from .router_collision_potential_report import RouterCollisionPotentialReport
 from .routing_table_from_machine_report import RoutingTableFromMachineReport
 from .real_tags_report import TagsFromMachineReport
+from .write_json_machine import WriteJsonMachine
+from .write_json_partition_n_keys_map import WriteJsonPartitionNKeysMap
+from .write_json_placements import WriteJsonPlacements
+from .write_json_routing_tables import WriteJsonRoutingTables
+
+
+def report_xml():
+    return os.path.join(
+        os.path.dirname(__file__), "front_end_common_reports.xml")
+
 
 __all__ = [
     "BitFieldCompressorReport",
@@ -29,7 +47,14 @@ __all__ = [
     "BoardChipReport",
     "EnergyReport",
     "FixedRouteFromMachineReport",
+    "NetworkSpecification",
     "MemoryMapOnHostChipReport",
     "MemoryMapOnHostReport",
+    "report_xml",
+    "RouterCollisionPotentialReport",
     "RoutingTableFromMachineReport",
-    "TagsFromMachineReport"]
+    "TagsFromMachineReport",
+    "WriteJsonMachine",
+    "WriteJsonPartitionNKeysMap",
+    "WriteJsonPlacements",
+    "WriteJsonRoutingTables"]

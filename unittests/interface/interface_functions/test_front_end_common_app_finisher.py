@@ -13,36 +13,38 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from six import itervalues
 from spinnman.model.enums.cpu_state import CPUState
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     ApplicationFinisher)
 from spinnman.model.cpu_infos import CPUInfos
+from spinnman.transceiver import Transceiver
 
 
 class _MockTransceiver(object):
 
     def __init__(self, core_states, time_between_states):
-        super(_MockTransceiver, self).__init__()
         self._core_states = core_states
         self._time_between_states = time_between_states
         self._current_state = 0
         self.sdp_send_count = 0
 
-    def get_core_state_count(self, _app_id, state):
+    @overrides(Transceiver.get_core_state_count)
+    def get_core_state_count(self, app_id, state):
         count = 0
-        for core_state in itervalues(
-                self._core_states[self._current_state]):
+        for core_state in self._core_states[self._current_state].values():
             if core_state == state:
                 count += 1
         return count
 
-    def get_cores_in_state(self, core_subsets, states):
+    @overrides(Transceiver.get_cores_in_state)
+    def get_cores_in_state(self, all_core_subsets, states):
         cores_in_state = CPUInfos()
         core_states = self._core_states[self._current_state]
-        for core_subset in core_subsets:
+        for core_subset in all_core_subsets:
             x = core_subset.x
             y = core_subset.y
 
@@ -57,11 +59,17 @@ class _MockTransceiver(object):
         self._current_state += 1
         return cores_in_state
 
-    def send_sdp_message(self, message):
+    @overrides(Transceiver.send_sdp_message)
+    def send_sdp_message(self, message, connection=None):
         self.sdp_send_count += 1
+
+    @overrides(Transceiver.send_signal)
+    def send_signal(self, app_id, signal):
+        pass
 
 
 def test_app_finisher():
+    unittest_setup()
     finisher = ApplicationFinisher()
     core_subsets = CoreSubsets()
     core_subsets.add_processor(0, 0, 1)

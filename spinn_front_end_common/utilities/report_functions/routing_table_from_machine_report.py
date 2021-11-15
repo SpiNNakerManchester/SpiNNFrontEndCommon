@@ -12,35 +12,34 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import logging
 import os
-
 from pacman.model.routing_tables.compressed_multicast_routing_table import (
     CompressedMulticastRoutingTable)
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.operations.algorithm_reports import reports
-
-logger = logging.getLogger(__name__)
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
+from spinn_front_end_common.utilities.report_functions import reports
 
 _FOLDER_NAME = "routing_tables_from_machine"
 
 
 class RoutingTableFromMachineReport(object):
+    """ Report the routing table that was actually on the machine.
     """
-    :param str report_default_directory:
-    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
-    :param ~spinnman.transceiver.Transceiver transceiver:
-    :param int app_id:
-    """
-    def __call__(
-            self, report_default_directory, routing_tables):
 
+    def __call__(self, routing_tables):
+        """
+        :param routing_tables:
+        :type routing_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param int app_id:
+        """
         # pylint: disable=protected-access
         tables = list(routing_tables.routing_tables)
         progress = ProgressBar(tables, "Reading Routing Tables from Machine")
 
-        folder_name = os.path.join(report_default_directory, _FOLDER_NAME)
+        folder_name = os.path.join(report_default_directory(), _FOLDER_NAME)
         os.mkdir(folder_name)
 
         # generate a file for every multicast entry

@@ -14,14 +14,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
-from six import add_metaclass
+from spinn_utilities.require_subclass import require_subclass
+from pacman.model.graphs.machine import MachineVertex
 
 
-@add_metaclass(AbstractBase)
-class AbstractSupportsBitFieldGeneration(object):
+@require_subclass(MachineVertex)
+class AbstractSupportsBitFieldGeneration(object, metaclass=AbstractBase):
     """ Marks a vertex that can provide information about bitfields it wants \
         generated on-chip.
     """
+    __slots__ = ()
 
     @abstractmethod
     def bit_field_base_address(self, transceiver, placement):

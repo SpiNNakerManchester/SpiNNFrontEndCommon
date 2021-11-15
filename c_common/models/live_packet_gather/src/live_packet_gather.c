@@ -33,12 +33,16 @@
 #include <eieio.h>
 
 //! Provenance data store
-struct provenance_data_struct {
+typedef struct lpg_provenance_data_t {
     //! Count of overflows when no payload was sent
     uint32_t number_of_overflows_no_payload;
     //! Count of overflows when a payload was sent
     uint32_t number_of_overflows_with_payload;
-};
+    //! Number of events gathered and recorded
+    uint32_t number_of_gathered_events;
+    //! Number of messages sent to host
+    uint32_t number_of_sent_messages;
+} lpg_provenance_data_t;
 
 //! \brief Definitions of each element in the configuration.
 //!
@@ -142,7 +146,7 @@ static circular_buffer with_payload_buffer;
 static bool processing_events = false;
 
 //! The provenance information that we are collecting.
-static struct provenance_data_struct provenance_data;
+static lpg_provenance_data_t provenance_data;
 
 //! The configuration data of the application.
 static struct lpg_config config;
@@ -226,6 +230,7 @@ static void flush_events(void) {
 
         spin1_send_sdp_msg(&g_event_message, 1);
         packets_sent++;
+        provenance_data.number_of_sent_messages++;
     }
 
     // reset counter
@@ -236,7 +241,7 @@ static void flush_events(void) {
 //! \param[out] provenance_region_address:
 //!     Where the provenance data will be written
 static void record_provenance_data(address_t provenance_region_address) {
-    struct provenance_data_struct *sdram = (void *) provenance_region_address;
+    lpg_provenance_data_t *sdram = (void *) provenance_region_address;
     // Copy provenance data into SDRAM region
     *sdram = provenance_data;
 }
@@ -261,7 +266,7 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
     packets_sent = 0;
 
     // check if the simulation has run to completion
-    if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
+    if (simulation_is_finished()) {
         simulation_handle_pause_resume(NULL);
 
         // Subtract 1 from the time so this tick gets done again on the next
@@ -310,6 +315,7 @@ static void process_incoming_event(uint key) {
             write_word(sdp_msg_aer_data, buffer_index++, time);
         }
     }
+    provenance_data.number_of_gathered_events++;
 }
 
 //! \brief Processes an incoming multicast packet with payload.
@@ -342,6 +348,7 @@ static void process_incoming_event_payload(uint key, uint payload) {
             write_word(sdp_msg_aer_data, buffer_index++, time);
         }
     }
+    provenance_data.number_of_gathered_events++;
 }
 
 //! \brief Handler for processing incoming packets that have been locally queued

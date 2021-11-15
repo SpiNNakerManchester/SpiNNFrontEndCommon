@@ -33,4 +33,9 @@ bool minimise_run(
         int target_length, bool *failed_by_malloc,
         volatile bool *stop_compressing);
 
+//! \brief Whether this is a standalone compressor.
+//! \details Mainly used to change logging
+//! \return Whether this is a standalone compressor
+bool standalone(void);
+
 #endif  // __MINIMISE_H__

@@ -125,8 +125,16 @@ static void resume_callback(void) {
     if (time == UINT32_MAX) {
         log_info("resume_skipped as time still zero");
     } else {
+        reset_core_counters();
         simulation_ticks = (simulation_ticks * timer) / sample_frequency;
-        log_info("total_sim_ticks = %d", simulation_ticks);
+        // The time value also needs to be (re)calculated in the same manner,
+        // but remember that we subtracted 1 off it at the end of the previous run...
+        time++;
+        time = (time * timer) / sample_frequency;
+        // Subtract 1 again now so that this starts at the "correct" value on the next tick
+        time--;
+        log_info("resume total_sim_ticks = %d timer %d sample_frequency %d time %d",
+                simulation_ticks, timer, sample_frequency, time);
         recording_reset();
         log_info("resume_callback");
     }
@@ -155,10 +163,11 @@ static void sample_in_slot(UNUSED uint unused0, UNUSED uint unused1) {
     // handle the situation when the first time update is sent
     if (time == 0) {
         simulation_ticks = (simulation_ticks * timer) / sample_frequency;
-        log_info("total_sim_ticks = %d", simulation_ticks);
+        log_info("start total_sim_ticks = %d timer %d sample_frequency %d time %d",
+                simulation_ticks, timer, sample_frequency, time);
     }
     // check if the simulation has run to completion
-    if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
+    if (simulation_is_finished()) {
         simulation_handle_pause_resume(resume_callback);
 
         recording_finalise();
@@ -168,6 +177,8 @@ static void sample_in_slot(UNUSED uint unused0, UNUSED uint unused1) {
         time--;
 
         simulation_ready_to_read();
+
+        return;
     }
 
     uint32_t count = ++sample_count;
@@ -181,8 +192,6 @@ static void sample_in_slot(UNUSED uint unused0, UNUSED uint unused1) {
         record_aggregate_sample();
         reset_core_counters();
     }
-
-    recording_do_timestep_update(time);
 }
 
 //! \brief Reads the configuration of the application out of the configuration
@@ -215,10 +224,6 @@ static bool initialize(void) {
             data_specification_get_region(CONFIG, ds_regions))) {
         return false;
     }
-
-    // change simulation ticks to be a number related to sampling frequency
-    simulation_ticks = (simulation_ticks * timer) / sample_frequency;
-    log_info("total_sim_ticks = %d", simulation_ticks);
 
     void *recording_region =
             data_specification_get_region(RECORDING, ds_regions);

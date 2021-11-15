@@ -12,7 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.machine import MachineEdge
@@ -20,23 +19,12 @@ from spinn_front_end_common.utilities.constants import (
     PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex as DataSpeedUp,
-    ExtraMonitorSupport, ExtraMonitorSupportMachineVertex)
+    ExtraMonitorSupportMachineVertex)
 
 
 class InsertEdgesToExtraMonitorFunctionality(object):
     """ Inserts edges between vertices who use MC speed up and its local\
         MC data gatherer.
-
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        the machine graph instance
-    :param ~pacman.model.placements.Placements placements: the placements
-    :param ~spinn_machine.Machine machine: the machine object
-    :param vertex_to_ethernet_connected_chip_mapping:
-        mapping between ethernet connected chips and packet gatherers
-    :type vertex_to_ethernet_connected_chip_mapping:
-        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
-        the application graph
     """
 
     __slots__ = [
@@ -54,13 +42,17 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                  vertex_to_ethernet_connected_chip_mapping,
                  application_graph=None):
         """
-        :param ~.MachineGraph machine_graph:
-        :param ~.Placements placements:
-        :param ~.Machine machine:
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph instance
+        :param ~pacman.model.placements.Placements placements: the placements
+        :param ~spinn_machine.Machine machine: the machine object
         :param vertex_to_ethernet_connected_chip_mapping:
+            mapping between ethernet connected chips and packet gatherers
         :type vertex_to_ethernet_connected_chip_mapping:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-        :param ~.ApplicationGraph application_graph:
+        :param application_graph: the application graph
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         n_app_vertices = 0
@@ -84,12 +76,6 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 if isinstance(vertex, ExtraMonitorSupportMachineVertex):
                     self._process_app_graph_vertex(
                         vertex, machine_graph, application_graph)
-            for app_vertex in progress.over(application_graph.vertices):
-                if not isinstance(app_vertex, ExtraMonitorSupport):
-                    continue
-                for vertex in app_vertex.machine_vertices:
-                    self._process_app_graph_vertex(
-                        vertex, machine_graph, application_graph)
 
     def _process_app_graph_vertex(
             self, vertex, machine_graph, application_graph):
@@ -109,13 +95,14 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 application_graph, vertex.app_vertex, gatherer.app_vertex)
             if app_edge is None:
                 app_edge = ApplicationEdge(
-                    vertex.app_vertex, gatherer.app_vertex,
-                    traffic_type=DataSpeedUp.TRAFFIC_TYPE)
+                    vertex.app_vertex, gatherer.app_vertex)
                 application_graph.add_edge(
                     app_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
             # Use the application edge to build the machine edge
-            edge = app_edge.create_machine_edge(
-                vertex, gatherer, self.EDGE_LABEL.format(vertex, gatherer))
+            edge = MachineEdge(
+                vertex, gatherer, traffic_type=DataSpeedUp.TRAFFIC_TYPE,
+                label=self.EDGE_LABEL.format(vertex, gatherer),
+                app_edge=app_edge)
             machine_graph.add_edge(
                 edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 

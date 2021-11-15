@@ -14,43 +14,45 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from pacman.model.graphs.machine import MachineVertex, MachineGraph
-from pacman.model.resources import ResourceContainer
+from spinn_utilities.executable_finder import ExecutableFinder
+from spinn_utilities.overrides import overrides
+from pacman.model.graphs.machine import (
+   MachineGraph, SimpleMachineVertex)
 from pacman.model.placements import Placements, Placement
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     GraphBinaryGatherer, LocateExecutableStartType)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 
-class _TestVertexWithBinary(MachineVertex, AbstractHasAssociatedBinary):
+class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
 
     def __init__(self, binary_file_name, binary_start_type):
-        super(_TestVertexWithBinary, self).__init__()
+        super().__init__(None)
         self._binary_file_name = binary_file_name
         self._binary_start_type = binary_start_type
 
-    def resources_required(self):
-        return ResourceContainer()
-
+    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return self._binary_file_name
 
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return self._binary_start_type
 
 
-class _TestVertexWithoutBinary(MachineVertex):
-    def resources_required(self):
-        return ResourceContainer()
-
-
 class _TestExecutableFinder(object):
+
+    @overrides(ExecutableFinder.get_executable_path)
     def get_executable_path(self, executable_name):
         return executable_name
 
 
 class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
+
+    def setUp(self):
+        unittest_setup()
 
     def test_call(self):
         """ Test calling the binary gatherer normally
@@ -62,7 +64,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             "test2.aplx", ExecutableType.RUNNING)
         vertex_3 = _TestVertexWithBinary(
             "test2.aplx", ExecutableType.RUNNING)
-        vertex_4 = _TestVertexWithoutBinary()
+        vertex_4 = SimpleMachineVertex(None)
 
         graph = MachineGraph("Test")
         graph.add_vertices([vertex_1, vertex_2, vertex_3])

@@ -14,118 +14,79 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import struct
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import SDRAM
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
-from data_specification.utility_calls import (
+from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset, get_data_spec_and_file_writer_filename)
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.utilities.helpful_functions import (
-    generate_unique_folder_name)
-
-REGION_STRUCT = struct.Struct("<{}I".format(MAX_MEM_REGIONS))
+    generate_unique_folder_name, n_word_struct)
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 
 
 class DSGRegionReloader(object):
     """ Regenerates and reloads the data specifications.
-
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        SpiNNMan transceiver for communication
-    :param ~pacman.model.placements.Placements placements:
-        the list of placements of the machine graph to cores
-    :param str hostname:
-        the machine name
-    :param str report_directory:
-        the location where reports are stored
-    :param bool write_text_specs:
-        True if the textual version of the specification is to be written
     """
-    __slots__ = [
-        "_txrx", "_host", "_write_text", "_rpt_dir", "_data_dir"]
+    __slots__ = ["_txrx", "_host", "_data_dir"]
 
     def __call__(
-            self, transceiver, placements, hostname, report_directory,
-            write_text_specs):
+            self, transceiver, placements, hostname):
         """
-        :param ~.Transceiver transceiver:
-        :param ~.Placements placements:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            SpiNNMan transceiver for communication
+        :param ~pacman.model.placements.Placements placements:
+            the list of placements of the machine graph to cores
         :param str hostname:
-        :param str report_directory:
-        :param bool write_text_specs:
+            the machine name
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         self._txrx = transceiver
         self._host = hostname
-        self._write_text = write_text_specs
 
         # build file paths for reloaded stuff
         app_data_dir = generate_unique_folder_name(
-            report_directory, "reloaded_data_regions", "")
+            report_default_directory(), "reloaded_data_regions", "")
         if not os.path.exists(app_data_dir):
             os.makedirs(app_data_dir)
         self._data_dir = app_data_dir
 
         report_dir = None
-        if write_text_specs:
+        if get_config_bool("Reports", "write_text_specs"):
             report_dir = generate_unique_folder_name(
-                report_directory, "reloaded_data_regions", "")
+                report_default_directory(), "reloaded_data_regions", "")
             if not os.path.exists(report_dir):
                 os.makedirs(report_dir)
-        self._rpt_dir = report_dir
-
-        application_vertices_to_reset = set()
 
         progress = ProgressBar(placements.n_placements, "Reloading data")
         for placement in progress.over(placements.placements):
-            # Try to generate the data spec for the placement
-            generated = self._regenerate_data_spec_for_vertices(
-                placement, placement.vertex)
-            # If the region was regenerated, mark it reloaded
-            if generated:
-                placement.vertex.mark_regions_reloaded()
-                continue
-
-            # If the spec wasn't generated directly, but there is an
-            # application vertex, try with that
-            app_vertex = placement.vertex.app_vertex
-            if app_vertex is not None:
-                generated = self._regenerate_data_spec_for_vertices(
-                    placement, app_vertex)
-
-                # If the region was regenerated, remember the application
-                # vertex for resetting later
-                if generated:
-                    application_vertices_to_reset.add(app_vertex)
-
-        # Only reset the application vertices here, otherwise only one
-        # machine vertex's data per app vertex will be updated
-        for app_vertex in application_vertices_to_reset:
-            app_vertex.mark_regions_reloaded()
+            # Generate the data spec for the placement if needed
+            self._regenerate_data_spec_for_vertices(placement)
 
         # App data directory can be removed as should be empty
         os.rmdir(app_data_dir)
 
-    def _regenerate_data_spec_for_vertices(self, placement, vertex):
+    def _regenerate_data_spec_for_vertices(self, placement):
         """
         :param ~.Placement placement:
-        :param ~.AbstractVertex vertex:
-        :rtype: bool
         """
+        vertex = placement.vertex
+
         # If the vertex doesn't regenerate, skip
         if not isinstance(vertex, AbstractRewritesDataSpecification):
-            return False
+            return
 
         # If the vertex doesn't require regeneration, skip
-        if not vertex.requires_memory_regions_to_be_reloaded():
-            return True
+        if not vertex.reload_required():
+            return
 
         # build the writers for the reports and data
         spec_file, spec = get_data_spec_and_file_writer_filename(
-            placement.x, placement.y, placement.p, self._host,
-            self._rpt_dir, self._write_text, self._data_dir)
+            placement.x, placement.y, placement.p, self._host, self._data_dir)
 
         # Execute the regeneration
         vertex.regenerate_data_specification(spec, placement)
@@ -147,7 +108,7 @@ class DSGRegionReloader(object):
         start_region = get_region_base_address_offset(regions_base_address, 0)
         table_size = get_region_base_address_offset(
             regions_base_address, MAX_MEM_REGIONS) - start_region
-        offsets = REGION_STRUCT.unpack_from(
+        offsets = n_word_struct(MAX_MEM_REGIONS).unpack_from(
             self._txrx.read_memory(
                 placement.x, placement.y, start_region, table_size))
 
@@ -157,5 +118,4 @@ class DSGRegionReloader(object):
                 self._txrx.write_memory(
                     placement.x, placement.y, offsets[i],
                     region.region_data[:region.max_write_pointer])
-
-        return True
+        vertex.set_reload_required(False)

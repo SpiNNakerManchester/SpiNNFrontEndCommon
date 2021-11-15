@@ -15,15 +15,20 @@
 
 import logging
 import os
+from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.interface.provenance import (
+    APPLICATION_RUNNER, LOADING, ProvenanceReader)
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.helpful_functions import (
-    convert_time_diff_to_total_milliseconds)
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 from spinn_front_end_common.interface.interface_functions import (
     ComputeEnergyUsed)
+from spinn_front_end_common.utilities.globals_variables import (
+    time_scale_factor)
 from spinn_machine.machine import Machine
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class EnergyReport(object):
@@ -31,8 +36,7 @@ class EnergyReport(object):
         consumed by a SpiNNaker job execution.
     """
 
-    __slots__ = (
-        "__report_dir", "__version", "__uses_spalloc", "__time_scale_factor")
+    __slots__ = ("__version", "__uses_spalloc")
 
     #: converter between joules to kilowatt hours
     JOULES_TO_KILOWATT_HOURS = 3600000
@@ -41,19 +45,14 @@ class EnergyReport(object):
     _DETAILED_FILENAME = "detailed_energy_report.rpt"
     _SUMMARY_FILENAME = "summary_energy_report.rpt"
 
-    def __init__(self, report_default_directory, version, spalloc_server,
-                 remote_spinnaker_url, time_scale_factor):
+    def __init__(self, version, spalloc_server, remote_spinnaker_url):
         """
-        :param str report_default_directory: location for reports
         :param int version: version of machine
         :param str spalloc_server: spalloc server IP
         :param str remote_spinnaker_url: remote SpiNNaker URL
-        :param int time_scale_factor: the time scale factor
         """
-        self.__report_dir = report_default_directory
         self.__version = version
         self.__uses_spalloc = bool(spalloc_server or remote_spinnaker_url)
-        self.__time_scale_factor = time_scale_factor
 
     def write_energy_report(
             self, placements, machine, runtime, buffer_manager, power_used):
@@ -71,16 +70,15 @@ class EnergyReport(object):
             logger.info("Skipping Energy report as no buffer_manager set")
             return
 
+        report_dir = report_default_directory()
         # detailed report path
-        detailed_report = os.path.join(
-            self.__report_dir, self._DETAILED_FILENAME)
+        detailed_report = os.path.join(report_dir, self._DETAILED_FILENAME)
 
         # summary report path
-        summary_report = os.path.join(
-            self.__report_dir, self._SUMMARY_FILENAME)
+        summary_report = os.path.join(report_dir, self._SUMMARY_FILENAME)
 
         # figure runtime in milliseconds with time scale factor
-        runtime_total_ms = runtime * self.__time_scale_factor
+        runtime_total_ms = time_scale_factor()
 
         # create detailed report
         with open(detailed_report, "w") as f:
@@ -332,11 +330,8 @@ class EnergyReport(object):
         """
 
         # find time in milliseconds
-        total_time_ms = 0.0
-        for element in power_used._algorithm_timing_provenance:
-            if element.names[1] == "loading":
-                total_time_ms += convert_time_diff_to_total_milliseconds(
-                    element.value)
+        reader = ProvenanceReader()
+        total_time_ms = reader.get_timer_sum_by_category(LOADING)
 
         # handle active routers etc
         active_router_cost = (
@@ -362,12 +357,8 @@ class EnergyReport(object):
         """
 
         # find time
-        total_time_ms = 0.0
-        for element in power_used._algorithm_timing_provenance:
-            if (element.names[1] == "Execution" and element.names[2] !=
-                    "run_time_of_FrontEndCommonApplicationRunner"):
-                total_time_ms += convert_time_diff_to_total_milliseconds(
-                    element.value)
+        reader = ProvenanceReader()
+        total_time_ms = reader.get_timer_sum_by_algorithm(APPLICATION_RUNNER)
 
         # handle active routers etc
         energy_cost_of_active_router = (

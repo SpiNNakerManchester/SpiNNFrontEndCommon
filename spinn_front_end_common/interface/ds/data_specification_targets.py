@@ -14,11 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import io
-try:
-    from collections.abc import MutableMapping
-except ImportError:
-    # For 2.7 only
-    from collections import MutableMapping
+from collections.abc import MutableMapping
 from .data_row_writer import DataRowWriter
 from .ds_sqllite_database import DsSqlliteDatabase
 
@@ -27,17 +23,16 @@ class DataSpecificationTargets(MutableMapping):
 
     __slots__ = ["_db"]
 
-    def __init__(self, machine, report_folder, init=None, clear=True):
+    def __init__(self, machine, init=None, clear=True):
         """
         :param ~spinn_machine.Machine machine:
-        :param str report_folder:
         :param init:
         :type init: bool or None
         :param bool clear:
         """
         # pylint: disable=super-init-not-called
         # real DB would write to report_folder
-        self._db = DsSqlliteDatabase(machine, report_folder, init)
+        self._db = DsSqlliteDatabase(machine, init)
         # Clear any current data specs
         if clear:
             self._db.clear_ds()
@@ -109,9 +104,6 @@ class DataSpecificationTargets(MutableMapping):
         """
         for key, value in self._db.ds_iteritems():
             yield key, io.BytesIO(value)
-
-    # Python 2 backward compatibility
-    iteritems = items
 
     def get_database(self):
         """ Expose the database so it can be shared

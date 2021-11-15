@@ -26,6 +26,8 @@
 #ifndef _TDMA_PROCESSING_H_
 #define _TDMA_PROCESSING_H_
 #include <stdbool.h>
+#include <spin1_api.h>
+#include <spin1_api_params.h>
 #include <spinn_extra.h>
 
 //! The format of the TDMA processing state, and the config in SDRAM.
@@ -38,8 +40,19 @@ typedef struct tdma_parameters {
     uint32_t time_between_sends;
 } tdma_parameters;
 
+//! The number of times the TDMA got behind
 extern uint32_t n_tdma_behind_times;
+
+//! The latest TIMER1 value of the TDMA
+extern uint32_t tdma_latest_send;
+
+//! The number of times the TDMA has to wait
+extern uint32_t tdma_waits;
+
+//! The expected time of the next send
 extern uint32_t tdma_expected_time;
+
+//! The TDMA parameters
 extern tdma_parameters tdma_params;
 
 //! \brief Get the number of times that the TDMA was behind.
@@ -57,6 +70,21 @@ bool tdma_processing_initialise(void **address);
 //! \brief Reset the phase of the TDMA.
 static inline void tdma_processing_reset_phase(void) {
     tdma_expected_time = tdma_params.initial_expected_time;
+}
+
+//! \brief Send a packet directly without queuing
+//! \param[in] key The key of the packet to send
+//! \param[in] payload The payload of the packet to send or ignored if none
+//! \param[in] with_payload Indicate whether the payload should be used or ignored
+static inline void send_packet(uint32_t key, uint32_t payload, uint32_t with_payload) {
+    while (cc[CC_TCR] & TX_FULL_MASK) {
+        spin1_delay_us(1);
+    }
+    cc[CC_TCR] = PKT_MC;
+    if (with_payload) {
+        cc[CC_TXDATA] = payload;
+    }
+    cc[CC_TXKEY]  = key;
 }
 
 //! \brief Send a packet according to the TDMA schedule.
@@ -77,7 +105,7 @@ static inline void tdma_processing_send_packet(
     // which point we will sent immediately.  We also should just send
     // if the timer has already expired completely as then we are really late!
     while ((ticks == timer_count) && (timer_value < tdma_expected_time)
-            && (tdma_expected_time > tdma_params.min_expected_time)) {
+            && (tdma_expected_time >= tdma_params.min_expected_time)) {
         tdma_expected_time -= tdma_params.time_between_sends;
     }
 
@@ -87,13 +115,15 @@ static inline void tdma_processing_send_packet(
     // which case we just skip this
     while ((ticks == timer_count) &&
             (timer1_control->current_value > tdma_expected_time)) {
-        // Do Nothing
+        tdma_waits++;
     }
 
     // Send the spike
-    while (!spin1_send_mc_packet(transmission_key, payload, with_payload)) {
-        spin1_delay_us(1);
+    uint32_t time = tc[T1_COUNT];
+    if (time < tdma_latest_send) {
+        tdma_latest_send = time;
     }
+    send_packet(transmission_key, payload, with_payload);
 }
 
 #endif // _TDMA_PROCESSING_H_

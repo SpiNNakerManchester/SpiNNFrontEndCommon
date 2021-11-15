@@ -16,13 +16,12 @@
 from spinnman.exceptions import SpinnmanException
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
-from spinn_front_end_common.interface.interface_functions import (
-    ChipIOBufExtractor)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 
 
 def run_system_application(
-        executable_cores, app_id, transceiver, provenance_file_path,
+        executable_cores, app_id, transceiver,
         executable_finder, read_algorithm_iobuf, check_for_success_function,
         cpu_end_states, needs_sync_barrier, filename_template,
         binaries_to_track=None, progress_bar=None, logger=None):
@@ -33,8 +32,6 @@ def run_system_application(
         the cores to run the executable on
     :param int app_id: the app-id for the executable
     :param ~spinnman.transceiver.Transceiver transceiver: the SpiNNMan instance
-    :param str provenance_file_path:
-        the path for where provenance data is stored
     :param ExecutableFinder executable_finder: finder for executable paths
     :param bool read_algorithm_iobuf: whether to report IOBUFs
     :param callable check_for_success_function:
@@ -53,7 +50,7 @@ def run_system_application(
         If provided and IOBUF is extracted, will be used to log errors and
         warnings
     :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None
-    :raise SpiNNManException:
+    :raise SpinnmanException:
         If one should arise from the underlying SpiNNMan calls
     """
 
@@ -79,6 +76,7 @@ def run_system_application(
         binary_start_types[binary_name] = ExecutableType.SYSTEM
 
     # Wait for the executable to finish
+    succeeded = False
     try:
         transceiver.wait_for_cores_to_be_in_state(
             check_targets.all_core_subsets, app_id, cpu_end_states,
@@ -87,30 +85,21 @@ def run_system_application(
             progress_bar.end()
         succeeded = True
     except SpinnmanException as ex:
-        succeeded = False
-        # Delay the exception until iobuff is ready
+        # Delay the exception until iobuf is ready
         error = ex
 
     if progress_bar is not None:
         progress_bar.end()
 
     # Check if any cores have not completed successfully
-    if succeeded and check_for_success_function is not None:
+    if succeeded and check_for_success_function:
         succeeded = check_for_success_function(executable_cores, transceiver)
 
     # if doing iobuf or on failure (succeeded is None is not failure)
-    if read_algorithm_iobuf or succeeded == False:  # noqa: E712
-        iobuf_reader = ChipIOBufExtractor(
-            filename_template=filename_template,
-            suppress_progress=False)
-        error_entries, warn_entries = iobuf_reader(
-            transceiver, executable_cores, executable_finder,
-            system_provenance_file_path=provenance_file_path)
-        if logger is not None:
-            for entry in warn_entries:
-                logger.warn(entry)
-            for entry in error_entries:
-                logger.error(entry)
+    if read_algorithm_iobuf or not succeeded:
+        _report_iobuf_messages(
+            transceiver, executable_cores, executable_finder, logger,
+            filename_template)
 
     # stop anything that's associated with the compressor binary
     transceiver.stop_application(app_id)
@@ -119,4 +108,23 @@ def run_system_application(
     if error is not None:
         raise error  # pylint: disable=raising-bad-type
 
-    return succeeded
+
+def _report_iobuf_messages(
+        txrx, cores, exe_finder, logger, filename_template):
+    """
+    :param Transceiver txrx:
+    :param ~spinnman.model.ExecutableTargets cores:
+    :param ExecutableFinder exe_finder:
+    :param ~logging.Logger logger:
+    :param str filename_template:
+    """
+    # Import in this function to prevent circular import issue
+    iobuf_reader = IOBufExtractor(
+        txrx, cores, exe_finder,
+        filename_template=filename_template, suppress_progress=False)
+    error_entries, warn_entries = iobuf_reader.extract_iobuf()
+    if logger is not None:
+        for entry in warn_entries:
+            logger.warn(entry)
+        for entry in error_entries:
+            logger.error(entry)

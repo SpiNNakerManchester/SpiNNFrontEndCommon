@@ -14,46 +14,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import logging
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.interface.profiling import AbstractHasProfileData
-
-logger = logging.getLogger(__name__)
+from spinn_front_end_common.utilities.globals_variables import (
+    app_provenance_file_path)
 
 
 class ProfileDataGatherer(object):
     """ Gets all the profiling data recorded by vertices and writes it to\
         files.
-
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the SpiNNMan interface object
-    :param ~pacman.model.placements.Placements placements:
-        The placements of the vertices
-    :param str provenance_file_path:
-        The location to store the profile data
-    :param int machine_time_step:
-        machine time step in ms
     """
 
     __slots__ = []
 
-    def __call__(
-            self, transceiver, placements, provenance_file_path,
-            machine_time_step):
+    def __call__(self, transceiver, placements):
         """
-        :param ~.Transceiver transceiver:
-        :param ~.Placements placements:
-        :param str provenance_file_path:
-        :param int machine_time_step:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the SpiNNMan interface object
+        :param ~pacman.model.placements.Placements placements:
+            The placements of the vertices
         """
         # pylint: disable=too-many-arguments
-        machine_time_step_ms = (
-            float(machine_time_step) / MICRO_TO_MILLISECOND_CONVERSION)
 
         progress = ProgressBar(
             placements.n_placements, "Getting profile data")
+        provenance_file_path = app_provenance_file_path()
 
         # retrieve provenance data from any cores that provide data
         for placement in progress.over(placements.placements):
@@ -62,19 +47,17 @@ class ProfileDataGatherer(object):
                 profile_data = placement.vertex.get_profile_data(
                     transceiver, placement)
                 if profile_data.tags:
-                    self._write(placement, profile_data, machine_time_step_ms,
-                                provenance_file_path)
+                    self._write(placement, profile_data, provenance_file_path)
 
     _FMT_A = "{: <{}s} {: <7s} {: <14s} {: <14s} {: <14s}\n"
     _FMT_B = "{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n"
     _FMT_C = "{: <{}s} {: >7d} {: >14.6f} {: >14.6f} {: >14.6f}\n"
 
     @classmethod
-    def _write(cls, p, profile_data, machine_time_step_ms, directory):
+    def _write(cls, p, profile_data, directory):
         """
         :param ~.Placement p:
         :param ProfileData profile_data:
-        :param float machine_time_step_ms:
         :param str directory:
         """
         max_tag_len = max(len(tag) for tag in profile_data.tags)
@@ -94,7 +77,5 @@ class ProfileDataGatherer(object):
                 f.write(cls._FMT_C.format(
                     tag, max_tag_len, profile_data.get_n_calls(tag),
                     profile_data.get_mean_ms(tag),
-                    profile_data.get_mean_n_calls_per_ts(
-                        tag, machine_time_step_ms),
-                    profile_data.get_mean_ms_per_ts(
-                        tag, machine_time_step_ms)))
+                    profile_data.get_mean_n_calls_per_ts(tag),
+                    profile_data.get_mean_ms_per_ts(tag)))

@@ -13,12 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_utilities.require_subclass import require_subclass
+from pacman.model.graphs.machine import MachineVertex
 
 
-@add_metaclass(AbstractBase)
-class AbstractProvidesProvenanceDataFromMachine(object):
+@require_subclass(MachineVertex)
+class AbstractProvidesProvenanceDataFromMachine(
+        object, metaclass=AbstractBase):
     """ Indicates that an object provides provenance data retrieved from the\
         machine.
     """
@@ -33,7 +35,4 @@ class AbstractProvidesProvenanceDataFromMachine(object):
             the SpinnMan interface object
         :param ~pacman.model.placements.Placement placement:
             the placement of the object
-        :return: the provenance items
-        :rtype:
-            iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
         """

@@ -18,11 +18,14 @@ import json
 import os
 import sys
 import unittest
+from spinn_utilities.config_holder import set_config
 from spalloc.job import JobDestroyedError
 from spinn_utilities.ping import Ping
 import spinnman.transceiver as transceiver
-from pacman.operations.algorithm_reports.write_json_machine import (
-    WriteJsonMachine, MACHINE_FILENAME)
+
+from spinn_front_end_common.interface.config_setup import unittest_setup
+from spinn_front_end_common.utilities.report_functions.write_json_machine \
+    import (WriteJsonMachine, MACHINE_FILENAME)
 from spinn_front_end_common.interface.interface_functions import (
     SpallocAllocator)
 
@@ -35,9 +38,36 @@ class TestWriteJson(unittest.TestCase):
     mainPort = 22244
 
     def setUp(self):
+        unittest_setup()
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
+        set_config("Machine", "down_chips", None)
+        set_config("Machine", "down_cores", None)
+        set_config("Machine", "down_links", None)
+
+    def _chips_differ(self, chip1, chip2):
+        if (chip1 == chip2):
+            return False
+        if len(chip1) != len(chip2):
+            raise True
+        for i in range(len(chip1)):
+            if chip1[i] == chip2[i]:
+                continue
+            if len(chip1[i]) != len(chip2[i]):
+                return True
+            for key in chip1[i]:
+                if (chip1[i][key] != chip2[i][key]):
+                    if key != "cores":
+                        return True
+                    # Toterance of
+                    c1 = int(chip1[i][key])
+                    c2 = int(chip2[i][key])
+                    if c1 < c2 - 1:
+                        return True
+                    if c1 > c2 + 1:
+                        return True
+            return False
 
     def json_compare(self, file1, file2):
         if filecmp.cmp(file1, file2):
@@ -55,16 +85,18 @@ class TestWriteJson(unittest.TestCase):
             if key == "chips":
                 chips1 = json1[key]
                 chips2 = json2[key]
+                if len(chips1) != len(chips2):
+                    raise AssertionError(
+                        f"# Chips {len(chips1)} != {len(chips2)}")
                 for i in range(len(chips1)):
-                    if (chips1[i] != chips2[i]):
-                        raise AssertionError("Chip {} differ {} {}".format(
-                            i, chips1[i], chips2[i]))
+                    if self._chips_differ(chips1[i], chips2[i]):
+                        raise AssertionError(
+                            f"Chip {i} differs {chips1[i]} {chips2[i]}")
             else:
                 if json1[key] != json2[key]:
                     raise AssertionError(
                         "Values differ for {} found {} {}".format(
                             key, json1[key], json2[key]))
-        raise AssertionError("Some wierd difference")
 
     def _remove_old_json(self, folder):
         if not os.path.exists(folder):
@@ -108,12 +140,14 @@ class TestWriteJson(unittest.TestCase):
     def testSpin2(self):
         if not Ping.host_is_reachable(self.spalloc):
             raise unittest.SkipTest(self.spalloc + " appears to be down")
+        set_config(
+            "Machine", "spalloc_user", "Integration testing ok to kill")
+        set_config("Machine", "spalloc_port", self.spin2Port)
+
         spallocAlgo = SpallocAllocator()
         try:
             (hostname, version, _, _, _, _, _, m_allocation_controller) = \
-                spallocAlgo(spalloc_server=self.spalloc,
-                            spalloc_user="Integration testing ok to kill",
-                            n_chips=20, spalloc_port=self.spin2Port)
+                spallocAlgo(spalloc_server=self.spalloc, n_chips=20)
         except (JobDestroyedError):
             self.skipTest("Skipping as getting Job failed")
 

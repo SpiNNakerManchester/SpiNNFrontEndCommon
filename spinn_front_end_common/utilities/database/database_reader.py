@@ -12,57 +12,24 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import os
-import sqlite3
-import six
-from spinn_utilities.abstract_context_manager import AbstractContextManager
-from spinn_utilities.overrides import overrides
-# See https://stackoverflow.com/a/21368622/301832
-if six.PY2:  # TODO: Nuke this when 2.7 support is dropped!
-    FileNotFoundError = IOError  # @ReservedAssignment
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 
-class DatabaseReader(AbstractContextManager):
+class DatabaseReader(SQLiteDB):
     """ A reader for the database.
     """
-
-    __slots__ = [
-        # the database connection (is basically a lock on the database)
-        "_connection",
-
-        # the handle for working on the DB
-        "_cursor"
-    ]
+    __slots__ = []
 
     def __init__(self, database_path):
         """
         :param str database_path: The path to the database
         """
-        # Ugly: must ensure database exists ourselves because Python doesn't
-        # have option to open read-only (in the real SQLite API!) exposed
-        if not os.path.exists(database_path):
-            raise FileNotFoundError(
-                "[Errno 2] No such file or directory: '{}'".format(
-                    database_path))
-        self._connection = sqlite3.connect(database_path)
-        self._connection.row_factory = sqlite3.Row
-        self._cursor = self._connection.cursor()
-
-    @property
-    def cursor(self):
-        """ The database cursor. Allows custom SQL queries to be performed.
-
-        :rtype: ~sqlite3.Cursor
-        """
-        return self._cursor
+        super().__init__(database_path, read_only=True, text_factory=str)
 
     def __exec_one(self, query, *args):
-        self._cursor.execute(query + " LIMIT 1", args)
-        return self._cursor.fetchone()
-
-    def __exec_all(self, query, *args):
-        self._cursor.execute(query, args)
-        return self._cursor.fetchall()
+        with self.transaction() as cur:
+            cur.execute(query + " LIMIT 1", args)
+            return cur.fetchone()
 
     @staticmethod
     def __r2t(row, *args):
@@ -75,12 +42,14 @@ class DatabaseReader(AbstractContextManager):
         :return: dictionary of atom IDs indexed by event key
         :rtype: dict(int, int)
         """
-        return {row["event"]: row["atom"]
-                for row in self.__exec_all(
+        with self.transaction() as cur:
+            return {
+                row["event"]: row["atom"]
+                for row in cur.execute(
                     """
                     SELECT * FROM label_event_atom_view
                     WHERE label = ?
-                    """, label)}
+                    """, (label, ))}
 
     def get_atom_id_to_key_mapping(self, label):
         """ Get a mapping of atom ID to event key for a given vertex
@@ -89,12 +58,14 @@ class DatabaseReader(AbstractContextManager):
         :return: dictionary of event keys indexed by atom ID
         :rtype: dict(int, int)
         """
-        return {row["atom"]: row["event"]
-                for row in self.__exec_all(
+        with self.transaction() as cur:
+            return {
+                row["atom"]: row["event"]
+                for row in cur.execute(
                     """
                     SELECT * FROM label_event_atom_view
                     WHERE label = ?
-                    """, label)}
+                    """, (label, ))}
 
     def get_live_output_details(self, label, receiver_label):
         """ Get the IP address, port and whether the SDP headers are to be\
@@ -244,12 +215,13 @@ class DatabaseReader(AbstractContextManager):
         :return: A list of x, y, p coordinates of the vertices
         :rtype: list(tuple(int, int, int))
         """
-
-        return [self.__xyp(row) for row in self.__exec_all(
-            """
-            SELECT x, y, p FROM application_vertex_placements
-            WHERE vertex_label = ?
-            """, label)]
+        with self.transaction() as cur:
+            return [
+                self.__xyp(row) for row in cur.execute(
+                    """
+                    SELECT x, y, p FROM application_vertex_placements
+                    WHERE vertex_label = ?
+                    """, (label, ))]
 
     def get_ip_address(self, x, y):
         """ Get an IP address to contact a chip
@@ -267,7 +239,3 @@ class DatabaseReader(AbstractContextManager):
             """, x, y)
         # Should only fail if no machine is present!
         return None if row is None else row["eth_ip_address"]
-
-    @overrides(AbstractContextManager.close)
-    def close(self):
-        self._connection.close()
