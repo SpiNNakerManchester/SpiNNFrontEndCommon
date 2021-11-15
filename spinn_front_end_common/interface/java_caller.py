@@ -360,9 +360,10 @@ class JavaCaller(object):
         # Read back the regions
         json_obj = list()
         for placement in placements:
-            json_p = self._json_placement(placement, transceiver)
-            if json_p:
-                json_obj.append(json_p)
+            if not isinstance(placement.vertex, AbstractVirtual):
+                json_p = self._json_placement(placement, transceiver)
+                if json_p:
+                    json_obj.append(json_p)
 
         # dump to json file
         with open(path, "w") as f:
