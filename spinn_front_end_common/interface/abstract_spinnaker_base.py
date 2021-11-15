@@ -3101,8 +3101,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._shutdown()
             sys.exit(1)
         except Exception as run_e:
-            e_inf = sys.exc_info()
-            self._recover_from_error(run_e, e_inf)
+            self._recover_from_error(run_e)
 
             # if in debug mode, do not shut down machine
             if get_config_str("Mode", "mode") != "Debug":
@@ -3116,24 +3115,24 @@ class AbstractSpinnakerBase(ConfigHandler):
                 # reraise exception
                 raise run_e
 
-    def _recover_from_error(self, exception, exc_info):
+    def _recover_from_error(self, exception):
+        """
+        :param Exception exception:
+        """
         try:
-            self.__recover_from_error(exception, exc_info)
+            self.__recover_from_error(exception)
         except Exception as rec_e:
             logger.exception(
                 f"Error {rec_e} when attempting to recover from error")
 
-    def __recover_from_error(self, exception, exc_info):
+    def __recover_from_error(self, exception):
         """
         :param Exception exception:
-        :param tuple(type,Exception,traceback) exc_info:
-        :param ExecutableTargets executable_targets:
         """
         # if exception has an exception, print to system
         logger.error("An error has occurred during simulation")
         # Print the detail including the traceback
-        real_exception = exception
-        logger.error(exception, exc_info=exc_info)
+        logger.error(exception)
 
         logger.info("\n\nAttempting to extract data\n\n")
 
@@ -3150,8 +3149,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Find the cores that are not in an expected state
         unsuccessful_cores = CPUInfos()
-        if isinstance(real_exception, SpiNNManCoresNotInStateException):
-            unsuccessful_cores = real_exception.failed_core_states()
+        if isinstance(exception, SpiNNManCoresNotInStateException):
+            unsuccessful_cores = exception.failed_core_states()
 
         # If there are no cores in a bad state, find those not yet in
         # their finished state
@@ -3646,8 +3645,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._do_stop_workflow()
             except Exception as e:
                 exn = e
-                exc_info = sys.exc_info()
-                self._recover_from_error(e, exc_info[2])
+                self._recover_from_error(e)
 
         # shut down the machine properly
         self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
