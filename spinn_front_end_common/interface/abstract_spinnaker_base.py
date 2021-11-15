@@ -3118,7 +3118,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _recover_from_error(self, exception, exc_info):
         try:
-            self.__recover_from_error(self, exception, exc_info)
+            self.__recover_from_error(exception, exc_info)
         except Exception as rec_e:
             logger.exception(
                 f"Error {rec_e} when attempting to recover from error")
