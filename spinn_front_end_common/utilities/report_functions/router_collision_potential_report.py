@@ -19,6 +19,8 @@ from spinn_machine.router import Router
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 
+COLLISION_REPORT = "routing_collision_protential_report.rpt"
+
 
 class RouterCollisionPotentialReport(object):
 
@@ -31,7 +33,7 @@ class RouterCollisionPotentialReport(object):
         """
         file_name = os.path.join(
             report_default_directory(),
-            "routing_collision_protential_report.rpt")
+            COLLISION_REPORT)
 
         with open(file_name, "w") as writer:
             collision_counts = self._generate_data(
