@@ -102,6 +102,14 @@ class FecDataView(object):
     def exception(self, data):
         return self.__fec_data._status.exception(data)
 
+    def get_app_id(self):
+        """
+        The current application id or None if not known
+
+        :rtype: int or None
+        """
+        return self.__fec_data._app_id
+
     @property
     def app_id(self):
         """
@@ -112,11 +120,18 @@ class FecDataView(object):
             If the app_id is currently unavailable
         """
         if self.__fec_data._app_id is None:
-            raise self.exception("machine_time_step")
+            raise self.exception("app_id")
         return self.__fec_data._app_id
 
     def has_app_id(self):
         return self.__fec_data._app_id is not None
+
+    def get_machine_time_step(self):
+        """ The machine timestep, in microseconds or None if not known
+
+        :rtype: int or None
+        """
+        return self.__fec_data._machine_time_step
 
     @property
     def machine_time_step(self):
@@ -132,6 +147,15 @@ class FecDataView(object):
 
     def has_machine_time_step(self):
         return self.__fec_data._machine_time_step is not None
+
+    def get_machine_time_step_ms(self):
+        """ The machine timestep, in microseconds or None if not known
+
+        Semantic sugar for machine_time_step() / 1000.
+
+        :rtype: float or None
+        """
+        return self.__fec_data._machine_time_step_ms
 
     @property
     def machine_time_step_ms(self):
@@ -151,6 +175,21 @@ class FecDataView(object):
         return self.__fec_data._machine_time_step_ms is not None
 
     # semantic sugar without caching
+    def get_machine_time_step_per_ms(self):
+        """ The machine timesteps in a microseconds or None if not known
+
+        Semantic sugar for 1000 / machine_time_step()
+
+        :rtype: float or None
+        :raises SpinnFrontEndException:
+            If the machine_time_step is currently unavailable
+        """
+        try:
+            return MICRO_TO_MILLISECOND_CONVERSION / \
+               self.get_machine_time_step_ms()
+        except TypeError:  # get_machine_time_step_ms is None
+            return None
+
     @property
     def machine_time_step_per_ms(self):
         """ The machine timesteps in a microseconds
@@ -164,9 +203,26 @@ class FecDataView(object):
         return MICRO_TO_MILLISECOND_CONVERSION / self.machine_time_step
 
     def has_machine_time_step_per_ms(self):
-        return self.__fec_data._machine_time_step is not None
+        return self.has_machine_time_step()
+
 
     # The data the user gets needs not be the exact data cached
+    @property
+    def get_n_calls_to_run(self):
+        """
+        The number of this or the next call to run or None if not Known
+
+        :rtpye: int
+        """
+        try:
+            if self.__fec_data._status == Data_Status.IN_RUN:
+                return self.__fec_data._n_calls_to_run
+            else:
+                # This is the current behaviour in ASB
+                return self.__fec_data._n_calls_to_run + 1
+        except TypeError:
+            return None
+
     @property
     def n_calls_to_run(self):
         """
@@ -182,17 +238,32 @@ class FecDataView(object):
             # This is the current behaviour in ASB
             return self.__fec_data._n_calls_to_run + 1
 
+    def has_n_calls_to_run(self):
+        return self.__fec_data._n_calls_to_run is not None
+
+    def get_report_default_directory(self):
+        return self.__fec_data._report_default_directory
+
     @property
     def report_default_directory(self):
         if self.__fec_data._report_default_directory is None:
             raise self.exception("report_default_directory")
         return self.__fec_data._report_default_directory
 
+    def has_report_default_directory(self):
+        return self.__fec_data._report_default_directory is not None
+
+    def get_provenance_file_path(self):
+        return self.__fec_data._provenance_file_path
+
     @property
     def provenance_file_path(self):
         if self.__fec_data._provenance_file_path is None:
             raise self.exception("provenance_file_path")
         return self.__fec_data._provenance_file_path
+
+    def has_provenance_file_path(self):
+        return self.__fec_data._provenance_file_path is not None
 
     def __getitem__(self, item):
         """
