@@ -39,5 +39,9 @@ class Data_Status(Enum):
         # pylint: disable=protected-access
         obj = object.__new__(cls)
         obj._value_ = value
-        obj.exception = exception
+        obj._exception = exception
         return obj
+
+    @property
+    def exception(self):
+        return self._exception
