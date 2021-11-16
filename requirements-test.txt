@@ -21,3 +21,4 @@ pytest-cov
 sphinx >= 4
 testfixtures
 httpretty != 1.0.0
+pandas
