@@ -1442,11 +1442,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Chip ID allocator"):
             allocator = MallocBasedChipIdAllocator()
-            if self._application_graph is None:
-                graph = self._machine_graph
-            else:
-                graph = self._application_graph
-            allocator(self._machine, graph)
+            allocator(self._machine, self._machine_graph)
             # return ignored as changes done inside original machine object
 
     def _execute_insert_live_packet_gatherers_to_graphs(self):
