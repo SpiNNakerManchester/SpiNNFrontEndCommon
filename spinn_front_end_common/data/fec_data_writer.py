@@ -32,7 +32,7 @@ class FecDataWriter(FecDataView):
     Writer class for the Fec Data
 
     """
-    __fec_data2 = _FecDataModel()
+    __fec_data = _FecDataModel()
     __slots__ = []
 
     def mock(self):
@@ -49,9 +49,9 @@ class FecDataWriter(FecDataView):
         Unittest that depend on a specific value should call mock and then
         set that value.
         """
-        self.__fec_data2._clear()
-        self.__fec_data2._n_calls_to_run = 0
-        self.__fec_data2._status = Data_Status.MOCKED
+        self.__fec_data._clear()
+        self.__fec_data._n_calls_to_run = 0
+        self.__fec_data._status = Data_Status.MOCKED
         self.__set_up_report_mocked()
         self.set_app_id(6)
         self.set_machine_time_step(1000)
@@ -61,17 +61,17 @@ class FecDataWriter(FecDataView):
         Puts all data back into the state expected at sim.setup time
 
         """
-        self.__fec_data2._clear()
-        self.__fec_data2._n_calls_to_run = 0
-        self.__fec_data2._status = Data_Status.SETUP
+        self.__fec_data._clear()
+        self.__fec_data._n_calls_to_run = 0
+        self.__fec_data._status = Data_Status.SETUP
         self.__set_up_report_specifics()
 
     def start_run(self):
-        self.__fec_data2._n_calls_to_run += 1
-        self.__fec_data2._status = Data_Status.IN_RUN
+        self.__fec_data._n_calls_to_run += 1
+        self.__fec_data._status = Data_Status.IN_RUN
 
     def finish_run(self):
-        self.__fec_data2._status = Data_Status.FINISHED
+        self.__fec_data._status = Data_Status.FINISHED
 
     def __set_up_report_mocked(self):
         """
@@ -79,17 +79,17 @@ class FecDataWriter(FecDataView):
         """
         temp_dir = tempfile.TemporaryDirectory()
 
-        self.__fec_data2._report_default_directory = temp_dir
-        self.__fec_data2._provenance_file_path = temp_dir
+        self.__fec_data._report_default_directory = temp_dir
+        self.__fec_data._provenance_file_path = temp_dir
 
     def __set_up_report_specifics(self):
         # This is a highly simplified example
         report_simulation_top_directory = os.getcwd()
-        self.__fec_data2._report_default_directory = os.path.join(
+        self.__fec_data._report_default_directory = os.path.join(
             report_simulation_top_directory, f"run_{self.n_calls_to_run}")
         logger.info(self.report_default_directory)
-        self.__fec_data2._provenance_file_path = os.path.join(
-            self.__fec_data2._report_default_directory,
+        self.__fec_data._provenance_file_path = os.path.join(
+            self.__fec_data._report_default_directory,
             "provenance_data")
 
     def set_app_id(self, app_id):
@@ -100,11 +100,11 @@ class FecDataWriter(FecDataView):
         """
         if not isinstance(app_id, int):
             raise TypeError("app_id should be an int")
-        self.__fec_data2._app_id = app_id
+        self.__fec_data._app_id = app_id
 
     def set_machine_time_step(self, machine_time_step):
         if machine_time_step is None:
             machine_time_step = get_config_int("Machine", "machine_time_step")
-        self.__fec_data2._machine_time_step = machine_time_step
-        self.__fec_data2._machine_time_step_ms = (
+        self.__fec_data._machine_time_step = machine_time_step
+        self.__fec_data._machine_time_step_ms = (
                 machine_time_step / MICRO_TO_MILLISECOND_CONVERSION)
