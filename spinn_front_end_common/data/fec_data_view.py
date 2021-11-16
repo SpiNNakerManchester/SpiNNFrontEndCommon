@@ -205,7 +205,6 @@ class FecDataView(object):
     def has_machine_time_step_per_ms(self):
         return self.has_machine_time_step()
 
-
     # The data the user gets needs not be the exact data cached
     @property
     def get_n_calls_to_run(self):
