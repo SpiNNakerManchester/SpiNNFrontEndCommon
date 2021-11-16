@@ -75,8 +75,22 @@ class FecDataView(object):
     """
     A read only view of the data available at FEC level
 
+    The objects accessed this way should not be changed or added to.
+    Changing or adding to any object accessed if unsupported as bypasses any
+    check or updates done in the writer(s).
+    Objects returned could be changed to immutable versions without notice!
+
+    The get methods will return either the value if known or a None.
+    This is the faster way to access the data but lacks the safety.
+
     The property methods will either return a valid value or
-    raise an Exception if the data is currently not available
+    raise an Exception if the data is currently not available.
+    These are typically semantic sugar around the get methods.
+
+    The has methods will return True is the value is known and False if not.
+    Semantically the are the same as checking if the get returns a None.
+    They may be faster if the object needs to be generated on the fly or
+    protected to be made immutable.
 
     While how and where the underpinning DataModel(s) store data can change
     without notice, methods in this class can be considered a supported API
@@ -85,9 +99,8 @@ class FecDataView(object):
     __fec_data = _FecDataModel()
     __slots__ = []
 
-    @property
-    def status(self):
-        return self.__fec_data._status
+    def exception(self, data):
+        return self.__fec_data._status.exception(data)
 
     @property
     def app_id(self):
@@ -99,7 +112,7 @@ class FecDataView(object):
             If the app_id is currently unavailable
         """
         if self.__fec_data._app_id is None:
-            raise self.status.exception("machine_time_step")
+            raise self.exception("machine_time_step")
         return self.__fec_data._app_id
 
     def has_app_id(self):
@@ -114,7 +127,7 @@ class FecDataView(object):
             If the machine_time_step is currently unavailable
         """
         if self.__fec_data._machine_time_step is None:
-            raise self.status.exception("machine_time_step")
+            raise self.exception("machine_time_step")
         return self.__fec_data._machine_time_step
 
     def has_machine_time_step(self):
@@ -131,7 +144,7 @@ class FecDataView(object):
             If the machine_time_step_ms is currently unavailable
         """
         if self.__fec_data._machine_time_step_ms is None:
-            raise self.status.exception("machine_time_step_ms")
+            raise self.exception("machine_time_step_ms")
         return self.__fec_data._machine_time_step_ms
 
     def has_machine_time_step_ms(self):
@@ -162,7 +175,7 @@ class FecDataView(object):
         :rtpye: int
         """
         if self.__fec_data._n_calls_to_run is None:
-            raise self.status.exception("n_calls_to_run")
+            raise self.exception("n_calls_to_run")
         if self.__fec_data._status == Data_Status.IN_RUN:
             return self.__fec_data._n_calls_to_run
         else:
@@ -172,13 +185,13 @@ class FecDataView(object):
     @property
     def report_default_directory(self):
         if self.__fec_data._report_default_directory is None:
-            raise self.status.exception("report_default_directory")
+            raise self.exception("report_default_directory")
         return self.__fec_data._report_default_directory
 
     @property
     def provenance_file_path(self):
         if self.__fec_data._provenance_file_path is None:
-            raise self.status.exception("provenance_file_path")
+            raise self.exception("provenance_file_path")
         return self.__fec_data._provenance_file_path
 
     def __getitem__(self, item):
