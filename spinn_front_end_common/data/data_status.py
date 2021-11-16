@@ -42,6 +42,5 @@ class Data_Status(Enum):
         obj._exception = exception
         return obj
 
-    @property
-    def exception(self):
-        return self._exception
+    def exception(self, data):
+        return self._exception(data)
