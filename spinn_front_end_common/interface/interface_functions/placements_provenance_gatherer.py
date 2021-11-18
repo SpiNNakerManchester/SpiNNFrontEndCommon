@@ -76,9 +76,11 @@ class PlacementsProvenanceGatherer(object):
             metadata['machine_time_step'] = simulator.machine_time_step
             metadata['config'] = simulator.config
             metadata['machine'] = simulator.machine
-            metadata['structured_provenance_filename'] = simulator.structured_provenance_filename
+            metadata['structured_provenance_filename'] = simulator.\
+                structured_provenance_filename
 
-            for i, (provenance, placement) in enumerate(zip(prov_items, prov_placement)):
+            for i, (provenance, placement) in enumerate(
+                    zip(prov_items, prov_placement)):
                 prov_name = provenance.names[1]
                 prov_value = provenance.value
                 pop = placement.vertex.label.split(":")[0]
@@ -86,8 +88,10 @@ class PlacementsProvenanceGatherer(object):
                 y = placement.y
                 p = placement.p
                 fixed_sdram = placement.vertex.resources_required.sdram.fixed
-                sdram_per_timestep = placement.vertex.resources_required.sdram.per_timestep
-                cpu_cycles = placement.vertex.resources_required.cpu_cycles.get_value()
+                sdram_per_timestep = placement.vertex.resources_required.\
+                    sdram.per_timestep
+                cpu_cycles = placement.vertex.resources_required.cpu_cycles.\
+                    get_value()
                 dtcm = placement.vertex.resources_required.dtcm.get_value()
 
                 label = placement.vertex.label
@@ -113,7 +117,8 @@ class PlacementsProvenanceGatherer(object):
                 # TODO check that metadata is correct
 
                 # figure out the past run id
-                numerical_runs = [int(x) for x in existing_data.files if x not in ["metadata"]]
+                numerical_runs = [int(
+                    x) for x in existing_data.files if x not in ["metadata"]]
                 prev_run = np.max(numerical_runs)
 
             else:
@@ -121,8 +126,9 @@ class PlacementsProvenanceGatherer(object):
                 prev_run = -1  # no previous run
 
             # Current data assembly
-            current_data = {str(prev_run + 1):
-                                structured_provenance_df.to_records(index=False)}
+            current_data = {str(
+                prev_run + 1): structured_provenance_df.to_records(
+                    index=False)}
 
             # Append current data to existing data
             np.savez_compressed(provenance_filename,
