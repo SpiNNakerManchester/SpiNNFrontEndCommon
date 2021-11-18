@@ -32,6 +32,7 @@ from pacman.model.resources import (
 from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
@@ -48,7 +49,7 @@ from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step, time_scale_factor)
+    time_scale_factor)
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints,
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
@@ -324,7 +325,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Recording live data, use the user provided receive rate
         keys_per_timestep = math.ceil(
             receive_rate / (
-                machine_time_step() * MICRO_TO_MILLISECOND_CONVERSION) * 1.1)
+                FecDataView().simulation_time_step_us *
+                MICRO_TO_MILLISECOND_CONVERSION) * 1.1)
         header_size = EIEIODataHeader.get_header_size(
             EIEIOType.KEY_32_BIT, is_payload_base=True)
         # Maximum size is one packet per key
@@ -675,7 +677,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # write timer offset in microseconds
         max_offset = ((
-            machine_time_step() * time_scale_factor()) // (
+            FecDataView().simulation_time_step_us * time_scale_factor()) // (
             _MAX_OFFSET_DENOMINATOR * 2))
         spec.write_value(
             (int(math.ceil(max_offset / self._n_vertices)) *

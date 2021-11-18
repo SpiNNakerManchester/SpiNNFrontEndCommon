@@ -154,19 +154,6 @@ def _temp_dir():
     return __temp_dir.name
 
 
-def machine_time_step():
-    """ The machine timestep, in microseconds
-
-    ..note: In unittest mode this returns the default 1000
-
-    :rtype: int
-    :raises SimulatorNotSetupException:
-        If the simulator has not been setup
-    """
-    from spinn_front_end_common.data.fec_data_view import FecDataView
-    return FecDataView().simulation_time_step_us
-
-
 def time_scale_factor():
     """ The time scaling factor.
 

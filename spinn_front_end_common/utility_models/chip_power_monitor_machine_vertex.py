@@ -27,6 +27,7 @@ from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource, ResourceContainer, VariableSDRAM)
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.buffer_management import (
     recording_utilities)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
@@ -35,7 +36,7 @@ from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step, time_scale_factor)
+    time_scale_factor)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
@@ -108,7 +109,9 @@ class ChipPowerMonitorMachineVertex(
         :rtype: ~pacman.model.resources.ResourceContainer
         """
         # pylint: disable=too-many-locals
-        step_in_microseconds = machine_time_step() * time_scale_factor()
+        view = FecDataView()
+        step_in_microseconds = (
+                view.simulation_time_step_us * time_scale_factor())
         # The number of sample per step CB believes does not have to be an int
         samples_per_step = (step_in_microseconds / sampling_frequency)
         n_samples_per_recording = get_config_int(
@@ -243,8 +246,9 @@ class ChipPowerMonitorMachineVertex(
         :return: the SDRAM usage
         :rtype: int
         """
+        view = FecDataView()
         timer_tick_in_micro_seconds = (
-                machine_time_step() * time_scale_factor())
+                view.simulation_time_step_us * time_scale_factor())
 
         recording_time = \
             self._sampling_frequency * get_config_int(

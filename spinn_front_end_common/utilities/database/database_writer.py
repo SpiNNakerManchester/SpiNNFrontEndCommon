@@ -17,12 +17,13 @@ import logging
 import os
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs.common import EdgeTrafficType
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesKeyToAtomMapping,
     AbstractSupportsDatabaseInjection)
 from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step, report_default_directory, time_scale_factor)
+    report_default_directory, time_scale_factor)
 from pacman.model.graphs.machine import MulticastEdgePartition
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -196,6 +197,7 @@ class DatabaseWriter(SQLiteDB):
 
         :param int runtime: the amount of time the application is to run for
         """
+        view = FecDataView()
         with self.transaction() as cur:
             cur.executemany(
                 """
@@ -203,7 +205,7 @@ class DatabaseWriter(SQLiteDB):
                     parameter_id, value)
                 VALUES (?, ?)
                 """, [
-                    ("machine_time_step", machine_time_step()),
+                    ("machine_time_step", view.simulation_time_step_us),
                     ("time_scale_factor", time_scale_factor()),
                     ("infinite_run", str(runtime is None)),
                     ("runtime", -1 if runtime is None else runtime),

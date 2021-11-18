@@ -20,10 +20,11 @@ from spinn_utilities.config_holder import get_config_float, get_config_int
 from spinn_front_end_common.abstract_models.impl.\
     tdma_aware_application_vertex import (
         TDMAAwareApplicationVertex)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.constants import CLOCKS_PER_US
 from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step, time_scale_factor)
+    time_scale_factor)
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
@@ -102,7 +103,8 @@ class LocalTDMABuilder(object):
             return
 
         # get config params
-        us_per_cycle = machine_time_step() * time_scale_factor()
+        view = FecDataView()
+        us_per_cycle = view.simulation_time_step_us * time_scale_factor()
         clocks_per_cycle = us_per_cycle * CLOCKS_PER_US
         (app_machine_quantity, clocks_between_cores, clocks_for_sending,
          clocks_waiting, clocks_initial) = self.config_values(clocks_per_cycle)
