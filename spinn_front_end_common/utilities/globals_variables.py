@@ -154,21 +154,6 @@ def _temp_dir():
     return __temp_dir.name
 
 
-def time_scale_factor():
-    """ The time scaling factor.
-
-    ..note: In unittest mode this returns the default 1
-
-    :rtype: int
-    :raises ValueError:
-        if the system is in a state where machine_timestep can't be retrieved
-    :raises SimulatorNotSetupException:
-        If the simulator has not been setup
-    """
-    from spinn_front_end_common.data.fec_data_view import FecDataView
-    return FecDataView().time_scale_factor
-
-
 def provenance_file_path():
     """
     Returns the path to the directory that holds all provenance files

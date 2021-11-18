@@ -81,7 +81,6 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         assert writer.simulation_time_step_ms == 0.2
         assert writer.simulation_time_step_per_ms == 5.0
         assert writer.time_scale_factor == 10
-        assert globals_variables.time_scale_factor() == 10
 
         with self.assertRaises(ConfigurationException):
             writer.set_up_timings(simulation_time_step_us=-20, time_scale_factor=10)

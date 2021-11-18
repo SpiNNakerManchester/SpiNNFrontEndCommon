@@ -48,8 +48,6 @@ from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD,
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.globals_variables import (
-    time_scale_factor)
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints,
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
@@ -677,7 +675,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # write timer offset in microseconds
         max_offset = ((
-            FecDataView().simulation_time_step_us * time_scale_factor()) // (
+            FecDataView().simulation_time_step_us *
+            FecDataView().time_scale_factor) // (
             _MAX_OFFSET_DENOMINATOR * 2))
         spec.write_value(
             (int(math.ceil(max_offset / self._n_vertices)) *

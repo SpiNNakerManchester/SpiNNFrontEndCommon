@@ -16,13 +16,14 @@
 import itertools
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.ordered_set import OrderedSet
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceReader
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.globals_variables import (
-    get_simulator, time_scale_factor)
+    get_simulator)
 
 #: milliseconds per second
 _MS_PER_SECOND = 1000.0
@@ -112,7 +113,7 @@ class ComputeEnergyUsed(object):
         power_used.mapping_time_secs = mapping_time / _MS_PER_SECOND
 
         using_spalloc = bool(spalloc_server or remote_spinnaker_url)
-        runtime_total_ms = runtime * time_scale_factor()
+        runtime_total_ms = runtime * FecDataView().time_scale_factor
         self._compute_energy_consumption(
              placements, machine, version, using_spalloc,
              dsg_time, buffer_manager, load_time,

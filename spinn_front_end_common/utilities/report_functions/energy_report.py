@@ -16,6 +16,7 @@
 import logging
 import os
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     APPLICATION_RUNNER, LOADING, ProvenanceReader)
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
@@ -24,8 +25,6 @@ from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 from spinn_front_end_common.interface.interface_functions import (
     ComputeEnergyUsed)
-from spinn_front_end_common.utilities.globals_variables import (
-    time_scale_factor)
 from spinn_machine.machine import Machine
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -78,7 +77,7 @@ class EnergyReport(object):
         summary_report = os.path.join(report_dir, self._SUMMARY_FILENAME)
 
         # figure runtime in milliseconds with time scale factor
-        runtime_total_ms = time_scale_factor()
+        runtime_total_ms = FecDataView().time_scale_factor
 
         # create detailed report
         with open(detailed_report, "w") as f:

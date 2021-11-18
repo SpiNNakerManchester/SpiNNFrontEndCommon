@@ -23,7 +23,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractProvidesKeyToAtomMapping,
     AbstractSupportsDatabaseInjection)
 from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory, time_scale_factor)
+    report_default_directory)
 from pacman.model.graphs.machine import MulticastEdgePartition
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -206,7 +206,7 @@ class DatabaseWriter(SQLiteDB):
                 VALUES (?, ?)
                 """, [
                     ("machine_time_step", view.simulation_time_step_us),
-                    ("time_scale_factor", time_scale_factor()),
+                    ("time_scale_factor", view.time_scale_factor),
                     ("infinite_run", str(runtime is None)),
                     ("runtime", -1 if runtime is None else runtime),
                     ("app_id", app_id)])

@@ -23,8 +23,6 @@ from spinn_front_end_common.abstract_models.impl.\
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.constants import CLOCKS_PER_US
-from spinn_front_end_common.utilities.globals_variables import (
-    time_scale_factor)
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
@@ -104,7 +102,7 @@ class LocalTDMABuilder(object):
 
         # get config params
         view = FecDataView()
-        us_per_cycle = view.simulation_time_step_us * time_scale_factor()
+        us_per_cycle = view.simulation_time_step_us * view.time_scale_factor
         clocks_per_cycle = us_per_cycle * CLOCKS_PER_US
         (app_machine_quantity, clocks_between_cores, clocks_for_sending,
          clocks_waiting, clocks_initial) = self.config_values(clocks_per_cycle)
@@ -141,7 +139,7 @@ class LocalTDMABuilder(object):
                         max_fraction_of_sending, fraction_of_sending)
 
         time_scale_factor_needed = (
-                time_scale_factor() * max_fraction_of_sending)
+                view.time_scale_factor * max_fraction_of_sending)
         if max_fraction_of_sending > 1:
             logger.warning(
                 "A time scale factor of {} may be needed to run correctly"
