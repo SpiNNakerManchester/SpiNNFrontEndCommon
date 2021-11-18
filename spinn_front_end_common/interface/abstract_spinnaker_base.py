@@ -81,6 +81,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     ApplicationFinisher, ApplicationRunner,  BufferExtractor,
@@ -425,6 +426,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Notification interface if needed
         "_notification_interface",
+
+        # The writer and therefor view of the global data
+        "_data_writer"
     ]
 
     def __init__(
@@ -448,6 +452,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         # pylint: disable=too-many-arguments
         super().__init__()
+
+        self._data_writer = FecDataWriter()
 
         # timings
         self._mapping_time = 0.0

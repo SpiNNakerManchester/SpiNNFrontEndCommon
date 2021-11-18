@@ -163,18 +163,8 @@ def machine_time_step():
     :raises SimulatorNotSetupException:
         If the simulator has not been setup
     """
-    if _simulator is None:
-        #  set by unittest_setup
-        if __unittest_mode:
-            return 1000
-        else:
-            raise SimulatorNotSetupException(
-                "machine_time_step() not supported before sim.setup.")
-    else:
-        if _simulator._status in SHUTDOWN_STATUS:
-            logger.warning(
-                "simulator shutdown before machine_time_step requested")
-    return _simulator.machine_time_step
+    from spinn_front_end_common.data.fec_data_view import FecDataView
+    return FecDataView().simulation_time_step_us
 
 
 def machine_time_step_ms():
@@ -188,18 +178,8 @@ def machine_time_step_ms():
     :raises SimulatorNotSetupException:
         If the simulator has not been setup
     """
-    if _simulator is None:
-        #  set by unittest_setup
-        if __unittest_mode:
-            return 1.0
-        else:
-            raise SimulatorNotSetupException(
-                "machine_time_step_ms() not supported before sim.setup.")
-    else:
-        if _simulator._status in SHUTDOWN_STATUS:
-            logger.warning(
-                "simulator shutdown before machine_time_step_ms requested")
-    return _simulator.machine_time_step_ms
+    from spinn_front_end_common.data.fec_data_view import FecDataView
+    return FecDataView().simulation_time_step_ms
 
 
 def machine_time_step_per_ms():
@@ -213,18 +193,8 @@ def machine_time_step_per_ms():
     :raises SimulatorNotSetupException:
         If the simulator has not been setup
     """
-    if _simulator is None:
-        #  set by unittest_setup
-        if __unittest_mode:
-            return 1.0
-        else:
-            raise SimulatorNotSetupException(
-                "machine_time_step_per_ms() not supported before sim.setup.")
-    else:
-        if _simulator._status in SHUTDOWN_STATUS:
-            logger.warning(
-                "simulator shutdown before machine_time_step_per_ms requested")
-    return _simulator.machine_time_step_per_ms
+    from spinn_front_end_common.data.fec_data_view import FecDataView
+    return FecDataView().simulation_time_step_per_ms
 
 
 def time_scale_factor():
@@ -238,18 +208,8 @@ def time_scale_factor():
     :raises SimulatorNotSetupException:
         If the simulator has not been setup
     """
-    if _simulator is None:
-        #  set by unittest_setup
-        if __unittest_mode:
-            return 1
-        else:
-            raise SimulatorNotSetupException(
-                "time_scale_factor() not supported before sim.setup.")
-    else:
-        if _simulator._status in SHUTDOWN_STATUS:
-            logger.warning(
-                "simulator shutdown before time_scale_factorrequested")
-    return _simulator.time_scale_factor
+    from spinn_front_end_common.data.fec_data_view import FecDataView
+    return FecDataView().time_scale_factor
 
 
 def provenance_file_path():
