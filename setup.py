@@ -83,8 +83,7 @@ setup(
                       "numpy > 1.13, < 1.21; python_version == '3.7'",
                       "numpy; python_version >= '3.8'",
                       "scipy >= 0.16.0, < 1.6; python_version == '3.6'",
-                      "scipy >= 0.16.0; python_version >= '3.7'",
-                      'pandas'],
+                      "scipy >= 0.16.0; python_version >= '3.7'"],
     extras_require={
         'plotting': [
             'matplotlib',
