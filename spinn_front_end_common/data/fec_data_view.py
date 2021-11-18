@@ -43,6 +43,8 @@ class _FecDataModel(object):
         "_provenance_file_path",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
+        "_simulation_time_step_per_s",
+        "_simulation_time_step_s",
         "_simulation_time_step_us",
         "_n_calls_to_run",
         "_report_default_directory",
@@ -69,9 +71,11 @@ class _FecDataModel(object):
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
         self._provenance_file_path = None
-        self._simulation_time_step_us = None
         self._simulation_time_step_ms = None
         self._simulation_time_step_per_ms = None
+        self._simulation_time_step_per_s = None
+        self._simulation_time_step_s = None
+        self._simulation_time_step_us = None
         self._n_calls_to_run = None
         self._report_default_directory = None
         self._time_scale_factor = None
@@ -157,6 +161,15 @@ class FecDataView(object):
         """
         return self.__fec_data._simulation_time_step_us
 
+    def get_simulation_time_step_s(self):
+        """ The simulation timestep, in seconds or None if not known
+
+        Semantic sugar for simulation_time_step_us / 1,000,000.
+
+        :rtype: int or None
+        """
+        return self.__fec_data._simulation_time_step_s
+
     def get_simulation_time_step_ms(self):
         """ The simulation time step, in milliseconds or None if not known
 
@@ -176,6 +189,17 @@ class FecDataView(object):
             If the simulation_time_step is currently unavailable
         """
         return self.__fec_data._simulation_time_step_per_ms
+
+    def get_simulation_time_step_per_s(self):
+        """ The simulation time step in a seconds or None if not known
+
+        Semantic sugar for 1,000,000 / simulation_time_step_us
+
+        :rtype: float or None
+        :raises SpinnFrontEndException:
+            If the simulation_time_step is currently unavailable
+        """
+        return self.__fec_data._simulation_time_step_per_s
 
     def get_hardware_time_step_ms(self):
         """ The hardware timestep, in milliseconds or None if not known
@@ -225,7 +249,7 @@ class FecDataView(object):
 
     @property
     def simulation_time_step_per_ms(self):
-        """ The simulation time step in  milliseconds
+        """ The simulation time steps per millisecond
 
         Semantic sugar for 1000 / simulation_time_step()
 
@@ -236,6 +260,34 @@ class FecDataView(object):
         if self.__fec_data._simulation_time_step_per_ms is None:
             raise self.exception("simulation_time_step_per_ms")
         return self.__fec_data._simulation_time_step_per_ms
+
+    @property
+    def simulation_time_step_per_s(self):
+        """ The simulation time steps per second
+
+        Semantic sugar for 1,000,000 / simulation_time_step()
+
+        :rtype: float
+        :raises SpinnFrontEndException:
+            If the simulation_time_step is currently unavailable
+        """
+        if self.__fec_data._simulation_time_step_per_s is None:
+            raise self.exception("simulation_time_step_per_s")
+        return self.__fec_data._simulation_time_step_per_s
+
+    @property
+    def simulation_time_step_s(self):
+        """ The simulation timestep, in seconds
+
+        Semantic sugar for simulation_time_step() / 1,000,000.
+
+        :rtype: float
+        :raises SpinnFrontEndException:
+            If the simulation_time_step_ms is currently unavailable
+        """
+        if self.__fec_data._simulation_time_step_s is None:
+            raise self.exception("simulation_time_step_s")
+        return self.__fec_data._simulation_time_step_s
 
     @property
     def hardware_time_step_ms(self):

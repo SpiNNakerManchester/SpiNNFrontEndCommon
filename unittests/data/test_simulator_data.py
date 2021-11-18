@@ -111,7 +111,11 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(SimulatorDataNotYetAvialable):
             view.simulation_time_step_per_ms
         with self.assertRaises(SimulatorDataNotYetAvialable):
+            view.simulation_time_step_per_s
+        with self.assertRaises(SimulatorDataNotYetAvialable):
             view.simulation_time_step_ms
+        with self.assertRaises(SimulatorDataNotYetAvialable):
+            view.simulation_time_step_s
         with self.assertRaises(SimulatorDataNotYetAvialable):
             view.time_scale_factor
         with self.assertRaises(SimulatorDataNotYetAvialable):
@@ -120,7 +124,9 @@ class TestSimulatorData(unittest.TestCase):
             view.hardware_time_step_us
         self.assertEqual(None, view.get_simulation_time_step_us())
         self.assertEqual(None, view.get_simulation_time_step_ms())
+        self.assertEqual(None, view.get_simulation_time_step_s())
         self.assertEqual(None, view.get_simulation_time_step_per_ms())
+        self.assertEqual(None, view.get_simulation_time_step_per_s())
         self.assertEqual(None, view.get_time_scale_factor())
         self.assertEqual(None, view.get_hardware_time_step_us())
         self.assertEqual(None, view.get_hardware_time_step_ms())
@@ -130,12 +136,16 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(500, view.get_simulation_time_step_us())
         self.assertEqual(0.5, view.get_simulation_time_step_ms())
         self.assertEqual(2, view.get_simulation_time_step_per_ms())
+        self.assertEqual(0.0005, view.get_simulation_time_step_s())
+        self.assertEqual(2000, view.get_simulation_time_step_per_s())
         self.assertEqual(4, view.get_time_scale_factor())
         self.assertEqual(2000, view.get_hardware_time_step_us())
         self.assertEqual(2, view.get_hardware_time_step_ms())
         self.assertEqual(500, view.simulation_time_step_us)
         self.assertEqual(0.5, view.simulation_time_step_ms)
+        self.assertEqual(0.0005, view.simulation_time_step_s)
         self.assertEqual(2, view.simulation_time_step_per_ms)
+        self.assertEqual(2000, view.simulation_time_step_per_s)
         self.assertEqual(4, view.time_scale_factor)
         self.assertEqual(2, view.hardware_time_step_ms)
         self.assertEqual(2000, view.hardware_time_step_us)
@@ -152,7 +162,9 @@ class TestSimulatorData(unittest.TestCase):
             writer.set_up_timings("bacon", 1)
         self.assertEqual(None, view.get_simulation_time_step_us())
         self.assertEqual(None, view.get_simulation_time_step_ms())
+        self.assertEqual(None, view.get_simulation_time_step_s())
         self.assertEqual(None, view.get_simulation_time_step_per_ms())
+        self.assertEqual(None, view.get_simulation_time_step_per_s())
         self.assertEqual(None, view.get_time_scale_factor())
         self.assertEqual(None, view.get_hardware_time_step_ms())
         self.assertEqual(None, view.get_hardware_time_step_us())

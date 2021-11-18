@@ -20,7 +20,7 @@ import tempfile
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION)
+    MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from .data_status import Data_Status
 from .fec_data_view import FecDataView, _FecDataModel
@@ -132,6 +132,8 @@ class FecDataWriter(FecDataView):
             self.__fec_data._simulation_time_step_us = None
             self.__fec_data._simulation_time_step_ms = None
             self.__fec_data._simulation_time_step_per_ms = None
+            self.__fec_data._simulation_time_step_per_s = None
+            self.__fec_data._simulation_time_step_s = None
             self.__fec_data._time_scale_factor = None
             self.__fec_data._hardware_time_step_us = None
             self.__fec_data._hardware_time_step_ms = None
@@ -162,6 +164,10 @@ class FecDataWriter(FecDataView):
                 simulation_time_step_us / MICRO_TO_MILLISECOND_CONVERSION)
         self.__fec_data._simulation_time_step_per_ms = (
                 MICRO_TO_MILLISECOND_CONVERSION / simulation_time_step_us)
+        self.__fec_data._simulation_time_step_per_s = (
+                MICRO_TO_SECOND_CONVERSION / simulation_time_step_us)
+        self.__fec_data._simulation_time_step_s = (
+                simulation_time_step_us / MICRO_TO_SECOND_CONVERSION)
 
     def _set_time_scale_factor(
             self, time_scale_factor, default_time_scale_factor):
