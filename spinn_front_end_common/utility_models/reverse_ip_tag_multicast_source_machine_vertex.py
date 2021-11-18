@@ -674,9 +674,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         spec.write_value(data=self._receive_sdp_port)
 
         # write timer offset in microseconds
-        max_offset = ((
-            FecDataView().simulation_time_step_us *
-            FecDataView().time_scale_factor) // (
+        max_offset = (FecDataView().hardware_time_step_us // (
             _MAX_OFFSET_DENOMINATOR * 2))
         spec.write_value(
             (int(math.ceil(max_offset / self._n_vertices)) *

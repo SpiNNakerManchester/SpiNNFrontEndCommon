@@ -102,7 +102,7 @@ class LocalTDMABuilder(object):
 
         # get config params
         view = FecDataView()
-        us_per_cycle = view.simulation_time_step_us * view.time_scale_factor
+        us_per_cycle = view.hardware_time_step_us
         clocks_per_cycle = us_per_cycle * CLOCKS_PER_US
         (app_machine_quantity, clocks_between_cores, clocks_for_sending,
          clocks_waiting, clocks_initial) = self.config_values(clocks_per_cycle)

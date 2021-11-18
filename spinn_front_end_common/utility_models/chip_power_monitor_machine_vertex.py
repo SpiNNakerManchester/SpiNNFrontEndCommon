@@ -108,10 +108,8 @@ class ChipPowerMonitorMachineVertex(
         """
         # pylint: disable=too-many-locals
         view = FecDataView()
-        step_in_microseconds = (
-                view.simulation_time_step_us * view.time_scale_factor)
-        # The number of sample per step CB believes does not have to be an int
-        samples_per_step = (step_in_microseconds / sampling_frequency)
+        # The number of sample per step does not have to be an int
+        samples_per_step = (view.hardware_time_step_us / sampling_frequency)
         n_samples_per_recording = get_config_int(
             "EnergyMonitor", "n_samples_per_recording_entry")
         recording_per_step = (samples_per_step / n_samples_per_recording)
@@ -245,13 +243,11 @@ class ChipPowerMonitorMachineVertex(
         :rtype: int
         """
         view = FecDataView()
-        timer_tick_in_micro_seconds = (
-                view.simulation_time_step_us * view.time_scale_factor)
 
         recording_time = \
             self._sampling_frequency * get_config_int(
                 "EnergyMonitor", "n_samples_per_recording_entry")
-        n_entries = math.floor(timer_tick_in_micro_seconds / recording_time)
+        n_entries = math.floor(view.hardware_time_step_us/ recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
     def get_recorded_data(self, placement, buffer_manager):

@@ -33,7 +33,7 @@ def get_simulation_header_array(binary_file_name):
     data = list()
     data.append(int(application_name_hash, 16))
     view = FecDataView()
-    data.append(view.simulation_time_step_us * view.time_scale_factor)
+    data.append(view.hardware_time_step_us)
 
     # add SDP port number for receiving synchronisations and new run times
     data.append(SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value)
