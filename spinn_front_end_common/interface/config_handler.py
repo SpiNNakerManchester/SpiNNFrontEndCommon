@@ -25,8 +25,6 @@ from spinn_machine import Machine
 from spinn_utilities.config_holder import (
     config_options, load_config, get_config_bool, get_config_int,
     get_config_str, get_config_str_list, set_config)
-from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -76,19 +74,6 @@ class ConfigHandler(object):
         #
         "_use_virtual_board",
 
-        # The machine timestep, in microseconds
-        "__machine_time_step",
-
-        # The machine timestep, in milliseconds
-        # Semantic sugar for __machine_time_step / 1000
-        "__machine_time_step_ms",
-
-        # The number of machine timestep in a milliseconds
-        # Semantic sugar for 1000 / __machine_time_step
-        "__machine_time_step_per_ms",
-
-        # The time scaling factor.
-        "__time_scale_factor"
     ]
 
     def __init__(self):
@@ -109,9 +94,6 @@ class ConfigHandler(object):
         self._report_default_directory = None
         self._report_simulation_top_directory = None
         self._this_run_time_string = None
-        self.__machine_time_step = None
-        self.__machine_time_step_ms = None
-        self.__time_scale_factor = None
 
     def _debug_configs(self):
         """ Adjust and checks config based on mode and reports_enabled
