@@ -77,7 +77,7 @@ class EnergyReport(object):
         summary_report = os.path.join(report_dir, self._SUMMARY_FILENAME)
 
         # figure runtime in milliseconds with time scale factor
-        runtime_total_ms = FecDataView().time_scale_factor
+        runtime_total_ms = runtime * FecDataView().time_scale_factor
 
         # create detailed report
         with open(detailed_report, "w") as f:
