@@ -323,9 +323,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Recording live data, use the user provided receive rate
         # https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/issues/896
         keys_per_timestep = math.ceil(
-            receive_rate / (
-                FecDataView().simulation_time_step_us *
-                MICRO_TO_MILLISECOND_CONVERSION) * 1.1)
+            receive_rate / FecDataView().simulation_time_step_ms * 1.1)
         header_size = EIEIODataHeader.get_header_size(
             EIEIOType.KEY_32_BIT, is_payload_base=True)
         # Maximum size is one packet per key
