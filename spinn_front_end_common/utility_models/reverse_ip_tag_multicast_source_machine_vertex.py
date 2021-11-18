@@ -321,6 +321,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 send_buffer_times, n_keys)
 
         # Recording live data, use the user provided receive rate
+        # https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/issues/896
         keys_per_timestep = math.ceil(
             receive_rate / (
                 FecDataView().simulation_time_step_us *
