@@ -158,3 +158,11 @@ class TestProvenanceDatabase(unittest.TestCase):
         data = reader.run_query("Select * from connector_provenance")
         expected = [(1, 'the pre', 'A post', 'OneToOne', 'foo', 12)]
         self.assertListEqual(expected, data)
+
+    def test_lut(self):
+        with ProvenanceWriter() as db:
+            db.insert_lut("the pre", "A post", "OneToOne", "foo", 0.5)
+        reader = ProvenanceReader()
+        data = reader.run_query("Select * from lut_provenance")
+        expected = [(1, 'the pre', 'A post', 'OneToOne', 'foo', 0.5)]
+        self.assertListEqual(expected, data)
