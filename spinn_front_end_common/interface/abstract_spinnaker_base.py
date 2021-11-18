@@ -934,11 +934,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         total_run_time = (
             total_run_timesteps * self._data_writer.hardware_time_step_ms)
 
-        # Convert dt into microseconds and multiply by
-        # scale factor to get hardware timestep
-        hardware_timestep_us = (
-                self.machine_time_step * self.time_scale_factor)
-
         logger.info(
             f"Simulating for {n_machine_time_steps} "
             f"{self._data_writer.simulation_time_step_ms}ms timesteps "

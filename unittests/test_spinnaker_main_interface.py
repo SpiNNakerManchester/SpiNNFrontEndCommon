@@ -71,25 +71,23 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         machine_time_step = get_config_int("Machine", "machine_time_step")
         time_scale_factor = get_config_int("Machine", "time_scale_factor")
         asb = AbstractSpinnakerBase(ExecutableFinder())
-        asb.set_up_timings(machine_time_step=None, time_scale_factor=None)
-        FecDataWriter().set_up_timings(simulation_time_step_us=None, time_scale_factor=None)
-        assert machine_time_step == asb.machine_time_step
-        assert time_scale_factor == asb.time_scale_factor
+        writer = FecDataWriter()
+        writer.set_up_timings(simulation_time_step_us=None, time_scale_factor=None)
+        assert machine_time_step == writer.simulation_time_step_us
 
         # Test specified
-        asb.set_up_timings(machine_time_step=200, time_scale_factor=10)
-        FecDataWriter().set_up_timings(simulation_time_step_us=200, time_scale_factor=10)
-        assert asb.machine_time_step == 200
-        assert asb.machine_time_step_ms == 0.2
-        assert asb.machine_time_step_per_ms == 5.0
-        assert asb.time_scale_factor == 10
+        writer.set_up_timings(simulation_time_step_us=200, time_scale_factor=10)
+        assert writer.simulation_time_step_us == 200
+        assert writer.simulation_time_step_ms == 0.2
+        assert writer.simulation_time_step_per_ms == 5.0
+        assert writer.time_scale_factor == 10
         assert globals_variables.machine_time_step() == 200
         assert globals_variables.machine_time_step_ms() == 0.2
         assert globals_variables.machine_time_step_per_ms() == 5.0
         assert globals_variables.time_scale_factor() == 10
 
         with self.assertRaises(ConfigurationException):
-            asb.set_up_timings(machine_time_step=-20, time_scale_factor=10)
+            writer.set_up_timings(simulation_time_step_us=-20, time_scale_factor=10)
 
 
 if __name__ == "__main__":
