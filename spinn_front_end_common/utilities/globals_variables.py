@@ -167,21 +167,6 @@ def machine_time_step():
     return FecDataView().simulation_time_step_us
 
 
-def machine_time_step_ms():
-    """ The machine timestep, in microseconds
-
-    Semantic sugar for machine_time_step() / 1000.
-
-    ..note: In unittest mode this returns the default 1.0
-
-    :rtype: float
-    :raises SimulatorNotSetupException:
-        If the simulator has not been setup
-    """
-    from spinn_front_end_common.data.fec_data_view import FecDataView
-    return FecDataView().simulation_time_step_ms
-
-
 def time_scale_factor():
     """ The time scaling factor.
 
