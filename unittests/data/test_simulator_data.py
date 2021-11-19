@@ -35,8 +35,6 @@ class TestSimulatorData(unittest.TestCase):
         # What happens before setup depends on the previous test
         # Use manual_check to verify this without dependency
         writer.setup()
-        self.assertIn("run_1", view.report_default_directory)
-        self.assertIn("provenance_data", view.provenance_file_path)
         with self.assertRaises(SimulatorDataNotYetAvialable):
             view.simulation_time_step_us
         writer.set_up_timings(1000, 1)
@@ -49,11 +47,13 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(1, view.n_calls_to_run)
         writer.start_run()
         self.assertEqual(1, view.n_calls_to_run)
+        self.assertIn("run_1", view.run_directory)
         writer.finish_run()
         self.assertEqual(2, view.n_calls_to_run)
         writer.start_run()
         self.assertEqual(2, view.n_calls_to_run)
-        self.assertIn("run_1", view.report_default_directory)
+        # No reset so run director does not change
+        self.assertIn("run_1", view.run_directory)
 
     def test_dict(self):
         view = FecDataView()
@@ -78,8 +78,6 @@ class TestSimulatorData(unittest.TestCase):
         # check there is a value not what it is
         self.assertIsNotNone(view.app_id)
         self.assertIsNotNone(view.simulation_time_step_us)
-        self.assertIsNotNone(view.report_default_directory)
-        self.assertIsNotNone(view.provenance_file_path)
 
     def test_multiple(self):
         view = FecDataView()
@@ -175,11 +173,14 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter()
         writer.setup()
         self.assertTrue(os.path.exists(writer.report_directory))
+        self.assertTrue(os.path.exists(writer.run_directory))
 
     def test_directories_mocked(self):
         writer = FecDataWriter()
         writer.mock()
         dir = writer.report_directory
+        self.assertTrue(os.path.exists(dir))
+        dir = writer.run_directory
         self.assertTrue(os.path.exists(dir))
 
     def test_get_n_calls_to_run(self):

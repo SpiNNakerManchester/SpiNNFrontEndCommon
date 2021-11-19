@@ -392,6 +392,12 @@ class FecDataView(object):
     # This allow directories to be created on the fly
 
     def temporary_directory(self):
+        """
+        The path to an existing temp directory
+
+        This temp directory
+        :return:
+        """
         if self.__fec_data._temporary_directory is None:
             self.__fec_data._temporary_directory = \
                 tempfile.TemporaryDirectory()
@@ -408,13 +414,23 @@ class FecDataView(object):
         if self.__fec_data._report_directory is None:
             if self.__fec_data._status == Data_Status.MOCKED:
                 return self.temporary_directory()
-            else:
-                raise self.exception("report_directory")
+            raise self.exception("report_directory")
         return self.__fec_data._report_directory
 
-    def get_run_directory(self):
-        if self.__fec_data._report_directory is None:
-            raise self.exception("run_directory")
+    @property
+    def run_directory(self):
+        if self.__fec_data._run_directory:
+            return self.__fec_data._run_directory
+
+        if self.__fec_data._timestamp_directory:
+            self.__fec_data._run_directory = self._child_folder(
+                self.__fec_data._timestamp_directory,
+                f"run_{self.n_calls_to_run}")
+            return self.__fec_data._run_directory
+
+        if self.__fec_data._status == Data_Status.MOCKED:
+            return self.temporary_directory()
+        raise self.exception("run_directory")
 
     def _child_folder(self, parent, child_name, must_create=False):
         """
@@ -429,9 +445,6 @@ class FecDataView(object):
         :raises OSError: if the directory existed ahead of time and creation
             was required by the user
         """
-        if self.__fec_data._status == Data_Status.MOCKED:
-            # Will be set to a temp dir during mock
-            return self.report_directory
         child = os.path.join(parent, child_name)
         if must_create:
             # Throws OSError or FileExistsError (a subclass of OSError) if the

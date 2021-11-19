@@ -13,10 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
+import datetime
 import logging
 import math
 import os
+import time
 from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.constants import (
@@ -78,6 +79,7 @@ class FecDataWriter(FecDataView):
 
     def __set_up_report_specifics(self):
         self.__create_reports_directory()
+        self.__create__timestamp_directory()
 
     def __create_reports_directory(self):
         default_report_file_path = get_config_str(
@@ -93,7 +95,18 @@ class FecDataWriter(FecDataView):
             self.__fec_data._report_directory = self._child_folder(
                 default_report_file_path, REPORTS_DIRNAME)
 
-
+    def __create__timestamp_directory(self):
+        while True:
+            try:
+                now = datetime.datetime.now()
+                timestamp = (
+                    f"{now.year:04}-{now.month:02}-{now.day:02}-{now.hour:02}"
+                    f"-{now.minute:02}-{now.second:02}-{now.microsecond:06}")
+                self.__fec_data._timestamp_directory = self._child_folder(
+                    self.report_directory, timestamp, must_create=True)
+                return
+            except OSError:
+                time.sleep(0.5)
 
     def set_app_id(self, app_id):
         """
