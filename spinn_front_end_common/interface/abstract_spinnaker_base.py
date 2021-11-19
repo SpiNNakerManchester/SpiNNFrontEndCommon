@@ -48,10 +48,12 @@ from pacman import __version__ as pacman_version
 from pacman.executor.injection_decorator import (
     clear_injectables, provide_injectables)
 from pacman.model.graphs.application import (
-    ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex)
+    ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex,
+    ApplicationFPGAVertex, ApplicationSpiNNakerLinkVertex)
 from pacman.model.graphs.machine import (
     MachineGraph, MachineGraphView, MachineVertex)
-from pacman.model.graphs import AbstractVirtual
+from pacman.model.graphs import (
+    AbstractVirtual, AbstractFPGA, AbstractSpiNNakerLink)
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.model.placements import Placements
 from pacman.model.resources import (
@@ -76,6 +78,8 @@ from pacman.operations.routing_info_allocator_algorithms.\
 from pacman.operations.routing_table_generators import (
     BasicRoutingTableGenerator)
 from pacman.operations.tag_allocator_algorithms import BasicTagAllocator
+from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
+
 
 from spinn_front_end_common import __version__ as fec_version
 from spinn_front_end_common.abstract_models import (
@@ -1012,7 +1016,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             self._build_graphs_for_usage()
             self._add_dependent_verts_and_edges_for_application_graph()
-            self._add_commands_to_command_sender()
 
             if get_config_bool("Buffers", "use_auto_pause_and_resume"):
                 self._plan_n_timesteps = get_config_int(
@@ -1120,33 +1123,77 @@ class AbstractSpinnakerBase(ConfigHandler):
         return False
 
     def _add_commands_to_command_sender(self):
-        command_sender = None
         vertices = self._application_graph.vertices
-        graph = self._application_graph
-        command_sender_vertex = CommandSender
+        is_app_graph = True
         if len(vertices) == 0:
             vertices = self._machine_graph.vertices
-            graph = self._machine_graph
-            command_sender_vertex = CommandSenderMachineVertex
+            is_app_graph = False
         for vertex in vertices:
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
-                # if there's no command sender yet, build one
-                if command_sender is None:
-                    command_sender = command_sender_vertex(
-                        "auto_added_command_sender", None)
-                    graph.add_vertex(command_sender)
+                constraints = []
+
+                # Decide if a constraint is needed
+                if isinstance(vertex, ApplicationFPGAVertex):
+                    fpga = vertex.outgoing_fpga_connection
+                    if fpga is not None:
+                        link_data = self._machine.get_fpga_link_with_id(
+                            fpga.fpga_id, fpga.fpga_link_id,
+                            fpga.board_address, fpga.chip_coords)
+                        constraints.append(ChipAndCoreConstraint(
+                            link_data.connected_chip_x,
+                            link_data.connected_chip_y))
+                elif isinstance(vertex, AbstractFPGA):
+                    link_data = self._machine.get_fpga_link_with_id(
+                            vertex.fpga_id, vertex.fpga_link_id,
+                            vertex.board_address, fpga.linked_chip_coordinates)
+                    constraints.append(ChipAndCoreConstraint(
+                        link_data.connected_chip_x,
+                        link_data.connected_chip_y))
+                elif isinstance(vertex, ApplicationSpiNNakerLinkVertex):
+                    link_data = self._machine.get_spinnaker_link_with_id(
+                        vertex.spinnaker_link_id, vertex.board_address)
+                    constraints.append(ChipAndCoreConstraint(
+                        link_data.connected_chip_x,
+                        link_data.connected_chip_y))
+                elif isinstance(vertex, AbstractSpiNNakerLink):
+                    link_data = self._machine.get_spinnaker_link_with_id(
+                        vertex.spinnaker_link_id, vertex.board_address)
+                    constraints.append(ChipAndCoreConstraint(
+                        link_data.connected_chip_x,
+                        link_data.connected_chip_y))
+
+                # Add a command sender
+                label = f"CommandSender for {vertex.label}"
+                command_sender_app = None
+                if is_app_graph:
+                    command_sender_app = CommandSender(label, constraints)
+                    self._application_graph.add_vertex(command_sender_app)
+                    app_edge = ApplicationEdge(command_sender_app, vertex)
+                    self._application_graph.add_edge(app_edge, "Commands")
+                    app_partition = self._application_graph.\
+                        get_outgoing_edge_partition_starting_at_vertex(
+                            vertex, "Commands")
+                    post_vertex = next(iter(
+                        vertex.splitter.get_out_going_vertices(
+                            app_edge, app_partition).keys()))
+                    command_sender = command_sender_app.machine_vertex
+                else:
+                    command_sender = CommandSenderMachineVertex(
+                        label, constraints)
+                    post_vertex = vertex
+                self._machine_graph.add_vertex(command_sender)
 
                 # allow the command sender to create key to partition map
                 command_sender.add_commands(
                     vertex.start_resume_commands,
                     vertex.pause_stop_commands,
-                    vertex.timed_commands, vertex)
+                    vertex.timed_commands, post_vertex)
 
-        # add the edges from the command sender to the dependent vertices
-        if command_sender is not None:
-            edges, partition_ids = command_sender.edges_and_partitions()
-            for edge, partition_id in zip(edges, partition_ids):
-                graph.add_edge(edge, partition_id)
+                # add the edges from the command sender to the dependent
+                # vertices
+                edges, partition_ids = command_sender.edges_and_partitions()
+                for edge, partition_id in zip(edges, partition_ids):
+                    self._machine_graph.add_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
         for vertex in self._application_graph.vertices:
@@ -2185,6 +2232,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         assert(self._machine)
         self._json_machine()
         self._execute_chip_id_allocator()
+        self._add_commands_to_command_sender()
         self._execute_insert_live_packet_gatherers_to_graphs()
         self._report_board_chip()
         self._execute_insert_chip_power_monitors()
