@@ -200,9 +200,9 @@ class FecDataWriter(FecDataView):
                 1.0, math.ceil(self.get_simulation_time_step_per_ms()))
             if time_scale_factor > 1.0:
                 logger.warning(
-                    "A timestep was entered that has forced spinnaker to "
-                     f"automatically slow the simulation down from real time "
-                    "by a factor of {time_scale_factor}.")
+                    f"A timestep was entered that has forced spinnaker to "
+                    f"automatically slow the simulation down from real time "
+                    f"by a factor of {time_scale_factor}.")
 
         if not isinstance(time_scale_factor, (int, float)):
             raise TypeError("app_id should be an int (or float)")

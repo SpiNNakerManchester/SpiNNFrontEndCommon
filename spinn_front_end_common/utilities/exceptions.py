@@ -95,12 +95,6 @@ class SimulatorShutdownException(SpinnFrontEndException):
         super().__init__(f"Requesting {data} is not valid after end")
 
 
-class SimulatorShutdownException(SpinnFrontEndException):
-    """
-    Raised when trying to get simulator after it has been shit down
-    """
-
-
 class SimulatorRunningException(SpinnFrontEndException):
     """
     Raised when trying to running get simulator that should not be running

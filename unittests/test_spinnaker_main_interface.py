@@ -16,13 +16,10 @@
 import os
 import sys
 import unittest
-from spinn_utilities.config_holder import get_config_int
-from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
-from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.utility_objs import ExecutableFinder
 
 
@@ -64,26 +61,6 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
         AbstractSpinnakerBase(ExecutableFinder())
-
-    def test_timings(self):
-
-        # Test defaults stay as in the configs
-        machine_time_step = get_config_int("Machine", "machine_time_step")
-        time_scale_factor = get_config_int("Machine", "time_scale_factor")
-        asb = AbstractSpinnakerBase(ExecutableFinder())
-        writer = FecDataWriter()
-        writer.set_up_timings(simulation_time_step_us=None, time_scale_factor=None)
-        assert machine_time_step == writer.simulation_time_step_us
-
-        # Test specified
-        writer.set_up_timings(simulation_time_step_us=200, time_scale_factor=10)
-        assert writer.simulation_time_step_us == 200
-        assert writer.simulation_time_step_ms == 0.2
-        assert writer.simulation_time_step_per_ms == 5.0
-        assert writer.time_scale_factor == 10
-
-        with self.assertRaises(ConfigurationException):
-            writer.set_up_timings(simulation_time_step_us=-20, time_scale_factor=10)
 
 
 if __name__ == "__main__":

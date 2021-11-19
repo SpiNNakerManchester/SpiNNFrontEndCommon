@@ -247,7 +247,7 @@ class ChipPowerMonitorMachineVertex(
         recording_time = \
             self._sampling_frequency * get_config_int(
                 "EnergyMonitor", "n_samples_per_recording_entry")
-        n_entries = math.floor(view.hardware_time_step_us/ recording_time)
+        n_entries = math.floor(view.hardware_time_step_us / recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
     def get_recorded_data(self, placement, buffer_manager):
