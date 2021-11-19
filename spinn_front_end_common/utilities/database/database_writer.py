@@ -260,7 +260,7 @@ class DatabaseWriter(SQLiteDB):
                     for edge in machine_graph.get_edges_starting_at_vertex(
                         vertex)))
 
-            if application_graph is not None:
+            if application_graph.n_vertices > 0:
                 cur.executemany(
                     """
                     INSERT INTO graph_mapper_vertex (
@@ -390,7 +390,7 @@ class DatabaseWriter(SQLiteDB):
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         """
-        if application_graph is not None and application_graph.n_vertices:
+        if application_graph.n_vertices:
             # We will be asking application vertices for key/atom mappings
             vertices_and_partitions = (
                 (partition.pre_vertex.app_vertex, partition)

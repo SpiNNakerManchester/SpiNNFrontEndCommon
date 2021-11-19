@@ -98,7 +98,7 @@ class LocalTDMABuilder(object):
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph or None
         """
-        if application_graph is None:
+        if application_graph.n_vertices == 0:
             return
 
         # get config params
