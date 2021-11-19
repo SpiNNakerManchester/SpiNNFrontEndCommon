@@ -1173,10 +1173,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                     app_partition = self._application_graph.\
                         get_outgoing_edge_partition_starting_at_vertex(
                             vertex, "Commands")
-                    post_vertex = next(iter(
-                        vertex.splitter.get_out_going_vertices(
-                            app_edge, app_partition).keys()))
                     command_sender = command_sender_app.machine_vertex
+                    post_vertex = next(iter(
+                        vertex.splitter.get_in_coming_vertices(
+                            app_edge, app_partition, command_sender).keys()))
                 else:
                     command_sender = CommandSenderMachineVertex(
                         label, constraints)
