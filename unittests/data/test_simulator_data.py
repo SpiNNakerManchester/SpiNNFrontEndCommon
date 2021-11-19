@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -21,6 +22,7 @@ from spinn_front_end_common.utilities.exceptions import (
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 
+from spinn_front_end_common.utilities.globals_variables import provenance_file_path
 
 class TestSimulatorData(unittest.TestCase):
 
@@ -168,6 +170,17 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(None, view.get_time_scale_factor())
         self.assertEqual(None, view.get_hardware_time_step_ms())
         self.assertEqual(None, view.get_hardware_time_step_us())
+
+    def test_directories_normal(self):
+        writer = FecDataWriter()
+        writer.setup()
+        self.assertTrue(os.path.exists(writer.report_directory))
+
+    def test_directories_mocked(self):
+        writer = FecDataWriter()
+        writer.mock()
+        dir = writer.report_directory
+        self.assertTrue(os.path.exists(dir))
 
     def test_get_n_calls_to_run(self):
         view = FecDataView()

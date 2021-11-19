@@ -13,6 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import errno
+import os
+import tempfile
 from .data_status import Data_Status
 
 
@@ -38,15 +41,18 @@ class _FecDataModel(object):
         "_app_id",
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
+        "_n_calls_to_run",
         "_provenance_file_path",
+        "_report_directory",
+        "_run_directory",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
         "_simulation_time_step_per_s",
         "_simulation_time_step_s",
         "_simulation_time_step_us",
-        "_n_calls_to_run",
-        "_report_default_directory",
+        "_timestamp_directory",
         "_time_scale_factor",
+        "_temporary_directory",
         # Data status mainly to raise best Exception
         "_status"
     ]
@@ -68,15 +74,18 @@ class _FecDataModel(object):
         self._app_id = None
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
+        self._n_calls_to_run = None
         self._provenance_file_path = None
         self._simulation_time_step_ms = None
         self._simulation_time_step_per_ms = None
         self._simulation_time_step_per_s = None
         self._simulation_time_step_s = None
         self._simulation_time_step_us = None
-        self._n_calls_to_run = None
-        self._report_default_directory = None
+        self._report_directory = None
+        self._run_directory = None
         self._time_scale_factor = None
+        self._timestamp_directory = None
+        self._temporary_directory = None
 
 
 class FecDataView(object):
@@ -379,20 +388,67 @@ class FecDataView(object):
         return self.__fec_data._n_calls_to_run is not None
 
     # Report directories
-    def get_report_default_directory(self):
-        return self.__fec_data._report_default_directory
+    # There are NO has or get methods for directories
+    # This allow directories to be created on the fly
+
+    def temporary_directory(self):
+        if self.__fec_data._temporary_directory is None:
+            self.__fec_data._temporary_directory = \
+                tempfile.TemporaryDirectory()
+        return self.__fec_data._temporary_directory.name
+
 
     @property
-    def report_default_directory(self):
-        if self.__fec_data._report_default_directory is None:
-            raise self.exception("report_default_directory")
-        return self.__fec_data._report_default_directory
+    def report_directory(self):
+        """
+        Returns path to existing reports directory
 
-    def has_report_default_directory(self):
-        return self.__fec_data._report_default_directory is not None
+        :rtpye: str
+        """
+        if self.__fec_data._report_directory is None:
+            if self.__fec_data._status == Data_Status.MOCKED:
+                return self.temporary_directory()
+            else:
+                raise self.exception("report_directory")
+        return self.__fec_data._report_directory
 
-    def get_provenance_file_path(self):
-        return self.__fec_data._provenance_file_path
+    def get_run_directory(self):
+        if self.__fec_data._report_directory is None:
+            raise self.exception("run_directory")
+
+    def _child_folder(self, parent, child_name, must_create=False):
+        """
+        :param str parent:
+        :param str child_name:
+        :param bool must_create:
+            If `True`, the directory named by `child_name` (but not necessarily
+            its parents) must be created by this call, and an exception will be
+            thrown if this fails.
+        :return: The fully qualified name of the child folder.
+        :rtype: str
+        :raises OSError: if the directory existed ahead of time and creation
+            was required by the user
+        """
+        if self.__fec_data._status == Data_Status.MOCKED:
+            # Will be set to a temp dir during mock
+            return self.report_directory
+        child = os.path.join(parent, child_name)
+        if must_create:
+            # Throws OSError or FileExistsError (a subclass of OSError) if the
+            # directory exists.
+            os.makedirs(child)
+        elif not os.path.exists(child):
+            self._make_dirs(child)
+        return child
+
+    @staticmethod
+    def _make_dirs(path):
+        # Workaround for Python 2/3 Compatibility (Python 3 raises on exists)
+        try:
+            os.makedirs(path)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
 
     @property
     def provenance_file_path(self):

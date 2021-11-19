@@ -13,11 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 import logging
 import math
 import os
-import tempfile
-from spinn_utilities.config_holder import get_config_int
+from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
@@ -27,6 +27,8 @@ from .fec_data_view import FecDataView, _FecDataModel
 
 logger = FormatAdapter(logging.getLogger(__name__))
 __temp_dir = None
+
+REPORTS_DIRNAME = "reports"
 
 
 class FecDataWriter(FecDataView):
@@ -54,7 +56,6 @@ class FecDataWriter(FecDataView):
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
         self.__fec_data._status = Data_Status.MOCKED
-        self.__set_up_report_mocked()
         self.set_app_id(6)
         self.set_up_timings(1000, 1)
 
@@ -75,24 +76,24 @@ class FecDataWriter(FecDataView):
     def finish_run(self):
         self.__fec_data._status = Data_Status.FINISHED
 
-    def __set_up_report_mocked(self):
-        """
-        Sets all the directories used to a Temporary Directory
-        """
-        temp_dir = tempfile.TemporaryDirectory()
-
-        self.__fec_data._report_default_directory = temp_dir
-        self.__fec_data._provenance_file_path = temp_dir
-
     def __set_up_report_specifics(self):
-        # This is a highly simplified example
-        report_simulation_top_directory = os.getcwd()
-        self.__fec_data._report_default_directory = os.path.join(
-            report_simulation_top_directory, f"run_{self.n_calls_to_run}")
-        logger.info(self.report_default_directory)
-        self.__fec_data._provenance_file_path = os.path.join(
-            self.__fec_data._report_default_directory,
-            "provenance_data")
+        self.__create_reports_directory()
+
+    def __create_reports_directory(self):
+        default_report_file_path = get_config_str(
+            "Reports", "default_report_file_path")
+        # determine common report folder
+        if default_report_file_path == "DEFAULT":
+            directory = os.getcwd()
+
+            # global reports folder
+            self.__fec_data._report_directory = self._child_folder(
+                directory, REPORTS_DIRNAME)
+        else:
+            self.__fec_data._report_directory = self._child_folder(
+                default_report_file_path, REPORTS_DIRNAME)
+
+
 
     def set_app_id(self, app_id):
         """
