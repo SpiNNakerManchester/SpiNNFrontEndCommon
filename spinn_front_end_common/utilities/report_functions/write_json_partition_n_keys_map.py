@@ -21,6 +21,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities import file_format_schemas
 from pacman.utilities.json_utils import partition_to_n_keys_map_to_json
 from jsonschema.exceptions import ValidationError
+from spinn_front_end_common.data import FecDataView
 
 N_KEYS_MAP_FILENAME = "n_keys_map.json"
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -30,12 +31,11 @@ class WriteJsonPartitionNKeysMap(object):
     """ Converter from MulticastRoutingTables to JSON.
     """
 
-    def __call__(self, partition_to_n_keys_map, json_folder):
+    def __call__(self, partition_to_n_keys_map):
         """ Runs the code to write the n_keys_map in JSON.
 
         :param AbstractMachinePartitionNKeysMap partition_to_n_keys_map:
             The number of keys needed for each partition.
-        :param str json_folder: the folder to which the JSON are being written
         :return: the name of the generated file
         :rtype: str
         """
@@ -43,22 +43,22 @@ class WriteJsonPartitionNKeysMap(object):
         progress = ProgressBar(3, "Converting to JSON partition n key map")
 
         return WriteJsonPartitionNKeysMap.write_json(
-            partition_to_n_keys_map, json_folder, progress)
+            partition_to_n_keys_map, progress)
 
     @staticmethod
-    def write_json(partition_to_n_keys_map, json_folder, progress=None):
+    def write_json(partition_to_n_keys_map, progress=None):
         """ Runs the code to write the machine in Java readable JSON.
 
         :param AbstractMachinePartitionNKeysMap partition_to_n_keys_map:
             The number of keys needed for each partition.
-        :param str json_folder: the folder to which the JSON are being written
         :param progress: Progress Bar if one used
         :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
         :return: the name of the generated file
         :rtype: str
         """
 
-        file_path = os.path.join(json_folder, N_KEYS_MAP_FILENAME)
+        file_path = os.path.join(
+            FecDataView().json_dir_path, N_KEYS_MAP_FILENAME)
         json_obj = partition_to_n_keys_map_to_json(partition_to_n_keys_map)
 
         if progress:

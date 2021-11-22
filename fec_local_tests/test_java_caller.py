@@ -23,5 +23,5 @@ from spinn_front_end_common.interface.java_caller import JavaCaller
 class TestJavaCaller(unittest.TestCase):
 
     def test_creation(self):
-        caller = JavaCaller("somepath", "java")
+        caller = JavaCaller("java")
         assert caller is not None

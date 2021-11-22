@@ -18,6 +18,7 @@ import os
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities import file_format_schemas
 from pacman.model.routing_tables.multicast_routing_tables import to_json
+from spinn_front_end_common.data import FecDataView
 
 ROUTING_TABLES_FILENAME = "routing_tables.json"
 
@@ -26,36 +27,33 @@ class WriteJsonRoutingTables(object):
     """ Converter from MulticastRoutingTables to JSON.
     """
 
-    def __call__(self, router_tables, json_folder):
+    def __call__(self, router_tables):
         """ Runs the code to write the machine in Java readable JSON.
 
         :param MulticastRoutingTables router_tables:
             Routing Tables to convert
-        :param str json_folder: the folder to which the JSON are being written
         :return: the name of the generated file
         :rtype: str
         """
         # Steps are tojson, validate and writefile
         progress = ProgressBar(3, "Converting to JSON RouterTables")
 
-        return WriteJsonRoutingTables.do_convert(
-            router_tables, json_folder, progress)
+        return WriteJsonRoutingTables.do_convert(router_tables, progress)
 
     @staticmethod
-    def do_convert(router_tables, json_folder, progress=None):
+    def do_convert(router_tables, progress=None):
         """ Runs the code to write the machine in Java readable JSON.
 
         :param MulticastRoutingTables router_tables:
             Routing Tables to convert
-        :param str json_folder:
-            the folder to which the JSON files are being written
         :param progress: The progress bar, if any
         :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
         :return: the name of the generated file
         :rtype: str
         """
 
-        file_path = os.path.join(json_folder, ROUTING_TABLES_FILENAME)
+        file_path = os.path.join(
+            FecDataView().json_dir_path, ROUTING_TABLES_FILENAME)
         json_obj = to_json(router_tables)
 
         if progress:

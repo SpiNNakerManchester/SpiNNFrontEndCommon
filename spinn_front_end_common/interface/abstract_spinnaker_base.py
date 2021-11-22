@@ -796,8 +796,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             java_properties = get_config_str(
                 "Java", "java_properties")
             self._java_caller = JavaCaller(
-                self._data_writer.json_dir_path, java_call, java_spinnaker_path,
-                java_properties, java_jar_path)
+                java_call, java_spinnaker_path, java_properties, java_jar_path)
 
     def __signal_handler(self, _signal, _frame):
         """ Handles closing down of script via keyboard interrupt
@@ -1410,7 +1409,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false("Reports", "write_json_machine"):
                 return
             writer = WriteJsonMachine()
-            writer(self._machine, self._data_writer.json_dir_path)
+            writer(self._machine)
             # TODO output ignored as never used
 
     def _report_network_specification(self):
@@ -1658,7 +1657,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "write_json_partition_n_keys_map"):
                 return
             writer = WriteJsonPartitionNKeysMap()
-            writer(self._machine_partition_n_keys_map, self._data_writer.json_dir_path)
+            writer(self._machine_partition_n_keys_map)
             # Output ignored as never used
 
     def _execute_connective_based_placer(self):
@@ -1853,7 +1852,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "write_json_placements"):
                 return
             writer = WriteJsonPlacements()
-            writer(self._placements, self._data_writer.json_dir_path)
+            writer(self._placements)
             # Output ignored as never used
 
     def _execute_ner_route_traffic_aware(self):
@@ -2081,7 +2080,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "write_json_routing_tables"):
                 return
             writer = WriteJsonRoutingTables()
-            writer(self._router_tables, self._data_writer.json_dir_path)
+            writer(self._router_tables)
             # Output ignored as never used
 
     def _report_router_collision_potential(self):

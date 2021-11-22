@@ -21,6 +21,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities import file_format_schemas
 from pacman.utilities.json_utils import placements_to_json
 from jsonschema.exceptions import ValidationError
+from spinn_front_end_common.data import FecDataView
 
 PLACEMENTS_FILENAME = "placements.json"
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -30,33 +31,31 @@ class WriteJsonPlacements(object):
     """ Converter from Placements to JSON.
     """
 
-    def __call__(self, placements, json_folder):
+    def __call__(self, placements):
         """ Runs the code to write the placements in JSON.
 
         :param Placements placements: The placements to write.
-        :param str json_folder: The folder to which the JSON are being written.
         :return: The name of the generated file.
         :rtype: str
         """
         # Steps are tojson, validate and writefile
         progress = ProgressBar(3, "Converting to JSON Placements")
 
-        return WriteJsonPlacements.write_json(
-            placements, json_folder, progress)
+        return WriteJsonPlacements.write_json(placements, progress)
 
     @staticmethod
-    def write_json(placements, json_folder, progress=None):
+    def write_json(placements, progress=None):
         """ Runs the code to write the placements in Java readable JSON.
 
         :param Placements placements: The placements to write
-        :param str json_folder: the folder to which the JSON are being written
         :param progress: Progress Bar if one used
         :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
         :return: the name of the generated file
         :rtype: str
         """
 
-        file_path = os.path.join(json_folder, PLACEMENTS_FILENAME)
+        file_path = os.path.join(
+            FecDataView().json_dir_path, PLACEMENTS_FILENAME)
         json_obj = placements_to_json(placements)
 
         if progress:

@@ -36,28 +36,23 @@ class TestJavaCaller(unittest.TestCase):
         cls.mock_jar = os.path.join(cls.mock, "spinnaker-exe.jar")
 
     def test_creation_with_jar_path(self):
-        caller = JavaCaller(
-            "somepath", "java", java_spinnaker_path="missing",
+        caller = JavaCaller("java", java_spinnaker_path="missing",
             java_jar_path=self.mock_jar)
         assert caller is not None
 
     def test_creation_java_spinnaker_path(self):
-        caller = JavaCaller(
-            "somepath", "java", java_spinnaker_path=self.mock)
+        caller = JavaCaller("java", java_spinnaker_path=self.mock)
         assert caller is not None
 
     def test_creation_different(self):
         with self.assertRaises(ConfigurationException):
-            JavaCaller(
-                "somepath", "java", java_spinnaker_path=self.mock,
+            JavaCaller("java", java_spinnaker_path=self.mock,
                 java_jar_path=self.mock_jar)
 
     def test_creation_wrong_java_spinnaker_path(self):
         with self.assertRaises(ConfigurationException):
-            JavaCaller(
-                "somepath", "java", java_spinnaker_path=self.interface)
+            JavaCaller("java", java_spinnaker_path=self.interface)
 
     def test_creation_bad_java_spinnaker_path(self):
         with self.assertRaises(ConfigurationException):
-            JavaCaller(
-                "somepath", "java", java_spinnaker_path=self.mock_jar)
+            JavaCaller("java", java_spinnaker_path=self.mock_jar)

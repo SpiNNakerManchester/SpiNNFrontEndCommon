@@ -20,6 +20,7 @@ import os
 import subprocess
 from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
     import WriteJsonMachine
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -49,8 +50,6 @@ class JavaCaller(object):
         "_java_call",
         # The location of the java jar file
         "_jar_file",
-        # the folder to write the any json files into
-        "_json_folder",
         # The machine
         "_machine",
         # The location where the machine json is written
@@ -69,11 +68,10 @@ class JavaCaller(object):
         "_java_properties"
     ]
 
-    def __init__(self, json_folder, java_call, java_spinnaker_path=None,
+    def __init__(self, java_call, java_spinnaker_path=None,
                  java_properties=None, java_jar_path=None):
         """ Creates a java caller and checks the user/config parameters.
 
-        :param str json_folder: The location where the machine JSON is written.
         :param str java_call:
             Call to start java. Including the path if required.
         :param str java_spinnaker_path:
@@ -91,7 +89,6 @@ class JavaCaller(object):
         """
         self._recording = None
         self._report_folder = report_default_directory()
-        self._json_folder = json_folder
 
         self._java_call = java_call
         result = subprocess.call([self._java_call, '-version'])
@@ -209,7 +206,7 @@ class JavaCaller(object):
         """
         if self._machine_json_path is None:
             self._machine_json_path = WriteJsonMachine.write_json(
-                self._machine, self._json_folder)
+                self._machine)
         return self._machine_json_path
 
     def set_report_folder(self, report_folder):
@@ -239,7 +236,8 @@ class JavaCaller(object):
             The Placements Object
         :param ~spinnman.transceiver.Transceiver transceiver: The Transceiver
         """
-        path = os.path.join(self._json_folder, "java_placements.json")
+        path = os.path.join(
+            FecDataView().json_dir_path, "java_placements.json")
         self._recording = False
         if self._gatherer_iptags is None:
             self._placement_json = self._write_placements(
