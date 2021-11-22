@@ -42,15 +42,14 @@ class _FecDataModel(object):
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
         "_n_calls_to_run",
-        "_provenance_file_path",
-        "_report_directory",
-        "_run_directory",
+        "_report_dir_path",
+        "_run_dir_path",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
         "_simulation_time_step_per_s",
         "_simulation_time_step_s",
         "_simulation_time_step_us",
-        "_timestamp_directory",
+        "_timestamp_dir_path",
         "_time_scale_factor",
         "_temporary_directory",
         # Data status mainly to raise best Exception
@@ -75,17 +74,22 @@ class _FecDataModel(object):
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
         self._n_calls_to_run = None
-        self._provenance_file_path = None
         self._simulation_time_step_ms = None
         self._simulation_time_step_per_ms = None
         self._simulation_time_step_per_s = None
         self._simulation_time_step_s = None
         self._simulation_time_step_us = None
-        self._report_directory = None
-        self._run_directory = None
+        self._report_dir_path = None
         self._time_scale_factor = None
-        self._timestamp_directory = None
         self._temporary_directory = None
+        self._hard_reset()
+
+    def _hard_reset(self):
+        """
+        Clears out all data
+        """
+        self._run_dir_path = None
+        self._timestamp_dir_path = None
 
 
 class FecDataView(object):
@@ -391,7 +395,7 @@ class FecDataView(object):
     # There are NO has or get methods for directories
     # This allow directories to be created on the fly
 
-    def temporary_directory(self):
+    def temporary_dir_path(self):
         """
         The path to an existing temp directory
 
@@ -405,32 +409,140 @@ class FecDataView(object):
 
 
     @property
-    def report_directory(self):
+    def report_dir_path(self):
         """
         Returns path to existing reports directory
 
+        ..note: In unittest mode this returns a tempdir
+        shared by all path methods
+
         :rtpye: str
+        :raises SpinnFrontEndException:
+            If the simulation_time_step is currently unavailable
         """
-        if self.__fec_data._report_directory is None:
+        if self.__fec_data._report_dir_path is None:
             if self.__fec_data._status == Data_Status.MOCKED:
-                return self.temporary_directory()
-            raise self.exception("report_directory")
-        return self.__fec_data._report_directory
+                return self.temporary_dir_path()
+            raise self.exception("report_dir_path")
+        return self.__fec_data._report_dir_path
 
     @property
-    def run_directory(self):
-        if self.__fec_data._run_directory:
-            return self.__fec_data._run_directory
+    def run_dir_path(self):
+        """
+        Returns the path to the directory that holds all the reports for run
 
-        if self.__fec_data._timestamp_directory:
-            self.__fec_data._run_directory = self._child_folder(
-                self.__fec_data._timestamp_directory,
+        This will be the path used by the last run call or to be used by
+        the next run if it has not yet been called.
+
+        ..note: In unittest mode this returns a tempdir
+        shared by all path methods
+
+        :rtpye: str
+        :raises SpinnFrontEndException:
+            If the simulation_time_step is currently unavailable
+        """
+        if self.__fec_data._run_dir_path:
+            return self.__fec_data._run_dir_path
+
+        if self.__fec_data._timestamp_dir_path:
+            self.__fec_data._run_dir_path = self._child_folder(
+                self.__fec_data._timestamp_dir_path,
                 f"run_{self.n_calls_to_run}")
-            return self.__fec_data._run_directory
+            return self.__fec_data._run_dir_path
 
         if self.__fec_data._status == Data_Status.MOCKED:
-            return self.temporary_directory()
-        raise self.exception("run_directory")
+            return self.temporary_dir_path()
+        raise self.exception("run_dir_path")
+
+    @property
+    def json_dir_path(self):
+        """
+        Returns the path to the directory that holds all json files
+
+        This will be the path used by the last run call or to be used by
+        the next run if it has not yet been called.
+
+        ..note: In unittest mode this returns a tempdir
+        shared by all path methods
+
+        :rtpye: str
+        :raises SpinnFrontEndException:
+            If the simulation_time_step is currently unavailable
+        """
+        if self.__fec_data._timestamp_dir_path:
+            return self._child_folder(self.run_dir_path, "json_files")
+
+        if self.__fec_data._status == Data_Status.MOCKED:
+            return self.temporary_dir_path()
+        raise self.exception("json_dir_path")
+
+    @property
+    def provenance_dir_path(self):
+        """
+        Returns the path to the directory that holds all provenance files
+
+        This will be the path used by the last run call or to be used by
+        the next run if it has not yet been called.
+
+        ..note: In unittest mode this returns a tempdir
+        shared by all path methods
+
+        :rtpye: str
+        :raises SpinnFrontEndException:
+            If the simulation_time_step is currently unavailable
+        """
+        if self.__fec_data._timestamp_dir_path:
+            return self._child_folder(self.run_dir_path, "provenance_data")
+
+        if self.__fec_data._status == Data_Status.MOCKED:
+            return self.temporary_dir_path()
+        raise self.exception("provenance_dir_path")
+
+    @property
+    def app_provenance_dir_path(self):
+        """
+        Returns the path to the directory that holds all app provenance files
+
+        This will be the path used by the last run call or to be used by
+        the next run if it has not yet been called.
+
+        ..note: In unittest mode this returns a tempdir
+        shared by all path methods
+
+        :rtpye: str
+        :raises SimulatorNotSetupException:
+            If the simulator has not been setup
+        """
+        if self.__fec_data._timestamp_dir_path:
+            return self._child_folder(
+                self.provenance_dir_path, "app_provenance_data")
+
+        if self.__fec_data._status == Data_Status.MOCKED:
+            return self.temporary_dir_path()
+        raise self.exception("app_provenance_dir_path")
+
+    @property
+    def system_provenance_dir_path(self):
+        """
+        Returns the path to the directory that holds all provenance files
+
+        This will be the path used by the last run call or to be used by
+        the next run if it has not yet been called.
+
+        ..note: In unittest mode this returns a tempdir
+        shared by all path methods
+
+        :rtpye: str
+        :raises SpinnFrontEndException:
+            If the simulation_time_step is currently unavailable
+        """
+        if self.__fec_data._timestamp_dir_path:
+            return self._child_folder(
+                self.provenance_dir_path, "system_provenance_data")
+
+        if self.__fec_data._status == Data_Status.MOCKED:
+            return self.temporary_dir_path()
+        raise self.exception("system_provenance_dir_path")
 
     def _child_folder(self, parent, child_name, must_create=False):
         """
@@ -462,15 +574,6 @@ class FecDataView(object):
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
-
-    @property
-    def provenance_file_path(self):
-        if self.__fec_data._provenance_file_path is None:
-            raise self.exception("provenance_file_path")
-        return self.__fec_data._provenance_file_path
-
-    def has_provenance_file_path(self):
-        return self.__fec_data._provenance_file_path is not None
 
     # Stuff to support inject_items
 

@@ -77,6 +77,11 @@ class FecDataWriter(FecDataView):
     def finish_run(self):
         self.__fec_data._status = Data_Status.FINISHED
 
+    def hard_reset(self):
+        self.__fec_data._hard_reset()
+        self.__fec_data._status = Data_Status.HARD_RESET
+        self.__create__timestamp_directory()
+
     def __set_up_report_specifics(self):
         self.__create_reports_directory()
         self.__create__timestamp_directory()
@@ -89,10 +94,10 @@ class FecDataWriter(FecDataView):
             directory = os.getcwd()
 
             # global reports folder
-            self.__fec_data._report_directory = self._child_folder(
+            self.__fec_data._report_dir_path = self._child_folder(
                 directory, REPORTS_DIRNAME)
         else:
-            self.__fec_data._report_directory = self._child_folder(
+            self.__fec_data._report_dir_path = self._child_folder(
                 default_report_file_path, REPORTS_DIRNAME)
 
     def __create__timestamp_directory(self):
@@ -102,8 +107,8 @@ class FecDataWriter(FecDataView):
                 timestamp = (
                     f"{now.year:04}-{now.month:02}-{now.day:02}-{now.hour:02}"
                     f"-{now.minute:02}-{now.second:02}-{now.microsecond:06}")
-                self.__fec_data._timestamp_directory = self._child_folder(
-                    self.report_directory, timestamp, must_create=True)
+                self.__fec_data._timestamp_dir_path = self._child_folder(
+                    self.report_dir_path, timestamp, must_create=True)
                 return
             except OSError:
                 time.sleep(0.5)

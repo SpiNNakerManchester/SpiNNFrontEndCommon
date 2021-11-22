@@ -22,18 +22,13 @@ from spinn_front_end_common.utilities.exceptions import (
 class Data_Status(Enum):
     """ Different states the Data can be in.
     """
-    NOT_SETUP = (
-        0, SimulatorNotSetupException)
-    MOCKED = (
-        1, SimulatorDataNotMocked)
-    SETUP = (
-        2, SimulatorDataNotYetAvialable)
-    IN_RUN = (
-        3, SimulatorDataNotYetAvialable)
-    FINISHED = (
-        4, SimulatorDataNotYetAvialable)
-    SHUTDOWN = (
-        5, SimulatorShutdownException)
+    NOT_SETUP = (0, SimulatorNotSetupException)
+    MOCKED = (1, SimulatorDataNotMocked)
+    SETUP = (2, SimulatorDataNotYetAvialable)
+    HARD_RESET = (3, SimulatorDataNotYetAvialable)
+    IN_RUN = (4, SimulatorDataNotYetAvialable)
+    FINISHED = (5, SimulatorDataNotYetAvialable)
+    SHUTDOWN = (6, SimulatorShutdownException)
 
     def __new__(cls, value, exception):
         # pylint: disable=protected-access
