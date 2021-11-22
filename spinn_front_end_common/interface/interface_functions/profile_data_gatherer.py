@@ -15,9 +15,8 @@
 
 import os
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.profiling import AbstractHasProfileData
-from spinn_front_end_common.utilities.globals_variables import (
-    app_provenance_file_path)
 
 
 class ProfileDataGatherer(object):
@@ -38,7 +37,7 @@ class ProfileDataGatherer(object):
 
         progress = ProgressBar(
             placements.n_placements, "Getting profile data")
-        provenance_file_path = app_provenance_file_path()
+        provenance_file_path = FecDataView.app_provenance_dir_path
 
         # retrieve provenance data from any cores that provide data
         for placement in progress.over(placements.placements):

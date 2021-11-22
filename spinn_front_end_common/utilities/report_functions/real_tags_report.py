@@ -14,8 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
+from spinn_front_end_common.data import FecDataView
 
 _REPORT_FILENAME = "tags_on_machine.txt"
 
@@ -29,7 +28,7 @@ class TagsFromMachineReport(object):
         :param str report_default_directory:
         :param ~spinnman.transceiver.Transceiver transceiver:
         """
-        filename = os.path.join(report_default_directory(), _REPORT_FILENAME)
+        filename = os.path.join(FecDataView().run_dir_path, _REPORT_FILENAME)
         tags = self._get_tags(transceiver)
         with open(filename, "w") as f:
             f.write("Tags actually read off the machine\n")

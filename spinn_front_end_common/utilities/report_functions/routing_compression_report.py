@@ -20,9 +20,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from pacman.operations.router_compressors.routing_compression_checker import (
     codify_table, compare_route)
 from pacman.utilities.algorithm_utilities.routes_format import format_route
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
-
+from spinn_front_end_common.data import FecDataView
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
@@ -38,7 +36,7 @@ def generate_routing_compression_checker_report(
     :rtype: None
     """
     file_name = os.path.join(
-        report_default_directory(), "routing_compression_checker_report.rpt")
+        FecDataView().run_dir_path, "routing_compression_checker_report.rpt")
 
     try:
         with open(file_name, "w") as f:

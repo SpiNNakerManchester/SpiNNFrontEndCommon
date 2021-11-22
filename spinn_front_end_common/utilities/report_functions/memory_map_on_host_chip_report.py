@@ -19,9 +19,8 @@ import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from data_specification.constants import MAX_MEM_REGIONS
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -43,7 +42,7 @@ class MemoryMapOnHostChipReport(object):
             the spinnMan instance
         """
         directory_name = os.path.join(
-            report_default_directory(), MEM_MAP_SUBDIR_NAME)
+            FecDataView().run_dir_path, MEM_MAP_SUBDIR_NAME)
         if not os.path.exists(directory_name):
             os.makedirs(directory_name)
 

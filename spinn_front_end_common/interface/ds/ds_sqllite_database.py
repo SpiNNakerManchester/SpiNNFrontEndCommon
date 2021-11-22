@@ -17,8 +17,7 @@ import logging
 import os
 import sqlite3
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.utilities.utility_objs import DataWritten
 
@@ -42,7 +41,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :type init: bool or None
         """
         self._machine = machine
-        database_file = os.path.join(report_default_directory(), DB_NAME)
+        database_file = os.path.join(FecDataView().run_dir_path, DB_NAME)
 
         if init is None:
             init = not os.path.exists(database_file)

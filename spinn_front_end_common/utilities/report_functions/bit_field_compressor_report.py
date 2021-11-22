@@ -19,9 +19,8 @@ import sys
 from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 from .bit_field_summary import BitFieldSummary
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.interface.provenance import ProvenanceReader
@@ -57,7 +56,7 @@ class BitFieldCompressorReport(object):
         :return: a summary, or `None` if the report file can't be written
         :rtype: BitFieldSummary
         """
-        file_name = os.path.join(report_default_directory(), _FILE_NAME)
+        file_name = os.path.join(FecDataView.run_dir_path, _FILE_NAME)
         try:
             with open(file_name, "w") as f:
                 return self._write_report(f, machine_graph, placements)

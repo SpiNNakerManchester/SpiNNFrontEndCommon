@@ -21,8 +21,6 @@ from spinn_front_end_common.interface.provenance import (
     APPLICATION_RUNNER, LOADING, ProvenanceReader)
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 from spinn_front_end_common.interface.interface_functions import (
     ComputeEnergyUsed)
 from spinn_machine.machine import Machine
@@ -69,7 +67,7 @@ class EnergyReport(object):
             logger.info("Skipping Energy report as no buffer_manager set")
             return
 
-        report_dir = report_default_directory()
+        report_dir = FecDataView.run_dir_path
         # detailed report path
         detailed_report = os.path.join(report_dir, self._DETAILED_FILENAME)
 

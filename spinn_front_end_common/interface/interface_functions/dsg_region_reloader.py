@@ -23,10 +23,9 @@ from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset, get_data_spec_and_file_writer_filename)
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     generate_unique_folder_name, n_word_struct)
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 
 
 class DSGRegionReloader(object):
@@ -49,8 +48,9 @@ class DSGRegionReloader(object):
         self._host = hostname
 
         # build file paths for reloaded stuff
+        run_dir_path = FecDataView().run_dir_path
         app_data_dir = generate_unique_folder_name(
-            report_default_directory(), "reloaded_data_regions", "")
+            run_dir_path, "reloaded_data_regions", "")
         if not os.path.exists(app_data_dir):
             os.makedirs(app_data_dir)
         self._data_dir = app_data_dir
@@ -58,7 +58,7 @@ class DSGRegionReloader(object):
         report_dir = None
         if get_config_bool("Reports", "write_text_specs"):
             report_dir = generate_unique_folder_name(
-                report_default_directory(), "reloaded_data_regions", "")
+                run_dir_path, "reloaded_data_regions", "")
             if not os.path.exists(report_dir):
                 os.makedirs(report_dir)
 

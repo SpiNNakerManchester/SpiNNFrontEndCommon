@@ -17,8 +17,7 @@ import logging
 import os.path
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs.application import ApplicationVertex
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
+from spinn_front_end_common.data import FecDataView
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -34,7 +33,7 @@ class NetworkSpecification(object):
         :param ApplicationGraph graph: the graph generated from the tools
         :rtype: None
         """
-        filename = os.path.join(report_default_directory(), self._FILENAME)
+        filename = os.path.join(FecDataView().run_dir_path, self._FILENAME)
         try:
             with open(filename, "w") as f:
                 f.write("*** Vertices:\n")

@@ -22,8 +22,6 @@ from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesKeyToAtomMapping,
     AbstractSupportsDatabaseInjection)
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 from pacman.model.graphs.machine import MulticastEdgePartition
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -53,7 +51,7 @@ class DatabaseWriter(SQLiteDB):
     ]
 
     def __init__(self):
-        self._database_path = os.path.join(report_default_directory(), DB_NAME)
+        self._database_path = os.path.join(FecDataView.run_dir_path, DB_NAME)
         init_sql_path = os.path.join(os.path.dirname(__file__), INIT_SQL)
 
         # delete any old database

@@ -15,8 +15,7 @@
 
 import os
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
+from spinn_front_end_common.data import FecDataView
 
 
 class BoardChipReport(object):
@@ -35,7 +34,7 @@ class BoardChipReport(object):
 
         # create file path
         directory_name = os.path.join(
-            report_default_directory(), self.AREA_CODE_REPORT_NAME)
+            FecDataView().run_dir_path, self.AREA_CODE_REPORT_NAME)
 
         # create the progress bar for end users
         progress_bar = ProgressBar(

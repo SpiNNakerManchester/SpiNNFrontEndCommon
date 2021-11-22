@@ -31,14 +31,13 @@ from pacman.model.routing_tables import (
 from pacman.utilities.algorithm_utilities.routes_format import format_route
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsBitFieldRoutingCompression)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD, BYTES_PER_3_WORDS)
 from spinn_front_end_common.utilities.report_functions.\
     bit_field_compressor_report import (
         generate_provenance_item)
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 from pacman.operations.router_compressors import PairCompressor
 
 
@@ -253,7 +252,7 @@ class HostBasedBitFieldRouterCompressor(object):
         :rtype: str
         """
         report_folder_path = os.path.join(
-            report_default_directory(), self._REPORT_FOLDER_NAME)
+            FecDataView().run_dir_path, self._REPORT_FOLDER_NAME)
         if not os.path.exists(report_folder_path):
             os.mkdir(report_folder_path)
         return report_folder_path

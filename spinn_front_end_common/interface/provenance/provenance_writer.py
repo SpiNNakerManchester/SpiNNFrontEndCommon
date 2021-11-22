@@ -18,7 +18,7 @@ import os
 import re
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities import globals_variables
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
@@ -59,7 +59,7 @@ class ProvenanceWriter(SQLiteDB):
         """
         if database_file is None and not memory:
             database_file = os.path.join(
-                globals_variables.provenance_file_path(), PROVENANCE_DB)
+                FecDataView().provenance_dir_path, PROVENANCE_DB)
         self._database_file = database_file
         super().__init__(database_file, ddl_file=_DDL_FILE)
 

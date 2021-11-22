@@ -23,8 +23,7 @@ from pacman import exceptions
 from pacman.model.graphs import AbstractSpiNNakerLink, AbstractFPGA
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.utilities.algorithm_utilities.routes_format import format_route
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
+from spinn_front_end_common.data import FecDataView
 from .router_summary import RouterSummary
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -57,7 +56,7 @@ def tag_allocator_report(tag_infos):
     :rtype: None
     """
 
-    file_name = os.path.join(report_default_directory(), _TAGS_FILENAME)
+    file_name = os.path.join(FecDataView().run_dir_path, _TAGS_FILENAME)
     try:
         with open(file_name, "w") as f:
             progress = ProgressBar(
@@ -117,7 +116,7 @@ def router_summary_report(routing_tables,  hostname, machine):
     :rtype: RouterSummary
     """
     file_name = os.path.join(
-        report_default_directory(), _ROUTING_SUMMARY_FILENAME)
+        FecDataView().run_dir_path, _ROUTING_SUMMARY_FILENAME)
     progress = ProgressBar(machine.n_chips,
                            "Generating Routing summary report")
     return _do_router_summary_report(
@@ -134,7 +133,7 @@ def router_compressed_summary_report(routing_tables, hostname, machine):
     :rtype: RouterSummary
     """
     file_name = os.path.join(
-        report_default_directory(), _COMPRESSED_ROUTING_SUMMARY_FILENAME)
+        FecDataView().run_dir_path, _COMPRESSED_ROUTING_SUMMARY_FILENAME)
     progress = ProgressBar(machine.n_chips,
                            "Generating Routing summary report")
     return _do_router_summary_report(
@@ -216,7 +215,7 @@ def router_report_from_paths(
     :param ~spinn_machine.Machine machine: The python machine object.
     :rtype: None
     """
-    file_name = os.path.join(report_default_directory(), _ROUTING_FILENAME)
+    file_name = os.path.join(FecDataView().run_dir_path, _ROUTING_FILENAME)
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
@@ -279,7 +278,7 @@ def partitioner_report(hostname, graph):
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
     file_name = os.path.join(
-        report_default_directory(), _PARTITIONING_FILENAME)
+        FecDataView().run_dir_path, _PARTITIONING_FILENAME)
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
@@ -335,7 +334,7 @@ def placement_report_with_application_graph_by_vertex(
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
     file_name = os.path.join(
-        report_default_directory(), _PLACEMENT_VTX_GRAPH_FILENAME)
+        FecDataView().run_dir_path, _PLACEMENT_VTX_GRAPH_FILENAME)
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
@@ -397,7 +396,7 @@ def placement_report_without_application_graph_by_vertex(
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
     file_name = os.path.join(
-        report_default_directory(), _PLACEMENT_VTX_SIMPLE_FILENAME)
+        FecDataView().run_dir_path, _PLACEMENT_VTX_SIMPLE_FILENAME)
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
@@ -445,7 +444,7 @@ def placement_report_with_application_graph_by_core(
     # Cycle through all chips and by all cores within each chip.
     # For each core, display what is held on it.
     file_name = os.path.join(
-        report_default_directory(), _PLACEMENT_CORE_GRAPH_FILENAME)
+        FecDataView().run_dir_path, _PLACEMENT_CORE_GRAPH_FILENAME)
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
@@ -509,7 +508,7 @@ def placement_report_without_application_graph_by_core(
     # Cycle through all chips and by all cores within each chip.
     # For each core, display what is held on it.
     file_name = os.path.join(
-        report_default_directory(), _PLACEMENT_CORE_SIMPLE_FILENAME)
+        FecDataView().run_dir_path, _PLACEMENT_CORE_SIMPLE_FILENAME)
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
@@ -566,7 +565,7 @@ def sdram_usage_report_per_chip(
     :rtype: None
     """
 
-    file_name = os.path.join(report_default_directory(), _SDRAM_FILENAME)
+    file_name = os.path.join(FecDataView().run_dir_path, _SDRAM_FILENAME)
     time_date_string = time.strftime("%c")
     progress = ProgressBar((len(placements) * 2 + machine.n_chips * 2),
                            "Generating SDRAM usage report")
@@ -646,7 +645,7 @@ def routing_info_report(machine_graph, routing_infos):
     :param MachineGraph machine_graph:
     :param RoutingInfo routing_infos:
     """
-    file_name = os.path.join(report_default_directory(), _VIRTKEY_FILENAME)
+    file_name = os.path.join(FecDataView().run_dir_path, _VIRTKEY_FILENAME)
     try:
         with open(file_name, "w") as f:
             progress = ProgressBar(machine_graph.n_outgoing_edge_partitions,
@@ -686,7 +685,7 @@ def router_report_from_router_tables(routing_tables):
     """
 
     top_level_folder = os.path.join(
-        report_default_directory(), _ROUTING_TABLE_DIR)
+        FecDataView().run_dir_path, _ROUTING_TABLE_DIR)
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
     progress = ProgressBar(routing_tables.routing_tables,
@@ -704,7 +703,7 @@ def router_report_from_compressed_router_tables(routing_tables):
     """
 
     top_level_folder = os.path.join(
-        report_default_directory(), _C_ROUTING_TABLE_DIR)
+        FecDataView().run_dir_path, _C_ROUTING_TABLE_DIR)
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
     progress = ProgressBar(routing_tables.routing_tables,
@@ -772,7 +771,7 @@ def generate_comparison_router_report(
         the compressed routing tables
     :rtype: None
     """
-    file_name = os.path.join(report_default_directory(), _COMPARED_FILENAME)
+    file_name = os.path.join(FecDataView().run_dir_path, _COMPARED_FILENAME)
     try:
         with open(file_name, "w") as f:
             progress = ProgressBar(

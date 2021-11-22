@@ -22,11 +22,10 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.core_subsets import CoreSubsets
 from spinnman.model.io_buffer import IOBuffer
 from spinn_utilities.config_holder import get_config_str
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_string_into_chip_and_core_subset)
-from spinn_front_end_common.utilities.globals_variables import (
-    app_provenance_file_path, system_provenance_file_path)
 
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -69,8 +68,9 @@ class IOBufExtractor(object):
         self._recovery_mode = bool(recovery_mode)
         self.__suppress_progress = bool(suppress_progress)
 
-        self.__app_path = app_provenance_file_path()
-        self.__sys_path = system_provenance_file_path()
+        view = FecDataView()
+        self.__app_path = view.app_provenance_dir_path
+        self.__sys_path = view.system_provenance_dir_path
         self.__transceiver = transceiver
         self.__from_cores = get_config_str(
             "Reports", "extract_iobuf_from_cores")

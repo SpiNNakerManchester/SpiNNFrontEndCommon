@@ -15,8 +15,7 @@
 
 import os
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
+from spinn_front_end_common.data import FecDataView
 
 
 class FixedRouteFromMachineReport(object):
@@ -31,7 +30,7 @@ class FixedRouteFromMachineReport(object):
         :param int app_id: the application ID the fixed routes were loaded with
         """
         file_name = os.path.join(
-            report_default_directory(), "fixed_route_routers")
+            FecDataView().run_dir_path, "fixed_route_routers")
 
         with open(file_name, "w") as output:
             self._write_fixed_routers(output, transceiver, machine, app_id)

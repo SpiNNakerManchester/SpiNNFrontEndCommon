@@ -137,7 +137,7 @@ from spinn_front_end_common.utilities.report_functions import (
     RoutingTableFromMachineReport, TagsFromMachineReport,
     WriteJsonMachine, WriteJsonPartitionNKeysMap, WriteJsonPlacements,
     WriteJsonRoutingTables)
-from spinn_front_end_common.utilities import IOBufExtractor
+from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType)
 from spinn_front_end_common.utility_models import (

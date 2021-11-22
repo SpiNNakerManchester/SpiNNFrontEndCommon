@@ -20,11 +20,10 @@ from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     ChipIOBufExtractor)
-from spinn_front_end_common.utilities.globals_variables import (
-    app_provenance_file_path)
 from spinnman.model import ExecutableTargets
 from spinnman.transceiver import Transceiver
 
@@ -96,7 +95,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertIn(fooaplx, executableFinder.get_executable_path(fooaplx))
 
     def testCallSimple(self):
-        folder = app_provenance_file_path()
+        folder = FecDataView().app_provenance_dir_path
         error_entries, warn_entries = extractor(
             transceiver, executable_targets=executable_targets,
             executable_finder=None)
@@ -130,7 +129,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertEqual(5, len(warn_entries))
 
     def testCallChips(self):
-        folder = app_provenance_file_path()
+        folder = FecDataView().app_provenance_dir_path
         set_config("Reports", "extract_iobuf_from_cores", "0,0,2:0,0,3")
         set_config("Reports", "extract_iobuf_from_binary_types", "None")
         error_entries, warn_entries = extractor(
@@ -164,7 +163,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertEqual(2, len(warn_entries))
 
     def testCallBinary(self):
-        folder = app_provenance_file_path()
+        folder = FecDataView().app_provenance_dir_path
         set_config("Reports", "extract_iobuf_from_cores", "None")
         set_config("Reports", "extract_iobuf_from_binary_types",
                    fooaplx + "," + alphaaplx)
@@ -195,7 +194,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertEqual(3, len(warn_entries))
 
     def testCallBoth(self):
-        folder = app_provenance_file_path()
+        folder = FecDataView().app_provenance_dir_path
         set_config("Reports", "extract_iobuf_from_cores", "0,0,2:1,1,1")
         set_config("Reports", "extract_iobuf_from_binary_types",
                    fooaplx + "," + alphaaplx)

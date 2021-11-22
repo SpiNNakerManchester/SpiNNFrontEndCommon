@@ -24,8 +24,7 @@ from spinn_utilities.config_holder import get_config_bool
 from data_specification.constants import APP_PTR_TABLE_HEADER_BYTE_SIZE
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
+from spinn_front_end_common.data import FecDataView
 
 # used to stop file conflicts
 _lock_condition = threading.Condition()
@@ -118,7 +117,7 @@ def get_report_writer(
     if not get_config_bool("Reports", "write_text_specs"):
         return None
     # initialise the report writer to send down to DSG
-    new_report_directory = os.path.join(report_default_directory(), _RPT_DIR)
+    new_report_directory = os.path.join(FecDataView().run_dir_path, _RPT_DIR)
     _mkdir(new_report_directory)
     name = os.path.join(new_report_directory, _RPT_TMPL.format(
         hostname, processor_chip_x, processor_chip_y, processor_id))

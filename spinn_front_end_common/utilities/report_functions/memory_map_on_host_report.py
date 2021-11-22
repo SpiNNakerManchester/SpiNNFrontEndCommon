@@ -16,8 +16,7 @@
 import logging
 import os
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
+from spinn_front_end_common.data import FecDataView
 logger = FormatAdapter(logging.getLogger(__name__))
 
 _FOLDER_NAME = "memory_map_from_processor_to_address_space"
@@ -35,7 +34,7 @@ class MemoryMapOnHostReport(object):
             dict(tuple(int,int,int),DataWritten)
         """
 
-        file_name = os.path.join(report_default_directory(), _FOLDER_NAME)
+        file_name = os.path.join(FecDataView.run_dir_path, _FOLDER_NAME)
         try:
             with open(file_name, "w") as f:
                 self._describe_mem_map(f, processor_to_app_data_base_address)

@@ -26,8 +26,6 @@ from spinn_front_end_common.utilities.report_functions.write_json_machine \
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -88,7 +86,7 @@ class JavaCaller(object):
         :raise ConfigurationException: if simple parameter checking fails.
         """
         self._recording = None
-        self._report_folder = report_default_directory()
+        self._report_folder = FecDataView.run_dir_path
 
         self._java_call = java_call
         result = subprocess.call([self._java_call, '-version'])

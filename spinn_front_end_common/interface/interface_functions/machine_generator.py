@@ -20,9 +20,8 @@ from spinnman.connections import SocketAddressWithChip
 from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 import time
 import logging
 
@@ -94,7 +93,7 @@ class MachineGenerator(object):
             version=board_version,
             auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
-            default_report_directory=report_default_directory())
+            default_report_directory=FecDataView().run_dir_path)
 
         if reset_machine_on_start_up:
             success = txrx.power_off_machine()

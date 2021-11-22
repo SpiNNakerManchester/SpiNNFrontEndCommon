@@ -34,9 +34,10 @@ from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.globals_variables import (
-    get_simulator, report_default_directory)
+    get_simulator)
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_vertices_to_core_subset, n_word_struct)
 from spinn_front_end_common.utilities.emergency_recovery import (
@@ -328,10 +329,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # create report if it doesn't already exist
 
-        self._out_report_path = \
-            os.path.join(report_default_directory(), self.OUT_REPORT_NAME)
-        self._in_report_path = \
-            os.path.join(report_default_directory(), self.IN_REPORT_NAME)
+        dir_path = FecDataView().run_dir_path
+        self._out_report_path = os.path.join(dir_path, self.OUT_REPORT_NAME)
+        self._in_report_path = os.path.join(dir_path, self.IN_REPORT_NAME)
 
         # Stored reinjection status for resetting timeouts
         self._last_status = None

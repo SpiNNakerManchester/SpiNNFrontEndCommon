@@ -15,12 +15,11 @@
 
 import unittest
 import os
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferedReceivingData
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_receiving_data import DB_FILE_NAME
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
@@ -30,7 +29,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         unittest_setup()
 
     def test_use_database(self):
-        f = os.path.join(report_default_directory(), DB_FILE_NAME)
+        f = os.path.join(FecDataView().run_dir_path, DB_FILE_NAME)
         self.assertFalse(os.path.isfile(f), "no existing DB at first")
 
         brd = BufferedReceivingData()

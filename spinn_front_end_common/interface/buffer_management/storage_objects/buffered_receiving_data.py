@@ -14,8 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 from .sqllite_database import SqlLiteDatabase
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
+from spinn_front_end_common.data import FecDataView
 
 #: Name of the database in the data folder
 DB_FILE_NAME = "buffer.sqlite3"
@@ -41,7 +40,7 @@ class BufferedReceivingData(object):
     ]
 
     def __init__(self):
-        self._db_file = os.path.join(report_default_directory(), DB_FILE_NAME)
+        self._db_file = os.path.join(FecDataView().run_dir_path, DB_FILE_NAME)
         self._db = None
         self.reset()
 

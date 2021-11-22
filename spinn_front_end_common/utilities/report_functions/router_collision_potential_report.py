@@ -16,8 +16,7 @@
 import os
 from collections import defaultdict
 from spinn_machine.router import Router
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
+from spinn_front_end_common.data import FecDataView
 
 
 class RouterCollisionPotentialReport(object):
@@ -30,7 +29,7 @@ class RouterCollisionPotentialReport(object):
         :param ~spinn_machine.Machine machine:
         """
         file_name = os.path.join(
-            report_default_directory(),
+            FecDataView().run_dir_path,
             "routing_collision_protential_report.rpt")
 
         with open(file_name, "w") as writer:
