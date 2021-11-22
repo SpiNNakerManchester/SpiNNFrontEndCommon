@@ -434,7 +434,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __init__(
             self, executable_finder, graph_label=None,
             database_socket_addresses=None, n_chips_required=None,
-            n_boards_required=None, front_end_versions=[]):
+            n_boards_required=None, front_end_versions=[], data_writer=None):
         """
         :param executable_finder: How to find APLX files to deploy to SpiNNaker
         :type executable_finder:
@@ -449,11 +449,17 @@ class AbstractSpinnakerBase(ConfigHandler):
             Overrides the number of boards to allocate from spalloc
         :param list(tuple(str,str)) front_end_versions:
             Information about what software is in use
+        :param FecDataWriter data_writer:
+            The Global data writer object
         """
         # pylint: disable=too-many-arguments
         super().__init__()
 
-        self._data_writer = FecDataWriter()
+        if data_writer:
+            self._data_writer = data_writer
+        else:
+            self._data_writer = FecDataWriter()
+        self._data_writer.setup()
 
         # timings
         self._mapping_time = 0.0

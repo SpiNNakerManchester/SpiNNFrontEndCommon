@@ -15,17 +15,24 @@
 
 from spinn_front_end_common.utilities.exceptions import (
     SimulatorDataNotYetAvialable, SimulatorNotSetupException)
-from spinn_front_end_common.data import FecDataView, FecDataWriter
+from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
+from spinn_front_end_common.interface.config_setup import add_spinnaker_cfg
+from spinn_utilities.config_holder import clear_cfg_files
 
 # This can not be a unittest as the unitest suite would use the same
 # python console and therefor the same singleton multiple times
 
 # It can be run multiple time as each run is a new python console
 
+# reset the configs without mocking the global data
+clear_cfg_files(True)
+add_spinnaker_cfg()
+
 view = FecDataView()
 writer = FecDataWriter()
 try:
-    view.simulation_time_step_us
+    a = view.simulation_time_step_us
     raise Exception("OOPS")
 except SimulatorNotSetupException:
     pass

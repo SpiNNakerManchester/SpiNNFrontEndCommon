@@ -68,7 +68,8 @@ class FecDataWriter(FecDataView):
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
         self.__fec_data._status = Data_Status.SETUP
-        self.__set_up_report_specifics()
+        self.__create_reports_directory()
+        self.__create__timestamp_directory()
 
     def start_run(self):
         self.__fec_data._n_calls_to_run += 1
@@ -80,10 +81,6 @@ class FecDataWriter(FecDataView):
     def hard_reset(self):
         self.__fec_data._hard_reset()
         self.__fec_data._status = Data_Status.HARD_RESET
-        self.__create__timestamp_directory()
-
-    def __set_up_report_specifics(self):
-        self.__create_reports_directory()
         self.__create__timestamp_directory()
 
     def __create_reports_directory(self):
