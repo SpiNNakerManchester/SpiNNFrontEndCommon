@@ -67,7 +67,7 @@ class EnergyReport(object):
             logger.info("Skipping Energy report as no buffer_manager set")
             return
 
-        report_dir = FecDataView.run_dir_path
+        report_dir = FecDataView().run_dir_path
         # detailed report path
         detailed_report = os.path.join(report_dir, self._DETAILED_FILENAME)
 

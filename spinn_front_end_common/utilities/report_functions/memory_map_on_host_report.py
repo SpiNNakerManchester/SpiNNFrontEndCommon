@@ -34,7 +34,7 @@ class MemoryMapOnHostReport(object):
             dict(tuple(int,int,int),DataWritten)
         """
 
-        file_name = os.path.join(FecDataView.run_dir_path, _FOLDER_NAME)
+        file_name = os.path.join(FecDataView().run_dir_path, _FOLDER_NAME)
         try:
             with open(file_name, "w") as f:
                 self._describe_mem_map(f, processor_to_app_data_base_address)

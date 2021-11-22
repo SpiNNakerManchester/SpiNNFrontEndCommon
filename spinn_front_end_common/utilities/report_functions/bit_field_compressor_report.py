@@ -56,7 +56,7 @@ class BitFieldCompressorReport(object):
         :return: a summary, or `None` if the report file can't be written
         :rtype: BitFieldSummary
         """
-        file_name = os.path.join(FecDataView.run_dir_path, _FILE_NAME)
+        file_name = os.path.join(FecDataView().run_dir_path, _FILE_NAME)
         try:
             with open(file_name, "w") as f:
                 return self._write_report(f, machine_graph, placements)

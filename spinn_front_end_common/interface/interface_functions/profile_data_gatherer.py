@@ -37,7 +37,7 @@ class ProfileDataGatherer(object):
 
         progress = ProgressBar(
             placements.n_placements, "Getting profile data")
-        provenance_file_path = FecDataView.app_provenance_dir_path
+        provenance_file_path = FecDataView().app_provenance_dir_path
 
         # retrieve provenance data from any cores that provide data
         for placement in progress.over(placements.placements):

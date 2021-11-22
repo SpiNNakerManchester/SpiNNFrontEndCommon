@@ -129,36 +129,3 @@ def setup_for_unittest():
     injection_decorator._instances = list()
     __temp_dir = None
 
-
-def get_generated_output(output):
-    """ Get one of the simulator outputs by name.
-
-    :param str output: The name of the output to retrieve.
-    :return: The value (of arbitrary type, dependent on which output),
-        or `None` if the variable is not found.
-    :raises SimulatorNotSetupException:
-        if the system has a status where outputs can't be retrieved
-    """
-    if _simulator is None:
-        raise SimulatorNotSetupException(
-            "You need to have ran a simulator before asking for its "
-            "generated output.")
-    else:
-        return _simulator.get_generated_output(output)
-
-
-def report_default_directory():
-    """
-    Returns the path to the directory that holds all the reports for run
-
-    This will be the path used by the last run call or to be used by
-    the next run if it has not yet been called.
-
-    ..note: In unittest mode this returns a tempdir shared by all path methods
-
-    :rtpye: str
-    :raises SimulatorNotSetupException:
-        If the simulator has not been setup
-    """
-    from spinn_front_end_common.data import FecDataView
-    return FecDataView().run_dir_path
