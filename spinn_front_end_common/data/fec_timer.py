@@ -20,6 +20,7 @@ from datetime import timedelta
 # pylint: disable=no-name-in-module
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance.provenance_writer import (
     ProvenanceWriter)
 
@@ -74,7 +75,7 @@ class FecTimer(object):
         _simulator = simulator
         if get_config_bool("Reports", "write_algorithm_timings"):
             _provenance_path = os.path.join(
-                simulator._report_default_directory,
+                FecDataView().run_dir_path,
                 "algorithm_timings.rpt")
         else:
             _provenance_path = None

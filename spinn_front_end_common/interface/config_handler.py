@@ -25,6 +25,7 @@ from spinn_machine import Machine
 from spinn_utilities.config_holder import (
     config_options, load_config, get_config_bool, get_config_int,
     get_config_str, get_config_str_list, set_config)
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -51,33 +52,25 @@ class ConfigHandler(object):
 
     __slots__ = [
         #
-        "_json_folder",
-
-        #
-        "_provenance_file_path",
-
-        #
-        "_app_provenance_file_path",
-
-        #
-        "_system_provenance_file_path",
-
-        #
-        "_report_default_directory",
-
-        #
-        "_report_simulation_top_directory",
-
-        #
-        "_this_run_time_string",
-
-        #
         "_use_virtual_board",
+
+        # The writer and therefor view of the global data
+        "_data_writer"
 
     ]
 
-    def __init__(self):
+    def __init__(self, data_writer=None):
+        """
+        :param FecDataWriter data_writer:
+            The Global data writer object
+        """
         load_config()
+
+        if data_writer:
+            self._data_writer = data_writer
+        else:
+            self._data_writer = FecDataWriter()
+        self._data_writer.setup()
 
         # set up machine targeted data
         self._use_virtual_board = get_config_bool("Machine", "virtual_board")
@@ -88,12 +81,6 @@ class ConfigHandler(object):
         max_machine_core = get_config_int("Machine", "max_machine_core")
         if max_machine_core is not None:
             Machine.set_max_cores_per_chip(max_machine_core)
-
-        self._json_folder = None
-        self._provenance_file_path = None
-        self._report_default_directory = None
-        self._report_simulation_top_directory = None
-        self._this_run_time_string = None
 
     def _debug_configs(self):
         """ Adjust and checks config based on mode and reports_enabled
@@ -258,36 +245,17 @@ class ConfigHandler(object):
                 report_default_directory,
                 get_config_bool("Reports", "remove_errored_folders"))
 
-        # determine the time slot for later while also making the report folder
-        if self._this_run_time_string is None:
-            while True:
-                try:
-                    timestamp = self.__make_timestamp()
-                    self._report_simulation_top_directory = self.child_folder(
-                        report_default_directory, timestamp, must_create=True)
-                    self._this_run_time_string = timestamp
-                    break
-                except OSError:
-                    time.sleep(0.5)
-        else:
-            self._report_simulation_top_directory = self.child_folder(
-                report_default_directory, self._this_run_time_string)
-
-        # create sub folder within reports for sub runs
-        # (where changes need to be recorded)
-        self._report_default_directory = self.child_folder(
-            self._report_simulation_top_directory, "run_{}".format(
-                n_calls_to_run))
-
         # store timestamp in latest/time_stamp for provenance reasons
+        timestamp_dir_path = self._data_writer.timestamp_dir_path
         time_of_run_file_name = os.path.join(
-            self._report_simulation_top_directory, TIMESTAMP_FILENAME)
+            timestamp_dir_path, TIMESTAMP_FILENAME)
+        _, timestamp = os.path.split(timestamp_dir_path)
         with open(time_of_run_file_name, "w") as f:
-            f.writelines(self._this_run_time_string)
+            f.writelines(timestamp)
 
         if get_config_bool("Logging", "warnings_at_end_to_file"):
             log_report_file = os.path.join(
-                self._report_default_directory, WARNING_LOGS_FILENAME)
+                self._data_writer.run_dir_path, WARNING_LOGS_FILENAME)
             logger.set_report_File(log_report_file)
 
     @staticmethod
@@ -309,32 +277,9 @@ class ConfigHandler(object):
         # set up reports default folder
         self._set_up_report_specifics(n_calls_to_run)
 
-        self._json_folder = os.path.join(
-            self._report_default_directory, "json_files")
-        if not os.path.exists(self._json_folder):
-            self._make_dirs(self._json_folder)
-
-        # make a folder for the provenance data storage
-        self._provenance_file_path = os.path.join(
-            self._report_default_directory, "provenance_data")
-        if not os.path.exists(self._provenance_file_path):
-            self._make_dirs(self._provenance_file_path)
-
-        # make application folder for provenance data storage
-        self._app_provenance_file_path = os.path.join(
-            self._provenance_file_path, "app_provenance_data")
-        if not os.path.exists(self._app_provenance_file_path):
-            self._make_dirs(self._app_provenance_file_path)
-
-        # make system folder for provenance data storage
-        self._system_provenance_file_path = os.path.join(
-            self._provenance_file_path, "system_provenance_data")
-        if not os.path.exists(self._system_provenance_file_path):
-            self._make_dirs(self._system_provenance_file_path)
-
     def __write_named_file(self, file_name):
         app_file_name = os.path.join(
-            self._report_simulation_top_directory, file_name)
+            self._data_writer.timestamp_dir_path, file_name)
         with open(app_file_name, "w") as f:
             f.writelines("file_name")
 

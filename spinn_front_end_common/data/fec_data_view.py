@@ -427,6 +427,24 @@ class FecDataView(object):
         return self.__fec_data._report_dir_path
 
     @property
+    def timestamp_dir_path(self):
+        """
+        Returns path to existing timestamped director in the reports directory
+
+        ..note: In unittest mode this returns a tempdir
+        shared by all path methods
+
+        :rtpye: str
+        :raises SpinnFrontEndException:
+            If the simulation_time_step is currently unavailable
+        """
+        if self.__fec_data._timestamp_dir_path is None:
+            if self.__fec_data._status == Data_Status.MOCKED:
+                return self.temporary_dir_path()
+            raise self.exception("timestamp_dir_path")
+        return self.__fec_data._timestamp_dir_path
+
+    @property
     def run_dir_path(self):
         """
         Returns the path to the directory that holds all the reports for run

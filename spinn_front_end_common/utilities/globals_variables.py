@@ -167,16 +167,8 @@ def provenance_file_path():
     :raises SimulatorNotSetupException:
         If the simulator has not been setup
     """
-    if _simulator is None:
-        if __unittest_mode:
-            return _temp_dir()
-        else:
-            raise SimulatorNotSetupException(
-                "provenance_file_path() not supported before sim.setup.")
-    else:
-        # underscore param used avoid exposing a None PyNN parameter
-        return _simulator._provenance_file_path
-
+    from spinn_front_end_common.data import FecDataView
+    return FecDataView().provenance_dir_path
 
 def app_provenance_file_path():
     """
@@ -191,16 +183,8 @@ def app_provenance_file_path():
     :raises SimulatorNotSetupException:
         If the simulator has not been setup
     """
-    if _simulator is None:
-        if __unittest_mode:
-            return _temp_dir()
-        else:
-            raise SimulatorNotSetupException(
-                "app_provenance_file_path() not supported before sim.setup.")
-    else:
-        # underscore param used avoid exposing a None PyNN parameter
-        return _simulator._app_provenance_file_path
-
+    from spinn_front_end_common.data import FecDataView
+    return FecDataView().app_provenance_dir_path
 
 def system_provenance_file_path():
     """
@@ -215,15 +199,8 @@ def system_provenance_file_path():
     :raises SimulatorNotSetupException:
         If the simulator has not been setup
     """
-    if _simulator is None:
-        if __unittest_mode:
-            return _temp_dir()
-        else:
-            raise SimulatorNotSetupException(
-                "system_provenance_file_path not supported before sim.setup.")
-    else:
-        # underscore param used avoid exposing a None PyNN parameter
-        return _simulator._system_provenance_file_path
+    from spinn_front_end_common.data import FecDataView
+    return FecDataView().system_provenance_dir_path
 
 
 def report_default_directory():
@@ -239,12 +216,5 @@ def report_default_directory():
     :raises SimulatorNotSetupException:
         If the simulator has not been setup
     """
-    if _simulator is None:
-        if __unittest_mode:
-            return _temp_dir()
-        else:
-            raise SimulatorNotSetupException(
-                "report_default_directory() not supported before sim.setup.")
-    else:
-        # underscore param used avoid exposing a None PyNN parameter
-        return _simulator._report_default_directory
+    from spinn_front_end_common.data import FecDataView
+    return FecDataView().run_dir_path
