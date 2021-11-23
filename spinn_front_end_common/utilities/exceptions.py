@@ -62,39 +62,6 @@ class CantFindSDRAMToUseException(SpinnFrontEndException):
     """
 
 
-class SimulatorNotSetupException(SpinnFrontEndException):
-    """
-    Raised when trying to get data before simulator has been setup
-    """
-
-    def __init__(self, data):
-        super().__init__(f"Requesting {data} is not valid before setup")
-
-
-class SimulatorDataNotYetAvialable(SpinnFrontEndException):
-    """
-    Raised when trying to get data before simulator has created it
-    """
-    def __init__(self, data):
-        super().__init__(f"{data} has not yet been created.")
-
-
-class SimulatorDataNotMocked(SimulatorDataNotYetAvialable):
-    """
-    Raised when trying to get data before a mocked simulator has created it
-    """
-    def __init__(self, data):
-        super().__init__(f"MOCK {data} has not yet been created.")
-
-
-class SimulatorShutdownException(SpinnFrontEndException):
-    """
-    Raised when trying to get simulator after it has been shit down
-    """
-    def __init__(self, data):
-        super().__init__(f"Requesting {data} is not valid after end")
-
-
 class SimulatorRunningException(SpinnFrontEndException):
     """
     Raised when trying to running get simulator that should not be running
