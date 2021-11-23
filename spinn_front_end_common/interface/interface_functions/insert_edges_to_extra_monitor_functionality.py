@@ -55,9 +55,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
             ~pacman.model.graphs.application.ApplicationGraph
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
-        n_app_vertices = 0
-        if application_graph is not None:
-            n_app_vertices = application_graph.n_vertices
+        n_app_vertices = application_graph.n_vertices
         self._chip_to_gatherer_map = vertex_to_ethernet_connected_chip_mapping
         self._machine = machine
         self._placements = placements
@@ -67,7 +65,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
             "Inserting edges between vertices which require FR speed up "
             "functionality.")
 
-        if application_graph is None:
+        if application_graph.n_vertices == 0:
             for vertex in progress.over(machine_graph.vertices):
                 if isinstance(vertex, ExtraMonitorSupportMachineVertex):
                     self._process_mach_graph_vertex(vertex, machine_graph)
