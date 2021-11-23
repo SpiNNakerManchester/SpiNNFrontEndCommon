@@ -978,11 +978,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If we have never run before, or the graph has changed,
         # start by performing mapping
         graph_changed, data_changed = self._detect_if_graph_has_changed(True)
-        if graph_changed and self._has_ran and not self._has_reset_last:
-            self.stop()
-            raise NotImplementedError(
-                "The network cannot be changed between runs without"
-                " resetting")
+        if graph_changed and self._has_ran:
+            if not self._has_reset_last:
+                self.stop()
+                raise NotImplementedError(
+                    "The network cannot be changed between runs without"
+                    " resetting")
+            self._data_writer.hard_reset()
 
         # If we have reset and the graph has changed, stop any running
         # application
