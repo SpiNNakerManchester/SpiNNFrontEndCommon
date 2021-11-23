@@ -18,12 +18,13 @@ import logging
 import math
 import os
 import time
+from spinn_utilities.data.data_status import Data_Status
+from spinn_utilities.data.utils_data_writer import UtilsDataWriter
 from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from .data_status import Data_Status
 from .fec_data_view import FecDataView, _FecDataModel
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -32,7 +33,7 @@ __temp_dir = None
 REPORTS_DIRNAME = "reports"
 
 
-class FecDataWriter(FecDataView):
+class FecDataWriter(UtilsDataWriter, FecDataView):
     """
     Writer class for the Fec Data
 
@@ -54,9 +55,9 @@ class FecDataWriter(FecDataView):
         Unittest that depend on a specific value should call mock and then
         set that value.
         """
+        UtilsDataWriter.mock(self)
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
-        self.__fec_data._status = Data_Status.MOCKED
         self.set_app_id(6)
         self.set_up_timings(1000, 1)
 
@@ -65,29 +66,29 @@ class FecDataWriter(FecDataView):
         Puts all data back into the state expected at sim.setup time
 
         """
+        UtilsDataWriter.setup(self)
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
-        self.__fec_data._status = Data_Status.SETUP
         self.__create_reports_directory()
-        self.__create_run_directory()
+        self.__create_run_dir_path()
 
     def start_run(self):
+        UtilsDataWriter.start_run(self)
         self.__fec_data._n_calls_to_run += 1
-        self.__fec_data._status = Data_Status.IN_RUN
 
     def finish_run(self):
-        self.__fec_data._status = Data_Status.FINISHED
+        UtilsDataWriter.finish_run(self)
 
     def hard_reset(self):
+        UtilsDataWriter.hard_reset(self)
         self.__fec_data._hard_reset()
-        self.__fec_data._status = Data_Status.HARD_RESET
-        self.__create_run_directory()
+        self.__create_run_dir_path()
 
-    def __create_run_directory(self):
+    def __create_run_dir_path(self):
         self.__create_timestamp_directory()
-        self.__fec_data._run_dir_path = self._child_folder(
+        self.set_run_dir_path(self._child_folder(
             self.__fec_data._timestamp_dir_path,
-            f"run_{self.n_calls_to_run}")
+            f"run_{self.n_calls_to_run}"))
 
     def __create_reports_directory(self):
         default_report_file_path = get_config_str(

@@ -16,7 +16,8 @@
 import errno
 import os
 import tempfile
-from .data_status import Data_Status
+from spinn_utilities.data.data_status import Data_Status
+from spinn_utilities.data import UtilsDataView
 
 
 class _FecDataModel(object):
@@ -43,7 +44,6 @@ class _FecDataModel(object):
         "_hardware_time_step_us",
         "_n_calls_to_run",
         "_report_dir_path",
-        "_run_dir_path",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
         "_simulation_time_step_per_s",
@@ -51,9 +51,6 @@ class _FecDataModel(object):
         "_simulation_time_step_us",
         "_timestamp_dir_path",
         "_time_scale_factor",
-        "_temporary_directory",
-        # Data status mainly to raise best Exception
-        "_status"
     ]
 
     def __new__(cls):
@@ -63,7 +60,6 @@ class _FecDataModel(object):
         obj = object.__new__(cls)
         cls.__singleton = obj
         obj._clear()
-        obj._status = Data_Status.NOT_SETUP
         return obj
 
     def _clear(self):
@@ -81,18 +77,16 @@ class _FecDataModel(object):
         self._simulation_time_step_us = None
         self._report_dir_path = None
         self._time_scale_factor = None
-        self._temporary_directory = None
         self._hard_reset()
 
     def _hard_reset(self):
         """
         Clears out all data
         """
-        self._run_dir_path = None
         self._timestamp_dir_path = None
 
 
-class FecDataView(object):
+class FecDataView(UtilsDataView):
     """
     A read only view of the data available at FEC level
 
@@ -120,9 +114,6 @@ class FecDataView(object):
     __fec_data = _FecDataModel()
     __slots__ = []
 
-    def exception(self, data):
-        return self.__fec_data._status.exception(data)
-
     # app_id methods
 
     def get_app_id(self):
@@ -143,7 +134,7 @@ class FecDataView(object):
             If the app_id is currently unavailable
         """
         if self.__fec_data._app_id is None:
-            raise self.exception("app_id")
+            raise self._exception("app_id")
         return self.__fec_data._app_id
 
     def has_app_id(self):
@@ -241,7 +232,7 @@ class FecDataView(object):
             If the simulation_time_step is currently unavailable
         """
         if self.__fec_data._simulation_time_step_us is None:
-            raise self.exception("simulation_time_step_us")
+            raise self._exception("simulation_time_step_us")
         return self.__fec_data._simulation_time_step_us
 
     @property
@@ -255,7 +246,7 @@ class FecDataView(object):
             If the simulation_time_step_ms is currently unavailable
         """
         if self.__fec_data._simulation_time_step_ms is None:
-            raise self.exception("simulation_time_step_ms")
+            raise self._exception("simulation_time_step_ms")
         return self.__fec_data._simulation_time_step_ms
 
     @property
@@ -269,7 +260,7 @@ class FecDataView(object):
             If the simulation_time_step is currently unavailable
         """
         if self.__fec_data._simulation_time_step_per_ms is None:
-            raise self.exception("simulation_time_step_per_ms")
+            raise self._exception("simulation_time_step_per_ms")
         return self.__fec_data._simulation_time_step_per_ms
 
     @property
@@ -283,7 +274,7 @@ class FecDataView(object):
             If the simulation_time_step is currently unavailable
         """
         if self.__fec_data._simulation_time_step_per_s is None:
-            raise self.exception("simulation_time_step_per_s")
+            raise self._exception("simulation_time_step_per_s")
         return self.__fec_data._simulation_time_step_per_s
 
     @property
@@ -297,7 +288,7 @@ class FecDataView(object):
             If the simulation_time_step_ms is currently unavailable
         """
         if self.__fec_data._simulation_time_step_s is None:
-            raise self.exception("simulation_time_step_s")
+            raise self._exception("simulation_time_step_s")
         return self.__fec_data._simulation_time_step_s
 
     @property
@@ -311,7 +302,7 @@ class FecDataView(object):
             If the simulation_time_step is currently unavailable
         """
         if self.__fec_data._hardware_time_step_ms is None:
-            raise self.exception("hardware_time_step_ms")
+            raise self._exception("hardware_time_step_ms")
         return self.__fec_data._hardware_time_step_ms
 
     @property
@@ -325,7 +316,7 @@ class FecDataView(object):
             If the simulation_time_step is currently unavailable
         """
         if self.__fec_data._hardware_time_step_us is None:
-            raise self.exception("ardware_time_step_us")
+            raise self._exception("ardware_time_step_us")
         return self.__fec_data._hardware_time_step_us
 
     # time scale factor
@@ -345,7 +336,7 @@ class FecDataView(object):
             If the time_scale_factor is currently unavailable
         """
         if self.__fec_data._time_scale_factor is None:
-            raise self.exception("time_scale_factor")
+            raise self._exception("time_scale_factor")
         return self.__fec_data._time_scale_factor
 
     def has_time_scale_factor(self):
@@ -365,7 +356,7 @@ class FecDataView(object):
         :rtpye: int
         """
         try:
-            if self.__fec_data._status == Data_Status.IN_RUN:
+            if self.status == Data_Status.IN_RUN:
                 return self.__fec_data._n_calls_to_run
             else:
                 # This is the current behaviour in ASB
@@ -381,8 +372,8 @@ class FecDataView(object):
         :rtpye: int
         """
         if self.__fec_data._n_calls_to_run is None:
-            raise self.exception("n_calls_to_run")
-        if self.__fec_data._status == Data_Status.IN_RUN:
+            raise self._exception("n_calls_to_run")
+        if self.status == Data_Status.IN_RUN:
             return self.__fec_data._n_calls_to_run
         else:
             # This is the current behaviour in ASB
@@ -394,18 +385,6 @@ class FecDataView(object):
     # Report directories
     # There are NO has or get methods for directories
     # This allow directories to be created on the fly
-
-    def temporary_dir_path(self):
-        """
-        The path to an existing temp directory
-
-        This temp directory
-        :return:
-        """
-        if self.__fec_data._temporary_directory is None:
-            self.__fec_data._temporary_directory = \
-                tempfile.TemporaryDirectory()
-        return self.__fec_data._temporary_directory.name
 
     @property
     def report_dir_path(self):
@@ -419,11 +398,11 @@ class FecDataView(object):
         :raises SpinnFrontEndException:
             If the simulation_time_step is currently unavailable
         """
-        if self.__fec_data._report_dir_path is None:
-            if self.__fec_data._status == Data_Status.MOCKED:
-                return self.temporary_dir_path()
-            raise self.exception("report_dir_path")
-        return self.__fec_data._report_dir_path
+        if self.__fec_data._report_dir_path:
+            return self.__fec_data._report_dir_path
+        if self.status == Data_Status.MOCKED:
+            return self._temporary_dir_path()
+        raise self._exception("report_dir_path")
 
     @property
     def timestamp_dir_path(self):
@@ -437,33 +416,13 @@ class FecDataView(object):
         :raises SpinnFrontEndException:
             If the simulation_time_step is currently unavailable
         """
-        if self.__fec_data._timestamp_dir_path is None:
-            if self.__fec_data._status == Data_Status.MOCKED:
-                return self.temporary_dir_path()
-            raise self.exception("timestamp_dir_path")
-        return self.__fec_data._timestamp_dir_path
+        if self.__fec_data._timestamp_dir_path:
+            return self.__fec_data._timestamp_dir_path
+        if self.status == Data_Status.MOCKED:
+            return self._temporary_dir_path()
+        raise self._exception("timestamp_dir_path")
 
-    @property
-    def run_dir_path(self):
-        """
-        Returns the path to the directory that holds all the reports for run
-
-        This will be the path used by the last run call or to be used by
-        the next run if it has not yet been called.
-
-        ..note: In unittest mode this returns a tempdir
-        shared by all path methods
-
-        :rtpye: str
-        :raises SpinnFrontEndException:
-            If the simulation_time_step is currently unavailable
-        """
-        if self.__fec_data._run_dir_path:
-            return self.__fec_data._run_dir_path
-
-        if self.__fec_data._status == Data_Status.MOCKED:
-            return self.temporary_dir_path()
-        raise self.exception("run_dir_path")
+    # run_dir_path in UtilsDataView
 
     @property
     def json_dir_path(self):
@@ -480,13 +439,10 @@ class FecDataView(object):
         :raises SpinnFrontEndException:
             If the simulation_time_step is currently unavailable
         """
-        if self.__fec_data._run_dir_path:
-            return self._child_folder(
-                self.__fec_data._run_dir_path, "json_files")
+        if self.status == Data_Status.MOCKED:
+            return self._temporary_dir_path()
 
-        if self.__fec_data._status == Data_Status.MOCKED:
-            return self.temporary_dir_path()
-        raise self.exception("json_dir_path")
+        return self._child_folder(self.run_dir_path, "json_files")
 
     @property
     def provenance_dir_path(self):
@@ -503,13 +459,9 @@ class FecDataView(object):
         :raises SpinnFrontEndException:
             If the simulation_time_step is currently unavailable
         """
-        if self.__fec_data._run_dir_path:
-            return self._child_folder(
-                self.__fec_data._run_dir_path, "provenance_data")
-
-        if self.__fec_data._status == Data_Status.MOCKED:
-            return self.temporary_dir_path()
-        raise self.exception("provenance_dir_path")
+        if self.status == Data_Status.MOCKED:
+            return self._temporary_dir_path()
+        return self._child_folder(self.run_dir_path, "provenance_data")
 
     @property
     def app_provenance_dir_path(self):
@@ -526,13 +478,11 @@ class FecDataView(object):
         :raises SimulatorNotSetupException:
             If the simulator has not been setup
         """
-        if self.__fec_data._run_dir_path:
-            return self._child_folder(
-                self.provenance_dir_path, "app_provenance_data")
+        if self.status == Data_Status.MOCKED:
+            return self._temporary_dir_path()
 
-        if self.__fec_data._status == Data_Status.MOCKED:
-            return self.temporary_dir_path()
-        raise self.exception("app_provenance_dir_path")
+        return self._child_folder(
+            self.provenance_dir_path, "app_provenance_data")
 
     @property
     def system_provenance_dir_path(self):
@@ -549,13 +499,10 @@ class FecDataView(object):
         :raises SpinnFrontEndException:
             If the simulation_time_step is currently unavailable
         """
-        if self.__fec_data._run_dir_path:
-            return self._child_folder(
-                self.provenance_dir_path, "system_provenance_data")
-
-        if self.__fec_data._status == Data_Status.MOCKED:
-            return self.temporary_dir_path()
-        raise self.exception("system_provenance_dir_path")
+        if self.status == Data_Status.MOCKED:
+            return self._temporary_dir_path()
+        return self._child_folder(
+            self.provenance_dir_path, "system_provenance_data")
 
     def _child_folder(self, parent, child_name, must_create=False):
         """

@@ -16,12 +16,14 @@
 import os
 import unittest
 from spinn_utilities.config_holder import set_config
+from spinn_utilities.data.data_status import Data_Status
+# hack do not copy
+from spinn_utilities.data.utils_data_writer import _UtilsDataModel
+from spinn_utilities.exceptions import (
+    DataNotYetAvialable, NotSetupException)
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.utilities.exceptions import (
-    ConfigurationException, SimulatorDataNotYetAvialable,
-    SimulatorNotSetupException)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.data.data_status import Data_Status
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 
 
@@ -36,7 +38,7 @@ class TestSimulatorData(unittest.TestCase):
         # What happens before setup depends on the previous test
         # Use manual_check to verify this without dependency
         writer.setup()
-        with self.assertRaises(SimulatorDataNotYetAvialable):
+        with self.assertRaises(DataNotYetAvialable):
             view.simulation_time_step_us
         writer.set_up_timings(1000, 1)
         view.simulation_time_step_us
@@ -64,7 +66,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertFalse("APPID" in view)
         with self.assertRaises(KeyError):
             view["APPID"]
-        with self.assertRaises(SimulatorDataNotYetAvialable):
+        with self.assertRaises(DataNotYetAvialable):
             view.app_id
         writer.set_app_id(6)
         self.assertTrue(view.has_app_id())
@@ -94,7 +96,7 @@ class TestSimulatorData(unittest.TestCase):
     def test_app_id(self):
         writer = FecDataWriter()
         writer.setup()
-        with self.assertRaises(SimulatorDataNotYetAvialable):
+        with self.assertRaises(DataNotYetAvialable):
             writer.app_id
         self.assertEqual(None, writer.get_app_id())
         self.assertFalse(writer.has_app_id())
@@ -107,21 +109,21 @@ class TestSimulatorData(unittest.TestCase):
         view = FecDataView()
         writer = FecDataWriter()
         writer.setup()
-        with self.assertRaises(SimulatorDataNotYetAvialable):
+        with self.assertRaises(DataNotYetAvialable):
             view.simulation_time_step_us
-        with self.assertRaises(SimulatorDataNotYetAvialable):
+        with self.assertRaises(DataNotYetAvialable):
             view.simulation_time_step_per_ms
-        with self.assertRaises(SimulatorDataNotYetAvialable):
+        with self.assertRaises(DataNotYetAvialable):
             view.simulation_time_step_per_s
-        with self.assertRaises(SimulatorDataNotYetAvialable):
+        with self.assertRaises(DataNotYetAvialable):
             view.simulation_time_step_ms
-        with self.assertRaises(SimulatorDataNotYetAvialable):
+        with self.assertRaises(DataNotYetAvialable):
             view.simulation_time_step_s
-        with self.assertRaises(SimulatorDataNotYetAvialable):
+        with self.assertRaises(DataNotYetAvialable):
             view.time_scale_factor
-        with self.assertRaises(SimulatorDataNotYetAvialable):
+        with self.assertRaises(DataNotYetAvialable):
             view.hardware_time_step_ms
-        with self.assertRaises(SimulatorDataNotYetAvialable):
+        with self.assertRaises(DataNotYetAvialable):
             view.hardware_time_step_us
         self.assertEqual(None, view.get_simulation_time_step_us())
         self.assertEqual(None, view.get_simulation_time_step_ms())
@@ -242,21 +244,23 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_directories_not_setup(self):
         writer = FecDataWriter()
+        # Hacks as normally not done
         writer._FecDataWriter__fec_data._clear()
-        writer._FecDataWriter__fec_data._status = Data_Status.NOT_SETUP
-        with self.assertRaises(SimulatorNotSetupException):
+        # VERY UGLY HACK DO NOT COPY!!!!!!!!!!!!
+        _UtilsDataModel()._status = Data_Status.NOT_SETUP
+        with self.assertRaises(NotSetupException):
             self.assertTrue(os.path.exists(writer.report_dir_path))
-        with self.assertRaises(SimulatorNotSetupException):
+        with self.assertRaises(NotSetupException):
             self.assertTrue(os.path.exists(writer.timestamp_dir_path))
-        with self.assertRaises(SimulatorNotSetupException):
+        with self.assertRaises(NotSetupException):
             self.assertTrue(os.path.exists(writer.run_dir_path))
-        with self.assertRaises(SimulatorNotSetupException):
+        with self.assertRaises(NotSetupException):
             self.assertTrue(os.path.exists(writer.json_dir_path))
-        with self.assertRaises(SimulatorNotSetupException):
+        with self.assertRaises(NotSetupException):
             self.assertTrue(os.path.exists(writer.provenance_dir_path))
-        with self.assertRaises(SimulatorNotSetupException):
+        with self.assertRaises(NotSetupException):
             self.assertTrue(os.path.exists(writer.app_provenance_dir_path))
-        with self.assertRaises(SimulatorNotSetupException):
+        with self.assertRaises(NotSetupException):
             self.assertTrue(os.path.exists(writer.system_provenance_dir_path))
 
     def test_get_n_calls_to_run(self):

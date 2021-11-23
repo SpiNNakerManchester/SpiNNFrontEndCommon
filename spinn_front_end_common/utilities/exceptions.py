@@ -62,6 +62,18 @@ class CantFindSDRAMToUseException(SpinnFrontEndException):
     """
 
 
+class SimulatorNotSetupException(SpinnFrontEndException):
+    """
+    Raised when trying to get simulator before it has been setup
+    """
+
+
+class SimulatorShutdownException(SpinnFrontEndException):
+    """
+    Raised when trying to get simulator after it has been shit down
+    """
+
+
 class SimulatorRunningException(SpinnFrontEndException):
     """
     Raised when trying to running get simulator that should not be running
