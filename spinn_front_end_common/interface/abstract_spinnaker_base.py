@@ -518,7 +518,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._app_id = None
 
         # folders
-        self._set_up_output_folders(self._n_calls_to_run)
+        self._set_up_report_specifics()
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
@@ -1000,10 +1000,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
                 self._new_run_clear()
-
-            if self._has_ran:
-                # create new sub-folder for reporting data
-                self._set_up_output_folders(self._n_calls_to_run)
 
             self._build_graphs_for_usage()
             self._add_dependent_verts_and_edges_for_application_graph()

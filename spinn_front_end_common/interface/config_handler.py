@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from configparser import NoOptionError
-import datetime
 import logging
 import os
 import errno
@@ -146,28 +145,6 @@ class ConfigHandler(object):
                 logger.info("[Reports]write_energy_report has been set to "
                             "False as runtime is set to forever")
 
-    def child_folder(self, parent, child_name, must_create=False):
-        """
-        :param str parent:
-        :param str child_name:
-        :param bool must_create:
-            If `True`, the directory named by `child_name` (but not necessarily
-            its parents) must be created by this call, and an exception will be
-            thrown if this fails.
-        :return: The fully qualified name of the child folder.
-        :rtype: str
-        :raises OSError: if the directory existed ahead of time and creation
-            was required by the user
-        """
-        child = os.path.join(parent, child_name)
-        if must_create:
-            # Throws OSError or FileExistsError (a subclass of OSError) if the
-            # directory exists.
-            os.makedirs(child)
-        elif not os.path.exists(child):
-            self._make_dirs(child)
-        return child
-
     def _remove_excess_folders(
             self, max_kept, starting_directory, remove_errored_folders):
         try:
@@ -214,34 +191,13 @@ class ConfigHandler(object):
             # process in the same folder, but we shouldn't die because of it
             pass
 
-    def _set_up_report_specifics(self, n_calls_to_run):
-        """
-        :param int n_calls_to_run:
-            the counter of how many times run has been called.
-        """
-
-        default_report_file_path = get_config_str(
-            "Reports", "default_report_file_path")
-        # determine common report folder
-        if default_report_file_path == "DEFAULT":
-            directory = os.getcwd()
-
-            # global reports folder
-            report_default_directory = self.child_folder(
-                directory, REPORTS_DIRNAME)
-        elif default_report_file_path == "REPORTS":
-            report_default_directory = REPORTS_DIRNAME
-            if not os.path.exists(report_default_directory):
-                self._make_dirs(report_default_directory)
-        else:
-            report_default_directory = self.child_folder(
-                default_report_file_path, REPORTS_DIRNAME)
-
+    def _set_up_report_specifics(self):
         # clear and clean out folders considered not useful anymore
-        if os.listdir(report_default_directory):
+        report_dir_path = self._data_writer.report_dir_path
+        if os.listdir(report_dir_path):
             self._remove_excess_folders(
                 get_config_int("Reports", "max_reports_kept"),
-                report_default_directory,
+                report_dir_path,
                 get_config_bool("Reports", "remove_errored_folders"))
 
         # store timestamp in latest/time_stamp for provenance reasons
@@ -256,25 +212,6 @@ class ConfigHandler(object):
             log_report_file = os.path.join(
                 self._data_writer.run_dir_path, WARNING_LOGS_FILENAME)
             logger.set_report_File(log_report_file)
-
-    @staticmethod
-    def __make_timestamp():
-        now = datetime.datetime.now()
-        return "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
-            now.year, now.month, now.day,
-            now.hour, now.minute, now.second, now.microsecond)
-
-    def _set_up_output_folders(self, n_calls_to_run):
-        """ Sets up all outgoing folders by creating a new timestamp folder
-            for each and clearing
-
-        :param int n_calls_to_run:
-            the counter of how many times run has been called.
-        :rtype: None
-        """
-
-        # set up reports default folder
-        self._set_up_report_specifics(n_calls_to_run)
 
     def __write_named_file(self, file_name):
         app_file_name = os.path.join(
