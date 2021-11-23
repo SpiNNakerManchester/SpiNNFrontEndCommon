@@ -461,12 +461,6 @@ class FecDataView(object):
         if self.__fec_data._run_dir_path:
             return self.__fec_data._run_dir_path
 
-        if self.__fec_data._timestamp_dir_path:
-            self.__fec_data._run_dir_path = self._child_folder(
-                self.__fec_data._timestamp_dir_path,
-                f"run_{self.n_calls_to_run}")
-            return self.__fec_data._run_dir_path
-
         if self.__fec_data._status == Data_Status.MOCKED:
             return self.temporary_dir_path()
         raise self.exception("run_dir_path")
@@ -486,8 +480,9 @@ class FecDataView(object):
         :raises SpinnFrontEndException:
             If the simulation_time_step is currently unavailable
         """
-        if self.__fec_data._timestamp_dir_path:
-            return self._child_folder(self.run_dir_path, "json_files")
+        if self.__fec_data._run_dir_path:
+            return self._child_folder(
+                self.__fec_data._run_dir_path, "json_files")
 
         if self.__fec_data._status == Data_Status.MOCKED:
             return self.temporary_dir_path()
@@ -508,8 +503,9 @@ class FecDataView(object):
         :raises SpinnFrontEndException:
             If the simulation_time_step is currently unavailable
         """
-        if self.__fec_data._timestamp_dir_path:
-            return self._child_folder(self.run_dir_path, "provenance_data")
+        if self.__fec_data._run_dir_path:
+            return self._child_folder(
+                self.__fec_data._run_dir_path, "provenance_data")
 
         if self.__fec_data._status == Data_Status.MOCKED:
             return self.temporary_dir_path()
@@ -530,7 +526,7 @@ class FecDataView(object):
         :raises SimulatorNotSetupException:
             If the simulator has not been setup
         """
-        if self.__fec_data._timestamp_dir_path:
+        if self.__fec_data._run_dir_path:
             return self._child_folder(
                 self.provenance_dir_path, "app_provenance_data")
 
@@ -553,7 +549,7 @@ class FecDataView(object):
         :raises SpinnFrontEndException:
             If the simulation_time_step is currently unavailable
         """
-        if self.__fec_data._timestamp_dir_path:
+        if self.__fec_data._run_dir_path:
             return self._child_folder(
                 self.provenance_dir_path, "system_provenance_data")
 

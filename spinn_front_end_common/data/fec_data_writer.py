@@ -69,7 +69,7 @@ class FecDataWriter(FecDataView):
         self.__fec_data._n_calls_to_run = 0
         self.__fec_data._status = Data_Status.SETUP
         self.__create_reports_directory()
-        self.__create__timestamp_directory()
+        self.__create_run_directory()
 
     def start_run(self):
         self.__fec_data._n_calls_to_run += 1
@@ -81,7 +81,13 @@ class FecDataWriter(FecDataView):
     def hard_reset(self):
         self.__fec_data._hard_reset()
         self.__fec_data._status = Data_Status.HARD_RESET
-        self.__create__timestamp_directory()
+        self.__create_run_directory()
+
+    def __create_run_directory(self):
+        self.__create_timestamp_directory()
+        self.__fec_data._run_dir_path = self._child_folder(
+            self.__fec_data._timestamp_dir_path,
+            f"run_{self.n_calls_to_run}")
 
     def __create_reports_directory(self):
         default_report_file_path = get_config_str(
@@ -97,7 +103,7 @@ class FecDataWriter(FecDataView):
             self.__fec_data._report_dir_path = self._child_folder(
                 default_report_file_path, REPORTS_DIRNAME)
 
-    def __create__timestamp_directory(self):
+    def __create_timestamp_directory(self):
         while True:
             try:
                 now = datetime.datetime.now()
