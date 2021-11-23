@@ -25,6 +25,7 @@ from data_specification.constants import (
     MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
 from data_specification.exceptions import DataSpecificationException
 from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
 from spinn_front_end_common.utilities.utility_objs import (
@@ -385,7 +386,7 @@ class HostExecuteDataSpecification(object):
         return results
 
     def execute_application_data_specs(
-            self, transceiver, machine, app_id, dsg_targets,
+            self, transceiver, machine, dsg_targets,
             executable_targets, region_sizes,
             placements=None, extra_monitor_cores=None,
             extra_monitor_cores_to_ethernet_connection_map=None,
@@ -396,7 +397,6 @@ class HostExecuteDataSpecification(object):
             the python representation of the SpiNNaker machine
         :param ~spinnman.transceiver.Transceiver transceiver:
             the spinnman instance
-        :param int app_id: the application ID of the simulation
         :param dict(tuple(int,int,int),int) region_sizes:
             the coord for region sizes for each core
         :param DataSpecificationTargets dsg_targets:
@@ -427,7 +427,7 @@ class HostExecuteDataSpecification(object):
         self._java = java_caller
         self._machine = machine
         self._txrx = transceiver
-        self._app_id = app_id
+        self._app_id = FecDataView().app_id
         self._monitors = extra_monitor_cores
         self._placements = placements
         self._core_to_conn_map = extra_monitor_cores_to_ethernet_connection_map
@@ -547,7 +547,7 @@ class HostExecuteDataSpecification(object):
         return dw_write_info
 
     def execute_system_data_specs(
-            self, transceiver, machine, app_id, dsg_targets, region_sizes,
+            self, transceiver, machine, dsg_targets, region_sizes,
             executable_targets,
             java_caller=None, processor_to_app_data_base_address=None):
         """ Execute the data specs for all system targets.
@@ -556,7 +556,6 @@ class HostExecuteDataSpecification(object):
             the spinnman instance
         :param ~spinn_machine.Machine machine:
             the python representation of the spinnaker machine
-        :param int app_id: the application ID of the simulation
         :param dict(tuple(int,int,int),str) dsg_targets:
             map of placement to file path
         :param dict(tuple(int,int,int),int) region_sizes:
@@ -577,7 +576,7 @@ class HostExecuteDataSpecification(object):
         self._write_info_map = processor_to_app_data_base_address
         self._machine = machine
         self._txrx = transceiver
-        self._app_id = app_id
+        self._app_id = FecDataView().app_id
         self._java = java_caller
         impl_method = self.__java_sys if java_caller else self.__python_sys
         return impl_method(dsg_targets, executable_targets, region_sizes)

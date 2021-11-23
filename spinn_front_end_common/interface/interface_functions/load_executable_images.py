@@ -16,6 +16,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     flood_fill_binary_to_spinnaker)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
@@ -28,27 +29,26 @@ class LoadExecutableImages(object):
 
     __slots__ = []
 
-    def load_app_images(self, executable_targets, app_id, transceiver):
+    def load_app_images(self, executable_targets, transceiver):
         """
         :param ~spinnman.model.ExecutableTargets executable_targets:
-        :param int app_id:
         :param ~spinnman.transceiver.Transceiver transceiver:
         """
-        self.__load_images(executable_targets, app_id, transceiver,
+        self.__load_images(executable_targets, transceiver,
                            lambda ty: ty is not ExecutableType.SYSTEM,
                            "Loading executables onto the machine")
 
-    def load_sys_images(self, executable_targets, app_id, transceiver):
+    def load_sys_images(self, executable_targets, transceiver):
         """
         :param ~spinnman.model.ExecutableTargets executable_targets:
         :param int app_id:
         :param ~spinnman.transceiver.Transceiver transceiver:
         """
-        self.__load_images(executable_targets, app_id, transceiver,
+        self.__load_images(executable_targets, transceiver,
                            lambda ty: ty is ExecutableType.SYSTEM,
                            "Loading system executables onto the machine")
 
-    def __load_images(self, executable_targets, app_id, txrx, filt, label):
+    def __load_images(self, executable_targets, txrx, filt, label):
         """
         :param ~.ExecutableTargets executable_targets:
         :param int app_id:
@@ -56,6 +56,7 @@ class LoadExecutableImages(object):
         :param callable(ExecutableType,bool) filt:
         :param str label
         """
+        app_id = FecDataView().app_id
         # Compute what work is to be done here
         binaries, cores = self.filter_targets(executable_targets, filt)
 

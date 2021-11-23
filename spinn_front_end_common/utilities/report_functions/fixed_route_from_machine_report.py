@@ -22,28 +22,27 @@ class FixedRouteFromMachineReport(object):
     """ Generate a report of the fixed routes from the machine.
     """
 
-    def __call__(self, transceiver, machine, app_id):
+    def __call__(self, transceiver, machine):
         """ Writes the fixed routes from the machine
 
         :param ~spinnman.transceiver.Transceiver transceiver: spinnMan instance
         :param ~spinn_machine.Machine machine: SpiNNMachine instance
-        :param int app_id: the application ID the fixed routes were loaded with
         """
         file_name = os.path.join(
             FecDataView().run_dir_path, "fixed_route_routers")
 
         with open(file_name, "w") as output:
-            self._write_fixed_routers(output, transceiver, machine, app_id)
+            self._write_fixed_routers(output, transceiver, machine)
 
-    def _write_fixed_routers(self, f, txrx, machine, app_id):
+    def _write_fixed_routers(self, f, txrx, machine):
         """ How to actually describe the fixed routes
 
         :param f: Where we are writing
         :param ~spinnman.transceiver.Transceiver txrx:
         :param ~spinn_machine.Machine machine:
-        :param int app_id: Which application is running on the machine
         :rtype: None
         """
+        app_id = FecDataView().app_id
         progress = ProgressBar(machine.n_chips, "Writing fixed route report")
         f.write(" x    y       route         [cores][links]\n")
         for chip in progress.over(machine.chips):

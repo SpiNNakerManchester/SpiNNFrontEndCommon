@@ -16,13 +16,13 @@
 from collections import defaultdict
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.machine import SourceSegmentedSDRAMMachinePartition
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
 class SDRAMOutgoingPartitionAllocator(object):
 
-    def __call__(self, machine_graph, placements, app_id,
-                 transceiver=None):
+    def __call__(self, machine_graph, placements, transceiver=None):
 
         progress_bar = ProgressBar(
             total_number_of_things_to_do=len(machine_graph.vertices),
@@ -60,7 +60,8 @@ class SDRAMOutgoingPartitionAllocator(object):
                 # allocate
                 if transceiver is not None:
                     sdram_base_address = transceiver.malloc_sdram(
-                        placement.x, placement.y, total_sdram, app_id)
+                        placement.x, placement.y, total_sdram,
+                        FecDataView().app_id)
                 else:
                     sdram_base_address = virtual_usage[
                         placement.x, placement.y]

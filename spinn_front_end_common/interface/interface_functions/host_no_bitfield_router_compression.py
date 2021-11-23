@@ -22,6 +22,7 @@ from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, Router
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.system_control_logic import (
     run_system_application)
@@ -36,43 +37,8 @@ _SDRAM_TAG = 1
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def mundy_on_chip_router_compression(
-        routing_tables, transceiver, machine, app_id,
-        system_provenance_folder):
-    """ Load routing tables and compress them using Andrew Mundy's algorithm.
-
-    This uses an APLX built by Mundy which no longer compiles but still works
-    with the current tool chain
-
-    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
-        the memory routing tables to be compressed
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        How to talk to the machine
-    :param ~spinn_machine.Machine machine:
-        the SpiNNaker machine representation
-    :param int app_id: the application ID used by the main application
-    :param str system_provenance_folder: the path to where to write the data
-    :param bool compress_only_when_needed:
-        If True, the compressor will only compress if the table doesn't fit in
-        the current router space, otherwise it will just load the table
-    :raises SpinnFrontEndException: If compression fails
-    """
-    # pylint: disable=too-many-arguments, unused-argument
-    msg = (
-        "MundyOnChipRouterCompression is no longer supported. "
-        "To use the currently recommended compression algorithm remove "
-        "loading_algorithms from your cfg. "
-        "While not recommended, OrderedCoveringOnChipRouterCompression "
-        "provides the same algorithm but has been updated to use the "
-        "current tools.")
-    print(msg)
-    logger.warning(msg)
-    raise NotImplementedError(msg)
-
-
 def pair_compression(
-        routing_tables, transceiver, executable_finder,
-        machine, app_id):
+        routing_tables, transceiver, executable_finder, machine):
     """ Load routing tables and compress then using the Pair Algorithm.
 
     See ``pacman/operations/router_compressors/pair_compressor.py`` which is
@@ -87,7 +53,6 @@ def pair_compression(
         ~spinn_utilities.executable_finder.ExecutableFinder
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine representation
-    :param int app_id: the application ID used by the main application
     :param bool compress_as_much_as_possible:
         If False, the compressor will only reduce the table until it fits in
         the router space, otherwise it will try to reduce until it until it
@@ -98,14 +63,14 @@ def pair_compression(
     binary_path = executable_finder.get_executable_path(
         "simple_pair_compressor.aplx")
     compression = Compression(
-        app_id, binary_path, machine, routing_tables, transceiver,
+        binary_path, machine, routing_tables, transceiver,
         "Running pair routing table compression on chip", result_register=1)
     compression.compress()
 
 
 def ordered_covering_compression(
         routing_tables, transceiver, executable_finder,
-        machine, app_id):
+        machine):
     """ Load routing tables and compress then using the unordered Algorithm.
 
     To the best of our knowledge this is the same algorithm as
@@ -121,30 +86,16 @@ def ordered_covering_compression(
         ~spinn_utilities.executable_finder.ExecutableFinder
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine representation
-    :param int app_id: the application ID used by the main application
     :raises SpinnFrontEndException: If compression fails
     """
     # pylint: disable=too-many-arguments
     binary_path = executable_finder.get_executable_path(
         "simple_unordered_compressor.aplx")
     compression = Compression(
-        app_id, binary_path, machine, routing_tables, transceiver,
+        binary_path, machine, routing_tables, transceiver,
         "Running unordered routing table compression on chip",
         result_register=1)
     compression.compress()
-
-
-def unordered_compression(
-        routing_tables, transceiver, executable_finder,
-        machine, app_id):
-    """ DEPRECATED use ordered_covering_compression """
-    logger.warning(
-        "UnorderedOnChipRouterCompression algorithm name is deprecated. "
-        "Please use OrderedCoveringOnChipRouterCompression instead. "
-        "loading_algorithms from your cfg to use defaults")
-    ordered_covering_compression(
-        routing_tables, transceiver, executable_finder,
-        machine, app_id)
 
 
 class Compression(object):
@@ -153,7 +104,6 @@ class Compression(object):
     """
 
     __slots__ = [
-        "_app_id",
         "_binary_path",
         "_compress_as_much_as_possible",
         "_compress_only_when_needed",
@@ -166,10 +116,9 @@ class Compression(object):
         "__failures"]
 
     def __init__(
-            self, app_id, binary_path, machine, routing_tables, transceiver,
+            self, binary_path, machine, routing_tables, transceiver,
             progress_text, result_register):
         """
-        :param int app_id: the application ID used by the main application
         :param str binary_path: What binary to run
         :param ~spinn_machine.Machine machine: The machine model
         :param routing_tables: the memory routing tables to be compressed
@@ -181,7 +130,6 @@ class Compression(object):
         :param int result_register:
             number of the user register to check for the result code
         """
-        self._app_id = app_id
         self._binary_path = binary_path
         self._compress_as_much_as_possible = get_config_bool(
             "Mapping", "router_table_compress_as_far_as_possible")
@@ -317,14 +265,14 @@ class Compression(object):
         data = b''
         if self._compress_only_when_needed is None:
             data += _THREE_WORDS.pack(
-                self._app_id,
+                FecDataView().app_id,
                 int(self._compress_as_much_as_possible),
                 # Write the size of the table
                 table.number_of_entries)
         else:
             # Mundy's compressor can not be changed so uses it own structure
             data += _FOUR_WORDS.pack(
-                self._app_id, int(self._compress_only_when_needed),
+                FecDataView().app_id, int(self._compress_only_when_needed),
                 int(self._compress_as_much_as_possible),
                 # Write the size of the table
                 table.number_of_entries)

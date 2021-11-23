@@ -65,7 +65,6 @@ class _FecDataModel(object):
         """
         Clears out all data
         """
-        self._app_id = None
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
         self._n_calls_to_run = None
@@ -82,6 +81,7 @@ class _FecDataModel(object):
         """
         Clears out all data
         """
+        self._app_id = None
         self._timestamp_dir_path = None
 
 

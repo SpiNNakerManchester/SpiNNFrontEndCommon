@@ -71,7 +71,7 @@ class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
         targets.add_processor("test2.aplx", 0, 1, 0, SIM)
         targets.add_processor("test2.aplx", 0, 1, 1, SIM)
         targets.add_processor("test2.aplx", 0, 1, 2, SIM)
-        loader.load_app_images(targets, 30, transceiver)
+        loader.load_app_images(targets, transceiver)
 
 
 if __name__ == "__main__":

@@ -36,6 +36,7 @@ from pacman.operations.router_compressors.ordered_covering_router_compressor\
 from spinn_front_end_common.abstract_models.\
     abstract_supports_bit_field_routing_compression import (
         AbstractSupportsBitFieldRoutingCompression)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.report_functions.\
     bit_field_compressor_report import (
         generate_provenance_item)
@@ -114,9 +115,8 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
         "failed to complete when running on chip"
 
     def __call__(
-            self, routing_tables, transceiver, machine, app_id,
-            machine_graph, placements, executable_finder,
-            routing_infos, executable_targets,
+            self, routing_tables, transceiver, machine, machine_graph,
+            placements, executable_finder, routing_infos, executable_targets,
             compress_as_much_as_possible=False):
         """ entrance for routing table compression with bit field
 
@@ -125,7 +125,6 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             ~pacman.model.routing_tables.MulticastRoutingTables
         :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
         :param ~spinn_machine.Machine machine: spinnMachine instance
-        :param int app_id: app id of the application
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             machine graph
         :param ~pacman.model.placements.Placements placements:
@@ -141,6 +140,7 @@ class MachineBitFieldRouterCompressor(object, metaclass=AbstractBase):
             whether to compress as much as possible
         :return: where the compressors ran
         """
+        app_id = FecDataView().app_id
         if len(routing_tables.routing_tables) == 0:
             return ExecutableTargets()
 

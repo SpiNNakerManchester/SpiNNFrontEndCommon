@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.data import FecDataView
 
 
 class RoutingTableLoader(object):
@@ -21,7 +22,7 @@ class RoutingTableLoader(object):
     """
     __slots__ = []
 
-    def __call__(self, router_tables, app_id, transceiver, machine):
+    def __call__(self, router_tables, transceiver, machine):
         """
         :param router_tables:
         :type router_tables:
@@ -32,7 +33,7 @@ class RoutingTableLoader(object):
         """
         progress = ProgressBar(router_tables.routing_tables,
                                "Loading routing data onto the machine")
-
+        app_id = FecDataView().app_id
         # load each router table that is needed for the application to run into
         # the chips SDRAM
         for table in progress.over(router_tables.routing_tables):

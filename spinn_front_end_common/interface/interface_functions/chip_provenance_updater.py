@@ -20,6 +20,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.model.enums import CPUState
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -36,19 +37,19 @@ class ChipProvenanceUpdater(object):
 
     __slots__ = ["__all_cores", "__app_id", "__txrx"]
 
-    def __call__(self, txrx, app_id, all_core_subsets):
+    def __call__(self, txrx, all_core_subsets):
         """
         :param ~spinnman.transceiver.Transceiver txrx:
         :param int app_id:
         :param ~spinn_machine.CoreSubsets all_core_subsets:
         """
         self.__all_cores = all_core_subsets
-        self.__app_id = app_id
+        self.__app_id = FecDataView().app_id
         self.__txrx = txrx
 
         # check that the right number of processors are in sync
         processors_completed = txrx.get_core_state_count(
-            app_id, CPUState.FINISHED)
+            self.__app_id, CPUState.FINISHED)
         total_processors = len(all_core_subsets)
         left_to_do_cores = total_processors - processors_completed
 

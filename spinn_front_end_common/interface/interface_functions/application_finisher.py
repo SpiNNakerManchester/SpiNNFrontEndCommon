@@ -19,6 +19,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.utilities.exceptions import (
@@ -34,9 +35,8 @@ class ApplicationFinisher(object):
     """
     __slots__ = []
 
-    def __call__(self, app_id, txrx, executable_types):
+    def __call__(self, txrx, executable_types):
         """
-        :param int app_id:
         :param ~spinnman.transceiver.Transceiver txrx:
         :param executable_types:
         :type executable_types:
@@ -44,6 +44,7 @@ class ApplicationFinisher(object):
         :raises ExecutableFailedToStopException:
         """
 
+        app_id = FecDataView().app_id
         total_processors = \
             len(executable_types[ExecutableType.USES_SIMULATION_INTERFACE])
         all_core_subsets = \

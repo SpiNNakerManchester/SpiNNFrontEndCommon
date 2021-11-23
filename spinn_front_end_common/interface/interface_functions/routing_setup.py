@@ -27,12 +27,11 @@ class RoutingSetup(object):
     """
     __slots__ = []
 
-    def __call__(self, router_tables, app_id, transceiver, machine):
+    def __call__(self, router_tables, transceiver, machine):
         """
         :param router_tables:
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
-        :param int app_id:
         :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~spinn_machine.Machine machine:
         """

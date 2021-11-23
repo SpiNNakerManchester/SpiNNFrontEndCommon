@@ -38,7 +38,7 @@ class ApplicationRunner(object):
     # Wraps up as a PACMAN algorithm
     def __call__(
             self, buffer_manager, notification_interface, executable_types,
-            app_id, txrx, runtime, no_sync_changes,
+            txrx, runtime, no_sync_changes,
             time_threshold, machine, run_until_complete=False):
         """
         :param BufferManager buffer_manager:
@@ -46,7 +46,6 @@ class ApplicationRunner(object):
         :param executable_types:
         :type executable_types:
             dict(ExecutableType,~spinn_machine.CoreSubsets)
-        :param int app_id:
         :param ~spinnman.transceiver.Transceiver txrx:
         :param int runtime:
         :param int no_sync_changes: Number of synchronisation changes
@@ -62,7 +61,7 @@ class ApplicationRunner(object):
         logger.info("*** Running simulation... *** ")
 
         self.__txrx = txrx
-        self.__app_id = app_id
+        self.__app_id = FecDataView().app_id
         self.__executable_types = executable_types
         self.__syncs = no_sync_changes
 
