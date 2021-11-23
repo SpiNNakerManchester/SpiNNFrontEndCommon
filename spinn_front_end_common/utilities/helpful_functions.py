@@ -19,7 +19,7 @@ import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
-from . import utility_calls
+from data_specification.constants import APP_PTR_TABLE_HEADER_BYTE_SIZE
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .constants import MICRO_TO_MILLISECOND_CONVERSION
@@ -90,6 +90,15 @@ def write_address_to_user1(txrx, x, y, p, address):
     user_1_address = txrx.get_user_1_register_address_from_core(p)
     txrx.write_memory(x, y, user_1_address, address)
 
+def get_region_base_address_offset(app_data_base_address, region):
+    """ Find the address of the of a given region for the DSG
+
+    :param int app_data_base_address: base address for the core
+    :param int region: the region ID we're looking for
+    """
+    return (app_data_base_address +
+            APP_PTR_TABLE_HEADER_BYTE_SIZE + (region * 4))
+
 
 def locate_memory_region_for_placement(placement, region, transceiver):
     """ Get the address of a region for a placement.
@@ -106,8 +115,8 @@ def locate_memory_region_for_placement(placement, region, transceiver):
         placement.x, placement.y, placement.p).user[0]
 
     # Get the position of the region in the pointer table
-    region_offset = utility_calls.get_region_base_address_offset(
-        regions_base_address, region)
+    region_offset = \
+        get_region_base_address_offset(regions_base_address, region)
 
     # Get the actual address of the region
     return transceiver.read_word(placement.x, placement.y, region_offset)

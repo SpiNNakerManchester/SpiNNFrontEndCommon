@@ -21,7 +21,6 @@ import os
 import tempfile
 import threading
 from spinn_utilities.config_holder import get_config_bool
-from data_specification.constants import APP_PTR_TABLE_HEADER_BYTE_SIZE
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
 from spinn_front_end_common.data import FecDataView
@@ -48,15 +47,6 @@ def _mkdir(directory):
             # Assume an external race beat us
             pass
 
-
-def get_region_base_address_offset(app_data_base_address, region):
-    """ Find the address of the of a given region for the DSG
-
-    :param int app_data_base_address: base address for the core
-    :param int region: the region ID we're looking for
-    """
-    return (app_data_base_address +
-            APP_PTR_TABLE_HEADER_BYTE_SIZE + (region * 4))
 
 
 _DAT_TMPL = "{}_dataSpec_{}_{}_{}.dat"

@@ -19,8 +19,6 @@ import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, Router
-from spinn_front_end_common.utilities.utility_calls import (
-    get_region_base_address_offset)
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
@@ -38,7 +36,7 @@ from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE, DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES,
     BYTES_PER_WORD, BYTES_PER_KB)
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset)
+    convert_vertices_to_core_subset, get_region_base_address_offset)
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_state_from_failure)
 from .data_speed_up_packet_gatherer_machine_vertex import (

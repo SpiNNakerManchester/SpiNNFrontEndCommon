@@ -19,8 +19,10 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import SDRAM
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
+from spinn_front_end_common.utilities.helpful_functions import (
+    get_region_base_address_offset)
 from spinn_front_end_common.utilities.utility_calls import (
-    get_region_base_address_offset, get_data_spec_and_file_writer_filename)
+    get_data_spec_and_file_writer_filename)
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.data import FecDataView
