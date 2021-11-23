@@ -36,7 +36,7 @@ class WriteJsonMachine(object):
 
         :param ~spinn_machine.Machine machine: Machine to convert
         :param json_folder: The folder (if not the standard one)
-        to which the JSON are being (over)written.
+            to which the JSON are being (over)written.
         :type json_folder: None or str
         :return: the name of the generated file
         :rtype: str
@@ -54,7 +54,7 @@ class WriteJsonMachine(object):
         :param progress: Progress Bar if one used
         :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
         :param json_folder: The folder (if not the standard one)
-        to which the JSON are being (over)written.
+            to which the JSON are being (over)written.
         :type json_folder: None or str
         :return: the name of the generated file
         :rtype: str
