@@ -90,6 +90,7 @@ def write_address_to_user1(txrx, x, y, p, address):
     user_1_address = txrx.get_user_1_register_address_from_core(p)
     txrx.write_memory(x, y, user_1_address, address)
 
+
 def get_region_base_address_offset(app_data_base_address, region):
     """ Find the address of the of a given region for the DSG
 

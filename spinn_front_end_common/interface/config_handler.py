@@ -19,7 +19,6 @@ import logging
 import os
 import errno
 import shutil
-import time
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
 from spinn_utilities.config_holder import (

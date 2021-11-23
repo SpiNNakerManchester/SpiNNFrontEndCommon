@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import tempfile
 from spinn_utilities.log import FormatAdapter
 from pacman.executor import injection_decorator
 from spinn_front_end_common.interface.simulator_status import (
@@ -128,4 +127,3 @@ def setup_for_unittest():
     __unittest_mode = True
     injection_decorator._instances = list()
     __temp_dir = None
-

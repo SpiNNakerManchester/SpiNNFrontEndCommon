@@ -48,7 +48,6 @@ def _mkdir(directory):
             pass
 
 
-
 _DAT_TMPL = "{}_dataSpec_{}_{}_{}.dat"
 _RPT_TMPL = "{}_dataSpec_{}_{}_{}.txt"
 _RPT_DIR = "data_spec_text_files"

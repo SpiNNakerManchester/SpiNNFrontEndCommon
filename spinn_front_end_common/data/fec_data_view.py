@@ -407,7 +407,6 @@ class FecDataView(object):
                 tempfile.TemporaryDirectory()
         return self.__fec_data._temporary_directory.name
 
-
     @property
     def report_dir_path(self):
         """
