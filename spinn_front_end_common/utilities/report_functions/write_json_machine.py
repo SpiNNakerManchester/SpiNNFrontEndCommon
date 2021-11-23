@@ -31,34 +31,43 @@ class WriteJsonMachine(object):
 
     """
 
-    def __call__(self, machine):
+    def __call__(self, machine, json_folder=None):
         """ Runs the code to write the machine in readable JSON.
 
         :param ~spinn_machine.Machine machine: Machine to convert
+        :param json_folder: The folder (if not the standard one)
+        to which the JSON are being written.
 
             .. warning::
                  The files in this folder will be overwritten!
-
+        :type json_folder: None or str
         :return: the name of the generated file
         :rtype: str
         """
         # Steps are tojson, validate and writefile
         progress = ProgressBar(3, "Converting to JSON machine")
 
-        return WriteJsonMachine.write_json(machine, progress)
+        return WriteJsonMachine.write_json(machine, progress, json_folder)
 
     @staticmethod
-    def write_json(machine, progress=None):
+    def write_json(machine, progress=None, json_folder=None):
         """ Runs the code to write the machine in Java readable JSON.
 
         :param ~spinn_machine.Machine machine: Machine to convert
         :param progress: Progress Bar if one used
         :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
+        :param json_folder: The folder (if not the standard one)
+        to which the JSON are being written.
+
+            .. warning::
+                 The files in this folder will be overwritten!
+        :type json_folder: None or str
         :return: the name of the generated file
         :rtype: str
         """
-
-        file_path = os.path.join(FecDataView().json_dir_path, MACHINE_FILENAME)
+        if json_folder is None:
+            json_folder = FecDataView().json_dir_path
+        file_path = os.path.join(json_folder, MACHINE_FILENAME)
         if not os.path.exists(file_path):
             json_obj = to_json(machine)
 
