@@ -18,7 +18,6 @@ import logging
 import math
 import os
 import time
-from spinn_utilities.data.data_status import Data_Status
 from spinn_utilities.data.utils_data_writer import UtilsDataWriter
 from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter

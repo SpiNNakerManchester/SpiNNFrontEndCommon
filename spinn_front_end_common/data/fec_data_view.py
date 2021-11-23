@@ -15,7 +15,6 @@
 
 import errno
 import os
-import tempfile
 from spinn_utilities.data.data_status import Data_Status
 from spinn_utilities.data import UtilsDataView
 
