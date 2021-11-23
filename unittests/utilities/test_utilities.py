@@ -17,8 +17,10 @@ import os.path
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_front_end_common.interface.config_setup import unittest_setup
+from spinn_front_end_common.utilities.helpful_functions import (
+    get_region_base_address_offset)
 from spinn_front_end_common.utilities.utility_calls import (
-    get_region_base_address_offset, get_data_spec_and_file_writer_filename)
+     get_data_spec_and_file_writer_filename)
 
 
 class TestingUtilities(unittest.TestCase):
