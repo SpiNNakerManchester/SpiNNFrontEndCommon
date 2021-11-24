@@ -25,9 +25,9 @@ import spinnman.transceiver as transceiver
 
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
-    import (WriteJsonMachine, MACHINE_FILENAME)
+    import (write_json_machine, MACHINE_FILENAME)
 from spinn_front_end_common.interface.interface_functions import (
-    SpallocAllocator)
+    spalloc_allocator)
 
 
 class TestWriteJson(unittest.TestCase):
@@ -114,11 +114,9 @@ class TestWriteJson(unittest.TestCase):
 
         machine = trans.get_machine_details()
 
-        jsonAlgo = WriteJsonMachine()
-
         folder = "spinn4"
         self._remove_old_json(folder)
-        filename = jsonAlgo(machine, folder)
+        filename = write_json_machine(machine, folder)
 
         self.json_compare(filename, "spinn4.json")
 
@@ -132,7 +130,7 @@ class TestWriteJson(unittest.TestCase):
 
         folder = "spinn4_fiddle"
         self._remove_old_json(folder)
-        filename = jsonAlgo(machine, folder)
+        filename = write_json_machine(machine, folder, True)
 
         self.json_compare(filename, "spinn4_fiddle.json")
         trans.close()
@@ -144,10 +142,9 @@ class TestWriteJson(unittest.TestCase):
             "Machine", "spalloc_user", "Integration testing ok to kill")
         set_config("Machine", "spalloc_port", self.spin2Port)
 
-        spallocAlgo = SpallocAllocator()
         try:
             (hostname, version, _, _, _, _, _, m_allocation_controller) = \
-                spallocAlgo(spalloc_server=self.spalloc, n_chips=20)
+                spalloc_allocator(spalloc_server=self.spalloc, n_chips=20)
         except (JobDestroyedError):
             self.skipTest("Skipping as getting Job failed")
 
@@ -157,11 +154,9 @@ class TestWriteJson(unittest.TestCase):
 
         m_allocation_controller.close()
 
-        jsonAlgo = WriteJsonMachine()
-
         folder = "spinn2"
         self._remove_old_json(folder)
-        filename = jsonAlgo(machine, folder)
+        filename = write_json_machine(machine, folder, False)
 
         self.json_compare(filename, "spinn2.json")
         trans.close()

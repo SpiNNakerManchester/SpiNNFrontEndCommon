@@ -30,32 +30,39 @@ from spinn_front_end_common.utilities.helpful_functions import (
     generate_unique_folder_name, n_word_struct)
 
 
-class DSGRegionReloader(object):
+def dsg_region_reloader(transceiver, placements, hostname):
+    reloader = _DSGRegionReloader(transceiver, hostname)
+    reloader._run(placements)
+
+
+class _DSGRegionReloader(object):
     """ Regenerates and reloads the data specifications.
     """
     __slots__ = ["_txrx", "_host", "_data_dir"]
 
-    def __call__(
-            self, transceiver, placements, hostname):
+    def __init__(self, transceiver, hostname):
         """
         :param ~spinnman.transceiver.Transceiver transceiver:
             SpiNNMan transceiver for communication
-        :param ~pacman.model.placements.Placements placements:
-            the list of placements of the machine graph to cores
         :param str hostname:
             the machine name
         """
-        # pylint: disable=too-many-arguments, attribute-defined-outside-init
         self._txrx = transceiver
         self._host = hostname
 
+    def _run(self, placements):
+        """
+        :param ~pacman.model.placements.Placements placements:
+            the list of placements of the machine graph to cores
+        """
+        # pylint: disable=too-many-arguments, attribute-defined-outside-init
+
         # build file paths for reloaded stuff
         run_dir_path = FecDataView().run_dir_path
-        app_data_dir = generate_unique_folder_name(
+        self._data_dir = generate_unique_folder_name(
             run_dir_path, "reloaded_data_regions", "")
-        if not os.path.exists(app_data_dir):
-            os.makedirs(app_data_dir)
-        self._data_dir = app_data_dir
+        if not os.path.exists(self._data_dir):
+            os.makedirs(self._data_dir)
 
         report_dir = None
         if get_config_bool("Reports", "write_text_specs"):
@@ -70,7 +77,7 @@ class DSGRegionReloader(object):
             self._regenerate_data_spec_for_vertices(placement)
 
         # App data directory can be removed as should be empty
-        os.rmdir(app_data_dir)
+        os.rmdir(self._data_dir)
 
     def _regenerate_data_spec_for_vertices(self, placement):
         """

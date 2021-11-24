@@ -23,7 +23,7 @@ from spinnman.model import IOBuffer
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    ChipIOBufExtractor)
+    chip_io_buf_extractor)
 from spinnman.model import ExecutableTargets
 from spinnman.transceiver import Transceiver
 
@@ -66,7 +66,6 @@ def mock_aplx(name):
     return os.path.join(path, "mock{}.aplx".format(name))
 
 
-extractor = ChipIOBufExtractor()
 executableFinder = ExecutableFinder([path])
 
 transceiver = _PretendTransceiver(
@@ -96,7 +95,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
     def testCallSimple(self):
         folder = FecDataView().app_provenance_dir_path
-        error_entries, warn_entries = extractor(
+        error_entries, warn_entries = chip_io_buf_extractor(
             transceiver, executable_targets=executable_targets,
             executable_finder=None)
         set_config("Reports", "extract_iobuf_from_cores", "None")
@@ -132,7 +131,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         folder = FecDataView().app_provenance_dir_path
         set_config("Reports", "extract_iobuf_from_cores", "0,0,2:0,0,3")
         set_config("Reports", "extract_iobuf_from_binary_types", "None")
-        error_entries, warn_entries = extractor(
+        error_entries, warn_entries = chip_io_buf_extractor(
             transceiver, executable_targets=executable_targets,
             executable_finder=None)
         testfile = os.path.join(
@@ -167,7 +166,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         set_config("Reports", "extract_iobuf_from_cores", "None")
         set_config("Reports", "extract_iobuf_from_binary_types",
                    fooaplx + "," + alphaaplx)
-        error_entries, warn_entries = extractor(
+        error_entries, warn_entries = chip_io_buf_extractor(
             transceiver, executable_targets=executable_targets,
             executable_finder=executableFinder)
         testfile = os.path.join(
@@ -198,7 +197,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         set_config("Reports", "extract_iobuf_from_cores", "0,0,2:1,1,1")
         set_config("Reports", "extract_iobuf_from_binary_types",
                    fooaplx + "," + alphaaplx)
-        error_entries, warn_entries = extractor(
+        error_entries, warn_entries = chip_io_buf_extractor(
             transceiver, executable_targets=executable_targets,
             executable_finder=executableFinder)
         testfile = os.path.join(

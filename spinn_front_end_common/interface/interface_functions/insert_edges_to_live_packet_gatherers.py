@@ -19,24 +19,13 @@ from pacman.model.graphs.machine import MachineEdge
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
-class InsertEdgesToLivePacketGatherers(object):
-    """ Add edges from the recorded vertices to the local Live PacketGatherers.
+def insert_edges_to_live_packet_gatherers(
+        live_packet_gatherer_parameters, placements,
+        live_packet_gatherers_to_vertex_mapping, machine,
+        machine_graph, application_graph=None, n_keys_map=None):
     """
+        Add edges from the recorded vertices to the local Live PacketGatherers.
 
-    __slots__ = [
-        # the mapping of LPG parameters to machine vertices
-        "_lpg_to_vertex",
-        # the SpiNNaker machine
-        "_machine",
-        # the placements object
-        "_placements"
-    ]
-
-    def __call__(
-            self, live_packet_gatherer_parameters, placements,
-            live_packet_gatherers_to_vertex_mapping, machine,
-            machine_graph, application_graph=None, n_keys_map=None):
-        """
         :param live_packet_gatherer_parameters: the set of parameters
         :type live_packet_gatherer_parameters:
             dict(LivePacketGatherParameters,
@@ -59,13 +48,63 @@ class InsertEdgesToLivePacketGatherers(object):
         :param n_keys_map: key map
         :type n_keys_map:
             ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
-        """
-        # pylint: disable=too-many-arguments, attribute-defined-outside-init
+    """
+    inserter = _InsertEdgesToLivePacketGatherers(
+        placements, live_packet_gatherers_to_vertex_mapping, machine)
+    inserter._run(live_packet_gatherer_parameters, machine_graph,
+                  application_graph, n_keys_map)
 
+
+class _InsertEdgesToLivePacketGatherers(object):
+    """ Add edges from the recorded vertices to the local Live PacketGatherers.
+    """
+
+    __slots__ = [
+        # the mapping of LPG parameters to machine vertices
+        "_lpg_to_vertex",
+        # the SpiNNaker machine
+        "_machine",
+        # the placements object
+        "_placements"
+    ]
+
+    def __init__(self, placements, live_packet_gatherers_to_vertex_mapping,
+                 machine):
+        """
+
+        :param ~pacman.model.placements.Placements placements:
+            the placements object
+        :param live_packet_gatherers_to_vertex_mapping:
+            the mapping of LPG parameters and the machine vertices associated
+            with it
+        :type live_packet_gatherers_to_vertex_mapping:
+            dict(LivePacketGatherParameters,
+            tuple(LivePacketGather or None,
+            dict(tuple(int,int),LivePacketGatherMachineVertex)))
+        :param ~spinn_machine.Machine machine: the SpiNNaker machine
+        """
         # These are all contextual, and unmodified by this algorithm
         self._lpg_to_vertex = live_packet_gatherers_to_vertex_mapping
         self._machine = machine
         self._placements = placements
+
+    def _run(self, live_packet_gatherer_parameters,
+             machine_graph, application_graph=None, n_keys_map=None):
+        """
+        :param live_packet_gatherer_parameters: the set of parameters
+        :type live_packet_gatherer_parameters:
+            dict(LivePacketGatherParameters,
+            list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph
+        :param application_graph: the application graph
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
+        :param n_keys_map: key map
+        :type n_keys_map:
+            ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
+        """
+        # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
         progress = ProgressBar(
             live_packet_gatherer_parameters,

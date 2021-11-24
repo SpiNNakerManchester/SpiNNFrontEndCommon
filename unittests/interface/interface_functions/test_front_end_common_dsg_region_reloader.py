@@ -23,7 +23,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    DSGRegionReloader)
+    dsg_region_reloader)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.helpful_functions import (
     get_region_base_address_offset, n_word_struct)
@@ -132,8 +132,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         }
         transceiver = _MockTransceiver(user_0_addresses)
 
-        reloader = DSGRegionReloader()
-        reloader.__call__(transceiver, placements, "localhost")
+        dsg_region_reloader(transceiver, placements, "localhost")
 
         regions_rewritten = transceiver._regions_rewritten
 

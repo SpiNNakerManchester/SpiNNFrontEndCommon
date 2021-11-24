@@ -19,55 +19,53 @@ from pacman.model.graphs.machine import SourceSegmentedSDRAMMachinePartition
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
-class SDRAMOutgoingPartitionAllocator(object):
+def sdram_outgoing_partition_allocator(
+        machine_graph, placements, app_id, transceiver=None):
 
-    def __call__(self, machine_graph, placements, app_id,
-                 transceiver=None):
+    progress_bar = ProgressBar(
+        total_number_of_things_to_do=len(machine_graph.vertices),
+        string_describing_what_being_progressed=(
+            "Allocating SDRAM for SDRAM outgoing egde partitions"))
 
-        progress_bar = ProgressBar(
-            total_number_of_things_to_do=len(machine_graph.vertices),
-            string_describing_what_being_progressed=(
-                "Allocating SDRAM for SDRAM outgoing egde partitions"))
+    if transceiver is None:
+        virtual_usage = defaultdict(int)
 
-        if transceiver is None:
-            virtual_usage = defaultdict(int)
+    for machine_vertex in machine_graph.vertices:
+        sdram_partitions = (
+            machine_graph.get_sdram_edge_partitions_starting_at_vertex(
+                machine_vertex))
+        for sdram_partition in sdram_partitions:
 
-        for machine_vertex in machine_graph.vertices:
-            sdram_partitions = (
-                machine_graph.get_sdram_edge_partitions_starting_at_vertex(
-                    machine_vertex))
-            for sdram_partition in sdram_partitions:
+            # get placement, ones where the src is multiple,
+            # you need to ask for the first pre vertex
+            if isinstance(
+                    sdram_partition, SourceSegmentedSDRAMMachinePartition):
+                placement = placements.get_placement_of_vertex(
+                    next(iter(sdram_partition.pre_vertices)))
+            else:
+                placement = placements.get_placement_of_vertex(
+                    sdram_partition.pre_vertex)
 
-                # get placement, ones where the src is multiple,
-                # you need to ask for the first pre vertex
-                if isinstance(
-                        sdram_partition, SourceSegmentedSDRAMMachinePartition):
-                    placement = placements.get_placement_of_vertex(
-                        next(iter(sdram_partition.pre_vertices)))
-                else:
-                    placement = placements.get_placement_of_vertex(
-                        sdram_partition.pre_vertex)
+            # total sdram
+            total_sdram = (sdram_partition.total_sdram_requirements())
 
-                # total sdram
-                total_sdram = (sdram_partition.total_sdram_requirements())
+            # if bust, throw exception
+            if total_sdram == 0:
+                raise SpinnFrontEndException(
+                    "Cannot allocate sdram size of 0 for "
+                    "partition {}".format(sdram_partition))
 
-                # if bust, throw exception
-                if total_sdram == 0:
-                    raise SpinnFrontEndException(
-                        "Cannot allocate sdram size of 0 for "
-                        "partition {}".format(sdram_partition))
+            # allocate
+            if transceiver is not None:
+                sdram_base_address = transceiver.malloc_sdram(
+                    placement.x, placement.y, total_sdram, app_id)
+            else:
+                sdram_base_address = virtual_usage[
+                    placement.x, placement.y]
+                virtual_usage[placement.x, placement.y] += total_sdram
 
-                # allocate
-                if transceiver is not None:
-                    sdram_base_address = transceiver.malloc_sdram(
-                        placement.x, placement.y, total_sdram, app_id)
-                else:
-                    sdram_base_address = virtual_usage[
-                        placement.x, placement.y]
-                    virtual_usage[placement.x, placement.y] += total_sdram
+            # update
+            sdram_partition.sdram_base_address = sdram_base_address
 
-                # update
-                sdram_partition.sdram_base_address = sdram_base_address
-
-            progress_bar.update()
-        progress_bar.end()
+        progress_bar.update()
+    progress_bar.end()
