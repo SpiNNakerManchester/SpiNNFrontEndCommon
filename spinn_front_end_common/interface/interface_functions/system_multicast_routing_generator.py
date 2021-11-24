@@ -31,26 +31,42 @@ ROUTING_MASK = 0xFFFFFFF8
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class SystemMulticastRoutingGenerator(object):
+def system_multicast_routing_generator(
+        machine, extra_monitor_cores, placements):
+    """ Generates routing table entries used by the data in processes with the\
+        extra monitor cores.
+
+    :param ~spinn_machine.Machine machine:
+    :param extra_monitor_cores:
+    :type extra_monitor_cores:
+        dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
+    :param ~pacman.model.placements.Placements placements:
+    :return: routing tables, destination-to-key map,
+        board-locn-to-timeout-key map
+    :rtype: tuple(MulticastRoutingTables,
+        dict(tuple(int,int),int), dict(tuple(int,int),int))
+    """
+    generator = _SystemMulticastRoutingGenerator(
+        machine, extra_monitor_cores, placements)
+    return generator._run()
+
+
+class _SystemMulticastRoutingGenerator(object):
     """ Generates routing table entries used by the data in processes with the\
         extra monitor cores.
     """
     __slots__ = ["_monitors", "_machine", "_key_to_destination_map",
                  "_placements", "_routing_tables", "_time_out_keys_by_board"]
 
-    def __call__(self, machine, extra_monitor_cores, placements):
+    def __init__(self, machine, extra_monitor_cores, placements):
         """
+
         :param ~spinn_machine.Machine machine:
         :param extra_monitor_cores:
         :type extra_monitor_cores:
             dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
         :param ~pacman.model.placements.Placements placements:
-        :return: routing tables, destination-to-key map,
-            board-locn-to-timeout-key map
-        :rtype: tuple(MulticastRoutingTables,
-            dict(tuple(int,int),int), dict(tuple(int,int),int))
         """
-        # pylint: disable=attribute-defined-outside-init
         self._machine = machine
         self._placements = placements
         self._monitors = extra_monitor_cores
@@ -58,12 +74,20 @@ class SystemMulticastRoutingGenerator(object):
         self._key_to_destination_map = dict()
         self._time_out_keys_by_board = dict()
 
+    def _run(self):
+        """
+        :return: routing tables, destination-to-key map,
+            board-locn-to-timeout-key map
+        :rtype: tuple(MulticastRoutingTables,
+            dict(tuple(int,int),int), dict(tuple(int,int),int))
+        """
         # create progress bar
         progress = ProgressBar(
-            machine.ethernet_connected_chips,
+            self._machine.ethernet_connected_chips,
             "Generating routing tables for data in system processes")
 
-        for ethernet_chip in progress.over(machine.ethernet_connected_chips):
+        for ethernet_chip in progress.over(
+                self._machine.ethernet_connected_chips):
             tree = self._generate_routing_tree(ethernet_chip)
             if tree is None:
                 tree = self._logging_retry(ethernet_chip)

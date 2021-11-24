@@ -18,35 +18,30 @@ from pacman.utilities.algorithm_utilities.placer_algorithm_utilities import (
     sort_vertices_by_known_constraints)
 
 
-class GraphMeasurer(object):
+def graph_measurer(machine_graph, machine, plan_n_timesteps):
     """ Works out how many chips a machine graph needs.
+
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        The machine_graph to measure.
+    :param ~spinn_machine.Machine machine:
+        The machine with respect to which to partition the application
+        graph.
+    :param int plan_n_timesteps: Number of timesteps to plan for.
+    :return: The size of the graph in number of chips.
+    :rtype: int
     """
 
-    __slots__ = []
+    # check that the algorithm can handle the constraints
+    ResourceTracker.check_constraints(machine_graph.vertices)
 
-    def __call__(self, machine_graph, machine, plan_n_timesteps):
-        """
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            The machine_graph to measure.
-        :param ~spinn_machine.Machine machine:
-            The machine with respect to which to partition the application
-            graph.
-        :param int plan_n_timesteps: Number of timesteps to plan for.
-        :return: The size of the graph in number of chips.
-        :rtype: int
-        """
+    ordered_vertices = sort_vertices_by_known_constraints(
+        machine_graph.vertices)
 
-        # check that the algorithm can handle the constraints
-        ResourceTracker.check_constraints(machine_graph.vertices)
+    # Iterate over vertices and allocate
+    progress = ProgressBar(machine_graph.n_vertices, "Measuring the graph")
 
-        ordered_vertices = sort_vertices_by_known_constraints(
-            machine_graph.vertices)
-
-        # Iterate over vertices and allocate
-        progress = ProgressBar(machine_graph.n_vertices, "Measuring the graph")
-
-        resource_tracker = ResourceTracker(machine, plan_n_timesteps)
-        for vertex in progress.over(ordered_vertices):
-            resource_tracker.allocate_constrained_resources(
-                vertex.resources_required, vertex.constraints)
-        return resource_tracker.chips_used
+    resource_tracker = ResourceTracker(machine, plan_n_timesteps)
+    for vertex in progress.over(ordered_vertices):
+        resource_tracker.allocate_constrained_resources(
+            vertex.resources_required, vertex.constraints)
+    return resource_tracker.chips_used

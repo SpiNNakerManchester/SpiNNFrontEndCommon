@@ -26,58 +26,30 @@ PLACEMENTS_FILENAME = "placements.json"
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class WriteJsonPlacements(object):
-    """ Converter from Placements to JSON.
+def write_json_placements(placements, json_folder):
+    """ Runs the code to write the placements in JSON.
+
+    :param Placements placements: The placements to write.
+    :param str json_folder: The folder to which the JSON are being written.
     """
+    # Steps are tojson, validate and writefile
+    progress = ProgressBar(3, "Converting to JSON Placements")
 
-    def __call__(self, placements, json_folder):
-        """ Runs the code to write the placements in JSON.
+    file_path = os.path.join(json_folder, PLACEMENTS_FILENAME)
+    json_obj = placements_to_json(placements)
 
-        :param Placements placements: The placements to write.
-        :param str json_folder: The folder to which the JSON are being written.
-        :return: The name of the generated file.
-        :rtype: str
-        """
-        # Steps are tojson, validate and writefile
-        progress = ProgressBar(3, "Converting to JSON Placements")
+    # validate the schema
+    try:
+        file_format_schemas.validate(json_obj, PLACEMENTS_FILENAME)
+    except ValidationError as ex:
+        logger.error("JSON validation exception: {}\n{}",
+                     ex.message, ex.instance)
 
-        return WriteJsonPlacements.write_json(
-            placements, json_folder, progress)
+    # update and complete progress bar
+    progress.update()
 
-    @staticmethod
-    def write_json(placements, json_folder, progress=None):
-        """ Runs the code to write the placements in Java readable JSON.
+    # dump to json file
+    with open(file_path, "w") as f:
+        json.dump(json_obj, f)
 
-        :param Placements placements: The placements to write
-        :param str json_folder: the folder to which the JSON are being written
-        :param progress: Progress Bar if one used
-        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
-        :return: the name of the generated file
-        :rtype: str
-        """
-
-        file_path = os.path.join(json_folder, PLACEMENTS_FILENAME)
-        json_obj = placements_to_json(placements)
-
-        if progress:
-            progress.update()
-
-        # validate the schema
-        try:
-            file_format_schemas.validate(json_obj, PLACEMENTS_FILENAME)
-        except ValidationError as ex:
-            logger.error("JSON validation exception: {}\n{}",
-                         ex.message, ex.instance)
-
-        # update and complete progress bar
-        if progress:
-            progress.update()
-
-        # dump to json file
-        with open(file_path, "w") as f:
-            json.dump(json_obj, f)
-
-        if progress:
-            progress.end()
-
-        return file_path
+    progress.end()
