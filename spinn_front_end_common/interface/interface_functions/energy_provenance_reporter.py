@@ -33,54 +33,49 @@ _BASIC_PROPERTIES = (
 _PROV_KEY = "power_provenance"
 
 
-class EnergyProvenanceReporter(object):
+def energy_provenance_reporter(power_used, placements):
     """ Converts the power usage information into provenance data.
+
+    :param PowerUsed power_used:
+        The computed basic power consumption information
+    :param ~pacman.model.placements.Placements placements:
+        Used for describing what a core was actually doing
     """
+    with ProvenanceWriter() as db:
+        for prop in _BASIC_PROPERTIES:
+            db.insert_power(
+                __prop_name(prop), getattr(power_used, prop))
+            for x, y, p in power_used.active_cores:
+                db.insert_core(
+                    x, y, p, "Energy (Joules)",
+                    power_used.get_core_active_energy_joules(x, y, p))
+                if p == 0:
+                    db.add_core_name(x, y, p, "SCAMP(OS)")
+            for x, y in power_used.active_routers:
+                db.insert_router(
+                    x, y, "Energy (Joules)",
+                    power_used.get_router_active_energy_joules(x, y))
 
-    __slots__ = []
 
-    def __call__(self, power_used, placements):
-        """
-        :param PowerUsed power_used:
-            The computed basic power consumption information
-        :param ~pacman.model.placements.Placements placements:
-            Used for describing what a core was actually doing
-        """
-        with ProvenanceWriter() as db:
-            for prop in _BASIC_PROPERTIES:
-                db.insert_power(
-                    self.__prop_name(prop), getattr(power_used, prop))
-                for x, y, p in power_used.active_cores:
-                    db.insert_core(
-                        x, y, p, "Energy (Joules)",
-                        power_used.get_core_active_energy_joules(x, y, p))
-                    if p == 0:
-                        db.add_core_name(x, y, p, "SCAMP(OS)")
-                for x, y in power_used.active_routers:
-                    db.insert_router(
-                        x, y, "Energy (Joules)",
-                        power_used.get_router_active_energy_joules(x, y))
+def __prop_name(name):
+    name = name.capitalize()
+    name = re.sub(r"_time_secs$", r" time (seconds)", name)
+    return re.sub(r"(_energy)?_joules", r" energy (Joules)", name)
 
-    @staticmethod
-    def __prop_name(name):
-        name = name.capitalize()
-        name = re.sub(r"_time_secs$", r" time (seconds)", name)
-        return re.sub(r"(_energy)?_joules", r" energy (Joules)", name)
 
-    @staticmethod
-    def __core_name(placements, x, y, p):
-        """
-        :param ~.Placements placements:
-        :rtype: str
-        """
-        if p == 0:
-            # SCAMP always runs on virtual core zero, by definition
-            return "SCAMP(OS)@{},{},{} energy (Joules)".format(x, y, p)
-        if placements.is_processor_occupied(x, y, p):
-            vtx = placements.get_vertex_on_processor(x, y, p)
-            return "{} energy (Joules)".format(vtx.label)
-        return "core@{},{},{} energy (Joules)".format(x, y, p)
+def __core_name(placements, x, y, p):
+    """
+    :param ~.Placements placements:
+    :rtype: str
+    """
+    if p == 0:
+        # SCAMP always runs on virtual core zero, by definition
+        return "SCAMP(OS)@{},{},{} energy (Joules)".format(x, y, p)
+    if placements.is_processor_occupied(x, y, p):
+        vtx = placements.get_vertex_on_processor(x, y, p)
+        return "{} energy (Joules)".format(vtx.label)
+    return "core@{},{},{} energy (Joules)".format(x, y, p)
 
-    @staticmethod
-    def __router_name(x, y):
-        return "router@{},{} energy (Joules)".format(x, y)
+
+def __router_name(x, y):
+    return "router@{},{} energy (Joules)".format(x, y)
