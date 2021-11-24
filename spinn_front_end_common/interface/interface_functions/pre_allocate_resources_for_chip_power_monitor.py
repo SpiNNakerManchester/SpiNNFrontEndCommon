@@ -13,32 +13,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinn_utilities.config_holder import get_config_int
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
 
 
-class PreAllocateResourcesForChipPowerMonitor(object):
-    """ Adds chip power monitor resources as required for a machine.
+def preallocate_resources_for_chip_power_monitor(pre_allocated_resources):
+    """  Adds chip power monitor resources as required
+
+    :param int sampling_frequency: the frequency of sampling
+    :param pre_allocated_resources: other preallocated resources
+    :type pre_allocated_resources:
+        ~pacman.model.resources.PreAllocatedResourceContainer
+    :return: preallocated resources
+    :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
     """
+    # pylint: disable=too-many-arguments
 
-    def __call__(
-            self, machine,  sampling_frequency, pre_allocated_resources):
-        """
-        :param ~spinn_machine.Machine machine:
-            the SpiNNaker machine as discovered
-        :param int sampling_frequency: the frequency of sampling
-        :param pre_allocated_resources: other preallocated resources
-        :type pre_allocated_resources:
-            ~pacman.model.resources.PreAllocatedResourceContainer
-        :return: preallocated resources
-        :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
-        """
-        # pylint: disable=too-many-arguments
-
-        # store how much SDRAM the power monitor uses per core
-        resources = ChipPowerMonitorMachineVertex.get_resources(
-            sampling_frequency=sampling_frequency)
-        pre_allocated_resources.add_sdram_all(resources.sdram)
-        pre_allocated_resources.add_cores_all(1)
-
-        return pre_allocated_resources
+    sampling_frequency,  = get_config_int(
+        "EnergyMonitor", "sampling_frequency"),
+    # store how much SDRAM the power monitor uses per core
+    resources = ChipPowerMonitorMachineVertex.get_resources(
+        sampling_frequency=sampling_frequency)
+    pre_allocated_resources.add_sdram_all(resources.sdram)
+    pre_allocated_resources.add_cores_all(1)

@@ -25,46 +25,39 @@ from spinn_front_end_common.utility_models import (
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class SplitterSelector(object):
-    """ Splitter object selector that allocates nothing but legacy\
-        splitter objects where required
+def splitter_selector(app_graph):
+    """ basic selector which puts the legacy splitter object on\
+        everything without a splitter object
+
+    :param ApplicationGraph app_graph: app graph
+    :rtype: None
     """
+    for app_vertex in app_graph.vertices:
+        if app_vertex.splitter is None:
+            vertex_selector(app_vertex)
 
-    NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE = (
-        "The SplitterSelector has not seen the {} vertex before. Therefore "
-        "there is no known splitter to allocate to this app vertex and so "
-        "will use the SplitterSliceLegacy Splitter.")
 
-    def __call__(self, app_graph):
-        """ basic selector which puts the legacy splitter object on\
-            everything without a splitter object
+def vertex_selector(app_vertex):
+    """ main point for selecting a splitter object for a given app vertex.
 
-        :param ApplicationGraph app_graph: app graph
-        :rtype: None
-        """
-        for app_vertex in app_graph.vertices:
-            if app_vertex.splitter is None:
-                self.vertex_selector(app_vertex)
+    Will assume the SplitterSliceLegacy if no heuristic is known for the
+    app vertex.
 
-    def vertex_selector(self, app_vertex):
-        """ main point for selecting a splitter object for a given app vertex.
-
-        Will assume the SplitterSliceLegacy if no heuristic is known for the
-        app vertex.
-
-        :param ~pacman.model.graphs.application.ApplicationVertex app_vertex:
-            app vertex to give a splitter object to
-        :rtype: None
-        """
-        if isinstance(app_vertex, AbstractOneAppOneMachineVertex):
-            app_vertex.splitter = SplitterOneAppOneMachine()
-        elif isinstance(app_vertex, ReverseIpTagMultiCastSource):
-            app_vertex.splitter = SplitterSliceLegacy()
-        elif isinstance(app_vertex, LivePacketGather):
-            app_vertex.splitter = SplitterOneToOneLegacy()
-        elif isinstance(app_vertex, ChipPowerMonitor):
-            app_vertex.splitter = SplitterOneToOneLegacy()
-        else:
-            logger.warning(
-                self.NOT_KNOWN_APP_VERTEX_ERROR_MESSAGE.format(app_vertex))
-            app_vertex.splitter = SplitterSliceLegacy()
+    :param ~pacman.model.graphs.application.ApplicationVertex app_vertex:
+        app vertex to give a splitter object to
+    :rtype: None
+    """
+    if isinstance(app_vertex, AbstractOneAppOneMachineVertex):
+        app_vertex.splitter = SplitterOneAppOneMachine()
+    elif isinstance(app_vertex, ReverseIpTagMultiCastSource):
+        app_vertex.splitter = SplitterSliceLegacy()
+    elif isinstance(app_vertex, LivePacketGather):
+        app_vertex.splitter = SplitterOneToOneLegacy()
+    elif isinstance(app_vertex, ChipPowerMonitor):
+        app_vertex.splitter = SplitterOneToOneLegacy()
+    else:
+        logger.warning(
+            f"The SplitterSelector has not seen the {app_vertex} vertex "
+            f"before. Therefore there is no known splitter to allocate to "
+            f"this app vertex and so will use the SplitterSliceLegacy.")
+        app_vertex.splitter = SplitterSliceLegacy()
