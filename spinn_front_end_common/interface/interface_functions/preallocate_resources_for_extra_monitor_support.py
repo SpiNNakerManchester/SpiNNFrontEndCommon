@@ -19,30 +19,21 @@ from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
 
 
-class PreAllocateResourcesForExtraMonitorSupport(object):
+def pre_allocate_resources_for_extra_monitor_support(pre_allocated_resources):
     """ Allocates resources for the extra monitors.
+
+    :param pre_allocated_resources: resources already preallocated
+    :type pre_allocated_resources:
+        ~pacman.model.resources.PreAllocatedResourceContainer
     """
-    def __call__(
-            self, machine, pre_allocated_resources,
-            n_cores_to_allocate=1):
-        """
-        :param ~spinn_machine.Machine machine: SpiNNaker machine object
-        :param pre_allocated_resources: resources already preallocated
-        :type pre_allocated_resources:
-            ~pacman.model.resources.PreAllocatedResourceContainer
-        :param int n_cores_to_allocate: how many gatherers to use per chip
-        :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
-        """
 
-        resources = DataSpeedUpPacketGatherMachineVertex.\
-            static_resources_required()
-        pre_allocated_resources.add_sdram_ethernet(resources.sdram)
-        pre_allocated_resources.add_cores_ethernet(n_cores_to_allocate)
-        pre_allocated_resources.add_iptag_resource(resources.iptags[0])
+    resources = DataSpeedUpPacketGatherMachineVertex.\
+        static_resources_required()
+    pre_allocated_resources.add_sdram_ethernet(resources.sdram)
+    pre_allocated_resources.add_cores_ethernet(1)
+    pre_allocated_resources.add_iptag_resource(resources.iptags[0])
 
-        extra_usage = \
-            ExtraMonitorSupportMachineVertex.static_resources_required()
-        pre_allocated_resources.add_sdram_all(extra_usage.sdram)
-        pre_allocated_resources.add_cores_all(1)
-
-        return pre_allocated_resources
+    extra_usage = \
+        ExtraMonitorSupportMachineVertex.static_resources_required()
+    pre_allocated_resources.add_sdram_all(extra_usage.sdram)
+    pre_allocated_resources.add_cores_all(1)

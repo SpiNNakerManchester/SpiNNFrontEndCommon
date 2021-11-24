@@ -19,7 +19,7 @@ from spinnman.messages.eieio import EIEIOType
 from pacman.model.resources import PreAllocatedResourceContainer
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    PreAllocateResourcesForLivePacketGatherers)
+    preallocate_resources_for_live_packet_gatherers)
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.utility_models import (
@@ -58,8 +58,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         live_packet_gatherers[default_params_holder] = list()
 
         # run  pre allocator
-        pre_alloc = PreAllocateResourcesForLivePacketGatherers()
-        pre_res = pre_alloc(
+        pre_res = preallocate_resources_for_live_packet_gatherers(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine,
             pre_allocated_resources=PreAllocatedResourceContainer())
@@ -78,8 +77,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         machine = virtual_machine(width=12, height=12)
         live_packet_gatherers = dict()
         # run  pre allocator
-        pre_alloc = PreAllocateResourcesForLivePacketGatherers()
-        pre_res = pre_alloc(
+        pre_res = preallocate_resources_for_live_packet_gatherers(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine,
             pre_allocated_resources=PreAllocatedResourceContainer())
@@ -94,9 +92,8 @@ class TestLPGPreAllocateRes(unittest.TestCase):
     def test_fail(self):
         machine = virtual_machine(width=12, height=12)
         live_packet_gatherers = {'foo': 'bar'}
-        pre_alloc = PreAllocateResourcesForLivePacketGatherers()
         with self.assertRaises(Exception) as exn:
-            pre_alloc(
+            preallocate_resources_for_live_packet_gatherers(
                 live_packet_gatherer_parameters=live_packet_gatherers,
                 machine=machine,
                 pre_allocated_resources=PreAllocatedResourceContainer())
