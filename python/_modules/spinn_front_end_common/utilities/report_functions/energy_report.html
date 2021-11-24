@@ -25,8 +25,7 @@
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../report_functions.html" accesskey="U">spinn_front_end_common.utilities.report_functions</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.report_functions.energy_report</a></li> 
       </ul>
     </div>  
@@ -61,8 +60,10 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">report_default_directory</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ComputeEnergyUsed</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions.compute_energy_used</span>\
+    <span class="kn">import</span> <span class="p">(</span><span class="n">JOULES_PER_SPIKE</span><span class="p">,</span> <span class="n">MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD</span><span class="p">,</span>
+            <span class="n">MILLIWATTS_PER_FRAME_ACTIVE_COST</span><span class="p">,</span> <span class="n">MILLIWATTS_PER_FPGA</span><span class="p">,</span>
+            <span class="n">MILLIWATTS_PER_IDLE_CHIP</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">time_scale_factor</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_machine.machine</span> <span class="kn">import</span> <span class="n">Machine</span>
@@ -263,10 +264,10 @@
             <span class="s2">&quot;The energy used by each active FPGA per millisecond is </span><span class="si">{}</span><span class="s2"> &quot;</span>
             <span class="s2">&quot;Joules.</span><span class="se">\n\n\n</span><span class="s2">&quot;</span>
             <span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">ComputeEnergyUsed</span><span class="o">.</span><span class="n">MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD</span><span class="p">,</span>
-                <span class="n">ComputeEnergyUsed</span><span class="o">.</span><span class="n">MILLIWATTS_PER_IDLE_CHIP</span><span class="p">,</span>
-                <span class="n">ComputeEnergyUsed</span><span class="o">.</span><span class="n">JOULES_PER_SPIKE</span><span class="p">,</span>
-                <span class="n">ComputeEnergyUsed</span><span class="o">.</span><span class="n">MILLIWATTS_PER_FPGA</span><span class="p">))</span>
+                <span class="n">MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD</span><span class="p">,</span>
+                <span class="n">MILLIWATTS_PER_IDLE_CHIP</span><span class="p">,</span>
+                <span class="n">JOULES_PER_SPIKE</span><span class="p">,</span>
+                <span class="n">MILLIWATTS_PER_FPGA</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_write_fpga_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; FPGA cost calculation</span>
@@ -353,7 +354,7 @@
 
         <span class="c1"># TAKE INTO ACCOUNT IDLE COST</span>
         <span class="n">idle_cost</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">runtime_total_ms</span> <span class="o">*</span> <span class="n">ComputeEnergyUsed</span><span class="o">.</span><span class="n">MILLIWATTS_PER_IDLE_CHIP</span><span class="p">)</span>
+            <span class="n">runtime_total_ms</span> <span class="o">*</span> <span class="n">MILLIWATTS_PER_IDLE_CHIP</span><span class="p">)</span>
 
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
             <span class="s2">&quot;The chip at </span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2"> used </span><span class="si">{}</span><span class="s2"> Joules of energy for by being idle &quot;</span>
@@ -375,7 +376,7 @@
         <span class="c1"># handle active routers etc</span>
         <span class="n">active_router_cost</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">power_used</span><span class="o">.</span><span class="n">loading_time_secs</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">power_used</span><span class="o">.</span><span class="n">num_frames</span> <span class="o">*</span>
-            <span class="n">ComputeEnergyUsed</span><span class="o">.</span><span class="n">MILLIWATTS_PER_FRAME_ACTIVE_COST</span><span class="p">)</span>
+            <span class="n">MILLIWATTS_PER_FRAME_ACTIVE_COST</span><span class="p">)</span>
 
         <span class="c1"># detailed report write</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
@@ -402,7 +403,7 @@
         <span class="c1"># handle active routers etc</span>
         <span class="n">energy_cost_of_active_router</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">total_time_ms</span> <span class="o">*</span> <span class="n">power_used</span><span class="o">.</span><span class="n">num_frames</span> <span class="o">*</span>
-            <span class="n">ComputeEnergyUsed</span><span class="o">.</span><span class="n">MILLIWATTS_PER_FRAME_ACTIVE_COST</span><span class="p">)</span>
+            <span class="n">MILLIWATTS_PER_FRAME_ACTIVE_COST</span><span class="p">)</span>
 
         <span class="c1"># detailed report</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
@@ -446,7 +447,6 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../report_functions.html" >spinn_front_end_common.utilities.report_functions</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.report_functions.energy_report</a></li> 
       </ul>
     </div>

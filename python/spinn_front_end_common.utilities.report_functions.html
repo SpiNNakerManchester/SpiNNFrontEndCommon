@@ -56,34 +56,6 @@
 </section>
 <section id="module-spinn_front_end_common.utilities.report_functions">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities.report_functions" title="Permalink to this headline">¶</a></h2>
-<p>Much of the code in this module is intended primarily for being invoked via the
-PACMAN Executor.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.BitFieldCompressorReport">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">BitFieldCompressorReport</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BitFieldCompressorReport" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Generates a report that shows the impact of the compression of         bitfields into the routing table.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.BitFieldCompressorReport.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/bit_field_compressor_report.html#BitFieldCompressorReport.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BitFieldCompressorReport.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – the machine graph</p></li>
-<li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – the placements</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>a summary, or <cite>None</cite> if the report file can’t be written</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary" title="spinn_front_end_common.utilities.report_functions.BitFieldSummary">BitFieldSummary</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.BitFieldSummary">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">BitFieldSummary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_merged</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_per_chip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lowest_per_chip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_to_merge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_to_merge_per_chip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_to_merge_per_chip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">average_per_chip_merged</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">average_per_chip_to_merge</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary" title="Permalink to this definition">¶</a></dt>
@@ -186,32 +158,6 @@ PACMAN Executor.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.BoardChipReport">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">BoardChipReport</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BoardChipReport" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Report on memory usage</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.BoardChipReport.AREA_CODE_REPORT_NAME">
-<span class="sig-name descname"><span class="pre">AREA_CODE_REPORT_NAME</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'board_chip_report.txt'</span></em><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BoardChipReport.AREA_CODE_REPORT_NAME" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.BoardChipReport.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/board_chip_report.html#BoardChipReport.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BoardChipReport.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a report that states where in SDRAM each region is.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – python representation of the machine</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.EnergyReport">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">EnergyReport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spalloc_server</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_spinnaker_url</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.EnergyReport" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
@@ -252,14 +198,43 @@ PACMAN Executor.</p>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.FixedRouteFromMachineReport">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">FixedRouteFromMachineReport</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.FixedRouteFromMachineReport" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Generate a report of the fixed routes from the machine.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.FixedRouteFromMachineReport.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/fixed_route_from_machine_report.html#FixedRouteFromMachineReport.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.FixedRouteFromMachineReport.__call__" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.bitfield_compressor_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">bitfield_compressor_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.bitfield_compressor_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a report that shows the impact of the compression of     bitfields into the routing table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – the machine graph</p></li>
+<li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – the placements</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a summary, or <cite>None</cite> if the report file can’t be written</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary" title="spinn_front_end_common.utilities.report_functions.BitFieldSummary">BitFieldSummary</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.board_chip_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">board_chip_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.board_chip_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a report that states where in SDRAM each region is.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – python representation of the machine</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.fixed_route_from_machine_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">fixed_route_from_machine_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.fixed_route_from_machine_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes the fixed routes from the machine</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -272,17 +247,11 @@ PACMAN Executor.</p>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.MemoryMapOnHostChipReport">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">MemoryMapOnHostChipReport</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.MemoryMapOnHostChipReport" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Report on memory usage. Creates a report that states where in SDRAM         each region is (read from machine)</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.MemoryMapOnHostChipReport.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dsg_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/memory_map_on_host_chip_report.html#MemoryMapOnHostChipReport.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.MemoryMapOnHostChipReport.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.memory_map_on_host_chip_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">memory_map_on_host_chip_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dsg_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.memory_map_on_host_chip_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report on memory usage. Creates a report that states where in SDRAM         each region is (read from machine)</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dsg_targets</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em>,</em><em>...</em><em>)</em>) – the map between placement and file writer</p></li>
@@ -292,34 +261,22 @@ PACMAN Executor.</p>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.MemoryMapOnHostReport">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">MemoryMapOnHostReport</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.MemoryMapOnHostReport" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Report on memory usage.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.MemoryMapOnHostReport.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processor_to_app_data_base_address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/memory_map_on_host_report.html#MemoryMapOnHostReport.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.MemoryMapOnHostReport.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.memory_map_on_host_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">memory_map_on_host_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processor_to_app_data_base_address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.memory_map_on_host_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report on memory usage.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>processor_to_app_data_base_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em>,</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.DataWritten" title="spinn_front_end_common.utilities.utility_objs.DataWritten"><em>DataWritten</em></a><em>)</em>) – </p>
 </dd>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.NetworkSpecification">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">NetworkSpecification</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.NetworkSpecification" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Generate report on the user’s network specification.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.NetworkSpecification.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/network_specification.html#NetworkSpecification.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.NetworkSpecification.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.network_specification">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">network_specification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.network_specification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate report on the user’s network specification.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>graph</strong> (<em>ApplicationGraph</em>) – the graph generated from the tools</p>
 </dd>
@@ -329,15 +286,9 @@ PACMAN Executor.</p>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.RouterCollisionPotentialReport">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">RouterCollisionPotentialReport</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.RouterCollisionPotentialReport" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.RouterCollisionPotentialReport.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">router_tables_by_partition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_keys_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/router_collision_potential_report.html#RouterCollisionPotentialReport.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.RouterCollisionPotentialReport.__call__" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.router_collision_potential_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">router_collision_potential_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">router_tables_by_partition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_keys_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.router_collision_potential_report" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -349,17 +300,11 @@ PACMAN Executor.</p>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.RoutingTableFromMachineReport">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">RoutingTableFromMachineReport</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.RoutingTableFromMachineReport" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Report the routing table that was actually on the machine.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.RoutingTableFromMachineReport.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">routing_tables</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/routing_table_from_machine_report.html#RoutingTableFromMachineReport.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.RoutingTableFromMachineReport.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.routing_table_from_machine_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">routing_table_from_machine_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">routing_tables</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.routing_table_from_machine_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report the routing table that was actually on the machine.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>routing_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a>) – </p></li>
@@ -370,17 +315,11 @@ PACMAN Executor.</p>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.TagsFromMachineReport">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">TagsFromMachineReport</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.TagsFromMachineReport" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Describes what the tags actually present on the machine are.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.TagsFromMachineReport.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/real_tags_report.html#TagsFromMachineReport.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.TagsFromMachineReport.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.tags_from_machine_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">tags_from_machine_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.tags_from_machine_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Describes what the tags actually present on the machine are.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>report_default_directory</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </p></li>
@@ -390,52 +329,20 @@ PACMAN Executor.</p>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.WriteJsonMachine">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">WriteJsonMachine</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.WriteJsonMachine" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Converter from memory machine to java machine.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This is no longer the rig machine format!</p>
-</div>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.WriteJsonMachine.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/write_json_machine.html#WriteJsonMachine.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.WriteJsonMachine.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs the code to write the machine in readable JSON.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – Machine to convert</p></li>
-<li><p><strong>json_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – <p>The folder to which the JSON are being written.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.write_json_machine">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">write_json_machine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_bar</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.write_json_machine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the code to write the machine in Java readable JSON.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>The files in this folder will be overwritten!</p>
+<p>The file in this folder will be overwritten!</p>
 </div>
-</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the name of the generated file</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.WriteJsonMachine.write_json">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/write_json_machine.html#WriteJsonMachine.write_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.WriteJsonMachine.write_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs the code to write the machine in Java readable JSON.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – Machine to convert</p></li>
 <li><p><strong>json_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – the folder to which the JSON are being written</p></li>
-<li><p><strong>progress</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.progress_bar.ProgressBar" title="(in SpiNNUtils v6.0)"><em>ProgressBar</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – Progress Bar if one used</p></li>
+<li><p><strong>progress_bar</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Flag if Progress Bar should be shown</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -447,17 +354,10 @@ PACMAN Executor.</p>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.WriteJsonPartitionNKeysMap">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">WriteJsonPartitionNKeysMap</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.WriteJsonPartitionNKeysMap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Converter from MulticastRoutingTables to JSON.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.WriteJsonPartitionNKeysMap.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition_to_n_keys_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/write_json_partition_n_keys_map.html#WriteJsonPartitionNKeysMap.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.WriteJsonPartitionNKeysMap.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs the code to write the n_keys_map in JSON.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.write_json_partition_n_keys_map">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">write_json_partition_n_keys_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition_to_n_keys_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.write_json_partition_n_keys_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converter from MulticastRoutingTables to JSON.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -474,37 +374,9 @@ PACMAN Executor.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.WriteJsonPartitionNKeysMap.write_json">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition_to_n_keys_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/write_json_partition_n_keys_map.html#WriteJsonPartitionNKeysMap.write_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.WriteJsonPartitionNKeysMap.write_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs the code to write the machine in Java readable JSON.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>partition_to_n_keys_map</strong> (<em>AbstractMachinePartitionNKeysMap</em>) – The number of keys needed for each partition.</p></li>
-<li><p><strong>json_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – the folder to which the JSON are being written</p></li>
-<li><p><strong>progress</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.progress_bar.ProgressBar" title="(in SpiNNUtils v6.0)"><em>ProgressBar</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – Progress Bar if one used</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the name of the generated file</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.WriteJsonPlacements">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">WriteJsonPlacements</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.WriteJsonPlacements" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Converter from Placements to JSON.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.WriteJsonPlacements.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/write_json_placements.html#WriteJsonPlacements.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.WriteJsonPlacements.__call__" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.write_json_placements">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">write_json_placements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.write_json_placements" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs the code to write the placements in JSON.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -513,90 +385,22 @@ PACMAN Executor.</p>
 <li><p><strong>json_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The folder to which the JSON are being written.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The name of the generated file.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
-</dd>
 </dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.WriteJsonPlacements.write_json">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/write_json_placements.html#WriteJsonPlacements.write_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.WriteJsonPlacements.write_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs the code to write the placements in Java readable JSON.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>placements</strong> (<em>Placements</em>) – The placements to write</p></li>
-<li><p><strong>json_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – the folder to which the JSON are being written</p></li>
-<li><p><strong>progress</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.progress_bar.ProgressBar" title="(in SpiNNUtils v6.0)"><em>ProgressBar</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – Progress Bar if one used</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the name of the generated file</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.WriteJsonRoutingTables">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">WriteJsonRoutingTables</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.WriteJsonRoutingTables" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Converter from MulticastRoutingTables to JSON.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.WriteJsonRoutingTables.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">router_tables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/write_json_routing_tables.html#WriteJsonRoutingTables.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.WriteJsonRoutingTables.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs the code to write the machine in Java readable JSON.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>router_tables</strong> (<em>MulticastRoutingTables</em>) – Routing Tables to convert</p></li>
-<li><p><strong>json_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – the folder to which the JSON are being written</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the name of the generated file</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.WriteJsonRoutingTables.do_convert">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">do_convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">router_tables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/write_json_routing_tables.html#WriteJsonRoutingTables.do_convert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.WriteJsonRoutingTables.do_convert" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs the code to write the machine in Java readable JSON.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>router_tables</strong> (<em>MulticastRoutingTables</em>) – Routing Tables to convert</p></li>
-<li><p><strong>json_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – the folder to which the JSON files are being written</p></li>
-<li><p><strong>progress</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.progress_bar.ProgressBar" title="(in SpiNNUtils v6.0)"><em>ProgressBar</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – The progress bar, if any</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the name of the generated file</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.report_xml">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">report_xml</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions.html#report_xml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.report_xml" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.write_json_routing_tables">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">write_json_routing_tables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">router_tables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.write_json_routing_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the code to write the machine in Java readable JSON.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>router_tables</strong> (<em>MulticastRoutingTables</em>) – Routing Tables to convert</p></li>
+<li><p><strong>json_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – the folder to which the JSON are being written</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 </section>

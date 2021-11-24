@@ -94,25 +94,23 @@
 <span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman.operations.chip_id_allocator_algorithms</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">MallocBasedChipIdAllocator</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">pacman.operations.fixed_route_router</span> <span class="kn">import</span> <span class="n">FixedRouteRouter</span>
-<span class="kn">from</span> <span class="nn">pacman.operations.partition_algorithms</span> <span class="kn">import</span> <span class="n">SplitterPartitioner</span>
+    <span class="n">malloc_based_chip_id_allocator</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.operations.fixed_route_router</span> <span class="kn">import</span> <span class="n">fixed_route_router</span>
+<span class="kn">from</span> <span class="nn">pacman.operations.partition_algorithms</span> <span class="kn">import</span> <span class="n">splitter_partitioner</span>
 <span class="kn">from</span> <span class="nn">pacman.operations.placer_algorithms</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ConnectiveBasedPlacer</span><span class="p">,</span> <span class="n">OneToOnePlacer</span><span class="p">,</span> <span class="n">RadialPlacer</span><span class="p">,</span> <span class="n">SpreaderPlacer</span><span class="p">)</span>
+    <span class="n">connective_based_placer</span><span class="p">,</span> <span class="n">one_to_one_placer</span><span class="p">,</span> <span class="n">radial_placer</span><span class="p">,</span> <span class="n">spreader_placer</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman.operations.router_algorithms</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">BasicDijkstraRouting</span><span class="p">,</span> <span class="n">NerRoute</span><span class="p">,</span> <span class="n">NerRouteTrafficAware</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">pacman.operations.router_compressors</span> <span class="kn">import</span> <span class="n">PairCompressor</span>
-<span class="kn">from</span> <span class="nn">pacman.operations.router_compressors.checked_unordered_pair_compressor</span> \
-    <span class="kn">import</span> <span class="nn">CheckedUnorderedPairCompressor</span>
+    <span class="n">basic_dijkstra_routing</span><span class="p">,</span> <span class="n">ner_route</span><span class="p">,</span> <span class="n">ner_route_traffic_aware</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.operations.router_compressors</span> <span class="kn">import</span> <span class="n">pair_compressor</span>
 <span class="kn">from</span> <span class="nn">pacman.operations.router_compressors.ordered_covering_router_compressor</span> \
-    <span class="kn">import</span> <span class="nn">OrderedCoveringCompressor</span>
+    <span class="kn">import</span> <span class="nn">ordered_covering_compressor</span>
 <span class="kn">from</span> <span class="nn">pacman.operations.routing_info_allocator_algorithms.</span>\
-    <span class="n">malloc_based_routing_allocator</span> <span class="kn">import</span> <span class="nn">MallocBasedRoutingInfoAllocator</span>
+    <span class="n">malloc_based_routing_allocator</span> <span class="kn">import</span> <span class="nn">malloc_based_routing_info_allocator</span>
 <span class="kn">from</span> <span class="nn">pacman.operations.routing_info_allocator_algorithms.</span>\
     <span class="n">zoned_routing_info_allocator</span> <span class="kn">import</span> <span class="p">(</span><span class="n">flexible_allocate</span><span class="p">,</span> <span class="n">global_allocate</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman.operations.routing_table_generators</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">BasicRoutingTableGenerator</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">pacman.operations.tag_allocator_algorithms</span> <span class="kn">import</span> <span class="n">BasicTagAllocator</span>
+    <span class="n">basic_routing_table_generator</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.operations.tag_allocator_algorithms</span> <span class="kn">import</span> <span class="n">basic_tag_allocator</span>
 
 <span class="kn">from</span> <span class="nn">spinn_front_end_common</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">fec_version</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
@@ -121,39 +119,43 @@
     <span class="n">AbstractCanReset</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.config_handler</span> <span class="kn">import</span> <span class="n">ConfigHandler</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ApplicationFinisher</span><span class="p">,</span> <span class="n">ApplicationRunner</span><span class="p">,</span>  <span class="n">BufferExtractor</span><span class="p">,</span>
-    <span class="n">BufferManagerCreator</span><span class="p">,</span> <span class="n">ChipIOBufClearer</span><span class="p">,</span> <span class="n">ChipIOBufExtractor</span><span class="p">,</span>
-    <span class="n">ChipProvenanceUpdater</span><span class="p">,</span> <span class="n">ChipRuntimeUpdater</span><span class="p">,</span> <span class="n">ComputeEnergyUsed</span><span class="p">,</span>
-    <span class="n">CreateNotificationProtocol</span><span class="p">,</span> <span class="n">DatabaseInterface</span><span class="p">,</span>
-    <span class="n">DSGRegionReloader</span><span class="p">,</span> <span class="n">EdgeToNKeysMapper</span><span class="p">,</span> <span class="n">EnergyProvenanceReporter</span><span class="p">,</span>
-    <span class="n">GraphBinaryGatherer</span><span class="p">,</span> <span class="n">GraphDataSpecificationWriter</span><span class="p">,</span>
-    <span class="n">GraphMeasurer</span><span class="p">,</span> <span class="n">GraphProvenanceGatherer</span><span class="p">,</span>  <span class="n">HostBasedBitFieldRouterCompressor</span><span class="p">,</span>
-    <span class="n">HostExecuteDataSpecification</span><span class="p">,</span> <span class="n">HBPAllocator</span><span class="p">,</span> <span class="n">HBPMaxMachineGenerator</span><span class="p">,</span>
-    <span class="n">InsertChipPowerMonitorsToGraphs</span><span class="p">,</span>
-    <span class="n">InsertEdgesToExtraMonitorFunctionality</span><span class="p">,</span> <span class="n">InsertEdgesToLivePacketGatherers</span><span class="p">,</span>
-    <span class="n">InsertExtraMonitorVerticesToGraphs</span><span class="p">,</span> <span class="n">InsertLivePacketGatherersToGraphs</span><span class="p">,</span>
-    <span class="n">LoadExecutableImages</span><span class="p">,</span> <span class="n">LoadFixedRoutes</span><span class="p">,</span>
-    <span class="n">LocalTDMABuilder</span><span class="p">,</span> <span class="n">LocateExecutableStartType</span><span class="p">,</span> <span class="n">MachineGenerator</span><span class="p">,</span>
-    <span class="n">PreAllocateResourcesForChipPowerMonitor</span><span class="p">,</span>
-    <span class="n">PreAllocateResourcesForLivePacketGatherers</span><span class="p">,</span>
-    <span class="n">PreAllocateResourcesForExtraMonitorSupport</span><span class="p">,</span>
-    <span class="n">PlacementsProvenanceGatherer</span><span class="p">,</span>
-    <span class="n">ProfileDataGatherer</span><span class="p">,</span> <span class="n">ProcessPartitionConstraints</span><span class="p">,</span>
-    <span class="n">ReadRoutingTablesFromMachine</span><span class="p">,</span>
-    <span class="n">RouterProvenanceGatherer</span><span class="p">,</span> <span class="n">RoutingSetup</span><span class="p">,</span> <span class="n">RoutingTableLoader</span><span class="p">,</span>
-    <span class="n">SDRAMOutgoingPartitionAllocator</span><span class="p">,</span> <span class="n">SpallocAllocator</span><span class="p">,</span>
-    <span class="n">SpallocMaxMachineGenerator</span><span class="p">,</span>
-    <span class="n">SystemMulticastRoutingGenerator</span><span class="p">,</span>
-    <span class="n">TagsLoader</span><span class="p">,</span> <span class="n">VirtualMachineGenerator</span><span class="p">)</span>
+    <span class="n">application_finisher</span><span class="p">,</span> <span class="n">application_runner</span><span class="p">,</span> <span class="n">buffer_extractor</span><span class="p">,</span>
+    <span class="n">buffer_manager_creator</span><span class="p">,</span> <span class="n">chip_io_buf_clearer</span><span class="p">,</span> <span class="n">chip_io_buf_extractor</span><span class="p">,</span>
+    <span class="n">chip_provenance_updater</span><span class="p">,</span> <span class="n">chip_runtime_updater</span><span class="p">,</span> <span class="n">compute_energy_used</span><span class="p">,</span>
+    <span class="n">create_notification_protocol</span><span class="p">,</span> <span class="n">database_interface</span><span class="p">,</span>
+    <span class="n">dsg_region_reloader</span><span class="p">,</span> <span class="n">edge_to_n_keys_mapper</span><span class="p">,</span> <span class="n">energy_provenance_reporter</span><span class="p">,</span>
+    <span class="n">execute_application_data_specs</span><span class="p">,</span> <span class="n">execute_system_data_specs</span><span class="p">,</span>
+    <span class="n">graph_binary_gatherer</span><span class="p">,</span> <span class="n">graph_data_specification_writer</span><span class="p">,</span>
+    <span class="n">graph_measurer</span><span class="p">,</span> <span class="n">graph_provenance_gatherer</span><span class="p">,</span>
+    <span class="n">host_based_bit_field_router_compressor</span><span class="p">,</span>
+    <span class="n">hbp_allocator</span><span class="p">,</span> <span class="n">hbp_max_machine_generator</span><span class="p">,</span>
+    <span class="n">insert_chip_power_monitors_to_graphs</span><span class="p">,</span>
+    <span class="n">insert_edges_to_extra_monitor_functionality</span><span class="p">,</span>
+    <span class="n">insert_edges_to_live_packet_gatherers</span><span class="p">,</span>
+    <span class="n">insert_extra_monitor_vertices_to_graphs</span><span class="p">,</span>
+    <span class="n">insert_live_packet_gatherers_to_graphs</span><span class="p">,</span>
+    <span class="n">load_app_images</span><span class="p">,</span> <span class="n">load_fixed_routes</span><span class="p">,</span> <span class="n">load_sys_images</span><span class="p">,</span>
+    <span class="n">local_tdma_builder</span><span class="p">,</span> <span class="n">locate_executable_start_type</span><span class="p">,</span> <span class="n">machine_generator</span><span class="p">,</span>
+    <span class="n">preallocate_resources_for_chip_power_monitor</span><span class="p">,</span>
+    <span class="n">preallocate_resources_for_live_packet_gatherers</span><span class="p">,</span>
+    <span class="n">pre_allocate_resources_for_extra_monitor_support</span><span class="p">,</span>
+    <span class="n">placements_provenance_gatherer</span><span class="p">,</span>
+    <span class="n">profile_data_gatherer</span><span class="p">,</span> <span class="n">process_partition_constraints</span><span class="p">,</span>
+    <span class="n">read_routing_tables_from_machine</span><span class="p">,</span>
+    <span class="n">router_provenance_gatherer</span><span class="p">,</span> <span class="n">routing_setup</span><span class="p">,</span> <span class="n">routing_table_loader</span><span class="p">,</span>
+    <span class="n">sdram_outgoing_partition_allocator</span><span class="p">,</span> <span class="n">spalloc_allocator</span><span class="p">,</span>
+    <span class="n">spalloc_max_machine_generator</span><span class="p">,</span>
+    <span class="n">system_multicast_routing_generator</span><span class="p">,</span>
+    <span class="n">tags_loader</span><span class="p">,</span> <span class="n">virtual_machine_generator</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions.</span>\
     <span class="n">machine_bit_field_router_compressor</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">MachineBitFieldOrderedCoveringCompressor</span><span class="p">,</span>
-        <span class="n">MachineBitFieldPairRouterCompressor</span><span class="p">)</span>
+        <span class="n">machine_bit_field_ordered_covering_compressor</span><span class="p">,</span>
+        <span class="n">machine_bit_field_pair_router_compressor</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions.</span>\
     <span class="n">host_no_bitfield_router_compression</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">ordered_covering_compression</span><span class="p">,</span> <span class="n">pair_compression</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.splitter_selectors</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">SplitterSelector</span><span class="p">)</span>
+    <span class="n">splitter_selector</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.java_caller</span> <span class="kn">import</span> <span class="n">JavaCaller</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">APPLICATION_RUNNER</span><span class="p">,</span> <span class="n">DATA_GENERATION</span><span class="p">,</span> <span class="n">GET_MACHINE</span><span class="p">,</span> <span class="n">LOADING</span><span class="p">,</span>
@@ -167,13 +169,13 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">convert_time_diff_to_total_milliseconds</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.report_functions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">BitFieldCompressorReport</span><span class="p">,</span> <span class="n">BoardChipReport</span><span class="p">,</span> <span class="n">EnergyReport</span><span class="p">,</span>
-    <span class="n">FixedRouteFromMachineReport</span><span class="p">,</span> <span class="n">MemoryMapOnHostReport</span><span class="p">,</span>
-    <span class="n">MemoryMapOnHostChipReport</span><span class="p">,</span> <span class="n">NetworkSpecification</span><span class="p">,</span>
-    <span class="n">RouterCollisionPotentialReport</span><span class="p">,</span>
-    <span class="n">RoutingTableFromMachineReport</span><span class="p">,</span> <span class="n">TagsFromMachineReport</span><span class="p">,</span>
-    <span class="n">WriteJsonMachine</span><span class="p">,</span> <span class="n">WriteJsonPartitionNKeysMap</span><span class="p">,</span> <span class="n">WriteJsonPlacements</span><span class="p">,</span>
-    <span class="n">WriteJsonRoutingTables</span><span class="p">)</span>
+    <span class="n">bitfield_compressor_report</span><span class="p">,</span> <span class="n">board_chip_report</span><span class="p">,</span> <span class="n">EnergyReport</span><span class="p">,</span>
+    <span class="n">fixed_route_from_machine_report</span><span class="p">,</span> <span class="n">memory_map_on_host_report</span><span class="p">,</span>
+    <span class="n">memory_map_on_host_chip_report</span><span class="p">,</span> <span class="n">network_specification</span><span class="p">,</span>
+    <span class="n">router_collision_potential_report</span><span class="p">,</span>
+    <span class="n">routing_table_from_machine_report</span><span class="p">,</span> <span class="n">tags_from_machine_report</span><span class="p">,</span>
+    <span class="n">write_json_machine</span><span class="p">,</span> <span class="n">write_json_partition_n_keys_map</span><span class="p">,</span> <span class="n">write_json_placements</span><span class="p">,</span>
+    <span class="n">write_json_routing_tables</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities</span> <span class="kn">import</span> <span class="n">IOBufExtractor</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ExecutableType</span><span class="p">)</span>
@@ -1279,10 +1281,8 @@
             <span class="k">return</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
             <span class="k">return</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">GET_MACHINE</span><span class="p">,</span> <span class="s2">&quot;Get Virtual Machine&quot;</span><span class="p">):</span>
-            <span class="n">generator</span> <span class="o">=</span> <span class="n">VirtualMachineGenerator</span><span class="p">()</span>
-            <span class="c1"># TODO fix params</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">))</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">GET_MACHINE</span><span class="p">,</span> <span class="s2">&quot;Virtual machine generator&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">virtual_machine_generator</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_execute_allocator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1309,14 +1309,12 @@
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spalloc_server</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="s2">&quot;SpallocAllocator&quot;</span><span class="p">):</span>
-                <span class="n">allocator</span> <span class="o">=</span> <span class="n">SpallocAllocator</span><span class="p">()</span>
-                <span class="k">return</span> <span class="n">allocator</span><span class="p">(</span>
+                <span class="k">return</span> <span class="n">spalloc_allocator</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_spalloc_server</span><span class="p">,</span> <span class="n">n_chips_required</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_n_boards_required</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="s2">&quot;HBPAllocator&quot;</span><span class="p">):</span>
-                <span class="n">allocator</span> <span class="o">=</span> <span class="n">HBPAllocator</span><span class="p">()</span>
-                <span class="k">return</span> <span class="n">allocator</span><span class="p">(</span>
+                <span class="k">return</span> <span class="n">hbp_allocator</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_remote_spinnaker_url</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">,</span>
                     <span class="n">n_chips_required</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_boards_required</span><span class="p">)</span>
 
@@ -1360,15 +1358,14 @@
             <span class="k">return</span>
 
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="s2">&quot;Machine generator&quot;</span><span class="p">):</span>
-            <span class="n">generator</span> <span class="o">=</span> <span class="n">MachineGenerator</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">machine_generator</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_ipaddress</span><span class="p">,</span> <span class="n">bmp_details</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_board_version</span><span class="p">,</span>
                 <span class="n">auto_detect_bmp</span><span class="p">,</span> <span class="n">scamp_connection_data</span><span class="p">,</span> <span class="n">boot_port_num</span><span class="p">,</span>
                 <span class="n">reset_machine</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_get_max_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the MachineGenerator if required</span>
+<span class="sd">        Runs, times and logs the a MaxMachineGenerator if required</span>
 
 <span class="sd">        Will set the &quot;machine&quot; value if not already set</span>
 
@@ -1384,20 +1381,15 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_machine</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spalloc_server</span><span class="p">:</span>
-            <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">GET_MACHINE</span><span class="p">,</span> <span class="s2">&quot;SpallocMaxMachineGenerator&quot;</span><span class="p">):</span>
-                <span class="n">generator</span> <span class="o">=</span> <span class="n">SpallocMaxMachineGenerator</span><span class="p">()</span>
-                <span class="c1"># TODO fix params</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_spalloc_server</span><span class="p">,</span>
-                    <span class="n">max_machine_core_reduction</span><span class="o">=</span><span class="n">get_config_int</span><span class="p">(</span>
-                        <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;max_machine_core_reduction&quot;</span><span class="p">))</span>
+            <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">GET_MACHINE</span><span class="p">,</span> <span class="s2">&quot;Spalloc max machine generator&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">spalloc_max_machine_generator</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_spalloc_server</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_spinnaker_url</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">GET_MACHINE</span><span class="p">,</span> <span class="s2">&quot;HBPMaxMachineGenerator&quot;</span><span class="p">):</span>
-                <span class="n">generator</span> <span class="o">=</span> <span class="n">HBPMaxMachineGenerator</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">hbp_max_machine_generator</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_remote_spinnaker_url</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">,</span>
-                    <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;max_machine_core_reduction&quot;</span><span class="p">))</span>
+                    <span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;No machine generataion possible&quot;</span><span class="p">)</span>
@@ -1450,9 +1442,7 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Json machine&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_json_machine&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">writer</span> <span class="o">=</span> <span class="n">WriteJsonMachine</span><span class="p">()</span>
-            <span class="n">writer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">)</span>
-            <span class="c1"># TODO output ignored as never used</span>
+            <span class="n">write_json_machine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_report_network_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1467,8 +1457,7 @@
                 <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
-            <span class="n">report</span> <span class="o">=</span> <span class="n">NetworkSpecification</span><span class="p">()</span>
-            <span class="n">report</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+            <span class="n">network_specification</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_chip_id_allocator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1476,12 +1465,11 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Chip ID allocator&quot;</span><span class="p">):</span>
-            <span class="n">allocator</span> <span class="o">=</span> <span class="n">MallocBasedChipIdAllocator</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
-            <span class="n">allocator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="n">graph</span><span class="p">)</span>
+            <span class="n">malloc_based_chip_id_allocator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="n">graph</span><span class="p">)</span>
             <span class="c1"># return ignored as changes done inside original machine object</span>
 
     <span class="k">def</span> <span class="nf">_execute_insert_live_packet_gatherers_to_graphs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1493,10 +1481,10 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_params</span><span class="p">,</span>
                                    <span class="s2">&quot;live_packet_recorder_params&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">inserter</span> <span class="o">=</span> <span class="n">InsertLivePacketGatherersToGraphs</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_parameters_mapping</span> <span class="o">=</span> <span class="n">inserter</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_parameters_mapping</span> <span class="o">=</span> \
+                <span class="n">insert_live_packet_gatherers_to_graphs</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_report_board_chip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1507,8 +1495,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_board_chip_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">report</span> <span class="o">=</span> <span class="n">BoardChipReport</span><span class="p">()</span>
-            <span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
+            <span class="n">board_chip_report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_splitter_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1518,14 +1505,13 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Splitter reset&quot;</span><span class="p">):</span>
             <span class="n">splitter_reset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
 
-    <span class="c1"># Overriden by spynaker to choose a different algorithm</span>
+    <span class="c1"># Overriden by spynaker to choose an extended algorithm</span>
     <span class="k">def</span> <span class="nf">_execute_splitter_selector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the SplitterSelector</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Splitter selector&quot;</span><span class="p">):</span>
-            <span class="n">selector</span> <span class="o">=</span> <span class="n">SplitterSelector</span><span class="p">()</span>
-            <span class="n">selector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
+            <span class="n">splitter_selector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_delay_support_adder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1547,10 +1533,9 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_params</span><span class="p">,</span>
                                    <span class="s2">&quot;live_packet_recorder_params&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">pre_allocator</span> <span class="o">=</span> <span class="n">PreAllocateResourcesForLivePacketGatherers</span><span class="p">()</span>
-            <span class="c1"># No need to get the output as same object as input</span>
-            <span class="n">pre_allocator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_params</span><span class="p">,</span>
-                          <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="n">pre_allocated_resources</span><span class="p">)</span>
+            <span class="n">preallocate_resources_for_live_packet_gatherers</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_params</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="n">pre_allocated_resources</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_preallocate_for_chip_power_monitor</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">pre_allocated_resources</span><span class="p">):</span>
@@ -1565,11 +1550,7 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Preallocate for chip power monitor&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">pre_allocator</span> <span class="o">=</span> <span class="n">PreAllocateResourcesForChipPowerMonitor</span><span class="p">()</span>
-            <span class="c1"># No need to get the output as same object as input</span>
-            <span class="n">pre_allocator</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
-                <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;EnergyMonitor&quot;</span><span class="p">,</span> <span class="s2">&quot;sampling_frequency&quot;</span><span class="p">),</span>
+            <span class="n">preallocate_resources_for_chip_power_monitor</span><span class="p">(</span>
                 <span class="n">pre_allocated_resources</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_preallocate_for_extra_monitor_support</span><span class="p">(</span>
@@ -1588,10 +1569,8 @@
                     <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;enable_reinjection&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">pre_allocator</span> <span class="o">=</span> <span class="n">PreAllocateResourcesForExtraMonitorSupport</span><span class="p">()</span>
-            <span class="c1"># TODO n_cores_to_allocate param</span>
-            <span class="c1"># No need to get the output as same object as input</span>
-            <span class="n">pre_allocator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="n">pre_allocated_resources</span><span class="p">)</span>
+            <span class="n">pre_allocate_resources_for_extra_monitor_support</span><span class="p">(</span>
+                <span class="n">pre_allocated_resources</span><span class="p">)</span>
 
     <span class="c1"># Overriden by spynaker to choose a different algorithm</span>
     <span class="k">def</span> <span class="nf">_execute_splitter_partitioner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pre_allocated_resources</span><span class="p">):</span>
@@ -1606,8 +1585,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Splitter partitioner&quot;</span><span class="p">):</span>
-            <span class="n">partitioner</span> <span class="o">=</span> <span class="n">SplitterPartitioner</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_chips_needed</span> <span class="o">=</span> <span class="n">partitioner</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_chips_needed</span> <span class="o">=</span> <span class="n">splitter_partitioner</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plan_n_timesteps</span><span class="p">,</span>
                 <span class="n">pre_allocated_resources</span><span class="p">)</span>
 
@@ -1626,8 +1604,7 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">:</span>
                 <span class="k">return</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Graph measurer&quot;</span><span class="p">):</span>
-            <span class="n">measurer</span> <span class="o">=</span> <span class="n">GraphMeasurer</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_n_chips_needed</span> <span class="o">=</span> <span class="n">measurer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_n_chips_needed</span> <span class="o">=</span> <span class="n">graph_measurer</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plan_n_timesteps</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_insert_chip_power_monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1638,15 +1615,14 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Insert chip power monitors&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">inserter</span> <span class="o">=</span> <span class="n">InsertChipPowerMonitorsToGraphs</span><span class="p">()</span>
-            <span class="n">inserter</span><span class="p">(</span>
+            <span class="n">insert_chip_power_monitors_to_graphs</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span>
                 <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;EnergyMonitor&quot;</span><span class="p">,</span> <span class="s2">&quot;sampling_frequency&quot;</span><span class="p">),</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_insert_extra_monitor_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Run, time and log the InsertChipPowerMonitorsToGraphs if required</span>
+<span class="sd">        Run, time and log the InsertExtraMonitorVerticesToGraphs if required</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Insert extra monitor vertices&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
@@ -1654,11 +1630,12 @@
                     <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;enable_reinjection&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">inserter</span> <span class="o">=</span> <span class="n">InsertExtraMonitorVerticesToGraphs</span><span class="p">()</span>
+            <span class="c1"># inserter checks for None app graph not an empty one</span>
         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
          <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_vertices</span><span class="p">,</span>
-         <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_to_chip_mapping</span><span class="p">)</span> <span class="o">=</span> <span class="n">inserter</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
+         <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_to_chip_mapping</span><span class="p">)</span> <span class="o">=</span> \
+            <span class="n">insert_extra_monitor_vertices_to_graphs</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_partitioner_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1678,17 +1655,17 @@
 <span class="sd">        Sets the &quot;machine_partition_n_keys_map&quot; data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Edge to n keys mapper&quot;</span><span class="p">):</span>
-            <span class="n">mapper</span> <span class="o">=</span> <span class="n">EdgeToNKeysMapper</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_partition_n_keys_map</span> <span class="o">=</span> <span class="n">mapper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_partition_n_keys_map</span> <span class="o">=</span> <span class="n">edge_to_n_keys_mapper</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_local_tdma_builder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs times and logs the LocalTDMABuilder</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Local TDMA builder&quot;</span><span class="p">):</span>
-            <span class="n">builder</span> <span class="o">=</span> <span class="n">LocalTDMABuilder</span><span class="p">()</span>
-            <span class="n">builder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_partition_n_keys_map</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
+            <span class="n">local_tdma_builder</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_partition_n_keys_map</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_json_partition_n_keys_map</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1698,8 +1675,8 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_json_partition_n_keys_map&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">writer</span> <span class="o">=</span> <span class="n">WriteJsonPartitionNKeysMap</span><span class="p">()</span>
-            <span class="n">writer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_partition_n_keys_map</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">)</span>
+            <span class="n">write_json_partition_n_keys_map</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_machine_partition_n_keys_map</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">)</span>
             <span class="c1"># Output ignored as never used</span>
 
     <span class="k">def</span> <span class="nf">_execute_connective_based_placer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1713,8 +1690,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Connective based placer&quot;</span><span class="p">):</span>
-            <span class="n">placer</span> <span class="o">=</span> <span class="n">ConnectiveBasedPlacer</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">placer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">connective_based_placer</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plan_n_timesteps</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_one_to_one_placer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1728,8 +1704,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;One to one placer&quot;</span><span class="p">):</span>
-            <span class="n">placer</span> <span class="o">=</span> <span class="n">OneToOnePlacer</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">placer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">one_to_one_placer</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plan_n_timesteps</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_radial_placer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1743,8 +1718,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Radial placer&quot;</span><span class="p">):</span>
-            <span class="n">placer</span> <span class="o">=</span> <span class="n">RadialPlacer</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">placer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">radial_placer</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plan_n_timesteps</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_speader_placer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1758,8 +1732,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Spreader placer&quot;</span><span class="p">):</span>
-            <span class="n">placer</span> <span class="o">=</span> <span class="n">SpreaderPlacer</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">placer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">spreader_placer</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_partition_n_keys_map</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plan_n_timesteps</span><span class="p">)</span>
 
@@ -1799,8 +1772,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_params</span><span class="p">,</span>
                                    <span class="s2">&quot;live_packet_recorder_params&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">inserter</span> <span class="o">=</span> <span class="n">InsertEdgesToLivePacketGatherers</span><span class="p">()</span>
-            <span class="n">inserter</span><span class="p">(</span>
+            <span class="n">insert_edges_to_live_packet_gatherers</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_parameters_mapping</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">,</span>
@@ -1815,10 +1787,10 @@
                     <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;enable_reinjection&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">inserter</span> <span class="o">=</span> <span class="n">InsertEdgesToExtraMonitorFunctionality</span><span class="p">()</span>
-            <span class="n">inserter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
-                     <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
-                     <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
+            <span class="n">insert_edges_to_extra_monitor_functionality</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_system_multicast_routing_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1833,12 +1805,12 @@
                     <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;enable_reinjection&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">generator</span> <span class="o">=</span> <span class="n">SystemMulticastRoutingGenerator</span><span class="p">()</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_in_multicast_routing_tables</span><span class="p">,</span>
              <span class="bp">self</span><span class="o">.</span><span class="n">_data_in_multicast_key_to_chip_map</span><span class="p">,</span>
-             <span class="bp">self</span><span class="o">.</span><span class="n">_system_multicast_router_timeout_keys</span><span class="p">)</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_to_chip_mapping</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
+             <span class="bp">self</span><span class="o">.</span><span class="n">_system_multicast_router_timeout_keys</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">system_multicast_routing_generator</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_to_chip_mapping</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_execute_fixed_route_router</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1850,8 +1822,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">router</span> <span class="o">=</span> <span class="n">FixedRouteRouter</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span> <span class="o">=</span> <span class="n">router</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span> <span class="o">=</span> <span class="n">fixed_route_router</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span>
                 <span class="n">DataSpeedUpPacketGatherMachineVertex</span><span class="p">)</span>
 
@@ -1893,8 +1864,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_json_placements&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">writer</span> <span class="o">=</span> <span class="n">WriteJsonPlacements</span><span class="p">()</span>
-            <span class="n">writer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">)</span>
+            <span class="n">write_json_placements</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">)</span>
             <span class="c1"># Output ignored as never used</span>
 
     <span class="k">def</span> <span class="nf">_execute_ner_route_traffic_aware</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1907,8 +1877,7 @@
 <span class="sd">            Calling of this method is based on the cfg router value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Ner route traffic aware&quot;</span><span class="p">):</span>
-            <span class="n">router</span> <span class="o">=</span> <span class="n">NerRouteTrafficAware</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_routing_table_by_partition</span> <span class="o">=</span> <span class="n">router</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_routing_table_by_partition</span> <span class="o">=</span> <span class="n">ner_route_traffic_aware</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_ner_route</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1921,8 +1890,7 @@
 <span class="sd">            Calling of this method is based on the cfg router value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Ner route&quot;</span><span class="p">):</span>
-            <span class="n">router</span> <span class="o">=</span> <span class="n">NerRoute</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_routing_table_by_partition</span> <span class="o">=</span> <span class="n">router</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_routing_table_by_partition</span> <span class="o">=</span> <span class="n">ner_route</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_basic_dijkstra_routing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1935,8 +1903,7 @@
 <span class="sd">            Calling of this method is based on the cfg router value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Basic dijkstra routing&quot;</span><span class="p">):</span>
-            <span class="n">router</span> <span class="o">=</span> <span class="n">BasicDijkstraRouting</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_routing_table_by_partition</span> <span class="o">=</span> <span class="n">router</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_routing_table_by_partition</span> <span class="o">=</span> <span class="n">basic_dijkstra_routing</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_do_routing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1971,8 +1938,7 @@
 <span class="sd">        Sets the &quot;tag&quot; data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Basic tag allocator&quot;</span><span class="p">):</span>
-            <span class="n">allocator</span> <span class="o">=</span> <span class="n">BasicTagAllocator</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">allocator</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">basic_tag_allocator</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plan_n_timesteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_report_tag_allocations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1990,8 +1956,7 @@
 <span class="sd">        Runs, times and logs the ProcessPartitionConstraints</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Process partition constraints&quot;</span><span class="p">):</span>
-            <span class="n">processor</span> <span class="o">=</span> <span class="n">ProcessPartitionConstraints</span><span class="p">()</span>
-            <span class="n">processor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">)</span>
+            <span class="n">process_partition_constraints</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_global_allocate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2035,8 +2000,7 @@
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Malloc based routing info allocator&quot;</span><span class="p">):</span>
-            <span class="n">allocator</span> <span class="o">=</span> <span class="n">MallocBasedRoutingInfoAllocator</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_routing_infos</span> <span class="o">=</span> <span class="n">allocator</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_routing_infos</span> <span class="o">=</span> <span class="n">malloc_based_routing_info_allocator</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_partition_n_keys_map</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.do_info_allocator"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.do_info_allocator">[docs]</a>    <span class="k">def</span> <span class="nf">do_info_allocator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2084,8 +2048,7 @@
 <span class="sd">            To add an additional Generator copy the pattern of do_placer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Basic routing table generator&quot;</span><span class="p">):</span>
-            <span class="n">generator</span> <span class="o">=</span> <span class="n">BasicRoutingTableGenerator</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span> <span class="o">=</span> <span class="n">basic_routing_table_generator</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_routing_infos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_routing_table_by_partition</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
         <span class="c1"># TODO Nuke ZonedRoutingTableGenerator</span>
@@ -2121,8 +2084,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_json_routing_tables&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">writer</span> <span class="o">=</span> <span class="n">WriteJsonRoutingTables</span><span class="p">()</span>
-            <span class="n">writer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">)</span>
+            <span class="n">write_json_routing_tables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">)</span>
             <span class="c1"># Output ignored as never used</span>
 
     <span class="k">def</span> <span class="nf">_report_router_collision_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2131,9 +2093,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Router collision potential report&quot;</span><span class="p">):</span>
             <span class="c1"># TODO cfg flag!</span>
-            <span class="n">report</span> <span class="o">=</span> <span class="n">RouterCollisionPotentialReport</span><span class="p">()</span>
-            <span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_routing_table_by_partition</span><span class="p">,</span>
-                   <span class="bp">self</span><span class="o">.</span><span class="n">_machine_partition_n_keys_map</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
+            <span class="n">router_collision_potential_report</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_routing_table_by_partition</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_machine_partition_n_keys_map</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_locate_executable_start_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2145,8 +2107,7 @@
             <span class="c1"># TODO why skip if virtual ?</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
-            <span class="n">locator</span> <span class="o">=</span> <span class="n">LocateExecutableStartType</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_executable_types</span> <span class="o">=</span> <span class="n">locator</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_executable_types</span> <span class="o">=</span> <span class="n">locate_executable_start_type</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_buffer_manager_creator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2161,8 +2122,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
 
-            <span class="n">creator</span> <span class="o">=</span> <span class="n">BufferManagerCreator</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span> <span class="o">=</span> <span class="n">creator</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span> <span class="o">=</span> <span class="n">buffer_manager_creator</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_vertices</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_to_chip_mapping</span><span class="p">,</span>
@@ -2174,9 +2134,8 @@
 <span class="sd">        Runs, times and logs the SDRAMOutgoingPartitionAllocator</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;SDRAM outgoing partition allocator&quot;</span><span class="p">):</span>
-            <span class="n">allocator</span> <span class="o">=</span> <span class="n">SDRAMOutgoingPartitionAllocator</span><span class="p">()</span>
             <span class="c1"># Ok if transceiver = None</span>
-            <span class="n">allocator</span><span class="p">(</span>
+            <span class="n">sdram_outgoing_partition_allocator</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">)</span>
 
@@ -2258,10 +2217,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="n">DATA_GENERATION</span><span class="p">,</span> <span class="s2">&quot;Graph data specification writer&quot;</span><span class="p">):</span>
-            <span class="n">writer</span> <span class="o">=</span> <span class="n">GraphDataSpecificationWriter</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_dsg_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_region_sizes</span> <span class="o">=</span> <span class="n">writer</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ipaddress</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_max_run_time_steps</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dsg_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_region_sizes</span> <span class="o">=</span> \
+                <span class="n">graph_data_specification_writer</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ipaddress</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_max_run_time_steps</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_do_data_generation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2290,9 +2249,9 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Routing setup&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
-            <span class="n">setup</span> <span class="o">=</span> <span class="n">RoutingSetup</span><span class="p">()</span>
             <span class="c1"># Only needs the x and y of chips with routing tables</span>
-            <span class="n">setup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
+            <span class="n">routing_setup</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_graph_binary_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2301,8 +2260,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Graph binary gatherer&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">gather</span> <span class="o">=</span> <span class="n">GraphBinaryGatherer</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span> <span class="o">=</span> <span class="n">gather</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span> <span class="o">=</span> <span class="n">graph_binary_gatherer</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -2329,8 +2287,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="n">compressor</span> <span class="o">=</span> <span class="n">HostBasedBitFieldRouterCompressor</span><span class="p">()</span>
-            <span class="n">compressed</span> <span class="o">=</span> <span class="n">compressor</span><span class="p">(</span>
+            <span class="n">compressed</span> <span class="o">=</span> <span class="n">host_based_bit_field_router_compressor</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_routing_infos</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">compressed</span>
@@ -2351,8 +2308,7 @@
                 <span class="s2">&quot;Machine bitfield ordered covering compressor&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[]</span>
-            <span class="n">compressor</span> <span class="o">=</span> <span class="n">MachineBitFieldOrderedCoveringCompressor</span><span class="p">()</span>
-            <span class="n">compressor</span><span class="p">(</span>
+            <span class="n">machine_bit_field_ordered_covering_compressor</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_routing_infos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span><span class="p">)</span>
@@ -2375,8 +2331,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">compressor</span> <span class="o">=</span> <span class="n">MachineBitFieldPairRouterCompressor</span><span class="p">()</span>
-            <span class="n">compressor</span><span class="p">(</span>
+            <span class="n">machine_bit_field_pair_router_compressor</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_routing_infos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span><span class="p">)</span>
@@ -2395,8 +2350,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Ordered covering compressor&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="n">compressor</span> <span class="o">=</span> <span class="n">OrderedCoveringCompressor</span><span class="p">()</span>
-            <span class="n">compressed</span> <span class="o">=</span> <span class="n">compressor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">)</span>
+            <span class="n">compressed</span> <span class="o">=</span> <span class="n">ordered_covering_compressor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">compressed</span>
 
     <span class="k">def</span> <span class="nf">_execute_ordered_covering_compression</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2431,8 +2385,7 @@
 <span class="sd">        :rtype: MulticastRoutingTables</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Pair compressor&quot;</span><span class="p">):</span>
-            <span class="n">compressor</span> <span class="o">=</span> <span class="n">PairCompressor</span><span class="p">()</span>
-            <span class="n">compressed</span> <span class="o">=</span> <span class="n">compressor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">)</span>
+            <span class="n">compressed</span> <span class="o">=</span> <span class="n">pair_compressor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">return</span> <span class="n">compressed</span>
 
@@ -2468,8 +2421,7 @@
 <span class="sd">        :rtype: MulticastRoutingTables</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Pair unordered compressor&quot;</span><span class="p">):</span>
-            <span class="n">compressor</span> <span class="o">=</span> <span class="n">CheckedUnorderedPairCompressor</span><span class="p">()</span>
-            <span class="n">compressed</span> <span class="o">=</span> <span class="n">compressor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">)</span>
+            <span class="n">compressed</span> <span class="o">=</span> <span class="n">pair_compressor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span> <span class="n">ordered</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">return</span> <span class="n">compressed</span>
 
@@ -2560,8 +2512,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
-            <span class="n">loader</span> <span class="o">=</span> <span class="n">RoutingTableLoader</span><span class="p">()</span>
-            <span class="n">loader</span><span class="p">(</span><span class="n">compressed</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
+            <span class="n">routing_table_loader</span><span class="p">(</span>
+                <span class="n">compressed</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_report_uncompressed_routing_table</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2582,9 +2534,8 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span>  <span class="s2">&quot;write_bit_field_compressor_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">report</span> <span class="o">=</span> <span class="n">BitFieldCompressorReport</span><span class="p">()</span>
             <span class="c1"># BitFieldSummary output ignored as never used</span>
-            <span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
+            <span class="n">bitfield_compressor_report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_load_fixed_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2596,8 +2547,7 @@
                 <span class="k">return</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
-            <span class="n">loader</span> <span class="o">=</span> <span class="n">LoadFixedRoutes</span><span class="p">()</span>
-            <span class="n">loader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">)</span>
+            <span class="n">load_fixed_routes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_system_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2610,8 +2560,7 @@
                 <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="kc">None</span>
-            <span class="n">specifier</span> <span class="o">=</span> <span class="n">HostExecuteDataSpecification</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">specifier</span><span class="o">.</span><span class="n">execute_system_data_specs</span><span class="p">(</span>
+            <span class="k">return</span> <span class="n">execute_system_data_specs</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dsg_targets</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_region_sizes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="p">)</span>
@@ -2623,8 +2572,7 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Load executable system Images&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
-            <span class="n">loader</span> <span class="o">=</span> <span class="n">LoadExecutableImages</span><span class="p">()</span>
-            <span class="n">loader</span><span class="o">.</span><span class="n">load_sys_images</span><span class="p">(</span>
+            <span class="n">load_sys_images</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_application_data_specification</span><span class="p">(</span>
@@ -2638,8 +2586,7 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Host data specification&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="n">processor_to_app_data_base_address</span>
-            <span class="n">specifier</span> <span class="o">=</span> <span class="n">HostExecuteDataSpecification</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">specifier</span><span class="o">.</span><span class="n">execute_application_data_specs</span><span class="p">(</span>
+            <span class="k">return</span> <span class="n">execute_application_data_specs</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dsg_targets</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_region_sizes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_vertices</span><span class="p">,</span>
@@ -2657,8 +2604,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_tag_allocation_reports&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">report</span> <span class="o">=</span> <span class="n">TagsFromMachineReport</span><span class="p">()</span>
-            <span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">)</span>
+            <span class="n">tags_from_machine_report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_load_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2668,8 +2614,7 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Tags Loader&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
-            <span class="n">loader</span> <span class="o">=</span> <span class="n">TagsLoader</span><span class="p">()</span>
-            <span class="n">loader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">)</span>
+            <span class="n">tags_loader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_do_extra_load_algorithms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2689,8 +2634,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_memory_map_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">report</span> <span class="o">=</span> <span class="n">MemoryMapOnHostReport</span><span class="p">()</span>
-            <span class="n">report</span><span class="p">(</span><span class="n">processor_to_app_data_base_address</span><span class="p">)</span>
+            <span class="n">memory_map_on_host_report</span><span class="p">(</span><span class="n">processor_to_app_data_base_address</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_report_memory_on_chip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2704,8 +2648,7 @@
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_memory_map_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
 
-            <span class="n">report</span> <span class="o">=</span> <span class="n">MemoryMapOnHostChipReport</span><span class="p">()</span>
-            <span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dsg_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">)</span>
+            <span class="n">memory_map_on_host_chip_report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dsg_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">)</span>
 
     <span class="c1"># TODO consider different cfg flags</span>
     <span class="k">def</span> <span class="nf">_report_compressed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compressed</span><span class="p">):</span>
@@ -2726,9 +2669,8 @@
             <span class="k">if</span> <span class="n">compressed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                     <span class="k">return</span>
-                <span class="n">reader</span> <span class="o">=</span> <span class="n">ReadRoutingTablesFromMachine</span><span class="p">()</span>
-                <span class="n">compressed</span> <span class="o">=</span> <span class="n">reader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span>
-                                    <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">)</span>
+                <span class="n">compressed</span> <span class="o">=</span> <span class="n">read_routing_tables_from_machine</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">)</span>
 
             <span class="n">router_report_from_compressed_router_tables</span><span class="p">(</span><span class="n">compressed</span><span class="p">)</span>
 
@@ -2737,8 +2679,7 @@
             <span class="n">router_compressed_summary_report</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ipaddress</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
 
-            <span class="n">report</span> <span class="o">=</span> <span class="n">RoutingTableFromMachineReport</span><span class="p">()</span>
-            <span class="n">report</span><span class="p">(</span><span class="n">compressed</span><span class="p">)</span>
+            <span class="n">routing_table_from_machine_report</span><span class="p">(</span><span class="n">compressed</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_report_fixed_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2751,8 +2692,8 @@
                     <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
             <span class="c1"># TODO at the same time as LoadFixedRoutes?</span>
-            <span class="n">report</span> <span class="o">=</span> <span class="n">FixedRouteFromMachineReport</span><span class="p">()</span>
-            <span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">)</span>
+            <span class="n">fixed_route_from_machine_report</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_application_load_executables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; algorithms needed for loading the binaries to the SpiNNaker machine</span>
@@ -2762,8 +2703,7 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Load executable app images&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
-            <span class="n">loader</span> <span class="o">=</span> <span class="n">LoadExecutableImages</span><span class="p">()</span>
-            <span class="n">loader</span><span class="o">.</span><span class="n">load_app_images</span><span class="p">(</span>
+            <span class="n">load_app_images</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_do_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">):</span>
@@ -2835,8 +2775,7 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;DSG region reloader&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
-            <span class="n">reloader</span> <span class="o">=</span> <span class="n">DSGRegionReloader</span><span class="p">()</span>
-            <span class="n">reloader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ipaddress</span><span class="p">)</span>
+            <span class="n">dsg_region_reloader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ipaddress</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_graph_provenance_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2846,8 +2785,8 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Graph provenance gatherer&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;read_provenance_data&quot;</span><span class="p">):</span>
                 <span class="k">return</span> <span class="p">[]</span>
-            <span class="n">gatherer</span> <span class="o">=</span> <span class="n">GraphProvenanceGatherer</span><span class="p">()</span>
-            <span class="n">gatherer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
+            <span class="n">graph_provenance_gatherer</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_placements_provenance_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2858,8 +2797,7 @@
                 <span class="k">return</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="p">[]</span>
-            <span class="n">gatherer</span> <span class="o">=</span> <span class="n">PlacementsProvenanceGatherer</span><span class="p">()</span>
-            <span class="n">gatherer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
+            <span class="n">placements_provenance_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_router_provenance_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2870,12 +2808,11 @@
                 <span class="k">return</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="p">[]</span>
-            <span class="n">gatherer</span> <span class="o">=</span> <span class="n">RouterProvenanceGatherer</span><span class="p">()</span>
-            <span class="n">gatherer</span><span class="p">(</span>
+            <span class="n">router_provenance_gatherer</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_vertices</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_execute_Profile_data_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_execute_profile_data_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the ProfileDataGatherer if requested</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2884,8 +2821,7 @@
                 <span class="k">return</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
-            <span class="n">gatherer</span> <span class="o">=</span> <span class="n">ProfileDataGatherer</span><span class="p">()</span>
-            <span class="n">gatherer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
+            <span class="n">profile_data_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_do_read_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2896,7 +2832,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_graph_provenance_gatherer</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_placements_provenance_gatherer</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_router_provenance_gatherer</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_Profile_data_gatherer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_profile_data_gatherer</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_report_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_time</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2909,7 +2845,6 @@
                 <span class="k">return</span> <span class="p">[]</span>
 
             <span class="c1"># TODO runtime is None</span>
-            <span class="n">compute_energy_used</span> <span class="o">=</span> <span class="n">ComputeEnergyUsed</span><span class="p">()</span>
             <span class="n">power_used</span> <span class="o">=</span> <span class="n">compute_energy_used</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_board_version</span><span class="p">,</span>
                 <span class="n">run_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_time</span><span class="p">,</span>
@@ -2918,8 +2853,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_spalloc_server</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_spinnaker_url</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span><span class="p">)</span>
 
-            <span class="n">energy_prov_reporter</span> <span class="o">=</span> <span class="n">EnergyProvenanceReporter</span><span class="p">()</span>
-            <span class="n">energy_prov_reporter</span><span class="p">(</span><span class="n">power_used</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
+            <span class="n">energy_provenance_reporter</span><span class="p">(</span><span class="n">power_used</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
 
             <span class="c1"># create energy reporter</span>
             <span class="n">energy_reporter</span> <span class="o">=</span> <span class="n">EnergyReport</span><span class="p">(</span>
@@ -2952,8 +2886,7 @@
             <span class="c1"># TODO Why check empty_graph is always false??</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;clear_iobuf_during_run&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">clearer</span> <span class="o">=</span> <span class="n">ChipIOBufClearer</span><span class="p">()</span>
-            <span class="n">clearer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_types</span><span class="p">)</span>
+            <span class="n">chip_io_buf_clearer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_types</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_runtime_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2967,10 +2900,10 @@
                 <span class="k">return</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">ExecutableType</span><span class="o">.</span><span class="n">USES_SIMULATION_INTERFACE</span> <span class="ow">in</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_executable_types</span><span class="p">):</span>
-                <span class="n">updater</span> <span class="o">=</span> <span class="n">ChipRuntimeUpdater</span><span class="p">()</span>
-                <span class="n">updater</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span>  <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_types</span><span class="p">,</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_current_run_timesteps</span><span class="p">,</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_first_machine_time_step</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
+                <span class="n">chip_runtime_updater</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span>  <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_types</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_current_run_timesteps</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_first_machine_time_step</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">timer</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="s2">&quot;No Simulation Interface used&quot;</span><span class="p">)</span>
 
@@ -2983,10 +2916,9 @@
 <span class="sd">        :param int run_time: the run duration in milliseconds.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Create database interface&quot;</span><span class="p">):</span>
-            <span class="n">interface_maker</span> <span class="o">=</span> <span class="n">DatabaseInterface</span><span class="p">()</span>
             <span class="c1"># Used to used compressed routing tables if available on host</span>
             <span class="c1"># TODO consider not saving router tabes.</span>
-            <span class="n">_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database_file_path</span> <span class="o">=</span> <span class="n">interface_maker</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_database_file_path</span> <span class="o">=</span> <span class="n">database_interface</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">,</span> <span class="n">run_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_max_run_time_steps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_routing_infos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span>
@@ -2999,8 +2931,7 @@
 <span class="sd">        Sets the notification_interface data object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Create notification protocol&quot;</span><span class="p">):</span>
-            <span class="n">creator</span> <span class="o">=</span> <span class="n">CreateNotificationProtocol</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_notification_interface</span> <span class="o">=</span> <span class="n">creator</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_notification_interface</span> <span class="o">=</span> <span class="n">create_notification_protocol</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_database_socket_addresses</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database_file_path</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_runner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">,</span> <span class="n">run_time</span><span class="p">):</span>
@@ -3015,14 +2946,13 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="n">APPLICATION_RUNNER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
-            <span class="n">runner</span> <span class="o">=</span> <span class="n">ApplicationRunner</span><span class="p">()</span>
             <span class="c1"># Don&#39;t timeout if a stepped mode is in operation</span>
             <span class="k">if</span> <span class="n">n_sync_steps</span><span class="p">:</span>
                 <span class="n">time_threshold</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">time_threshold</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
                     <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;post_simulation_overrun_before_error&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_no_sync_changes</span> <span class="o">=</span> <span class="n">runner</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_no_sync_changes</span> <span class="o">=</span> <span class="n">application_runner</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_notification_interface</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_executable_types</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">run_time</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_no_sync_changes</span><span class="p">,</span> <span class="n">time_threshold</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
@@ -3038,9 +2968,8 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">iobuf_extractor</span> <span class="o">=</span> <span class="n">ChipIOBufExtractor</span><span class="p">()</span>
             <span class="c1"># ErrorMessages, WarnMessages output ignored as never used!</span>
-            <span class="n">iobuf_extractor</span><span class="p">(</span>
+            <span class="n">chip_io_buf_extractor</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_buffer_extractor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -3050,7 +2979,6 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Buffer extractor&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
-            <span class="n">buffer_extractor</span> <span class="o">=</span> <span class="n">BufferExtractor</span><span class="p">()</span>
             <span class="n">buffer_extractor</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span><span class="p">)</span>
@@ -3166,8 +3094,7 @@
 
         <span class="c1"># Extract router provenance</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">router_provenance</span> <span class="o">=</span> <span class="n">RouterProvenanceGatherer</span><span class="p">()</span>
-            <span class="n">router_provenance</span><span class="p">(</span>
+            <span class="n">router_provenance_gatherer</span><span class="p">(</span>
                 <span class="n">transceiver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">machine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
                 <span class="n">router_tables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span>
                 <span class="n">extra_monitor_vertices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_vertices</span><span class="p">,</span>
@@ -3229,8 +3156,8 @@
 
             <span class="c1"># Attempt to force the cores to write provenance and exit</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">updater</span> <span class="o">=</span> <span class="n">ChipProvenanceUpdater</span><span class="p">()</span>
-                <span class="n">updater</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="n">non_rte_core_subsets</span><span class="p">)</span>
+                <span class="n">chip_provenance_updater</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="n">non_rte_core_subsets</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Could not update provenance on chip&quot;</span><span class="p">)</span>
 
@@ -3242,8 +3169,7 @@
                 <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="ow">in</span> <span class="n">finished_cores</span><span class="p">:</span>
                     <span class="n">finished_placements</span><span class="o">.</span><span class="n">add_placement</span><span class="p">(</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="o">.</span><span class="n">get_placement_on_processor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
-                <span class="n">extractor</span> <span class="o">=</span> <span class="n">PlacementsProvenanceGatherer</span><span class="p">()</span>
-                <span class="n">extractor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">finished_placements</span><span class="p">)</span>
+                <span class="n">placements_provenance_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">finished_placements</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">pro_e</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not read provenance due to </span><span class="si">{</span><span class="n">pro_e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -3685,8 +3611,8 @@
 
     <span class="k">def</span> <span class="nf">_execute_application_finisher</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Application finisher&quot;</span><span class="p">):</span>
-            <span class="n">finisher</span> <span class="o">=</span> <span class="n">ApplicationFinisher</span><span class="p">()</span>
-            <span class="n">finisher</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_types</span><span class="p">)</span>
+            <span class="n">application_finisher</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_types</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_do_stop_workflow</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
