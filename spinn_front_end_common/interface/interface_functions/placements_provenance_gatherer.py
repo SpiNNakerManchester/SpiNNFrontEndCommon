@@ -35,6 +35,8 @@ def placements_provenance_gatherer(transceiver, placements):
     :param ~pacman.model.placements.Placements placements:
         The placements of the vertices
     """
+    prov_items = list()
+    prov_placement = list()
     errors = list()
 
     progress = ProgressBar(
