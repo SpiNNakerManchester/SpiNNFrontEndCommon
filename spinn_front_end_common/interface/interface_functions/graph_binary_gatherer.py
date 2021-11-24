@@ -25,27 +25,43 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class GraphBinaryGatherer(object):
+def graph_binary_gatherer(placements, graph, executable_finder):
+    """
+    Extracts binaries to be executed.
+
+    :param ~pacman.model.placements.Placements placements:
+    :param ~pacman.model.graphs.machine.MachineGraph graph:
+    :param executable_finder:
+    :type executable_finder:
+        ~spinn_utilities.executable_finder.ExecutableFinder
+    :rtype: ExecutableTargets
+    """
+    gatherer = _GraphBinaryGatherer(executable_finder)
+    return gatherer._run(placements, graph)
+
+
+class _GraphBinaryGatherer(object):
     """ Extracts binaries to be executed.
     """
 
     __slots__ = ["_exe_finder", "_exe_targets"]
 
-    def __init__(self):
-        self._exe_finder = None
-        self._exe_targets = None
-
-    def __call__(self, placements, graph, executable_finder):
+    def __init__(self, executable_finder):
         """
-        :param ~pacman.model.placements.Placements placements:
-        :param ~pacman.model.graphs.machine.MachineGraph graph:
+
         :param executable_finder:
         :type executable_finder:
             ~spinn_utilities.executable_finder.ExecutableFinder
-        :rtype: ExecutableTargets
         """
         self._exe_finder = executable_finder
         self._exe_targets = ExecutableTargets()
+
+    def _run(self, placements, graph):
+        """
+        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.graphs.machine.MachineGraph graph:
+        :rtype: ExecutableTargets
+        """
         progress = ProgressBar(graph.n_vertices, "Finding binaries")
         for vertex in progress.over(graph.vertices):
             placement = placements.get_placement_of_vertex(vertex)

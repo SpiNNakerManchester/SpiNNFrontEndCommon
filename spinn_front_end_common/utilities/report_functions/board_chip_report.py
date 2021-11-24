@@ -18,43 +18,39 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 
+AREA_CODE_REPORT_NAME = "board_chip_report.txt"
 
-class BoardChipReport(object):
-    """ Report on memory usage
+
+def board_chip_report(machine):
+    """ Creates a report that states where in SDRAM each region is.
+
+    :param ~spinn_machine.Machine machine:
+        python representation of the machine
+    :rtype: None
     """
 
-    AREA_CODE_REPORT_NAME = "board_chip_report.txt"
+    # create file path
+    directory_name = os.path.join(
+        report_default_directory(), AREA_CODE_REPORT_NAME)
 
-    def __call__(self, machine):
-        """ Creates a report that states where in SDRAM each region is.
+    # create the progress bar for end users
+    progress_bar = ProgressBar(
+        len(machine.ethernet_connected_chips),
+        "Writing the board chip report")
 
-        :param ~spinn_machine.Machine machine:
-            python representation of the machine
-        :rtype: None
-        """
+    # iterate over ethernet chips and then the chips on that board
+    with open(directory_name, "w") as writer:
+        _write_report(writer, machine, progress_bar)
 
-        # create file path
-        directory_name = os.path.join(
-            report_default_directory(), self.AREA_CODE_REPORT_NAME)
 
-        # create the progress bar for end users
-        progress_bar = ProgressBar(
-            len(machine.ethernet_connected_chips),
-            "Writing the board chip report")
-
-        # iterate over ethernet chips and then the chips on that board
-        with open(directory_name, "w") as writer:
-            self._write_report(writer, machine, progress_bar)
-
-    @staticmethod
-    def _write_report(writer, machine, progress_bar):
-        """
-        :param ~io.FileIO writer:
-        :param ~spinn_machine.Machine machine:
-        :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
-        """
-        for chip in progress_bar.over(machine.ethernet_connected_chips):
-            xys = machine.get_existing_xys_on_board(chip)
-            writer.write(
-                "board with IP address : {} : has chips {}\n".format(
-                    chip.ip_address, list(xys)))
+def _write_report(writer, machine, progress_bar):
+    """
+    :param ~io.FileIO writer:
+    :param ~spinn_machine.Machine machine:
+    :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
+    """
+    for chip in progress_bar.over(machine.ethernet_connected_chips):
+        xys = machine.get_existing_xys_on_board(chip)
+        writer.write(
+            "board with IP address : {} : has chips {}\n".format(
+                chip.ip_address, list(xys)))

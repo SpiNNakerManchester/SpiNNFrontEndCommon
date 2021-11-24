@@ -23,8 +23,10 @@ from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
-from spinn_front_end_common.interface.interface_functions import (
-    ComputeEnergyUsed)
+from spinn_front_end_common.interface.interface_functions.compute_energy_used\
+    import (JOULES_PER_SPIKE, MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD,
+            MILLIWATTS_PER_FRAME_ACTIVE_COST, MILLIWATTS_PER_FPGA,
+            MILLIWATTS_PER_IDLE_CHIP)
 from spinn_machine.machine import Machine
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -77,7 +79,7 @@ class EnergyReport(object):
         summary_report = os.path.join(report_dir, self._SUMMARY_FILENAME)
 
         # figure runtime in milliseconds with time scale factor
-        runtime_total_ms = runtime * FecDataView().time_scale_factor
+        runtime_total_ms = FecDataView().time_scale_factor
 
         # create detailed report
         with open(detailed_report, "w") as f:
@@ -223,10 +225,10 @@ class EnergyReport(object):
             "The energy used by each active FPGA per millisecond is {} "
             "Joules.\n\n\n"
             .format(
-                ComputeEnergyUsed.MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD,
-                ComputeEnergyUsed.MILLIWATTS_PER_IDLE_CHIP,
-                ComputeEnergyUsed.JOULES_PER_SPIKE,
-                ComputeEnergyUsed.MILLIWATTS_PER_FPGA))
+                MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD,
+                MILLIWATTS_PER_IDLE_CHIP,
+                JOULES_PER_SPIKE,
+                MILLIWATTS_PER_FPGA))
 
     def _write_fpga_cost(self, power_used, f):
         """ FPGA cost calculation
@@ -313,7 +315,7 @@ class EnergyReport(object):
 
         # TAKE INTO ACCOUNT IDLE COST
         idle_cost = (
-            runtime_total_ms * ComputeEnergyUsed.MILLIWATTS_PER_IDLE_CHIP)
+            runtime_total_ms * MILLIWATTS_PER_IDLE_CHIP)
 
         f.write(
             "The chip at {},{} used {} Joules of energy for by being idle "
@@ -335,7 +337,7 @@ class EnergyReport(object):
         # handle active routers etc
         active_router_cost = (
             power_used.loading_time_secs * 1000 * power_used.num_frames *
-            ComputeEnergyUsed.MILLIWATTS_PER_FRAME_ACTIVE_COST)
+            MILLIWATTS_PER_FRAME_ACTIVE_COST)
 
         # detailed report write
         f.write(
@@ -362,7 +364,7 @@ class EnergyReport(object):
         # handle active routers etc
         energy_cost_of_active_router = (
             total_time_ms * power_used.num_frames *
-            ComputeEnergyUsed.MILLIWATTS_PER_FRAME_ACTIVE_COST)
+            MILLIWATTS_PER_FRAME_ACTIVE_COST)
 
         # detailed report
         f.write(

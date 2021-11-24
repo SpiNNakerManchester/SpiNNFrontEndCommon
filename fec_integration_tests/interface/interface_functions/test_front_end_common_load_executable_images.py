@@ -22,7 +22,7 @@ from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType)
 from spinn_front_end_common.interface.interface_functions import (
-    LoadExecutableImages)
+    load_app_images)
 
 SIM = ExecutableType.USES_SIMULATION_INTERFACE
 
@@ -63,7 +63,6 @@ class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
 
     def test_front_end_common_load_executable_images(self):
         transceiver = _MockTransceiver(self)
-        loader = LoadExecutableImages()
         targets = ExecutableTargets()
         targets.add_processor("test.aplx", 0, 0, 0, SIM)
         targets.add_processor("test.aplx", 0, 0, 1, SIM)
@@ -71,7 +70,7 @@ class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
         targets.add_processor("test2.aplx", 0, 1, 0, SIM)
         targets.add_processor("test2.aplx", 0, 1, 1, SIM)
         targets.add_processor("test2.aplx", 0, 1, 2, SIM)
-        loader.load_app_images(targets, 30, transceiver)
+        load_app_images(targets, 30, transceiver)
 
 
 if __name__ == "__main__":
