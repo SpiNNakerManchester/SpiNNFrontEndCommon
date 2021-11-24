@@ -25,6 +25,7 @@ def routing_table_from_machine_report(routing_tables):
 
         folder_name = os.path.join(FecDataView().run_dir_path, _FOLDER_NAME)
         os.mkdir(folder_name)
+
     :param routing_tables:
     :type routing_tables:
         ~pacman.model.routing_tables.MulticastRoutingTables
