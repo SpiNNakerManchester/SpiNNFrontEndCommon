@@ -23,54 +23,35 @@ from spinn_front_end_common.data import FecDataView
 ROUTING_TABLES_FILENAME = "routing_tables.json"
 
 
-class WriteJsonRoutingTables(object):
-    """ Converter from MulticastRoutingTables to JSON.
+def write_json_routing_tables(router_tables):
+    """ Runs the code to write the machine in Java readable JSON.
+
+    :param MulticastRoutingTables router_tables:
+        Routing Tables to convert
+    :param str json_folder: the folder to which the JSON are being written
     """
+    # Steps are tojson, validate and writefile
+    progress = ProgressBar(3, "Converting to JSON RouterTables")
 
-    def __call__(self, router_tables):
-        """ Runs the code to write the machine in Java readable JSON.
+    file_path = os.path.join(
+        FecDataView().json_dir_path, ROUTING_TABLES_FILENAME)
+    json_obj = to_json(router_tables)
 
-        :param MulticastRoutingTables router_tables:
-            Routing Tables to convert
-        :return: the name of the generated file
-        :rtype: str
-        """
-        # Steps are tojson, validate and writefile
-        progress = ProgressBar(3, "Converting to JSON RouterTables")
+    if progress:
+        progress.update()
 
-        return WriteJsonRoutingTables.do_convert(router_tables, progress)
+    # validate the schema
+    file_format_schemas.validate(json_obj, ROUTING_TABLES_FILENAME)
 
-    @staticmethod
-    def do_convert(router_tables, progress=None):
-        """ Runs the code to write the machine in Java readable JSON.
+    # update and complete progress bar
+    if progress:
+        progress.update()
 
-        :param MulticastRoutingTables router_tables:
-            Routing Tables to convert
-        :param progress: The progress bar, if any
-        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
-        :return: the name of the generated file
-        :rtype: str
-        """
+    # dump to json file
+    with open(file_path, "w") as f:
+        json.dump(json_obj, f)
 
-        file_path = os.path.join(
-            FecDataView().json_dir_path, ROUTING_TABLES_FILENAME)
-        json_obj = to_json(router_tables)
+    if progress:
+        progress.end()
 
-        if progress:
-            progress.update()
-
-        # validate the schema
-        file_format_schemas.validate(json_obj, ROUTING_TABLES_FILENAME)
-
-        # update and complete progress bar
-        if progress:
-            progress.update()
-
-        # dump to json file
-        with open(file_path, "w") as f:
-            json.dump(json_obj, f)
-
-        if progress:
-            progress.end()
-
-        return file_path
+    return file_path

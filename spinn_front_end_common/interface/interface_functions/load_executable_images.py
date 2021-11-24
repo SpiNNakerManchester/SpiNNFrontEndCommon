@@ -22,78 +22,76 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
-class LoadExecutableImages(object):
+def load_app_images(executable_targets, transceiver):
     """ Go through the executable targets and load each binary to everywhere\
-        and then send a start request to the cores that actually use it.
+         and then send a start request to the cores that actually use it.
+
+    :param ~spinnman.model.ExecutableTargets executable_targets:
+    :param ~spinnman.transceiver.Transceiver transceiver:
     """
+    __load_images(executable_targets, transceiver,
+                  lambda ty: ty is not ExecutableType.SYSTEM,
+                  "Loading executables onto the machine")
 
-    __slots__ = []
 
-    def load_app_images(self, executable_targets, transceiver):
-        """
-        :param ~spinnman.model.ExecutableTargets executable_targets:
-        :param ~spinnman.transceiver.Transceiver transceiver:
-        """
-        self.__load_images(executable_targets, transceiver,
-                           lambda ty: ty is not ExecutableType.SYSTEM,
-                           "Loading executables onto the machine")
+def load_sys_images(executable_targets, app_id, transceiver):
+    """ Go through the executable targets and load each binary to everywhere\
+         and then send a start request to the cores that actually use it.
 
-    def load_sys_images(self, executable_targets, transceiver):
-        """
-        :param ~spinnman.model.ExecutableTargets executable_targets:
-        :param int app_id:
-        :param ~spinnman.transceiver.Transceiver transceiver:
-        """
-        self.__load_images(executable_targets, transceiver,
-                           lambda ty: ty is ExecutableType.SYSTEM,
-                           "Loading system executables onto the machine")
+    :param ~spinnman.model.ExecutableTargets executable_targets:
+    :param int app_id:
+    :param ~spinnman.transceiver.Transceiver transceiver:
+    """
+    __load_images(executable_targets, app_id, transceiver,
+                  lambda ty: ty is ExecutableType.SYSTEM,
+                  "Loading system executables onto the machine")
 
-    def __load_images(self, executable_targets, txrx, filt, label):
-        """
-        :param ~.ExecutableTargets executable_targets:
-        :param int app_id:
-        :param ~.Transceiver txrx:
-        :param callable(ExecutableType,bool) filt:
-        :param str label
-        """
-        app_id = FecDataView().app_id
-        # Compute what work is to be done here
-        binaries, cores = self.filter_targets(executable_targets, filt)
 
-        # ISSUE: Loading order may be non-constant on older Python
-        progress = ProgressBar(cores.total_processors + 1, label)
-        for binary in binaries:
-            progress.update(flood_fill_binary_to_spinnaker(
-                executable_targets, binary, txrx, app_id))
+def __load_images(executable_targets, txrx, filt, label):
+    """
+    :param ~.ExecutableTargets executable_targets:
+    :param ~.Transceiver txrx:
+    :param callable(ExecutableType,bool) filt:
+    :param str label
+    """
+    # Compute what work is to be done here
+    binaries, cores = filter_targets(executable_targets, filt)
+    app_id = FecDataView().app_id
 
-        self.__start_simulation(cores, txrx, app_id)
-        progress.update()
-        progress.end()
+    # ISSUE: Loading order may be non-constant on older Python
+    progress = ProgressBar(cores.total_processors + 1, label)
+    for binary in binaries:
+        progress.update(flood_fill_binary_to_spinnaker(
+            executable_targets, binary, txrx, app_id))
 
-    @staticmethod
-    def filter_targets(targets, filt):
-        """
-        :param ~spinnman.model.ExecutableTargets executable_targets:
-        :param callable(ExecutableType,bool) filt:
-        :rtype: tuple(list(str), ExecutableTargets)
-        """
-        binaries = []
-        cores = ExecutableTargets()
-        for exe_type in targets.executable_types_in_binary_set():
-            if filt(exe_type):
-                for aplx in targets.get_binaries_of_executable_type(exe_type):
-                    binaries.append(aplx)
-                    cores.add_subsets(
-                        aplx, targets.get_cores_for_binary(aplx), exe_type)
-        return binaries, cores
+    __start_simulation(cores, txrx, app_id)
+    progress.update()
+    progress.end()
 
-    @staticmethod
-    def __start_simulation(executable_targets, txrx, app_id):
-        """
-        :param ~.ExecutableTargets executable_targets:
-        :param ~.Transceiver txrx:
-        :param int app_id:
-        """
-        txrx.wait_for_cores_to_be_in_state(
-            executable_targets.all_core_subsets, app_id, [CPUState.READY])
-        txrx.send_signal(app_id, Signal.START)
+
+def filter_targets(targets, filt):
+    """
+    :param ~spinnman.model.ExecutableTargets executable_targets:
+    :param callable(ExecutableType,bool) filt:
+    :rtype: tuple(list(str), ExecutableTargets)
+    """
+    binaries = []
+    cores = ExecutableTargets()
+    for exe_type in targets.executable_types_in_binary_set():
+        if filt(exe_type):
+            for aplx in targets.get_binaries_of_executable_type(exe_type):
+                binaries.append(aplx)
+                cores.add_subsets(
+                    aplx, targets.get_cores_for_binary(aplx), exe_type)
+    return binaries, cores
+
+
+def __start_simulation(executable_targets, txrx, app_id):
+    """
+    :param ~.ExecutableTargets executable_targets:
+    :param ~.Transceiver txrx:
+    :param int app_id:
+    """
+    txrx.wait_for_cores_to_be_in_state(
+        executable_targets.all_core_subsets, app_id, [CPUState.READY])
+    txrx.send_signal(app_id, Signal.START)

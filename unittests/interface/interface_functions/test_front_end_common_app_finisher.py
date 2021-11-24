@@ -19,7 +19,7 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinnman.model.enums.cpu_state import CPUState
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    ApplicationFinisher)
+    application_finisher)
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.transceiver import Transceiver
 
@@ -70,7 +70,6 @@ class _MockTransceiver(object):
 
 def test_app_finisher():
     unittest_setup()
-    finisher = ApplicationFinisher()
     core_subsets = CoreSubsets()
     core_subsets.add_processor(0, 0, 1)
     core_subsets.add_processor(1, 1, 2)
@@ -81,7 +80,7 @@ def test_app_finisher():
     executable_types = {
         ExecutableType.USES_SIMULATION_INTERFACE: core_subsets}
     txrx = _MockTransceiver(core_states, 0.5)
-    finisher.__call__(30, txrx, executable_types)
+    application_finisher(txrx, executable_types)
 
     # First round called twice as 2 running +
     # second round called once as 1 running

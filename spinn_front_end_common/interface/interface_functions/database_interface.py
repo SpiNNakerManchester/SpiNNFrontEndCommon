@@ -23,7 +23,35 @@ from spinn_front_end_common.utilities.database import DatabaseWriter
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class DatabaseInterface(object):
+def database_interface(
+        machine_graph, tags, runtime, machine, data_n_timesteps, placements,
+        routing_infos, router_tables, app_id, application_graph=None):
+    """ Writes a database of the graph(s) and other information.
+
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        :param ~pacman.model.tags.Tags tags:
+        :param int runtime:
+        :param ~spinn_machine.Machine machine:
+        :param int data_n_timesteps:
+        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+        :param router_tables:
+        :type router_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
+        :param int app_id:
+        :param application_graph:
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
+        :return: Database interface, where the database is located
+        :rtype: tuple(DatabaseInterface, str)
+    """
+    interface = _DatabaseInterface(machine_graph)
+    return interface._run(
+        machine_graph, tags, runtime, machine, data_n_timesteps, placements,
+        routing_infos, router_tables, app_id, application_graph)
+
+
+class _DatabaseInterface(object):
     """ Writes a database of the graph(s) and other information.
     """
 
@@ -35,11 +63,12 @@ class DatabaseInterface(object):
         "_needs_db"
     ]
 
-    def __init__(self):
-        self._writer = None
-        self._needs_db = None
+    def __init__(self, machine_graph):
+        self._writer = DatabaseWriter()
+        # add database generation if requested
+        self._needs_db = self._writer.auto_detect_database(machine_graph)
 
-    def __call__(
+    def _run(
             self, machine_graph, tags, runtime, machine, data_n_timesteps,
             placements, routing_infos, router_tables, application_graph=None):
         """
@@ -61,9 +90,6 @@ class DatabaseInterface(object):
         """
         # pylint: disable=too-many-arguments
 
-        self._writer = DatabaseWriter()
-        # add database generation if requested
-        self._needs_db = self._writer.auto_detect_database(machine_graph)
         user_create_database = get_config_bool("Database", "create_database")
         if user_create_database is not None:
             if user_create_database != self._needs_db:
@@ -79,13 +105,6 @@ class DatabaseInterface(object):
                 data_n_timesteps, placements, routing_infos, router_tables,
                 tags)
 
-        return self, self.database_file_path
-
-    @property
-    def database_file_path(self):
-        """
-        :rtype: str or None
-        """
         if self._needs_db:
             return self._writer.database_path
         return None

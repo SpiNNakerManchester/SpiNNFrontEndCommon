@@ -17,28 +17,24 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.data import FecDataView
 
 
-class RoutingTableLoader(object):
+def routing_table_loader(router_tables, transceiver, machine):
     """ Loads routes into initialised routers.
-    """
-    __slots__ = []
 
-    def __call__(self, router_tables, transceiver, machine):
-        """
-        :param router_tables:
-        :type router_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
-        :param int app_id:
-        :param ~spinnman.transceiver.Transceiver transceiver:
-        :param ~spinn_machine.Machine machine:
-        """
-        progress = ProgressBar(router_tables.routing_tables,
-                               "Loading routing data onto the machine")
-        app_id = FecDataView().app_id
-        # load each router table that is needed for the application to run into
-        # the chips SDRAM
-        for table in progress.over(router_tables.routing_tables):
-            if (not machine.get_chip_at(table.x, table.y).virtual
-                    and table.multicast_routing_entries):
-                transceiver.load_multicast_routes(
-                    table.x, table.y, table.multicast_routing_entries,
-                    app_id=app_id)
+    :param router_tables:
+    :type router_tables:
+        ~pacman.model.routing_tables.MulticastRoutingTables
+    :param int app_id:
+    :param ~spinnman.transceiver.Transceiver transceiver:
+    :param ~spinn_machine.Machine machine:
+    """
+    progress = ProgressBar(router_tables.routing_tables,
+                           "Loading routing data onto the machine")
+
+    # load each router table that is needed for the application to run into
+    # the chips SDRAM
+    for table in progress.over(router_tables.routing_tables):
+        if (not machine.get_chip_at(table.x, table.y).virtual
+                and table.multicast_routing_entries):
+            transceiver.load_multicast_routes(
+                table.x, table.y, table.multicast_routing_entries,
+                app_id=FecDataView().app_id)

@@ -31,38 +31,43 @@ _ONE_WORD = struct.Struct("<I")
 _LIMIT = 10
 
 
-class ChipProvenanceUpdater(object):
+def chip_provenance_updater(txrx, app_id, all_core_subsets):
+    updater = _ChipProvenanceUpdater(txrx, app_id, all_core_subsets)
+    updater._run()
+
+
+class _ChipProvenanceUpdater(object):
     """ Forces all cores to generate provenance data, and then exit.
     """
 
     __slots__ = ["__all_cores", "__app_id", "__txrx"]
 
-    def __call__(self, txrx, all_core_subsets):
+    def __init__(self, txrx, all_core_subsets):
         """
         :param ~spinnman.transceiver.Transceiver txrx:
-        :param int app_id:
         :param ~spinn_machine.CoreSubsets all_core_subsets:
         """
         self.__all_cores = all_core_subsets
         self.__app_id = FecDataView().app_id
         self.__txrx = txrx
 
+    def _run(self):
         # check that the right number of processors are in sync
-        processors_completed = txrx.get_core_state_count(
+        processors_completed = self.__txrx.get_core_state_count(
             self.__app_id, CPUState.FINISHED)
-        total_processors = len(all_core_subsets)
+        total_processors = len(self.__all_cores)
         left_to_do_cores = total_processors - processors_completed
 
         progress = ProgressBar(
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
 
-        error_cores = txrx.get_cores_in_state(
-            all_core_subsets, CPUState.RUN_TIME_EXCEPTION)
-        watchdog_cores = txrx.get_cores_in_state(
-            all_core_subsets, CPUState.WATCHDOG)
-        idle_cores = txrx.get_cores_in_state(
-            all_core_subsets, CPUState.IDLE)
+        error_cores = self.__txrx.get_cores_in_state(
+            self.__all_cores, CPUState.RUN_TIME_EXCEPTION)
+        watchdog_cores = self.__txrx.get_cores_in_state(
+            self.__all_cores, CPUState.WATCHDOG)
+        idle_cores = self.__txrx.get_cores_in_state(
+            self.__all_cores, CPUState.IDLE)
 
         if error_cores or watchdog_cores or idle_cores:
             raise ConfigurationException(

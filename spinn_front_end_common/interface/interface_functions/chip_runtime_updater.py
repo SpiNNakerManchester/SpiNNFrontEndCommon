@@ -19,16 +19,10 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.scp import UpdateRuntimeProcess
 
 
-class ChipRuntimeUpdater(object):
+def chip_runtime_updater(txrx, executable_types, run_until_timesteps,
+                         current_timesteps, n_sync_steps):
     """ Updates the runtime of an application running on a SpiNNaker machine.
-    """
 
-    __slots__ = []
-
-    def __call__(
-            self, txrx, executable_types, run_until_timesteps,
-            current_timesteps, n_sync_steps):
-        """
         :param ~spinnman.transceiver.Transceiver transceiver:
         :param executable_types:
         :type executable_types: dict(ExecutableType,~spinn_machine.CoreSubsets)
@@ -37,29 +31,29 @@ class ChipRuntimeUpdater(object):
         :param int current_timesteps:
         :param n_sync_steps:
         :type n_sync_steps: int or None
-        """
-        core_subsets = \
-            executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
+    """
+    core_subsets = \
+        executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
 
-        ready_progress = ProgressBar(
-            total_number_of_things_to_do=1,
-            string_describing_what_being_progressed=(
-                "Waiting for cores to be either in PAUSED or READY state"))
-        txrx.wait_for_cores_to_be_in_state(
-            core_subsets, FecDataView().app_id, [CPUState.PAUSED, CPUState.READY],
-            error_states=frozenset({
-                CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG,
-                CPUState.FINISHED}))
-        ready_progress.end()
+    ready_progress = ProgressBar(
+        total_number_of_things_to_do=1,
+        string_describing_what_being_progressed=(
+            "Waiting for cores to be either in PAUSED or READY state"))
+    txrx.wait_for_cores_to_be_in_state(
+        core_subsets, FecDataView().app_id, [CPUState.PAUSED, CPUState.READY],
+        error_states=frozenset({
+            CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG,
+            CPUState.FINISHED}))
+    ready_progress.end()
 
-        infinite_run = 0
-        if run_until_timesteps is None:
-            infinite_run = 1
-            run_until_timesteps = 0
-            current_timesteps = 0
+    infinite_run = 0
+    if run_until_timesteps is None:
+        infinite_run = 1
+        run_until_timesteps = 0
+        current_timesteps = 0
 
-        # TODO: Expose the connection selector in SpiNNMan
-        process = UpdateRuntimeProcess(txrx.scamp_connection_selector)
-        process.update_runtime(
-            current_timesteps, run_until_timesteps, infinite_run, core_subsets,
-            len(core_subsets), n_sync_steps)
+    # TODO: Expose the connection selector in SpiNNMan
+    process = UpdateRuntimeProcess(txrx.scamp_connection_selector)
+    process.update_runtime(
+        current_timesteps, run_until_timesteps, infinite_run, core_subsets,
+        len(core_subsets), n_sync_steps)

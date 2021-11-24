@@ -27,59 +27,40 @@ N_KEYS_MAP_FILENAME = "n_keys_map.json"
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class WriteJsonPartitionNKeysMap(object):
+def write_json_partition_n_keys_map(partition_to_n_keys_map):
     """ Converter from MulticastRoutingTables to JSON.
+
+    :param AbstractMachinePartitionNKeysMap partition_to_n_keys_map:
+        The number of keys needed for each partition.
+    :param str json_folder: the folder to which the JSON are being written
+    :return: the name of the generated file
+    :rtype: str
     """
+    # Steps are tojson, validate and writefile
+    progress = ProgressBar(3, "Converting to JSON partition n key map")
 
-    def __call__(self, partition_to_n_keys_map):
-        """ Runs the code to write the n_keys_map in JSON.
+    file_path = os.path.join(FecDataView().json_dir_path, N_KEYS_MAP_FILENAME)
+    json_obj = partition_to_n_keys_map_to_json(partition_to_n_keys_map)
 
-        :param AbstractMachinePartitionNKeysMap partition_to_n_keys_map:
-            The number of keys needed for each partition.
-        :return: the name of the generated file
-        :rtype: str
-        """
-        # Steps are tojson, validate and writefile
-        progress = ProgressBar(3, "Converting to JSON partition n key map")
+    if progress:
+        progress.update()
 
-        return WriteJsonPartitionNKeysMap.write_json(
-            partition_to_n_keys_map, progress)
+    # validate the schema
+    try:
+        file_format_schemas.validate(json_obj, N_KEYS_MAP_FILENAME)
+    except ValidationError as ex:
+        logger.error("JSON validation exception: {}\n{}",
+                     ex.message, ex.instance)
 
-    @staticmethod
-    def write_json(partition_to_n_keys_map, progress=None):
-        """ Runs the code to write the machine in Java readable JSON.
+    # update and complete progress bar
+    if progress:
+        progress.update()
 
-        :param AbstractMachinePartitionNKeysMap partition_to_n_keys_map:
-            The number of keys needed for each partition.
-        :param progress: Progress Bar if one used
-        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
-        :return: the name of the generated file
-        :rtype: str
-        """
+    # dump to json file
+    with open(file_path, "w") as f:
+        json.dump(json_obj, f)
 
-        file_path = os.path.join(
-            FecDataView().json_dir_path, N_KEYS_MAP_FILENAME)
-        json_obj = partition_to_n_keys_map_to_json(partition_to_n_keys_map)
+    if progress:
+        progress.end()
 
-        if progress:
-            progress.update()
-
-        # validate the schema
-        try:
-            file_format_schemas.validate(json_obj, N_KEYS_MAP_FILENAME)
-        except ValidationError as ex:
-            logger.error("JSON validation exception: {}\n{}",
-                         ex.message, ex.instance)
-
-        # update and complete progress bar
-        if progress:
-            progress.update()
-
-        # dump to json file
-        with open(file_path, "w") as f:
-            json.dump(json_obj, f)
-
-        if progress:
-            progress.end()
-
-        return file_path
+    return file_path

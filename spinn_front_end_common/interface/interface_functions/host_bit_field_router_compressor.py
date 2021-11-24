@@ -38,7 +38,123 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.report_functions.\
     bit_field_compressor_report import (
         generate_provenance_item)
-from pacman.operations.router_compressors import PairCompressor
+from pacman.operations.router_compressors.pair_compressor import (
+    _PairCompressor)
+
+_REPORT_FOLDER_NAME = "router_compressor_with_bitfield"
+
+
+def host_based_bit_field_router_compressor(
+        router_tables, machine, placements, transceiver,
+        machine_graph, routing_infos):
+    """
+    Entry point when using the PACMANAlgorithmExecutor
+
+    :param router_tables: routing tables (uncompressed and unordered)
+    :type router_tables:
+        ~pacman.model.routing_tables.MulticastRoutingTables
+    :param ~spinn_machine.Machine machine: SpiNNMachine instance
+    :param ~pacman.model.placements.Placements placements: placements
+    :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph level
+    :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+        routing information
+    :return: compressed routing table entries
+    :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
+    """
+    # create progress bar
+    progress = ProgressBar(
+        len(router_tables.routing_tables) * 2,
+        "Compressing routing Tables with bitfields in host")
+
+    # create report
+    if get_config_bool(
+            "Reports", "write_router_compression_with_bitfield_report"):
+        report_folder_path = generate_report_path()
+    else:
+        report_folder_path = None
+
+    # compressed router table
+    compressed_pacman_router_tables = MulticastRoutingTables()
+
+    key_atom_map = generate_key_to_atom_map(
+        machine_graph, routing_infos)
+
+    # start the routing table choice conversion
+    for router_table in progress.over(router_tables.routing_tables):
+        start_compression_selection_process(
+            router_table, report_folder_path,
+            transceiver, machine_graph, placements, machine,
+            compressed_pacman_router_tables, key_atom_map)
+
+    # return compressed tables
+    return compressed_pacman_router_tables
+
+
+def generate_report_path():
+    """
+    :rtype: str
+    """
+    report_folder_path = os.path.join(
+        FecDataView().run_dir_path, _REPORT_FOLDER_NAME)
+    if not os.path.exists(report_folder_path):
+        os.mkdir(report_folder_path)
+    return report_folder_path
+
+
+def generate_key_to_atom_map(machine_graph, routing_infos):
+    """ THIS IS NEEDED due to the link from key to edge being lost.
+
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        machine graph
+    :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+        routing infos
+    :return: key to atom map based of key to n atoms
+    :rtype: dict(int,int)
+    """
+    # build key to n atoms map
+    key_to_n_atoms_map = dict()
+    for vertex in machine_graph.vertices:
+        for partition in machine_graph.\
+                get_multicast_edge_partitions_starting_at_vertex(vertex):
+            key = routing_infos.get_first_key_from_pre_vertex(
+                vertex, partition.identifier)
+
+            key_to_n_atoms_map[key] = (
+                vertex.get_n_keys_for_partition(partition))
+    return key_to_n_atoms_map
+
+
+def start_compression_selection_process(
+        router_table, report_folder_path,
+        transceiver, machine_graph, placements, machine,
+        compressed_pacman_router_tables, key_atom_map):
+    """ Entrance method for doing on host compression. Can be used as a \
+        public method for other compressors.
+
+    :param router_table: the routing table in question to compress
+    :type router_table:
+        ~pacman.model.routing_tables.UnCompressedMulticastRoutingTable
+    :param report_folder_path: the report folder base address
+    :type report_folder_path: str or None
+    :param ~spinnman.transceiver.Transceiver transceiver:
+        spinnMan instance
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        machine graph
+    :param ~pacman.model.placements.Placements placements: placements
+    :param ~spinn_machine.Machine machine: SpiNNMan instance
+    :param compressed_pacman_router_tables:
+        a data holder for compressed tables
+    :type compressed_pacman_router_tables:
+        ~pacman.model.routing_tables.MulticastRoutingTables
+    :param dict(int,int) key_atom_map: key to atoms map
+        should be allowed to handle per time step
+    """
+    compressor = _HostBasedBitFieldRouterCompressor()
+    compressor._run(
+        router_table, report_folder_path, transceiver, machine_graph,
+        placements, machine, compressed_pacman_router_tables, key_atom_map)
 
 
 class _BitFieldData(object):
@@ -80,7 +196,7 @@ class _BitFieldData(object):
                 for i in range(32)]
 
 
-class HostBasedBitFieldRouterCompressor(object):
+class _HostBasedBitFieldRouterCompressor(object):
     """ Host-based fancy router compressor using the bitfield filters of the \
         cores. Compresses bitfields and router table entries together as \
         much as feasible.
@@ -108,7 +224,6 @@ class HostBasedBitFieldRouterCompressor(object):
     _DEFAULT_TIME_PER_ITERATION = 10
 
     # report name
-    _REPORT_FOLDER_NAME = "router_compressor_with_bitfield"
     _REPORT_NAME = "router_{}_{}.rpt"
 
     # key id for the initial entry
@@ -152,54 +267,7 @@ class HostBasedBitFieldRouterCompressor(object):
         self._best_routing_entries = None
         self._best_midpoint = -1
         self._bit_fields_by_key = None
-        self._compression_attempts = None
-
-    def __call__(
-            self, router_tables, machine, placements, transceiver,
-            machine_graph, routing_infos):
-        """
-        Entry point when using the PACMANAlgorithmExecutor
-
-        :param router_tables: routing tables (uncompressed and unordered)
-        :type router_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
-        :param ~spinn_machine.Machine machine: SpiNNMachine instance
-        :param ~pacman.model.placements.Placements placements: placements
-        :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            the machine graph level
-        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-            routing information
-        :return: compressed routing table entries
-        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
-        """
-        # create progress bar
-        progress = ProgressBar(
-            len(router_tables.routing_tables) * 2,
-            "Compressing routing Tables with bitfields in host")
-
-        # create report
-        if get_config_bool(
-                "Reports", "write_router_compression_with_bitfield_report"):
-            report_folder_path = self.generate_report_path()
-        else:
-            report_folder_path = None
-
-        # compressed router table
-        compressed_pacman_router_tables = MulticastRoutingTables()
-
-        key_atom_map = self.generate_key_to_atom_map(
-            machine_graph, routing_infos)
-
-        # start the routing table choice conversion
-        for router_table in progress.over(router_tables.routing_tables):
-            self.start_compression_selection_process(
-                router_table, report_folder_path,
-                transceiver, machine_graph, placements, machine,
-                compressed_pacman_router_tables, key_atom_map)
-
-        # return compressed tables
-        return compressed_pacman_router_tables
+        self._compression_attempts = dict()
 
     def get_bit_field_sdram_base_addresses(
             self, chip_x, chip_y, machine, placements, transceiver):
@@ -224,40 +292,7 @@ class HostBasedBitFieldRouterCompressor(object):
                             vertex))
         return base_addresses
 
-    @staticmethod
-    def generate_key_to_atom_map(machine_graph, routing_infos):
-        """ THIS IS NEEDED due to the link from key to edge being lost.
-
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            machine graph
-        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-            routing infos
-        :return: key to atom map based of key to n atoms
-        :rtype: dict(int,int)
-        """
-        # build key to n atoms map
-        key_to_n_atoms_map = dict()
-        for vertex in machine_graph.vertices:
-            for partition in machine_graph.\
-                    get_multicast_edge_partitions_starting_at_vertex(vertex):
-                key = routing_infos.get_first_key_from_pre_vertex(
-                    vertex, partition.identifier)
-
-                key_to_n_atoms_map[key] = (
-                    vertex.get_n_keys_for_partition(partition))
-        return key_to_n_atoms_map
-
-    def generate_report_path(self):
-        """
-        :rtype: str
-        """
-        report_folder_path = os.path.join(
-            FecDataView().run_dir_path, self._REPORT_FOLDER_NAME)
-        if not os.path.exists(report_folder_path):
-            os.mkdir(report_folder_path)
-        return report_folder_path
-
-    def start_compression_selection_process(
+    def _run(
             self, router_table, report_folder_path,
             transceiver, machine_graph, placements, machine,
             compressed_pacman_router_tables, key_atom_map):
@@ -282,12 +317,6 @@ class HostBasedBitFieldRouterCompressor(object):
         :param dict(int,int) key_atom_map: key to atoms map
             should be allowed to handle per time step
         """
-        # Reset all the self values as they change for each routing table
-        self._best_routing_entries = None
-        self._best_midpoint = -1
-        self._bit_fields_by_key = None
-        self._compression_attempts = dict()
-
         # Find the processors that have bitfield data and where it is
         bit_field_chip_base_addresses = (
             self.get_bit_field_sdram_base_addresses(
@@ -603,7 +632,7 @@ class HostBasedBitFieldRouterCompressor(object):
             compress to the correct length.
 
         """
-        compressor = PairCompressor(ordered=True)
+        compressor = _PairCompressor(ordered=True)
         compressed_entries = compressor.compress_table(router_table)
         if len(compressed_entries) > Machine.ROUTER_ENTRIES:
             raise MinimisationFailedError(

@@ -23,63 +23,45 @@ from spinn_front_end_common.data import FecDataView
 MACHINE_FILENAME = "machine.json"
 
 
-class WriteJsonMachine(object):
-    """ Converter from memory machine to java machine.
+def write_json_machine(machine, json_folder=None, progress_bar=True):
+    """ Runs the code to write the machine in Java readable JSON.
 
-    .. note::
-        This is no longer the rig machine format!
+    .. warning::
+         The file in this folder will be overwritten!
 
+    :param ~spinn_machine.Machine machine: Machine to convert
+    :param str json_folder: the folder to which the JSON are being written
+    :param bool progress_bar: Flag if Progress Bar should be shown
+    :return: the name of the generated file
+    :rtype: str
     """
 
-    def __call__(self, machine, json_folder=None):
-        """ Runs the code to write the machine in readable JSON.
-
-        :param ~spinn_machine.Machine machine: Machine to convert
-        :param json_folder: The folder (if not the standard one)
-            to which the JSON are being (over)written.
-        :type json_folder: None or str
-        :return: the name of the generated file
-        :rtype: str
-        """
+    if progress_bar:
         # Steps are tojson, validate and writefile
         progress = ProgressBar(3, "Converting to JSON machine")
+    else:
+        progress = None
+    if json_folder is None:
+        json_folder = FecDataView().json_dir_path
+    file_path = os.path.join(json_folder, MACHINE_FILENAME)
+    if not os.path.exists(file_path):
+        json_obj = to_json(machine)
 
-        return WriteJsonMachine.write_json(machine, progress, json_folder)
+        if progress:
+            progress.update()
 
-    @staticmethod
-    def write_json(machine, progress=None, json_folder=None):
-        """ Runs the code to write the machine in Java readable JSON.
+        # validate the schema
+        file_format_schemas.validate(json_obj, MACHINE_FILENAME)
 
-        :param ~spinn_machine.Machine machine: Machine to convert
-        :param progress: Progress Bar if one used
-        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
-        :param json_folder: The folder (if not the standard one)
-            to which the JSON are being (over)written.
-        :type json_folder: None or str
-        :return: the name of the generated file
-        :rtype: str
-        """
-        if json_folder is None:
-            json_folder = FecDataView().json_dir_path
-        file_path = os.path.join(json_folder, MACHINE_FILENAME)
-        if not os.path.exists(file_path):
-            json_obj = to_json(machine)
-
-            if progress:
-                progress.update()
-
-            # validate the schema
-            file_format_schemas.validate(json_obj, MACHINE_FILENAME)
-
-            # update and complete progress bar
-            if progress:
-                progress.end()
-
-            # dump to json file
-            with open(file_path, "w") as f:
-                json.dump(json_obj, f)
-
+        # update and complete progress bar
         if progress:
             progress.end()
 
-        return file_path
+        # dump to json file
+        with open(file_path, "w") as f:
+            json.dump(json_obj, f)
+
+    if progress:
+        progress.end()
+
+    return file_path
