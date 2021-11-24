@@ -13,48 +13,38 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Much of the code in this module is intended primarily for being invoked via the
-PACMAN Executor.
-"""
-
-import os
-from .bit_field_compressor_report import BitFieldCompressorReport
+from .bit_field_compressor_report import bitfield_compressor_report
 from .bit_field_summary import BitFieldSummary
-from .board_chip_report import BoardChipReport
+from .board_chip_report import board_chip_report
 from .energy_report import EnergyReport
-from .fixed_route_from_machine_report import FixedRouteFromMachineReport
-from .memory_map_on_host_chip_report import MemoryMapOnHostChipReport
-from .memory_map_on_host_report import MemoryMapOnHostReport
-from .network_specification import NetworkSpecification
-from .router_collision_potential_report import RouterCollisionPotentialReport
-from .routing_table_from_machine_report import RoutingTableFromMachineReport
-from .real_tags_report import TagsFromMachineReport
-from .write_json_machine import WriteJsonMachine
-from .write_json_partition_n_keys_map import WriteJsonPartitionNKeysMap
-from .write_json_placements import WriteJsonPlacements
-from .write_json_routing_tables import WriteJsonRoutingTables
-
-
-def report_xml():
-    return os.path.join(
-        os.path.dirname(__file__), "front_end_common_reports.xml")
+from .fixed_route_from_machine_report import fixed_route_from_machine_report
+from .memory_map_on_host_chip_report import memory_map_on_host_chip_report
+from .memory_map_on_host_report import memory_map_on_host_report
+from .network_specification import network_specification
+from .router_collision_potential_report import (
+    router_collision_potential_report)
+from .routing_table_from_machine_report import (
+    routing_table_from_machine_report)
+from .real_tags_report import tags_from_machine_report
+from .write_json_machine import write_json_machine
+from .write_json_partition_n_keys_map import write_json_partition_n_keys_map
+from .write_json_placements import write_json_placements
+from .write_json_routing_tables import write_json_routing_tables
 
 
 __all__ = [
-    "BitFieldCompressorReport",
+    "bitfield_compressor_report",
     "BitFieldSummary",
-    "BoardChipReport",
+    "board_chip_report",
     "EnergyReport",
-    "FixedRouteFromMachineReport",
-    "NetworkSpecification",
-    "MemoryMapOnHostChipReport",
-    "MemoryMapOnHostReport",
-    "report_xml",
-    "RouterCollisionPotentialReport",
-    "RoutingTableFromMachineReport",
-    "TagsFromMachineReport",
-    "WriteJsonMachine",
-    "WriteJsonPartitionNKeysMap",
-    "WriteJsonPlacements",
-    "WriteJsonRoutingTables"]
+    "fixed_route_from_machine_report",
+    "network_specification",
+    "memory_map_on_host_chip_report",
+    "memory_map_on_host_report",
+    "router_collision_potential_report",
+    "routing_table_from_machine_report",
+    "tags_from_machine_report",
+    "write_json_machine",
+    "write_json_partition_n_keys_map",
+    "write_json_placements",
+    "write_json_routing_tables"]

@@ -17,23 +17,18 @@ from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
-class ChipIOBufClearer(object):
+def chip_io_buf_clearer(transceiver, executable_types):
     """ Clears the logging output buffer of an application running on a\
         SpiNNaker machine.
+
+    :param ~spinnman.transceiver.Transceiver transceiver:
+    :param executable_types:
+    :type executable_types:
+        dict(ExecutableType,~spinn_machine.CoreSubsets)
     """
+    if ExecutableType.USES_SIMULATION_INTERFACE in executable_types:
+        core_subsets = \
+            executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
 
-    __slots__ = []
-
-    def __call__(self, transceiver, executable_types):
-        """
-        :param ~spinnman.transceiver.Transceiver transceiver:
-        :param executable_types:
-        :type executable_types:
-            dict(ExecutableType,~spinn_machine.CoreSubsets)
-        """
-        if ExecutableType.USES_SIMULATION_INTERFACE in executable_types:
-            core_subsets = \
-                executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
-
-            process = ClearIOBUFProcess(transceiver.scamp_connection_selector)
-            process.clear_iobuf(core_subsets, len(core_subsets))
+        process = ClearIOBUFProcess(transceiver.scamp_connection_selector)
+        process.clear_iobuf(core_subsets, len(core_subsets))

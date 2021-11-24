@@ -17,40 +17,34 @@ from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.routing_info import DictBasedMachinePartitionNKeysMap
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
+PROG_BAR_NAME = (
+    "Getting number of keys required by each edge using application graph")
+ERROR_MSG = (
+    "A machine graph is required for this mapper. Please choose and try again")
 
-class EdgeToNKeysMapper(object):
+
+def edge_to_n_keys_mapper(machine_graph):
     """ Works out the number of keys needed for each edge.
+
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+    :rtype: ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
+    :raises ConfigurationException: If no graph is available
     """
+    if machine_graph is None:
+        raise ConfigurationException(ERROR_MSG)
 
-    __slots__ = []
+    # Generate an n_keys map for the graph and add constraints
+    n_keys_map = DictBasedMachinePartitionNKeysMap()
 
-    PROG_BAR_NAME = (
-        "Getting number of keys required by each edge using application graph")
-    ERROR_MSG = (
-        "A machine graph is required for this mapper. Please choose and try "
-        "again")
+    # generate progress bar
+    progress = ProgressBar(machine_graph.n_vertices, PROG_BAR_NAME)
 
-    def __call__(self, machine_graph):
-        """
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        :rtype: ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
-        :raises ConfigurationException: If no graph is available
-        """
-        if machine_graph is None:
-            raise ConfigurationException(self.ERROR_MSG)
+    # iterate over each partition in the graph
+    for vertex in progress.over(machine_graph.vertices):
+        for partition in machine_graph.\
+                get_multicast_edge_partitions_starting_at_vertex(vertex):
+            n_keys = partition.pre_vertex.get_n_keys_for_partition(
+                partition)
+            n_keys_map.set_n_keys_for_partition(partition, n_keys)
 
-        # Generate an n_keys map for the graph and add constraints
-        n_keys_map = DictBasedMachinePartitionNKeysMap()
-
-        # generate progress bar
-        progress = ProgressBar(machine_graph.n_vertices, self.PROG_BAR_NAME)
-
-        # iterate over each partition in the graph
-        for vertex in progress.over(machine_graph.vertices):
-            for partition in machine_graph.\
-                    get_multicast_edge_partitions_starting_at_vertex(vertex):
-                n_keys = partition.pre_vertex.get_n_keys_for_partition(
-                    partition)
-                n_keys_map.set_n_keys_for_partition(partition, n_keys)
-
-        return n_keys_map
+    return n_keys_map
