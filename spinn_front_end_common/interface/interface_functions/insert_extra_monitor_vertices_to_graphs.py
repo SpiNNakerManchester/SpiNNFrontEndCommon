@@ -20,205 +20,206 @@ from spinn_front_end_common.utility_models import (
     ExtraMonitorSupport, ExtraMonitorSupportMachineVertex)
 
 
-class InsertExtraMonitorVerticesToGraphs(object):
+def insert_extra_monitor_vertices_to_graphs(
+        machine, machine_graph, application_graph=None):
     """ Inserts the extra monitor vertices into the graph that correspond to\
-        the extra monitor cores required.
+    the extra monitor cores required.
+
+    :param ~spinn_machine.Machine machine: spinnMachine instance
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        machine graph
+    :param int n_cores_to_allocate:
+        number of cores to allocate for reception
+    :param application_graph: app graph
+    :type application_graph:
+        ~pacman.model.graphs.application.ApplicationGraph
+    :return: vertex to Ethernet connection map,
+        list of extra_monitor_vertices,
+        vertex_to_chip_map
+    :rtype: tuple(
+        dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),
+        list(ExtraMonitorSupportMachineVertex),
+        dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
     """
+    # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
-    __slots__ = []
+    progress = ProgressBar(
+        machine.n_chips + len(list(machine.ethernet_connected_chips)),
+        "Inserting extra monitors into graphs")
 
-    def __call__(
-            self, machine, machine_graph, application_graph=None):
-        """
-        :param ~spinn_machine.Machine machine: spinnMachine instance
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            machine graph
-        :param int n_cores_to_allocate:
-            number of cores to allocate for reception
-        :param application_graph: app graph
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
-        :return: vertex to Ethernet connection map,
-            list of extra_monitor_vertices,
-            vertex_to_chip_map
-        :rtype: tuple(
-            dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),
-            list(ExtraMonitorSupportMachineVertex),
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
-        """
-        # pylint: disable=too-many-arguments, attribute-defined-outside-init
+    chip_to_gatherer_map = dict()
+    vertex_to_chip_map = dict()
 
-        progress = ProgressBar(
-            machine.n_chips + len(list(machine.ethernet_connected_chips)),
-            "Inserting extra monitors into graphs")
+    # handle reinjector and chip based data extractor functionality.
+    if application_graph.n_vertices > 0:
+        extra_monitors = __add_second_monitors_application_graph(
+            progress, machine, application_graph, machine_graph,
+            vertex_to_chip_map)
+    else:
+        extra_monitors = __add_second_monitors_machine_graph(
+            progress, machine, machine_graph, vertex_to_chip_map)
 
-        chip_to_gatherer_map = dict()
-        vertex_to_chip_map = dict()
+    # progress data receiver for data extraction functionality
+    if application_graph.n_vertices > 0:
+        __add_data_extraction_vertices_app_graph(
+            progress, machine, application_graph, machine_graph,
+            chip_to_gatherer_map, vertex_to_chip_map)
+    else:
+        __add_data_extraction_vertices_mach_graph(
+            progress, machine, machine_graph, chip_to_gatherer_map,
+            vertex_to_chip_map)
 
-        # handle reinjector and chip based data extractor functionality.
-        if application_graph is not None:
-            extra_monitors = self._add_second_monitors_application_graph(
-                progress, machine, application_graph, machine_graph,
-                vertex_to_chip_map)
-        else:
-            extra_monitors = self._add_second_monitors_machine_graph(
-                progress, machine, machine_graph, vertex_to_chip_map)
+    return chip_to_gatherer_map, extra_monitors, vertex_to_chip_map
 
-        # progress data receiver for data extraction functionality
-        if application_graph is not None:
-            self._add_data_extraction_vertices_app_graph(
-                progress, machine, application_graph, machine_graph,
-                chip_to_gatherer_map, vertex_to_chip_map)
-        else:
-            self._add_data_extraction_vertices_mach_graph(
-                progress, machine, machine_graph, chip_to_gatherer_map,
-                vertex_to_chip_map)
 
-        return chip_to_gatherer_map, extra_monitors, vertex_to_chip_map
+def __add_second_monitors_application_graph(
+        progress, machine, application_graph, machine_graph,
+        vertex_to_chip_map):
+    """ Handles placing the second monitor vertex with extra functionality\
+        into the graph
 
-    def _add_second_monitors_application_graph(
-            self, progress, machine, application_graph, machine_graph,
-            vertex_to_chip_map):
-        """ Handles placing the second monitor vertex with extra functionality\
-            into the graph
+    :param ~.ProgressBar progress: progress bar
+    :param ~.Machine machine: spinnMachine instance
+    :param ~.ApplicationGraph application_graph: app graph
+    :param ~.MachineGraph machine_graph: machine graph
+    :param dict vertex_to_chip_map: map between vertex and chip
+    :return: list of extra monitor vertices
+    :rtype: list(~.MachineVertex)
+    """
+    # pylint: disable=too-many-arguments
 
-        :param ~.ProgressBar progress: progress bar
-        :param ~.Machine machine: spinnMachine instance
-        :param ~.ApplicationGraph application_graph: app graph
-        :param ~.MachineGraph machine_graph: machine graph
-        :param dict vertex_to_chip_map: map between vertex and chip
-        :return: list of extra monitor vertices
-        :rtype: list(~.MachineVertex)
-        """
-        # pylint: disable=too-many-arguments
+    extra_monitor_vertices = list()
 
-        extra_monitor_vertices = list()
+    for chip in progress.over(machine.chips, finish_at_end=False):
+        if chip.virtual:
+            continue
+        # add to both application graph and machine graph
+        app_vertex = __new_app_monitor(chip)
+        application_graph.add_vertex(app_vertex)
+        machine_vertex = app_vertex.machine_vertex
+        machine_graph.add_vertex(machine_vertex)
+        vertex_to_chip_map[chip.x, chip.y] = machine_vertex
+        extra_monitor_vertices.append(machine_vertex)
 
-        for chip in progress.over(machine.chips, finish_at_end=False):
-            if chip.virtual:
-                continue
-            # add to both application graph and machine graph
-            app_vertex = self.__new_app_monitor(chip)
-            application_graph.add_vertex(app_vertex)
-            machine_vertex = app_vertex.machine_vertex
-            machine_graph.add_vertex(machine_vertex)
-            vertex_to_chip_map[chip.x, chip.y] = machine_vertex
-            extra_monitor_vertices.append(machine_vertex)
+    return extra_monitor_vertices
 
-        return extra_monitor_vertices
 
-    def _add_second_monitors_machine_graph(
-            self, progress, machine, machine_graph, vertex_to_chip_map):
-        """ Handles placing the second monitor vertex with extra functionality\
-            into the graph
+def __add_second_monitors_machine_graph(
+        progress, machine, machine_graph, vertex_to_chip_map):
+    """ Handles placing the second monitor vertex with extra functionality\
+        into the graph
 
-        :param ~.ProgressBar progress: progress bar
-        :param ~.Machine machine: spinnMachine instance
-        :param ~.MachineGraph machine_graph: machine graph
-        :param dict vertex_to_chip_map: map between vertex and chip
-        :return: list of extra monitor vertices
-        :rtype: list(~.MachineVertex)
-        """
-        # pylint: disable=too-many-arguments
+    :param ~.ProgressBar progress: progress bar
+    :param ~.Machine machine: spinnMachine instance
+    :param ~.MachineGraph machine_graph: machine graph
+    :param dict vertex_to_chip_map: map between vertex and chip
+    :return: list of extra monitor vertices
+    :rtype: list(~.MachineVertex)
+    """
+    # pylint: disable=too-many-arguments
 
-        extra_monitor_vertices = list()
+    extra_monitor_vertices = list()
 
-        for chip in progress.over(machine.chips, finish_at_end=False):
-            if chip.virtual:
-                continue
-            # add to machine graph
-            vertex = self.__new_mach_monitor(chip)
-            machine_graph.add_vertex(vertex)
-            vertex_to_chip_map[chip.x, chip.y] = vertex
-            extra_monitor_vertices.append(vertex)
+    for chip in progress.over(machine.chips, finish_at_end=False):
+        if chip.virtual:
+            continue
+        # add to machine graph
+        vertex = __new_mach_monitor(chip)
+        machine_graph.add_vertex(vertex)
+        vertex_to_chip_map[chip.x, chip.y] = vertex
+        extra_monitor_vertices.append(vertex)
 
-        return extra_monitor_vertices
+    return extra_monitor_vertices
 
-    def _add_data_extraction_vertices_app_graph(
-            self, progress, machine, application_graph, machine_graph,
-            chip_to_gatherer_map, vertex_to_chip_map):
-        """ Places vertices for receiving data extraction packets.
 
-        :param ~.ProgressBar progress: progress bar
-        :param ~.Machine machine: machine instance
-        :param ~.ApplicationGraph application_graph: application graph
-        :param ~.MachineGraph machine_graph: machine graph
-        :param dict chip_to_gatherer_map: vertex to chip map
-        :param dict vertex_to_chip_map: map between chip and extra monitor
-        """
-        # pylint: disable=too-many-arguments
+def __add_data_extraction_vertices_app_graph(
+        progress, machine, application_graph, machine_graph,
+        chip_to_gatherer_map, vertex_to_chip_map):
+    """ Places vertices for receiving data extraction packets.
 
-        # insert machine vertices
-        for chip in progress.over(machine.ethernet_connected_chips):
-            # add to application graph
-            app_vertex = self.__new_app_gatherer(chip, vertex_to_chip_map)
-            application_graph.add_vertex(app_vertex)
-            machine_vertex = app_vertex.machine_vertex
-            machine_graph.add_vertex(machine_vertex)
-            # update mapping for edge builder
-            chip_to_gatherer_map[chip.x, chip.y] = machine_vertex
+    :param ~.ProgressBar progress: progress bar
+    :param ~.Machine machine: machine instance
+    :param ~.ApplicationGraph application_graph: application graph
+    :param ~.MachineGraph machine_graph: machine graph
+    :param dict chip_to_gatherer_map: vertex to chip map
+    :param dict vertex_to_chip_map: map between chip and extra monitor
+    """
+    # pylint: disable=too-many-arguments
 
-    def _add_data_extraction_vertices_mach_graph(
-            self, progress, machine, machine_graph,
-            chip_to_gatherer_map, vertex_to_chip_map):
-        """ Places vertices for receiving data extraction packets.
+    # insert machine vertices
+    for chip in progress.over(machine.ethernet_connected_chips):
+        # add to application graph
+        app_vertex = __new_app_gatherer(chip, vertex_to_chip_map)
+        application_graph.add_vertex(app_vertex)
+        machine_vertex = app_vertex.machine_vertex
+        machine_graph.add_vertex(machine_vertex)
+        # update mapping for edge builder
+        chip_to_gatherer_map[chip.x, chip.y] = machine_vertex
 
-        :param ~.ProgressBar progress: progress bar
-        :param ~.Machine machine: machine instance
-        :param ~.MachineGraph machine_graph: machine graph
-        :param dict chip_to_gatherer_map: vertex to chip map
-        :param dict vertex_to_chip_map: map between chip and extra monitor
-        """
-        # pylint: disable=too-many-arguments
 
-        # insert machine vertices
-        for chip in progress.over(machine.ethernet_connected_chips):
-            machine_vertex = self.__new_mach_gatherer(chip, vertex_to_chip_map)
-            machine_graph.add_vertex(machine_vertex)
-            # update mapping for edge builder
-            chip_to_gatherer_map[chip.x, chip.y] = machine_vertex
+def __add_data_extraction_vertices_mach_graph(
+        progress, machine, machine_graph,
+        chip_to_gatherer_map, vertex_to_chip_map):
+    """ Places vertices for receiving data extraction packets.
 
-    @staticmethod
-    def __new_app_monitor(chip):
-        """
-        :param ~.Chip chip:
-        :rtype: ExtraMonitorSupport
-        """
-        return ExtraMonitorSupport(constraints=[
-            ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+    :param ~.ProgressBar progress: progress bar
+    :param ~.Machine machine: machine instance
+    :param ~.MachineGraph machine_graph: machine graph
+    :param dict chip_to_gatherer_map: vertex to chip map
+    :param dict vertex_to_chip_map: map between chip and extra monitor
+    """
+    # pylint: disable=too-many-arguments
 
-    @staticmethod
-    def __new_mach_monitor(chip):
-        """
-        :param ~.Chip chip:
-        :rtype: ExtraMonitorSupportMachineVertex
-        """
-        return ExtraMonitorSupportMachineVertex(
-            constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)],
-            app_vertex=None)
+    # insert machine vertices
+    for chip in progress.over(machine.ethernet_connected_chips):
+        machine_vertex = __new_mach_gatherer(chip, vertex_to_chip_map)
+        machine_graph.add_vertex(machine_vertex)
+        # update mapping for edge builder
+        chip_to_gatherer_map[chip.x, chip.y] = machine_vertex
 
-    def __new_app_gatherer(self, ethernet_chip, vertex_to_chip_map):
-        """
-        :param ~.Chip ethernet_chip:
-        :param dict vertex_to_chip_map:
-        :rtype: DataSpeedUpPacketGather
-        """
-        return DataSpeedUpPacketGather(
-            x=ethernet_chip.x, y=ethernet_chip.y,
-            ip_address=ethernet_chip.ip_address,
-            constraints=[ChipAndCoreConstraint(
-                x=ethernet_chip.x, y=ethernet_chip.y)],
-            extra_monitors_by_chip=vertex_to_chip_map)
 
-    def __new_mach_gatherer(self, ethernet_chip, vertex_to_chip_map):
-        """
-        :param ~.Chip ethernet_chip:
-        :param dict vertex_to_chip_map:
-        :rtype: DataSpeedUpPacketGatherMachineVertex
-        """
-        return DataSpeedUpPacketGatherMachineVertex(
-            x=ethernet_chip.x, y=ethernet_chip.y,
-            ip_address=ethernet_chip.ip_address,
-            constraints=[ChipAndCoreConstraint(
-                x=ethernet_chip.x, y=ethernet_chip.y)],
-            extra_monitors_by_chip=vertex_to_chip_map)
+def __new_app_monitor(chip):
+    """
+    :param ~.Chip chip:
+    :rtype: ExtraMonitorSupport
+    """
+    return ExtraMonitorSupport(constraints=[
+        ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+
+
+def __new_mach_monitor(chip):
+    """
+    :param ~.Chip chip:
+    :rtype: ExtraMonitorSupportMachineVertex
+    """
+    return ExtraMonitorSupportMachineVertex(
+        constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)],
+        app_vertex=None)
+
+
+def __new_app_gatherer(ethernet_chip, vertex_to_chip_map):
+    """
+    :param ~.Chip ethernet_chip:
+    :param dict vertex_to_chip_map:
+    :rtype: DataSpeedUpPacketGather
+    """
+    return DataSpeedUpPacketGather(
+        x=ethernet_chip.x, y=ethernet_chip.y,
+        ip_address=ethernet_chip.ip_address,
+        constraints=[ChipAndCoreConstraint(
+            x=ethernet_chip.x, y=ethernet_chip.y)],
+        extra_monitors_by_chip=vertex_to_chip_map)
+
+
+def __new_mach_gatherer(ethernet_chip, vertex_to_chip_map):
+    """
+    :param ~.Chip ethernet_chip:
+    :param dict vertex_to_chip_map:
+    :rtype: DataSpeedUpPacketGatherMachineVertex
+    """
+    return DataSpeedUpPacketGatherMachineVertex(
+        x=ethernet_chip.x, y=ethernet_chip.y,
+        ip_address=ethernet_chip.ip_address,
+        constraints=[ChipAndCoreConstraint(
+            x=ethernet_chip.x, y=ethernet_chip.y)],
+        extra_monitors_by_chip=vertex_to_chip_map)

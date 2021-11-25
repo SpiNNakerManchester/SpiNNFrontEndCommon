@@ -16,21 +16,15 @@ from spinn_front_end_common.utilities.notification_protocol import (
     NotificationProtocol)
 
 
-class CreateNotificationProtocol(object):
+def create_notification_protocol(socket_addresses, database_file_path):
     """ Builds the notification protocol for GUI and external device \
         interaction.
-    """
 
-    __slots__ = []
-
-    def __call__(
-            self, socket_addresses, database_file_path):
-        """
         :param socket_addresses: Where to notify.
         :type socket_addresses:
             set(~spinn_utilities.socket_address.SocketAddress)
         :param str database_file_path:
-        """
-        notification_protocol = NotificationProtocol(socket_addresses)
-        notification_protocol.send_read_notification(database_file_path)
-        return notification_protocol
+    """
+    notification_protocol = NotificationProtocol(socket_addresses)
+    notification_protocol.send_read_notification(database_file_path)
+    return notification_protocol
