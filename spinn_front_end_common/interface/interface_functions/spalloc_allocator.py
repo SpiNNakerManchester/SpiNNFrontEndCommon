@@ -20,6 +20,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spalloc import Job
 from spalloc.states import JobState
+from spinn_machine import Machine
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
@@ -168,91 +169,84 @@ class _OldSpallocJobController(MachineAllocationController):
         super()._teardown()
 
 
-class SpallocAllocator(object):
+_MACHINE_VERSION = 5
+
+
+def spalloc_allocator(spalloc_server, n_chips=None, n_boards=None,
+                      bearer_token=None):
     """ Request a machine from a SPALLOC server that will fit the given\
         number of chips.
+
+    :param str spalloc_server:
+        The server from which the machine should be requested
+    :param n_chips: The number of chips required.
+        IGNORED if n_boards is not None
+    :type n_chips: int or None
+    :param int n_boards: The number of boards required
+    :type n_boards: int or None
+    :param bearer_token: The bearer token to use
+    :type bearer_token: str or None
+    :rtype: tuple(str, int, None, bool, bool, None, None,
+        MachineAllocationController)
     """
 
-    # Use a worst case calculation
-    _N_CHIPS_PER_BOARD = 48
-    _MACHINE_VERSION = 5
+    # Work out how many boards are needed
+    if n_boards is None:
+        n_boards = float(n_chips) / Machine.MAX_CHIPS_PER_48_BOARD
+        # If the number of boards rounded up is less than 10% of a board
+        # bigger than the actual number of boards,
+        # add another board just in case.
+        if math.ceil(n_boards) - n_boards < 0.1:
+            n_boards += 1
+        n_boards = int(math.ceil(n_boards))
+    if SpallocClient.is_server_address(spalloc_server):
+        return _allocate_job_new(spalloc_server, n_boards, bearer_token)
+    else:
+        return _OldSpallocAllocator(spalloc_server, n_boards).allocate()
 
-    def __call__(
-            self, spalloc_server, n_chips=None, n_boards=None,
-            bearer_token=None):
-        """
-        :param str spalloc_server:
-            The server from which the machine should be requested
-        :param n_chips: The number of chips required.
-            IGNORED if n_boards is not None
-        :type n_chips: int or None
-        :param int n_boards: The number of boards required
-        :type n_boards: int or None
-        :param bearer_token: The bearer token to use
-        :type bearer_token: str or None
-        :rtype: tuple(str, int, None, bool, bool, None, None,
-            MachineAllocationController)
-        """
-        # pylint: disable=too-many-arguments
 
-        # Work out how many boards are needed
-        if n_boards is None:
-            n_boards = float(n_chips) / self._N_CHIPS_PER_BOARD
-            # If the number of boards rounded up is less than 10% of a board
-            # bigger than the actual number of boards,
-            # add another board just in case.
-            if math.ceil(n_boards) - n_boards < 0.1:
-                n_boards += 1
-            n_boards = int(math.ceil(n_boards))
+def _allocate_job_new(spalloc_server, n_boards, bearer_token=None):
+    """
+    Request a machine from an old-style spalloc server that will fit the
+    given number of boards.
 
-        if SpallocClient.is_server_address(spalloc_server):
-            return self.allocate_job_new(
-                spalloc_server, n_boards, bearer_token)
-        else:
-            return self.allocate_job_old(spalloc_server, n_boards)
-
-    def allocate_job_new(self, spalloc_server, n_boards, bearer_token=None):
-        """
-        Request a machine from an old-style spalloc server that will fit the
-        given number of boards.
-
-        :param str spalloc_server:
-            The server from which the machine should be requested
-        :param int n_boards: The number of boards required
-        :param bearer_token: The bearer token to use
-        :type bearer_token: str or None
-        :rtype: tuple(str, int, None, bool, bool, None, None,
-            MachineAllocationController)
-        """
-
-        spalloc_machine = get_config_str("Machine", "spalloc_machine")
-        client = SpallocClient(spalloc_server, bearer_token=bearer_token)
+    :param str spalloc_server:
+        The server from which the machine should be requested
+    :param int n_boards: The number of boards required
+    :param bearer_token: The bearer token to use
+    :type bearer_token: str or None
+    :rtype: tuple(str, int, None, bool, bool, None, None,
+        MachineAllocationController)
+    """
+    spalloc_machine = get_config_str("Machine", "spalloc_machine")
+    client = SpallocClient(spalloc_server, bearer_token=bearer_token)
+    try:
         job = client.create_job(n_boards, spalloc_machine)
-        closer_for_keepalive_task = client.launch_keepalive_task(job)
+        keepalive_closer = client.launch_keepalive_task(job)
         try:
             job.wait_until_ready()
             root = job.get_root_host()
-            machine_allocation_controller = _NewSpallocJobController(
-                client, job, closer_for_keepalive_task)
-            return (
-                root, self._MACHINE_VERSION, None, False,
-                False, None, None, machine_allocation_controller
-            )
+            allocation_controller = _NewSpallocJobController(
+                client, job, keepalive_closer)
+            # Success; we don't want to close the client now
+            client = None
         except Exception:
-            closer_for_keepalive_task.close()
-            client.close()
+            keepalive_closer.close()
             raise
+    finally:
+        if client is not None:
+            client.close()
+    return (
+        root, _MACHINE_VERSION, None, False, False, None, None,
+        allocation_controller)
 
-    def allocate_job_old(self, spalloc_server, n_boards):
+
+class _OldSpallocAllocator:
+    def __init__(self, spalloc_server, n_boards):
         """
-        Request a machine from an old-style spalloc server that will fit the
-        given number of boards.
-
         :param str spalloc_server:
             The server from which the machine should be requested
         :param int n_boards: The number of boards required
-        :rtype: tuple(str, int, None, bool, bool, None, None,
-            MachineAllocationController)
         """
         host, port, user = parse_old_spalloc(
             spalloc_server, get_config_int("Machine", "spalloc_port"),
@@ -263,45 +257,54 @@ class SpallocAllocator(object):
             'owner': user
         }
         spalloc_machine = get_config_str("Machine", "spalloc_machine")
+
         if spalloc_machine is not None:
             spalloc_kw_args['machine'] = spalloc_machine
 
-        job, hostname = self._launch_checked_job(n_boards, spalloc_kw_args)
+        self.avoid_boards = get_config_str_list(
+            "Machine", "spalloc_avoid_boards")
+        self.n_boards = n_boards
+        self.spalloc_kwargs = spalloc_kw_args
+
+    def allocate(self):
+        """
+        Request a machine from an old-style spalloc server that will fit the
+        requested number of boards.
+
+        :rtype: tuple(str, int, None, bool, bool, None, None,
+            MachineAllocationController)
+        """
+        job, hostname = self._launch_checked_job()
         machine_allocation_controller = _OldSpallocJobController(job)
 
         return (
-            hostname, self._MACHINE_VERSION, None, False,
+            hostname, _MACHINE_VERSION, None, False,
             False, None, None, machine_allocation_controller
         )
 
-    def _launch_checked_job(self, n_boards, spalloc_kw_args):
+    def _launch_checked_job(self):
         """
-        :param int n_boards:
-        :param dict(str, str or int) spalloc_kw_args:
         :rtype: tuple(~.Job, str)
         """
-        # NB: The new spalloc server doesn't need this concept; it's much
-        # easier to administratively take boards out of service there.
-        avoid_boards = get_config_str_list("Machine", "spalloc_avoid_boards")
         avoid_jobs = []
-        job, hostname = self._launch_job(n_boards, spalloc_kw_args)
-        while hostname in avoid_boards:
-            avoid_jobs.append(job)
-            logger.warning(
-                f"Asking for new job as {hostname} "
-                f"as in the spalloc_avoid_boards list")
-            job, hostname = self._launch_job(n_boards, spalloc_kw_args)
-        for avoid_job in avoid_jobs:
-            avoid_job.destroy("Asked to avoid by cfg")
+        try:
+            job, hostname = self._launch_job()
+            while hostname in self.avoid_boards:
+                avoid_jobs.append(job)
+                logger.warning(
+                    f"Asking for new job as {hostname} "
+                    f"as in the spalloc_avoid_boards list")
+                job, hostname = self._launch_job()
+        finally:
+            for avoid_job in avoid_jobs:
+                avoid_job.destroy("Asked to avoid by cfg")
         return job, hostname
 
-    def _launch_job(self, n_boards, spalloc_kw_args):
+    def _launch_job(self):
         """
-        :param int n_boards:
-        :param dict(str, str or int) spalloc_kw_args:
         :rtype: tuple(~.Job, str)
         """
-        job = Job(n_boards, **spalloc_kw_args)
+        job = Job(self.n_boards, **self.spalloc_kwargs)
         try:
             job.wait_until_ready()
             # get param from jobs before starting, so that hanging doesn't
