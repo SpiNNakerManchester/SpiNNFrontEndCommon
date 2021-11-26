@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from .live_packet_gather_splitter import LivePacketGatherSplitter
 from .splitter_selector import SplitterSelector
 
-__all__ = ['SplitterSelector']
+__all__ = ['SplitterSelector', 'LivePacketGatherSplitter']

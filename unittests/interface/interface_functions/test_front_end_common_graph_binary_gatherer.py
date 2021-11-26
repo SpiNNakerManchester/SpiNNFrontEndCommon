@@ -16,14 +16,24 @@
 import unittest
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_utilities.overrides import overrides
-from pacman.model.graphs.machine import (
-   MachineGraph, SimpleMachineVertex)
+from pacman.model.graphs.machine import SimpleMachineVertex
+from pacman.model.graphs.application import ApplicationGraph
+from pacman.model.graphs.application.abstract import (
+    AbstractOneAppOneMachineVertex)
 from pacman.model.placements import Placements, Placement
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     GraphBinaryGatherer, LocateExecutableStartType)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+
+
+class _TestAppVertexWithBinary(AbstractOneAppOneMachineVertex):
+
+    def __init__(self, binary_file_name, binary_start_type):
+        AbstractOneAppOneMachineVertex.__init__(
+            self, _TestVertexWithBinary(binary_file_name, binary_start_type),
+            label=None, constraints=[])
 
 
 class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
@@ -42,6 +52,13 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
         return self._binary_start_type
 
 
+class _TestSimpleAppVertex(AbstractOneAppOneMachineVertex):
+
+    def __init__(self):
+        AbstractOneAppOneMachineVertex.__init__(
+            self, SimpleMachineVertex(None), label=None, constraints=[])
+
+
 class _TestExecutableFinder(object):
 
     @overrides(ExecutableFinder.get_executable_path)
@@ -58,22 +75,20 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         """ Test calling the binary gatherer normally
         """
 
-        vertex_1 = _TestVertexWithBinary(
+        vertex_1 = _TestAppVertexWithBinary(
             "test.aplx", ExecutableType.RUNNING)
-        vertex_2 = _TestVertexWithBinary(
+        vertex_2 = _TestAppVertexWithBinary(
             "test2.aplx", ExecutableType.RUNNING)
-        vertex_3 = _TestVertexWithBinary(
+        vertex_3 = _TestAppVertexWithBinary(
             "test2.aplx", ExecutableType.RUNNING)
-        vertex_4 = SimpleMachineVertex(None)
 
-        graph = MachineGraph("Test")
+        graph = ApplicationGraph("Test")
         graph.add_vertices([vertex_1, vertex_2, vertex_3])
 
         placements = Placements(placements=[
-            Placement(vertex_1, 0, 0, 0),
-            Placement(vertex_2, 0, 0, 1),
-            Placement(vertex_3, 0, 0, 2),
-            Placement(vertex_4, 0, 0, 3)])
+            Placement(vertex_1.machine_vertex, 0, 0, 0),
+            Placement(vertex_2.machine_vertex, 0, 0, 1),
+            Placement(vertex_3.machine_vertex, 0, 0, 2)])
 
         gatherer = GraphBinaryGatherer()
         targets = gatherer.__call__(placements, graph, _TestExecutableFinder())
@@ -94,16 +109,16 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         """ Test calling the binary gatherer with mixed executable types
         """
 
-        vertex_1 = _TestVertexWithBinary(
+        vertex_1 = _TestAppVertexWithBinary(
             "test.aplx", ExecutableType.RUNNING)
-        vertex_2 = _TestVertexWithBinary(
+        vertex_2 = _TestAppVertexWithBinary(
             "test2.aplx", ExecutableType.SYNC)
 
         placements = Placements(placements=[
-            Placement(vertex_1, 0, 0, 0),
-            Placement(vertex_2, 0, 0, 1)])
+            Placement(vertex_1.machine_vertex, 0, 0, 0),
+            Placement(vertex_2.machine_vertex, 0, 0, 1)])
 
-        graph = MachineGraph("Test")
+        graph = ApplicationGraph("Test")
         graph.add_vertices([vertex_1, vertex_2])
 
         gatherer = LocateExecutableStartType()

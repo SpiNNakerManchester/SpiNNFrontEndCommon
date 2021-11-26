@@ -22,7 +22,6 @@ from spinn_machine import CoreSubsets, Router
 from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset)
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from spinn_utilities.config_holder import get_config_bool
@@ -258,26 +257,20 @@ class ExtraMonitorSupportMachineVertex(
         """
         return "extra_monitor_support.aplx"
 
-    @inject_items({"routing_info": "RoutingInfos",
-                   "machine_graph": "MachineGraph",
-                   "data_in_routing_tables": "DataInMulticastRoutingTables",
+    @inject_items({"data_in_routing_tables": "DataInMulticastRoutingTables",
                    "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
                    "app_id": "APPID",
                    "machine": "ExtendedMachine",
                    "router_timeout_keys": "SystemMulticastRouterTimeoutKeys"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={
-                   "routing_info", "machine_graph", "data_in_routing_tables",
-                   "mc_data_chips_to_keys", "app_id", "machine",
-                   "router_timeout_keys"})
+                   "data_in_routing_tables", "mc_data_chips_to_keys", "app_id",
+                   "machine", "router_timeout_keys"})
     def generate_data_specification(
-            self, spec, placement, routing_info, machine_graph,
-            data_in_routing_tables, mc_data_chips_to_keys, app_id,
-            machine, router_timeout_keys):
+            self, spec, placement, data_in_routing_tables,
+            mc_data_chips_to_keys, app_id, machine, router_timeout_keys):
         """
         :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            (injected)
         :param data_in_routing_tables: (injected)
         :type data_in_routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
@@ -294,8 +287,7 @@ class ExtraMonitorSupportMachineVertex(
         self._generate_reinjection_config(
             spec, router_timeout_keys, placement, machine)
         # write data speed up out config
-        self._generate_data_speed_up_out_config(
-            spec, routing_info, machine_graph)
+        self._generate_data_speed_up_out_config(spec)
         # write data speed up in config
         self._generate_data_speed_up_in_config(
             spec, data_in_routing_tables,
@@ -304,33 +296,21 @@ class ExtraMonitorSupportMachineVertex(
         self._generate_provenance_area(spec)
         spec.end_specification()
 
-    def _generate_data_speed_up_out_config(
-            self, spec, routing_info, machine_graph):
+    def _generate_data_speed_up_out_config(self, spec):
         """
         :param ~.DataSpecificationGenerator spec: spec file
         :param ~.RoutingInfo routing_info: the packet routing info
-        :param ~.MachineGraph machine_graph: The graph containing this vertex
         """
         spec.reserve_memory_region(
             region=_DSG_REGIONS.DATA_OUT_CONFIG,
             size=_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES,
             label="data speed-up out config region")
         spec.switch_write_focus(_DSG_REGIONS.DATA_OUT_CONFIG)
-
-        if Gatherer.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
-            base_key = routing_info.get_first_key_for_edge(
-                list(machine_graph.get_edges_starting_at_vertex(self))[0])
-            spec.write_value(base_key)
-            spec.write_value(base_key + Gatherer.NEW_SEQ_KEY_OFFSET)
-            spec.write_value(base_key + Gatherer.FIRST_DATA_KEY_OFFSET)
-            spec.write_value(base_key + Gatherer.TRANSACTION_ID_KEY_OFFSET)
-            spec.write_value(base_key + Gatherer.END_FLAG_KEY_OFFSET)
-        else:
-            spec.write_value(Gatherer.BASE_KEY)
-            spec.write_value(Gatherer.NEW_SEQ_KEY)
-            spec.write_value(Gatherer.FIRST_DATA_KEY)
-            spec.write_value(Gatherer.TRANSACTION_ID_KEY)
-            spec.write_value(Gatherer.END_FLAG_KEY)
+        spec.write_value(Gatherer.BASE_KEY)
+        spec.write_value(Gatherer.NEW_SEQ_KEY)
+        spec.write_value(Gatherer.FIRST_DATA_KEY)
+        spec.write_value(Gatherer.TRANSACTION_ID_KEY)
+        spec.write_value(Gatherer.END_FLAG_KEY)
 
     def _generate_reinjection_config(
             self, spec, router_timeout_keys, placement, machine):

@@ -46,8 +46,6 @@ from .host_bit_field_router_compressor import HostBasedBitFieldRouterCompressor
 from .host_execute_data_specification import HostExecuteDataSpecification
 from .insert_chip_power_monitors_to_graphs import (
     InsertChipPowerMonitorsToGraphs)
-from .insert_edges_to_extra_monitor_functionality import (
-    InsertEdgesToExtraMonitorFunctionality)
 from .insert_edges_to_live_packet_gatherers import (
     InsertEdgesToLivePacketGatherers)
 from .insert_extra_monitor_vertices_to_graphs import (

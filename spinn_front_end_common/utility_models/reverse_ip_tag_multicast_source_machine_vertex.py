@@ -594,10 +594,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         self.reserve_provenance_data_region(spec)
 
-    def _update_virtual_key(self, routing_info, machine_graph):
+    def _update_virtual_key(self, routing_info):
         """
         :param ~pacman.model.routing_info.RoutingInfo routing_info:
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         """
         if self._virtual_key is None:
             rinfo = routing_info.get_routing_info_from_pre_vertex(
@@ -673,25 +672,23 @@ class ReverseIPTagMulticastSourceMachineVertex(
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
     @inject_items({
-        "machine_graph": "MachineGraph",
         "routing_info": "RoutingInfos",
         "data_n_time_steps": "DataNTimeSteps"
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_graph", "routing_info", "data_n_time_steps"
+            "routing_info", "data_n_time_steps"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_graph, routing_info, data_n_time_steps):
+            routing_info, data_n_time_steps):
         """
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.routing_info.RoutingInfo routing_info:
         :param int data_n_time_steps:
         """
         # pylint: disable=too-many-arguments, arguments-differ
-        self._update_virtual_key(routing_info, machine_graph)
+        self._update_virtual_key(routing_info)
 
         # Reserve regions
         self._reserve_regions(spec, data_n_time_steps)

@@ -20,7 +20,7 @@ from pacman.model.partitioner_splitters import (
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
 from spinn_front_end_common.utility_models import (
-    ReverseIpTagMultiCastSource, LivePacketGather, ChipPowerMonitor)
+    ReverseIpTagMultiCastSource, ChipPowerMonitor)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -60,8 +60,6 @@ class SplitterSelector(object):
             app_vertex.splitter = SplitterOneAppOneMachine()
         elif isinstance(app_vertex, ReverseIpTagMultiCastSource):
             app_vertex.splitter = SplitterFixedLegacy()
-        elif isinstance(app_vertex, LivePacketGather):
-            app_vertex.splitter = SplitterOneToOneLegacy()
         elif isinstance(app_vertex, ChipPowerMonitor):
             app_vertex.splitter = SplitterOneToOneLegacy()
         else:

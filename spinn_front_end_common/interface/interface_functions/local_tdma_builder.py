@@ -85,21 +85,13 @@ class LocalTDMABuilder(object):
     FRACTION_OF_TIME_FOR_SPIKE_SENDING = 0.8
     FRACTION_OF_TIME_STEP_BEFORE_SPIKE_SENDING = 0.1
 
-    def __call__(
-            self, machine_graph, n_keys_map, application_graph=None):
+    def __call__(self, application_graph):
         """ main entrance
 
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            machine graph.
-        :param n_keys_map: the map of partitions to n keys.
-        :type n_keys_map:
-            ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
         :param application_graph: app graph.
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph or None
         """
-        if application_graph.n_vertices == 0:
-            return
 
         # get config params
         us_per_cycle = machine_time_step() * time_scale_factor()
@@ -119,12 +111,10 @@ class LocalTDMABuilder(object):
                 # check config params for better performance
                 (n_at_same_time, local_clocks) = self._auto_config_times(
                     app_machine_quantity, clocks_between_cores,
-                    clocks_for_sending, app_vertex, n_keys_map,
-                    machine_graph, clocks_waiting)
+                    clocks_for_sending, app_vertex, clocks_waiting)
                 n_phases, n_slots, clocks_between_phases = \
                     self._generate_times(
-                        machine_graph, app_vertex, n_at_same_time,
-                        local_clocks, n_keys_map)
+                        app_vertex, n_at_same_time, local_clocks)
 
                 # store in tracker
                 app_vertex.set_other_timings(
@@ -160,10 +150,10 @@ class LocalTDMABuilder(object):
     @staticmethod
     def _auto_config_times(
             app_machine_quantity, clocks_between_cores, clocks_for_sending,
-            app_vertex, n_keys_map, machine_graph, clocks_waiting):
+            app_vertex, clocks_waiting):
 
         n_cores = app_vertex.get_n_cores()
-        n_phases = app_vertex.find_n_phases_for(machine_graph, n_keys_map)
+        n_phases = app_vertex.get_n_phases()
 
         # If there are no packets sent, pretend there is 1 to avoid division
         # by 0; it won't actually matter anyway
@@ -226,27 +216,21 @@ class LocalTDMABuilder(object):
 
     @staticmethod
     def _generate_times(
-            machine_graph, app_vertex, app_machine_quantity,
-            clocks_between_cores, n_keys_map):
+            app_vertex, app_machine_quantity, clocks_between_cores):
         """ Generates the number of phases needed for this app vertex, as well\
             as the number of slots and the time between spikes for this app\
             vertex, given the number of machine verts to fire at the same time\
             from a given app vertex.
 
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            machine graph
         :param TDMAAwareApplicationVertex app_vertex: the app vertex
         :param int app_machine_quantity: the pop spike control level
         :param int clocks_between_cores: the clock cycles between cores
-        :param n_keys_map: the partition to n keys map.
-        :type n_keys_map:
-            ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
         :return: (n_phases, n_slots, time_between_phases) for this app vertex
         :rtype: tuple(int, int, int)
         """
 
         # Figure total T2s
-        n_phases = app_vertex.find_n_phases_for(machine_graph, n_keys_map)
+        n_phases = app_vertex.get_n_phases()
 
         # how many hops between T2's
         n_cores = app_vertex.get_n_cores()

@@ -38,7 +38,7 @@ class GraphBinaryGatherer(object):
     def __call__(self, placements, graph, executable_finder):
         """
         :param ~pacman.model.placements.Placements placements:
-        :param ~pacman.model.graphs.machine.MachineGraph graph:
+        :param ~pacman.model.graphs.application.ApplicationGraph graph:
         :param executable_finder:
         :type executable_finder:
             ~spinn_utilities.executable_finder.ExecutableFinder
@@ -47,9 +47,10 @@ class GraphBinaryGatherer(object):
         self._exe_finder = executable_finder
         self._exe_targets = ExecutableTargets()
         progress = ProgressBar(graph.n_vertices, "Finding binaries")
-        for vertex in progress.over(graph.vertices):
-            placement = placements.get_placement_of_vertex(vertex)
-            self.__get_binary(placement, vertex)
+        for app_vertex in progress.over(graph.vertices):
+            for vertex in app_vertex.machine_vertices:
+                placement = placements.get_placement_of_vertex(vertex)
+                self.__get_binary(placement, vertex)
 
         return self._exe_targets
 
