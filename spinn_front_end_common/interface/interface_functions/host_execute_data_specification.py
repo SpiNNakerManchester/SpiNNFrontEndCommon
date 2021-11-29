@@ -520,7 +520,7 @@ class _HostExecuteDataSpecification(object):
         except:  # noqa: E722
             if uses_advanced_monitors:
                 emergency_recover_states_from_failure(
-                    self._txrx, self._app_id, executable_targets)
+                    self._txrx, executable_targets)
             raise
 
     def __set_router_timeouts(self):
