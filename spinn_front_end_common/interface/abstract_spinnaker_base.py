@@ -3212,7 +3212,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # if no application, but a machine graph, check for changes there
         elif self._original_machine_graph.n_vertices:
-            changed = self._original_mach_graph.updated_since_cloned(
+            changed = self._original_machine_graph.updated_since_cloned(
                 self._machine_graph)
             for machine_vertex in self._original_machine_graph.vertices:
                 if isinstance(machine_vertex, AbstractChangableAfterRun):
