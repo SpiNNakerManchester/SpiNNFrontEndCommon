@@ -17,7 +17,6 @@ import unittest
 from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.application import ApplicationGraph, ApplicationVertex
-from pacman.model.graphs.machine import MachineGraph
 from pacman_test_objects import SimpleTestVertex
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (

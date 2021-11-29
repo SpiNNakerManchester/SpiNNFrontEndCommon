@@ -30,7 +30,6 @@ from spinnman.model.enums.cpu_state import CPUState
 from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset)
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)

@@ -46,4 +46,3 @@ class LivePacketGather(ApplicationVertex):
         :rtype: LivePacketGatherPatameters
         """
         return self.__lpg_params
-
