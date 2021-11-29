@@ -17,19 +17,21 @@ import logging
 from spinn_utilities.log import FormatAdapter
 from spinnman.model import ExecutableTargets, CPUInfos
 from spinnman.model.enums import CPUState
+from spinn_front_end_common.data import FecDataView
 from .iobuf_extractor import IOBufExtractor
 from .globals_variables import get_simulator
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def _emergency_state_check(txrx, app_id):
+def _emergency_state_check(txrx):
     """
     :param ~.Transceiver txrx: spinnman interface
     :param int app_id: the app id
     """
     # pylint: disable=broad-except
     try:
+        app_id = FecDataView().app_id
         rte_count = txrx.get_core_state_count(
             app_id, CPUState.RUN_TIME_EXCEPTION)
         watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
@@ -74,20 +76,19 @@ def _emergency_iobuf_extract(txrx, executable_targets):
     extractor.extract_iobuf()
 
 
-def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
+def emergency_recover_state_from_failure(txrx, vertex, placement):
     """ Used to get at least *some* information out of a core when something\
         goes badly wrong. Not a replacement for what abstract spinnaker base\
         does.
 
     :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
-    :param int app_id: The ID of the application.
     :param AbstractHasAssociatedBinary vertex:
         The vertex to retrieve the IOBUF from if it is suspected as being dead
     :param ~pacman.model.placements.Placement placement:
         Where the vertex is located.
     """
     # pylint: disable=protected-access
-    _emergency_state_check(txrx, app_id)
+    _emergency_state_check(txrx)
     target = ExecutableTargets()
     path = get_simulator()._executable_finder.get_executable_path(
         vertex.get_binary_file_name())
@@ -97,15 +98,14 @@ def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
     _emergency_iobuf_extract(txrx, target)
 
 
-def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
+def emergency_recover_states_from_failure(txrx, executable_targets):
     """ Used to get at least *some* information out of a core when something\
         goes badly wrong. Not a replacement for what abstract spinnaker base\
         does.
 
     :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
-    :param int app_id: The ID of the application.
     :param ~spinnman.model.ExecutableTargets executable_targets:
         The what/where mapping
     """
-    _emergency_state_check(txrx, app_id)
+    _emergency_state_check(txrx)
     _emergency_iobuf_extract(txrx, executable_targets)

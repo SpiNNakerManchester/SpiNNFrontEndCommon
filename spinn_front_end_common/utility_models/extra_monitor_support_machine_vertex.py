@@ -26,6 +26,7 @@ from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from spinn_utilities.config_holder import get_config_bool
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
@@ -260,7 +261,6 @@ class ExtraMonitorSupportMachineVertex(
                    "machine_graph": "MachineGraph",
                    "data_in_routing_tables": "DataInMulticastRoutingTables",
                    "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
-                   "app_id": "APPID",
                    "machine": "ExtendedMachine",
                    "router_timeout_keys": "SystemMulticastRouterTimeoutKeys"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
@@ -270,7 +270,7 @@ class ExtraMonitorSupportMachineVertex(
                    "router_timeout_keys"})
     def generate_data_specification(
             self, spec, placement, routing_info, machine_graph,
-            data_in_routing_tables, mc_data_chips_to_keys, app_id,
+            data_in_routing_tables, mc_data_chips_to_keys,
             machine, router_timeout_keys):
         """
         :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)
@@ -280,13 +280,12 @@ class ExtraMonitorSupportMachineVertex(
         :type data_in_routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
         :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
-        :param int app_id: (injected)
         :param ~spinn_machine.Machine machine: (injected)
         """
         # pylint: disable=arguments-differ
         # storing for future usage
         self._placement = placement
-        self._app_id = app_id
+        self._app_id = FecDataView().app_id
         self._machine = machine
         # write reinjection config
         self._generate_reinjection_config(
@@ -477,8 +476,7 @@ class ExtraMonitorSupportMachineVertex(
             process.set_wait1_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
+                transceiver, self, placements.get_placement_of_vertex(self))
             raise
 
     def set_router_wait2_timeout(
@@ -510,8 +508,7 @@ class ExtraMonitorSupportMachineVertex(
             process.set_wait2_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
+                transceiver, self, placements.get_placement_of_vertex(self))
             raise
 
     def reset_reinjection_counters(
@@ -534,8 +531,7 @@ class ExtraMonitorSupportMachineVertex(
             process.reset_counters(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
+                transceiver, self, placements.get_placement_of_vertex(self))
             raise
 
     def clear_reinjection_queue(
@@ -558,8 +554,7 @@ class ExtraMonitorSupportMachineVertex(
             process.reset_counters(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
+                transceiver, self, placements.get_placement_of_vertex(self))
             raise
 
     def get_reinjection_status(self, placements, transceiver):
@@ -579,7 +574,7 @@ class ExtraMonitorSupportMachineVertex(
                 placement.x, placement.y, placement.p)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, self, placement)
+                transceiver, self, placement)
             raise
 
     def get_reinjection_status_for_vertices(
@@ -646,8 +641,7 @@ class ExtraMonitorSupportMachineVertex(
                 self._reinject_fixed_route)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
+                transceiver, self, placements.get_placement_of_vertex(self))
             raise
 
     def load_system_mc_routes(
@@ -672,8 +666,7 @@ class ExtraMonitorSupportMachineVertex(
             return process.load_system_mc_routes(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
+                transceiver, self, placements.get_placement_of_vertex(self))
             raise
 
     def load_application_mc_routes(
@@ -698,8 +691,7 @@ class ExtraMonitorSupportMachineVertex(
             return process.load_application_mc_routes(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
+                transceiver, self, placements.get_placement_of_vertex(self))
             raise
 
     @staticmethod

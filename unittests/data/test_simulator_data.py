@@ -58,22 +58,6 @@ class TestSimulatorData(unittest.TestCase):
         # No reset so run director does not change
         self.assertIn("run_1", view.run_dir_path)
 
-    def test_dict(self):
-        view = FecDataView()
-        writer = FecDataWriter()
-        writer.setup()
-        self.assertFalse(view.has_app_id())
-        self.assertFalse("APPID" in view)
-        with self.assertRaises(KeyError):
-            view["APPID"]
-        with self.assertRaises(DataNotYetAvialable):
-            view.app_id
-        writer.set_app_id(6)
-        self.assertTrue(view.has_app_id())
-        self.assertEqual(6, view.app_id)
-        self.assertEqual(6, view["APPID"])
-        self.assertTrue("APPID" in view)
-
     def test_mock(self):
         view = FecDataView()
         writer = FecDataWriter()

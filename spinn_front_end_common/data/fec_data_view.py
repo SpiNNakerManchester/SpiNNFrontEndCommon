@@ -589,7 +589,7 @@ class FecDataView(UtilsDataView):
             exception, but that indicates a programming mismatch
         """
         results = []
-        for key in ["APPID", "ApplicationGraph", "DataInMulticastKeyToChipMap",
+        for key in ["ApplicationGraph", "DataInMulticastKeyToChipMap",
                     "DataInMulticastRoutingTables", "DataNTimeSteps",
                     "ExtendedMachine", "FirstMachineTimeStep", "MachineGraph",
                     "MachinePartitionNKeysMap", "Placements", "RoutingInfos",
@@ -614,12 +614,6 @@ class FecDataView(UtilsDataView):
         :rtype: Object or None
         :raise KeyError: It the item is one that is never provided
         """
-        if item == "APPID":
-            if self.has_app_id():
-                return self.app_id
-            else:
-                return None
-
         # TODO Actually add these items to this code
 
         """

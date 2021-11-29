@@ -199,8 +199,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_coord_word",
         # transaction id
         "_transaction_id",
-        # app id
-        "_app_id",
         # socket
         "_connection",
         # store of the extra monitors to location. helpful in data in
@@ -324,7 +322,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         # local provenance storage
         self._run = 0
         self._placement = None
-        self._app_id = None
 
         # create report if it doesn't already exist
 
@@ -382,19 +379,18 @@ class DataSpeedUpPacketGatherMachineVertex(
         "tags": "Tags",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
         "machine": "ExtendedMachine",
-        "app_id": "APPID",
         "router_timeout_key": "SystemMulticastRouterTimeoutKeys"
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "machine_graph", "routing_info", "tags",
-            "mc_data_chips_to_keys", "machine", "app_id",
+            "mc_data_chips_to_keys", "machine",
             "router_timeout_key"
         })
     def generate_data_specification(
             self, spec, placement, machine_graph, routing_info, tags,
-            mc_data_chips_to_keys, machine, app_id, router_timeout_key):
+            mc_data_chips_to_keys, machine, router_timeout_key):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             (injected)
@@ -402,14 +398,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param ~pacman.model.tags.Tags tags: (injected)
         :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
         :param ~spinn_machine.Machine machine: (injected)
-        :param int app_id: (injected)
         :param dict(tuple(int,int),int) router_timeout_key: (injected)
         """
         # pylint: disable=too-many-arguments, arguments-differ
 
         # update my placement for future knowledge
         self._placement = placement
-        self._app_id = app_id
 
         # Create the data regions for hello world
         self._reserve_memory_regions(spec)
@@ -732,7 +726,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     time_out_count += 1
                     if time_out_count > TIMEOUT_RETRY_LIMIT:
                         emergency_recover_state_from_failure(
-                            transceiver, self._app_id, self, self._placement)
+                            transceiver, self, self._placement)
                         raise SpinnFrontEndException(
                             TIMEOUT_MESSAGE.format(
                                 time_out_count)) from e
@@ -1016,8 +1010,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             process.set_wait1_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
+                transceiver, self, placements.get_placement_of_vertex(self))
             raise
 
     def set_router_wait2_timeout(self, timeout, transceiver, placements):
@@ -1035,8 +1028,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             process.set_wait2_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
+                transceiver, self, placements.get_placement_of_vertex(self))
             raise
 
     def clear_reinjection_queue(self, transceiver, placements):
@@ -1053,8 +1045,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             process.reset_counters(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
+                transceiver, self, placements.get_placement_of_vertex(self))
             raise
 
     def unset_cores_for_data_streaming(

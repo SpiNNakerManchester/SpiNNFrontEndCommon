@@ -623,7 +623,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             exception, but that indicates a programming mismatch
         """
         results = []
-        for key in ["APPID", "ApplicationGraph", "DataInMulticastKeyToChipMap",
+        for key in ["ApplicationGraph", "DataInMulticastKeyToChipMap",
                     "DataInMulticastRoutingTables", "DataNTimeSteps",
                     "ExtendedMachine", "FirstMachineTimeStep", "MachineGraph",
                     "MachinePartitionNKeysMap", "Placements", "RoutingInfos",
@@ -645,8 +645,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: Object or None
         :raise KeyError: It the item is one that is never provided
         """
-        if item == "APPID":
-            return self._data_writer.app_id
         if item == "ApplicationGraph":
             return self._application_graph
         if item == "DataInMulticastKeyToChipMap":
