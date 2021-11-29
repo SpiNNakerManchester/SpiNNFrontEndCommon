@@ -248,7 +248,7 @@ class ProvenanceReader(object):
             for row in self.run_query(query, [int(x), int(y)],
                                       use_sqlite_rows=True))
 
-    def get_cores_with_provenace(self):
+    def get_cores_with_provenance(self):
         """
         Gets the cores with provenance
 
@@ -376,7 +376,7 @@ class ProvenanceReader(object):
         print("\nROUETER (0,0) PROVENANCE:")
         print(pr.get_provenance_for_router(0, 0))
         print("\nCORES WITH PROVENACE")
-        print(pr.get_cores_with_provenace())
+        print(pr.get_cores_with_provenance())
 
 
 if __name__ == '__main__':
