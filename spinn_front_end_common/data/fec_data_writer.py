@@ -129,6 +129,19 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
     def clear_app_id(self):
         self.__fec_data._app_id = None
 
+    def set_max_run_time_steps(self, max_run_time_steps):
+        """
+        Sets the max_run_time_steps value
+
+        :param int max_run_time_steps: new value
+        """
+        if not isinstance(max_run_time_steps, int):
+            raise TypeError("max_run_time_steps should be an int")
+        if max_run_time_steps <= 0:
+            raise ConfigurationException(
+                f"max_run_time_steps {max_run_time_steps} must be possitive")
+        self.__fec_data._max_run_time_steps = max_run_time_steps
+
     def set_up_timings(
             self, simulation_time_step_us, time_scale_factor,
             default_time_scale_factor=None):

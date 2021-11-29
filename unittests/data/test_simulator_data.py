@@ -88,6 +88,28 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(17, writer.get_app_id())
         self.assertEqual(17, writer.app_id)
         self.assertTrue(writer.has_app_id)
+        with self.assertRaises(TypeError):
+            writer.set_app_id(17.0)
+
+    def test_max_run_time_steps(self):
+        writer = FecDataWriter()
+        writer.setup()
+        with self.assertRaises(DataNotYetAvialable):
+            writer.max_run_time_steps
+        self.assertEqual(None, writer.get_max_run_time_steps())
+        self.assertFalse(writer.has_max_run_time_steps())
+        writer.set_max_run_time_steps(13455)
+        self.assertEqual(13455, writer.get_max_run_time_steps())
+        self.assertEqual(13455, writer.max_run_time_steps)
+        self.assertTrue(writer.has_max_run_time_steps)
+
+        with self.assertRaises(TypeError):
+            writer.set_max_run_time_steps(45.0)
+        with self.assertRaises(ConfigurationException):
+            writer.set_max_run_time_steps(-1)
+        with self.assertRaises(ConfigurationException):
+            writer.set_max_run_time_steps(0)
+
 
     def test_simulation_timestep(self):
         view = FecDataView()

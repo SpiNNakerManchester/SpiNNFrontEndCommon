@@ -42,6 +42,7 @@ class _FecDataModel(object):
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
         "_n_calls_to_run",
+        "_max_run_time_steps",
         "_report_dir_path",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
@@ -82,6 +83,7 @@ class _FecDataModel(object):
         Clears out all data
         """
         self._app_id = None
+        self._max_run_time_steps = None
         self._timestamp_dir_path = None
 
 
@@ -138,6 +140,41 @@ class FecDataView(UtilsDataView):
 
     def has_app_id(self):
         return self.__fec_data._app_id is not None
+
+    # max_run_time_steps methods
+
+    def get_max_run_time_steps(self):
+        """
+        Returns the calculated longest time this or a future run loop could be
+
+        Mainly ued to indicate the number of timesteps the vertex can and
+        therefor should reserve memry for
+
+        Guranteed to be None (unkown) or possitve
+
+        :rtype: None or int
+        """
+        return self.__fec_data._max_run_time_steps
+
+    @property
+    def max_run_time_steps(self):
+        """
+        Returns the calculated longest time this or a future run loop could be
+
+        Mainly ued to indicate the number of timesteps the vertex can and
+        therefor should reserve memory for
+
+        Guranteed to be possitve
+        :rtype: int
+        :raises SpinnFrontEndException:
+            If the max_run_time_steps is currently unavailable
+        """
+        if self.__fec_data.max_run_time_steps is None:
+            raise self._exception("max_run_time_steps")
+        return self.__fec_data._max_run_time_steps
+
+    def has_max_run_time_steps(self):
+        return self.__fec_data._max_run_time_steps is not None
 
     # simulation_time_step_methods
 
