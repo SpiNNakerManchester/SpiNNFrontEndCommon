@@ -354,9 +354,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Used in exception handling and control c
         "_last_except_hook",
 
-        # status flag
-        "_vertices_or_edges_added",
-
         # Version provenance
         # TODO provenance cleanup
         "_version_provenance",
@@ -527,7 +524,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._create_version_provenance(front_end_versions)
 
         self._last_except_hook = sys.excepthook
-        self._vertices_or_edges_added = False
         self._first_machine_time_step = None
         self._compressor_provenance = None
         self._hostname = None
@@ -3188,15 +3184,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         changed = False
         data_changed = False
-        if self._vertices_or_edges_added:
-            self._vertices_or_edges_added = False
-            # Set changed - note that we can't return yet as we still have to
-            # mark vertices as not changed, otherwise they will keep reporting
-            # that they have changed when they haven't
-            changed = True
 
         # if application graph is filled, check their changes
         if self._original_application_graph.n_vertices:
+            changed = self._original_application_graph.updated_since_cloned(
+                self._application_graph)
             for vertex in self._original_application_graph.vertices:
                 if isinstance(vertex, AbstractChangableAfterRun):
                     if vertex.requires_mapping:
@@ -3218,6 +3210,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # if no application, but a machine graph, check for changes there
         elif self._original_machine_graph.n_vertices:
+            changed = self._original_mach_graph.updated_since_cloned(
+                self._machine_graph)
             for machine_vertex in self._original_machine_graph.vertices:
                 if isinstance(machine_vertex, AbstractChangableAfterRun):
                     if machine_vertex.requires_mapping:
@@ -3408,7 +3402,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Cannot add vertices to both the machine and application"
                 " graphs")
         self._original_application_graph.add_vertex(vertex)
-        self._vertices_or_edges_added = True
 
     def add_machine_vertex(self, vertex):
         """
@@ -3424,7 +3417,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Cannot add vertices to both the machine and application"
                 " graphs")
         self._original_machine_graph.add_vertex(vertex)
-        self._vertices_or_edges_added = True
 
     def add_application_edge(self, edge_to_add, partition_identifier):
         """
@@ -3435,7 +3427,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._original_application_graph.add_edge(
             edge_to_add, partition_identifier)
-        self._vertices_or_edges_added = True
 
     def add_machine_edge(self, edge, partition_id):
         """
@@ -3445,7 +3436,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             the partition identifier for the outgoing edge partition
         """
         self._original_machine_graph.add_edge(edge, partition_id)
-        self._vertices_or_edges_added = True
 
     def _shutdown(
             self, turn_off_machine=None, clear_routing_tables=None,
