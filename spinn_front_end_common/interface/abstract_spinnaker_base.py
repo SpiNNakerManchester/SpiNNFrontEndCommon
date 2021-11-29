@@ -3503,7 +3503,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __stop_app(self):
         if self._txrx is not None and self._data_writer.has_app_id():
             self._txrx.stop_application(self._data_writer.app_id)
-            self._data_writer.set_app_id(None)
+            self._data_writer.clear_app_id()
 
     def __close_transceiver(self, turn_off_machine):
         """

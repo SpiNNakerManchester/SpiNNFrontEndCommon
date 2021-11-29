@@ -25,7 +25,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def database_interface(
         machine_graph, tags, runtime, machine, data_n_timesteps, placements,
-        routing_infos, router_tables, app_id, application_graph=None):
+        routing_infos, router_tables, application_graph=None):
     """ Writes a database of the graph(s) and other information.
 
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
@@ -38,7 +38,6 @@ def database_interface(
         :param router_tables:
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
-        :param int app_id:
         :param application_graph:
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph
@@ -48,7 +47,7 @@ def database_interface(
     interface = _DatabaseInterface(machine_graph)
     return interface._run(
         machine_graph, tags, runtime, machine, data_n_timesteps, placements,
-        routing_infos, router_tables, app_id, application_graph)
+        routing_infos, router_tables, application_graph)
 
 
 class _DatabaseInterface(object):

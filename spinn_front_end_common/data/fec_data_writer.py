@@ -126,6 +126,9 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
             raise TypeError("app_id should be an int")
         self.__fec_data._app_id = app_id
 
+    def clear_app_id(self):
+        self.__fec_data._app_id = None
+
     def set_up_timings(
             self, simulation_time_step_us, time_scale_factor,
             default_time_scale_factor=None):

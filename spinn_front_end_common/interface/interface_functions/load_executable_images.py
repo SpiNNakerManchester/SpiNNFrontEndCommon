@@ -34,15 +34,14 @@ def load_app_images(executable_targets, transceiver):
                   "Loading executables onto the machine")
 
 
-def load_sys_images(executable_targets, app_id, transceiver):
+def load_sys_images(executable_targets, transceiver):
     """ Go through the executable targets and load each binary to everywhere\
          and then send a start request to the cores that actually use it.
 
     :param ~spinnman.model.ExecutableTargets executable_targets:
-    :param int app_id:
     :param ~spinnman.transceiver.Transceiver transceiver:
     """
-    __load_images(executable_targets, app_id, transceiver,
+    __load_images(executable_targets, transceiver,
                   lambda ty: ty is ExecutableType.SYSTEM,
                   "Loading system executables onto the machine")
 
