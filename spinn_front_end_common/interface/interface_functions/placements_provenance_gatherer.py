@@ -19,7 +19,6 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesProvenanceDataFromMachine, ProvenanceWriter)
-from spinn_front_end_common.utilities.globals_variables import get_simulator
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -32,8 +31,6 @@ def placements_provenance_gatherer(transceiver, placements):
     :param ~pacman.model.placements.Placements placements:
         The placements of the vertices
     """
-    prov_items = list()
-    prov_placement = list()
     errors = list()
 
     progress = ProgressBar(
