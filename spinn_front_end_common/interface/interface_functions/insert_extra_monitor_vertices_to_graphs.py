@@ -23,52 +23,47 @@ from spinn_front_end_common.utilities.constants import (
     PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 
 
-class InsertExtraMonitorVerticesToGraphs(object):
+def insert_extra_monitor_vertices_to_graphs(machine, application_graph):
     """ Inserts the extra monitor vertices into the graph that correspond to\
         the extra monitor cores required.
+
+    :param ~spinn_machine.Machine machine: spinnMachine instance
+    :param int n_cores_to_allocate:
+        number of cores to allocate for reception
+    :param application_graph: app graph
+    :type application_graph:
+        ~pacman.model.graphs.application.ApplicationGraph
+    :return: vertex to Ethernet connection map,
+        list of extra_monitor_vertices,
+        vertex_to_chip_map
+    :rtype: tuple(
+        dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),
+        list(ExtraMonitorSupportMachineVertex),
+        dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
     """
+    # pylint: disable=too-many-arguments, attribute-defined-outside-init
+    gatherers_by_chip = dict()
+    extra_monitors = list()
+    extra_monitors_by_chip = dict()
+    ethernet_chips = list(machine.ethernet_connected_chips)
+    progress = ProgressBar(
+        len(ethernet_chips), "Inserting extra monitors into graphs")
 
-    __slots__ = []
-
-    def __call__(self, machine, application_graph):
-        """
-        :param ~spinn_machine.Machine machine: spinnMachine instance
-        :param int n_cores_to_allocate:
-            number of cores to allocate for reception
-        :param application_graph: app graph
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
-        :return: vertex to Ethernet connection map,
-            list of extra_monitor_vertices,
-            vertex_to_chip_map
-        :rtype: tuple(
-            dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),
-            list(ExtraMonitorSupportMachineVertex),
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
-        """
-        # pylint: disable=too-many-arguments, attribute-defined-outside-init
-        gatherers_by_chip = dict()
-        extra_monitors = list()
-        extra_monitors_by_chip = dict()
-        ethernet_chips = list(machine.ethernet_connected_chips)
-        progress = ProgressBar(
-            len(ethernet_chips), "Inserting extra monitors into graphs")
-
-        for eth in progress.over(machine.ethernet_connected_chips):
-            gatherer = DataSpeedUpPacketGather(
-                x=eth.x, y=eth.y, ip_address=eth.ip_address,
-                constraints=[ChipAndCoreConstraint(x=eth.x, y=eth.y)])
-            gatherer.splitter = SplitterOneAppOneMachine()
-            application_graph.add_vertex(gatherer)
-            gatherers_by_chip[eth.x, eth.y] = gatherer.machine_vertex
-            for x, y in machine.get_existing_xys_by_ethernet(eth.x, eth.y):
-                monitor = ExtraMonitorSupport(
-                    constraints=[ChipAndCoreConstraint(x, y)])
-                monitor.splitter = SplitterOneAppOneMachine()
-                application_graph.add_vertex(monitor)
-                application_graph.add_edge(
-                    ApplicationEdge(monitor, gatherer),
-                    PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
-                extra_monitors.append(monitor.machine_vertex)
-                extra_monitors_by_chip[x, y] = monitor.machine_vertex
-        return gatherers_by_chip, extra_monitors, extra_monitors_by_chip
+    for eth in progress.over(machine.ethernet_connected_chips):
+        gatherer = DataSpeedUpPacketGather(
+            x=eth.x, y=eth.y, ip_address=eth.ip_address,
+            constraints=[ChipAndCoreConstraint(x=eth.x, y=eth.y)])
+        gatherer.splitter = SplitterOneAppOneMachine()
+        application_graph.add_vertex(gatherer)
+        gatherers_by_chip[eth.x, eth.y] = gatherer.machine_vertex
+        for x, y in machine.get_existing_xys_by_ethernet(eth.x, eth.y):
+            monitor = ExtraMonitorSupport(
+                constraints=[ChipAndCoreConstraint(x, y)])
+            monitor.splitter = SplitterOneAppOneMachine()
+            application_graph.add_vertex(monitor)
+            application_graph.add_edge(
+                ApplicationEdge(monitor, gatherer),
+                PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
+            extra_monitors.append(monitor.machine_vertex)
+            extra_monitors_by_chip[x, y] = monitor.machine_vertex
+    return gatherers_by_chip, extra_monitors, extra_monitors_by_chip

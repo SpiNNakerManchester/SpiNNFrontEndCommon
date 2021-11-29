@@ -14,6 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .live_packet_gather_splitter import LivePacketGatherSplitter
-from .splitter_selector import SplitterSelector
+from .splitter_selector import splitter_selector, vertex_selector
 
-__all__ = ['SplitterSelector', 'LivePacketGatherSplitter']
+__all__ = ['splitter_selector', 'vertex_selector', 'LivePacketGatherSplitter']

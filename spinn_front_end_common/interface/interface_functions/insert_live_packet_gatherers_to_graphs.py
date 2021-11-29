@@ -18,40 +18,33 @@ from spinn_front_end_common.interface.splitter_selectors import (
     LivePacketGatherSplitter)
 
 
-class InsertLivePacketGatherersToGraphs(object):
-    """ Adds LPGs as required into a given graph.
+def insert_live_packet_gatherers_to_graphs(
+        live_packet_gatherer_parameters, machine, application_graph):
+    """ Add LPG vertices on Ethernet connected chips as required.
+
+    :param live_packet_gatherer_parameters:
+        the Live Packet Gatherer parameters requested by the script
+    :type live_packet_gatherer_parameters:
+        dict(LivePacketGatherParameters,
+        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
+    :param ~spinn_machine.Machine machine:
+        the SpiNNaker machine as discovered
+    :param application_graph: the application graph
+    :type application_graph:
+        ~pacman.model.graphs.application.ApplicationGraph
+    :return: mapping between LPG parameters and LPG application and
+        machine vertices
+    :rtype: dict(LivePacketGatherParameters,LivePacketGather)
     """
+    # Keep track of the vertices added by parameters and board address
+    lpg_params_to_vertices = dict()
 
-    __slots__ = []
+    # for every Ethernet connected chip, add the gatherers required
+    for params in live_packet_gatherer_parameters:
+        lpg_app_vtx = LivePacketGather(params)
+        lpg_app_vtx.splitter = LivePacketGatherSplitter()
+        lpg_app_vtx.splitter.really_create_machine_vertices(machine)
+        application_graph.add_vertex(lpg_app_vtx)
+        lpg_params_to_vertices[params] = lpg_app_vtx
 
-    def __call__(
-            self, live_packet_gatherer_parameters, machine, application_graph):
-        """ Add LPG vertices on Ethernet connected chips as required.
-
-        :param live_packet_gatherer_parameters:
-            the Live Packet Gatherer parameters requested by the script
-        :type live_packet_gatherer_parameters:
-            dict(LivePacketGatherParameters,
-            list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
-        :param ~spinn_machine.Machine machine:
-            the SpiNNaker machine as discovered
-        :param application_graph: the application graph
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
-        :return: mapping between LPG parameters and LPG application and
-            machine vertices
-        :rtype: dict(LivePacketGatherParameters,LivePacketGather)
-        """
-
-        # Keep track of the vertices added by parameters and board address
-        lpg_params_to_vertices = dict()
-
-        # for every Ethernet connected chip, add the gatherers required
-        for params in live_packet_gatherer_parameters:
-            lpg_app_vtx = LivePacketGather(params)
-            lpg_app_vtx.splitter = LivePacketGatherSplitter()
-            lpg_app_vtx.splitter.really_create_machine_vertices(machine)
-            application_graph.add_vertex(lpg_app_vtx)
-            lpg_params_to_vertices[params] = lpg_app_vtx
-
-        return lpg_params_to_vertices
+    return lpg_params_to_vertices

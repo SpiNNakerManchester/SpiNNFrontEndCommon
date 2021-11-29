@@ -20,35 +20,30 @@ from spinn_front_end_common.utility_models import ChipPowerMonitor
 _LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
 
 
-class InsertChipPowerMonitorsToGraphs(object):
+def insert_chip_power_monitors_to_graphs(
+        machine, sampling_frequency, application_graph):
     """ Adds chip power monitors into a given graph.
+
+    :param ~spinn_machine.Machine machine:
+        the SpiNNaker machine as discovered
+    :param int sampling_frequency:
+    :param application_graph: the application graph
+    :type application_graph:
+        ~pacman.model.graphs.application.ApplicationGraph
     """
 
-    def __call__(self, machine, sampling_frequency, application_graph):
-        """ Adds chip power monitor vertices on Ethernet connected chips as\
-            required.
+    # create progress bar
+    progress = ProgressBar(
+        machine.n_chips, "Adding Chip power monitors to Graph")
 
-        :param ~spinn_machine.Machine machine:
-            the SpiNNaker machine as discovered
-        :param int sampling_frequency:
-        :param application_graph: the application graph
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
-        """
-        # pylint: disable=too-many-arguments
-
-        # create progress bar
-        progress = ProgressBar(
-            machine.n_chips, "Adding Chip power monitors to Graph")
-
-        app_vertex = ChipPowerMonitor(
-            label="ChipPowerMonitor",
-            sampling_frequency=sampling_frequency)
-        application_graph.add_vertex(app_vertex)
-        for chip in progress.over(machine.chips):
-            if not chip.virtual:
-                vertex = app_vertex.create_machine_vertex(
-                    vertex_slice=None, resources_required=None,
-                    label=_LABEL.format("machine", chip.x, chip.y),
-                    constraints=[ChipAndCoreConstraint(chip.x, chip.y)])
-                app_vertex.remember_machine_vertex(vertex)
+    app_vertex = ChipPowerMonitor(
+        label="ChipPowerMonitor",
+        sampling_frequency=sampling_frequency)
+    application_graph.add_vertex(app_vertex)
+    for chip in progress.over(machine.chips):
+        if not chip.virtual:
+            vertex = app_vertex.create_machine_vertex(
+                vertex_slice=None, resources_required=None,
+                label=_LABEL.format("machine", chip.x, chip.y),
+                constraints=[ChipAndCoreConstraint(chip.x, chip.y)])
+            app_vertex.remember_machine_vertex(vertex)

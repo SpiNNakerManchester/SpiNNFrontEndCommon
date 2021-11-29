@@ -19,50 +19,47 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
-class LocateExecutableStartType(object):
+def locate_executable_start_type(graph, placements):
     """ Discovers where applications of particular types need to be launched.
+
+    :param ~pacman.model.graphs.application.ApplicationGraph graph:
+    :param ~pacman.model.placements.Placements placements:
+    :rtype: dict(ExecutableType,~spinn_machine.CoreSubsets or None)
     """
+    if not graph.vertices:
+        return {ExecutableType.NO_APPLICATION: None}
 
-    def __call__(self, graph, placements):
-        """
-        :param ~pacman.model.graphs.application.ApplicationGraph graph:
-        :param ~pacman.model.placements.Placements placements:
-        :rtype: dict(ExecutableType,~spinn_machine.CoreSubsets or None)
-        """
-        if not graph.vertices:
-            return {ExecutableType.NO_APPLICATION: None}
+    binary_start_types = dict()
 
-        binary_start_types = dict()
+    progress = ProgressBar(
+        graph.n_vertices, "Finding executable start types")
+    for app_vertex in progress.over(graph.vertices):
+        for vertex in app_vertex.machine_vertices:
+            # try to locate binary type, but possible it doesn't have one
+            if isinstance(vertex, AbstractHasAssociatedBinary):
+                bin_type = vertex.get_binary_start_type()
+                # update core subset with location of the vertex on the
+                # machine
+                if bin_type not in binary_start_types:
+                    binary_start_types[bin_type] = CoreSubsets()
 
-        progress = ProgressBar(
-            graph.n_vertices, "Finding executable start types")
-        for app_vertex in progress.over(graph.vertices):
-            for vertex in app_vertex.machine_vertices:
-                # try to locate binary type, but possible it doesn't have one
-                if isinstance(vertex, AbstractHasAssociatedBinary):
-                    bin_type = vertex.get_binary_start_type()
-                    # update core subset with location of the vertex on the
-                    # machine
-                    if bin_type not in binary_start_types:
-                        binary_start_types[bin_type] = CoreSubsets()
+                __add_vertex_to_subset(
+                    vertex, placements, binary_start_types[bin_type])
 
-                    self._add_vertex_to_subset(
-                        vertex, placements, binary_start_types[bin_type])
+    # only got apps with no binary, such as external devices.
+    # return no app
+    if not binary_start_types:
+        return {ExecutableType.NO_APPLICATION: None}
 
-        # only got apps with no binary, such as external devices.
-        # return no app
-        if not binary_start_types:
-            return {ExecutableType.NO_APPLICATION: None}
+    return binary_start_types
 
-        return binary_start_types
 
-    @staticmethod
-    def _add_vertex_to_subset(machine_vertex, placements, core_subsets):
-        """
-        :param ~.MachineVertex machine_vertex:
-        :param ~.Placements placements:
-        :param ~.CoreSubsets core_subsets:
-        """
-        placement = placements.get_placement_of_vertex(machine_vertex)
-        core_subsets.add_processor(
-            x=placement.x, y=placement.y, processor_id=placement.p)
+def __add_vertex_to_subset(machine_vertex, placements, core_subsets):
+    """
+    :param ~.MachineVertex machine_vertex:
+    :param ~.Placements placements:
+    :param ~.CoreSubsets core_subsets:
+    """
+    placement = placements.get_placement_of_vertex(machine_vertex)
+    core_subsets.add_processor(
+        x=placement.x, y=placement.y, processor_id=placement.p)
