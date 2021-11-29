@@ -43,8 +43,8 @@ def insert_live_packet_gatherers_to_graphs(
     for params in live_packet_gatherer_parameters:
         lpg_app_vtx = LivePacketGather(params)
         lpg_app_vtx.splitter = LivePacketGatherSplitter()
-        lpg_app_vtx.splitter.really_create_machine_vertices(machine)
         application_graph.add_vertex(lpg_app_vtx)
+        lpg_app_vtx.splitter.really_create_machine_vertices(machine)
         lpg_params_to_vertices[params] = lpg_app_vtx
 
     return lpg_params_to_vertices

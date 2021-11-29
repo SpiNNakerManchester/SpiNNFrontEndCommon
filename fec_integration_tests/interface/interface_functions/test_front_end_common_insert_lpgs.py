@@ -33,58 +33,11 @@ class TestInsertLPGs(unittest.TestCase):
     def setUp(self):
         unittest_setup()
 
-    def test_that_3_lpgs_are_generated_on_3_board(self):
-        machine = virtual_machine(width=12, height=12)
-        graph = MachineGraph("Test")
-
-        default_params = {
-            'use_prefix': False,
-            'key_prefix': None,
-            'prefix_type': None,
-            'message_type': EIEIOType.KEY_32_BIT,
-            'right_shift': 0,
-            'payload_as_time_stamps': True,
-            'use_payload_prefix': True,
-            'payload_prefix': None,
-            'payload_right_shift': 0,
-            'number_of_packets_sent_per_time_step': 0,
-            'hostname': None,
-            'port': None,
-            'strip_sdp': None,
-            'tag': None,
-            'label': "Test"}
-
-        # data stores needed by algorithm
-        live_packet_gatherers = dict()
-        default_params_holder = LivePacketGatherParameters(**default_params)
-        live_packet_gatherers[default_params_holder] = list()
-
-        # run edge inserter that should go boom
-        lpg_verts_mapping = insert_live_packet_gatherers_to_graphs(
-            live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine, machine_graph=graph,
-            application_graph=ApplicationGraph("empty"))
-
-        self.assertEqual(len(lpg_verts_mapping[default_params_holder][1]), 3)
-        locs = [(0, 0), (4, 8), (8, 4)]
-        for vertex in lpg_verts_mapping[default_params_holder][1].values():
-            x = list(vertex.constraints)[0].x
-            y = list(vertex.constraints)[0].y
-            key = (x, y)
-            locs.remove(key)
-
-        self.assertEqual(len(locs), 0)
-
-        verts = lpg_verts_mapping[default_params_holder][1].values()
-        for vertex in graph.vertices:
-            self.assertIn(vertex, verts)
-
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
         machine = virtual_machine(width=12, height=12)
         app_graph = ApplicationGraph("Test")
         app_graph.add_vertex(
             SimpleTestVertex(10, "New AbstractConstrainedVertex 1", 256))
-        graph = MachineGraph("Test", app_graph)
 
         default_params = {
             'use_prefix': False,
@@ -110,15 +63,15 @@ class TestInsertLPGs(unittest.TestCase):
 
         # run edge inserter that should go boom
         lpg_verts_mapping = insert_live_packet_gatherers_to_graphs(
-            live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine, machine_graph=graph, application_graph=app_graph)
+            live_packet_gatherers, machine, app_graph)
 
-        self.assertEqual(len(lpg_verts_mapping[default_params_holder][1]), 3)
+        lpg_app_vertex = lpg_verts_mapping[default_params_holder]
+        self.assertEqual(len(lpg_app_vertex.machine_vertices), 3)
         locs = list()
         locs.append((0, 0))
         locs.append((4, 8))
         locs.append((8, 4))
-        for vertex in lpg_verts_mapping[default_params_holder][1].values():
+        for vertex in lpg_app_vertex.machine_vertices:
             x = list(vertex.constraints)[0].x
             y = list(vertex.constraints)[0].y
             key = (x, y)
@@ -126,13 +79,8 @@ class TestInsertLPGs(unittest.TestCase):
 
         self.assertEqual(len(locs), 0)
 
-        verts = lpg_verts_mapping[default_params_holder][1].values()
-        for vertex in graph.vertices:
-            self.assertIn(vertex, verts)
-
         app_verts = set()
-        for vertex in lpg_verts_mapping[default_params_holder][1].values():
-            app_vertex = vertex.app_vertex
+        for app_vertex in lpg_verts_mapping.values():
             self.assertIsNotNone(app_vertex)
             self.assertIsInstance(app_vertex, ApplicationVertex)
             app_verts.add(app_vertex)
