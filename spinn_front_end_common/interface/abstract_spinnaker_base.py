@@ -2141,6 +2141,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._do_placer()
         self._execute_insert_edges_to_live_packet_gatherers()
         self._execute_insert_edges_to_extra_monitor()
+        self._application_graph.freeze()
+        self._machine_graph.freeze()
         self._execute_system_multicast_routing_generator()
         self._execute_fixed_route_router()
         self._report_placements_with_application_graph()
