@@ -284,9 +284,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # sync to 0
         "_no_sync_changes",
 
-        # max time the run can take without running out of memory
-        "_max_run_time_steps",
-
         # Set when run_until_complete is specified by the user
         "_run_until_complete",
 
@@ -561,7 +558,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._machine_graph = None
         self._machine_partition_n_keys_map = None
         self._max_machine = False
-        self._max_run_time_steps = None
         self._multicast_routes_loaded = False
         self._n_chips_needed = None
         self._placements = None
@@ -624,7 +620,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         results = []
         for key in ["ApplicationGraph", "DataInMulticastKeyToChipMap",
-                    "DataInMulticastRoutingTables", "DataNTimeSteps",
+                    "DataInMulticastRoutingTables",
                     "ExtendedMachine", "FirstMachineTimeStep", "MachineGraph",
                     "MachinePartitionNKeysMap", "Placements", "RoutingInfos",
                     "RunUntilTimeSteps", "SystemMulticastRouterTimeoutKeys",
@@ -651,10 +647,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._data_in_multicast_key_to_chip_map
         if item == "DataInMulticastRoutingTables":
             return self._data_in_multicast_routing_tables
-        if item == "DataNTimeSteps":
-            return self._max_run_time_steps
-        if item == "DataNSteps":
-            return self._max_run_time_steps
         if item == "ExtendedMachine":
             return self._machine
         if item == "FirstMachineTimeStep":
@@ -1023,9 +1015,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                         "Buffers", "use_auto_pause_and_resume", "False")
 
         # Work out the maximum run duration given all recordings
-        if self._max_run_time_steps is None:
-            self._max_run_time_steps = self._deduce_data_n_timesteps(
-                self._machine_graph)
+        if not self._data_writer.hardware_time_step_ms:
+            self._data_writer.set_max_run_time_steps(
+                self._deduce_data_n_timesteps(self._machine_graph))
         clear_injectables()
 
         # Work out an array of timesteps to perform
@@ -1035,13 +1027,14 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # Runs should only be in units of max_run_time_steps at most
             if (is_per_timestep_sdram and
-                    (self._max_run_time_steps < n_machine_time_steps or
+                    (self._data_writer.get_max_run_time_steps()
+                        < n_machine_time_steps or
                         n_machine_time_steps is None)):
                 self._status = Simulator_Status.FINISHED
                 raise ConfigurationException(
-                    "The SDRAM required by one or more vertices is based on"
-                    " the run time, so the run time is limited to"
-                    " {} time steps".format(self._max_run_time_steps))
+                    "The SDRAM required by one or more vertices is based on "
+                    "the run time, so the run time is limited to "
+                    f"{self._data_writer.get_max_run_time_steps()} time steps")
 
             steps = [n_machine_time_steps]
         elif run_time is not None:
@@ -1049,8 +1042,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # With auto pause and resume, any time step is possible but run
             # time more than the first will guarantee that run will be called
             # more than once
-            steps = self._generate_steps(
-                n_machine_time_steps, self._max_run_time_steps)
+            steps = self._generate_steps(n_machine_time_steps)
 
         # If we have never run before, or the graph has changed, or data has
         # been changed, generate and load the data
@@ -1081,12 +1073,13 @@ class AbstractSpinnakerBase(ConfigHandler):
                     self._state_condition.wait()
         else:
             logger.info("Running forever in steps of {}ms".format(
-                self._max_run_time_steps))
+                self._data_writer.get_max_run_time_steps()))
             self._n_loops = 1
             while self._status != Simulator_Status.STOP_REQUESTED:
                 logger.info("Run {}".format(self._n_loops))
                 self._do_run(
-                    self._max_run_time_steps, graph_changed, n_sync_steps)
+                    self._data_writer.get_max_run_time_steps(), graph_changed,
+                    n_sync_steps)
                 self._n_loops += 1
 
         # Indicate that the signal handler needs to act
@@ -1193,18 +1186,17 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         return max_time_steps
 
-    @staticmethod
-    def _generate_steps(n_steps, n_steps_per_segment):
+    def _generate_steps(self, n_steps):
         """ Generates the list of "timer" runs. These are usually in terms of\
             time steps, but need not be.
 
         :param int n_steps: the total runtime in machine time steps
-        :param int n_steps_per_segment: the minimum allowed per chunk
         :return: list of time step lengths
         :rtype: list(int)
         """
         if n_steps == 0:
             return [0]
+        n_steps_per_segment = self._data_writer.get_max_run_time_steps()
         n_full_iterations = int(math.floor(n_steps / n_steps_per_segment))
         left_over_steps = n_steps - n_full_iterations * n_steps_per_segment
         steps = [int(n_steps_per_segment)] * n_full_iterations
@@ -2167,8 +2159,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 DATA_GENERATION, "Graph data specification writer"):
             self._dsg_targets, self._region_sizes = \
                 graph_data_specification_writer(
-                    self._placements, self._ipaddress, self._machine,
-                    self._max_run_time_steps)
+                    self._placements, self._ipaddress, self._machine)
 
     def _do_data_generation(self):
         """
@@ -2704,8 +2695,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             sdram_usage_report_per_chip(
                 self._ipaddress, self._placements, self._machine,
-                self._plan_n_timesteps,
-                data_n_timesteps=self._max_run_time_steps)
+                self._plan_n_timesteps)
 
     def _execute_dsg_region_reloader(self):
         """
@@ -2866,7 +2856,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # TODO consider not saving router tabes.
             self._database_file_path = database_interface(
                 self._machine_graph, self._tags, run_time, self._machine,
-                self._max_run_time_steps, self._placements,
+                self._placements,
                 self._routing_infos, self._router_tables,
                 self._application_graph)
 

@@ -559,7 +559,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         self._is_recording = new_state
 
-    def _reserve_regions(self, spec, n_machine_time_steps):
+    def _reserve_regions(self, spec):
         """
         :param ~.DataSpecificationGenerator spec:
         :param int n_machine_time_steps:
@@ -583,7 +583,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._send_buffer_size = (
                 self._send_buffer_sdram_per_timestep(
                     self._send_buffer_times, self._n_keys) *
-                n_machine_time_steps)
+                FecDataView().max_run_time_steps)
             if self._send_buffer_size:
                 spec.reserve_memory_region(
                     region=self._REGIONS.SEND_BUFFER,
@@ -683,7 +683,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @inject_items({
         "machine_graph": "MachineGraph",
         "routing_info": "RoutingInfos",
-        "data_n_time_steps": "DataNTimeSteps"
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
@@ -692,7 +691,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_graph, routing_info, data_n_time_steps):
+            machine_graph, routing_info):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.routing_info.RoutingInfo routing_info:
@@ -702,7 +701,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._update_virtual_key(routing_info, machine_graph)
 
         # Reserve regions
-        self._reserve_regions(spec, data_n_time_steps)
+        self._reserve_regions(spec)
 
         # Write the system region
         spec.switch_write_focus(self._REGIONS.SYSTEM)

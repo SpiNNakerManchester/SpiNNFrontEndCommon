@@ -24,7 +24,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def database_interface(
-        machine_graph, tags, runtime, machine, data_n_timesteps, placements,
+        machine_graph, tags, runtime, machine, placements,
         routing_infos, router_tables, application_graph=None):
     """ Writes a database of the graph(s) and other information.
 
@@ -32,7 +32,6 @@ def database_interface(
         :param ~pacman.model.tags.Tags tags:
         :param int runtime:
         :param ~spinn_machine.Machine machine:
-        :param int data_n_timesteps:
         :param ~pacman.model.placements.Placements placements:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         :param router_tables:
@@ -46,7 +45,7 @@ def database_interface(
     """
     interface = _DatabaseInterface(machine_graph)
     return interface._run(
-        machine_graph, tags, runtime, machine, data_n_timesteps, placements,
+        machine_graph, tags, runtime, machine, placements,
         routing_infos, router_tables, application_graph)
 
 
@@ -68,14 +67,13 @@ class _DatabaseInterface(object):
         self._needs_db = self._writer.auto_detect_database(machine_graph)
 
     def _run(
-            self, machine_graph, tags, runtime, machine, data_n_timesteps,
-            placements, routing_infos, router_tables, application_graph=None):
+            self, machine_graph, tags, runtime, machine, placements,
+            routing_infos, router_tables, application_graph=None):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.tags.Tags tags:
         :param int runtime:
         :param ~spinn_machine.Machine machine:
-        :param int data_n_timesteps:
         :param ~pacman.model.placements.Placements placements:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         :param router_tables:
@@ -101,8 +99,7 @@ class _DatabaseInterface(object):
                         self._writer.database_path)
             self._write_to_db(
                 machine, runtime, application_graph, machine_graph,
-                data_n_timesteps, placements, routing_infos, router_tables,
-                tags)
+                placements, routing_infos, router_tables, tags)
 
         if self._needs_db:
             return self._writer.database_path
@@ -110,15 +107,12 @@ class _DatabaseInterface(object):
 
     def _write_to_db(
             self, machine, runtime, app_graph, machine_graph,
-            data_n_timesteps, placements, routing_infos, router_tables,
-            tags):
+            placements, routing_infos, router_tables, tags):
         """
         :param ~.Machine machine:
         :param int runtime:
         :param ~.ApplicationGraph app_graph:
         :param ~.MachineGraph machine_graph:
-        :param int data_n_timesteps:
-            The number of timesteps for which data space will been reserved
         :param ~.Placements placements:
         :param ~.RoutingInfo routing_infos:
         :param ~.MulticastRoutingTables router_tables:
@@ -126,16 +120,17 @@ class _DatabaseInterface(object):
         """
         # pylint: disable=too-many-arguments
 
+        view = FecDataView()
         with self._writer as w, ProgressBar(
                 9, "Creating graph description database") as p:
-            w.add_system_params(runtime, FecDataView().app_id)
+            w.add_system_params(runtime, view.app_id)
             p.update()
             w.add_machine_objects(machine)
             p.update()
             if app_graph is not None and app_graph.n_vertices:
                 w.add_application_vertices(app_graph)
             p.update()
-            w.add_vertices(machine_graph, data_n_timesteps, app_graph)
+            w.add_vertices(machine_graph, view.max_run_time_steps, app_graph)
             p.update()
             w.add_placements(placements)
             p.update()

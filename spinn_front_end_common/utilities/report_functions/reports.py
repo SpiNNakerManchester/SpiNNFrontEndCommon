@@ -552,7 +552,7 @@ def _write_one_chip_machine_placement(f, c, placements):
 
 
 def sdram_usage_report_per_chip(
-        hostname, placements, machine, plan_n_timesteps, data_n_timesteps):
+        hostname, placements, machine, plan_n_timesteps):
     """ Reports the SDRAM used per chip
 
     :param str hostname: the machine's hostname to which the placer worked on
@@ -560,8 +560,6 @@ def sdram_usage_report_per_chip(
     :param ~spinn_machine.Machine machine: the python machine object
     :param int plan_n_timesteps:
         The number of timesteps for which placer reserved space.
-    :param int data_n_timesteps:
-        The number of timesteps for which data can be saved on the machine.
     :rtype: None
     """
 
@@ -583,23 +581,23 @@ def sdram_usage_report_per_chip(
             f.write("\nActual space reserved on the machine\n")
             f.write("----------------------\n")
             _sdram_usage_report_per_chip_with_timesteps(
-                f, placements, machine, data_n_timesteps, progress, True, True)
+                f, placements, machine, progress, True, True)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for "
                          "writing.", file_name)
 
 
 def _sdram_usage_report_per_chip_with_timesteps(
-        f, placements, machine, timesteps, progress, end_progress, details):
+        f, placements, machine, progress, end_progress, details):
     """
     :param ~io.FileIO f:
     :param Placements placements:
     :param ~spinn_machine.Machine machine:
-    :param int timesteps:
     :param ~spinn_utilities.progress_bar.ProgressBar progress:
     :param bool end_progress:
     :param bool details: If True will get costs printed by regions
     """
+    timesteps = FecDataView().max_run_time_steps
     f.write("Based on {} timesteps\n\n".format(timesteps))
     used_sdram_by_chip = dict()
     placements = sorted(placements.placements,

@@ -141,12 +141,10 @@ class ChipPowerMonitorMachineVertex(
         """
         return BINARY_FILE_NAME
 
-    @inject_items({"data_n_time_steps": "DataNTimeSteps"})
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
-               additional_arguments={"data_n_time_steps"})
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            data_n_time_steps):
+            ):
         """ Supports the application vertex calling this directly
 
         :param ~data_specification.DataSpecificationGenerator spec: data spec
@@ -157,7 +155,7 @@ class ChipPowerMonitorMachineVertex(
 
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
-        self._write_setup_info(spec, data_n_time_steps)
+        self._write_setup_info(spec)
         self._write_configuration_region(spec)
 
         # End-of-Spec:
@@ -175,7 +173,7 @@ class ChipPowerMonitorMachineVertex(
         spec.write_value(n_samples_per_recording, data_type=DataType.UINT32)
         spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
 
-    def _write_setup_info(self, spec, n_machine_time_steps):
+    def _write_setup_info(self, spec):
         """ Writes the system data as required.
 
         :param ~data_specification.DataSpecificationGenerator spec:
@@ -189,7 +187,7 @@ class ChipPowerMonitorMachineVertex(
         spec.switch_write_focus(region=self._REGIONS.RECORDING)
         recorded_region_sizes = [
             self._deduce_sdram_requirements_per_timer_tick()
-            * n_machine_time_steps]
+            * FecDataView().max_run_time_steps]
         spec.write_array(recording_utilities.get_recording_header_array(
             recorded_region_sizes))
 

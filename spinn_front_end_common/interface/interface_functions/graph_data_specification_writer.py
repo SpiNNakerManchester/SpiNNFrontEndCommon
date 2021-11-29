@@ -21,6 +21,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from data_specification import DataSpecificationGenerator
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.ds.data_specification_targets import (
     DataSpecificationTargets)
@@ -32,15 +33,13 @@ logger = logging.getLogger(__name__)
 
 
 def graph_data_specification_writer(
-        placements, hostname, machine, data_n_timesteps, placement_order=None):
+        placements, hostname, machine, placement_order=None):
     """
     :param ~pacman.model.placements.Placements placements:
         placements of machine graph to cores
     :param str hostname: SpiNNaker machine name
     :param ~spinn_machine.Machine machine:
         the python representation of the SpiNNaker machine
-    :param int data_n_timesteps:
-        The number of timesteps for which data space will been reserved
     :param list(~pacman.model.placements.Placement) placement_order:
         the optional order in which placements should be examined
     :return: DSG targets (map of placement tuple and filename)
@@ -49,7 +48,7 @@ def graph_data_specification_writer(
         If the DSG asks to use more SDRAM than is available.
     """
     writer = _GraphDataSpecificationWriter(hostname, machine)
-    return writer._run(placements, data_n_timesteps, placement_order)
+    return writer._run(placements, placement_order)
 
 
 class _GraphDataSpecificationWriter(object):
@@ -76,16 +75,13 @@ class _GraphDataSpecificationWriter(object):
         self._hostname = hostname
 
     def _run(
-            self, placements, data_n_timesteps,
-            placement_order=None):
+            self, placements, placement_order=None):
         """
         :param ~pacman.model.placements.Placements placements:
             placements of machine graph to cores
         :param str hostname: SpiNNaker machine name
         :param ~spinn_machine.Machine machine:
             the python representation of the SpiNNaker machine
-        :param int data_n_timesteps:
-            The number of timesteps for which data space will been reserved
         :param list(~pacman.model.placements.Placement) placement_order:
             the optional order in which placements should be examined
         :return: DSG targets (map of placement tuple and filename)
@@ -113,7 +109,7 @@ class _GraphDataSpecificationWriter(object):
                 # Try to generate the data spec for the placement
                 vertex = placement.vertex
                 generated = self.__generate_data_spec_for_vertices(
-                    placement, vertex, targets, data_n_timesteps)
+                    placement, vertex, targets)
 
                 if generated and isinstance(
                         vertex, AbstractRewritesDataSpecification):
@@ -123,8 +119,7 @@ class _GraphDataSpecificationWriter(object):
                 # application vertex, try with that
                 if not generated and vertex.app_vertex is not None:
                     generated = self.__generate_data_spec_for_vertices(
-                        placement, vertex.app_vertex, targets,
-                        data_n_timesteps)
+                        placement, vertex.app_vertex, targets)
                     if generated and isinstance(
                             vertex.app_vertex,
                             AbstractRewritesDataSpecification):
@@ -136,8 +131,7 @@ class _GraphDataSpecificationWriter(object):
 
         return targets, self._region_sizes
 
-    def __generate_data_spec_for_vertices(
-            self, pl, vertex, targets, data_n_timesteps):
+    def __generate_data_spec_for_vertices(self, pl, vertex, targets):
         """
         :param ~.Placement pl: placement of machine graph to cores
         :param ~.AbstractVertex vertex: the specific vertex to write DSG for.
@@ -172,7 +166,8 @@ class _GraphDataSpecificationWriter(object):
             if isinstance(sdram, MultiRegionSDRAM):
                 for i, size in enumerate(spec.region_sizes):
                     est_size = sdram.regions.get(i, ConstantSDRAM(0))
-                    est_size = est_size.get_total_sdram(data_n_timesteps)
+                    est_size = est_size.get_total_sdram(
+                        FecDataView().max_run_time_steps)
                     if size > est_size:
                         logger.warn(
                             "Region {} of vertex {} is bigger than expected: "
@@ -193,7 +188,7 @@ class _GraphDataSpecificationWriter(object):
                 vert, self._region_sizes[pl.x, pl.y, pl.p],
                 sum(self._region_sizes[pl.x, pl.y, pl.p]),
                 vert.resources_required.sdram.get_total_sdram(
-                    data_n_timesteps))
+                    FecDataView().max_run_time_steps))
             for vert in self._vertices_by_chip[pl.x, pl.y]))
 
         raise ConfigurationException(
