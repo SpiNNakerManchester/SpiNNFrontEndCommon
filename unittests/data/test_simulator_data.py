@@ -107,6 +107,9 @@ class TestSimulatorData(unittest.TestCase):
         writer.increment_current_run_timesteps(95)
         self.assertEqual(105, writer.first_machine_time_step)
         self.assertEqual(200, writer.current_run_timesteps)
+        writer.increment_current_run_timesteps(0)
+        self.assertEqual(200, writer.first_machine_time_step)
+        self.assertEqual(200, writer.current_run_timesteps)
         writer.hard_reset()
         self.assertEqual(0, writer.first_machine_time_step)
         self.assertEqual(0, writer.current_run_timesteps)
@@ -114,8 +117,6 @@ class TestSimulatorData(unittest.TestCase):
             writer.increment_current_run_timesteps(45.0)
         with self.assertRaises(ConfigurationException):
             writer.increment_current_run_timesteps(-1)
-        with self.assertRaises(ConfigurationException):
-            writer.increment_current_run_timesteps(0)
         writer.increment_current_run_timesteps(95)
         with self.assertRaises(NotImplementedError):
             writer.increment_current_run_timesteps(None)
