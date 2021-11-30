@@ -151,7 +151,7 @@ class FecDataView(UtilsDataView):
     @property
     def current_run_timesteps(self):
         """
-        The end of this or the previous do__run loop.
+        The end of this or the previous do__run loop time in steps.
 
         Will be zero if not yet run and not yet in the do_run_loop
 
@@ -162,9 +162,27 @@ class FecDataView(UtilsDataView):
         return self.__fec_data._current_run_timesteps
 
     @property
+    def current_run_times_ms(self):
+        """
+        The end of this or the previous do__run loop time in ms.
+
+        Semantic sugar for current_run_timesteps * simulation_time_step_ms
+
+        Will be zero if not yet run and not yet in the do_run_loop
+
+        Will be zero if in run forever mode
+
+        :rtpye: float
+        """
+        if self.__fec_data._current_run_timesteps is None:
+            return 0.0
+        return self.__fec_data._current_run_timesteps * \
+               self.simulation_time_step_ms
+
+    @property
     def first_machine_time_step(self):
         """
-        The start of this or the next do_run loop
+        The start of this or the next do_run loop time in steps
 
         Will be None if in run forever mode
 

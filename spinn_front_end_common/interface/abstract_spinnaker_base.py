@@ -3318,16 +3318,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         return self._n_loops
 
-    def get_current_time(self):
-        """ Get the current simulation time.
-
-        :rtype: float
-        """
-        if self._has_ran:
-            return (self._data_writer.current_run_timesteps *
-                    self._data_writer.simulation_time_step_ms)
-        return 0.0
-
     def __repr__(self):
         if self._ipaddress:
             return f"general front end instance for machine {self._ipaddress}"

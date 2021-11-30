@@ -120,7 +120,7 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             writer.increment_current_run_timesteps(None)
 
-    def test_run_times(self):
+    def test_run_forever(self):
         writer = FecDataWriter()
         writer.setup()
         writer.increment_current_run_timesteps(None)
@@ -130,6 +130,16 @@ class TestSimulatorData(unittest.TestCase):
             writer.increment_current_run_timesteps(None)
         with self.assertRaises(NotImplementedError):
             writer.increment_current_run_timesteps(100)
+
+    def test_current_run_times_ms(self):
+        writer = FecDataWriter()
+        writer.setup()
+        with self.assertRaises(DataNotYetAvialable):
+            writer.current_run_times_ms
+        writer.set_up_timings(500, 4)
+        self.assertEqual(0, writer.current_run_times_ms)
+        writer.increment_current_run_timesteps(88)
+        self.assertEqual(44, writer.current_run_times_ms)
 
     def test_max_run_time_steps(self):
         writer = FecDataWriter()
