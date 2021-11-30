@@ -108,6 +108,7 @@ class _InsertLivePacketGatherersToGraphs(object):
                     for p_id in p_ids:
                         app_edge = ApplicationEdge(app_vertex, lpg_app_vtx)
                         self._application_graph.add_edge(app_edge, p_id)
+                        lpg_app_vtx.add_incoming_edge(app_edge)
         else:
             for params in live_packet_gatherer_parameters:
                 mac_vtxs = dict()

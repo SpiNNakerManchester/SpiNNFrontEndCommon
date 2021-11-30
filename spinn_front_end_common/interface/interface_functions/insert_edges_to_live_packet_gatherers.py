@@ -170,6 +170,7 @@ class _InsertEdgesToLivePacketGatherers(object):
                     vertex, machine_lpgs)
                 machine_edge = MachineEdge(vertex, lpg, app_edge=app_edge)
                 m_graph.add_edge(machine_edge, p_id)
+                lpg.add_incoming_edge(machine_edge)
 
                 # add to n_keys_map if needed
                 if n_keys_map:
