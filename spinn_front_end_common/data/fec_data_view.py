@@ -169,7 +169,7 @@ class FecDataView(UtilsDataView):
         :raises SpinnFrontEndException:
             If the max_run_time_steps is currently unavailable
         """
-        if self.__fec_data.max_run_time_steps is None:
+        if self.__fec_data._max_run_time_steps is None:
             raise self._exception("max_run_time_steps")
         return self.__fec_data._max_run_time_steps
 
