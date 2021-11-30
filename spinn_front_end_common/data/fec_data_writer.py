@@ -129,6 +129,33 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
     def clear_app_id(self):
         self.__fec_data._app_id = None
 
+    def increment_current_run_timesteps(self, increment):
+        """
+        Increment the current_run_timesteps and sets first_machine_time_step
+
+        A None increment signals run_forever
+
+        :param increment: The timesteps for this do_run loop
+        :rtype increment: int or None
+        """
+        if increment is None:
+            if self.__fec_data._current_run_timesteps != 0:
+                raise NotImplementedError(
+                    "Run forever after another run")
+            self.__fec_data._current_run_timesteps = None
+        else:
+            if not isinstance(increment, int):
+                raise TypeError("increment should be an int (or None")
+            if increment <= 0:
+                raise ConfigurationException(
+                    f"increment {increment} must be possitive")
+            if self.__fec_data._current_run_timesteps is None:
+                raise NotImplementedError(
+                    "Run after run forever")
+            self.__fec_data._first_machine_time_step = \
+                self.__fec_data._current_run_timesteps
+            self.__fec_data._current_run_timesteps += increment
+
     def set_max_run_time_steps(self, max_run_time_steps):
         """
         Sets the max_run_time_steps value

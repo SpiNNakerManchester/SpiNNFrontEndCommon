@@ -39,6 +39,8 @@ class _FecDataModel(object):
     __slots__ = [
         # Data values cached
         "_app_id",
+        "_current_run_timesteps",
+        "_first_machine_time_step",
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
         "_n_calls_to_run",
@@ -83,6 +85,8 @@ class _FecDataModel(object):
         Clears out all data
         """
         self._app_id = None
+        self._current_run_timesteps = 0
+        self._first_machine_time_step = 0
         self._max_run_time_steps = None
         self._timestamp_dir_path = None
 
@@ -140,6 +144,32 @@ class FecDataView(UtilsDataView):
 
     def has_app_id(self):
         return self.__fec_data._app_id is not None
+
+    # current_run_timesteps and first_machine_time_step
+    # Only a property as always available
+    @property
+    def current_run_timesteps(self):
+        """
+        The end of this or the previous do__run loop.
+
+        Will be zero if not yet run and not yet in the do_run_loop
+
+        Will be None if in run forever mode
+
+        :rtpye: int or None
+        """
+        return self.__fec_data._current_run_timesteps
+
+    @property
+    def first_machine_time_step(self):
+        """
+        The start of this or the next do_run loop
+
+        Will be None if in run forever mode
+
+        :rtpye: int or None
+        """
+        return self.__fec_data._first_machine_time_step
 
     # max_run_time_steps methods
 

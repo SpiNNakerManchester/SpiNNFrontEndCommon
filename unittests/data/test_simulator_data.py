@@ -91,6 +91,41 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(TypeError):
             writer.set_app_id(17.0)
 
+    def test_run_times(self):
+        writer = FecDataWriter()
+        writer.setup()
+        self.assertEqual(0, writer.first_machine_time_step)
+        self.assertEqual(0, writer.current_run_timesteps)
+        writer.increment_current_run_timesteps(105)
+        self.assertEqual(0, writer.first_machine_time_step)
+        self.assertEqual(105, writer.current_run_timesteps)
+        writer.increment_current_run_timesteps(95)
+        self.assertEqual(105, writer.first_machine_time_step)
+        self.assertEqual(200, writer.current_run_timesteps)
+        writer.hard_reset()
+        self.assertEqual(0, writer.first_machine_time_step)
+        self.assertEqual(0, writer.current_run_timesteps)
+        with self.assertRaises(TypeError):
+            writer.increment_current_run_timesteps(45.0)
+        with self.assertRaises(ConfigurationException):
+            writer.increment_current_run_timesteps(-1)
+        with self.assertRaises(ConfigurationException):
+            writer.increment_current_run_timesteps(0)
+        writer.increment_current_run_timesteps(95)
+        with self.assertRaises(NotImplementedError):
+            writer.increment_current_run_timesteps(None)
+
+    def test_run_times(self):
+        writer = FecDataWriter()
+        writer.setup()
+        writer.increment_current_run_timesteps(None)
+        self.assertEqual(0, writer.first_machine_time_step)
+        self.assertIsNone(writer.current_run_timesteps)
+        with self.assertRaises(NotImplementedError):
+            writer.increment_current_run_timesteps(None)
+        with self.assertRaises(NotImplementedError):
+            writer.increment_current_run_timesteps(100)
+
     def test_max_run_time_steps(self):
         writer = FecDataWriter()
         writer.setup()
