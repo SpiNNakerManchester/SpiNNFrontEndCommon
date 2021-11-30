@@ -581,14 +581,15 @@ def sdram_usage_report_per_chip(
             f.write("\nActual space reserved on the machine\n")
             f.write("----------------------\n")
             _sdram_usage_report_per_chip_with_timesteps(
-                f, placements, machine, progress, True, True)
+                f, placements, machine, FecDataView().max_run_time_steps,
+                progress, True, True)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for "
                          "writing.", file_name)
 
 
 def _sdram_usage_report_per_chip_with_timesteps(
-        f, placements, machine, progress, end_progress, details):
+        f, placements, machine, timesteps, progress, end_progress, details):
     """
     :param ~io.FileIO f:
     :param Placements placements:
@@ -597,7 +598,6 @@ def _sdram_usage_report_per_chip_with_timesteps(
     :param bool end_progress:
     :param bool details: If True will get costs printed by regions
     """
-    timesteps = FecDataView().max_run_time_steps
     f.write("Based on {} timesteps\n\n".format(timesteps))
     used_sdram_by_chip = dict()
     placements = sorted(placements.placements,
