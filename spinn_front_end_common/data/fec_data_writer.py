@@ -146,9 +146,9 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
         else:
             if not isinstance(increment, int):
                 raise TypeError("increment should be an int (or None")
-            if increment <= 0:
+            if increment < 0:
                 raise ConfigurationException(
-                    f"increment {increment} must be possitive")
+                    f"increment {increment} must not be negative")
             if self.__fec_data._current_run_timesteps is None:
                 raise NotImplementedError(
                     "Run after run forever")
