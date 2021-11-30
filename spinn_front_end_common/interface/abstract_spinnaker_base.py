@@ -1015,7 +1015,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                         "Buffers", "use_auto_pause_and_resume", "False")
 
         # Work out the maximum run duration given all recordings
-        if not self._data_writer.hardware_time_step_ms:
+        if not self._data_writer.has_max_run_time_steps():
             self._data_writer.set_max_run_time_steps(
                 self._deduce_data_n_timesteps(self._machine_graph))
         clear_injectables()

@@ -110,7 +110,6 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(ConfigurationException):
             writer.set_max_run_time_steps(0)
 
-
     def test_simulation_timestep(self):
         view = FecDataView()
         writer = FecDataWriter()
