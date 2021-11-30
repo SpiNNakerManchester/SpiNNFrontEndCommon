@@ -88,6 +88,11 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(17, writer.get_app_id())
         self.assertEqual(17, writer.app_id)
         self.assertTrue(writer.has_app_id)
+        writer.clear_app_id()
+        self.assertEqual(None, writer.get_app_id())
+        self.assertFalse(writer.has_app_id())
+        writer.set_app_id(18)
+        self.assertEqual(18, writer.get_app_id())
         with self.assertRaises(TypeError):
             writer.set_app_id(17.0)
 

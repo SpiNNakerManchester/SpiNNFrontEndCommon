@@ -61,7 +61,7 @@ N_MONITORS_ACTIVE_DURING_COMMS = 2
 
 
 def compute_energy_used(
-        placements, machine, version, runtime, buffer_manager, mapping_time,
+        placements, machine, version, buffer_manager, mapping_time,
         load_time, execute_time, dsg_time, extraction_time,
         spalloc_server=None, remote_spinnaker_url=None,
         machine_allocation_controller=None):
@@ -72,7 +72,6 @@ def compute_energy_used(
     :param ~spinn_machine.Machine machine:
     :param int version:
         The version of the SpiNNaker boards in use.
-    :param float runtime:
     :param BufferManager buffer_manager:
     :param float mapping_time:
         From simulator via :py:class:`~.FinaliseTimingData`.
@@ -106,7 +105,8 @@ def compute_energy_used(
     power_used.mapping_time_secs = mapping_time / _MS_PER_SECOND
 
     using_spalloc = bool(spalloc_server or remote_spinnaker_url)
-    runtime_total_ms = runtime * FecDataView().time_scale_factor
+    view = FecDataView()
+    runtime_total_ms = view.current_run_timesteps * view.time_scale_factor
     _compute_energy_consumption(
          placements, machine, version, using_spalloc,
          dsg_time, buffer_manager, load_time,

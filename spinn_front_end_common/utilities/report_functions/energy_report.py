@@ -54,12 +54,11 @@ class EnergyReport(object):
         self.__uses_spalloc = bool(spalloc_server or remote_spinnaker_url)
 
     def write_energy_report(
-            self, placements, machine, runtime, buffer_manager, power_used):
+            self, placements, machine, buffer_manager, power_used):
         """ Writes the report.
 
         :param ~pacman.model.placements.Placements placements: the placements
         :param ~spinn_machine.Machine machine: the machine
-        :param int runtime:
         :param BufferManager buffer_manager:
         :param PowerUsed power_used:
         :rtype: None
