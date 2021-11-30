@@ -176,8 +176,8 @@ class FecDataView(UtilsDataView):
         """
         if self.__fec_data._current_run_timesteps is None:
             return 0.0
-        return self.__fec_data._current_run_timesteps * \
-               self.simulation_time_step_ms
+        return (self.__fec_data._current_run_timesteps *
+                self.simulation_time_step_ms)
 
     @property
     def first_machine_time_step(self):
