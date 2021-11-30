@@ -165,6 +165,7 @@ class FecDataView(UtilsDataView):
         therefor should reserve memory for
 
         Guranteed to be possitve
+
         :rtype: int
         :raises SpinnFrontEndException:
             If the max_run_time_steps is currently unavailable
