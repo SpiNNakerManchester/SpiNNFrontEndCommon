@@ -135,11 +135,11 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter()
         writer.setup()
         with self.assertRaises(DataNotYetAvialable):
-            writer.current_run_times_ms
+            writer.current_run_time_ms
         writer.set_up_timings(500, 4)
-        self.assertEqual(0, writer.current_run_times_ms)
+        self.assertEqual(0, writer.current_run_time_ms)
         writer.increment_current_run_timesteps(88)
-        self.assertEqual(44, writer.current_run_times_ms)
+        self.assertEqual(44, writer.current_run_time_ms)
 
     def test_max_run_time_steps(self):
         writer = FecDataWriter()

@@ -162,7 +162,7 @@ class FecDataView(UtilsDataView):
         return self.__fec_data._current_run_timesteps
 
     @property
-    def current_run_times_ms(self):
+    def current_run_time_ms(self):
         """
         The end of this or the previous do__run loop time in ms.
 
