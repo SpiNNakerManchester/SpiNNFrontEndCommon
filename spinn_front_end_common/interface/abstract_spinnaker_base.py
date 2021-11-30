@@ -611,12 +611,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         results = []
         for key in ["ApplicationGraph", "DataInMulticastKeyToChipMap",
                     "DataInMulticastRoutingTables",
-                    "ExtendedMachine", "FirstMachineTimeStep", "MachineGraph",
+                    "ExtendedMachine", "MachineGraph",
                     "MachinePartitionNKeysMap", "Placements", "RoutingInfos",
-                    "RunUntilTimeSteps", "SystemMulticastRouterTimeoutKeys",
-                    "Tags"]:
+                    "SystemMulticastRouterTimeoutKeys", "Tags"]:
             item = self._unchecked_gettiem(key)
-            pop = 1/0
             if item is not None:
                 results.append((key, item))
         return results
@@ -640,8 +638,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._data_in_multicast_routing_tables
         if item == "ExtendedMachine":
             return self._machine
-        if item == "FirstMachineTimeStep":
-            return self._data_writer.first_machine_time_step
         if item == "MachineGraph":
             return self.machine_graph
         if item == "MachinePartitionNKeysMap":
@@ -650,8 +646,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._placements
         if item == "RoutingInfos":
             return self._routing_infos
-        if item == "RunUntilTimeSteps":
-            return self._data_writer.current_run_timesteps
         if item == "SystemMulticastRouterTimeoutKeys":
             return self._system_multicast_router_timeout_keys
         if item == "Tags":

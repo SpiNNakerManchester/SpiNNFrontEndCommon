@@ -477,13 +477,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
             first_machine_time_step <= time_stamp_in_ticks <
             n_machine_time_steps)
 
-    def _fill_send_buffer(
-            self, first_machine_time_step, run_until_timesteps):
+    def _fill_send_buffer(self):
         """ Fill the send buffer with keys to send.
 
-        :param int first_machine_time_step:
-        :param int run_until_timesteps:
-        """
+       """
+        view = FecDataView()
+        first_machine_time_step = view.first_machine_time_step
+        run_until_timesteps = view.current_run_timesteps
         if (self._first_machine_time_step == first_machine_time_step and
                 self._run_until_timesteps == run_until_timesteps):
             return
@@ -759,23 +759,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def is_in_injection_mode(self):
         return self._in_injection_mode
 
-    @inject_items({
-        "first_machine_time_step": "FirstMachineTimeStep",
-        "run_until_timesteps": "RunUntilTimeSteps"
-    })
-    def update_buffer(
-            self, run_until_timesteps, first_machine_time_step):
-        """ Updates the buffers on specification of the first machine timestep.
-            Note: This is called by injection.
-
-        :param int first_machine_time_step:
-            The first machine time step in the simulation
-        :param int run_until_timesteps:
-            The last machine time step in the simulation
-        """
-        self._fill_send_buffer(
-            first_machine_time_step, run_until_timesteps)
-
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
         if not self._is_recording:
@@ -792,7 +775,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         :rtype: dict(int,BufferedSendingRegion)
         """
-        self.update_buffer()  # pylint: disable=E1120
+        self._fill_send_buffer()
         return self._send_buffers
 
     @overrides(SendsBuffersFromHostPreBufferedImpl.get_regions)
