@@ -687,7 +687,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_graph", "routing_info", "data_n_time_steps"
+            "machine_graph", "routing_info"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
@@ -715,7 +715,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             per_timestep = self._recording_sdram_per_timestep(
                 self._is_recording, self._receive_rate,
                 self._send_buffer_times, self._n_keys)
-            recording_size = per_timestep * data_n_time_steps
+            recording_size = per_timestep * FecDataView().max_run_time_steps
         spec.write_array(get_recording_header_array([recording_size]))
 
         # Write the configuration information
