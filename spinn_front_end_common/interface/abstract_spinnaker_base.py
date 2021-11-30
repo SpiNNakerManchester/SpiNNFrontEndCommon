@@ -3203,14 +3203,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         return self._get_machine()
 
     @property
-    def no_machine_time_steps(self):
-        """ The number of machine time steps.
-
-        :rtype: int
-        """
-        return self._data_writer.current_run_timesteps
-
-    @property
     def machine_graph(self):
         """
         Returns a protected view of the machine_graph
