@@ -161,7 +161,7 @@ class _InsertEdgesToLivePacketGatherers(object):
         for p_id in p_ids:
             part = app_graph.get_outgoing_edge_partition_starting_at_vertex(
                 app_vertex, p_id)
-            app_edge = next(iter(part.edges[0]))
+            app_edge = next(iter(part.edges))
 
             m_vertices = app_vertex.splitter.get_out_going_vertices(
                 app_edge, part)

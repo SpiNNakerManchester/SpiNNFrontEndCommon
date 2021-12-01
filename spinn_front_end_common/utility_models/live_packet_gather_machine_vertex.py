@@ -232,8 +232,8 @@ class LivePacketGatherMachineVertex(
             spec.write_value(len(self._incoming_edges))
             for edge in self._incoming_edges:
                 r_info = routing_info.get_routing_info_for_edge(edge)
-                spec.write_value(r_info.key)
-                spec.write_value(r_info.mask)
+                spec.write_value(r_info.first_key)
+                spec.write_value(r_info.first_mask)
                 spec.write_value(edge.pre_vertex.vertex_slice.lo_atom)
 
     def _write_setup_info(self, spec):
