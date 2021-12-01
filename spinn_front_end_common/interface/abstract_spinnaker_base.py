@@ -3118,6 +3118,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # know to update the vertices which need to know a reset has occurred
         self._has_reset_last = True
 
+        self._data_writer.soft_reset()
+
         # Reset the graph off the machine, to set things to time 0
         self.__reset_graph_elements()
 

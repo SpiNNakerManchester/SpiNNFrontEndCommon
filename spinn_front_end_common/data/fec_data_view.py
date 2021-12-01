@@ -84,12 +84,18 @@ class _FecDataModel(object):
 
     def _hard_reset(self):
         """
-        Clears out all data
+        Clears out all data that should change after a reset and graaph change
+        """
+        self._max_run_time_steps = None
+        self._timestamp_dir_path = None
+        self._soft_reset()
+
+    def _soft_reset(self):
+        """
+        Clears timing and other data that should changed every reset
         """
         self._current_run_timesteps = 0
         self._first_machine_time_step = 0
-        self._max_run_time_steps = None
-        self._timestamp_dir_path = None
 
 
 class FecDataView(UtilsDataView):
