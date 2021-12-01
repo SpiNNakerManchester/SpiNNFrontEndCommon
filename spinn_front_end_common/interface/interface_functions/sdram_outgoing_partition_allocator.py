@@ -20,9 +20,9 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
-def sdram_outgoing_partition_allocator(
-        machine_graph, placements, transceiver=None):
-
+def sdram_outgoing_partition_allocator(placements, transceiver=None):
+    view = FecDataView()
+    machine_graph = view.runtime_machine_graph
     progress_bar = ProgressBar(
         total_number_of_things_to_do=len(machine_graph.vertices),
         string_describing_what_being_progressed=(
@@ -35,7 +35,7 @@ def sdram_outgoing_partition_allocator(
         sdram_partitions = (
             machine_graph.get_sdram_edge_partitions_starting_at_vertex(
                 machine_vertex))
-        app_id = FecDataView().app_id
+        app_id = view.app_id
         for sdram_partition in sdram_partitions:
 
             # get placement, ones where the src is multiple,

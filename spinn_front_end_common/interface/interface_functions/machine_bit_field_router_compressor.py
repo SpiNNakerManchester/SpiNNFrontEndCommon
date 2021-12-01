@@ -120,7 +120,7 @@ class _MachineBitFieldRouterCompressor(object):
 
     def run(
             self, routing_tables, transceiver, machine,
-            machine_graph, placements, executable_finder,
+            placements, executable_finder,
             routing_infos, executable_targets,
             compress_as_much_as_possible=False):
         """ entrance for routing table compression with bit field
@@ -130,8 +130,6 @@ class _MachineBitFieldRouterCompressor(object):
             ~pacman.model.routing_tables.MulticastRoutingTables
         :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
         :param ~spinn_machine.Machine machine: spinnMachine instance
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            machine graph
         :param ~pacman.model.placements.Placements placements:
             placements on machine
         :param ExecutableFinder executable_finder:
@@ -145,6 +143,7 @@ class _MachineBitFieldRouterCompressor(object):
             whether to compress as much as possible
         :return: where the compressors ran
         """
+        machine_graph = FecDataView().runtime_machine_graph
         if len(routing_tables.routing_tables) == 0:
             return ExecutableTargets()
 
@@ -770,7 +769,7 @@ class _MachineBitFieldRouterCompressor(object):
 
 
 def machine_bit_field_ordered_covering_compressor(
-        routing_tables, transceiver, machine, machine_graph,
+        routing_tables, transceiver, machine,
         placements, executable_finder, routing_infos, executable_targets,
         compress_as_much_as_possible=False):
     """ compression with bit field and ordered covering
@@ -780,8 +779,6 @@ def machine_bit_field_ordered_covering_compressor(
             ~pacman.model.routing_tables.MulticastRoutingTables
         :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
         :param ~spinn_machine.Machine machine: spinnMachine instance
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            machine graph
         :param ~pacman.model.placements.Placements placements:
             placements on machine
         :param ExecutableFinder executable_finder:
@@ -798,13 +795,13 @@ def machine_bit_field_ordered_covering_compressor(
     compressor = _MachineBitFieldRouterCompressor(
         "bit_field_ordered_covering_compressor.aplx", "OrderedCovering")
     return compressor.run(
-        routing_tables, transceiver, machine, machine_graph,
+        routing_tables, transceiver, machine,
         placements, executable_finder, routing_infos, executable_targets,
         compress_as_much_as_possible)
 
 
 def machine_bit_field_pair_router_compressor(
-        routing_tables, transceiver, machine, machine_graph,
+        routing_tables, transceiver, machine,
         placements, executable_finder, routing_infos, executable_targets,
         compress_as_much_as_possible=False):
     """ compression with bit field and ordered covering
@@ -814,8 +811,6 @@ def machine_bit_field_pair_router_compressor(
             ~pacman.model.routing_tables.MulticastRoutingTables
         :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
         :param ~spinn_machine.Machine machine: spinnMachine instance
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            machine graph
         :param ~pacman.model.placements.Placements placements:
             placements on machine
         :param ExecutableFinder executable_finder:
@@ -832,6 +827,6 @@ def machine_bit_field_pair_router_compressor(
     compressor = _MachineBitFieldRouterCompressor(
         "bit_field_pair_compressor.aplx", "Pair")
     return compressor.run(
-        routing_tables, transceiver, machine, machine_graph,
+        routing_tables, transceiver, machine,
         placements, executable_finder, routing_infos, executable_targets,
         compress_as_much_as_possible)

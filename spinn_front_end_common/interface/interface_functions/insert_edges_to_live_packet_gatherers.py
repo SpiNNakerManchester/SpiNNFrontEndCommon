@@ -16,13 +16,14 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.machine import MachineEdge
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 def insert_edges_to_live_packet_gatherers(
         live_packet_gatherer_parameters, placements,
         live_packet_gatherers_to_vertex_mapping, machine,
-        machine_graph, application_graph=None, n_keys_map=None):
+        n_keys_map=None):
     """
         Add edges from the recorded vertices to the local Live PacketGatherers.
 
@@ -40,19 +41,13 @@ def insert_edges_to_live_packet_gatherers(
             tuple(LivePacketGather or None,
             dict(tuple(int,int),LivePacketGatherMachineVertex)))
         :param ~spinn_machine.Machine machine: the SpiNNaker machine
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            the machine graph
-        :param application_graph: the application graph
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
         :param n_keys_map: key map
         :type n_keys_map:
             ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
     """
     inserter = _InsertEdgesToLivePacketGatherers(
         placements, live_packet_gatherers_to_vertex_mapping, machine)
-    inserter._run(live_packet_gatherer_parameters, machine_graph,
-                  application_graph, n_keys_map)
+    inserter._run(live_packet_gatherer_parameters, n_keys_map)
 
 
 class _InsertEdgesToLivePacketGatherers(object):
@@ -88,8 +83,7 @@ class _InsertEdgesToLivePacketGatherers(object):
         self._machine = machine
         self._placements = placements
 
-    def _run(self, live_packet_gatherer_parameters,
-             machine_graph, application_graph=None, n_keys_map=None):
+    def _run(self, live_packet_gatherer_parameters, n_keys_map=None):
         """
         :param live_packet_gatherer_parameters: the set of parameters
         :type live_packet_gatherer_parameters:
@@ -106,6 +100,8 @@ class _InsertEdgesToLivePacketGatherers(object):
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
+        machine_graph = FecDataView().runtime_machine_graph
+        application_graph = FecDataView().runtime_graph
         progress = ProgressBar(
             live_packet_gatherer_parameters,
             string_describing_what_being_progressed=(

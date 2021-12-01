@@ -703,7 +703,7 @@ class FecDataView(UtilsDataView):
         """
         if self.__fec_data._runtime_graph is None:
             raise self._exception("runtime_graph")
-        if self.status != Data_Status.IN_RUN:
+        if self.status not in [Data_Status.IN_RUN, Data_Status.MOCKED]:
             raise self._exception("runtime_graph")
         return self.__fec_data._runtime_graph
 
@@ -729,6 +729,34 @@ class FecDataView(UtilsDataView):
         """
         if self.__fec_data._runtime_machine_graph is None:
             raise self._exception("runtime_machine_graph")
-        if self.status != Data_Status.IN_RUN:
+        if self.status not in [Data_Status.IN_RUN, Data_Status.MOCKED]:
             raise self._exception("runtime_machine_graph")
         return self.__fec_data._runtime_machine_graph
+
+    @property
+    def runtime_best_graph(self):
+        """
+        The runtime application graph unless it is empty and the
+        machine graph one is not
+
+        This is the run time version of the graph which is created by the
+        simulator to add system vertices.
+
+        Changes to this graph by anything except the insert algorithms is not
+        supported.
+
+         .. note::
+            The graph returned by this method may be immutable depending on
+            when it is called
+
+        :rtype: ApplicationGraph or MachineGraph
+        :raises SpinnFrontEndException:
+            If the runtime_graph is currently unavailable, or if this method
+            is used except during run
+        """
+        graph = self.runtime_graph
+        if graph.n_vertices:
+            return graph
+        if self.__fec_data._runtime_machine_graph.n_vertices:
+            return self.__fec_data._runtime_machine_graph.n_vertices
+        return graph

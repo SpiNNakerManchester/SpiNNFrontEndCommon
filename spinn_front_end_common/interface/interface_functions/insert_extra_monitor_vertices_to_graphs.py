@@ -15,24 +15,17 @@
 
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGather, DataSpeedUpPacketGatherMachineVertex,
     ExtraMonitorSupport, ExtraMonitorSupportMachineVertex)
 
 
-def insert_extra_monitor_vertices_to_graphs(
-        machine, machine_graph, application_graph=None):
+def insert_extra_monitor_vertices_to_graphs(machine):
     """ Inserts the extra monitor vertices into the graph that correspond to\
     the extra monitor cores required.
 
     :param ~spinn_machine.Machine machine: spinnMachine instance
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        machine graph
-    :param int n_cores_to_allocate:
-        number of cores to allocate for reception
-    :param application_graph: app graph
-    :type application_graph:
-        ~pacman.model.graphs.application.ApplicationGraph
     :return: vertex to Ethernet connection map,
         list of extra_monitor_vertices,
         vertex_to_chip_map
@@ -51,37 +44,31 @@ def insert_extra_monitor_vertices_to_graphs(
     vertex_to_chip_map = dict()
 
     # handle reinjector and chip based data extractor functionality.
-    if application_graph.n_vertices > 0:
+    if FecDataView().runtime_graph.n_vertices > 0:
         extra_monitors = __add_second_monitors_application_graph(
-            progress, machine, application_graph, machine_graph,
-            vertex_to_chip_map)
+            progress, machine, vertex_to_chip_map)
     else:
         extra_monitors = __add_second_monitors_machine_graph(
-            progress, machine, machine_graph, vertex_to_chip_map)
+            progress, machine, vertex_to_chip_map)
 
     # progress data receiver for data extraction functionality
-    if application_graph.n_vertices > 0:
+    if FecDataView().runtime_graph.n_vertices > 0:
         __add_data_extraction_vertices_app_graph(
-            progress, machine, application_graph, machine_graph,
-            chip_to_gatherer_map, vertex_to_chip_map)
+            progress, machine, chip_to_gatherer_map, vertex_to_chip_map)
     else:
         __add_data_extraction_vertices_mach_graph(
-            progress, machine, machine_graph, chip_to_gatherer_map,
-            vertex_to_chip_map)
+            progress, machine, chip_to_gatherer_map, vertex_to_chip_map)
 
     return chip_to_gatherer_map, extra_monitors, vertex_to_chip_map
 
 
 def __add_second_monitors_application_graph(
-        progress, machine, application_graph, machine_graph,
-        vertex_to_chip_map):
+        progress, machine, vertex_to_chip_map):
     """ Handles placing the second monitor vertex with extra functionality\
         into the graph
 
     :param ~.ProgressBar progress: progress bar
     :param ~.Machine machine: spinnMachine instance
-    :param ~.ApplicationGraph application_graph: app graph
-    :param ~.MachineGraph machine_graph: machine graph
     :param dict vertex_to_chip_map: map between vertex and chip
     :return: list of extra monitor vertices
     :rtype: list(~.MachineVertex)
@@ -90,6 +77,8 @@ def __add_second_monitors_application_graph(
 
     extra_monitor_vertices = list()
 
+    application_graph = FecDataView().runtime_graph
+    machine_graph = FecDataView().runtime_machine_graph
     for chip in progress.over(machine.chips, finish_at_end=False):
         if chip.virtual:
             continue
@@ -104,14 +93,12 @@ def __add_second_monitors_application_graph(
     return extra_monitor_vertices
 
 
-def __add_second_monitors_machine_graph(
-        progress, machine, machine_graph, vertex_to_chip_map):
+def __add_second_monitors_machine_graph(progress, machine, vertex_to_chip_map):
     """ Handles placing the second monitor vertex with extra functionality\
         into the graph
 
     :param ~.ProgressBar progress: progress bar
     :param ~.Machine machine: spinnMachine instance
-    :param ~.MachineGraph machine_graph: machine graph
     :param dict vertex_to_chip_map: map between vertex and chip
     :return: list of extra monitor vertices
     :rtype: list(~.MachineVertex)
@@ -120,6 +107,7 @@ def __add_second_monitors_machine_graph(
 
     extra_monitor_vertices = list()
 
+    machine_graph = FecDataView().runtime_machine_graph
     for chip in progress.over(machine.chips, finish_at_end=False):
         if chip.virtual:
             continue
@@ -133,19 +121,18 @@ def __add_second_monitors_machine_graph(
 
 
 def __add_data_extraction_vertices_app_graph(
-        progress, machine, application_graph, machine_graph,
-        chip_to_gatherer_map, vertex_to_chip_map):
+        progress, machine, chip_to_gatherer_map, vertex_to_chip_map):
     """ Places vertices for receiving data extraction packets.
 
     :param ~.ProgressBar progress: progress bar
     :param ~.Machine machine: machine instance
-    :param ~.ApplicationGraph application_graph: application graph
-    :param ~.MachineGraph machine_graph: machine graph
     :param dict chip_to_gatherer_map: vertex to chip map
     :param dict vertex_to_chip_map: map between chip and extra monitor
     """
     # pylint: disable=too-many-arguments
 
+    application_graph = FecDataView().runtime_graph
+    machine_graph = FecDataView().runtime_machine_graph
     # insert machine vertices
     for chip in progress.over(machine.ethernet_connected_chips):
         # add to application graph
@@ -158,18 +145,17 @@ def __add_data_extraction_vertices_app_graph(
 
 
 def __add_data_extraction_vertices_mach_graph(
-        progress, machine, machine_graph,
-        chip_to_gatherer_map, vertex_to_chip_map):
+        progress, machine, chip_to_gatherer_map, vertex_to_chip_map):
     """ Places vertices for receiving data extraction packets.
 
     :param ~.ProgressBar progress: progress bar
     :param ~.Machine machine: machine instance
-    :param ~.MachineGraph machine_graph: machine graph
     :param dict chip_to_gatherer_map: vertex to chip map
     :param dict vertex_to_chip_map: map between chip and extra monitor
     """
     # pylint: disable=too-many-arguments
 
+    machine_graph = FecDataView().runtime_machine_graph
     # insert machine vertices
     for chip in progress.over(machine.ethernet_connected_chips):
         machine_vertex = __new_mach_gatherer(chip, vertex_to_chip_map)

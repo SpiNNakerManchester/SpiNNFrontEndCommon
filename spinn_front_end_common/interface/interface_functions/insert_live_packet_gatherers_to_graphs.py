@@ -16,13 +16,13 @@
 from collections import defaultdict
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utility_models import (
     LivePacketGather, LivePacketGatherMachineVertex)
 
 
 def insert_live_packet_gatherers_to_graphs(
-        live_packet_gatherer_parameters, machine, machine_graph,
-        application_graph=None):
+        live_packet_gatherer_parameters, machine):
     """ Add LPG vertices on Ethernet connected chips as required.
 
     :param live_packet_gatherer_parameters:
@@ -43,8 +43,7 @@ def insert_live_packet_gatherers_to_graphs(
         tuple(LivePacketGather or None,
         dict(tuple(int,int),LivePacketGatherMachineVertex)))
     """
-    inserter = _InsertLivePacketGatherersToGraphs(
-        machine_graph, application_graph)
+    inserter = _InsertLivePacketGatherersToGraphs()
     return inserter._run(live_packet_gatherer_parameters, machine)
 
 
@@ -56,7 +55,7 @@ class _InsertLivePacketGatherersToGraphs(object):
         "_machine_graph",
         "_application_graph"]
 
-    def __init__(self,  machine_graph, application_graph):
+    def __init__(self):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph
@@ -64,8 +63,9 @@ class _InsertLivePacketGatherersToGraphs(object):
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph
         """
-        self._machine_graph = machine_graph
-        self._application_graph = application_graph
+        view = FecDataView()
+        self._machine_graph = view.runtime_machine_graph
+        self._application_graph = view.runtime_graph
 
     def _run(self, live_packet_gatherer_parameters, machine,):
         """ Add LPG vertices on Ethernet connected chips as required.

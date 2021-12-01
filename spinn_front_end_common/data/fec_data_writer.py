@@ -317,6 +317,11 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
         return self.__fec_data._machine_graph
 
     def create_graphs(self, graph_label):
+        """
+        Creates the user/ original graphs based on the label
+
+        :param str graph_label:
+        """
         # update graph label if needed
         if graph_label is None:
             graph_label = "Application_graph"
@@ -329,6 +334,10 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
             application_graph=self.__fec_data._graph)
 
     def clone_graphs(self):
+        """
+        Clones the user/ original grapgs and creates runtime ones
+
+        """
         if self.__fec_data._graph.n_vertices:
             if self.__fec_data._machine_graph.n_vertices:
                 raise ConfigurationException(
@@ -338,3 +347,19 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
         self.__fec_data._runtime_graph = self.__fec_data._graph.clone()
         self.__fec_data._runtime_machine_graph = \
             self.__fec_data._machine_graph.clone()
+
+    def _set_runtime_graph(self, graph):
+        """
+        Only used in unittests
+        """
+        self.__fec_data._runtime_graph = graph
+
+    def set_runtime_machine_graph(self, runtime_machine_graph):
+        """
+        Set the runtime machine graph
+
+        :param MachineGraph runtime_machine_graph:
+        """
+        if not isinstance(runtime_machine_graph, MachineGraph):
+            raise TypeError("runtime_machine_graph should be a MachineGraph")
+        self.__fec_data._runtime_machine_graph = runtime_machine_graph

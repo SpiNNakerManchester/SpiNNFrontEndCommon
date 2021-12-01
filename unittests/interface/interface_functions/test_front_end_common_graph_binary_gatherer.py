@@ -19,6 +19,7 @@ from spinn_utilities.overrides import overrides
 from pacman.model.graphs.machine import (
    MachineGraph, SimpleMachineVertex)
 from pacman.model.placements import Placements, Placement
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     graph_binary_gatherer, locate_executable_start_type)
@@ -75,9 +76,10 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             Placement(vertex_3, 0, 0, 2),
             Placement(vertex_4, 0, 0, 3)])
 
+        FecDataWriter().set_runtime_machine_graph(graph)
         targets = graph_binary_gatherer(
-            placements, graph, _TestExecutableFinder())
-        start_type = locate_executable_start_type(graph, placements)
+            placements, _TestExecutableFinder())
+        start_type = locate_executable_start_type(placements)
         self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
         self.assertEqual(targets.total_processors, 3)
 
@@ -105,7 +107,8 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         graph = MachineGraph("Test")
         graph.add_vertices([vertex_1, vertex_2])
 
-        results = locate_executable_start_type(graph, placements)
+        FecDataWriter().set_runtime_machine_graph(graph)
+        results = locate_executable_start_type(placements)
         self.assertIn(ExecutableType.RUNNING, results)
         self.assertIn(ExecutableType.SYNC, results)
         self.assertNotIn(ExecutableType.USES_SIMULATION_INTERFACE, results)

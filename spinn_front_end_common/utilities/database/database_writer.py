@@ -67,17 +67,15 @@ class DatabaseWriter(SQLiteDB):
         self._machine_id = 0
 
     @staticmethod
-    def auto_detect_database(machine_graph):
+    def auto_detect_database():
         """ Auto detects if there is a need to activate the database system
 
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            the machine graph of the application problem space.
         :return: whether the database is needed for the application
         :rtype: bool
         """
         return any(isinstance(vertex, AbstractSupportsDatabaseInjection)
                    and vertex.is_in_injection_mode
-                   for vertex in machine_graph.vertices)
+                   for vertex in FecDataView().runtime_machine_graph.vertices)
 
     @property
     def database_path(self):

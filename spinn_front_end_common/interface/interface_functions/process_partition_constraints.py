@@ -19,15 +19,16 @@ from pacman.model.constraints.key_allocator_constraints import (
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints,
     AbstractProvidesIncomingPartitionConstraints)
+from spinn_front_end_common.data import FecDataView
 
 
-def process_partition_constraints(machine_graph):
+def process_partition_constraints():
     """
     Adds constraints to partitions if the vertices at either end of the\
         partition request it.
 
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
     """
+    machine_graph = FecDataView().runtime_machine_graph
     # generate progress bar
     progress = ProgressBar(
         machine_graph.n_vertices,
