@@ -21,6 +21,8 @@ import time
 from spinn_utilities.data.utils_data_writer import UtilsDataWriter
 from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
+from pacman.model.graphs.application import ApplicationGraph
+from pacman.model.graphs.machine import MachineGraph
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -301,3 +303,38 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
         self.__fec_data._hardware_time_step_us = rounded
         self.__fec_data._hardware_time_step_ms = (
                 rounded / MICRO_TO_MILLISECOND_CONVERSION)
+
+    @property
+    def graph(self):
+        if self.__fec_data._graph is None:
+            raise self._exception("graph")
+        return self.__fec_data._graph
+
+    @property
+    def machine_graph(self):
+        if self.__fec_data._machine_graph is None:
+            raise self._exception("machine_graph")
+        return self.__fec_data._machine_graph
+
+    def create_graphs(self, graph_label):
+        # update graph label if needed
+        if graph_label is None:
+            graph_label = "Application_graph"
+        else:
+            graph_label = graph_label
+
+        self.__fec_data._graph = ApplicationGraph(label=graph_label)
+        self.__fec_data._machine_graph = MachineGraph(
+            label=graph_label,
+            application_graph=self.__fec_data._graph)
+
+    def clone_graphs(self):
+        if self.__fec_data._graph.n_vertices:
+            if self.__fec_data._machine_graph.n_vertices:
+                raise ConfigurationException(
+                    "Illegal state where both original_application and "
+                    "original machine graph have vertices in them")
+
+        self.__fec_data._runtime_graph = self.__fec_data._graph.clone()
+        self.__fec_data._runtime_machine_graph = \
+            self.__fec_data._machine_graph.clone()
