@@ -959,6 +959,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     " run more than once")
 
         self._status = Simulator_Status.IN_RUN
+        self._data_writer.start_run()
 
         self._adjust_config(run_time)
 
@@ -1107,6 +1108,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._n_calls_to_run += 1
         self._n_loops = None
         self._status = Simulator_Status.FINISHED
+        self._data_writer.finish_run()
 
     def _is_per_timestep_sdram(self):
         for placement in self._placements.placements:
