@@ -3085,8 +3085,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             changed = True
 
         # if application graph is filled, check their changes
-        if self._data_writer.application_graph.n_vertices:
-            for vertex in self._data_writer.application_graph.vertices:
+        if self._data_writer.graph.n_vertices:
+            for vertex in self._data_writer.graph.vertices:
                 if isinstance(vertex, AbstractChangableAfterRun):
                     if vertex.requires_mapping:
                         changed = True
@@ -3094,7 +3094,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                         data_changed = True
                     vertex.mark_no_changes()
             for partition in \
-                    self._data_writer.application_graph.outgoing_edge_partitions:
+                    self._data_writer.graph.outgoing_edge_partitions:
                 for edge in partition.edges:
                     if isinstance(edge, AbstractChangableAfterRun):
                         if edge.requires_mapping:
@@ -3159,7 +3159,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         :rtype: ~pacman.model.graphs.application.ApplicationGraph
         """
-        return self._data_writer._graph
+        return self._data_writer.graph
 
     @property
     def application_graph(self):
@@ -3299,8 +3299,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param str partition_identifier:
             the partition identifier for the outgoing edge partition
         """
-        self._data_writer.application_graph.add_edge(
-            edge_to_add, partition_identifier)
+        self._data_writer.graph.add_edge(edge_to_add, partition_identifier)
         self._vertices_or_edges_added = True
 
     def add_machine_edge(self, edge, partition_id):
