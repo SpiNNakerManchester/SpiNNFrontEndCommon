@@ -69,6 +69,7 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
         self.__create_reports_directory()
+        self.__create_timestamp_directory()
         self.__create_run_dir_path()
 
     def start_run(self):
@@ -84,7 +85,6 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
         self.__create_run_dir_path()
 
     def __create_run_dir_path(self):
-        self.__create_timestamp_directory()
         self.set_run_dir_path(self._child_folder(
             self.__fec_data._timestamp_dir_path,
             f"run_{self.n_calls_to_run}"))
