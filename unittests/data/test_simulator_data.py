@@ -63,7 +63,6 @@ class TestSimulatorData(unittest.TestCase):
         writer.hard_reset()
         self.assertIn("run_3", view.run_dir_path)
 
-
     def test_dict(self):
         view = FecDataView()
         writer = FecDataWriter()
