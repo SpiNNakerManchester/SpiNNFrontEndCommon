@@ -507,7 +507,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_in_multicast_routing_tables = None
         self._dsg_targets = None
         self._executable_targets = None
-        self._executable_types = None
+        self._executable_types = []
         self._extra_monitor_to_chip_mapping = None
         self._extra_monitor_vertices = None
         self._fixed_routes = None
@@ -867,6 +867,19 @@ class AbstractSpinnakerBase(ConfigHandler):
         return n_machine_time_steps, total_run_time
 
     def _run(self, run_time, sync_time):
+        self.verify_not_running()
+
+        self._status = Simulator_Status.IN_RUN
+        self._data_writer.start_run()
+
+        try:
+            self.__run(run_time, sync_time)
+        finally:
+            self._status = Simulator_Status.FINISHED
+            self._data_writer.finish_run()
+            self._has_ran = True
+
+    def __run(self, run_time, sync_time):
         """ The main internal run function.
 
         :param int run_time: the run duration in milliseconds.
@@ -885,8 +898,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 raise NotImplementedError(
                     "Only binaries that use the simulation interface can be"
                     " run more than once")
-
-        self._status = Simulator_Status.IN_RUN
 
         self._adjust_config(run_time)
 
@@ -915,6 +926,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "The network cannot be changed between runs without"
                     " resetting")
             self._data_writer.hard_reset()
+            FecTimer.setup(self)
 
         # If we have reset and the graph has changed, stop any running
         # application
@@ -1035,7 +1047,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # update counter for runs (used by reports and app data)
         self._n_calls_to_run += 1
         self._n_loops = None
-        self._status = Simulator_Status.FINISHED
 
     def _is_per_timestep_sdram(self):
         for placement in self._placements.placements:

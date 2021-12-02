@@ -57,6 +57,11 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(2, view.n_calls_to_run)
         # No reset so run director does not change
         self.assertIn("run_1", view.run_dir_path)
+        writer.finish_run()
+        writer.start_run()
+        self.assertEqual(3, view.n_calls_to_run)
+        writer.hard_reset()
+        self.assertIn("run_3", view.run_dir_path)
 
     def test_mock(self):
         view = FecDataView()
