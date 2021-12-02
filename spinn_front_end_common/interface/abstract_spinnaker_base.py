@@ -783,8 +783,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :raises ConfigurationException: If the current state does not
             support a new run call
         """
-        self.verify_not_running()
-
         if self._data_writer.graph.n_vertices:
             return True
         if self._data_writer.machine_graph.n_vertices:
