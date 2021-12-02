@@ -1863,7 +1863,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Zoned routing info allocator"):
             self._routing_infos = flexible_allocate(
-                self._data_writer.machine_graph,
+                self._data_writer.runtime_machine_graph,
                 self._machine_partition_n_keys_map)
 
     def _execute_malloc_based_routing_info_allocator(self):
