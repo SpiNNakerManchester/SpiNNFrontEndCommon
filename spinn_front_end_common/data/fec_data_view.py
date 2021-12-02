@@ -80,6 +80,7 @@ class _FecDataModel(object):
         self._simulation_time_step_us = None
         self._report_dir_path = None
         self._time_scale_factor = None
+        self._timestamp_dir_path = None
         self._hard_reset()
 
     def _hard_reset(self):
@@ -87,7 +88,6 @@ class _FecDataModel(object):
         Clears out all data that should change after a reset and graaph change
         """
         self._max_run_time_steps = None
-        self._timestamp_dir_path = None
         self._soft_reset()
 
     def _soft_reset(self):
