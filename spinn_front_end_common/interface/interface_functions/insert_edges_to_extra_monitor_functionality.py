@@ -79,7 +79,7 @@ class _InsertEdgesToExtraMonitorFunctionality(object):
         application_graph = FecDataView().runtime_graph
 
         progress = ProgressBar(
-            machine_graph.n_vertices +application_graph.n_vertices,
+            machine_graph.n_vertices + application_graph.n_vertices,
             "Inserting edges between vertices which require FR speed up "
             "functionality.")
 

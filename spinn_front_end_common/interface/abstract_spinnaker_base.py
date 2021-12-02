@@ -1465,8 +1465,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             return
         with FecTimer(MAPPING, "Splitter partitioner"):
             machine_graph, self._n_chips_needed = splitter_partitioner(
-                self._data_writer.runtime_graph, self._machine, self._plan_n_timesteps,
-                pre_allocated_resources)
+                self._data_writer.runtime_graph, self._machine,
+                self._plan_n_timesteps, pre_allocated_resources)
 
     def _execute_graph_measurer(self):
         """
