@@ -2031,9 +2031,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._setup_java_caller()
         self._do_extra_mapping_algorithms()
         self._report_network_specification()
+
         self._execute_splitter_reset()
         self._execute_splitter_selector()
         self._execute_delay_support_adder()
+
         pre_allocated_resources = PreAllocatedResourceContainer()
         self._execute_preallocate_for_live_packet_gatherer(
             pre_allocated_resources)
@@ -2050,23 +2052,28 @@ class AbstractSpinnakerBase(ConfigHandler):
         assert(self._machine)
         self._json_machine()
         self._execute_chip_id_allocator()
-        self._execute_insert_live_packet_gatherers_to_graphs()
         self._report_board_chip()
+
+        self._execute_insert_live_packet_gatherers_to_graphs()
         self._execute_insert_chip_power_monitors()
         self._execute_insert_extra_monitor_vertices()
+
         self._execute_partitioner_report()
         self._execute_local_tdma_builder()
         self._json_partition_n_keys_map()
         self._do_placer()
-        self._execute_insert_edges_to_live_packet_gatherers()
-        self._execute_system_multicast_routing_generator()
-        self._execute_fixed_route_router()
         self._report_placements_with_application_graph()
         # self._report_placements_with_machine_graph()
         self._json_placements()
+
+        self._execute_insert_edges_to_live_packet_gatherers()
+        self._execute_system_multicast_routing_generator()
+        self._execute_fixed_route_router()
         self._do_routing()
+
         self._execute_basic_tag_allocator()
         self._report_tag_allocations()
+
         # self._execute_process_partition_constraints()
         self.do_info_allocator()
         self._report_router_info()
