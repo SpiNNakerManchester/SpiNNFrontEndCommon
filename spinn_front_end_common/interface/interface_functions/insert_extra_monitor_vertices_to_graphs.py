@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 from pacman.model.placements import Placement
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex, ExtraMonitorSupportMachineVertex)
