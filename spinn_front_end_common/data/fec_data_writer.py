@@ -18,9 +18,9 @@ import logging
 import math
 import os
 import time
-from spinn_utilities.data.utils_data_writer import UtilsDataWriter
 from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
+from pacman.data.pacman_data_writer import PacmanDataWriter
 from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.machine import MachineGraph
 from spinn_front_end_common.utilities.constants import (
@@ -34,7 +34,7 @@ __temp_dir = None
 REPORTS_DIRNAME = "reports"
 
 
-class FecDataWriter(UtilsDataWriter, FecDataView):
+class FecDataWriter(PacmanDataWriter, FecDataView):
     """
     Writer class for the Fec Data
 
@@ -56,7 +56,7 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
         Unittest that depend on a specific value should call mock and then
         set that value.
         """
-        UtilsDataWriter.mock(self)
+        PacmanDataWriter.mock(self)
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
         self.set_app_id(6)
@@ -67,7 +67,7 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
         Puts all data back into the state expected at sim.setup time
 
         """
-        UtilsDataWriter.setup(self)
+        PacmanDataWriter.setup(self)
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
         self.__create_reports_directory()
@@ -75,19 +75,19 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
         self.__create_run_dir_path()
 
     def start_run(self):
-        UtilsDataWriter.start_run(self)
+        PacmanDataWriter.start_run(self)
         self.__fec_data._n_calls_to_run += 1
 
     def finish_run(self):
-        UtilsDataWriter.finish_run(self)
+        PacmanDataWriter.finish_run(self)
 
     def hard_reset(self):
-        UtilsDataWriter.hard_reset(self)
+        PacmanDataWriter.hard_reset(self)
         self.__fec_data._hard_reset()
         self.__create_run_dir_path()
 
     def soft_reset(self):
-        UtilsDataWriter.soft_reset(self)
+        PacmanDataWriter.soft_reset(self)
         self.__fec_data._soft_reset()
 
     def __create_run_dir_path(self):
@@ -303,63 +303,3 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
         self.__fec_data._hardware_time_step_us = rounded
         self.__fec_data._hardware_time_step_ms = (
                 rounded / MICRO_TO_MILLISECOND_CONVERSION)
-
-    @property
-    def graph(self):
-        if self.__fec_data._graph is None:
-            raise self._exception("graph")
-        return self.__fec_data._graph
-
-    @property
-    def machine_graph(self):
-        if self.__fec_data._machine_graph is None:
-            raise self._exception("machine_graph")
-        return self.__fec_data._machine_graph
-
-    def create_graphs(self, graph_label):
-        """
-        Creates the user/ original graphs based on the label
-
-        :param str graph_label:
-        """
-        # update graph label if needed
-        if graph_label is None:
-            graph_label = "Application_graph"
-        else:
-            graph_label = graph_label
-
-        self.__fec_data._graph = ApplicationGraph(label=graph_label)
-        self.__fec_data._machine_graph = MachineGraph(
-            label=graph_label,
-            application_graph=self.__fec_data._graph)
-
-    def clone_graphs(self):
-        """
-        Clones the user/ original grapgs and creates runtime ones
-
-        """
-        if self.__fec_data._graph.n_vertices:
-            if self.__fec_data._machine_graph.n_vertices:
-                raise ConfigurationException(
-                    "Illegal state where both original_application and "
-                    "original machine graph have vertices in them")
-
-        self.__fec_data._runtime_graph = self.__fec_data._graph.clone()
-        self.__fec_data._runtime_machine_graph = \
-            self.__fec_data._machine_graph.clone()
-
-    def _set_runtime_graph(self, graph):
-        """
-        Only used in unittests
-        """
-        self.__fec_data._runtime_graph = graph
-
-    def set_runtime_machine_graph(self, runtime_machine_graph):
-        """
-        Set the runtime machine graph
-
-        :param MachineGraph runtime_machine_graph:
-        """
-        if not isinstance(runtime_machine_graph, MachineGraph):
-            raise TypeError("runtime_machine_graph should be a MachineGraph")
-        self.__fec_data._runtime_machine_graph = runtime_machine_graph

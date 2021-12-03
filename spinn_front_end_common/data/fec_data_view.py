@@ -16,7 +16,7 @@
 import errno
 import os
 from spinn_utilities.data.data_status import Data_Status
-from spinn_utilities.data import UtilsDataView
+from pacman.data import PacmanDataView
 
 
 class _FecDataModel(object):
@@ -41,15 +41,11 @@ class _FecDataModel(object):
         "_app_id",
         "_current_run_timesteps",
         "_first_machine_time_step",
-        "_graph",
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
         "_n_calls_to_run",
-        "_machine_graph",
         "_max_run_time_steps",
         "_report_dir_path",
-        "_runtime_graph",
-        "_runtime_machine_graph",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
         "_simulation_time_step_per_s",
@@ -74,10 +70,8 @@ class _FecDataModel(object):
         """
         # app_id not hard_reset as used to stop previous runs
         self._app_id = None
-        self._graph = None
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
-        self._machine_graph = None
         self._n_calls_to_run = None
         self._simulation_time_step_ms = None
         self._simulation_time_step_per_ms = None
@@ -93,8 +87,6 @@ class _FecDataModel(object):
         """
         Clears out all data that should change after a reset and graaph change
         """
-        self._runtime_graph = None
-        self._runtime_machine_graph = None
         self._max_run_time_steps = None
         self._soft_reset()
 
@@ -106,7 +98,7 @@ class _FecDataModel(object):
         self._first_machine_time_step = 0
 
 
-class FecDataView(UtilsDataView):
+class FecDataView(PacmanDataView):
     """
     A read only view of the data available at FEC level
 
@@ -634,129 +626,3 @@ class FecDataView(UtilsDataView):
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
-
-    # graph methods
-
-    @property
-    def graph(self):
-        """
-        The user level application graph
-
-        This is the version of the graph which is created by the user / script
-        Previously known as asb._original_application_graph.
-
-        Changes to this graph will only affect the next run
-
-        :rtype: ApplicationGraph
-        :raises SpinnFrontEndException:
-            If the graph is currently unavailable, or if this method
-            is used during run
-        """
-        if self.__fec_data._graph is None:
-            raise self._exception("graph")
-        # The writer overrides this method without this safety
-        if self.status == Data_Status.IN_RUN:
-            raise self._exception("graph")
-        return self.__fec_data._graph
-
-    @property
-    def machine_graph(self):
-        """
-        The user level machine graph
-
-        Previously known as asb._original_machine_graph.
-
-       Changes to this graph will only affect the next run
-
-        :rtype: MachineGraph
-        :raises SpinnFrontEndException:
-            If the machine_graph is currently unavailable, or if this method
-            is used during run
-        """
-        if self.__fec_data._machine_graph is None:
-            raise self._exception("machine_graph")
-        # The writer overrides this method without this safety
-        if self.status == Data_Status.IN_RUN:
-            raise self._exception("machine_graph")
-        return self.__fec_data._machine_graph
-
-    @property
-    def runtime_graph(self):
-        """
-        The runtime application graph
-
-        This is the run time version of the graph which is created by the
-        simulator to add system vertices.
-        Previously known as asb.application_graph.
-
-        Changes to this graph by anything except the insert algorithms is not
-        supported.
-
-         .. note::
-            The graph returned by this method may be immutable depending on
-            when it is called
-
-        :rtype: ApplicationGraph
-        :raises SpinnFrontEndException:
-            If the runtime_graph is currently unavailable, or if this method
-            is used except during run
-        """
-        if self.__fec_data._runtime_graph is None:
-            raise self._exception("runtime_graph")
-        if self.status not in [Data_Status.IN_RUN, Data_Status.MOCKED]:
-            raise self._exception("runtime_graph")
-        return self.__fec_data._runtime_graph
-
-    @property
-    def runtime_machine_graph(self):
-        """
-        The runtime machine graph
-
-        This is the run time version of the graph which is created by the
-        simulator to add system vertices.
-
-        Changes to this graph by anything except the insert algorithms is not
-        supported.
-
-         .. note::
-            The graph returned by this method may be immutable depending on
-            when it is called
-
-        :rtype: ApplicationGraph
-        :raises SpinnFrontEndException:
-            If the runtime_graph is currently unavailable, or if this method
-            is used except during run
-        """
-        if self.__fec_data._runtime_machine_graph is None:
-            raise self._exception("runtime_machine_graph")
-        if self.status not in [Data_Status.IN_RUN, Data_Status.MOCKED]:
-            raise self._exception("runtime_machine_graph")
-        return self.__fec_data._runtime_machine_graph
-
-    @property
-    def runtime_best_graph(self):
-        """
-        The runtime application graph unless it is empty and the
-        machine graph one is not
-
-        This is the run time version of the graph which is created by the
-        simulator to add system vertices.
-
-        Changes to this graph by anything except the insert algorithms is not
-        supported.
-
-         .. note::
-            The graph returned by this method may be immutable depending on
-            when it is called
-
-        :rtype: ApplicationGraph or MachineGraph
-        :raises SpinnFrontEndException:
-            If the runtime_graph is currently unavailable, or if this method
-            is used except during run
-        """
-        graph = self.runtime_graph
-        if graph.n_vertices:
-            return graph
-        if self.__fec_data._runtime_machine_graph.n_vertices:
-            return self.__fec_data._runtime_machine_graph.n_vertices
-        return graph
