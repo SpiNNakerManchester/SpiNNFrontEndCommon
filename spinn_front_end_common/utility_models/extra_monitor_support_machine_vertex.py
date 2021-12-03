@@ -122,7 +122,7 @@ class ExtraMonitorSupportMachineVertex(
     )
 
     def __init__(
-            self, constraints, app_vertex,
+            self, constraints=None, app_vertex=None,
             reinject_multicast=None, reinject_point_to_point=False,
             reinject_nearest_neighbour=False, reinject_fixed_route=False):
         """

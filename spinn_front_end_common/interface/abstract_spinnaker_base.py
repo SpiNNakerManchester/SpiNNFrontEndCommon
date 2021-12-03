@@ -1511,7 +1511,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 get_config_int("EnergyMonitor", "sampling_frequency"),
                 self._application_graph)
 
-    def _execute_insert_extra_monitor_vertices(self):
+    def _execute_insert_extra_monitor_vertices(self, system_placements):
         """
         Run, time and log the InsertExtraMonitorVerticesToGraphs if required
 
@@ -1526,7 +1526,8 @@ class AbstractSpinnakerBase(ConfigHandler):
              self._extra_monitor_vertices,
              self._extra_monitor_to_chip_mapping) = \
                 insert_extra_monitor_vertices_to_graphs(
-                    self._machine, self._application_graph)
+                    self._machine, self._application_graph,
+                    system_placements)
 
     def _execute_partitioner_report(self):
         """
@@ -1615,7 +1616,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._machine_graph, self._machine,
                 self._machine_partition_n_keys_map, self._plan_n_timesteps)
 
-    def _execute_application_placer(self):
+    def _execute_application_placer(self, system_placements):
         """
         Runs, times and logs the Application Placer
 
@@ -1627,9 +1628,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Spreader placer"):
             self._placements = place_application_graph(
-                self._machine, self._application_graph, self._plan_n_timesteps)
+                self._machine, self._application_graph, self._plan_n_timesteps,
+                system_placements)
 
-    def _do_placer(self):
+    def _do_placer(self, system_placements):
         """
         Runs, times and logs one of the placers
 
@@ -1651,7 +1653,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if name == "SpreaderPlacer":
             return self._execute_speader_placer()
         if name == "ApplicationPlacer":
-            return self._execute_application_placer()
+            return self._execute_application_placer(system_placements)
         if "," in name:
             raise ConfigurationException(
                 "Only a single algorithm is supported for placer")
@@ -2054,14 +2056,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_chip_id_allocator()
         self._report_board_chip()
 
+        system_placements = Placements()
         self._execute_insert_live_packet_gatherers_to_graphs()
         self._execute_insert_chip_power_monitors()
-        self._execute_insert_extra_monitor_vertices()
+        self._execute_insert_extra_monitor_vertices(system_placements)
 
         self._execute_partitioner_report()
         self._execute_local_tdma_builder()
         self._json_partition_n_keys_map()
-        self._do_placer()
+        self._do_placer(system_placements)
         self._report_placements_with_application_graph()
         # self._report_placements_with_machine_graph()
         self._json_placements()

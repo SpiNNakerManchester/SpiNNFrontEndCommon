@@ -15,15 +15,13 @@
 
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
-from pacman.model.graphs.application import ApplicationEdge
-from pacman.model.partitioner_splitters import SplitterOneAppOneMachine
+from pacman.model.placements import Placement
 from spinn_front_end_common.utility_models import (
-    DataSpeedUpPacketGather, ExtraMonitorSupport)
-from spinn_front_end_common.utilities.constants import (
-    PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
+    DataSpeedUpPacketGatherMachineVertex, ExtraMonitorSupportMachineVertex)
 
 
-def insert_extra_monitor_vertices_to_graphs(machine, application_graph):
+def insert_extra_monitor_vertices_to_graphs(
+        machine, application_graph, placements):
     """ Inserts the extra monitor vertices into the graph that correspond to\
         the extra monitor cores required.
 
@@ -33,6 +31,7 @@ def insert_extra_monitor_vertices_to_graphs(machine, application_graph):
     :param application_graph: app graph
     :type application_graph:
         ~pacman.model.graphs.application.ApplicationGraph
+    :param Placements placements: Where to put placements
     :return: vertex to Ethernet connection map,
         list of extra_monitor_vertices,
         vertex_to_chip_map
@@ -50,20 +49,15 @@ def insert_extra_monitor_vertices_to_graphs(machine, application_graph):
         len(ethernet_chips), "Inserting extra monitors into graphs")
 
     for eth in progress.over(machine.ethernet_connected_chips):
-        gatherer = DataSpeedUpPacketGather(
-            x=eth.x, y=eth.y, ip_address=eth.ip_address,
-            constraints=[ChipAndCoreConstraint(x=eth.x, y=eth.y)])
-        gatherer.splitter = SplitterOneAppOneMachine()
-        application_graph.add_vertex(gatherer)
-        gatherers_by_chip[eth.x, eth.y] = gatherer.machine_vertex
+        gatherer = DataSpeedUpPacketGatherMachineVertex(
+            x=eth.x, y=eth.y, ip_address=eth.ip_address)
+        gatherers_by_chip[eth.x, eth.y] = gatherer
+        p = placements.n_placements_on_chip(eth.x, eth.y) + 1
+        placements.add_placement(Placement(gatherer, eth.x, eth.y, p))
         for x, y in machine.get_existing_xys_by_ethernet(eth.x, eth.y):
-            monitor = ExtraMonitorSupport(
-                constraints=[ChipAndCoreConstraint(x, y)])
-            monitor.splitter = SplitterOneAppOneMachine()
-            application_graph.add_vertex(monitor)
-            application_graph.add_edge(
-                ApplicationEdge(monitor, gatherer),
-                PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
-            extra_monitors.append(monitor.machine_vertex)
-            extra_monitors_by_chip[x, y] = monitor.machine_vertex
+            monitor = ExtraMonitorSupportMachineVertex()
+            extra_monitors.append(monitor)
+            extra_monitors_by_chip[x, y] = monitor
+            p = placements.n_placements_on_chip(x, y) + 1
+            placements.add_placement(Placement(monitor, x, y, p))
     return gatherers_by_chip, extra_monitors, extra_monitors_by_chip
