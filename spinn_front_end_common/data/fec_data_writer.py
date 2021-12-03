@@ -85,7 +85,7 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
         self.__create_run_dir_path()
 
     def soft_reset(self):
-        UtilsDataWriter.hard_reset(self)
+        UtilsDataWriter.soft_reset(self)
         self.__fec_data._soft_reset()
 
     def __create_run_dir_path(self):
