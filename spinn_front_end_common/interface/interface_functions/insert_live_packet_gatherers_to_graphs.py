@@ -16,9 +16,10 @@
 from collections import defaultdict
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
-from spinn_front_end_common.data import FecDataView
+from pacman.model.graphs.application import ApplicationEdge
 from spinn_front_end_common.utility_models import (
     LivePacketGather, LivePacketGatherMachineVertex)
+from spinn_front_end_common.data import FecDataView
 
 
 def insert_live_packet_gatherers_to_graphs(
@@ -102,6 +103,12 @@ class _InsertLivePacketGatherersToGraphs(object):
                     mac_vtxs[chip.x, chip.y] = self._add_app_lpg_vertex(
                         lpg_app_vtx, chip)
                 lpg_params_to_vertices[params] = (lpg_app_vtx, mac_vtxs)
+                for app_vertex, p_ids in live_packet_gatherer_parameters[
+                        params]:
+                    for p_id in p_ids:
+                        app_edge = ApplicationEdge(app_vertex, lpg_app_vtx)
+                        self._application_graph.add_edge(app_edge, p_id)
+                        lpg_app_vtx.add_incoming_edge(app_edge)
         else:
             for params in live_packet_gatherer_parameters:
                 mac_vtxs = dict()
