@@ -3137,14 +3137,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         return self._get_machine()
 
     @property
-    def machine_graph(self):
-        """
-        Returns a protected view of the machine_graph
-        :rtype: ~pacman.model.graphs.machine.MachineGraph
-        """
-        return MachineGraphView(self._data_writer.runtime_machine_graph)
-
-    @property
     def original_machine_graph(self):
         """
         :rtype: ~pacman.model.graphs.machine.MachineGraph
@@ -3157,15 +3149,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: ~pacman.model.graphs.application.ApplicationGraph
         """
         return self._data_writer.get_graph()
-
-    @property
-    def application_graph(self):
-        """ The protected view of the application graph used to derive the
-            runtime machine configuration.
-
-        :rtype: ~pacman.model.graphs.application.ApplicationGraph
-        """
-        return ApplicationGraphView(self._data_writer.runtime_graph)
 
     @property
     def routing_infos(self):
