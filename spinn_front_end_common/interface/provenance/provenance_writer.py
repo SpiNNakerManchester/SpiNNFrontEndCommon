@@ -276,3 +276,25 @@ class ProvenanceWriter(SQLiteDB):
                 """,
                 [pre_population, post_population, the_type, description,
                  the_value])
+
+    def insert_lut(
+            self, pre_population, post_population, the_type, description,
+            the_value):
+        """
+        Inserts edge data into the lut_provenance
+        :param str pre_population: Name of the pre population / vertex
+        :param str post_population:  Name of the post population / vertex
+        :param str the_type: Class of the rule of the LUT
+        :param str description: type of value
+        :param float the_value: data
+        """
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT OR IGNORE INTO lut_provenance(
+                    pre_population, post_population, the_type, description,
+                    the_value)
+                VALUES(?, ?, ?, ?, ?)
+                """,
+                [pre_population, post_population, the_type, description,
+                 the_value])

@@ -202,4 +202,12 @@ CREATE TABLE IF NOT EXISTS connector_provenance(
     description STRING NOT NULL,
     the_value INTEGER NOT NULL);
 
-
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table LUT provenance
+CREATE TABLE IF NOT EXISTS lut_provenance(
+    connector_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pre_population STRING NOT NULL,
+    post_population STRING NOT NULL,
+    the_type  STRING NOT NULL,
+    description STRING NOT NULL,
+    the_value FLOAT NOT NULL);
