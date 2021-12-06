@@ -29,6 +29,7 @@ from spinn_front_end_common.utilities.utility_objs import (
 from spinn_front_end_common.utility_models import LivePacketGather
 from pacman_test_objects import SimpleTestVertex
 from pacman.model.partitioner_splitters import SplitterSliceLegacy
+from pacman.model.graphs.application.application_edge import ApplicationEdge
 
 
 class TestInsertLPGEdges(unittest.TestCase):
@@ -111,6 +112,9 @@ class TestInsertLPGEdges(unittest.TestCase):
             vertex = SimpleTestVertex(1)
             vertex.splitter = SplitterSliceLegacy()
             app_graph.add_vertex(vertex)
+            app_edge = ApplicationEdge(vertex, lpg_app_vertex)
+            app_graph.add_edge(app_edge, "EVENTS")
+            lpg_app_vertex.add_incoming_edge(app_edge)
             vertex_slice = Slice(0, 0)
             resources_required = vertex.get_resources_used_by_atoms(
                 vertex_slice)

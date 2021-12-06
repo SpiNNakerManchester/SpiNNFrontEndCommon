@@ -16,7 +16,9 @@
 from collections import defaultdict
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
-from spinn_front_end_common.utility_models import LivePacketGather
+from pacman.model.graphs.application import ApplicationEdge
+from spinn_front_end_common.utility_models import (
+    LivePacketGather, LivePacketGatherMachineVertex)
 
 
 def insert_live_packet_gatherers_to_graphs(
@@ -100,6 +102,12 @@ class _InsertLivePacketGatherersToGraphs(object):
                 mac_vtxs[chip.x, chip.y] = self._add_app_lpg_vertex(
                     lpg_app_vtx, chip)
             lpg_params_to_vertices[params] = (lpg_app_vtx, mac_vtxs)
+            for app_vertex, p_ids in live_packet_gatherer_parameters[
+                    params]:
+                for p_id in p_ids:
+                    app_edge = ApplicationEdge(app_vertex, lpg_app_vtx)
+                    self._application_graph.add_edge(app_edge, p_id)
+                    lpg_app_vtx.add_incoming_edge(app_edge)
 
         return lpg_params_to_vertices
 
@@ -117,5 +125,18 @@ class _InsertLivePacketGatherersToGraphs(object):
             vertex_slice=None, resources_required=None,
             label="LivePacketGatherer",
             constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+        self._machine_graph.add_vertex(vtx)
+        return vtx
+
+    def _add_mach_lpg_vertex(self, chip, params):
+        """ Adds a LPG vertex to a machine graph without an associated\
+            application graph.
+
+        :param ~.Chip chip:
+        :param LivePacketGatherParameters params:
+        :rtype: LivePacketGatherMachineVertex
+        """
+        vtx = LivePacketGatherMachineVertex(
+            params, constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
         self._machine_graph.add_vertex(vtx)
         return vtx
