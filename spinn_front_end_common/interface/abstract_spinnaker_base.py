@@ -48,8 +48,8 @@ from pacman import __version__ as pacman_version
 from pacman.executor.injection_decorator import (
     clear_injectables, provide_injectables)
 from pacman.model.graphs.application import (
-    ApplicationGraphView, ApplicationEdge, ApplicationVertex)
-from pacman.model.graphs.machine import (MachineGraphView, MachineVertex)
+    ApplicationEdge, ApplicationVertex)
+from pacman.model.graphs.machine import MachineVertex
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.model.placements import Placements
 from pacman.model.resources import (
@@ -3131,20 +3131,6 @@ class AbstractSpinnakerBase(ConfigHandler):
          :rtype: ~spinn_machine.Machine
          """
         return self._get_machine()
-
-    @property
-    def original_machine_graph(self):
-        """
-        :rtype: ~pacman.model.graphs.machine.MachineGraph
-        """
-        return self._data_writer._machine_graph
-
-    @property
-    def original_application_graph(self):
-        """
-        :rtype: ~pacman.model.graphs.application.ApplicationGraph
-        """
-        return self._data_writer.get_graph()
 
     @property
     def routing_infos(self):
