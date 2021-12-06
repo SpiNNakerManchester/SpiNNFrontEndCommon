@@ -3109,15 +3109,15 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # if no application, but a machine graph, check for changes there
         elif self._data_writer.get_machine_graph().n_vertices:
-            for machine_vertex in self._data_writer.get_machine_graph().vertices:
+            machine_graph = self._data_writer.get_machine_graph()
+            for machine_vertex in machine_graph.vertices:
                 if isinstance(machine_vertex, AbstractChangableAfterRun):
                     if machine_vertex.requires_mapping:
                         changed = True
                     if machine_vertex.requires_data_generation:
                         data_changed = True
                     machine_vertex.mark_no_changes()
-            for partition in self._data_writer.get_machine_graph().\
-                    outgoing_edge_partitions:
+            for partition in machine_graph.outgoing_edge_partitions:
                 for machine_edge in partition.edges:
                     if isinstance(machine_edge, AbstractChangableAfterRun):
                         if machine_edge.requires_mapping:

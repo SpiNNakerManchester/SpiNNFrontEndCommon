@@ -21,8 +21,6 @@ import time
 from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from pacman.data.pacman_data_writer import PacmanDataWriter
-from pacman.model.graphs.application import ApplicationGraph
-from pacman.model.graphs.machine import MachineGraph
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
