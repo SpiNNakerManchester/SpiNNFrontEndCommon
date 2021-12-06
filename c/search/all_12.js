@@ -1,8 +1,7 @@
 var searchData=
 [
-  ['r_1141',['R',['../spinn__extra_8h.html#a0848ff4af8ebb953f8f2c735a9ff024f',1,'sdram_dll_status_t']]],
   ['r_1142',['r',['http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html#a2235ccee39f7f922d3cd59a9f9854d8b',1,'vcpu_t']]],
-  ['r_1143',['R',['../spinn__extra_8h.html#ac6c705a7c4076e680c0fe17a6918ee1e',1,'sdram_dll_user_config0_t']]],
+  ['r_1143',['R',['../spinn__extra_8h.html#ac6c705a7c4076e680c0fe17a6918ee1e',1,'sdram_dll_user_config0_t::R()'],['../spinn__extra_8h.html#a0848ff4af8ebb953f8f2c735a9ff024f',1,'sdram_dll_status_t::R()']]],
   ['ran_5fout_5fof_5ftime_1144',['RAN_OUT_OF_TIME',['../compressor__sorter__structs_8h.html#ac124d280cf92fb450e1e72a58b88253faacc8682efbd3957ac911dbb6fe2459b0',1,'compressor_sorter_structs.h']]],
   ['random_1145',['random',['http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html#ab2c7b4f5f622c5a397833ba72fd58b2a',1,'sv_t::random()'],['http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html#aefcbe56944d42fc97fc6cd936529f008',1,'sark_data_t::random()']]],
   ['random_2ec_1146',['random.c',['http://spinnakermanchester.github.io/spinn_common/random_8c.html',1,'']]],
@@ -13,7 +12,7 @@ var searchData=
   ['rc_1151',['rc',['http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html#a100de1cfa85f23be5edc19f35f887b61',1,'event_data_t']]],
   ['rcvd_1152',['rcvd',['http://spinnakermanchester.github.io/spinnaker_tools/scamp_8h.html#aaa914dcd40a087110282b3b37478a252',1,'level_t']]],
   ['rdiv_1153',['rdiv',['../spinn__extra_8h.html#ae7606bf1449a7e3220bfd66b2e8f8425',1,'sc_clock_mux_t']]],
-  ['read_5fparameters_1154',['read_parameters',['../reverse__iptag__multicast__source_8c.html#a9c661e1debde2430fa05fcfe543a280f',1,'read_parameters(struct config *config):&#160;reverse_iptag_multicast_source.c'],['../live__packet__gather_8c.html#a6e8a9983373837ed220f1708539a8007',1,'read_parameters(struct lpg_config *sdram_config):&#160;live_packet_gather.c'],['../chip__power__monitor_8c.html#a36c5c4a96b95d6ac1e48c8a0af1cf253',1,'read_parameters(struct sample_params *sample_params):&#160;chip_power_monitor.c']]],
+  ['read_5fparameters_1154',['read_parameters',['../reverse__iptag__multicast__source_8c.html#a9c661e1debde2430fa05fcfe543a280f',1,'read_parameters(struct config *config):&#160;reverse_iptag_multicast_source.c'],['../live__packet__gather_8c.html#a8a5d89e78ed08d87f86461d0282874fc',1,'read_parameters(struct lpg_config *sdram_config):&#160;live_packet_gather.c'],['../chip__power__monitor_8c.html#a36c5c4a96b95d6ac1e48c8a0af1cf253',1,'read_parameters(struct sample_params *sample_params):&#160;chip_power_monitor.c']]],
   ['read_5fpause_5fstop_5fcommands_1155',['read_pause_stop_commands',['../command__sender__multicast__source_8c.html#aae812422f36dc071f3d18a17751cc898',1,'command_sender_multicast_source.c']]],
   ['read_5fpointer_1156',['read_pointer',['../reverse__iptag__multicast__source_8c.html#aef1ab53109ddf408618b407c8fbb6e35',1,'reverse_iptag_multicast_source.c']]],
   ['read_5fscheduled_5fparameters_1157',['read_scheduled_parameters',['../command__sender__multicast__source_8c.html#a6a5b7e15a1a61d1eca1893f3f772d6b5',1,'command_sender_multicast_source.c']]],

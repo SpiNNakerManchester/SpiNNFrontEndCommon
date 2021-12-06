@@ -95,6 +95,8 @@ Data Structures</h2></td></tr>
 <tr class="memitem:structlpg__provenance__data__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#structlpg__provenance__data__t">lpg_provenance_data_t</a></td></tr>
 <tr class="memdesc:structlpg__provenance__data__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provenance data store.  <a href="live__packet__gather_8c.html#structlpg__provenance__data__t">More...</a><br /></td></tr>
 <tr class="separator:structlpg__provenance__data__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:structkey__translation__entry"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#structkey__translation__entry">key_translation_entry</a></td></tr>
+<tr class="separator:structkey__translation__entry"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:structlpg__config"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#structlpg__config">lpg_config</a></td></tr>
 <tr class="memdesc:structlpg__config"><td class="mdescLeft">&#160;</td><td class="mdescRight">Definitions of each element in the configuration.  <a href="live__packet__gather_8c.html#structlpg__config">More...</a><br /></td></tr>
 <tr class="separator:structlpg__config"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -155,6 +157,13 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:acbd162cdbf23c1ab211ce557c654c197"><td class="memItemLeft" align="right" valign="top"><a id="acbd162cdbf23c1ab211ce557c654c197"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#acbd162cdbf23c1ab211ce557c654c197">find_translation_entry</a> (uint32_t key, uint32_t *index)</td></tr>
+<tr class="memdesc:acbd162cdbf23c1ab211ce557c654c197"><td class="mdescLeft">&#160;</td><td class="mdescRight">find a key translation entry <br /></td></tr>
+<tr class="separator:acbd162cdbf23c1ab211ce557c654c197"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae4660535f6be71fed2457ac25febfd06"><td class="memItemLeft" align="right" valign="top"><a id="ae4660535f6be71fed2457ac25febfd06"></a>
+static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>translated_key</b> (uint32_t key)</td></tr>
+<tr class="separator:ae4660535f6be71fed2457ac25febfd06"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae60986adea3f6ccef173be3cc274b75e"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#ae60986adea3f6ccef173be3cc274b75e">write_word</a> (void *base, uint32_t index, uint32_t value)</td></tr>
 <tr class="memdesc:ae60986adea3f6ccef173be3cc274b75e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Because <em>WHY OH WHY</em> would you use aligned memory? At least with this we don't get data aborts.  <a href="live__packet__gather_8c.html#ae60986adea3f6ccef173be3cc274b75e">More...</a><br /></td></tr>
 <tr class="separator:ae60986adea3f6ccef173be3cc274b75e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -192,9 +201,9 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="memitem:ad5781513c66ebf0173e0225b196c50d6"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#ad5781513c66ebf0173e0225b196c50d6">incoming_event_payload_callback</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> key, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> payload)</td></tr>
 <tr class="memdesc:ad5781513c66ebf0173e0225b196c50d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">FIQ handler for incoming packets with payload.  <a href="live__packet__gather_8c.html#ad5781513c66ebf0173e0225b196c50d6">More...</a><br /></td></tr>
 <tr class="separator:ad5781513c66ebf0173e0225b196c50d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6e8a9983373837ed220f1708539a8007"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a6e8a9983373837ed220f1708539a8007">read_parameters</a> (struct <a class="el" href="live__packet__gather_8c.html#structlpg__config">lpg_config</a> *sdram_config)</td></tr>
-<tr class="memdesc:a6e8a9983373837ed220f1708539a8007"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copies the application configuration from DSG SDRAM to DTCM.  <a href="live__packet__gather_8c.html#a6e8a9983373837ed220f1708539a8007">More...</a><br /></td></tr>
-<tr class="separator:a6e8a9983373837ed220f1708539a8007"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a5d89e78ed08d87f86461d0282874fc"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a8a5d89e78ed08d87f86461d0282874fc">read_parameters</a> (struct <a class="el" href="live__packet__gather_8c.html#structlpg__config">lpg_config</a> *sdram_config)</td></tr>
+<tr class="memdesc:a8a5d89e78ed08d87f86461d0282874fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copies the application configuration from DSG SDRAM to DTCM.  <a href="live__packet__gather_8c.html#a8a5d89e78ed08d87f86461d0282874fc">More...</a><br /></td></tr>
+<tr class="separator:a8a5d89e78ed08d87f86461d0282874fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a37f0b2315f3101f6ff9936c212c5bd84"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a37f0b2315f3101f6ff9936c212c5bd84">initialize</a> (uint32_t *timer_period)</td></tr>
 <tr class="memdesc:a37f0b2315f3101f6ff9936c212c5bd84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise the application.  <a href="live__packet__gather_8c.html#a37f0b2315f3101f6ff9936c212c5bd84">More...</a><br /></td></tr>
 <tr class="separator:a37f0b2315f3101f6ff9936c212c5bd84"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -272,10 +281,10 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 static <a class="el" href="live__packet__gather_8c.html#structlpg__provenance__data__t">lpg_provenance_data_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a438f9cdfcf84ec078f51f63d0f178da2">provenance_data</a></td></tr>
 <tr class="memdesc:a438f9cdfcf84ec078f51f63d0f178da2"><td class="mdescLeft">&#160;</td><td class="mdescRight">The provenance information that we are collecting. <br /></td></tr>
 <tr class="separator:a438f9cdfcf84ec078f51f63d0f178da2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1cdb39dbce26cd716ccc4bbc6cdc6d79"><td class="memItemLeft" align="right" valign="top"><a id="a1cdb39dbce26cd716ccc4bbc6cdc6d79"></a>
-static struct <a class="el" href="live__packet__gather_8c.html#structlpg__config">lpg_config</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a1cdb39dbce26cd716ccc4bbc6cdc6d79">config</a></td></tr>
-<tr class="memdesc:a1cdb39dbce26cd716ccc4bbc6cdc6d79"><td class="mdescLeft">&#160;</td><td class="mdescRight">The configuration data of the application. <br /></td></tr>
-<tr class="separator:a1cdb39dbce26cd716ccc4bbc6cdc6d79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accee749453357a6804a221bc1e2e2f4a"><td class="memItemLeft" align="right" valign="top"><a id="accee749453357a6804a221bc1e2e2f4a"></a>
+static struct <a class="el" href="live__packet__gather_8c.html#structlpg__config">lpg_config</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#accee749453357a6804a221bc1e2e2f4a">config</a></td></tr>
+<tr class="memdesc:accee749453357a6804a221bc1e2e2f4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">The configuration data of the application. <br /></td></tr>
+<tr class="separator:accee749453357a6804a221bc1e2e2f4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The implementation of the Live Packet Gatherer. </p>
@@ -327,6 +336,43 @@ Number of messages sent to host. </td></tr>
 
 </div>
 </div>
+<a name="structkey__translation__entry" id="structkey__translation__entry"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#structkey__translation__entry">&#9670;&nbsp;</a></span>key_translation_entry</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct key_translation_entry</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<div class="textblock">
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00047">47</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+</div><table class="fieldtable">
+<tr><th colspan="3">Data Fields</th></tr>
+<tr><td class="fieldtype">
+<a id="a7aba5f067baef85f50223a0cefc4ce6f"></a>uint32_t</td>
+<td class="fieldname">
+key</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a94130c98daf3a8fb64081c10cf585d25"></a>uint32_t</td>
+<td class="fieldname">
+mask</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="ae3682ff79f1c2c54ea3fa5309ca7ab74"></a>uint32_t</td>
+<td class="fieldname">
+lo_atom</td>
+<td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
 <a name="structlpg__config" id="structlpg__config"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#structlpg__config">&#9670;&nbsp;</a></span>lpg_config</h2>
 
@@ -341,7 +387,7 @@ Number of messages sent to host. </td></tr>
 <div class="textblock"><p>Definitions of each element in the configuration. </p>
 <p>This is copied from SDRAM into DTCM for speed. </p>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00050">50</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00059">59</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -416,6 +462,18 @@ SDP destination to use when sending. </td></tr>
 packets_per_timestamp</td>
 <td class="fielddoc">
 Maximum number of packets to send per timestep, or 0 for "send them all". </td></tr>
+<tr><td class="fieldtype">
+<a id="a06401e8fe3455e2c8078619e044fb2b9"></a>uint32_t</td>
+<td class="fieldname">
+n_translation_entries</td>
+<td class="fielddoc">
+The number of entries in the translation table. </td></tr>
+<tr><td class="fieldtype">
+<a id="a04645540e6e648f79c2244f29f73be6d"></a><a class="el" href="live__packet__gather_8c.html#structkey__translation__entry">key_translation_entry</a></td>
+<td class="fieldname">
+translation_table[]</td>
+<td class="fielddoc">
+Translation table. </td></tr>
 </table>
 
 </div>
@@ -447,7 +505,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00078">78</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00091">91</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -502,7 +560,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00178">178</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00230">230</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -556,7 +614,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00189">189</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00241">241</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -587,7 +645,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
 <p>Get how many events there are waiting to be sent. </p>
 <dl class="section return"><dt>Returns</dt><dd>The number of events waiting </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00196">196</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00248">248</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -623,7 +681,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00243">243</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00295">295</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -671,7 +729,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00257">257</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00309">309</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -702,7 +760,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
 <p>Flush events to the outside world if our internal buffers are now full. </p>
 <p>Calls <a class="el" href="live__packet__gather_8c.html#a91cdc1c4e765f059eab4831e97c9af38" title="Send buffered events to host via SDP AER message and clear internal buffers.">flush_events()</a> to do the flush. </p>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00284">284</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00336">336</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -738,7 +796,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00292">292</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00344">344</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -785,7 +843,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00324">324</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00376">376</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -835,7 +893,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00369">369</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00421">421</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -883,7 +941,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00396">396</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00450">450</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -931,12 +989,12 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00416">416</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00470">470</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
-<a id="a6e8a9983373837ed220f1708539a8007"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6e8a9983373837ed220f1708539a8007">&#9670;&nbsp;</a></span>read_parameters()</h2>
+<a id="a8a5d89e78ed08d87f86461d0282874fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a5d89e78ed08d87f86461d0282874fc">&#9670;&nbsp;</a></span>read_parameters()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -945,7 +1003,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void read_parameters </td>
+          <td class="memname">static bool read_parameters </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="live__packet__gather_8c.html#structlpg__config">lpg_config</a> *&#160;</td>
           <td class="paramname"><em>sdram_config</em></td><td>)</td>
@@ -968,7 +1026,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00435">435</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00489">489</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -1005,7 +1063,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if initialisation succeeds. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00476">476</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00526">526</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -1036,7 +1094,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
 <p>Sets up the AER EIEIO data message. </p>
 <dl class="section return"><dt>Returns</dt><dd>bool where True was successful init and false otherwise. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00510">510</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00559">559</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>

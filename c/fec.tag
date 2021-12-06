@@ -4410,6 +4410,7 @@
     <includes id="simulation_8h" name="simulation.h" local="no" imported="no">simulation.h</includes>
     <includes id="eieio_8h" name="eieio.h" local="no" imported="no">eieio.h</includes>
     <class kind="struct">lpg_provenance_data_t</class>
+    <class kind="struct">key_translation_entry</class>
     <class kind="struct">lpg_config</class>
     <member kind="define">
       <type>#define</type>
@@ -4489,6 +4490,13 @@
       <anchorfile>live__packet__gather_8c.html</anchorfile>
       <anchor>a8260104100d03dd752ed71c07e465cc1</anchor>
       <arglist></arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static bool</type>
+      <name>find_translation_entry</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>acbd162cdbf23c1ab211ce557c654c197</anchor>
+      <arglist>(uint32_t key, uint32_t *index)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
@@ -4575,10 +4583,10 @@
       <arglist>(uint key, uint payload)</arglist>
     </member>
     <member kind="function" static="yes">
-      <type>static void</type>
+      <type>static bool</type>
       <name>read_parameters</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a6e8a9983373837ed220f1708539a8007</anchor>
+      <anchor>a8a5d89e78ed08d87f86461d0282874fc</anchor>
       <arglist>(struct lpg_config *sdram_config)</arglist>
     </member>
     <member kind="function" static="yes">
@@ -4715,10 +4723,10 @@
       <arglist></arglist>
     </member>
     <member kind="variable" static="yes">
-      <type>static struct lpg_config</type>
+      <type>static struct lpg_config *</type>
       <name>config</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
-      <anchor>a1cdb39dbce26cd716ccc4bbc6cdc6d79</anchor>
+      <anchor>accee749453357a6804a221bc1e2e2f4a</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -9506,6 +9514,11 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>key_translation_entry</name>
+    <filename>live__packet__gather_8c.html</filename>
+    <anchor>structkey__translation__entry</anchor>
+  </compound>
+  <compound kind="struct">
     <name>lpg_config</name>
     <filename>live__packet__gather_8c.html</filename>
     <anchor>structlpg__config</anchor>
@@ -9592,6 +9605,20 @@
       <anchorfile>live__packet__gather_8c.html</anchorfile>
       <anchor>ae0b3473b85793cfd723d1e7517d8bacf</anchor>
       <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>n_translation_entries</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a06401e8fe3455e2c8078619e044fb2b9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>key_translation_entry</type>
+      <name>translation_table</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a04645540e6e648f79c2244f29f73be6d</anchor>
+      <arglist>[]</arglist>
     </member>
   </compound>
   <compound kind="struct">

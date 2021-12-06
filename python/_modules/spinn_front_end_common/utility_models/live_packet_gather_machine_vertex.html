@@ -92,8 +92,9 @@
     <span class="n">TRAFFIC_IDENTIFIER</span> <span class="o">=</span> <span class="s2">&quot;LPG_EVENT_STREAM&quot;</span>
 
     <span class="n">_N_ADDITIONAL_PROVENANCE_ITEMS</span> <span class="o">=</span> <span class="mi">4</span>
-    <span class="n">_CONFIG_SIZE</span> <span class="o">=</span> <span class="mi">12</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
+    <span class="n">_CONFIG_SIZE</span> <span class="o">=</span> <span class="mi">13</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
     <span class="n">_PROVENANCE_REGION_SIZE</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
+    <span class="n">_KEY_ENTRY_SIZE</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -110,14 +111,12 @@
             <span class="n">label</span> <span class="ow">or</span> <span class="n">lpg_params</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
             <span class="n">app_vertex</span><span class="o">=</span><span class="n">app_vertex</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_resources_required</span> <span class="o">=</span> <span class="n">ResourceContainer</span><span class="p">(</span>
-            <span class="n">cpu_cycles</span><span class="o">=</span><span class="n">CPUCyclesPerTickResource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_cpu_usage</span><span class="p">()),</span>
-            <span class="n">dtcm</span><span class="o">=</span><span class="n">DTCMResource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_dtcm_usage</span><span class="p">()),</span>
-            <span class="n">sdram</span><span class="o">=</span><span class="n">ConstantSDRAM</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_sdram_usage</span><span class="p">()),</span>
-            <span class="n">iptags</span><span class="o">=</span><span class="p">[</span><span class="n">lpg_params</span><span class="o">.</span><span class="n">get_iptag_resource</span><span class="p">()])</span>
-
         <span class="c1"># app specific data items</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span> <span class="o">=</span> <span class="n">lpg_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_edges</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+<div class="viewcode-block" id="LivePacketGatherMachineVertex.add_incoming_edge"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.add_incoming_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_incoming_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edge</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">_provenance_region_id</span><span class="p">)</span>
@@ -129,10 +128,20 @@
     <span class="k">def</span> <span class="nf">_n_additional_data_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N_ADDITIONAL_PROVENANCE_ITEMS</span>
 
+    <span class="k">def</span> <span class="nf">_get_key_translation_sdram</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span><span class="o">.</span><span class="n">translate_keys</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_incoming_edges</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_KEY_ENTRY_SIZE</span>
+
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">resources_required</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">resources_required</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resources_required</span>
+        <span class="k">return</span> <span class="n">ResourceContainer</span><span class="p">(</span>
+            <span class="n">cpu_cycles</span><span class="o">=</span><span class="n">CPUCyclesPerTickResource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_cpu_usage</span><span class="p">()),</span>
+            <span class="n">dtcm</span><span class="o">=</span><span class="n">DTCMResource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_dtcm_usage</span><span class="p">()),</span>
+            <span class="n">sdram</span><span class="o">=</span><span class="n">ConstantSDRAM</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_sdram_usage</span><span class="p">()</span> <span class="o">+</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_get_key_translation_sdram</span><span class="p">()),</span>
+            <span class="n">iptags</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span><span class="o">.</span><span class="n">get_iptag_resource</span><span class="p">()])</span>
 
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractSupportsDatabaseInjection</span><span class="o">.</span><span class="n">is_in_injection_mode</span><span class="p">)</span>
@@ -177,13 +186,14 @@
     <span class="k">def</span> <span class="nf">get_binary_start_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">USES_SIMULATION_INTERFACE</span></div>
 
-<div class="viewcode-block" id="LivePacketGatherMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.generate_data_specification">[docs]</a>    <span class="nd">@inject_items</span><span class="p">({</span><span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="s2">&quot;Tags&quot;</span><span class="p">})</span>
+<div class="viewcode-block" id="LivePacketGatherMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.generate_data_specification">[docs]</a>    <span class="nd">@inject_items</span><span class="p">({</span><span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="s2">&quot;Tags&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;routing_info&quot;</span><span class="p">:</span> <span class="s2">&quot;RoutingInfos&quot;</span><span class="p">})</span>
     <span class="nd">@overrides</span><span class="p">(</span>
         <span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">,</span>
-        <span class="n">additional_arguments</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tags&quot;</span><span class="p">})</span>
+        <span class="n">additional_arguments</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tags&quot;</span><span class="p">,</span> <span class="s2">&quot;routing_info&quot;</span><span class="p">})</span>
     <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span>  <span class="c1"># @UnusedVariable</span>
-            <span class="n">tags</span><span class="p">):</span>
+            <span class="n">tags</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.tags.Tags tags:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -194,7 +204,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_reserve_memory_regions</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_setup_info</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_configuration_region</span><span class="p">(</span>
-            <span class="n">spec</span><span class="p">,</span> <span class="n">tags</span><span class="o">.</span><span class="n">get_ip_tags_for_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="n">spec</span><span class="p">,</span> <span class="n">tags</span><span class="o">.</span><span class="n">get_ip_tags_for_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">routing_info</span><span class="p">)</span>
 
         <span class="c1"># End-of-Spec:</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">end_specification</span><span class="p">()</span></div>
@@ -212,15 +222,18 @@
             <span class="n">size</span><span class="o">=</span><span class="n">SIMULATION_N_BYTES</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;system&#39;</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
             <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">CONFIG</span><span class="p">,</span>
-            <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_CONFIG_SIZE</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;config&#39;</span><span class="p">)</span>
+            <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_CONFIG_SIZE</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_key_translation_sdram</span><span class="p">(),</span>
+            <span class="n">label</span><span class="o">=</span><span class="s1">&#39;config&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reserve_provenance_data_region</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_write_configuration_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">iptags</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_write_configuration_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">iptags</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Write the configuration region to the spec</span>
 
 <span class="sd">        :param ~.DataSpecificationGenerator spec:</span>
 <span class="sd">        :param iterable(~.IPTag) iptags:</span>
 <span class="sd">            The set of IP tags assigned to the object</span>
+<span class="sd">        :param RoutingInfo routing_info:</span>
+<span class="sd">            Routing information for incoming keys if needed</span>
 <span class="sd">        :raise ConfigurationException: if `iptags` is empty</span>
 <span class="sd">        :raise DataSpecificationException:</span>
 <span class="sd">            when something goes wrong with the DSG generation</span>
@@ -250,6 +263,17 @@
 
         <span class="c1"># number of packets to send per time stamp</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span><span class="o">.</span><span class="n">number_of_packets_sent_per_time_step</span><span class="p">)</span>
+
+        <span class="c1"># Key Translation</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span><span class="o">.</span><span class="n">translate_keys</span><span class="p">:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_incoming_edges</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_edges</span><span class="p">:</span>
+                <span class="n">r_info</span> <span class="o">=</span> <span class="n">routing_info</span><span class="o">.</span><span class="n">get_routing_info_for_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span>
+                <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">r_info</span><span class="o">.</span><span class="n">first_key</span><span class="p">)</span>
+                <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">r_info</span><span class="o">.</span><span class="n">first_mask</span><span class="p">)</span>
+                <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">pre_vertex</span><span class="o">.</span><span class="n">vertex_slice</span><span class="o">.</span><span class="n">lo_atom</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_write_setup_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Write basic info to the system region</span>
@@ -326,7 +350,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.1.
     </div>
   </body>
 </html>

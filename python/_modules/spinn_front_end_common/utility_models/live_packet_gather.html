@@ -76,6 +76,10 @@
         <span class="n">label</span> <span class="o">=</span> <span class="n">lpg_params</span><span class="o">.</span><span class="n">label</span> <span class="ow">or</span> <span class="s2">&quot;Live Packet Gatherer&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span> <span class="o">=</span> <span class="n">lpg_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_edges</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+<div class="viewcode-block" id="LivePacketGather.add_incoming_edge"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGather.add_incoming_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_incoming_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edge</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LivePacketGather.create_machine_vertex"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGather.create_machine_vertex">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">LegacyPartitionerAPI</span><span class="o">.</span><span class="n">create_machine_vertex</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">create_machine_vertex</span><span class="p">(</span>
@@ -94,11 +98,21 @@
     <span class="k">def</span> <span class="nf">n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="mi">1</span>
 
+    <span class="k">def</span> <span class="nf">__get_key_translation_sdram</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span><span class="o">.</span><span class="n">translate_keys</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="n">n_entries</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_edges</span><span class="p">:</span>
+            <span class="n">n_entries</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span>
+                <span class="n">edge</span><span class="o">.</span><span class="n">pre_vertex</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">get_in_coming_slices</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">n_entries</span> <span class="o">*</span> <span class="n">LivePacketGatherMachineVertex</span><span class="o">.</span><span class="n">_KEY_ENTRY_SIZE</span>
+
 <div class="viewcode-block" id="LivePacketGather.get_resources_used_by_atoms"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGather.get_resources_used_by_atoms">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">LegacyPartitionerAPI</span><span class="o">.</span><span class="n">get_resources_used_by_atoms</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_resources_used_by_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="p">):</span>  <span class="c1"># @UnusedVariable</span>
         <span class="k">return</span> <span class="n">ResourceContainer</span><span class="p">(</span>
             <span class="n">sdram</span><span class="o">=</span><span class="n">ConstantSDRAM</span><span class="p">(</span>
-                <span class="n">LivePacketGatherMachineVertex</span><span class="o">.</span><span class="n">get_sdram_usage</span><span class="p">()),</span>
+                <span class="n">LivePacketGatherMachineVertex</span><span class="o">.</span><span class="n">get_sdram_usage</span><span class="p">()</span> <span class="o">+</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__get_key_translation_sdram</span><span class="p">()),</span>
             <span class="n">dtcm</span><span class="o">=</span><span class="n">DTCMResource</span><span class="p">(</span><span class="n">LivePacketGatherMachineVertex</span><span class="o">.</span><span class="n">get_dtcm_usage</span><span class="p">()),</span>
             <span class="n">cpu_cycles</span><span class="o">=</span><span class="n">CPUCyclesPerTickResource</span><span class="p">(</span>
                 <span class="n">LivePacketGatherMachineVertex</span><span class="o">.</span><span class="n">get_cpu_usage</span><span class="p">()),</span>
@@ -142,7 +156,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.1.
     </div>
   </body>
 </html>
