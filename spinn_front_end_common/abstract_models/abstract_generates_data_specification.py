@@ -13,12 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_utilities.require_subclass import require_subclass
+from pacman.model.graphs.machine import MachineVertex
 
 
-@add_metaclass(AbstractBase)
-class AbstractGeneratesDataSpecification(object):
+@require_subclass(MachineVertex)
+class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
 
     __slots__ = ()
 
@@ -26,9 +27,9 @@ class AbstractGeneratesDataSpecification(object):
     def generate_data_specification(self, spec, placement):
         """ Generate a data specification.
 
-        :param spec: The data specification to write to
-        :type spec: ~data_specification.DataSpecificationGenerator
-        :param placement: the placement the vertex is located at
-        :type placement: ~pacman.model.placements.Placement
+        :param ~data_specification.DataSpecificationGenerator spec:
+            The data specification to write to
+        :param ~pacman.model.placements.Placement placement:
+            The placement the vertex is located at
         :rtype: None
         """

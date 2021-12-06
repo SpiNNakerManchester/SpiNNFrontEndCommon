@@ -13,17 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_front_end_common.utilities.constants import SDP_PORTS
+from spinn_utilities.overrides import overrides
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.messages.scp.impl.check_ok_response import CheckOKResponse
+from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .speedup_in_scp_commands import SpeedupInSCPCommands
 
 
 class LoadApplicationMCRoutesMessage(AbstractSCPRequest):
     """ An SCP Request to write the application multicast routes into the\
-    router.
+        router.
     """
 
     __slots__ = (
@@ -31,15 +32,12 @@ class LoadApplicationMCRoutesMessage(AbstractSCPRequest):
 
     def __init__(self, x, y, p):
         """
-        :param x: The x-coordinate of a chip, between 0 and 255
-        :type x: int
-        :param y: The y-coordinate of a chip, between 0 and 255
-        :type y: int
-        :param p: The processor running the extra monitor vertex, between\
-            0 and 17
-        :type p: int
+        :param int x: The x-coordinate of a chip, between 0 and 255
+        :param int y: The y-coordinate of a chip, between 0 and 255
+        :param int p:
+            The processor running the extra monitor vertex, between 0 and 17
         """
-        super(LoadApplicationMCRoutesMessage, self).__init__(
+        super().__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(
@@ -49,6 +47,7 @@ class LoadApplicationMCRoutesMessage(AbstractSCPRequest):
             SCPRequestHeader(
                 command=SpeedupInSCPCommands.LOAD_APPLICATION_MC_ROUTES))
 
+    @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self):
         return CheckOKResponse(
             "load application multicast routes",

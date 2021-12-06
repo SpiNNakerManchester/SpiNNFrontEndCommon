@@ -12,49 +12,36 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import logging
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities.utility_objs import ResourceTracker
 from pacman.utilities.algorithm_utilities.placer_algorithm_utilities import (
     sort_vertices_by_known_constraints)
 
-logger = logging.getLogger(__name__)
 
-
-class GraphMeasurer(object):
+def graph_measurer(machine_graph, machine, plan_n_timesteps):
     """ Works out how many chips a machine graph needs.
+
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        The machine_graph to measure.
+    :param ~spinn_machine.Machine machine:
+        The machine with respect to which to partition the application
+        graph.
+    :param int plan_n_timesteps: Number of timesteps to plan for.
+    :return: The size of the graph in number of chips.
+    :rtype: int
     """
 
-    __slots__ = []
+    # check that the algorithm can handle the constraints
+    ResourceTracker.check_constraints(machine_graph.vertices)
 
-    def __call__(self, machine_graph, machine, plan_n_timesteps):
-        """
-        :param machine_graph: The machine_graph to measure
-        :type machine_graph:\
-            :py:class:`pacman.model.graph.machine.MachineGraph`
-                    :py:class:`pacman.model.graph.machine.MachineGraph`
-        :param machine:\
-            The machine with respect to which to partition the application\
-            graph
-        :type machine: :py:class:`spinn_machine.Machine`
-        :param plan_n_timesteps: number of timesteps to plan for
-        :type  plan_n_timesteps: int
-        :return: The size of the graph in number of chips
-        :rtype: int
-        """
+    ordered_vertices = sort_vertices_by_known_constraints(
+        machine_graph.vertices)
 
-        # check that the algorithm can handle the constraints
-        ResourceTracker.check_constraints(machine_graph.vertices)
+    # Iterate over vertices and allocate
+    progress = ProgressBar(machine_graph.n_vertices, "Measuring the graph")
 
-        ordered_vertices = sort_vertices_by_known_constraints(
-            machine_graph.vertices)
-
-        # Iterate over vertices and allocate
-        progress = ProgressBar(machine_graph.n_vertices, "Measuring the graph")
-
-        resource_tracker = ResourceTracker(machine, plan_n_timesteps)
-        for vertex in progress.over(ordered_vertices):
-            resource_tracker.allocate_constrained_resources(
-                vertex.resources_required, vertex.constraints)
-        return len(resource_tracker.keys)
+    resource_tracker = ResourceTracker(machine, plan_n_timesteps)
+    for vertex in progress.over(ordered_vertices):
+        resource_tracker.allocate_constrained_resources(
+            vertex.resources_required, vertex.constraints)
+    return resource_tracker.chips_used

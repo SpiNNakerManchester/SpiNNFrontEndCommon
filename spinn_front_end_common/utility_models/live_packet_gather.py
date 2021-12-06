@@ -14,124 +14,67 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.overrides import overrides
-from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
+from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
-    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, IPtagResource,
-    ResourceContainer)
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
+    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
-from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
-class LivePacketGather(
-        ApplicationVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary):
+class LivePacketGather(ApplicationVertex, LegacyPartitionerAPI):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a SpiNNaker machine.
     """
 
-    def __init__(
-            self, hostname=None, port=None, tag=None,
-            strip_sdp=True, use_prefix=False, key_prefix=None,
-            prefix_type=None, message_type=EIEIOType.KEY_32_BIT, right_shift=0,
-            payload_as_time_stamps=True, use_payload_prefix=True,
-            payload_prefix=None, payload_right_shift=0,
-            number_of_packets_sent_per_time_step=0, constraints=None,
-            label=None):
-        # pylint: disable=too-many-arguments, too-many-locals
-        if ((message_type == EIEIOType.KEY_PAYLOAD_32_BIT or
-             message_type == EIEIOType.KEY_PAYLOAD_16_BIT) and
-                use_payload_prefix and payload_as_time_stamps):
-            raise ConfigurationException(
-                "Timestamp can either be included as payload prefix or as "
-                "payload to each key, not both")
-        if ((message_type == EIEIOType.KEY_32_BIT or
-             message_type == EIEIOType.KEY_16_BIT) and
-                not use_payload_prefix and payload_as_time_stamps):
-            raise ConfigurationException(
-                "Timestamp can either be included as payload prefix or as"
-                " payload to each key, but current configuration does not "
-                "specify either of these")
-        if (not isinstance(prefix_type, EIEIOPrefix) and
-                prefix_type is not None):
-            raise ConfigurationException(
-                "the type of a prefix type should be of a EIEIOPrefix, "
-                "which can be located in :"
-                "SpinnMan.messages.eieio.eieio_prefix_type")
+    def __init__(self, lpg_params, constraints=None):
+        """
+        :param LivePacketGatherParameters lpg_params:
+        :param constraints:
+        :type constraints:
+            iterable(~pacman.model.constraints.AbstractConstraint)
+        """
+        label = lpg_params.label or "Live Packet Gatherer"
+        super().__init__(label, constraints, 1)
+        self._lpg_params = lpg_params
+        self._incoming_edges = list()
 
-        if label is None:
-            label = "Live Packet Gatherer"
+    def add_incoming_edge(self, edge):
+        self._incoming_edges.append(edge)
 
-        super(LivePacketGather, self).__init__(label, constraints, 1)
-
-        # storage objects
-        self._iptags = None
-
-        # tag info
-        self._ip_address = hostname
-        self._port = port
-        self._tag = tag
-        self._strip_sdp = strip_sdp
-
-        # eieio info
-        self._prefix_type = prefix_type
-        self._use_prefix = use_prefix
-        self._key_prefix = key_prefix
-        self._message_type = message_type
-        self._right_shift = right_shift
-        self._payload_as_time_stamps = payload_as_time_stamps
-        self._use_payload_prefix = use_payload_prefix
-        self._payload_prefix = payload_prefix
-        self._payload_right_shift = payload_right_shift
-        self._number_of_packets_sent_per_time_step = \
-            number_of_packets_sent_per_time_step
-
-    @overrides(ApplicationVertex.create_machine_vertex)
+    @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, resources_required,  # @UnusedVariable
+            self, vertex_slice, resources_required,
             label=None, constraints=None):
-        return LivePacketGatherMachineVertex(
-            label, self._use_prefix, self._key_prefix, self._prefix_type,
-            self._message_type, self._right_shift,
-            self._payload_as_time_stamps, self._use_payload_prefix,
-            self._payload_prefix, self._payload_right_shift,
-            self._number_of_packets_sent_per_time_step,
-            hostname=self._ip_address, port=self._port,
-            strip_sdp=self._strip_sdp, constraints=constraints)
-
-    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
-        return 'live_packet_gather.aplx'
-
-    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
-        return ExecutableType.USES_SIMULATION_INTERFACE
+        machine_vertex = LivePacketGatherMachineVertex(
+            self._lpg_params, constraints, self, label)
+        if vertex_slice:
+            assert (vertex_slice == machine_vertex.vertex_slice)
+        if resources_required:
+            assert (resources_required == machine_vertex.resources_required)
+        return machine_vertex
 
     @property
-    @overrides(ApplicationVertex.n_atoms)
+    @overrides(LegacyPartitionerAPI.n_atoms)
     def n_atoms(self):
         return 1
 
-    @overrides(ApplicationVertex.get_resources_used_by_atoms)
+    def __get_key_translation_sdram(self):
+        if not self._lpg_params.translate_keys:
+            return 0
+        n_entries = 0
+        for edge in self._incoming_edges:
+            n_entries += len(
+                edge.pre_vertex.splitter.get_in_coming_slices()[0])
+        return n_entries * LivePacketGatherMachineVertex._KEY_ENTRY_SIZE
+
+    @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
         return ResourceContainer(
             sdram=ConstantSDRAM(
-                LivePacketGatherMachineVertex.get_sdram_usage()),
+                LivePacketGatherMachineVertex.get_sdram_usage() +
+                self.__get_key_translation_sdram()),
             dtcm=DTCMResource(LivePacketGatherMachineVertex.get_dtcm_usage()),
             cpu_cycles=CPUCyclesPerTickResource(
                 LivePacketGatherMachineVertex.get_cpu_usage()),
-            iptags=[IPtagResource(
-                ip_address=self._ip_address, port=self._port,
-                strip_sdp=self._strip_sdp, tag=self._tag,
-                traffic_identifier=(
-                    LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER))])
-
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(self, spec, placement):
-
-        # generate spec for the machine vertex
-        placement.vertex.generate_data_specification(spec, placement)
+            iptags=[self._lpg_params.get_iptag_resource()])

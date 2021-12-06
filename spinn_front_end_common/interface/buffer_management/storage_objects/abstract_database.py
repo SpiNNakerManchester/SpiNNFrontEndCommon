@@ -13,13 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
-from spinn_utilities.abstract_base import (
-    AbstractBase, abstractmethod)
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
-@add_metaclass(AbstractBase)
-class AbstractDatabase(object):
+class AbstractDatabase(object, metaclass=AbstractBase):
     """
     This API separates the required database calls from the implementation.
 
@@ -51,43 +48,34 @@ class AbstractDatabase(object):
         """
 
     @abstractmethod
-    def store_data_in_region_buffer(self, x, y, p, region, data):
+    def store_data_in_region_buffer(self, x, y, p, region, missing, data):
         """ Store some information in the corresponding buffer for a\
             specific chip, core and recording region.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data to be stored
-        :type region: int
-        :param data: data to be stored
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data to be stored
+        :param bool missing: Whether any data is missing
+        :param bytearray data: data to be stored
 
             .. note::
                 Implementations may assume this to be shorter than 1GB
-
-        :type data: bytearray
         """
 
     @abstractmethod
     def get_region_data(self, x, y, p, region):
         """ Get the data stored for a given region of a given core
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data
-        :type region: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data
         :return: a buffer containing all the data received during the\
             simulation, and a flag indicating if any data was missing
 
             .. note::
-                Implementations should not assume that the total buffer is \
+                Implementations should not assume that the total buffer is
                 necessarily shorter than 1GB.
 
         :rtype: tuple(memoryview, bool)
@@ -102,4 +90,19 @@ class AbstractDatabase(object):
             keeping data after reset.
 
         :rtype: None
+        """
+
+    @abstractmethod
+    def clear_region(self, x, y, p, region):
+        """ Clears the data for a single region.
+
+        .. note::
+            This method *loses information!*
+
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data to be cleared
+        :return: True if any region was changed
+        :rtype: bool
         """

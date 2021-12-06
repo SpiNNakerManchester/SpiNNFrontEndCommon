@@ -13,14 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 
 
-@add_metaclass(AbstractBase)
-class AbstractSendMeMulticastCommandsVertex(object):
-    """ A vertex which wants to commands to be sent to it as multicast\
-        packets at fixed points in the simulation
+class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
+    """ A device that may be a virtual vertex which wants to commands to be\
+        sent to it as multicast packets at fixed points in the simulation.
+
+    .. note::
+        The device might not be a vertex at all. It could instead be
+        instantiated entirely host side, in which case these methods will
+        never be called.
     """
 
     __slots__ = ()
@@ -29,7 +32,7 @@ class AbstractSendMeMulticastCommandsVertex(object):
     def start_resume_commands(self):
         """ The commands needed when starting or resuming simulation
 
-        :rtype: \
+        :rtype:
             iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
         """
 
@@ -37,7 +40,7 @@ class AbstractSendMeMulticastCommandsVertex(object):
     def pause_stop_commands(self):
         """ The commands needed when pausing or stopping simulation
 
-        :rtype: \
+        :rtype:
             iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
         """
 
@@ -45,6 +48,6 @@ class AbstractSendMeMulticastCommandsVertex(object):
     def timed_commands(self):
         """ The commands to be sent at given times in the simulation
 
-        :rtype: \
+        :rtype:
             iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
         """

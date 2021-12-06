@@ -14,69 +14,64 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.profiling import AbstractHasProfileData
+from spinn_front_end_common.utilities.globals_variables import (
+    app_provenance_file_path)
 
-logger = logging.getLogger(__name__)
+
+_FMT_A = "{: <{}s} {: <7s} {: <14s} {: <14s} {: <14s}\n"
+_FMT_B = "{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n"
+_FMT_C = "{: <{}s} {: >7d} {: >14.6f} {: >14.6f} {: >14.6f}\n"
 
 
-class ProfileDataGatherer(object):
-    __slots__ = []
+def profile_data_gatherer(transceiver, placements):
+    """ Gets all the profiling data recorded by vertices and writes it to\
+        files.
 
-    def __call__(
-            self, transceiver, placements, provenance_file_path,
-            machine_time_step):
-        """
-        :param transceiver: the SpiNNMan interface object
-        :param placements: The placements of the vertices
-        :param has_ran: token that states that the simulation has ran
-        :param provenance_file_path: The location to store the profile data
-        :param machine_time_step: machine time step in ms
-        """
-        # pylint: disable=too-many-arguments
-        machine_time_step_ms = float(machine_time_step) / 1000.0
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the SpiNNMan interface object
+        :param ~pacman.model.placements.Placements placements:
+            The placements of the vertices
+    """
+    # pylint: disable=too-many-arguments
 
-        progress = ProgressBar(
-            placements.n_placements, "Getting profile data")
+    progress = ProgressBar(
+        placements.n_placements, "Getting profile data")
+    provenance_file_path = app_provenance_file_path()
 
-        # retrieve provenance data from any cores that provide data
-        for placement in progress.over(placements.placements):
-            if isinstance(placement.vertex, AbstractHasProfileData):
-                # get data
-                profile_data = placement.vertex.get_profile_data(
-                    transceiver, placement)
-                if profile_data.tags:
-                    self._write(placement, profile_data, machine_time_step_ms,
-                                provenance_file_path)
+    # retrieve provenance data from any cores that provide data
+    for placement in progress.over(placements.placements):
+        if isinstance(placement.vertex, AbstractHasProfileData):
+            # get data
+            profile_data = placement.vertex.get_profile_data(
+                transceiver, placement)
+            if profile_data.tags:
+                _write(placement, profile_data, provenance_file_path)
 
-    def _write(self, p, profile_data, machine_time_step_ms, directory):
-        # pylint: disable=too-many-arguments
-        max_tag_len = max(len(tag) for tag in profile_data.tags)
 
-        # write data
-        file_name = os.path.join(
-            directory, "{}_{}_{}_profile.txt".format(p.x, p.y, p.p))
+def _write(p, profile_data, directory):
+    """
+    :param ~.Placement p:
+    :param ProfileData profile_data:
+    :param str directory:
+    """
+    max_tag_len = max(len(tag) for tag in profile_data.tags)
+    file_name = os.path.join(
+        directory, f"{p.x}_{p.y}_{ p.p}_profile.txt")
 
-        # set mode of the file based off if the file already exists
-        mode = "w"
-        if os.path.exists(file_name):
-            mode = "a"
+    # write profile data to file, creating if necessary
+    with open(file_name, "a") as f:
+        # Write header
+        f.write(_FMT_A.format(
+            "tag", max_tag_len, "n_calls", "mean_ms", "n_calls_per_ts",
+            "mean_ms_per_ts"))
+        f.write(_FMT_B.format("", max_tag_len, "", "", "", ""))
 
-        # write profile data to file
-        with open(file_name, mode) as f:
-            f.write("{: <{}s} {: <7s} {: <14s} {: <14s} {: <14s}\n".format(
-                "tag", max_tag_len, "n_calls", "mean_ms",
-                "n_calls_per_ts", "mean_ms_per_ts"))
-            f.write("{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n".format(
-                "", max_tag_len, "", "", "", ""))
-            for tag in profile_data.tags:
-                f.write("{: <{}s} {: >7d} {: >14.6f} {: >14.6f} {: >14.6f}\n"
-                        .format(
-                            tag, max_tag_len,
-                            profile_data.get_n_calls(tag),
-                            profile_data.get_mean_ms(tag),
-                            profile_data.get_mean_n_calls_per_ts(
-                                tag, machine_time_step_ms),
-                            profile_data.get_mean_ms_per_ts(
-                                tag, machine_time_step_ms)))
+        # Write content
+        for tag in profile_data.tags:
+            f.write(_FMT_C.format(
+                tag, max_tag_len, profile_data.get_n_calls(tag),
+                profile_data.get_mean_ms(tag),
+                profile_data.get_mean_n_calls_per_ts(tag),
+                profile_data.get_mean_ms_per_ts(tag)))

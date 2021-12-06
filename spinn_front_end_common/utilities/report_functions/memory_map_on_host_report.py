@@ -15,44 +15,31 @@
 
 import logging
 import os
-from six import iteritems
 from spinn_utilities.log import FormatAdapter
-
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 logger = FormatAdapter(logging.getLogger(__name__))
 
 _FOLDER_NAME = "memory_map_from_processor_to_address_space"
 
 
-class MemoryMapOnHostReport(object):
+def memory_map_on_host_report(processor_to_app_data_base_address):
     """ Report on memory usage.
+
+    :param processor_to_app_data_base_address:
+    :type processor_to_app_data_base_address:
+        dict(tuple(int,int,int),DataWritten)
     """
-
-    def __call__(
-            self, report_default_directory,
-            processor_to_app_data_base_address):
-        """
-        :param report_default_directory:
-        :param processor_to_app_data_base_address:
-        :type processor_to_app_data_base_address: \
-            dict(?,:py:class:`~spinn_front_end_common.utilities.utility_models.DataWritten`)
-        :rtype: None
-        """
-
-        file_name = os.path.join(report_default_directory, _FOLDER_NAME)
-        try:
-            with open(file_name, "w") as f:
-                self._describe_mem_map(f, processor_to_app_data_base_address)
-        except IOError:
-            logger.exception("Generate_placement_reports: Can't open file"
-                             " {} for writing.", file_name)
-
-    @staticmethod
-    def _describe_mem_map(f, memory_map):
-        f.write("On host data specification executor\n")
-
-        for key, data in iteritems(memory_map):
-            f.write(
-                "{}: ('start_address': {}, hex:{}), "
-                "'memory_used': {}, 'memory_written': {} \n".format(
-                    key, data.start_address, hex(data.start_address),
-                    data.memory_used, data.memory_written))
+    file_name = os.path.join(report_default_directory(), _FOLDER_NAME)
+    try:
+        with open(file_name, "w") as f:
+            f.write("On host data specification executor\n")
+            for key, data in processor_to_app_data_base_address.items():
+                f.write(
+                    f"{key}: ('start_address': {data.start_address}, "
+                    f"hex:{hex(data.start_address)}), "
+                    f"'memory_used': {data.memory_used}, "
+                    f"'memory_written': {data.memory_written} \n")
+    except IOError:
+        logger.exception("Generate_placement_reports: Can't open file"
+                         " {} for writing.", file_name)

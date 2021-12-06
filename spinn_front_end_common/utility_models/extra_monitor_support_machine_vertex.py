@@ -13,42 +13,62 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from enum import Enum
+from enum import Enum, IntEnum
 import logging
+import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, Router
+from spinn_front_end_common.utilities.utility_calls import (
+    get_region_base_address_offset)
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM, ResourceContainer
+from spinn_utilities.config_holder import get_config_bool
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
-from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
         ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
-        SetRouterEmergencyTimeoutProcess, SetRouterTimeoutProcess,
-        ClearQueueProcess, LoadApplicationMCRoutesProcess,
-        LoadSystemMCRoutesProcess)
+        SetRouterTimeoutProcess, ClearQueueProcess,
+        LoadApplicationMCRoutesProcess, LoadSystemMCRoutesProcess)
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE, DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES,
     BYTES_PER_WORD, BYTES_PER_KB)
+from spinn_front_end_common.utilities.helpful_functions import (
+    convert_vertices_to_core_subset)
+from spinn_front_end_common.utilities.emergency_recovery import (
+    emergency_recover_state_from_failure)
 from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex as
     Gatherer)
-from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset, emergency_recover_state_from_failure)
+from spinn_front_end_common.interface.provenance import (
+    AbstractProvidesProvenanceDataFromMachine, ProvenanceWriter)
 
 log = FormatAdapter(logging.getLogger(__name__))
 
-_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES = 4 * BYTES_PER_WORD
-_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 4 * BYTES_PER_WORD
+_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES = 5 * BYTES_PER_WORD
+#: 1.new seq key, 2.first data key, 3. transaction id key 4.end flag key,
+# 5.base key
+_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 5 * BYTES_PER_WORD
 _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * BYTES_PER_KB
 _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES = 3 * BYTES_PER_WORD
-_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = (48 * 3 + 1) * BYTES_PER_WORD
+_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = ((49 * 3) + 1) * BYTES_PER_WORD
 _BIT_SHIFT_TO_MOVE_APP_ID = 24
+
+_ONE_WORD = struct.Struct("<I")
+# typedef struct extra_monitor_provenance_t {
+#     uint n_sdp_packets;
+#     uint n_in_streams;
+#     uint n_out_streams;
+#     uint n_router_changes;
+# } extra_monitor_provenance_t;
+_PROVENANCE_FORMAT = struct.Struct("<IIII")
+
+# cap for stopping wrap arounds
+TRANSACTION_ID_CAP = 0xFFFFFFFF
 
 # SDRAM requirement for containing router table entries
 # 16 bytes per entry:
@@ -58,10 +78,11 @@ _BIT_SHIFT_TO_MOVE_APP_ID = 24
 _SDRAM_FOR_ROUTER_TABLE_ENTRIES = 1024 * 4 * BYTES_PER_WORD
 
 
-class _DSG_REGIONS(Enum):
+class _DSG_REGIONS(IntEnum):
     REINJECT_CONFIG = 0
     DATA_OUT_CONFIG = 1
     DATA_IN_CONFIG = 2
+    PROVENANCE_AREA = 3
 
 
 class _KEY_OFFSETS(Enum):
@@ -72,9 +93,12 @@ class _KEY_OFFSETS(Enum):
 
 class ExtraMonitorSupportMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
-        AbstractGeneratesDataSpecification):
+        AbstractGeneratesDataSpecification,
+        AbstractProvidesProvenanceDataFromMachine):
     """ Machine vertex for talking to extra monitor cores. \
         Supports reinjection control and the faster data transfer protocols.
+
+    Usually deployed once per chip.
     """
 
     __slots__ = (
@@ -90,36 +114,38 @@ class ExtraMonitorSupportMachineVertex(
         "_placement",
         # app id, used for reporting failures on system core RTE
         "_app_id",
-        "_machine"
+        # machine instance
+        "_machine",
+        # the local transaction id
+        "_transaction_id",
+        # provenance region address
+        "_prov_region"
     )
 
     def __init__(
-            self, constraints, reinject_multicast=None,
-            reinject_point_to_point=False, reinject_nearest_neighbour=False,
-            reinject_fixed_route=False):
+            self, constraints, app_vertex,
+            reinject_multicast=None, reinject_point_to_point=False,
+            reinject_nearest_neighbour=False, reinject_fixed_route=False):
         """
         :param constraints: constraints on this vertex
-        :type constraints: \
+        :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
-        :param reinject_multicast: \
-            if we reinject multicast packets; defaults to value of \
+        :param bool reinject_multicast:
+            if we reinject multicast packets; defaults to value of
             `enable_reinjection` setting in configuration file
-        :type reinject_multicast: bool
-        :param reinject_point_to_point: if we reinject point-to-point packets
-        :type reinject_point_to_point: bool
-        :param reinject_nearest_neighbour: \
+        :param bool reinject_point_to_point:
+            if we reinject point-to-point packets
+        :param bool reinject_nearest_neighbour:
             if we reinject nearest-neighbour packets
-        :type reinject_nearest_neighbour: bool
-        :param reinject_fixed_route: if we reinject fixed route packets
-        :type reinject_fixed_route: bool
+        :param bool reinject_fixed_route: if we reinject fixed route packets
         """
         # pylint: disable=too-many-arguments
-        super(ExtraMonitorSupportMachineVertex, self).__init__(
-            label="SYSTEM:ExtraMonitor", constraints=constraints)
+        super().__init__(
+            label="SYSTEM:ExtraMonitor", constraints=constraints,
+            app_vertex=app_vertex)
 
         if reinject_multicast is None:
-            config = globals_variables.get_simulator().config
-            self._reinject_multicast = config.getboolean(
+            self._reinject_multicast = get_config_bool(
                 "Machine", "enable_reinjection")
         else:
             self._reinject_multicast = reinject_multicast
@@ -130,6 +156,8 @@ class ExtraMonitorSupportMachineVertex(
         self._placement = None
         self._app_id = None
         self._machine = None
+        self._transaction_id = 0
+        self._prov_region = None
 
     @property
     def reinject_multicast(self):
@@ -137,6 +165,23 @@ class ExtraMonitorSupportMachineVertex(
         :rtype: bool
         """
         return self._reinject_multicast
+
+    @property
+    def transaction_id(self):
+        return self._transaction_id
+
+    def update_transaction_id(self):
+        self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
+
+    def update_transaction_id_from_machine(self, txrx):
+        """ looks up from the machine what the current transaction id is
+        and updates the extra monitor.
+
+        :param txrx: SpiNNMan instance
+        :rtype: None
+        """
+        self._transaction_id = txrx.read_user_1(
+            self._placement.x, self._placement.y, self._placement.p)
 
     @property
     def reinject_point_to_point(self):
@@ -213,35 +258,32 @@ class ExtraMonitorSupportMachineVertex(
         """
         return "extra_monitor_support.aplx"
 
-    @inject_items({"routing_info": "MemoryRoutingInfos",
-                   "machine_graph": "MemoryMachineGraph",
+    @inject_items({"routing_info": "RoutingInfos",
+                   "machine_graph": "MachineGraph",
                    "data_in_routing_tables": "DataInMulticastRoutingTables",
                    "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
                    "app_id": "APPID",
-                   "machine": "MemoryExtendedMachine"})
+                   "machine": "ExtendedMachine",
+                   "router_timeout_keys": "SystemMulticastRouterTimeoutKeys"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
-               additional_arguments={"routing_info", "machine_graph",
-                                     "data_in_routing_tables",
-                                     "mc_data_chips_to_keys", "app_id",
-                                     "machine"})
+               additional_arguments={
+                   "routing_info", "machine_graph", "data_in_routing_tables",
+                   "mc_data_chips_to_keys", "app_id", "machine",
+                   "router_timeout_keys"})
     def generate_data_specification(
             self, spec, placement, routing_info, machine_graph,
             data_in_routing_tables, mc_data_chips_to_keys, app_id,
-            machine):
+            machine, router_timeout_keys):
         """
-        :param routing_info: (injected)
-        :type routing_info: ~pacman.model.routing_info.RoutingInfo
-        :param machine_graph: (injected)
-        :type machine_graph: ~pacman.model.graphs.machine.MachineGraph
+        :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            (injected)
         :param data_in_routing_tables: (injected)
-        :type data_in_routing_tables: \
+        :type data_in_routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
-        :param mc_data_chips_to_keys: (injected)
-        :type mc_data_chips_to_keys: dict(tuple(int,int),int)
-        :param app_id: (injected)
-        :type app_id: int
-        :param machine: (injected)
-        :type machine: ~spinn_machine.Machine
+        :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
+        :param int app_id: (injected)
+        :param ~spinn_machine.Machine machine: (injected)
         """
         # pylint: disable=arguments-differ
         # storing for future usage
@@ -249,7 +291,8 @@ class ExtraMonitorSupportMachineVertex(
         self._app_id = app_id
         self._machine = machine
         # write reinjection config
-        self._generate_reinjection_config(spec)
+        self._generate_reinjection_config(
+            spec, router_timeout_keys, placement, machine)
         # write data speed up out config
         self._generate_data_speed_up_out_config(
             spec, routing_info, machine_graph)
@@ -258,24 +301,21 @@ class ExtraMonitorSupportMachineVertex(
             spec, data_in_routing_tables,
             machine.get_chip_at(placement.x, placement.y),
             mc_data_chips_to_keys)
+        self._generate_provenance_area(spec)
         spec.end_specification()
 
     def _generate_data_speed_up_out_config(
             self, spec, routing_info, machine_graph):
         """
-        :param spec: spec file
-        :type spec: ~data_specification.DataSpecificationGenerator
-        :param routing_info: the packet routing info
-        :type routing_info: ~pacman.model.routing_info.RoutingInfo
-        :param machine_graph: The graph containing this vertex
-        :type machine_graph: ~pacman.model.graphs.machine.MachineGraph
-        :rtype: None
+        :param ~.DataSpecificationGenerator spec: spec file
+        :param ~.RoutingInfo routing_info: the packet routing info
+        :param ~.MachineGraph machine_graph: The graph containing this vertex
         """
         spec.reserve_memory_region(
-            region=_DSG_REGIONS.DATA_OUT_CONFIG.value,
+            region=_DSG_REGIONS.DATA_OUT_CONFIG,
             size=_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES,
             label="data speed-up out config region")
-        spec.switch_write_focus(_DSG_REGIONS.DATA_OUT_CONFIG.value)
+        spec.switch_write_focus(_DSG_REGIONS.DATA_OUT_CONFIG)
 
         if Gatherer.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
             base_key = routing_info.get_first_key_for_edge(
@@ -283,50 +323,59 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(base_key)
             spec.write_value(base_key + Gatherer.NEW_SEQ_KEY_OFFSET)
             spec.write_value(base_key + Gatherer.FIRST_DATA_KEY_OFFSET)
+            spec.write_value(base_key + Gatherer.TRANSACTION_ID_KEY_OFFSET)
             spec.write_value(base_key + Gatherer.END_FLAG_KEY_OFFSET)
         else:
             spec.write_value(Gatherer.BASE_KEY)
             spec.write_value(Gatherer.NEW_SEQ_KEY)
             spec.write_value(Gatherer.FIRST_DATA_KEY)
+            spec.write_value(Gatherer.TRANSACTION_ID_KEY)
             spec.write_value(Gatherer.END_FLAG_KEY)
 
-    def _generate_reinjection_config(self, spec):
+    def _generate_reinjection_config(
+            self, spec, router_timeout_keys, placement, machine):
         """
-        :param spec: spec file
-        :type spec: ~data_specification.DataSpecificationGenerator
+        :param ~.DataSpecificationGenerator spec: spec file
+        :param dict(tuple(int,int),int) router_timeout_keys:
+        :param ~.Placement placement:
+        :param ~.Machine machine:
         """
         spec.reserve_memory_region(
-            region=_DSG_REGIONS.REINJECT_CONFIG.value,
+            region=_DSG_REGIONS.REINJECT_CONFIG,
             size=_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES,
             label="re-injection config region")
 
-        spec.switch_write_focus(_DSG_REGIONS.REINJECT_CONFIG.value)
+        spec.switch_write_focus(_DSG_REGIONS.REINJECT_CONFIG)
         for value in [
                 self._reinject_multicast, self._reinject_point_to_point,
                 self._reinject_fixed_route,
                 self._reinject_nearest_neighbour]:
+            # Note that this is inverted! Why... I dunno!
             spec.write_value(int(not value))
+
+        # add the reinjection mc interface
+        chip = machine.get_chip_at(placement.x, placement.y)
+        reinjector_base_mc_key = (
+            router_timeout_keys[
+                (chip.nearest_ethernet_x, chip.nearest_ethernet_y)])
+        spec.write_value(reinjector_base_mc_key)
 
     def _generate_data_speed_up_in_config(
             self, spec, data_in_routing_tables, chip, mc_data_chips_to_keys):
         """
-        :param spec: spec file
-        :type spec: ~data_specification.DataSpecificationGenerator
-        :param data_in_routing_tables: routing tables for all chips
-        :type data_in_routing_tables: \
-            ~pacman.model.routing_tables.MulticastRoutingTables
-        :param chip: the chip where this monitor will run
-        :type chip: ~spinn_machine.Chip
-        :param mc_data_chips_to_keys: data in keys to chips map.
-        :type mc_data_chips_to_keys: dict(tuple(int,int),int)
-        :rtype: None
+        :param ~.DataSpecificationGenerator spec: spec file
+        :param ~.MulticastRoutingTables data_in_routing_tables:
+            routing tables for all chips
+        :param ~.Chip chip: the chip where this monitor will run
+        :param dict(tuple(int,int),int) mc_data_chips_to_keys:
+            data in keys to chips map.
         """
         spec.reserve_memory_region(
-            region=_DSG_REGIONS.DATA_IN_CONFIG.value,
+            region=_DSG_REGIONS.DATA_IN_CONFIG,
             size=(_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING +
                   _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES),
             label="data speed-up in config region")
-        spec.switch_write_focus(_DSG_REGIONS.DATA_IN_CONFIG.value)
+        spec.switch_write_focus(_DSG_REGIONS.DATA_IN_CONFIG)
 
         # write address key and data key
         base_key = mc_data_chips_to_keys[chip.x, chip.y]
@@ -344,28 +393,82 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(self.__encode_route(entry))
 
     def __encode_route(self, entry):
+        """
+        :param ~spinn_machine.MulticastRoutingEntry entry:
+        :rtype: int
+        """
         route = self._app_id << _BIT_SHIFT_TO_MOVE_APP_ID
         route |= Router.convert_routing_table_entry_to_spinnaker_route(entry)
         return route
 
-    def set_router_time_outs(
+    def _generate_provenance_area(self, spec):
+        """
+        :param ~.DataSpecificationGenerator spec: spec file
+        """
+        spec.reserve_memory_region(
+            region=_DSG_REGIONS.PROVENANCE_AREA, size=_PROVENANCE_FORMAT.size,
+            label="provenance collection region", empty=True)
+
+    def __get_provenance_region_address(self, txrx, place):
+        """
+        :param ~spinnman.transceiver.Transceiver txrx:
+        :param ~pacman.model.placements.Placement place:
+        :rtype: int
+        """
+        if self._prov_region is None:
+            region_table_addr = txrx.get_cpu_information_from_core(
+                place.x, place.y, place.p).user[0]
+            region_entry_addr = get_region_base_address_offset(
+                region_table_addr, _DSG_REGIONS.PROVENANCE_AREA)
+            self._prov_region, = _ONE_WORD.unpack(txrx.read_memory(
+                place.x, place.y, region_entry_addr, BYTES_PER_WORD))
+        return self._prov_region
+
+    @overrides(AbstractProvidesProvenanceDataFromMachine.
+               get_provenance_data_from_machine)
+    def get_provenance_data_from_machine(self, transceiver, placement):
+        # No standard provenance region, so no standard provenance data
+        # But we do have our own.
+        provenance_address = self.__get_provenance_region_address(
+            transceiver, placement)
+        data = transceiver.read_memory(
+            placement.x, placement.y, provenance_address,
+            _PROVENANCE_FORMAT.size)
+        (n_sdp_packets, n_in_streams, n_out_streams, n_router_changes) = \
+            _PROVENANCE_FORMAT.unpack_from(data)
+        with ProvenanceWriter() as db:
+            db.insert_monitor(
+                placement.x, placement.y,
+                "Number_of_Router_Configuration_Changes", n_router_changes),
+            db.insert_monitor(
+                placement.x, placement.y,
+                "Number_of_Relevant_SDP_Messages", n_sdp_packets),
+            db.insert_monitor(
+                placement.x, placement.y,
+                "Number_of_Input_Streamlets", n_in_streams),
+            db.insert_monitor(
+                placement.x, placement.y,
+                "Number_of_Output_Streamlets", n_out_streams)
+
+    def set_router_wait1_timeout(
             self, timeout, transceiver, placements,
             extra_monitor_cores_to_set):
         """ Supports setting of the router time outs for a set of chips via\
-            their extra monitor cores.
+            their extra monitor cores. This sets the timeout for the time\
+            between when a packet arrives and when it starts to be emergency\
+            routed. (Actual emergency routing is disabled by default.)
 
-        :param timeout: The mantissa and exponent of the timeout value, \
-            each between 0 and 15
-        :type timeout: tuple(int, int)
-        :param transceiver: the spinnman interface
-        :type transceiver: ~spinnman.transceiver.Transceiver
-        :param placements: placements object
-        :type placements: ~pacman.model.placements.Placements
-        :param extra_monitor_cores_to_set: \
+        :param tuple(int,int) timeout:
+            The mantissa and exponent of the timeout value, each between
+            0 and 15
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnman interface
+        :param ~pacman.model.placements.Placements placements:
+            vertex placements
+        :param extra_monitor_cores_to_set:
             which monitors control the routers to set the timeout of
-        :type extra_monitor_cores_to_set: \
-            iterable(~spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex)
-        :rtype: None
+        :type extra_monitor_cores_to_set:
+            iterable(ExtraMonitorSupportMachineVertex)
         """
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset(
@@ -373,37 +476,40 @@ class ExtraMonitorSupportMachineVertex(
         process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
         try:
-            process.set_timeout(mantissa, exponent, core_subsets)
+            process.set_wait1_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
                 placements.get_placement_of_vertex(self))
             raise
 
-    def set_router_emergency_timeout(
+    def set_router_wait2_timeout(
             self, timeout, transceiver, placements,
             extra_monitor_cores_to_set):
-        """ Sets the timeout of the routers
+        """ Supports setting of the router time outs for a set of chips via\
+            their extra monitor cores. This sets the timeout for the time\
+            between when a packet starts to be emergency routed and when it\
+            is dropped. (Actual emergency routing is disabled by default.)
 
-        :param timeout: The mantissa and exponent of the timeout value, \
-            each between 0 and 15
-        :type timeout: tuple(int, int)
-        :param transceiver: the spinnMan instance
-        :type transceiver: ~spinnman.transceiver.Transceiver
-        :param placements: the placements object
-        :type placements: ~pacman.model.placements.Placements
-        :param extra_monitor_cores_to_set: \
+        :param tuple(int,int) timeout:
+            The mantissa and exponent of the timeout value, each between
+            0 and 15
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnMan instance
+        :param ~pacman.model.placements.Placements placements:
+            vertex placements
+        :param extra_monitor_cores_to_set:
             which monitors control the routers to set the timeout of
-        :type extra_monitor_cores_to_set: \
-            iterable(~spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex)
+        :type extra_monitor_cores_to_set:
+            iterable(ExtraMonitorSupportMachineVertex)
         """
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
-        process = SetRouterEmergencyTimeoutProcess(
+        process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
         try:
-            process.set_timeout(mantissa, exponent, core_subsets)
+            process.set_wait2_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
@@ -414,14 +520,14 @@ class ExtraMonitorSupportMachineVertex(
             self, transceiver, placements, extra_monitor_cores_to_set):
         """ Resets the counters for reinjection
 
-        :param transceiver: the spinnMan interface
-        :type transceiver: ~spinnman.transceiver.Transceiver
-        :param placements: the placements object
-        :type placements: ~pacman.model.placements.Placements
-        :param extra_monitor_cores_to_set: \
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnMan interface
+        :param ~pacman.model.placements.Placements placements:
+            the placements object
+        :param extra_monitor_cores_to_set:
             which monitors control the routers to reset the counters of
-        :type extra_monitor_cores_to_set: \
-            iterable(~spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex)
+        :type extra_monitor_cores_to_set:
+            iterable(ExtraMonitorSupportMachineVertex)
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
@@ -438,14 +544,14 @@ class ExtraMonitorSupportMachineVertex(
             self, transceiver, placements, extra_monitor_cores_to_set):
         """ Clears the queues for reinjection
 
-        :param transceiver: the spinnMan interface
-        :type transceiver: ~spinnman.transceiver.Transceiver
-        :param placements: the placements object
-        :type placements: ~pacman.model.placements.Placements
-        :param extra_monitor_cores_to_set: \
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnMan interface
+        :param ~pacman.model.placements.Placements placements:
+            the placements object
+        :param extra_monitor_cores_to_set:
             Which extra monitors need to clear their queues.
-        :type extra_monitor_cores_to_set: \
-            iterable(~spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex)
+        :type extra_monitor_cores_to_set:
+            iterable(ExtraMonitorSupportMachineVertex)
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
@@ -461,13 +567,12 @@ class ExtraMonitorSupportMachineVertex(
     def get_reinjection_status(self, placements, transceiver):
         """ Get the reinjection status from this extra monitor vertex
 
-        :param transceiver: the spinnMan interface
-        :type transceiver: ~spinnman.transceiver.Transceiver
-        :param placements: the placements object
-        :type placements: ~pacman.model.placements.Placements
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnMan interface
+        :param ~pacman.model.placements.Placements placements:
+            the vertex placements
         :return: the reinjection status for this vertex
-        :rtype: \
-            ~spinn_front_end_common.utilities.utility_objs.ReInjectionStatus
+        :rtype: ReInjectionStatus
         """
         placement = placements.get_placement_of_vertex(self)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
@@ -483,55 +588,45 @@ class ExtraMonitorSupportMachineVertex(
             self, placements, extra_monitor_cores_for_data, transceiver):
         """ Get the reinjection status from a set of extra monitor cores
 
-        :param placements: the placements object
-        :type placements: ~pacman.model.placements.Placements
-        :param extra_monitor_cores_for_data: \
+        :param ~pacman.model.placements.Placements placements:
+            the placements object
+        :param extra_monitor_cores_for_data:
             the extra monitor cores to get status from
-        :type extra_monitor_cores_for_data: \
-            iterable(~spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex)
-        :param transceiver: the spinnMan interface
-        :type transceiver: ~spinnman.transceiver.Transceiver
-        :rtype: dict(tuple(int,int), \
-            ~spinn_front_end_common.utilities.utility_objs.ReInjectionStatus)
+        :type extra_monitor_cores_for_data:
+            iterable(ExtraMonitorSupportMachineVertex)
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnMan interface
+        :rtype: dict(tuple(int,int), ReInjectionStatus)
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
-        try:
-            return process.get_reinjection_status_for_core_subsets(
-                core_subsets)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
-            raise
+        return process.get_reinjection_status_for_core_subsets(core_subsets)
 
     def set_reinjection_packets(
             self, placements, extra_monitor_cores_for_data, transceiver,
             point_to_point=None, multicast=None, nearest_neighbour=None,
             fixed_route=None):
         """
-        :param placements: placements object
-        :type placements: ~pacman.model.placements.Placements
-        :param extra_monitor_cores_for_data: \
+        :param ~pacman.model.placements.Placements placements:
+            placements object
+        :param extra_monitor_cores_for_data:
             the extra monitor cores to set the packets of
-        :type extra_monitor_cores_for_data: \
-            iterable(~spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex)
-        :param transceiver: spinnman instance
-        :type transceiver: ~spinnman.transceiver.Transceiver
-        :param point_to_point: \
+        :type extra_monitor_cores_for_data:
+            iterable(ExtraMonitorSupportMachineVertex)
+        :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
+        :param point_to_point:
             If point to point should be set, or None if left as before
         :type point_to_point: bool or None
-        :param multicast: \
+        :param multicast:
             If multicast should be set, or None if left as before
         :type multicast: bool or None
-        :param nearest_neighbour: \
+        :param nearest_neighbour:
             If nearest neighbour should be set, or None if left as before
         :type nearest_neighbour: bool or None
-        :param fixed_route: \
+        :param fixed_route:
             If fixed route should be set, or None if left as before.
         :type fixed_route: bool or None
-        :rtype: None
         """
         # pylint: disable=too-many-arguments
         if multicast is not None:
@@ -562,15 +657,14 @@ class ExtraMonitorSupportMachineVertex(
         """ Get the extra monitor cores to load up the system-based \
             multicast routes (used by data in).
 
-        :param placements: the placements object
-        :type placements: ~pacman.model.placements.Placements
-        :param extra_monitor_cores_for_data: \
+        :param ~pacman.model.placements.Placements placements:
+            the placements object
+        :param extra_monitor_cores_for_data:
             the extra monitor cores to get status from
-        :type extra_monitor_cores_for_data: \
-            iterable(~spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex)
-        :param transceiver: the spinnMan interface
-        :type transceiver: ~spinnman.transceiver.Transceiver
-        :rtype: None
+        :type extra_monitor_cores_for_data:
+            iterable(ExtraMonitorSupportMachineVertex)
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnMan interface
         """
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
@@ -589,15 +683,14 @@ class ExtraMonitorSupportMachineVertex(
         """ Get the extra monitor cores to load up the application-based\
             multicast routes (used by data in).
 
-        :param placements: the placements object
-        :type placements: ~pacman.model.placements.Placements
-        :param extra_monitor_cores_for_data: \
+        :param ~pacman.model.placements.Placements placements:
+            the placements object
+        :param extra_monitor_cores_for_data:
             the extra monitor cores to get status from
-        :type extra_monitor_cores_for_data: \
-            iterable(~spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex)
-        :param transceiver: the spinnMan interface
-        :type transceiver: ~spinnman.transceiver.Transceiver
-        :rtype: None
+        :type extra_monitor_cores_for_data:
+            iterable(ExtraMonitorSupportMachineVertex)
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnMan interface
         """
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
@@ -612,19 +705,15 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     @staticmethod
-    def _convert_vertices_to_core_subset(
-            extra_monitor_cores, placements):
+    def _convert_vertices_to_core_subset(extra_monitor_cores, placements):
         """ Convert vertices into the subset of cores where they've been\
             placed.
 
-        :param extra_monitor_cores: \
+        :param iterable(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the vertices to convert to core subsets
-        :type extra_monitor_cores: \
-            iterable(~spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex)
-        :param placements: the placements object
-        :type placements: ~pacman.model.placements.Placements
+        :param ~.Placements placements: the placements object
         :return: where the vertices have been placed
-        :rtype: ~spinn_machine.CoreSubsets
+        :rtype: ~.CoreSubsets
         """
         core_subsets = CoreSubsets()
         for vertex in extra_monitor_cores:

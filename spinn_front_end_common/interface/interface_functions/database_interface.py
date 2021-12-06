@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.database import DatabaseWriter
@@ -21,97 +22,123 @@ from spinn_front_end_common.utilities.database import DatabaseWriter
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class DatabaseInterface(object):
-    """ Writes a database of the graph(s) and other information
+def database_interface(
+        machine_graph, tags, runtime, machine, data_n_timesteps, placements,
+        routing_infos, router_tables, app_id, application_graph=None):
+    """ Writes a database of the graph(s) and other information.
+
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        :param ~pacman.model.tags.Tags tags:
+        :param int runtime:
+        :param ~spinn_machine.Machine machine:
+        :param int data_n_timesteps:
+        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+        :param router_tables:
+        :type router_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
+        :param int app_id:
+        :param application_graph:
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
+        :return: Database interface, where the database is located
+        :rtype: tuple(DatabaseInterface, str)
+    """
+    interface = _DatabaseInterface(machine_graph)
+    return interface._run(
+        machine_graph, tags, runtime, machine, data_n_timesteps, placements,
+        routing_infos, router_tables, app_id, application_graph)
+
+
+class _DatabaseInterface(object):
+    """ Writes a database of the graph(s) and other information.
     """
 
     __slots__ = [
         # the database writer object
         "_writer",
 
-        # True if the end user has asked for the database to be written
-        "_user_create_database",
-
         # True if the network is computed to need the database to be written
         "_needs_db"
     ]
 
-    def __init__(self):
-        self._writer = None
-        self._user_create_database = None
-        self._needs_db = None
-
-    def __call__(
-            self, machine_graph, user_create_database, tags,
-            runtime, machine, data_n_timesteps, time_scale_factor,
-            machine_time_step, placements, routing_infos, router_tables,
-            database_directory, create_atom_to_event_id_mapping=False,
-            application_graph=None, graph_mapper=None):
-        # pylint: disable=too-many-arguments
-
-        self._writer = DatabaseWriter(database_directory)
-        self._user_create_database = user_create_database
+    def __init__(self, machine_graph):
+        self._writer = DatabaseWriter()
         # add database generation if requested
         self._needs_db = self._writer.auto_detect_database(machine_graph)
 
-        if self.needs_database:
+    def _run(
+            self, machine_graph, tags, runtime, machine, data_n_timesteps,
+            placements, routing_infos, router_tables, app_id,
+            application_graph=None):
+        """
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        :param ~pacman.model.tags.Tags tags:
+        :param int runtime:
+        :param ~spinn_machine.Machine machine:
+        :param int data_n_timesteps:
+        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+        :param router_tables:
+        :type router_tables:
+            ~pacman.model.routing_tables.MulticastRoutingTables
+        :param int app_id:
+        :param application_graph:
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
+        :return: Database interface, where the database is located
+        :rtype: tuple(DatabaseInterface, str)
+        """
+        # pylint: disable=too-many-arguments
+
+        user_create_database = get_config_bool("Database", "create_database")
+        if user_create_database is not None:
+            if user_create_database != self._needs_db:
+                logger.warning(f"Database creating changed to "
+                               f"{user_create_database} due to cfg settings")
+                self._needs_db = user_create_database
+
+        if self._needs_db:
             logger.info("creating live event connection database in {}",
                         self._writer.database_path)
-            self._write_to_db(machine, time_scale_factor, machine_time_step,
-                              runtime, application_graph, machine_graph,
-                              data_n_timesteps, graph_mapper, placements,
-                              routing_infos, router_tables, tags,
-                              create_atom_to_event_id_mapping)
+            self._write_to_db(
+                machine, runtime, application_graph, machine_graph,
+                data_n_timesteps, placements, routing_infos, router_tables,
+                tags, app_id)
 
-        return self, self.database_file_path
-
-    @property
-    def needs_database(self):
-        if self._user_create_database == "None":
-            return self._needs_db
-        return self._user_create_database == "True"
-
-    @property
-    def database_file_path(self):
-        if self.needs_database:
+        if self._needs_db:
             return self._writer.database_path
         return None
 
     def _write_to_db(
-            self, machine, time_scale_factor, machine_time_step,
-            runtime, application_graph, machine_graph, data_n_timesteps,
-            graph_mapper, placements, routing_infos, router_tables, tags,
-            create_atom_to_event_id_mapping):
+            self, machine, runtime, app_graph, machine_graph,
+            data_n_timesteps, placements, routing_infos, router_tables,
+            tags, app_id):
         """
-        :param machine:
-        :param time_scale_factor:
-        :param machine_time_step:
-        :param runtime:
-        :param application_graph:
-        :param machine_graph:
-        :param data_n_timesteps: \
+        :param ~.Machine machine:
+        :param int runtime:
+        :param ~.ApplicationGraph app_graph:
+        :param ~.MachineGraph machine_graph:
+        :param int data_n_timesteps:
             The number of timesteps for which data space will been reserved
-        :param graph_mapper:
-        :param placements:
-        :param routing_infos:
-        :param router_tables:
-        :param tags:
-        :param create_atom_to_event_id_mapping:
-        :return:
+        :param ~.Placements placements:
+        :param ~.RoutingInfo routing_infos:
+        :param ~.MulticastRoutingTables router_tables:
+        :param ~.Tags tags:
+        :param int app_id:
         """
         # pylint: disable=too-many-arguments
 
         with self._writer as w, ProgressBar(
                 9, "Creating graph description database") as p:
-            w.add_system_params(time_scale_factor, machine_time_step, runtime)
+            w.add_system_params(runtime, app_id)
             p.update()
             w.add_machine_objects(machine)
             p.update()
-            if application_graph is not None and application_graph.n_vertices:
-                w.add_application_vertices(application_graph)
+            if app_graph is not None and app_graph.n_vertices:
+                w.add_application_vertices(app_graph)
             p.update()
-            w.add_vertices(machine_graph, data_n_timesteps, graph_mapper,
-                           application_graph)
+            w.add_vertices(machine_graph, data_n_timesteps, app_graph)
             p.update()
             w.add_placements(placements)
             p.update()
@@ -121,10 +148,12 @@ class DatabaseInterface(object):
             p.update()
             w.add_tags(machine_graph, tags)
             p.update()
-            if (graph_mapper is not None and application_graph is not None
-                    and create_atom_to_event_id_mapping):
-                w.create_atom_to_event_id_mapping(
-                    graph_mapper=graph_mapper,
-                    application_graph=application_graph,
-                    machine_graph=machine_graph, routing_infos=routing_infos)
+            if app_graph is not None:
+                if get_config_bool(
+                        "Database",
+                        "create_routing_info_to_neuron_id_mapping"):
+                    w.create_atom_to_event_id_mapping(
+                        application_graph=app_graph,
+                        machine_graph=machine_graph,
+                        routing_infos=routing_infos)
             p.update()

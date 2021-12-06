@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .failed_state import FailedState
-from .simulator_interface import SimulatorInterface
+from .fec_timer import FecTimer
+from .iobuf_extractor import IOBufExtractor
 
-__all__ = ["FailedState", "SimulatorInterface"]
+__all__ = ["FecTimer", "IOBufExtractor"]
