@@ -1340,7 +1340,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_network_specification_report"):
                 return
-            network_specification(self._data_writer.runtime_best_graph)
+            network_specification()
 
     def _execute_chip_id_allocator(self):
         """
