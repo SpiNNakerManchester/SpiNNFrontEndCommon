@@ -494,7 +494,6 @@ def placement_report_without_application_graph_by_core(
     :param ~spinn_machine.Machine machine: the SpiNNaker machine object
     :param Placements placements: the placements objects built by the placer.
     """
-    m
     # File 2: Placement by core.
     # Cycle through all chips and by all cores within each chip.
     # For each core, display what is held on it.

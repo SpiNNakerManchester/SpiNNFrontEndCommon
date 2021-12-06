@@ -592,10 +592,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         self.reserve_provenance_data_region(spec)
 
-    def _update_virtual_key(self, routing_info, machine_graph):
+    def _update_virtual_key(self, routing_info):
         """
         :param ~pacman.model.routing_info.RoutingInfo routing_info:
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         """
         if self._virtual_key is None:
             if self._send_buffer_partition_id is not None:
@@ -607,6 +606,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                     self._virtual_key = rinfo.first_key
                     self._mask = rinfo.first_mask
             else:
+                machine_graph = FecDataView().runtime_machine_graph
                 partitions = machine_graph\
                     .get_multicast_edge_partitions_starting_at_vertex(self)
                 partition = next(iter(partitions), None)
@@ -681,24 +681,20 @@ class ReverseIPTagMulticastSourceMachineVertex(
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
     @inject_items({
-        "machine_graph": "MachineGraph",
         "routing_info": "RoutingInfos",
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "machine_graph", "routing_info"
-        })
+        additional_arguments={"routing_info"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_graph, routing_info):
+            routing_info):
         """
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.routing_info.RoutingInfo routing_info:
         :param int data_n_time_steps:
         """
         # pylint: disable=too-many-arguments, arguments-differ
-        self._update_virtual_key(routing_info, machine_graph)
+        self._update_virtual_key(routing_info)
 
         # Reserve regions
         self._reserve_regions(spec)

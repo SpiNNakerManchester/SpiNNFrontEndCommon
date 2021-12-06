@@ -258,24 +258,21 @@ class ExtraMonitorSupportMachineVertex(
         return "extra_monitor_support.aplx"
 
     @inject_items({"routing_info": "RoutingInfos",
-                   "machine_graph": "MachineGraph",
                    "data_in_routing_tables": "DataInMulticastRoutingTables",
                    "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
                    "machine": "ExtendedMachine",
                    "router_timeout_keys": "SystemMulticastRouterTimeoutKeys"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={
-                   "routing_info", "machine_graph", "data_in_routing_tables",
+                   "routing_info", "data_in_routing_tables",
                    "mc_data_chips_to_keys", "app_id", "machine",
                    "router_timeout_keys"})
     def generate_data_specification(
-            self, spec, placement, routing_info, machine_graph,
+            self, spec, placement, routing_info,
             data_in_routing_tables, mc_data_chips_to_keys,
             machine, router_timeout_keys):
         """
         :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            (injected)
         :param data_in_routing_tables: (injected)
         :type data_in_routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
@@ -291,8 +288,7 @@ class ExtraMonitorSupportMachineVertex(
         self._generate_reinjection_config(
             spec, router_timeout_keys, placement, machine)
         # write data speed up out config
-        self._generate_data_speed_up_out_config(
-            spec, routing_info, machine_graph)
+        self._generate_data_speed_up_out_config(spec, routing_info)
         # write data speed up in config
         self._generate_data_speed_up_in_config(
             spec, data_in_routing_tables,
@@ -301,13 +297,12 @@ class ExtraMonitorSupportMachineVertex(
         self._generate_provenance_area(spec)
         spec.end_specification()
 
-    def _generate_data_speed_up_out_config(
-            self, spec, routing_info, machine_graph):
+    def _generate_data_speed_up_out_config(self, spec, routing_info):
         """
         :param ~.DataSpecificationGenerator spec: spec file
         :param ~.RoutingInfo routing_info: the packet routing info
-        :param ~.MachineGraph machine_graph: The graph containing this vertex
         """
+        machine_graph = FecDataView().runtime_machine_graph
         spec.reserve_memory_region(
             region=_DSG_REGIONS.DATA_OUT_CONFIG,
             size=_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES,
