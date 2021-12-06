@@ -32,7 +32,8 @@ class LivePacketGatherParameters(object):
         '_port', '_hostname', "_tag", "_strip_sdp", "_use_prefix",
         "_key_prefix", "_prefix_type", "_message_type", "_right_shift",
         "_payload_as_time_stamps", "_use_payload_prefix", "_payload_prefix",
-        "_payload_right_shift", "_n_packets_per_time_step", "_label"
+        "_payload_right_shift", "_n_packets_per_time_step", "_label",
+        "_translate_keys"
     ]
 
     def __init__(
@@ -41,7 +42,8 @@ class LivePacketGatherParameters(object):
             message_type=EIEIOType.KEY_32_BIT, right_shift=0,
             payload_as_time_stamps=True, use_payload_prefix=True,
             payload_prefix=None, payload_right_shift=0,
-            number_of_packets_sent_per_time_step=0, label=None):
+            number_of_packets_sent_per_time_step=0, label=None,
+            translate_keys=False):
         """
         :raises ConfigurationException:
             If the parameters passed are known to be an invalid combination.
@@ -81,6 +83,7 @@ class LivePacketGatherParameters(object):
         self._payload_right_shift = payload_right_shift
         self._n_packets_per_time_step = number_of_packets_sent_per_time_step
         self._label = label
+        self._translate_keys = translate_keys
 
     @property
     def port(self):
@@ -142,6 +145,10 @@ class LivePacketGatherParameters(object):
     def label(self):
         return self._label
 
+    @property
+    def translate_keys(self):
+        return self._translate_keys
+
     def get_iptag_resource(self):
         """ Get a description of the IPtag that the LPG for these parameters \
             will require.
@@ -170,7 +177,8 @@ class LivePacketGatherParameters(object):
                 self._payload_right_shift == other.payload_right_shift and
                 self._n_packets_per_time_step ==
                 other.number_of_packets_sent_per_time_step and
-                self._label == other.label)
+                self._label == other.label and
+                self._translate_keys == other.translate_keys)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -182,5 +190,5 @@ class LivePacketGatherParameters(object):
             self._right_shift, self._payload_as_time_stamps,
             self._use_payload_prefix, self._payload_prefix,
             self._payload_right_shift, self._n_packets_per_time_step,
-            self._label)
+            self._label, self._translate_keys)
         return hash(data)
