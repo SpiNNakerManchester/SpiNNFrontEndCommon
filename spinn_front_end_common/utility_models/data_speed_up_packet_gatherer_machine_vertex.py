@@ -374,7 +374,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         return ExecutableType.SYSTEM
 
     @inject_items({
-        "machine_graph": "MachineGraph",
         "routing_info": "RoutingInfos",
         "tags": "Tags",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
@@ -384,12 +383,12 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_graph", "routing_info", "tags",
+            "routing_info", "tags",
             "mc_data_chips_to_keys", "machine",
             "router_timeout_key"
         })
     def generate_data_specification(
-            self, spec, placement, machine_graph, routing_info, tags,
+            self, spec, placement, routing_info, tags,
             mc_data_chips_to_keys, machine, router_timeout_key):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
@@ -397,9 +396,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)
         :param ~pacman.model.tags.Tags tags: (injected)
         :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
-        :param ~spinn_machine.Machine machine: (injected)
         :param dict(tuple(int,int),int) router_timeout_key: (injected)
         """
+        machine_graph = FecDataView().runtime_machine_graph
         # pylint: disable=too-many-arguments, arguments-differ
 
         # update my placement for future knowledge

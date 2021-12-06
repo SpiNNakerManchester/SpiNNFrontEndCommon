@@ -22,6 +22,7 @@ from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineGraph, SimpleMachineVertex
 from pacman.model.placements import Placements, Placement
 from pacman.model.resources import ResourceContainer
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     insert_edges_to_live_packet_gatherers)
@@ -112,14 +113,15 @@ class TestInsertLPGEdges(unittest.TestCase):
             verts_expected[eth_x, eth_y].append(vertex)
             placements.add_placement(Placement(x=x, y=y, p=5, vertex=vertex))
 
+        FecDataWriter().set_runtime_machine_graph(graph)
+        FecDataWriter()._set_runtime_graph(ApplicationGraph("Empty"))
         # run edge inserter that should go boom
         insert_edges_to_live_packet_gatherers(
             live_packet_gatherer_parameters=live_packet_gatherers,
             placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
                 live_packet_gatherers_to_vertex_mapping),
-            machine=machine, machine_graph=graph,
-            application_graph=ApplicationGraph("Empty"))
+            machine=machine)
 
         # verify edges are in the right place
         for chip in machine.ethernet_connected_chips:
@@ -218,13 +220,15 @@ class TestInsertLPGEdges(unittest.TestCase):
             placements.add_placement(
                 Placement(x=x, y=y, p=5, vertex=mac_vertex))
 
+        FecDataWriter().set_runtime_machine_graph(graph)
+        FecDataWriter()._set_runtime_graph(app_graph)
         # run edge inserter that should go boom
         insert_edges_to_live_packet_gatherers(
             live_packet_gatherer_parameters=live_packet_gatherers,
             placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
                 live_packet_gatherers_to_vertex_mapping),
-            machine=machine, machine_graph=graph, application_graph=app_graph)
+            machine=machine)
 
         # verify edges are in the right place
         for chip in machine.ethernet_connected_chips:

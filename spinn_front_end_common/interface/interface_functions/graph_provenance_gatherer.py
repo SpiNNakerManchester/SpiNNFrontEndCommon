@@ -14,24 +14,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesLocalProvenanceData)
 
 
-def graph_provenance_gatherer(machine_graph, application_graph=None):
+def graph_provenance_gatherer():
     """ Gets provenance information from the graphs.
 
     :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         The machine graph to inspect
-    :param application_graph: The optional application graph
-    :type application_graph:
-        ~pacman.model.graphs.application.ApplicationGraph
     """
-    _get_machine_graph_provenance(machine_graph)
-    _get_app_graph_provenance(application_graph)
+    _get_machine_graph_provenance()
+    _get_app_graph_provenance()
 
 
-def _get_machine_graph_provenance(machine_graph):
+def _get_machine_graph_provenance():
+    machine_graph = FecDataView().runtime_machine_graph
     progress = ProgressBar(
         machine_graph.n_vertices +
         machine_graph.n_outgoing_edge_partitions,
@@ -47,7 +46,8 @@ def _get_machine_graph_provenance(machine_graph):
                 edge.get_local_provenance_data()
 
 
-def _get_app_graph_provenance(application_graph):
+def _get_app_graph_provenance():
+    application_graph = FecDataView().runtime_graph
     progress = ProgressBar(
         application_graph.n_vertices +
         application_graph.n_outgoing_edge_partitions,

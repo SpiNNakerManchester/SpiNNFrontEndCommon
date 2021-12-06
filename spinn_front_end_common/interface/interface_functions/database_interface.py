@@ -24,11 +24,10 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def database_interface(
-        machine_graph, tags, runtime, machine, placements,
-        routing_infos, router_tables, application_graph=None):
+        tags, runtime, machine, placements,
+        routing_infos, router_tables):
     """ Writes a database of the graph(s) and other information.
 
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.tags.Tags tags:
         :param int runtime:
         :param ~spinn_machine.Machine machine:
@@ -37,16 +36,13 @@ def database_interface(
         :param router_tables:
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
-        :param application_graph:
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
         :return: Database interface, where the database is located
         :rtype: tuple(DatabaseInterface, str)
     """
-    interface = _DatabaseInterface(machine_graph)
+    interface = _DatabaseInterface()
     return interface._run(
-        machine_graph, tags, runtime, machine, placements,
-        routing_infos, router_tables, application_graph)
+        tags, runtime, machine, placements,
+        routing_infos, router_tables)
 
 
 class _DatabaseInterface(object):
@@ -61,16 +57,15 @@ class _DatabaseInterface(object):
         "_needs_db"
     ]
 
-    def __init__(self, machine_graph):
+    def __init__(self):
         self._writer = DatabaseWriter()
         # add database generation if requested
-        self._needs_db = self._writer.auto_detect_database(machine_graph)
+        self._needs_db = self._writer.auto_detect_database()
 
     def _run(
-            self, machine_graph, tags, runtime, machine, placements,
-            routing_infos, router_tables, application_graph=None):
+            self, tags, runtime, machine, placements,
+            routing_infos, router_tables):
         """
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.tags.Tags tags:
         :param int runtime:
         :param ~spinn_machine.Machine machine:
@@ -79,9 +74,6 @@ class _DatabaseInterface(object):
         :param router_tables:
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
-        :param application_graph:
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
         :return: Database interface, where the database is located
         :rtype: tuple(DatabaseInterface, str)
         """
@@ -98,21 +90,19 @@ class _DatabaseInterface(object):
             logger.info("creating live event connection database in {}",
                         self._writer.database_path)
             self._write_to_db(
-                machine, runtime, application_graph, machine_graph,
-                placements, routing_infos, router_tables, tags)
+                machine, runtime, placements, routing_infos, router_tables,
+                tags)
 
         if self._needs_db:
             return self._writer.database_path
         return None
 
     def _write_to_db(
-            self, machine, runtime, app_graph, machine_graph,
+            self, machine, runtime,
             placements, routing_infos, router_tables, tags):
         """
         :param ~.Machine machine:
         :param int runtime:
-        :param ~.ApplicationGraph app_graph:
-        :param ~.MachineGraph machine_graph:
         :param ~.Placements placements:
         :param ~.RoutingInfo routing_infos:
         :param ~.MulticastRoutingTables router_tables:
@@ -121,6 +111,8 @@ class _DatabaseInterface(object):
         # pylint: disable=too-many-arguments
 
         view = FecDataView()
+        app_graph = view.runtime_graph
+        machine_graph = view .runtime_machine_graph
         with self._writer as w, ProgressBar(
                 9, "Creating graph description database") as p:
             w.add_system_params(runtime, view.app_id)

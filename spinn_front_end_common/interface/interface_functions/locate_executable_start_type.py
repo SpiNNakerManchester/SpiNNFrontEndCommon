@@ -16,10 +16,11 @@
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
-def locate_executable_start_type(graph, placements):
+def locate_executable_start_type(placements):
     """
     Discovers where applications of particular types need to be launched.
 
@@ -27,6 +28,7 @@ def locate_executable_start_type(graph, placements):
     :param ~pacman.model.placements.Placements placements:
     :rtype: dict(ExecutableType,~spinn_machine.CoreSubsets or None)
     """
+    graph = FecDataView().runtime_machine_graph
     if not graph.vertices:
         return {ExecutableType.NO_APPLICATION: None}
 

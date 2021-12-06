@@ -24,13 +24,13 @@ logger = FormatAdapter(logging.getLogger(__name__))
 _FILENAME = "network_specification.rpt"
 
 
-def network_specification(graph):
+def network_specification():
     """ Generate report on the user's network specification.
 
-    :param ApplicationGraph graph: the graph generated from the tools
     :rtype: None
     """
     filename = os.path.join(FecDataView().run_dir_path, _FILENAME)
+    graph = FecDataView().runtime_best_graph
     try:
         with open(filename, "w") as f:
             f.write("*** Vertices:\n")

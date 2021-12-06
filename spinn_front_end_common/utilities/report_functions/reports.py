@@ -72,36 +72,31 @@ def tag_allocator_report(tag_infos):
                      "writing.", file_name)
 
 
-def placer_reports_with_application_graph(
-        hostname, graph, placements, machine):
+def placer_reports_with_application_graph(hostname, placements, machine):
     """ Reports that can be produced from placement given a application\
         graph's existence
 
     :param str hostname: The machine's hostname to which the placer worked on.
-    :param ApplicationGraph graph:
-        The application graph to which placements were built.
     :param Placements placements: the placements objects built by the placer.
     :param ~spinn_machine.Machine machine: the python machine object.
     :rtype: None
     """
     placement_report_with_application_graph_by_vertex(
-        hostname, graph, placements)
+        hostname, placements)
     placement_report_with_application_graph_by_core(
         hostname, placements, machine)
 
 
 def placer_reports_without_application_graph(
-        hostname, machine_graph, placements, machine):
+        hostname, placements, machine):
     """
     :param str hostname: The machine's hostname to which the placer worked on.
     :param Placements placements: The placements objects built by the placer.
     :param ~spinn_machine.Machine machine: The python machine object.
-    :param MachineGraph machine_graph:
         The machine graph to which the reports are to operate on.
     :rtype: None
     """
-    placement_report_without_application_graph_by_vertex(
-        hostname, placements, machine_graph)
+    placement_report_without_application_graph_by_vertex(hostname, placements)
     placement_report_without_application_graph_by_core(
         hostname, placements, machine)
 
@@ -204,23 +199,24 @@ def _do_router_summary_report(
 
 def router_report_from_paths(
         routing_tables, routing_infos, hostname,
-        machine_graph, placements, machine):
+        placements, machine):
     """ Generates a text file of routing paths
 
     :param MulticastRoutingTables routing_tables: The original routing tables.
     :param str hostname: The machine's hostname to which the placer worked on.
     :param RoutingInfo routing_infos:
-    :param MachineGraph machine_graph:
     :param Placements placements:
     :param ~spinn_machine.Machine machine: The python machine object.
     :rtype: None
     """
-    file_name = os.path.join(FecDataView().run_dir_path, _ROUTING_FILENAME)
+    view = FecDataView()
+    file_name = os.path.join(view.run_dir_path, _ROUTING_FILENAME)
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
-            progress = ProgressBar(machine_graph.n_outgoing_edge_partitions,
-                                   "Generating Routing path report")
+            progress = ProgressBar(
+                view.runtime_machine_graph.n_outgoing_edge_partitions,
+                "Generating Routing path report")
 
             f.write("        Edge Routing Report\n")
             f.write("        ===================\n\n")
@@ -228,7 +224,7 @@ def router_report_from_paths(
                 time_date_string, hostname))
 
             for partition in progress.over(
-                    machine_graph.outgoing_edge_partitions):
+                    view.runtime_machine_graph.outgoing_edge_partitions):
                 if partition.traffic_type == EdgeTrafficType.MULTICAST:
                     _write_one_router_partition_report(
                         f, partition, machine, placements, routing_infos,
@@ -267,11 +263,10 @@ def _write_one_router_partition_report(f, partition, machine, placements,
         f.write("\n")
 
 
-def partitioner_report(hostname, graph):
+def partitioner_report(hostname):
     """ Generate report on the placement of vertices onto cores.
 
     :param str hostname: the machine's hostname to which the placer worked on
-    :param ApplicationGraph graph: the app graph
 
     """
 
@@ -282,7 +277,7 @@ def partitioner_report(hostname, graph):
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
-            progress = ProgressBar(graph.n_vertices,
+            progress = ProgressBar(FecDataView().runtime_graph.n_vertices,
                                    "Generating partitioner report")
 
             f.write("        Partitioning Information by Vertex\n")
@@ -290,7 +285,7 @@ def partitioner_report(hostname, graph):
             f.write("Generated: {} for target machine '{}'\n\n".format(
                 time_date_string, hostname))
 
-            for vertex in progress.over(graph.vertices):
+            for vertex in progress.over(FecDataView().runtime_graph.vertices):
                 _write_one_vertex_partition(f, vertex)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for"
@@ -322,8 +317,7 @@ def _write_one_vertex_partition(f, vertex):
     f.write("\n")
 
 
-def placement_report_with_application_graph_by_vertex(
-        hostname, graph, placements):
+def placement_report_with_application_graph_by_vertex(hostname, placements):
     """ Generate report on the placement of vertices onto cores by vertex.
 
     :param str hostname: the machine's hostname to which the placer worked on
@@ -338,7 +332,7 @@ def placement_report_with_application_graph_by_vertex(
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
-            progress = ProgressBar(graph.n_vertices,
+            progress = ProgressBar(FecDataView().runtime_graph.n_vertices,
                                    "Generating placement report")
 
             f.write("        Placement Information by Vertex\n")
@@ -346,7 +340,7 @@ def placement_report_with_application_graph_by_vertex(
             f.write("Generated: {} for target machine '{}'\n\n".format(
                 time_date_string, hostname))
 
-            for vertex in progress.over(graph.vertices):
+            for vertex in progress.over(FecDataView().runtime_graph.vertices):
                 _write_one_vertex_application_placement(f, vertex, placements)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for"
@@ -383,16 +377,13 @@ def _write_one_vertex_application_placement(f, vertex, placements):
     f.write("\n")
 
 
-def placement_report_without_application_graph_by_vertex(
-        hostname, placements, machine_graph):
+def placement_report_without_application_graph_by_vertex(hostname, placements):
     """ Generate report on the placement of vertices onto cores by vertex.
 
     :param str hostname: the machine's hostname to which the placer worked on
     :param Placements placements: the placements objects built by the placer.
-    :param MachineGraph machine_graph:
-        the machine graph generated by the end user
     """
-
+    machine_graph = FecDataView().runtime_machine_graph
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
     file_name = os.path.join(
@@ -503,7 +494,6 @@ def placement_report_without_application_graph_by_core(
     :param ~spinn_machine.Machine machine: the SpiNNaker machine object
     :param Placements placements: the placements objects built by the placer.
     """
-
     # File 2: Placement by core.
     # Cycle through all chips and by all cores within each chip.
     # For each core, display what is held on it.
@@ -636,14 +626,15 @@ def _sdram_usage_report_per_chip_with_timesteps(
             pass
 
 
-def routing_info_report(machine_graph, routing_infos):
+def routing_info_report(routing_infos):
     """ Generates a report which says which keys is being allocated to each\
         vertex
 
-    :param MachineGraph machine_graph:
     :param RoutingInfo routing_infos:
     """
-    file_name = os.path.join(FecDataView().run_dir_path, _VIRTKEY_FILENAME)
+    view = FecDataView()
+    file_name = os.path.join(view.run_dir_path, _VIRTKEY_FILENAME)
+    machine_graph = view.runtime_machine_graph
     try:
         with open(file_name, "w") as f:
             progress = ProgressBar(machine_graph.n_outgoing_edge_partitions,

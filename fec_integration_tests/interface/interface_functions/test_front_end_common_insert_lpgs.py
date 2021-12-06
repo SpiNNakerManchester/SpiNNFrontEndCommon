@@ -19,6 +19,7 @@ from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.application import ApplicationGraph, ApplicationVertex
 from pacman.model.graphs.machine import MachineGraph
 from pacman_test_objects import SimpleTestVertex
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     insert_live_packet_gatherers_to_graphs)
@@ -59,11 +60,11 @@ class TestInsertLPGs(unittest.TestCase):
         default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
-        # run edge inserter that should go boom
+        FecDataWriter().set_runtime_machine_graph(graph)
+        FecDataWriter()._set_runtime_graph(ApplicationGraph("empty"))
         lpg_verts_mapping = insert_live_packet_gatherers_to_graphs(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine, machine_graph=graph,
-            application_graph=ApplicationGraph("empty"))
+            machine=machine)
 
         self.assertEqual(len(lpg_verts_mapping[default_params_holder][1]), 3)
         locs = [(0, 0), (4, 8), (8, 4)]
@@ -108,10 +109,11 @@ class TestInsertLPGs(unittest.TestCase):
         default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
-        # run edge inserter that should go boom
+        FecDataWriter().set_runtime_machine_graph(graph)
+        FecDataWriter()._set_runtime_graph(app_graph)
         lpg_verts_mapping = insert_live_packet_gatherers_to_graphs(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine, machine_graph=graph, application_graph=app_graph)
+            machine=machine)
 
         self.assertEqual(len(lpg_verts_mapping[default_params_holder][1]), 3)
         locs = list()

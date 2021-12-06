@@ -16,13 +16,12 @@ from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities.utility_objs import ResourceTracker
 from pacman.utilities.algorithm_utilities.placer_algorithm_utilities import (
     sort_vertices_by_known_constraints)
+from spinn_front_end_common.data import FecDataView
 
 
-def graph_measurer(machine_graph, machine, plan_n_timesteps):
+def graph_measurer(machine, plan_n_timesteps):
     """ Works out how many chips a machine graph needs.
 
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        The machine_graph to measure.
     :param ~spinn_machine.Machine machine:
         The machine with respect to which to partition the application
         graph.
@@ -30,6 +29,7 @@ def graph_measurer(machine_graph, machine, plan_n_timesteps):
     :return: The size of the graph in number of chips.
     :rtype: int
     """
+    machine_graph = FecDataView().runtime_machine_graph
 
     # check that the algorithm can handle the constraints
     ResourceTracker.check_constraints(machine_graph.vertices)

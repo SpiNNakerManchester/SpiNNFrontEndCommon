@@ -30,7 +30,7 @@ FRACTION_OF_TIME_FOR_SPIKE_SENDING = 0.8
 FRACTION_OF_TIME_STEP_BEFORE_SPIKE_SENDING = 0.1
 
 
-def local_tdma_builder(machine_graph, n_keys_map, application_graph=None):
+def local_tdma_builder(n_keys_map):
     """ Builds a localised TDMA
 
     Builds a localised TDMA which allows a number of machine vertices
@@ -85,20 +85,15 @@ def local_tdma_builder(machine_graph, n_keys_map, application_graph=None):
         X is pop0 firing,
         Y is pop1 firing
 
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        machine graph.
     :param n_keys_map: the map of partitions to n keys.
     :type n_keys_map:
         ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
-    :param application_graph: app graph.
-    :type application_graph:
-        ~pacman.model.graphs.application.ApplicationGraph or None
     """
-    if application_graph.n_vertices == 0:
+    view = FecDataView()
+    if view.runtime_graph.n_vertices == 0:
         return
 
     # get config params
-    view = FecDataView()
     us_per_cycle = view.hardware_time_step_us
     clocks_per_cycle = us_per_cycle * CLOCKS_PER_US
     (app_machine_quantity, clocks_between_cores, clocks_for_sending,
@@ -107,7 +102,8 @@ def local_tdma_builder(machine_graph, n_keys_map, application_graph=None):
     # calculate for each app vertex if the time needed fits
     app_verts = list()
     max_fraction_of_sending = 0
-    for app_vertex in application_graph.vertices:
+    machine_graph = view.runtime_machine_graph
+    for app_vertex in view.runtime_graph.vertices:
         if isinstance(app_vertex, TDMAAwareApplicationVertex):
             app_verts.append(app_vertex)
 
@@ -147,7 +143,7 @@ def local_tdma_builder(machine_graph, n_keys_map, application_graph=None):
             .format(time_scale_factor_needed))
 
     # get initial offset for each app vertex.
-    for app_vertex in application_graph.vertices:
+    for app_vertex in FecDataView().runtime_graph.vertices:
         if isinstance(app_vertex, TDMAAwareApplicationVertex):
             initial_offset = __generate_initial_offset(
                 app_vertex, app_verts, clocks_initial,

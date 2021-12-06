@@ -16,7 +16,7 @@
 import errno
 import os
 from spinn_utilities.data.data_status import Data_Status
-from spinn_utilities.data import UtilsDataView
+from pacman.data import PacmanDataView
 
 
 class _FecDataModel(object):
@@ -98,7 +98,7 @@ class _FecDataModel(object):
         self._first_machine_time_step = 0
 
 
-class FecDataView(UtilsDataView):
+class FecDataView(PacmanDataView):
     """
     A read only view of the data available at FEC level
 

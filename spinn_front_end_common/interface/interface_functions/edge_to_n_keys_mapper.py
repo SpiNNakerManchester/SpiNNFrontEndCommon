@@ -15,24 +15,20 @@
 
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.routing_info import DictBasedMachinePartitionNKeysMap
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.data import FecDataView
 
 PROG_BAR_NAME = (
     "Getting number of keys required by each edge using application graph")
-ERROR_MSG = (
-    "A machine graph is required for this mapper. Please choose and try again")
 
 
-def edge_to_n_keys_mapper(machine_graph):
+def edge_to_n_keys_mapper():
     """ Works out the number of keys needed for each edge.
 
     :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
     :rtype: ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
     :raises ConfigurationException: If no graph is available
     """
-    if machine_graph is None:
-        raise ConfigurationException(ERROR_MSG)
-
+    machine_graph = FecDataView().runtime_machine_graph
     # Generate an n_keys map for the graph and add constraints
     n_keys_map = DictBasedMachinePartitionNKeysMap()
 

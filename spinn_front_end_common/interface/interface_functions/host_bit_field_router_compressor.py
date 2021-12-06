@@ -45,8 +45,7 @@ _REPORT_FOLDER_NAME = "router_compressor_with_bitfield"
 
 
 def host_based_bit_field_router_compressor(
-        router_tables, machine, placements, transceiver,
-        machine_graph, routing_infos):
+        router_tables, machine, placements, transceiver, routing_infos):
     """
     Entry point when using the PACMANAlgorithmExecutor
 
@@ -56,13 +55,12 @@ def host_based_bit_field_router_compressor(
     :param ~spinn_machine.Machine machine: SpiNNMachine instance
     :param ~pacman.model.placements.Placements placements: placements
     :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        the machine graph level
     :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         routing information
     :return: compressed routing table entries
     :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
     """
+    machine_graph = FecDataView().runtime_machine_graph
     # create progress bar
     progress = ProgressBar(
         len(router_tables.routing_tables) * 2,

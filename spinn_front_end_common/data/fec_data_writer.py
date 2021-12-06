@@ -18,9 +18,9 @@ import logging
 import math
 import os
 import time
-from spinn_utilities.data.utils_data_writer import UtilsDataWriter
 from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
+from pacman.data.pacman_data_writer import PacmanDataWriter
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -32,7 +32,7 @@ __temp_dir = None
 REPORTS_DIRNAME = "reports"
 
 
-class FecDataWriter(UtilsDataWriter, FecDataView):
+class FecDataWriter(PacmanDataWriter, FecDataView):
     """
     Writer class for the Fec Data
 
@@ -54,7 +54,7 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
         Unittest that depend on a specific value should call mock and then
         set that value.
         """
-        UtilsDataWriter.mock(self)
+        PacmanDataWriter.mock(self)
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
         self.set_app_id(6)
@@ -65,7 +65,7 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
         Puts all data back into the state expected at sim.setup time
 
         """
-        UtilsDataWriter.setup(self)
+        PacmanDataWriter.setup(self)
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
         self.__create_reports_directory()
@@ -73,19 +73,19 @@ class FecDataWriter(UtilsDataWriter, FecDataView):
         self.__create_run_dir_path()
 
     def start_run(self):
-        UtilsDataWriter.start_run(self)
+        PacmanDataWriter.start_run(self)
         self.__fec_data._n_calls_to_run += 1
 
     def finish_run(self):
-        UtilsDataWriter.finish_run(self)
+        PacmanDataWriter.finish_run(self)
 
     def hard_reset(self):
-        UtilsDataWriter.hard_reset(self)
+        PacmanDataWriter.hard_reset(self)
         self.__fec_data._hard_reset()
         self.__create_run_dir_path()
 
     def soft_reset(self):
-        UtilsDataWriter.soft_reset(self)
+        PacmanDataWriter.soft_reset(self)
         self.__fec_data._soft_reset()
 
     def __create_run_dir_path(self):
