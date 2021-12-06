@@ -3261,7 +3261,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param str partition_identifier:
             the partition identifier for the outgoing edge partition
         """
-        self._data_writer.get_graph().add_edge(edge_to_add, partition_identifier)
+        self._data_writer.get_graph().add_edge(
+            edge_to_add, partition_identifier)
         self._vertices_or_edges_added = True
 
     def add_machine_edge(self, edge, partition_id):
