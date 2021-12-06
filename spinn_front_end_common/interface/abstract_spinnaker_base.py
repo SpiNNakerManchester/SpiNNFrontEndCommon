@@ -1746,8 +1746,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Ner route traffic aware"):
             self._routing_table_by_partition = ner_route_traffic_aware(
-                self._data_writer.runtime_machine_graph, self._machine,
-                self._placements)
+                self._machine, self._placements)
 
     def _execute_ner_route(self):
         """
@@ -1760,8 +1759,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Ner route"):
             self._routing_table_by_partition = ner_route(
-                self._data_writer.runtime_machine_graph, self._machine,
-                self._placements)
+                self._machine, self._placements)
 
     def _execute_basic_dijkstra_routing(self):
         """
@@ -1774,8 +1772,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Basic dijkstra routing"):
             self._routing_table_by_partition = basic_dijkstra_routing(
-                self._data_writer.runtime_machine_graph, self._machine,
-                self._placements)
+                self._machine, self._placements)
 
     def _do_routing(self):
         """
