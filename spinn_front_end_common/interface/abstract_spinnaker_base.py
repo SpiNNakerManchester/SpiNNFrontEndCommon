@@ -1381,7 +1381,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         with FecTimer(MAPPING, "Splitter reset"):
-            splitter_reset(self._data_writer.runtime_graph)
+            splitter_reset()
 
     # Overriden by spynaker to choose an extended algorithm
     def _execute_splitter_selector(self):
@@ -1389,7 +1389,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the SplitterSelector
         """
         with FecTimer(MAPPING, "Splitter selector"):
-            splitter_selector(self._data_writer.runtime_graph)
+            splitter_selector()
 
     def _execute_delay_support_adder(self):
         """
@@ -1720,8 +1720,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             # TODO dont pass down machine_graph is they are kept long term
             placer_reports_without_application_graph(
-                self._ipaddress, self._data_writer.runtime_machine_graph,
-                self._placements, self._machine)
+                self._ipaddress, self._placements, self._machine)
 
     def _json_placements(self):
         """
