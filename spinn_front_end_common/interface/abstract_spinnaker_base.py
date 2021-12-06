@@ -1561,8 +1561,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Connective based placer"):
             self._placements = connective_based_placer(
-                self._data_writer.runtime_machine_graph, self._machine,
-                self._plan_n_timesteps)
+                self._machine, self._plan_n_timesteps)
 
     def _execute_one_to_one_placer(self):
         """
@@ -1576,8 +1575,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "One to one placer"):
             self._placements = one_to_one_placer(
-                self._data_writer.runtime_machine_graph, self._machine,
-                self._plan_n_timesteps)
+                self._machine, self._plan_n_timesteps)
 
     def _execute_radial_placer(self):
         """
@@ -1591,8 +1589,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Radial placer"):
             self._placements = radial_placer(
-                self._data_writer.runtime_machine_graph, self._machine,
-                self._plan_n_timesteps)
+                self._machine, self._plan_n_timesteps)
 
     def _execute_speader_placer(self):
         """
@@ -1606,7 +1603,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Spreader placer"):
             self._placements = spreader_placer(
-                self._data_writer.runtime_machine_graph, self._machine,
+                self._machine,
                 self._machine_partition_n_keys_map, self._plan_n_timesteps)
 
     def _do_placer(self):
