@@ -72,7 +72,7 @@ def get_profiling_data(profile_region, tag_labels, txrx, placement):
     profile_data = ProfileData(tag_labels)
 
     address = locate_memory_region_for_placement(
-        placement=placement, region=profile_region, transceiver=txrx)
+        placement=placement, region=profile_region)
 
     # Read the profiling data size
     words_written = txrx.read_word(placement.x, placement.y, address)

@@ -13,15 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
-def chip_io_buf_clearer(transceiver, executable_types):
+def chip_io_buf_clearer(executable_types):
     """ Clears the logging output buffer of an application running on a\
         SpiNNaker machine.
 
-    :param ~spinnman.transceiver.Transceiver transceiver:
     :param executable_types:
     :type executable_types:
         dict(ExecutableType,~spinn_machine.CoreSubsets)
@@ -30,5 +30,5 @@ def chip_io_buf_clearer(transceiver, executable_types):
         core_subsets = \
             executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
 
-        process = ClearIOBUFProcess(transceiver.scamp_connection_selector)
+        process = ClearIOBUFProcess(FecDataView().scamp_connection_selector)
         process.clear_iobuf(core_subsets, len(core_subsets))

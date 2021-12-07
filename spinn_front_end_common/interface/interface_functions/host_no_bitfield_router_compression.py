@@ -159,7 +159,7 @@ class Compression(object):
             progress_bar.end()
             return
 
-        self._compressor_app_id = self._transceiver.app_id_tracker.get_new_id()
+        self._compressor_app_id = FecDataView().get_new_id()
 
         # figure size of SDRAM needed for each chip for storing the routing
         # table
@@ -171,8 +171,7 @@ class Compression(object):
 
         executable_finder = ExecutableFinder(binary_search_paths=[])
         run_system_application(
-            executable_targets, self._compressor_app_id, self._transceiver,
-            executable_finder,
+            executable_targets, self._compressor_app_id, executable_finder,
             get_config_bool("Reports", "write_compressor_iobuf"),
             self._check_for_success,
             [CPUState.FINISHED], False, "compressor_on_{}_{}_{}.txt",
@@ -195,13 +194,12 @@ class Compression(object):
         # write SDRAM requirements per chip
         self._transceiver.write_memory(table.x, table.y, base_address, data)
 
-    def _check_for_success(self, executable_targets, transceiver):
+    def _check_for_success(self, executable_targets):
         """ Goes through the cores checking for cores that have failed to\
             compress the routing tables to the level where they fit into the\
             router
 
         :param ExecutableTargets executable_targets:
-        :param ~spinnman.transceiver.Transceiver transceiver:
         """
         for core_subset in executable_targets.all_core_subsets:
             x = core_subset.x
@@ -209,11 +207,11 @@ class Compression(object):
             for p in core_subset.processor_ids:
                 # Read the result from specified register
                 if self.__result_register == 0:
-                    result = transceiver.read_user_0(x, y, p)
+                    result = FecDataView().transceiver.read_user_0(x, y, p)
                 elif self.__result_register == 1:
-                    result = transceiver.read_user_1(x, y, p)
+                    result = FecDataView().read_user_1(x, y, p)
                 elif self.__result_register == 2:
-                    result = transceiver.read_user_2(x, y, p)
+                    result = FecDataView().read_user_2(x, y, p)
                 else:
                     raise Exception("Incorrect register")
                 # The result is 0 if success, otherwise failure

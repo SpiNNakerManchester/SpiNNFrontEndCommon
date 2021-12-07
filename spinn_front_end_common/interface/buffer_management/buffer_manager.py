@@ -31,6 +31,7 @@ from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
 from spinnman.messages.eieio import EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
 from data_specification.constants import BYTES_PER_WORD
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import SDP_PORTS
 from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, SpinnFrontEndException)
@@ -208,7 +209,7 @@ class BufferManager(object):
         """
         # pylint: disable=too-many-arguments
         if not get_config_bool("Machine", "enable_advanced_monitor_support"):
-            return self._transceiver.read_memory(
+            return FecDataView().read_memory(
                 placement_x, placement_y, address, length)
 
         # Round to word boundaries
@@ -226,7 +227,7 @@ class BufferManager(object):
             sender, self._placements.get_placement_of_vertex(sender),
             address, length, self._fixed_routes)
         if VERIFY:
-            txrx_data = self._transceiver.read_memory(
+            txrx_data = FecDataView().read_memory(
                 placement_x, placement_y, address, length)
             self._verify_data(extra_mon_data, txrx_data)
 
@@ -289,7 +290,7 @@ class BufferManager(object):
         :param ~spinn_machine.tags.IPTag tag:
         :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
         """
-        connection = self._transceiver.register_udp_listener(
+        connection = FecDataView().transceiver.register_udp_listener(
             self._receive_buffer_command_message, EIEIOConnection,
             local_port=tag.port, local_host=tag.ip_address)
         self._seen_tags.add((tag.ip_address, connection.local_port))
@@ -443,7 +444,7 @@ class BufferManager(object):
         # region_base_address = self._locate_region_address(region, vertex)
         placement = self._placements.get_placement_of_vertex(vertex)
         region_base_address = locate_memory_region_for_placement(
-            placement, region, self._transceiver)
+            placement, region)
 
         # Add packets until out of space
         sent_message = False
@@ -494,7 +495,7 @@ class BufferManager(object):
                 region, sent_stop_message=True)
 
         # Do the writing all at once for efficiency
-        self._transceiver.write_memory(
+        FecDataView().transceiver.write_memory(
             placement.x, placement.y, region_base_address, all_data)
 
     def _send_messages(self, size, vertex, region, sequence_no):
@@ -576,7 +577,7 @@ class BufferManager(object):
             destination_cpu=placement.p, flags=SDPFlag.REPLY_NOT_EXPECTED,
             destination_port=SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value)
         sdp_message = SDPMessage(sdp_header, message.bytestring)
-        self._transceiver.send_sdp_message(sdp_message)
+        FecDataView().transceiver.send_sdp_message(sdp_message)
 
     def stop(self):
         """ Indicates that the simulation has finished, so no further\
@@ -594,7 +595,7 @@ class BufferManager(object):
         :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
         """
         if self._java_caller is not None:
-            self._java_caller.set_placements(placements, self._transceiver)
+            self._java_caller.set_placements(placements)
 
         timer = Timer()
         with timer:
@@ -628,7 +629,7 @@ class BufferManager(object):
 
         # update transaction id from the machine for all extra monitors
         for extra_mon in self._extra_monitor_cores:
-            extra_mon.update_transaction_id_from_machine(self._transceiver)
+            extra_mon.update_transaction_id_from_machine()
 
         # Ugly, to avoid an import loop...
         with receivers[0].streaming(
@@ -686,7 +687,7 @@ class BufferManager(object):
                 placement.x, placement.y, placement.p):
 
             addr = placement.vertex.get_recording_region_base_address(
-                self._transceiver, placement)
+                placement)
             self._get_region_information(
                 addr, placement.x, placement.y, placement.p)
 

@@ -143,14 +143,14 @@ class _MachineBitFieldRouterCompressor(object):
             whether to compress as much as possible
         :return: where the compressors ran
         """
-        machine_graph = FecDataView().runtime_machine_graph
+        view = FecDataView()
+        machine_graph = view.runtime_machine_graph
         if len(routing_tables.routing_tables) == 0:
             return ExecutableTargets()
 
-        app_id = FecDataView().app_id
+        app_id = view.app_id
         # new app id for this simulation
-        routing_table_compressor_app_id = \
-            transceiver.app_id_tracker.get_new_id()
+        routing_table_compressor_app_id = view.get_new_id()
 
         text = self._PROGRESS_BAR_TEXT.format(self._compressor_type)
         retry_count = get_config_int(
@@ -188,8 +188,7 @@ class _MachineBitFieldRouterCompressor(object):
         try:
             run_system_application(
                 compressor_executable_targets,
-                routing_table_compressor_app_id, transceiver,
-                executable_finder,
+                routing_table_compressor_app_id, executable_finder,
                 get_config_bool("Reports", "write_compressor_iobuf"),
                 functools.partial(
                     self._check_bit_field_router_compressor_for_success,

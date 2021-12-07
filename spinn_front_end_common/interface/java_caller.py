@@ -216,7 +216,7 @@ class JavaCaller(object):
         """
         self._report_folder = report_folder
 
-    def set_placements(self, placements, transceiver):
+    def set_placements(self, placements):
         """ Passes in the placements leaving this class to decide pass it to
             Java.
 
@@ -232,22 +232,18 @@ class JavaCaller(object):
 
         :param ~pacman.model.placements.Placements placements:
             The Placements Object
-        :param ~spinnman.transceiver.Transceiver transceiver: The Transceiver
         """
         path = os.path.join(
             FecDataView().json_dir_path, "java_placements.json")
         self._recording = False
         if self._gatherer_iptags is None:
-            self._placement_json = self._write_placements(
-                placements, transceiver, path)
+            self._placement_json = self._write_placements(placements, path)
         else:
-            self._placement_json = self._write_gather(
-                placements, transceiver, path)
+            self._placement_json = self._write_gather(placements, path)
 
-    def _json_placement(self, placement, transceiver):
+    def _json_placement(self, placement):
         """
         :param ~pacman.model.placements.Placement placement:
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :rtype: dict
         """
         vertex = placement.vertex
@@ -263,8 +259,7 @@ class JavaCaller(object):
             self._recording = True
             json_vertex["recordedRegionIds"] = vertex.get_recorded_region_ids()
             json_vertex["recordingRegionBaseAddress"] = \
-                vertex.get_recording_region_base_address(
-                    transceiver, placement)
+                vertex.get_recording_region_base_address(placement)
         else:
             json_vertex["recordedRegionIds"] = []
             json_vertex["recordingRegionBaseAddress"] = 0
@@ -303,10 +298,9 @@ class JavaCaller(object):
             by_ethernet[ethernet][chip_xy].append(placement)
         return by_ethernet
 
-    def _write_gather(self, placements, transceiver, path):
+    def _write_gather(self, placements, path):
         """
         :param ~pacman.model.placements.Placements placements:
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :param str path:
         :rtype: str
         """
@@ -329,7 +323,7 @@ class JavaCaller(object):
                 if chip_xy in by_chip:
                     json_placements = list()
                     for placement in by_chip[chip_xy]:
-                        json_p = self._json_placement(placement, transceiver)
+                        json_p = self._json_placement(placement)
                         if json_p:
                             json_placements.append(json_p)
                     if len(json_placements) > 0:
@@ -344,17 +338,16 @@ class JavaCaller(object):
 
         return path
 
-    def _write_placements(self, placements, transceiver, path):
+    def _write_placements(self, placements, path):
         """
         :param ~pacman.model.placements.Placements placements:
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :param str path:
         :rtype: str
         """
         # Read back the regions
         json_obj = list()
         for placement in placements:
-            json_p = self._json_placement(placement, transceiver)
+            json_p = self._json_placement(placement)
             if json_p:
                 json_obj.append(json_p)
 

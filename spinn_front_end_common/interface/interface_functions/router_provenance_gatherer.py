@@ -97,8 +97,7 @@ class _RouterProvenanceGatherer(object):
             monitor = self._extra_monitor_vertices[0]
             reinjection_data = monitor.get_reinjection_status_for_vertices(
                 placements=self._placements,
-                extra_monitor_cores_for_data=self._extra_monitor_vertices,
-                transceiver=self._txrx)
+                extra_monitor_cores_for_data=self._extra_monitor_vertices)
 
         for router_table in progress.over(
                 self._router_tables.routing_tables, False):

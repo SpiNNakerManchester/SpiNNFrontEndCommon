@@ -526,9 +526,9 @@ class _HostExecuteDataSpecification(object):
     def __set_router_timeouts(self):
         for receiver in self._core_to_conn_map.values():
             receiver.load_system_routing_tables(
-                self._txrx, self._monitors, self._placements)
+                self._monitors, self._placements)
             receiver.set_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements)
+                self._monitors, self._placements)
 
     def __reset_router_timeouts(self):
         # reset router timeouts
@@ -537,7 +537,7 @@ class _HostExecuteDataSpecification(object):
                 self._txrx, self._monitors, self._placements)
             # reset router tables
             receiver.load_application_routing_tables(
-                self._txrx, self._monitors, self._placements)
+               self._monitors, self._placements)
 
     def __select_writer(self, x, y):
         chip = self._machine.get_chip_at(x, y)
@@ -612,7 +612,7 @@ class _HostExecuteDataSpecification(object):
         dw_write_info = self.__java_database(
             dsg_targets, progress, region_sizes)
         if use_monitors:
-            self._java.set_placements(self._placements, self._txrx)
+            self._java.set_placements(self._placements)
 
         self._java.execute_app_data_specification(use_monitors)
 

@@ -26,6 +26,5 @@ def chip_io_buf_extractor(transceiver, executable_targets, executable_finder):
     :return: error_entries, warn_entries
     :rtype: tuple(list(str),list(str))
     """
-    extractor = IOBufExtractor(
-        transceiver, executable_targets, executable_finder)
+    extractor = IOBufExtractor(executable_targets, executable_finder)
     return extractor.extract_iobuf()

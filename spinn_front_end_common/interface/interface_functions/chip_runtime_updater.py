@@ -19,10 +19,9 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.scp import UpdateRuntimeProcess
 
 
-def chip_runtime_updater(txrx, executable_types, n_sync_steps):
+def chip_runtime_updater(executable_types, n_sync_steps):
     """ Updates the runtime of an application running on a SpiNNaker machine.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :param executable_types:
         :type executable_types: dict(ExecutableType,~spinn_machine.CoreSubsets)
         :param run_until_timesteps:
@@ -39,7 +38,7 @@ def chip_runtime_updater(txrx, executable_types, n_sync_steps):
         total_number_of_things_to_do=1,
         string_describing_what_being_progressed=(
             "Waiting for cores to be either in PAUSED or READY state"))
-    txrx.wait_for_cores_to_be_in_state(
+    view.transceiver.wait_for_cores_to_be_in_state(
         core_subsets, view.app_id, [CPUState.PAUSED, CPUState.READY],
         error_states=frozenset({
             CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG,
@@ -55,8 +54,7 @@ def chip_runtime_updater(txrx, executable_types, n_sync_steps):
         infinite_run = 0
         current_timesteps = view.first_machine_time_step
 
-    # TODO: Expose the connection selector in SpiNNMan
-    process = UpdateRuntimeProcess(txrx.scamp_connection_selector)
+    process = UpdateRuntimeProcess(FecDataView().scamp_connection_selector)
     process.update_runtime(
         current_timesteps, run_until_timesteps, infinite_run, core_subsets,
         len(core_subsets), n_sync_steps)
