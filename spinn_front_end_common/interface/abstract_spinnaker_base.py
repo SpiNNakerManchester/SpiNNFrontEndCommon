@@ -2077,7 +2077,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._execute_partitioner_report()
         self._execute_local_tdma_builder()
-        self._json_partition_n_keys_map()
+        # self._json_partition_n_keys_map()
         self._do_placer(system_placements)
         self._report_placements_with_application_graph()
         # self._report_placements_with_machine_graph()
