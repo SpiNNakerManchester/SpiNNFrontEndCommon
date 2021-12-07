@@ -142,7 +142,7 @@ class FecDataView(PacmanDataView):
         The current application id
 
         :rtype: int
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsException:
             If the app_id is currently unavailable
         """
         if self.__fec_data._app_id is None:
@@ -222,7 +222,7 @@ class FecDataView(PacmanDataView):
         Guranteed to be possitve
 
         :rtype: int
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsException:
             If the max_run_time_steps is currently unavailable
         """
         if self.__fec_data._max_run_time_steps is None:
@@ -279,7 +279,7 @@ class FecDataView(PacmanDataView):
         Semantic sugar for 1000 / simulation_time_step_us
 
         :rtype: float or None
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsExceptionn:
             If the simulation_time_step is currently unavailable
         """
         return self.__fec_data._simulation_time_step_per_ms
@@ -290,7 +290,7 @@ class FecDataView(PacmanDataView):
         Semantic sugar for 1,000,000 / simulation_time_step_us
 
         :rtype: float or None
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         return self.__fec_data._simulation_time_step_per_s
@@ -320,7 +320,7 @@ class FecDataView(PacmanDataView):
         Previously known as machine_timestep
 
         :rtype: int
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if self.__fec_data._simulation_time_step_us is None:
@@ -334,7 +334,7 @@ class FecDataView(PacmanDataView):
         Semantic sugar for simulation_time_step() / 1000.
 
         :rtype: float
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsException:
             If the simulation_time_step_ms is currently unavailable
         """
         if self.__fec_data._simulation_time_step_ms is None:
@@ -348,7 +348,7 @@ class FecDataView(PacmanDataView):
         Semantic sugar for 1000 / simulation_time_step()
 
         :rtype: float
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if self.__fec_data._simulation_time_step_per_ms is None:
@@ -362,7 +362,7 @@ class FecDataView(PacmanDataView):
         Semantic sugar for 1,000,000 / simulation_time_step()
 
         :rtype: float
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if self.__fec_data._simulation_time_step_per_s is None:
@@ -376,7 +376,7 @@ class FecDataView(PacmanDataView):
         Semantic sugar for simulation_time_step() / 1,000,000.
 
         :rtype: float
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsException:
             If the simulation_time_step_ms is currently unavailable
         """
         if self.__fec_data._simulation_time_step_s is None:
@@ -390,7 +390,7 @@ class FecDataView(PacmanDataView):
         Semantic sugar for simulation_time_step_ms * time_sclae_factor
 
         :rtype: float
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if self.__fec_data._hardware_time_step_ms is None:
@@ -404,7 +404,7 @@ class FecDataView(PacmanDataView):
         Semantic sugar for simulation_time_step_us * time_sclae_factor
 
         :rtype: int
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if self.__fec_data._hardware_time_step_us is None:
@@ -424,7 +424,7 @@ class FecDataView(PacmanDataView):
         """
 
         :rtype: int or float
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsException:
             If the time_scale_factor is currently unavailable
         """
         if self.__fec_data._time_scale_factor is None:
@@ -487,7 +487,7 @@ class FecDataView(PacmanDataView):
         shared by all path methods
 
         :rtpye: str
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if self.__fec_data._report_dir_path:
@@ -505,7 +505,7 @@ class FecDataView(PacmanDataView):
         shared by all path methods
 
         :rtpye: str
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if self.__fec_data._timestamp_dir_path:
@@ -528,7 +528,7 @@ class FecDataView(PacmanDataView):
         shared by all path methods
 
         :rtpye: str
-        :raises SpinnFrontEndException:
+        :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if self.status == Data_Status.MOCKED:
@@ -548,7 +548,7 @@ class FecDataView(PacmanDataView):
         shared by all path methods
 
         :rtpye: str
-        :raises SpinnFrontEndException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if self.status == Data_Status.MOCKED:
@@ -567,7 +567,7 @@ class FecDataView(PacmanDataView):
         shared by all path methods
 
         :rtpye: str
-        :raises SimulatorNotSetupException:
+        :raises ~spinn_utilities.exceptions.SimulatorNotSetupException:
             If the simulator has not been setup
         """
         if self.status == Data_Status.MOCKED:
@@ -588,7 +588,7 @@ class FecDataView(PacmanDataView):
         shared by all path methods
 
         :rtpye: str
-        :raises SpinnFrontEndException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if self.status == Data_Status.MOCKED:
