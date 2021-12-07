@@ -22,7 +22,6 @@ from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection)
 from spinn_front_end_common.utilities.globals_variables import (
     machine_time_step, report_default_directory, time_scale_factor)
-from pacman.model.graphs.machine import MulticastEdgePartition
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
