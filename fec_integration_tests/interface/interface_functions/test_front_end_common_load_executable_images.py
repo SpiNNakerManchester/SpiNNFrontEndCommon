@@ -55,6 +55,10 @@ class _MockTransceiver(Transceiver):
     def send_signal(self, app_id, signal):
         pass
 
+    @overrides(Transceiver.close)
+    def close(self):
+        pass
+
 
 class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
 
