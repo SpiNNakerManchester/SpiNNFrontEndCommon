@@ -12,7 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 main interface for the SpiNNaker tools
 """
@@ -62,7 +61,8 @@ from pacman.operations.placer_algorithms import (
     connective_based_placer, one_to_one_placer, radial_placer, spreader_placer,
     place_application_graph)
 from pacman.operations.router_algorithms import (
-    basic_dijkstra_routing, ner_route, ner_route_traffic_aware)
+    basic_dijkstra_routing, ner_route, ner_route_traffic_aware,
+    route_application_graph)
 from pacman.operations.router_compressors import pair_compressor
 from pacman.operations.router_compressors.ordered_covering_router_compressor \
     import ordered_covering_compressor
@@ -1148,13 +1148,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         # on each chip
         usage_by_chip = dict()
 
-        for app_vert in self._application_graph.vertices:
-            for vertices, sdram in app_vert.splitter.get_same_chip_groups():
-                place = self._placements.get_placement_of_vertex(vertices[0])
-                if (place.x, place.y) in usage_by_chip:
-                    usage_by_chip[place.x, place.y] += sdram
-                else:
-                    usage_by_chip[place.x, place.y] = sdram
+        for place in self._placements:
+            sdram = place.vertex.resources_required.sdram
+            if (place.x, place.y) in usage_by_chip:
+                usage_by_chip[place.x, place.y] += sdram
+            else:
+                usage_by_chip[place.x, place.y] = sdram
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
@@ -1788,6 +1787,19 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._routing_table_by_partition = basic_dijkstra_routing(
                 self._machine_graph, self._machine, self._placements)
 
+    def _execute_application_router(self):
+        """
+        Runs, times and logs the ApplicationRouter
+
+        Sets the "routing_table_by_partition" data if called
+
+        .. note::
+            Calling of this method is based on the cfg router value
+        """
+        with FecTimer(MAPPING, "Basic dijkstra routing"):
+            self._routing_table_by_partition = route_application_graph(
+                self._machine, self._application_graph, self._placements)
+
     def _do_routing(self):
         """
         Runs, times and logs one of the routers
@@ -1807,6 +1819,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._execute_ner_route()
         if name == "NerRouteTrafficAware":
             return self._execute_ner_route_traffic_aware()
+        if name == "ApplicationRouter":
+            return self._execute_application_router()
         if "," in name:
             raise ConfigurationException(
                 "Only a single algorithm is supported for router")
@@ -1911,13 +1925,13 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _report_router_info(self):
         """
-        Writes, times and logs the router iinfo report if requested
+        Writes, times and logs the router info report if requested
         """
         with FecTimer(MAPPING, "Router info report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_info_report"):
                 return
-            routing_info_report(self._machine_graph, self._routing_infos)
+            routing_info_report(self._application_graph, self._routing_infos)
 
     def _execute_basic_routing_table_generator(self):
         """
@@ -2084,7 +2098,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_routers()
         self._report_router_summary()
         self._json_routing_tables()
-        self._report_router_collision_potential()
+        # self._report_router_collision_potential()
         self._execute_locate_executable_start_type()
         self._execute_buffer_manager_creator()
         self._execute_sdram_outgoing_partition_allocator()
@@ -2803,7 +2817,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # Used to used compressed routing tables if available on host
             # TODO consider not saving router tabes.
             self._database_file_path = database_interface(
-                self._machine_graph, self._tags, run_time, self._machine,
+                self._tags, run_time, self._machine,
                 self._max_run_time_steps, self._placements,
                 self._routing_infos, self._router_tables,
                 self._app_id, self._application_graph)

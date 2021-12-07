@@ -23,11 +23,10 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def database_interface(
-        machine_graph, tags, runtime, machine, data_n_timesteps, placements,
-        routing_infos, router_tables, app_id, application_graph=None):
+        tags, runtime, machine, data_n_timesteps, placements,
+        routing_infos, router_tables, app_id, application_graph):
     """ Writes a database of the graph(s) and other information.
 
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.tags.Tags tags:
         :param int runtime:
         :param ~spinn_machine.Machine machine:
@@ -44,9 +43,9 @@ def database_interface(
         :return: Database interface, where the database is located
         :rtype: tuple(DatabaseInterface, str)
     """
-    interface = _DatabaseInterface(machine_graph)
+    interface = _DatabaseInterface(application_graph)
     return interface._run(
-        machine_graph, tags, runtime, machine, data_n_timesteps, placements,
+        tags, runtime, machine, data_n_timesteps, placements,
         routing_infos, router_tables, app_id, application_graph)
 
 
@@ -62,17 +61,16 @@ class _DatabaseInterface(object):
         "_needs_db"
     ]
 
-    def __init__(self, machine_graph):
+    def __init__(self, app_graph):
         self._writer = DatabaseWriter()
         # add database generation if requested
-        self._needs_db = self._writer.auto_detect_database(machine_graph)
+        self._needs_db = self._writer.auto_detect_database(app_graph)
 
     def _run(
-            self, machine_graph, tags, runtime, machine, data_n_timesteps,
+            self, tags, runtime, machine, data_n_timesteps,
             placements, routing_infos, router_tables, app_id,
-            application_graph=None):
+            application_graph):
         """
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.tags.Tags tags:
         :param int runtime:
         :param ~spinn_machine.Machine machine:
@@ -102,7 +100,7 @@ class _DatabaseInterface(object):
             logger.info("creating live event connection database in {}",
                         self._writer.database_path)
             self._write_to_db(
-                machine, runtime, application_graph, machine_graph,
+                machine, runtime, application_graph,
                 data_n_timesteps, placements, routing_infos, router_tables,
                 tags, app_id)
 
@@ -111,7 +109,7 @@ class _DatabaseInterface(object):
         return None
 
     def _write_to_db(
-            self, machine, runtime, app_graph, machine_graph,
+            self, machine, runtime, app_graph,
             data_n_timesteps, placements, routing_infos, router_tables,
             tags, app_id):
         """
@@ -130,30 +128,25 @@ class _DatabaseInterface(object):
         # pylint: disable=too-many-arguments
 
         with self._writer as w, ProgressBar(
-                9, "Creating graph description database") as p:
+                8, "Creating graph description database") as p:
             w.add_system_params(runtime, app_id)
             p.update()
             w.add_machine_objects(machine)
             p.update()
-            if app_graph is not None and app_graph.n_vertices:
-                w.add_application_vertices(app_graph)
-            p.update()
-            w.add_vertices(machine_graph, data_n_timesteps, app_graph)
+            w.add_application_vertices(app_graph, data_n_timesteps)
             p.update()
             w.add_placements(placements)
             p.update()
-            w.add_routing_infos(routing_infos, machine_graph)
+            w.add_routing_infos(routing_infos, app_graph)
             p.update()
             w.add_routing_tables(router_tables)
             p.update()
-            w.add_tags(machine_graph, tags)
+            w.add_tags(app_graph, tags)
             p.update()
-            if app_graph is not None:
-                if get_config_bool(
-                        "Database",
-                        "create_routing_info_to_neuron_id_mapping"):
-                    w.create_atom_to_event_id_mapping(
-                        application_graph=app_graph,
-                        machine_graph=machine_graph,
-                        routing_infos=routing_infos)
+            if get_config_bool(
+                    "Database",
+                    "create_routing_info_to_neuron_id_mapping"):
+                w.create_atom_to_event_id_mapping(
+                    application_graph=app_graph,
+                    routing_infos=routing_infos)
             p.update()

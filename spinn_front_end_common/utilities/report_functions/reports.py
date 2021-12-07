@@ -645,43 +645,38 @@ def _sdram_usage_report_per_chip_with_timesteps(
             pass
 
 
-def routing_info_report(machine_graph, routing_infos):
+def routing_info_report(app_graph, routing_infos):
     """ Generates a report which says which keys is being allocated to each\
         vertex
 
-    :param MachineGraph machine_graph:
+    :param ApplicationGraph app_graph:
     :param RoutingInfo routing_infos:
     """
     file_name = os.path.join(report_default_directory(), _VIRTKEY_FILENAME)
     try:
         with open(file_name, "w") as f:
-            progress = ProgressBar(machine_graph.n_outgoing_edge_partitions,
+            progress = ProgressBar(app_graph.n_outgoing_edge_partitions,
                                    "Generating Routing info report")
-            for vertex in machine_graph.vertices:
-                _write_vertex_virtual_keys(
-                    f, vertex, machine_graph, routing_infos, progress)
+            for part in progress.over(app_graph.outgoing_edge_partitions):
+                _write_vertex_virtual_keys(f, part, routing_infos)
             progress.end()
     except IOError:
         logger.exception("generate virtual key space information report: "
                          "Can't open file {} for writing.", file_name)
 
 
-def _write_vertex_virtual_keys(
-        f, vertex, graph, routing_infos, progress):
+def _write_vertex_virtual_keys(f, part, routing_infos):
     """
     :param ~io.FileIO f:
     :param MachineVertex vertex:
-    :param MachineGraph graph:
     :param RoutingInfo routing_infos:
     :param ~spinn_utilities.progress_bar.ProgressBar progress:
     """
-    f.write("Vertex: {}\n".format(vertex))
-    for partition in progress.over(
-            graph.get_multicast_edge_partitions_starting_at_vertex(vertex),
-            False):
-        rinfo = routing_infos.get_routing_info_from_partition(partition)
-        f.write("    Partition: {}, Routing Info: {}\n".format(
-            partition.identifier, rinfo.keys_and_masks))
+    f.write("Vertex: {}\n".format(part.pre_vertex))
+    rinfo = routing_infos.get_routing_info_from_pre_vertex(
+        part.pre_vertex, part.identifier)
+    f.write("    Partition: {}, Routing Info: {}\n".format(
+        part.identifier, rinfo.keys_and_masks))
 
 
 def router_report_from_router_tables(routing_tables):

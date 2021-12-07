@@ -92,28 +92,6 @@ CREATE TABLE IF NOT EXISTS Machine_vertices(
     sdram_used INTEGER,
     dtcm_used INTEGER);
 
--- A communication link between two machine vertices
-CREATE TABLE IF NOT EXISTS Machine_edges(
-    edge_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    pre_vertex INTEGER,
-    post_vertex INTEGER,
-    label TEXT,
-    class TEXT,
-    FOREIGN KEY (pre_vertex)
-        REFERENCES Machine_vertices(vertex_id),
-    FOREIGN KEY (post_vertex)
-        REFERENCES Machine_vertices(vertex_id));
-
--- The edge identified by edge_id starts at the vertex identified by vertex_id
-CREATE TABLE IF NOT EXISTS Machine_graph(
-    vertex_id INTEGER,
-    edge_id INTEGER,
-    PRIMARY KEY (vertex_id, edge_id),
-    FOREIGN KEY (vertex_id)
-        REFERENCES Machine_vertices(vertex_id),
-    FOREIGN KEY (edge_id)
-        REFERENCES Machine_edges(edge_id));
-
 -- The state of the graph mapper, which links each application vertex to a
 -- number of machine vertexes, with contiguous-but-non-overlapping ranges of
 -- atoms.
@@ -127,17 +105,6 @@ CREATE TABLE IF NOT EXISTS graph_mapper_vertex(
         REFERENCES Machine_vertices(vertex_id),
     FOREIGN KEY (application_vertex_id)
         REFERENCES Application_vertices(vertex_id));
-
--- The state of the graph mapper, which links each application edge to one or
--- more machine edges.
-CREATE TABLE IF NOT EXISTS graph_mapper_edges(
-    application_edge_id INTEGER,
-    machine_edge_id INTEGER,
-    PRIMARY KEY (application_edge_id, machine_edge_id),
-    FOREIGN KEY (machine_edge_id)
-        REFERENCES Machine_edges(edge_id),
-    FOREIGN KEY (application_edge_id)
-        REFERENCES Application_edges(edge_id));
 
 -- How the machine vertices are actually placed on the SpiNNaker machine.
 CREATE TABLE IF NOT EXISTS Placements(
@@ -154,12 +121,13 @@ CREATE TABLE IF NOT EXISTS Placements(
 -- The mapping of machine edges to the keys and masks used in SpiNNaker
 -- packets.
 CREATE TABLE IF NOT EXISTS Routing_info(
-    edge_id INTEGER,
+    pre_vertex_id INTEGER,
+    partition_id TEXT,
     "key" INTEGER,
     mask INTEGER,
-    PRIMARY KEY (edge_id, "key", mask),
-    FOREIGN KEY (edge_id)
-        REFERENCES Machine_edges(edge_id));
+    PRIMARY KEY (pre_vertex_id, partition_id),
+    FOREIGN KEY (pre_vertex_id)
+        REFERENCES Machine_vertices(pre_vertex_id));
 
 -- The computed routing table for a chip.
 CREATE TABLE IF NOT EXISTS Routing_table(

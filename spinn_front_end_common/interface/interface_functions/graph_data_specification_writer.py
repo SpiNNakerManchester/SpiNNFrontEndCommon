@@ -189,9 +189,8 @@ class _GraphDataSpecificationWriter(object):
         #  what each core within the chip uses and its original
         # estimate.
         memory_usage = "\n".join((
-            "    {}: {} (total={}, estimated={})".format(
+            "    {}: (total={}, estimated={})".format(
                 vert, self._region_sizes[pl.x, pl.y, pl.p],
-                sum(self._region_sizes[pl.x, pl.y, pl.p]),
                 vert.resources_required.sdram.get_total_sdram(
                     data_n_timesteps))
             for vert in self._vertices_by_chip[pl.x, pl.y]))
