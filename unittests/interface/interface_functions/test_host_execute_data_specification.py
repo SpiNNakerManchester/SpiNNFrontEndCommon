@@ -24,6 +24,7 @@ from data_specification.constants import (
     MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
     execute_application_data_specs)
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -32,7 +33,7 @@ from spinn_front_end_common.interface.ds import DataSpecificationTargets
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 
-class _MockTransceiver(object):
+class _MockTransceiver(Transceiver):
     """ Pretend transceiver
     """
     # pylint: disable=unused-argument
@@ -69,6 +70,10 @@ class _MockTransceiver(object):
             data = struct.pack("<I", data)
         self._regions_written.append((base_address, data))
 
+    @overrides(Transceiver.close)
+    def close(self, close_original_connections=True, power_off_machine=False):
+        pass
+
 
 class TestHostExecuteDataSpecification(unittest.TestCase):
 
@@ -78,6 +83,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
     def test_call(self):
         transceiver = _MockTransceiver(user_0_addresses={0: 1000})
+        FecDataWriter().set_transceiver(transceiver)
         machine = virtual_machine(2, 2)
 
         dsg_targets = DataSpecificationTargets(machine)
@@ -103,7 +109,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets.add_processor(
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         infos = execute_application_data_specs(
-            transceiver, machine, dsg_targets, targets,
+            machine, dsg_targets, targets,
             region_sizes=region_sizes)
 
         # Test regions - although 3 are created, only 2 should be uploaded
@@ -145,6 +151,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
     def test_multi_spec_with_references(self):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000, 2: 3000})
+        FecDataWriter().set_transceiver(transceiver)
         machine = virtual_machine(2, 2)
         region_sizes = dict()
 
@@ -181,8 +188,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets.add_processor(
             "text.aplx", 0, 0, 2, ExecutableType.USES_SIMULATION_INTERFACE)
         infos = execute_application_data_specs(
-            transceiver, machine, dsg_targets, targets,
-            region_sizes=region_sizes)
+            machine, dsg_targets, targets, region_sizes=region_sizes)
 
         # User 0 for each spec (3) + header and table for each spec (3)
         # + 1 actual region (as rest are references)
@@ -221,6 +227,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
     def test_multispec_with_reference_error(self):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
+        FecDataWriter().set_transceiver(transceiver)
         machine = virtual_machine(2, 2)
         region_sizes = dict()
 
@@ -251,12 +258,13 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because one of the regions can't be found
         with self.assertRaises(ValueError):
             execute_application_data_specs(
-                transceiver, machine, dsg_targets, targets,
+                machine, dsg_targets, targets,
                 region_sizes=region_sizes)
 
     def test_multispec_with_double_reference(self):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
+        FecDataWriter().set_transceiver(transceiver)
         machine = virtual_machine(2, 2)
         region_sizes = dict()
 
@@ -279,12 +287,12 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because regions have same reference
         with self.assertRaises(ValueError):
             execute_application_data_specs(
-                transceiver, machine, dsg_targets, targets,
-                region_sizes=region_sizes)
+                machine, dsg_targets, targets, region_sizes=region_sizes)
 
     def test_multispec_with_wrong_chip_reference(self):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
+        FecDataWriter().set_transceiver(transceiver)
         machine = virtual_machine(2, 2)
         region_sizes = dict()
 
@@ -315,12 +323,12 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because the reference is on a different chip
         with self.assertRaises(ValueError):
             execute_application_data_specs(
-                transceiver, machine, dsg_targets, targets,
-                region_sizes=region_sizes)
+                machine, dsg_targets, targets, region_sizes=region_sizes)
 
     def test_multispec_with_wrong_chip_reference_on_close(self):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
+        FecDataWriter().set_transceiver(transceiver)
         machine = virtual_machine(2, 2)
         region_sizes = dict()
 
@@ -351,7 +359,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because the reference is on a different chip
         with self.assertRaises(ValueError):
             execute_application_data_specs(
-                transceiver, machine, dsg_targets, targets,
+                machine, dsg_targets, targets,
                 region_sizes=region_sizes)
 
 

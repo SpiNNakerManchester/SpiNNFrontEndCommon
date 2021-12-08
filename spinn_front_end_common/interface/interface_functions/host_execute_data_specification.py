@@ -101,8 +101,7 @@ class _ExecutionContext(object):
         cross-references
     """
 
-    def __init__(self, txrx, machine):
-        self.__txrx = txrx
+    def __init__(self, machine):
         self.__machine = machine
         self.__references_to_fill = list()
         self.__references_to_use = dict()
@@ -122,7 +121,6 @@ class _ExecutionContext(object):
         """ Execute the data spec for a core
         :param tuple(int,int,int) core:
         :param ~.AbstractDataReader reader:
-        :param callable(tuple(int,int,int,bytearray),None) writer_func:
         :param int base_address:
         :param int size_allocated:
         :rtype: DataWritten
@@ -160,7 +158,7 @@ class _ExecutionContext(object):
         if write_header_now:
             # NB: DSE meta-block is always small (i.e., one SDP write)
             to_write = numpy.concatenate((header, pointer_table)).tobytes()
-            self.__txrx.write_memory(x, y, base_address, to_write)
+            FecDataView().transceiver.write_memory(x, y, base_address, to_write)
 
         # Write each region
         bytes_written = APP_PTR_TABLE_BYTE_SIZE
@@ -197,8 +195,9 @@ class _ExecutionContext(object):
                     ref_region)
             to_write = numpy.concatenate(
                 (core_to_fill.header, pointer_table)).tobytes()
-            self.__txrx.write_memory(core_to_fill.x, core_to_fill.y,
-                                     core_to_fill.base_address, to_write)
+            FecDataView().transceiver.write_memory(
+                core_to_fill.x, core_to_fill.y, core_to_fill.base_address,
+                to_write)
 
     def __handle_new_references(self, x, y, p, executor, pointer_table):
         """ Get references that can be used later
@@ -274,13 +273,11 @@ class _ExecutionContext(object):
 
 
 def execute_system_data_specs(
-        transceiver, machine, dsg_targets, region_sizes,
+        machine, dsg_targets, region_sizes,
         executable_targets,  java_caller=None,
         processor_to_app_data_base_address=None):
     """ Execute the data specs for all system targets.
 
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the spinnman instance
     :param ~spinn_machine.Machine machine:
         the python representation of the spinnaker machine
     :param dict(tuple(int,int,int),str) dsg_targets:
@@ -297,14 +294,14 @@ def execute_system_data_specs(
     :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
     """
     specifier = _HostExecuteDataSpecification(
-        transceiver, machine, java_caller,
+        machine, java_caller,
         processor_to_app_data_base_address)
     return specifier.execute_system_data_specs(
         dsg_targets, region_sizes, executable_targets)
 
 
 def execute_application_data_specs(
-        transceiver, machine, dsg_targets,
+        machine, dsg_targets,
         executable_targets, region_sizes,
         placements=None, extra_monitor_cores=None,
         extra_monitor_cores_to_ethernet_connection_map=None,
@@ -313,8 +310,6 @@ def execute_application_data_specs(
 
     :param ~spinn_machine.Machine machine:
         the python representation of the SpiNNaker machine
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the spinnman instance
     :param dict(tuple(int,int,int),int) region_sizes:
         the coord for region sizes for each core
     :param DataSpecificationTargets dsg_targets:
@@ -339,7 +334,7 @@ def execute_application_data_specs(
     :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
     """
     specifier = _HostExecuteDataSpecification(
-        transceiver, machine, java_caller,
+        machine, java_caller,
         processor_to_app_data_base_address)
     return specifier.execute_application_data_specs(
         dsg_targets, executable_targets, region_sizes, placements,
@@ -360,21 +355,17 @@ class _HostExecuteDataSpecification(object):
         "_machine",
         "_monitors",
         "_placements",
-        # The spinnman instance.
-        "_txrx",
         # The write info; a dict of cores to a dict of
         # 'start_address', 'memory_used', 'memory_written'
         "_write_info_map"]
 
     first = True
 
-    def __init__(self, transceiver, machine, java_caller,
+    def __init__(self, machine, java_caller,
                  processor_to_app_data_base_address):
         """
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnman instance
         :param ~spinn_machine.Machine machine:
-            the python representation of the spinnaker machine
+           the python representation of the spinnaker machine
         :param JavaCaller java_caller:
         :param processor_to_app_data_base_address:
             map of placement and DSG data
@@ -385,7 +376,6 @@ class _HostExecuteDataSpecification(object):
         self._machine = machine
         self._monitors = None
         self._placements = None
-        self._txrx = transceiver
         if processor_to_app_data_base_address:
             self._write_info_map = processor_to_app_data_base_address
         else:
@@ -463,10 +453,10 @@ class _HostExecuteDataSpecification(object):
             base_addresses[core] = self.__malloc_region_storage(
                 core, region_sizes[core])
 
-        with _ExecutionContext(self._txrx, self._machine) as context:
+        with _ExecutionContext(self._machine) as context:
             for core, reader in progress.over(dsg_targets.items()):
                 results[core] = context.execute(
-                    core, reader, self._txrx.write_memory,
+                    core, reader, FecDataView().transceiver.write_memory,
                     base_addresses[core], region_sizes[core])
 
         return results
@@ -519,8 +509,7 @@ class _HostExecuteDataSpecification(object):
                 region_sizes)
         except:  # noqa: E722
             if uses_advanced_monitors:
-                emergency_recover_states_from_failure(
-                    self._txrx, executable_targets)
+                emergency_recover_states_from_failure(executable_targets)
             raise
 
     def __set_router_timeouts(self):
@@ -534,7 +523,7 @@ class _HostExecuteDataSpecification(object):
         # reset router timeouts
         for receiver in self._core_to_conn_map.values():
             receiver.unset_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements)
+                self._monitors, self._placements)
             # reset router tables
             receiver.load_application_routing_tables(
                self._monitors, self._placements)
@@ -575,14 +564,14 @@ class _HostExecuteDataSpecification(object):
             base_addresses[core] = self.__malloc_region_storage(
                 core, region_sizes[core])
 
-        with _ExecutionContext(self._txrx, self._machine) as context:
+        with _ExecutionContext(self._machine) as context:
             for core, reader in progress.over(dsg_targets.items()):
                 x, y, _p = core
                 # write information for the memory map report
                 self._write_info_map[core] = context.execute(
                     core, reader,
                     self.__select_writer(x, y)
-                    if use_monitors else self._txrx.write_memory,
+                    if use_monitors else FecDataView().transceiver.write_memory,
                     base_addresses[core], region_sizes[core])
 
         if use_monitors:
@@ -700,10 +689,10 @@ class _HostExecuteDataSpecification(object):
             base_addresses[core] = self.__malloc_region_storage(
                 core, region_sizes[core])
 
-        with _ExecutionContext(self._txrx, self._machine) as context:
+        with _ExecutionContext(self._machine) as context:
             for core, reader in progress.over(sys_targets.items()):
                 self._write_info_map[core] = context.execute(
-                    core, reader, self._txrx.write_memory,
+                    core, reader, FecDataView().transceiver.write_memory,
                     base_addresses[core], region_sizes[core])
 
         return self._write_info_map
@@ -723,9 +712,10 @@ class _HostExecuteDataSpecification(object):
 
         # allocate memory where the app data is going to be written; this
         # raises an exception in case there is not enough SDRAM to allocate
-        start_address = self._txrx.malloc_sdram(x, y, size, self._app_id)
+        start_address = FecDataView().transceiver.malloc_sdram(
+            x, y, size, self._app_id)
 
         # set user 0 register appropriately to the application data
-        write_address_to_user0(self._txrx, x, y, p, start_address)
+        write_address_to_user0(x, y, p, start_address)
 
         return start_address

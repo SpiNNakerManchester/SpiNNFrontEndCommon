@@ -66,15 +66,15 @@ def read_data(x, y, address, length, data_format, transceiver):
     return struct.unpack_from(data_format, data)[0]
 
 
-def write_address_to_user0(txrx, x, y, p, address):
+def write_address_to_user0(x, y, p, address):
     """ Writes the given address into the user_0 register of the given core.
 
-    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
     :param int x: Chip coordinate.
     :param int y: Chip coordinate.
     :param int p: Core ID on chip.
     :param int address: Value to write (32-bit integer)
     """
+    txrx = FecDataView().transceiver
     user_0_address = txrx.get_user_0_register_address_from_core(p)
     txrx.write_memory(x, y, user_0_address, address)
 

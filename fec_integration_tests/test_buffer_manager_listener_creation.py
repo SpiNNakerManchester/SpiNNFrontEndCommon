@@ -21,6 +21,8 @@ from spinn_machine.tags import IPTag
 from spinnman.transceiver import Transceiver
 from spinnman.connections.udp_packet_connections import (
     SCAMPConnection, EIEIOConnection)
+from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from pacman_test_objects import SimpleTestVertex
@@ -66,14 +68,15 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         pl = Placements([pl1, pl2])
 
         # Create transceiver
-        trnx = Transceiver(version=5, connections=connections)
+        transceiver = Transceiver(version=5, connections=connections)
+        FecDataWriter().set_transceiver(transceiver)
         # Alternatively, one can register a udp listener for testing via:
         # trnx.register_udp_listener(callback=None,
         #        connection_class=EIEIOConnection)
 
         # Create buffer manager
         bm = BufferManager(
-            placements=pl, tags=t, transceiver=trnx, extra_monitor_cores=None,
+            placements=pl, tags=t, extra_monitor_cores=None,
             packet_gather_cores_to_ethernet_connection_map=None,
             extra_monitor_to_chip_mapping=None, machine=None,
             fixed_routes=None)
@@ -84,7 +87,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         bm._add_buffer_listeners(vertex=v2)
 
         number_of_listeners = 0
-        for i in bm._transceiver._udp_listenable_connections_by_class[
+        for i in transceiver._udp_listenable_connections_by_class[
                 EIEIOConnection]:
             # Check if listener is registered on connection - we only expect
             # one listener to be registered, as all connections can use the

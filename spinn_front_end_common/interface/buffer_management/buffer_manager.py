@@ -86,9 +86,6 @@ class BufferManager(object):
         # list of tags
         "_tags",
 
-        # SpiNNMan instance
-        "_transceiver",
-
         # Set of (ip_address, port) that are being listened to for the tags
         "_seen_tags",
 
@@ -132,7 +129,7 @@ class BufferManager(object):
         "_java_caller"
     ]
 
-    def __init__(self, placements, tags, transceiver, extra_monitor_cores,
+    def __init__(self, placements, tags, extra_monitor_cores,
                  packet_gather_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
                  java_caller=None):
@@ -140,8 +137,6 @@ class BufferManager(object):
         :param ~pacman.model.placements.Placements placements:
             The placements of the vertices
         :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            The transceiver to use for sending and receiving information
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             The monitors.
         :param packet_gather_cores_to_ethernet_connection_map:
@@ -160,7 +155,6 @@ class BufferManager(object):
         # pylint: disable=too-many-arguments
         self._placements = placements
         self._tags = tags
-        self._transceiver = transceiver
         self._extra_monitor_cores = extra_monitor_cores
         self._packet_gather_cores_to_ethernet_connection_map = \
             packet_gather_cores_to_ethernet_connection_map
@@ -633,8 +627,7 @@ class BufferManager(object):
 
         # Ugly, to avoid an import loop...
         with receivers[0].streaming(
-                receivers, self._transceiver, self._extra_monitor_cores,
-                self._placements):
+                receivers, self._extra_monitor_cores, self._placements):
             # get data
             self.__old_get_data_for_placements(placements, progress)
 
@@ -710,9 +703,10 @@ class BufferManager(object):
         :param x: The x-coordinate of the chip containing the data
         :param y: The y-coordinate of the chip containing the data
         """
-        n_regions = self._transceiver.read_word(x, y, addr)
+        transceiver = FecDataView().transceiver
+        n_regions = transceiver.read_word(x, y, addr)
         n_bytes = get_recording_header_size(n_regions)
-        data = self._transceiver.read_memory(
+        data = transceiver.read_memory(
             x, y, addr + BYTES_PER_WORD, n_bytes - BYTES_PER_WORD)
         data_type = _RecordingRegion * n_regions
         regions = data_type.from_buffer_copy(data)

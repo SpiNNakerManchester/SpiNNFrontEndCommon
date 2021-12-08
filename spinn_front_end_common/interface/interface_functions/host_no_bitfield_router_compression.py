@@ -38,7 +38,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def pair_compression(
-        routing_tables, transceiver, executable_finder, machine):
+        routing_tables, executable_finder, machine):
     """ Load routing tables and compress then using the Pair Algorithm.
 
     See ``pacman/operations/router_compressors/pair_compressor.py`` which is
@@ -63,14 +63,13 @@ def pair_compression(
     binary_path = executable_finder.get_executable_path(
         "simple_pair_compressor.aplx")
     compression = Compression(
-        binary_path, machine, routing_tables, transceiver,
+        binary_path, machine, routing_tables,
         "Running pair routing table compression on chip", result_register=1)
     compression.compress()
 
 
 def ordered_covering_compression(
-        routing_tables, transceiver, executable_finder,
-        machine):
+        routing_tables, executable_finder,  machine):
     """ Load routing tables and compress then using the unordered Algorithm.
 
     To the best of our knowledge this is the same algorithm as
@@ -92,7 +91,7 @@ def ordered_covering_compression(
     binary_path = executable_finder.get_executable_path(
         "simple_unordered_compressor.aplx")
     compression = Compression(
-        binary_path, machine, routing_tables, transceiver,
+        binary_path, machine, routing_tables,
         "Running unordered routing table compression on chip",
         result_register=1)
     compression.compress()
@@ -111,12 +110,11 @@ class Compression(object):
         "_machine",
         "_progresses_text",
         "__result_register",
-        "_transceiver",
         "_routing_tables",
         "__failures"]
 
     def __init__(
-            self, binary_path, machine, routing_tables, transceiver,
+            self, binary_path, machine, routing_tables,
             progress_text, result_register):
         """
         :param str binary_path: What binary to run
@@ -124,8 +122,6 @@ class Compression(object):
         :param routing_tables: the memory routing tables to be compressed
         :type routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            How to talk to the machine
         :param str progress_text: Text to use in progress bar
         :param int result_register:
             number of the user register to check for the result code
@@ -136,7 +132,6 @@ class Compression(object):
         # Only used by mundy compressor we can not rebuild
         self._compress_only_when_needed = None
         self._machine = machine
-        self._transceiver = transceiver
         self._routing_tables = routing_tables
         self._progresses_text = progress_text
         self._compressor_app_id = None
@@ -185,14 +180,15 @@ class Compression(object):
         :param pacman.model.routing_tables.AbstractMulticastRoutingTable table:
             the pacman router table instance
         """
+        transceiver = FecDataView().transceiver
         data = self._build_data(table)
 
         # go to spinnman and ask for a memory region of that size per chip.
-        base_address = self._transceiver.malloc_sdram(
+        base_address = transceiver.malloc_sdram(
             table.x, table.y, len(data), self._compressor_app_id, _SDRAM_TAG)
 
         # write SDRAM requirements per chip
-        self._transceiver.write_memory(table.x, table.y, base_address, data)
+        transceiver.write_memory(table.x, table.y, base_address, data)
 
     def _check_for_success(self, executable_targets):
         """ Goes through the cores checking for cores that have failed to\

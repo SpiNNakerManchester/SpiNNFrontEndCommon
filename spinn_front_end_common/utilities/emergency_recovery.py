@@ -97,12 +97,11 @@ def emergency_recover_state_from_failure(vertex, placement):
     _emergency_iobuf_extract(target)
 
 
-def emergency_recover_states_from_failure(txrx, executable_targets):
+def emergency_recover_states_from_failure(executable_targets):
     """ Used to get at least *some* information out of a core when something\
         goes badly wrong. Not a replacement for what abstract spinnaker base\
         does.
 
-    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
     :param ~spinnman.model.ExecutableTargets executable_targets:
         The what/where mapping
     """

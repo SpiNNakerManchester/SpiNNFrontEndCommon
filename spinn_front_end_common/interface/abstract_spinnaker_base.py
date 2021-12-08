@@ -1982,7 +1982,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
 
             self._buffer_manager = buffer_manager_creator(
-                self._placements, self._tags, self._txrx,
+                self._placements, self._tags,
                 self._extra_monitor_vertices,
                 self._extra_monitor_to_chip_mapping,
                 self._vertex_to_ethernet_connected_chip_mapping,
@@ -1994,7 +1994,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "SDRAM outgoing partition allocator"):
             # Ok if transceiver = None
-            sdram_outgoing_partition_allocator(self._placements, self._txrx)
+            sdram_outgoing_partition_allocator(self._placements)
 
     def _do_mapping(self, total_run_time):
         """
@@ -2104,8 +2104,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             # Only needs the x and y of chips with routing tables
-            routing_setup(
-                self._router_tables, self._txrx, self._machine)
+            routing_setup(self._router_tables, self._machine)
 
     def _execute_graph_binary_gatherer(self):
         """
@@ -2142,7 +2141,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._multicast_routes_loaded = False
             compressed = host_based_bit_field_router_compressor(
                 self._router_tables, self._machine, self._placements,
-                self._txrx, self._routing_infos)
+                self._routing_infos)
             return compressed
 
     def _execute_machine_bitfield_ordered_covering_compressor(self):
@@ -2162,7 +2161,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             machine_bit_field_ordered_covering_compressor(
-                self._router_tables, self._txrx, self._machine,
+                self._router_tables, self._machine,
                 self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
             self._multicast_routes_loaded = True
@@ -2185,7 +2184,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             self._multicast_routes_loaded = True
             machine_bit_field_pair_router_compressor(
-                self._router_tables, self._txrx, self._machine,
+                self._router_tables, self._machine,
                 self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
             return None
@@ -2221,8 +2220,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             ordered_covering_compression(
-                self._router_tables, self._txrx, self._executable_finder,
-                self._machine)
+                self._router_tables, self._executable_finder, self._machine)
             self._multicast_routes_loaded = True
             return None
 
@@ -2257,8 +2255,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             pair_compression(
-                self._router_tables, self._txrx, self._executable_finder,
-                self._machine)
+                self._router_tables, self._executable_finder, self._machine)
             self._multicast_routes_loaded = True
             return None
 
@@ -2365,8 +2362,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._multicast_routes_loaded = True
             if timer.skip_if_virtual_board():
                 return
-            routing_table_loader(
-                compressed, self._txrx, self._machine)
+            routing_table_loader(compressed, self._machine)
 
     def _report_uncompressed_routing_table(self):
         """
@@ -2400,7 +2396,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             if timer.skip_if_virtual_board():
                 return
-            load_fixed_routes(self._fixed_routes, self._txrx)
+            load_fixed_routes(self._fixed_routes)
 
     def _execute_system_data_specification(self):
         """
@@ -2414,7 +2410,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None
             return execute_system_data_specs(
-                self._txrx, self._machine, self._dsg_targets,
+                self._machine, self._dsg_targets,
                 self._region_sizes, self._executable_targets,
                 self._java_caller)
 
@@ -2440,7 +2436,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return processor_to_app_data_base_address
             return execute_application_data_specs(
-                self._txrx, self._machine, self._dsg_targets,
+                self._machine, self._dsg_targets,
                 self._executable_targets, self._region_sizes, self._placements,
                 self._extra_monitor_vertices,
                 self._vertex_to_ethernet_connected_chip_mapping,

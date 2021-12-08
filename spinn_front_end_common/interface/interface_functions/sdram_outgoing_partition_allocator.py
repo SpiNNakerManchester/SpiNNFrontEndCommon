@@ -20,9 +20,10 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
-def sdram_outgoing_partition_allocator(placements, transceiver=None):
+def sdram_outgoing_partition_allocator(placements):
     view = FecDataView()
     machine_graph = view.runtime_machine_graph
+    transceiver = view.get_transceiver()
     progress_bar = ProgressBar(
         total_number_of_things_to_do=len(machine_graph.vertices),
         string_describing_what_being_progressed=(
