@@ -907,6 +907,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If we have never run before, or the graph has changed,
         # start by performing mapping
         graph_changed, data_changed = self._detect_if_graph_has_changed()
+
+        # If we have reset and the graph has changed, stop any running
+        # application
+        if (graph_changed or data_changed) and self._has_ran:
+            if self._data_writer.has_transceiver():
+                self._data_writer.transceiver.stop_application(
+                    self._data_writer.app_id)
+
         if graph_changed and self._has_ran:
             if not self._has_reset_last:
                 self.stop()
@@ -916,12 +924,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.hard_reset()
             FecTimer.setup(self)
 
-        # If we have reset and the graph has changed, stop any running
-        # application
-        if (graph_changed or data_changed) and self._has_ran:
-            if self._data_writer.has_transceiver():
-                self._data_writer.transceiver.stop_application(
-                    self._data_writer.app_id)
 
             self._no_sync_changes = 0
 
@@ -1281,10 +1283,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if not self._data_writer.has_app_id():
             if self._data_writer.has_transceiver():
-                self._data_writer.set_app_id(ALANS_DEFAULT_RANDOM_APP_ID)
-            else:
                 self._data_writer.set_app_id(
                     self._data_writer.get_new_id())
+            else:
+                self._data_writer.set_app_id(ALANS_DEFAULT_RANDOM_APP_ID)
 
         self._execute_get_virtual_machine()
         allocator_data = self._execute_allocator(GET_MACHINE, total_run_time)
