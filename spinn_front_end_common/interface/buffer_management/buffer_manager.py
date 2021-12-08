@@ -489,7 +489,7 @@ class BufferManager(object):
                 region, sent_stop_message=True)
 
         # Do the writing all at once for efficiency
-        FecDataView().transceiver.write_memory(
+        FecDataView().write_memory(
             placement.x, placement.y, region_base_address, all_data)
 
     def _send_messages(self, size, vertex, region, sequence_no):
