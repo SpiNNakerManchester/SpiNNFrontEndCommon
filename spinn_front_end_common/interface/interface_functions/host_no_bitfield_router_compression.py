@@ -205,9 +205,9 @@ class Compression(object):
                 if self.__result_register == 0:
                     result = FecDataView().transceiver.read_user_0(x, y, p)
                 elif self.__result_register == 1:
-                    result = FecDataView().read_user_1(x, y, p)
+                    result = FecDataView().transceiver.read_user_1(x, y, p)
                 elif self.__result_register == 2:
-                    result = FecDataView().read_user_2(x, y, p)
+                    result = FecDataView().transceiver.read_user_2(x, y, p)
                 else:
                     raise Exception("Incorrect register")
                 # The result is 0 if success, otherwise failure
