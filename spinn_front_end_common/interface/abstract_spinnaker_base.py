@@ -1834,8 +1834,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the "tag" data
         """
         with FecTimer(MAPPING, "Basic tag allocator"):
-            self._tags = basic_tag_allocator(
-                self._machine, self._plan_n_timesteps, self._placements)
+            self._tags = basic_tag_allocator(self._machine, self._placements)
 
     def _report_tag_allocations(self):
         """
@@ -2160,8 +2159,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Graph binary gatherer") as timer:
             try:
                 self._executable_targets = graph_binary_gatherer(
-                    self._placements, self._application_graph,
-                    self._executable_finder)
+                    self._placements, self._executable_finder)
             except KeyError:
                 if self.use_virtual_board:
                     logger.warning(
