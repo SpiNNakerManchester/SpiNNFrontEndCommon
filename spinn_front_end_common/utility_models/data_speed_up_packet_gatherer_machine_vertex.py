@@ -1572,8 +1572,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @overrides(AbstractProvidesProvenanceDataFromMachine
                .get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, transceiver, placement):
+    def get_provenance_data_from_machine(self, placement):
         # Get the App Data for the core
+        transceiver = FecDataView().transceiver
         region_table_address = transceiver.get_cpu_information_from_core(
             placement.x, placement.y, placement.p).user[0]
 

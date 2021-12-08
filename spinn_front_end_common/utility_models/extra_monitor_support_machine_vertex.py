@@ -418,9 +418,10 @@ class ExtraMonitorSupportMachineVertex(
 
     @overrides(AbstractProvidesProvenanceDataFromMachine.
                get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, transceiver, placement):
+    def get_provenance_data_from_machine(self, placement):
         # No standard provenance region, so no standard provenance data
         # But we do have our own.
+        transceiver = FecDataView().transceiver
         provenance_address = self.__get_provenance_region_address(
             transceiver, placement)
         data = transceiver.read_memory(

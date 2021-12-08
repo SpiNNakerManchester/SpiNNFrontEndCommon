@@ -31,8 +31,8 @@ _ONE_WORD = struct.Struct("<I")
 _LIMIT = 10
 
 
-def chip_provenance_updater(txrx, all_core_subsets):
-    updater = _ChipProvenanceUpdater(txrx, all_core_subsets)
+def chip_provenance_updater(all_core_subsets):
+    updater = _ChipProvenanceUpdater(all_core_subsets)
     updater._run()
 
 
@@ -42,14 +42,14 @@ class _ChipProvenanceUpdater(object):
 
     __slots__ = ["__all_cores", "__app_id", "__txrx"]
 
-    def __init__(self, txrx, all_core_subsets):
+    def __init__(self, all_core_subsets):
         """
-        :param ~spinnman.transceiver.Transceiver txrx:
         :param ~spinn_machine.CoreSubsets all_core_subsets:
         """
         self.__all_cores = all_core_subsets
-        self.__app_id = FecDataView().app_id
-        self.__txrx = txrx
+        view = FecDataView()
+        self.__app_id = view.app_id
+        self.__txrx = view.txrx
 
     def _run(self):
         # check that the right number of processors are in sync

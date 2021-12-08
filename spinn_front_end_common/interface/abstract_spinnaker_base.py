@@ -2641,7 +2641,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return []
             if timer.skip_if_virtual_board():
                 return []
-            placements_provenance_gatherer(self._txrx, self._placements)
+            placements_provenance_gatherer(self._placements)
 
     def _execute_router_provenance_gatherer(self):
         """
@@ -2653,7 +2653,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return []
             router_provenance_gatherer(
-                self._txrx, self._machine, self._router_tables,
+                self._machine, self._router_tables,
                 self._extra_monitor_vertices, self._placements)
 
     def _execute_profile_data_gatherer(self):
@@ -2665,7 +2665,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             if timer.skip_if_virtual_board():
                 return
-            profile_data_gatherer(self._txrx, self._placements)
+            profile_data_gatherer(self._placements)
 
     def _do_read_provenance(self):
         """
@@ -2791,7 +2791,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Machine", "post_simulation_overrun_before_error")
             self._no_sync_changes = application_runner(
                 self._buffer_manager, self._notification_interface,
-                self._executable_types, self._txrx, run_time,
+                self._executable_types, run_time,
                 self._no_sync_changes, time_threshold, self._machine,
                 self._run_until_complete)
 
@@ -2807,7 +2807,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             # ErrorMessages, WarnMessages output ignored as never used!
             chip_io_buf_extractor(
-                self._txrx, self._executable_targets, self._executable_finder)
+                self._executable_targets, self._executable_finder)
 
     def _execute_buffer_extractor(self):
         """
@@ -2897,9 +2897,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # if in debug mode, do not shut down machine
             if get_config_str("Mode", "mode") != "Debug":
                 try:
-                    self.stop(
-                        turn_off_machine=False, clear_routing_tables=False,
-                        clear_tags=False)
+                    self.stop(clear_routing_tables=False, clear_tags=False)
                 except Exception as stop_e:
                     logger.exception(f"Error {stop_e} when attempting to stop")
 
@@ -2930,7 +2928,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Extract router provenance
         try:
             router_provenance_gatherer(
-                transceiver=self._txrx, machine=self._machine,
+                machine=self._machine,
                 router_tables=self._router_tables,
                 extra_monitor_vertices=self._extra_monitor_vertices,
                 placements=self._placements)
@@ -2945,8 +2943,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If there are no cores in a bad state, find those not yet in
         # their finished state
         if not unsuccessful_cores:
+            transceiver = self._data_writer.transceiver
             for executable_type in self._executable_types:
-                failed_cores = self._txrx.get_cores_not_in_state(
+                failed_cores = transceiver.get_cores_not_in_state(
                     self._executable_types[executable_type],
                     executable_type.end_state)
                 for (x, y, p) in failed_cores:
@@ -2991,20 +2990,20 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # Attempt to force the cores to write provenance and exit
             try:
-                chip_provenance_updater(
-                    self._txrx, non_rte_core_subsets)
+                chip_provenance_updater(non_rte_core_subsets)
             except Exception:
                 logger.exception("Could not update provenance on chip")
 
             # Extract any written provenance data
             try:
-                finished_cores = self._txrx.get_cores_in_state(
+                transceiver = self._data_writer.transceiver
+                finished_cores = transceiver.get_cores_in_state(
                     non_rte_core_subsets, CPUState.FINISHED)
                 finished_placements = Placements()
                 for (x, y, p) in finished_cores:
                     finished_placements.add_placement(
                         self._placements.get_placement_on_processor(x, y, p))
-                placements_provenance_gatherer(self._txrx, finished_placements)
+                placements_provenance_gatherer(finished_placements)
             except Exception as pro_e:
                 logger.exception(f"Could not read provenance due to {pro_e}")
 
@@ -3150,7 +3149,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :rtype: ~spinnman.transceiver.Transceiver
         """
-        return self._txrx
+        return self._data_writer.transceiver
 
     @property
     def tags(self):
@@ -3266,18 +3265,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._vertices_or_edges_added = True
 
     def _shutdown(
-            self, turn_off_machine=None, clear_routing_tables=None,
-            clear_tags=None):
+            self, clear_routing_tables=None, clear_tags=None):
         """
         :param bool turn_off_machine:
         :param bool clear_routing_tables:
         :param bool clear_tags:
+
         """
         self._status = Simulator_Status.SHUTDOWN
-
-        if turn_off_machine is None:
-            turn_off_machine = get_config_bool(
-                "Machine", "turn_off_machine")
 
         if clear_routing_tables is None:
             clear_routing_tables = get_config_bool(
@@ -3286,7 +3281,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if clear_tags is None:
             clear_tags = get_config_bool("Machine", "clear_tags")
 
-        if self._txrx is not None:
+        if self._data_writer.has_transceiver():
             # if stopping on machine, clear IP tags and routing table
             self.__clear(clear_tags, clear_routing_tables)
 
@@ -3294,7 +3289,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self.__stop_app()
 
         # stop the transceiver and allocation controller
-        self.__close_transceiver(turn_off_machine)
+        self._data_writer.clear_transceiver()
         self.__close_allocation_controller()
 
         try:
@@ -3311,12 +3306,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param bool clear_routing_tables:
         """
         # if stopping on machine, clear IP tags and
+        transceiver = self._data_writer.transceiver
         if clear_tags:
             for ip_tag in self._tags.ip_tags:
-                self._txrx.clear_ip_tag(
+                transceiver.clear_ip_tag(
                     ip_tag.tag, board_address=ip_tag.board_address)
             for reverse_ip_tag in self._tags.reverse_ip_tags:
-                self._txrx.clear_ip_tag(
+                transceiver.clear_ip_tag(
                     reverse_ip_tag.tag,
                     board_address=reverse_ip_tag.board_address)
 
@@ -3325,42 +3321,28 @@ class AbstractSpinnakerBase(ConfigHandler):
             for router_table in self._router_tables.routing_tables:
                 if not self._machine.get_chip_at(
                         router_table.x, router_table.y).virtual:
-                    self._txrx.clear_multicast_routes(
+                    transceiver.clear_multicast_routes(
                         router_table.x, router_table.y)
 
         # clear values
         self._no_sync_changes = 0
 
     def __stop_app(self):
-        if self._txrx is not None and self._data_writer.has_app_id():
-            self._txrx.stop_application(self._data_writer.app_id)
+        if (self._data_writer.has_transceiver() and
+                self._data_writer.has_app_id()):
+            self._data_writer.transceiver.stop_application(
+                self._data_writer.app_id)
             self._data_writer.clear_app_id()
-
-    def __close_transceiver(self, turn_off_machine):
-        """
-        :param bool turn_off_machine:
-        """
-        if self._txrx is not None:
-            if turn_off_machine:
-                logger.info("Turning off machine")
-
-            self._txrx.close(power_off_machine=turn_off_machine)
-            self._txrx = None
 
     def __close_allocation_controller(self):
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
 
-    def stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
-             clear_routing_tables=None, clear_tags=None):
+    def stop(self, clear_routing_tables=None, clear_tags=None):
         """
         End running of the simulation.
 
-        :param bool turn_off_machine:
-            decides if the machine should be powered down after running the
-            execution. Note that this powers down all boards connected to the
-            BMP connections given to the transceiver
         :param bool clear_routing_tables: informs the tool chain if it
             should turn off the clearing of the routing tables
         :param bool clear_tags: informs the tool chain if it should clear the
@@ -3385,7 +3367,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._recover_from_error(e)
 
         # shut down the machine properly
-        self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
+        self._shutdown(clear_routing_tables, clear_tags)
 
         if exn is not None:
             self.write_errored_file()
@@ -3394,7 +3376,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_application_finisher(self):
         with FecTimer(RUN_LOOP, "Application finisher"):
-            application_finisher(self._txrx, self._executable_types)
+            application_finisher(self._executable_types)
 
     def _do_stop_workflow(self):
         """
@@ -3461,7 +3443,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             sync_signal = Signal.SYNC0
         else:
             sync_signal = Signal.SYNC1
-        self._txrx.send_signal(self._data_writer.app_id, sync_signal)
+        self._data_writer.transceiver.send_signal(
+            self._data_writer.app_id, sync_signal)
         self._no_sync_changes += 1
 
     @staticmethod

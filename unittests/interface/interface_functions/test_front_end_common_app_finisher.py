@@ -17,6 +17,7 @@ from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinnman.model.enums.cpu_state import CPUState
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher)
@@ -24,7 +25,7 @@ from spinnman.model.cpu_infos import CPUInfos
 from spinnman.transceiver import Transceiver
 
 
-class _MockTransceiver(object):
+class _MockTransceiver(Transceiver):
 
     def __init__(self, core_states, time_between_states):
         self._core_states = core_states
@@ -67,6 +68,10 @@ class _MockTransceiver(object):
     def send_signal(self, app_id, signal):
         pass
 
+    @overrides(Transceiver.close)
+    def close(self, close_original_connections=True, power_off_machine=False):
+        pass
+
 
 def test_app_finisher():
     unittest_setup()
@@ -80,7 +85,8 @@ def test_app_finisher():
     executable_types = {
         ExecutableType.USES_SIMULATION_INTERFACE: core_subsets}
     txrx = _MockTransceiver(core_states, 0.5)
-    application_finisher(txrx, executable_types)
+    FecDataWriter().set_transceiver(txrx)
+    application_finisher(executable_types)
 
     # First round called twice as 2 running +
     # second round called once as 1 running
