@@ -146,7 +146,5 @@ class _DatabaseInterface(object):
             if get_config_bool(
                     "Database",
                     "create_routing_info_to_neuron_id_mapping"):
-                w.create_atom_to_event_id_mapping(
-                    application_graph=app_graph,
-                    routing_infos=routing_infos)
+                w.create_atom_to_event_id_mapping(app_graph, routing_infos)
             p.update()
