@@ -30,8 +30,8 @@ from spinn_front_end_common.utilities.helpful_functions import (
     generate_unique_folder_name, n_word_struct)
 
 
-def dsg_region_reloader(transceiver, placements, hostname):
-    reloader = _DSGRegionReloader(transceiver, hostname)
+def dsg_region_reloader(placements, hostname):
+    reloader = _DSGRegionReloader(hostname)
     reloader._run(placements)
 
 
@@ -40,14 +40,12 @@ class _DSGRegionReloader(object):
     """
     __slots__ = ["_txrx", "_host", "_data_dir"]
 
-    def __init__(self, transceiver, hostname):
+    def __init__(self, hostname):
         """
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            SpiNNMan transceiver for communication
         :param str hostname:
             the machine name
         """
-        self._txrx = transceiver
+        self._txrx = FecDataView().transceiver
         self._host = hostname
 
     def _run(self, placements):

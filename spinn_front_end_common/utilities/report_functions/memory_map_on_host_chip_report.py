@@ -29,20 +29,20 @@ MEM_MAP_FILENAME = "memory_map_from_processor_{0:d}_{1:d}_{2:d}.txt"
 REGION_HEADER_SIZE = 2 * BYTES_PER_WORD
 
 
-def memory_map_on_host_chip_report(dsg_targets, transceiver):
+def memory_map_on_host_chip_report(dsg_targets):
     """ Report on memory usage. Creates a report that states where in SDRAM \
         each region is (read from machine)
 
     :param dict(tuple(int,int,int),...) dsg_targets:
         the map between placement and file writer
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the spinnMan instance
     """
+    view = FecDataView()
     directory_name = os.path.join(
-        FecDataView().run_dir_path, MEM_MAP_SUBDIR_NAME)
+        view.run_dir_path, MEM_MAP_SUBDIR_NAME)
     if not os.path.exists(directory_name):
         os.makedirs(directory_name)
 
+    transceiver = view.transceiver
     progress = ProgressBar(dsg_targets, "Writing memory map reports")
     for (x, y, p) in progress.over(dsg_targets):
         file_name = os.path.join(

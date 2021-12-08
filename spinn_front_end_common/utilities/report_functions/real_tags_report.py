@@ -19,14 +19,12 @@ from spinn_front_end_common.data import FecDataView
 _REPORT_FILENAME = "tags_on_machine.txt"
 
 
-def tags_from_machine_report(transceiver):
+def tags_from_machine_report():
     """ Describes what the tags actually present on the machine are.
 
-    :param str report_default_directory:
-    :param ~spinnman.transceiver.Transceiver transceiver:
     """
     filename = os.path.join(FecDataView().run_dir_path, _REPORT_FILENAME)
-    tags = _get_tags(transceiver)
+    tags = _get_tags()
     with open(filename, "w") as f:
         f.write("Tags actually read off the machine\n")
         f.write("==================================\n")
@@ -34,8 +32,8 @@ def tags_from_machine_report(transceiver):
             f.write(f"{repr(tag)}\n")
 
 
-def _get_tags(txrx):
+def _get_tags():
     try:
-        return txrx.get_tags()
+        return FecDataView().transceiver.get_tags()
     except Exception as e:  # pylint: disable=broad-except
         return [e]

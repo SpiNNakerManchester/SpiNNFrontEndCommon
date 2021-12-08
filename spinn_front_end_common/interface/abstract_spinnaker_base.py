@@ -2421,8 +2421,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Load executable system Images") as timer:
             if timer.skip_if_virtual_board():
                 return
-            load_sys_images(
-                self._executable_targets, self._txrx)
+            load_sys_images(self._executable_targets)
 
     def _execute_application_data_specification(
             self, processor_to_app_data_base_address):
@@ -2453,7 +2452,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_tag_allocation_reports"):
                 return
-            tags_from_machine_report(self._txrx)
+            tags_from_machine_report()
 
     def _execute_load_tags(self):
         """
@@ -2463,7 +2462,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Tags Loader") as timer:
             if timer.skip_if_virtual_board():
                 return
-            tags_loader(self._txrx, self._tags)
+            tags_loader(self._tags)
 
     def _do_extra_load_algorithms(self):
         """
@@ -2497,7 +2496,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "write_memory_map_report"):
                 return
 
-            memory_map_on_host_chip_report(self._dsg_targets, self._txrx)
+            memory_map_on_host_chip_report(self._dsg_targets)
 
     # TODO consider different cfg flags
     def _report_compressed(self, compressed):
@@ -2519,7 +2518,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 if timer.skip_if_virtual_board():
                     return
                 compressed = read_routing_tables_from_machine(
-                    self._txrx, self._router_tables)
+                    self._router_tables)
 
             router_report_from_compressed_router_tables(compressed)
 
@@ -2541,7 +2540,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Machine", "enable_advanced_monitor_support"):
                 return
             # TODO at the same time as LoadFixedRoutes?
-            fixed_route_from_machine_report(self._txrx, self._machine)
+            fixed_route_from_machine_report(self._machine)
 
     def _execute_application_load_executables(self):
         """ algorithms needed for loading the binaries to the SpiNNaker machine
@@ -2551,7 +2550,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Load executable app images") as timer:
             if timer.skip_if_virtual_board():
                 return
-            load_app_images(self._executable_targets, self._txrx)
+            load_app_images(self._executable_targets)
 
     def _do_load(self, graph_changed):
         """
@@ -2621,7 +2620,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "DSG region reloader") as timer:
             if timer.skip_if_virtual_board():
                 return
-            dsg_region_reloader(self._txrx, self._placements, self._ipaddress)
+            dsg_region_reloader(self._placements, self._ipaddress)
 
     def _execute_graph_provenance_gatherer(self):
         """
