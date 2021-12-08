@@ -116,7 +116,7 @@ class TestWriteJson(unittest.TestCase):
 
         folder = "spinn4"
         self._remove_old_json(folder)
-        filename = write_json_machine(machine, folder)
+        filename = write_json_machine(machine, folder, True)
 
         self.json_compare(filename, "spinn4.json")
 
