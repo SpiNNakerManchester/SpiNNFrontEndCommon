@@ -91,7 +91,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             Placement(vertex_3.machine_vertex, 0, 0, 2)])
 
         targets = graph_binary_gatherer(
-            placements, graph, _TestExecutableFinder())
+            placements, _TestExecutableFinder())
         start_type = locate_executable_start_type(graph, placements)
         self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
         self.assertEqual(targets.total_processors, 3)
