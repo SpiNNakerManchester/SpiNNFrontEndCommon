@@ -924,7 +924,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.hard_reset()
             FecTimer.setup(self)
 
-
             self._no_sync_changes = 0
 
         # build the graphs to modify with system requirements
