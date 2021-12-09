@@ -583,7 +583,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             n_bytes = len(data)
         elif n_bytes is None:
             n_bytes = len(data)
-        transceiver = get_simulator().transceiver
+        transceiver = FecDataView().transceiver
 
         # start time recording
         start = datetime.datetime.now()
@@ -1129,7 +1129,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     self._run, "No Extraction time", end - start)
             return data
 
-        transceiver = get_simulator().transceiver
+        transceiver = FecDataView().transceiver
 
         # Update the IP Tag to work through a NAT firewall
         connection = SCAMPConnection(

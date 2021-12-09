@@ -3145,14 +3145,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         return self._placements
 
     @property
-    def transceiver(self):
-        """ How to talk to the machine.
-
-        :rtype: ~spinnman.transceiver.Transceiver
-        """
-        return self._data_writer.transceiver
-
-    @property
     def tags(self):
         """
         :rtype: ~pacman.model.tags.Tags
