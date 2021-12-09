@@ -3312,8 +3312,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._no_sync_changes = 0
 
     def __stop_app(self):
-        if (self._data_writer.has_transceiver() and
-                self._data_writer.has_app_id()):
+        if self._data_writer.has_transceiver():
             self._data_writer.transceiver.stop_application(
                 self._data_writer.app_id)
             self._data_writer.clear_app_id()
