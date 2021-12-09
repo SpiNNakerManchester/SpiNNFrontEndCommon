@@ -59,7 +59,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         SpiNNManDataWriter.mock(self)
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
-        self.set_app_id(6)
         self.set_up_timings(1000, 1)
 
     def setup(self):

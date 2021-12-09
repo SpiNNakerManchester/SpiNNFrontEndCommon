@@ -103,7 +103,7 @@ def run_system_application(
 
     # stop anything that's associated with the compressor binary
     transceiver.stop_application(app_id)
-    transceiver.app_id_tracker.free_id(app_id)
+    view.app_id_tracker.free_id(app_id)
 
     if error is not None:
         raise error  # pylint: disable=raising-bad-type

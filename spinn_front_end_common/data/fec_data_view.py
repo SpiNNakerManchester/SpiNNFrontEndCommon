@@ -70,7 +70,6 @@ class _FecDataModel(object):
         Clears out all data
         """
         # app_id not hard_reset as used to stop previous runs
-        self._app_id = None
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
         self._n_calls_to_run = None
@@ -88,6 +87,7 @@ class _FecDataModel(object):
         """
         Clears out all data that should change after a reset and graaph change
         """
+        self._app_id = None
         self._max_run_time_steps = None
         self._soft_reset()
 
@@ -129,14 +129,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     # app_id methods
 
-    def get_app_id(self):
-        """
-        The current application id or None if not known
-
-        :rtype: int or None
-        """
-        return self.__fec_data._app_id
-
     @property
     def app_id(self):
         """
@@ -147,11 +139,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             If the app_id is currently unavailable
         """
         if self.__fec_data._app_id is None:
-            raise self._exception("app_id")
+            self.__fec_data._app_id = self.get_new_id()
         return self.__fec_data._app_id
-
-    def has_app_id(self):
-        return self.__fec_data._app_id is not None
 
     # current_run_timesteps and first_machine_time_step
     # Only a property as always available

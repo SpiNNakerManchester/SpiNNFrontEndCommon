@@ -162,9 +162,6 @@ except ImportError:
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-# 0-15 are reserved for system use (per lplana)
-ALANS_DEFAULT_RANDOM_APP_ID = 16
-
 
 class AbstractSpinnakerBase(ConfigHandler):
     """ Main interface into the tools logic flow.
@@ -1280,13 +1277,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param n_machine_time_steps:
         :rtype: ~spinn_machine.Machine
         """
-        if not self._data_writer.has_app_id():
-            if self._data_writer.has_transceiver():
-                self._data_writer.set_app_id(
-                    self._data_writer.get_new_id())
-            else:
-                self._data_writer.set_app_id(ALANS_DEFAULT_RANDOM_APP_ID)
-
         self._execute_get_virtual_machine()
         allocator_data = self._execute_allocator(GET_MACHINE, total_run_time)
         self._execute_machine_generator(GET_MACHINE, allocator_data)
