@@ -179,7 +179,7 @@ class ExtraMonitorSupportMachineVertex(
         :param txrx: SpiNNMan instance
         :rtype: None
         """
-        self._transaction_id = FecDataView().read_user_1(
+        self._transaction_id = FecDataView().transceiver.read_user_1(
             self._placement.x, self._placement.y, self._placement.p)
 
     @property
