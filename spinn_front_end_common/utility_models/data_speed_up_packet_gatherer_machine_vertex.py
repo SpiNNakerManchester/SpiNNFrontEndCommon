@@ -34,8 +34,6 @@ from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
-from spinn_front_end_common.utilities.globals_variables import (
-    get_simulator)
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_vertices_to_core_subset, get_region_base_address_offset,
     n_word_struct)
