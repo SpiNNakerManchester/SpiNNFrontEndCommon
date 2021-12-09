@@ -3376,6 +3376,26 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param bool clear_tags: informs the tool chain if it should clear the
             tags off the machine at stop
         """
+        self._data_writer.stopping()
+        try:
+            self._stop(turn_off_machine, clear_routing_tables, clear_tags)
+        finally:
+            self._data_writer.shut_down()
+
+    def _stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
+             clear_routing_tables=None, clear_tags=None):
+        """
+        End running of the simulation.
+
+        :param bool turn_off_machine:
+            decides if the machine should be powered down after running the
+            execution. Note that this powers down all boards connected to the
+            BMP connections given to the transceiver
+        :param bool clear_routing_tables: informs the tool chain if it
+            should turn off the clearing of the routing tables
+        :param bool clear_tags: informs the tool chain if it should clear the
+            tags off the machine at stop
+        """
         if self._status in [Simulator_Status.SHUTDOWN]:
             raise ConfigurationException("Simulator has already been shutdown")
         self._status = Simulator_Status.SHUTDOWN
@@ -3401,6 +3421,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self.write_errored_file()
             raise exn  # pylint: disable=raising-bad-type
         self.write_finished_file()
+
 
     def _execute_application_finisher(self):
         with FecTimer(RUN_LOOP, "Application finisher"):
