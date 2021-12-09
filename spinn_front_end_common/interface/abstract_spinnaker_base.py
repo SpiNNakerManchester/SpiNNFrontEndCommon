@@ -3351,19 +3351,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._data_writer.stopping()
         try:
-            self._stop(turn_off_machine, clear_routing_tables, clear_tags)
+            self._stop(clear_routing_tables, clear_tags)
         finally:
             self._data_writer.shut_down()
 
-    def _stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
-              clear_routing_tables=None, clear_tags=None):
+    def _stop(self, clear_routing_tables=None, clear_tags=None):
         """
         End running of the simulation.
 
-        :param bool turn_off_machine:
-            decides if the machine should be powered down after running the
-            execution. Note that this powers down all boards connected to the
-            BMP connections given to the transceiver
         :param bool clear_routing_tables: informs the tool chain if it
             should turn off the clearing of the routing tables
         :param bool clear_tags: informs the tool chain if it should clear the
