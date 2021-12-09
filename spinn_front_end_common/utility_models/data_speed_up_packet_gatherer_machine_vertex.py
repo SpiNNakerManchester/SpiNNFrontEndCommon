@@ -350,7 +350,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             and updates the data speed up gatherer.
 
         """
-        self._transaction_id = FecDataView.transceiver.read_user_1(
+        self._transaction_id = FecDataView().transceiver.read_user_1(
             self._placement.x, self._placement.y, self._placement.p)
 
     @classmethod
