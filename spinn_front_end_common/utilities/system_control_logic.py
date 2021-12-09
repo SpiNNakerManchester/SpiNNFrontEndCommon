@@ -16,12 +16,13 @@
 from spinnman.exceptions import SpinnmanException
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 
 
 def run_system_application(
-        executable_cores, app_id, transceiver,
+        executable_cores, app_id,
         executable_finder, read_algorithm_iobuf, check_for_success_function,
         cpu_end_states, needs_sync_barrier, filename_template,
         binaries_to_track=None, progress_bar=None, logger=None):
@@ -31,7 +32,6 @@ def run_system_application(
     :param ~spinnman.model.ExecutableTargets executable_cores:
         the cores to run the executable on
     :param int app_id: the app-id for the executable
-    :param ~spinnman.transceiver.Transceiver transceiver: the SpiNNMan instance
     :param ExecutableFinder executable_finder: finder for executable paths
     :param bool read_algorithm_iobuf: whether to report IOBUFs
     :param callable check_for_success_function:
@@ -53,7 +53,8 @@ def run_system_application(
     :raise SpinnmanException:
         If one should arise from the underlying SpiNNMan calls
     """
-
+    view = FecDataView()
+    transceiver = view.transceiver
     # load the executable
     transceiver.execute_application(executable_cores, app_id)
 
@@ -93,13 +94,12 @@ def run_system_application(
 
     # Check if any cores have not completed successfully
     if succeeded and check_for_success_function:
-        succeeded = check_for_success_function(executable_cores, transceiver)
+        succeeded = check_for_success_function(executable_cores)
 
     # if doing iobuf or on failure (succeeded is None is not failure)
     if read_algorithm_iobuf or not succeeded:
         _report_iobuf_messages(
-            transceiver, executable_cores, executable_finder, logger,
-            filename_template)
+            executable_cores, executable_finder, logger, filename_template)
 
     # stop anything that's associated with the compressor binary
     transceiver.stop_application(app_id)
@@ -110,9 +110,8 @@ def run_system_application(
 
 
 def _report_iobuf_messages(
-        txrx, cores, exe_finder, logger, filename_template):
+        cores, exe_finder, logger, filename_template):
     """
-    :param Transceiver txrx:
     :param ~spinnman.model.ExecutableTargets cores:
     :param ExecutableFinder exe_finder:
     :param ~logging.Logger logger:
@@ -120,7 +119,7 @@ def _report_iobuf_messages(
     """
     # Import in this function to prevent circular import issue
     iobuf_reader = IOBufExtractor(
-        txrx, cores, exe_finder,
+        cores, exe_finder,
         filename_template=filename_template, suppress_progress=False)
     error_entries, warn_entries = iobuf_reader.extract_iobuf()
     if logger is not None:

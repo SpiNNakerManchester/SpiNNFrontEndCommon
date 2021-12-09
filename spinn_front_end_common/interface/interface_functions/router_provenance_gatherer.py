@@ -17,16 +17,15 @@ import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanException
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def router_provenance_gatherer(transceiver, machine, router_tables,
+def router_provenance_gatherer(machine, router_tables,
                                extra_monitor_vertices=None, placements=None):
     """
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the SpiNNMan interface object
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine
     :param router_tables: the router tables that have been generated
@@ -38,8 +37,7 @@ def router_provenance_gatherer(transceiver, machine, router_tables,
         the placements object
     """
     gather = _RouterProvenanceGatherer(
-        transceiver, machine, router_tables, extra_monitor_vertices,
-        placements)
+        machine, router_tables, extra_monitor_vertices, placements)
     gather._add_router_provenance_data()
 
 
@@ -56,11 +54,9 @@ class _RouterProvenanceGatherer(object):
         '_placements',
         # routingtabkes passed in
         '_router_tables',
-        # transceiver
-        '_txrx',
     ]
 
-    def __init__(self, transceiver, machine, router_tables,
+    def __init__(self, machine, router_tables,
                  extra_monitor_vertices=None, placements=None):
         """
         :param ~spinnman.transceiver.Transceiver transceiver:
@@ -78,7 +74,6 @@ class _RouterProvenanceGatherer(object):
         # pylint: disable=too-many-arguments
         # pylint: disable=attribute-defined-outside-init
         self._extra_monitor_vertices = extra_monitor_vertices
-        self._txrx = transceiver
         self._machine = machine
         self._placements = placements
         self._router_tables = router_tables
@@ -97,8 +92,7 @@ class _RouterProvenanceGatherer(object):
             monitor = self._extra_monitor_vertices[0]
             reinjection_data = monitor.get_reinjection_status_for_vertices(
                 placements=self._placements,
-                extra_monitor_cores_for_data=self._extra_monitor_vertices,
-                transceiver=self._txrx)
+                extra_monitor_cores_for_data=self._extra_monitor_vertices)
 
         for router_table in progress.over(
                 self._router_tables.routing_tables, False):
@@ -122,7 +116,8 @@ class _RouterProvenanceGatherer(object):
         y = table.y
         if not self._machine.get_chip_at(x, y).virtual:
             try:
-                diagnostics = self._txrx.get_router_diagnostics(x, y)
+                diagnostics = FecDataView().transceiver.get_router_diagnostics(
+                    x, y)
             except SpinnmanException:
                 logger.warning(
                     "Could not read routing diagnostics from {}, {}",
@@ -139,7 +134,8 @@ class _RouterProvenanceGatherer(object):
         """
         # pylint: disable=bare-except
         try:
-            diagnostics = self._txrx.get_router_diagnostics(chip.x, chip.y)
+            diagnostics = FecDataView().transceiver.get_router_diagnostics(
+                chip.x, chip.y)
         except SpinnmanException:
             # There could be issues with unused chips - don't worry!
             return

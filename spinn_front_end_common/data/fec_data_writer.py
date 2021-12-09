@@ -20,6 +20,7 @@ import os
 import time
 from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
+from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from pacman.data.pacman_data_writer import PacmanDataWriter
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
@@ -32,7 +33,7 @@ __temp_dir = None
 REPORTS_DIRNAME = "reports"
 
 
-class FecDataWriter(PacmanDataWriter, FecDataView):
+class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     """
     Writer class for the Fec Data
 
@@ -55,6 +56,7 @@ class FecDataWriter(PacmanDataWriter, FecDataView):
         set that value.
         """
         PacmanDataWriter.mock(self)
+        SpiNNManDataWriter.mock(self)
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
         self.set_app_id(6)
@@ -66,6 +68,7 @@ class FecDataWriter(PacmanDataWriter, FecDataView):
 
         """
         PacmanDataWriter.setup(self)
+        SpiNNManDataWriter.setup(self)
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
         self.__create_reports_directory()
@@ -81,11 +84,13 @@ class FecDataWriter(PacmanDataWriter, FecDataView):
 
     def hard_reset(self):
         PacmanDataWriter.hard_reset(self)
+        SpiNNManDataWriter.hard_reset(self)
         self.__fec_data._hard_reset()
         self.__create_run_dir_path()
 
     def soft_reset(self):
         PacmanDataWriter.soft_reset(self)
+        SpiNNManDataWriter.soft_reset(self)
         self.__fec_data._soft_reset()
 
     def __create_run_dir_path(self):

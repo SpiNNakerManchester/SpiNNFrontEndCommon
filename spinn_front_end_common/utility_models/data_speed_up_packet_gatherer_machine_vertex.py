@@ -34,8 +34,6 @@ from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
-from spinn_front_end_common.utilities.globals_variables import (
-    get_simulator)
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_vertices_to_core_subset, get_region_base_address_offset,
     n_word_struct)
@@ -347,13 +345,12 @@ class DataSpeedUpPacketGatherMachineVertex(
     def resources_required(self):
         return self.static_resources_required()
 
-    def update_transaction_id_from_machine(self, txrx):
+    def update_transaction_id_from_machine(self):
         """ Looks up from the machine what the current transaction ID is\
             and updates the data speed up gatherer.
 
-        :param ~spinnman.transceiver.Transceiver txrx: SpiNNMan instance
         """
-        self._transaction_id = txrx.read_user_1(
+        self._transaction_id = FecDataView.transceiver.read_user_1(
             self._placement.x, self._placement.y, self._placement.p)
 
     @classmethod
@@ -584,7 +581,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             n_bytes = len(data)
         elif n_bytes is None:
             n_bytes = len(data)
-        transceiver = get_simulator().transceiver
+        transceiver = FecDataView().transceiver
 
         # start time recording
         start = datetime.datetime.now()
@@ -665,7 +662,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._coord_word = (dest_x << DEST_X_SHIFT) | dest_y
 
         # for safety, check the transaction id from the machine before updating
-        self.update_transaction_id_from_machine(transceiver)
+        self.update_transaction_id_from_machine()
         self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
         time_out_count = 0
 
@@ -725,7 +722,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     time_out_count += 1
                     if time_out_count > TIMEOUT_RETRY_LIMIT:
                         emergency_recover_state_from_failure(
-                            transceiver, self, self._placement)
+                            self, self._placement)
                         raise SpinnFrontEndException(
                             TIMEOUT_MESSAGE.format(
                                 time_out_count)) from e
@@ -913,15 +910,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         log.debug("sent end flag")
 
     @staticmethod
-    def streaming(gatherers, transceiver, extra_monitor_cores, placements):
+    def streaming(gatherers, extra_monitor_cores, placements):
         """ Helper method for setting the router timeouts to a state usable\
             for data streaming via a Python context manager (i.e., using\
             the `with` statement).
 
         :param list(DataSpeedUpPacketGatherMachineVertex) gatherers:
             All the gatherers that are to be set
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan instance
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the extra monitor cores to set
         :param ~pacman.model.placements.Placements placements:
@@ -929,15 +924,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: a context manager
         """
         return _StreamingContextManager(
-            gatherers, transceiver, extra_monitor_cores, placements)
+            gatherers, extra_monitor_cores, placements)
 
     def set_cores_for_data_streaming(
-            self, transceiver, extra_monitor_cores, placements):
+            self, extra_monitor_cores, placements):
         """ Helper method for setting the router timeouts to a state usable\
             for data streaming.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan instance
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the extra monitor cores to set
         :param ~pacman.model.placements.Placements placements:
@@ -946,42 +939,36 @@ class DataSpeedUpPacketGatherMachineVertex(
         lead_monitor = extra_monitor_cores[0]
         # Store the last reinjection status for resetting
         # NOTE: This assumes the status is the same on all cores
-        self._last_status = lead_monitor.get_reinjection_status(
-            placements, transceiver)
+        self._last_status = lead_monitor.get_reinjection_status(placements)
 
         # Set to not inject dropped packets
         lead_monitor.set_reinjection_packets(
-            placements, extra_monitor_cores, transceiver,
+            placements, extra_monitor_cores,
             point_to_point=False, multicast=False, nearest_neighbour=False,
             fixed_route=False)
 
         # Clear any outstanding packets from reinjection
-        self.clear_reinjection_queue(transceiver, placements)
+        self.clear_reinjection_queue(placements)
 
         # set time outs
-        self.set_router_wait2_timeout(
-            self._SHORT_TIMEOUT, transceiver, placements)
-        self.set_router_wait1_timeout(
-            self._LONG_TIMEOUT, transceiver, placements)
+        self.set_router_wait2_timeout(self._SHORT_TIMEOUT, placements)
+        self.set_router_wait1_timeout(self._LONG_TIMEOUT, placements)
 
     @staticmethod
-    def load_application_routing_tables(
-            transceiver, extra_monitor_cores, placements):
+    def load_application_routing_tables(extra_monitor_cores, placements):
         """ Set all chips to have application table loaded in the router.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan instance
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the extra monitor cores to set
         :param ~pacman.model.placements.Placements placements:
             placements object
         """
         extra_monitor_cores[0].load_application_mc_routes(
-            placements, extra_monitor_cores, transceiver)
+            placements, extra_monitor_cores)
 
     @staticmethod
     def load_system_routing_tables(
-            transceiver, extra_monitor_cores, placements):
+            extra_monitor_cores, placements):
         """ Set all chips to have the system table loaded in the router
 
         :param ~spinnman.transceiver.Transceiver transceiver:
@@ -992,78 +979,69 @@ class DataSpeedUpPacketGatherMachineVertex(
             placements object
         """
         extra_monitor_cores[0].load_system_mc_routes(
-            placements, extra_monitor_cores, transceiver)
+            placements, extra_monitor_cores)
 
-    def set_router_wait1_timeout(self, timeout, transceiver, placements):
+    def set_router_wait1_timeout(self, timeout, placements):
         """ Set the wait1 field for a set of routers.
 
         :param tuple(int,int) timeout:
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~pacman.model.placements.Placements placements:
         """
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset([self], placements)
         process = SetRouterTimeoutProcess(
-            transceiver.scamp_connection_selector)
+            FecDataView().scamp_connection_selector)
         try:
             process.set_wait1_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self, placements.get_placement_of_vertex(self))
+                self, placements.get_placement_of_vertex(self))
             raise
 
-    def set_router_wait2_timeout(self, timeout, transceiver, placements):
+    def set_router_wait2_timeout(self, timeout, placements):
         """ Set the wait2 field for a set of routers.
 
         :param tuple(int,int) timeout:
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~pacman.model.placements.Placements placements:
         """
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset([self], placements)
         process = SetRouterTimeoutProcess(
-            transceiver.scamp_connection_selector)
+            FecDataView().scamp_connection_selector)
         try:
             process.set_wait2_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self, placements.get_placement_of_vertex(self))
+                self, placements.get_placement_of_vertex(self))
             raise
 
-    def clear_reinjection_queue(self, transceiver, placements):
+    def clear_reinjection_queue(self, placements):
         """ Clears the queues for reinjection.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnMan interface
         :param ~pacman.model.placements.Placements placements:
             the placements object
         """
         core_subsets = convert_vertices_to_core_subset([self], placements)
-        process = ClearQueueProcess(transceiver.scamp_connection_selector)
+        process = ClearQueueProcess(FecDataView().scamp_connection_selector)
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self, placements.get_placement_of_vertex(self))
+                self, placements.get_placement_of_vertex(self))
             raise
 
-    def unset_cores_for_data_streaming(
-            self, transceiver, extra_monitor_cores, placements):
+    def unset_cores_for_data_streaming(self, extra_monitor_cores, placements):
         """ Helper method for restoring the router timeouts to normal after\
             being in a state usable for data streaming.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan instance
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the extra monitor cores to set
         :param ~pacman.model.placements.Placements placements:
             placements object
         """
         # Set the routers to temporary values
-        self.set_router_wait1_timeout(
-            self._TEMP_TIMEOUT, transceiver, placements)
-        self.set_router_wait2_timeout(
-            self._ZERO_TIMEOUT, transceiver, placements)
+        self.set_router_wait1_timeout(self._TEMP_TIMEOUT, placements)
+        self.set_router_wait2_timeout(self._ZERO_TIMEOUT, placements)
 
         if self._last_status is None:
             log.warning(
@@ -1072,14 +1050,14 @@ class DataSpeedUpPacketGatherMachineVertex(
         try:
             self.set_router_wait1_timeout(
                 self._last_status.router_wait1_timeout_parameters,
-                transceiver, placements)
+                placements)
             self.set_router_wait2_timeout(
                 self._last_status.router_wait2_timeout_parameters,
-                transceiver, placements)
+                placements)
 
             lead_monitor = extra_monitor_cores[0]
             lead_monitor.set_reinjection_packets(
-                placements, extra_monitor_cores, transceiver,
+                placements, extra_monitor_cores,
                 point_to_point=self._last_status.is_reinjecting_point_to_point,
                 multicast=self._last_status.is_reinjecting_multicast,
                 nearest_neighbour=(
@@ -1091,7 +1069,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             core_subsets = convert_vertices_to_core_subset(
                 extra_monitor_cores, placements)
             try:
-                error_cores = transceiver.get_cores_not_in_state(
+                error_cores = FecDataView().transceiver.get_cores_not_in_state(
                     core_subsets, {CPUState.RUNNING})
                 if error_cores:
                     log.error("Cores in an unexpected state: {}".format(
@@ -1149,7 +1127,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     self._run, "No Extraction time", end - start)
             return data
 
-        transceiver = get_simulator().transceiver
+        transceiver = FecDataView().transceiver
 
         # Update the IP Tag to work through a NAT firewall
         connection = SCAMPConnection(
@@ -1592,8 +1570,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @overrides(AbstractProvidesProvenanceDataFromMachine
                .get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, transceiver, placement):
+    def get_provenance_data_from_machine(self, placement):
         # Get the App Data for the core
+        transceiver = FecDataView().transceiver
         region_table_address = transceiver.get_cpu_information_from_core(
             placement.x, placement.y, placement.p).user[0]
 
@@ -1628,33 +1607,31 @@ class _StreamingContextManager(object):
     """ The implementation of the context manager object for streaming \
         configuration control.
     """
-    __slots__ = ["_gatherers", "_monitors", "_placements", "_txrx"]
+    __slots__ = ["_gatherers", "_monitors", "_placements"]
 
-    def __init__(self, gatherers, txrx, monitors, placements):
+    def __init__(self, gatherers, monitors, placements):
         """
         :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:
-        :param ~spinnman.transceiver.Transceiver txrx:
         :param list(ExtraMonitorSupportMachineVertex) monitors:
         :param ~pacman.model.placements.Placements placements:
         """
         self._gatherers = list(gatherers)
-        self._txrx = txrx
         self._monitors = monitors
         self._placements = placements
 
     def __enter__(self):
         for gatherer in self._gatherers:
             gatherer.load_system_routing_tables(
-                self._txrx, self._monitors, self._placements)
+                self._monitors, self._placements)
         for gatherer in self._gatherers:
             gatherer.set_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements)
+                self._monitors, self._placements)
 
     def __exit__(self, _type, _value, _tb):
         for gatherer in self._gatherers:
             gatherer.unset_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements)
+                self._monitors, self._placements)
         for gatherer in self._gatherers:
             gatherer.load_application_routing_tables(
-                self._txrx, self._monitors, self._placements)
+                self._monitors, self._placements)
         return False

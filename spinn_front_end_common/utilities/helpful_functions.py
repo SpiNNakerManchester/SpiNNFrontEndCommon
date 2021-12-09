@@ -20,6 +20,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
 from data_specification.constants import APP_PTR_TABLE_HEADER_BYTE_SIZE
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .constants import MICRO_TO_MILLISECOND_CONVERSION
@@ -65,28 +66,28 @@ def read_data(x, y, address, length, data_format, transceiver):
     return struct.unpack_from(data_format, data)[0]
 
 
-def write_address_to_user0(txrx, x, y, p, address):
+def write_address_to_user0(x, y, p, address):
     """ Writes the given address into the user_0 register of the given core.
 
-    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
     :param int x: Chip coordinate.
     :param int y: Chip coordinate.
     :param int p: Core ID on chip.
     :param int address: Value to write (32-bit integer)
     """
+    txrx = FecDataView().transceiver
     user_0_address = txrx.get_user_0_register_address_from_core(p)
     txrx.write_memory(x, y, user_0_address, address)
 
 
-def write_address_to_user1(txrx, x, y, p, address):
+def write_address_to_user1(x, y, p, address):
     """ Writes the given address into the user_1 register of the given core.
 
-    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
     :param int x: Chip coordinate.
     :param int y: Chip coordinate.
     :param int p: Core ID on chip.
     :param int address: Value to write (32-bit integer)
     """
+    txrx = FecDataView().transceiver
     user_1_address = txrx.get_user_1_register_address_from_core(p)
     txrx.write_memory(x, y, user_1_address, address)
 
@@ -101,7 +102,7 @@ def get_region_base_address_offset(app_data_base_address, region):
             APP_PTR_TABLE_HEADER_BYTE_SIZE + (region * 4))
 
 
-def locate_memory_region_for_placement(placement, region, transceiver):
+def locate_memory_region_for_placement(placement, region):
     """ Get the address of a region for a placement.
 
     :param int region: the region to locate the base address of
@@ -112,6 +113,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :return: the address
     :rtype: int
     """
+    transceiver = FecDataView().transceiver
     regions_base_address = transceiver.get_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
 
@@ -137,24 +139,6 @@ def convert_string_into_chip_and_core_subset(cores):
             x, y, processor_id = downed_core.split(",")
             ignored_cores.add_processor(int(x), int(y), int(processor_id))
     return ignored_cores
-
-
-def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
-    """ Flood fills a binary to spinnaker on a given `app_id` \
-        given the executable targets and binary.
-
-    :param ~spinnman.model.ExecutableTargets executable_targets:
-        the executable targets object
-    :param str binary: the (name of the) binary to flood fill
-    :param ~spinnman.transceiver.Transceiver txrx: spinnman instance
-    :param int app_id: the application ID to load it as
-    :return: the number of cores it was loaded onto
-    :rtype: int
-    """
-    core_subset = executable_targets.get_cores_for_binary(binary)
-    txrx.execute_flood(
-        core_subset, binary, app_id, wait=True, is_filename=True)
-    return len(core_subset)
 
 
 def generate_unique_folder_name(folder, filename, extension):

@@ -19,9 +19,10 @@ from spinnman.model import DiagnosticFilter
 from spinnman.model.enums import (
     DiagnosticFilterDefaultRoutingStatus, DiagnosticFilterPacketType,
     DiagnosticFilterSource)
+from spinn_front_end_common.data import FecDataView
 
 
-def routing_setup(router_tables, transceiver, machine):
+def routing_setup(router_tables,  machine):
     """
     Initialises the routers. Note that this does not load any routes into\
     them.
@@ -32,6 +33,8 @@ def routing_setup(router_tables, transceiver, machine):
     :param ~spinnman.transceiver.Transceiver transceiver:
     :param ~spinn_machine.Machine machine:
     """
+    view = FecDataView()
+    transceiver = view.transceiver
     routing_tables = list(router_tables.routing_tables)
     progress = ProgressBar(routing_tables, "Preparing Routing Tables")
 

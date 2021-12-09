@@ -22,6 +22,7 @@ from data_specification.constants import MAX_MEM_REGIONS
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.interface.config_setup import unittest_setup
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
     dsg_region_reloader)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
@@ -80,7 +81,7 @@ class _MockCPUInfo(object):
         return [self._user_0]
 
 
-class _MockTransceiver(object):
+class _MockTransceiver(Transceiver):
     """ Pretend transceiver
     """
     # pylint: disable=unused-argument
@@ -107,6 +108,10 @@ class _MockTransceiver(object):
             cpu=0, is_filename=False):
         self._regions_rewritten.append((base_address, data))
 
+    @overrides(Transceiver.close)
+    def close(self, close_original_connections=True, power_off_machine=False):
+        pass
+
 
 class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
@@ -131,8 +136,8 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
             for i, placement in enumerate(placements.placements)
         }
         transceiver = _MockTransceiver(user_0_addresses)
-
-        dsg_region_reloader(transceiver, placements, "localhost")
+        FecDataWriter().set_transceiver(transceiver)
+        dsg_region_reloader(placements, "localhost")
 
         regions_rewritten = transceiver._regions_rewritten
 

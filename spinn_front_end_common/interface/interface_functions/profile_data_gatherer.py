@@ -24,12 +24,10 @@ _FMT_B = "{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n"
 _FMT_C = "{: <{}s} {: >7d} {: >14.6f} {: >14.6f} {: >14.6f}\n"
 
 
-def profile_data_gatherer(transceiver, placements):
+def profile_data_gatherer(placements):
     """ Gets all the profiling data recorded by vertices and writes it to\
         files.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan interface object
         :param ~pacman.model.placements.Placements placements:
             The placements of the vertices
     """
@@ -43,8 +41,7 @@ def profile_data_gatherer(transceiver, placements):
     for placement in progress.over(placements.placements):
         if isinstance(placement.vertex, AbstractHasProfileData):
             # get data
-            profile_data = placement.vertex.get_profile_data(
-                transceiver, placement)
+            profile_data = placement.vertex.get_profile_data(placement)
             if profile_data.tags:
                 _write(placement, profile_data, provenance_file_path)
 

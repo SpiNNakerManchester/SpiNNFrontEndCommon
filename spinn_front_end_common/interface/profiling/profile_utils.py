@@ -15,6 +15,7 @@
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
+from spinn_front_end_common.data import FecDataView
 from .profile_data import ProfileData
 
 _PROFILE_HEADER_SIZE_BYTES = BYTES_PER_WORD
@@ -60,19 +61,19 @@ def write_profile_region_data(spec, region, n_samples):
     spec.write_value(n_samples)
 
 
-def get_profiling_data(profile_region, tag_labels, txrx, placement):
+def get_profiling_data(profile_region, tag_labels, placement):
     """ Utility function to get profile data from a profile region.
 
     :param int profile_region: DSG region to get profiling data out of SDRAM
     :param list(str) tag_labels: labels for the profiling data
-    :param ~spinnman.transceiver.Transceiver txrx: SpiNNMan transceiver
     :param ~pacman.model.placements.Placement placement: placement
     :rtype: ProfileData
     """
+    txrx = FecDataView().transceiver
     profile_data = ProfileData(tag_labels)
 
     address = locate_memory_region_for_placement(
-        placement=placement, region=profile_region, transceiver=txrx)
+        placement=placement, region=profile_region)
 
     # Read the profiling data size
     words_written = txrx.read_word(placement.x, placement.y, address)

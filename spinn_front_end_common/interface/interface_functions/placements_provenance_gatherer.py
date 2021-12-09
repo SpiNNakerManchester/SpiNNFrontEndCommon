@@ -23,7 +23,7 @@ from spinn_front_end_common.interface.provenance import (
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def placements_provenance_gatherer(transceiver, placements):
+def placements_provenance_gatherer(placements):
     """ Gets provenance information from vertices on the machine.
 
     :param ~spinnman.transceiver.Transceiver transceiver:
@@ -38,17 +38,16 @@ def placements_provenance_gatherer(transceiver, placements):
 
     # retrieve provenance data from any cores that provide data
     for placement in progress.over(placements.placements):
-        _add_placement_provenance(placement, transceiver, errors)
+        _add_placement_provenance(placement, errors)
     if errors:
         logger.warning("Errors found during provenance gathering:")
         for error in errors:
             logger.warning("{}", error)
 
 
-def _add_placement_provenance(placement, txrx, errors):
+def _add_placement_provenance(placement, errors):
     """
     :param ~.Placement placement:
-    :param ~.Transceiver txrx:
     :param list(str) errors:
     """
     # retrieve provenance data from any cores that provide data
@@ -56,8 +55,7 @@ def _add_placement_provenance(placement, txrx, errors):
             placement.vertex, AbstractProvidesProvenanceDataFromMachine):
         # get data
         try:
-            placement.vertex.get_provenance_data_from_machine(
-                txrx, placement)
+            placement.vertex.get_provenance_data_from_machine(placement)
             with ProvenanceWriter() as db:
                 db.add_core_name(placement.x, placement.y, placement.p,
                                  placement.vertex.label)

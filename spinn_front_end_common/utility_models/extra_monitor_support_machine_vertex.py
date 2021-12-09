@@ -172,14 +172,14 @@ class ExtraMonitorSupportMachineVertex(
     def update_transaction_id(self):
         self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
 
-    def update_transaction_id_from_machine(self, txrx):
+    def update_transaction_id_from_machine(self):
         """ looks up from the machine what the current transaction id is
         and updates the extra monitor.
 
         :param txrx: SpiNNMan instance
         :rtype: None
         """
-        self._transaction_id = txrx.read_user_1(
+        self._transaction_id = FecDataView().transceiver.read_user_1(
             self._placement.x, self._placement.y, self._placement.p)
 
     @property
@@ -418,9 +418,10 @@ class ExtraMonitorSupportMachineVertex(
 
     @overrides(AbstractProvidesProvenanceDataFromMachine.
                get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, transceiver, placement):
+    def get_provenance_data_from_machine(self, placement):
         # No standard provenance region, so no standard provenance data
         # But we do have our own.
+        transceiver = FecDataView().transceiver
         provenance_address = self.__get_provenance_region_address(
             transceiver, placement)
         data = transceiver.read_memory(
@@ -443,8 +444,7 @@ class ExtraMonitorSupportMachineVertex(
                 "Number_of_Output_Streamlets", n_out_streams)
 
     def set_router_wait1_timeout(
-            self, timeout, transceiver, placements,
-            extra_monitor_cores_to_set):
+            self, timeout, placements, extra_monitor_cores_to_set):
         """ Supports setting of the router time outs for a set of chips via\
             their extra monitor cores. This sets the timeout for the time\
             between when a packet arrives and when it starts to be emergency\
@@ -453,8 +453,6 @@ class ExtraMonitorSupportMachineVertex(
         :param tuple(int,int) timeout:
             The mantissa and exponent of the timeout value, each between
             0 and 15
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnman interface
         :param ~pacman.model.placements.Placements placements:
             vertex placements
         :param extra_monitor_cores_to_set:
@@ -466,17 +464,16 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterTimeoutProcess(
-            transceiver.scamp_connection_selector)
+            FecDataView().scamp_connection_selector)
         try:
             process.set_wait1_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self, placements.get_placement_of_vertex(self))
+                self, placements.get_placement_of_vertex(self))
             raise
 
     def set_router_wait2_timeout(
-            self, timeout, transceiver, placements,
-            extra_monitor_cores_to_set):
+            self, timeout, placements, extra_monitor_cores_to_set):
         """ Supports setting of the router time outs for a set of chips via\
             their extra monitor cores. This sets the timeout for the time\
             between when a packet starts to be emergency routed and when it\
@@ -485,8 +482,6 @@ class ExtraMonitorSupportMachineVertex(
         :param tuple(int,int) timeout:
             The mantissa and exponent of the timeout value, each between
             0 and 15
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnMan instance
         :param ~pacman.model.placements.Placements placements:
             vertex placements
         :param extra_monitor_cores_to_set:
@@ -498,16 +493,16 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterTimeoutProcess(
-            transceiver.scamp_connection_selector)
+            FecDataView().scamp_connection_selector)
         try:
             process.set_wait2_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self, placements.get_placement_of_vertex(self))
+                self, placements.get_placement_of_vertex(self))
             raise
 
     def reset_reinjection_counters(
-            self, transceiver, placements, extra_monitor_cores_to_set):
+            self, placements, extra_monitor_cores_to_set):
         """ Resets the counters for reinjection
 
         :param ~spinnman.transceiver.Transceiver transceiver:
@@ -521,20 +516,18 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
-        process = ResetCountersProcess(transceiver.scamp_connection_selector)
+        process = ResetCountersProcess(FecDataView().scamp_connection_selector)
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self, placements.get_placement_of_vertex(self))
+                self, placements.get_placement_of_vertex(self))
             raise
 
     def clear_reinjection_queue(
-            self, transceiver, placements, extra_monitor_cores_to_set):
+            self, placements, extra_monitor_cores_to_set):
         """ Clears the queues for reinjection
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnMan interface
         :param ~pacman.model.placements.Placements placements:
             the placements object
         :param extra_monitor_cores_to_set:
@@ -544,15 +537,15 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
-        process = ClearQueueProcess(transceiver.scamp_connection_selector)
+        process = ClearQueueProcess(FecDataView().scamp_connection_selector)
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self, placements.get_placement_of_vertex(self))
+                self, placements.get_placement_of_vertex(self))
             raise
 
-    def get_reinjection_status(self, placements, transceiver):
+    def get_reinjection_status(self, placements):
         """ Get the reinjection status from this extra monitor vertex
 
         :param ~spinnman.transceiver.Transceiver transceiver:
@@ -563,17 +556,17 @@ class ExtraMonitorSupportMachineVertex(
         :rtype: ReInjectionStatus
         """
         placement = placements.get_placement_of_vertex(self)
-        process = ReadStatusProcess(transceiver.scamp_connection_selector)
+        process = ReadStatusProcess(
+            FecDataView().scamp_connection_selector)
         try:
             return process.get_reinjection_status(
                 placement.x, placement.y, placement.p)
         except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                transceiver, self, placement)
+            emergency_recover_state_from_failure(self, placement)
             raise
 
     def get_reinjection_status_for_vertices(
-            self, placements, extra_monitor_cores_for_data, transceiver):
+            self, placements, extra_monitor_cores_for_data):
         """ Get the reinjection status from a set of extra monitor cores
 
         :param ~pacman.model.placements.Placements placements:
@@ -588,11 +581,11 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
-        process = ReadStatusProcess(transceiver.scamp_connection_selector)
+        process = ReadStatusProcess(FecDataView().scamp_connection_selector)
         return process.get_reinjection_status_for_core_subsets(core_subsets)
 
     def set_reinjection_packets(
-            self, placements, extra_monitor_cores_for_data, transceiver,
+            self, placements, extra_monitor_cores_for_data,
             point_to_point=None, multicast=None, nearest_neighbour=None,
             fixed_route=None):
         """
@@ -602,7 +595,6 @@ class ExtraMonitorSupportMachineVertex(
             the extra monitor cores to set the packets of
         :type extra_monitor_cores_for_data:
             iterable(ExtraMonitorSupportMachineVertex)
-        :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
         :param point_to_point:
             If point to point should be set, or None if left as before
         :type point_to_point: bool or None
@@ -628,7 +620,8 @@ class ExtraMonitorSupportMachineVertex(
 
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
-        process = SetPacketTypesProcess(transceiver.scamp_connection_selector)
+        process = SetPacketTypesProcess(
+            FecDataView().scamp_connection_selector)
         try:
             process.set_packet_types(
                 core_subsets, self._reinject_point_to_point,
@@ -636,11 +629,11 @@ class ExtraMonitorSupportMachineVertex(
                 self._reinject_fixed_route)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self, placements.get_placement_of_vertex(self))
+                self, placements.get_placement_of_vertex(self))
             raise
 
     def load_system_mc_routes(
-            self, placements, extra_monitor_cores_for_data, transceiver):
+            self, placements, extra_monitor_cores_for_data):
         """ Get the extra monitor cores to load up the system-based \
             multicast routes (used by data in).
 
@@ -656,16 +649,16 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = LoadSystemMCRoutesProcess(
-            transceiver.scamp_connection_selector)
+            FecDataView().scamp_connection_selector)
         try:
             return process.load_system_mc_routes(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self, placements.get_placement_of_vertex(self))
+                self, placements.get_placement_of_vertex(self))
             raise
 
     def load_application_mc_routes(
-            self, placements, extra_monitor_cores_for_data, transceiver):
+            self, placements, extra_monitor_cores_for_data):
         """ Get the extra monitor cores to load up the application-based\
             multicast routes (used by data in).
 
@@ -675,18 +668,16 @@ class ExtraMonitorSupportMachineVertex(
             the extra monitor cores to get status from
         :type extra_monitor_cores_for_data:
             iterable(ExtraMonitorSupportMachineVertex)
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnMan interface
         """
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = LoadApplicationMCRoutesProcess(
-            transceiver.scamp_connection_selector)
+            FecDataView().scamp_connection_selector)
         try:
             return process.load_application_mc_routes(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self, placements.get_placement_of_vertex(self))
+                self, placements.get_placement_of_vertex(self))
             raise
 
     @staticmethod

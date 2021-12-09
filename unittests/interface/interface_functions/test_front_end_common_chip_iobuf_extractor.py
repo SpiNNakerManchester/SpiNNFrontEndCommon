@@ -21,6 +21,7 @@ from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     chip_io_buf_extractor)
@@ -28,7 +29,7 @@ from spinnman.model import ExecutableTargets
 from spinnman.transceiver import Transceiver
 
 
-class _PretendTransceiver(object):
+class _PretendTransceiver(Transceiver):
     def __init__(self, iobuffers):
         self._iobuffers = iobuffers
 
@@ -37,6 +38,10 @@ class _PretendTransceiver(object):
         for iobuf in self._iobuffers:
             if core_subsets.is_core(iobuf.x, iobuf.y, iobuf.p):
                 yield iobuf
+
+    @overrides(Transceiver.close)
+    def close(self, close_original_connections=True, power_off_machine=False):
+        pass
 
 
 def mock_text(x, y, p):
@@ -58,7 +63,6 @@ text111, result_error111, result_warning111 = mock_text(1, 1, 1)
 text112, result_error112, result_warning112 = mock_text(1, 1, 2)
 text003, result_error003, result_warning003 = mock_text(0, 0, 3)
 
-
 path = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -67,11 +71,6 @@ def mock_aplx(name):
 
 
 executableFinder = ExecutableFinder([path])
-
-transceiver = _PretendTransceiver(
-    [IOBuffer(0, 0, 1, text001), IOBuffer(0, 0, 2, text002),
-     IOBuffer(1, 1, 1, text111), IOBuffer(1, 1, 2, text112),
-     IOBuffer(0, 0, 3, text003)])
 
 executable_targets = ExecutableTargets()
 core_subsets = CoreSubsets([CoreSubset(0, 0, [1, 2])])
@@ -89,6 +88,10 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
+        FecDataWriter().set_transceiver(_PretendTransceiver(
+            [IOBuffer(0, 0, 1, text001), IOBuffer(0, 0, 2, text002),
+             IOBuffer(1, 1, 1, text111), IOBuffer(1, 1, 2, text112),
+             IOBuffer(0, 0, 3, text003)]))
 
     def testExectuableFinder(self):
         self.assertIn(fooaplx, executableFinder.get_executable_path(fooaplx))
@@ -96,7 +99,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
     def testCallSimple(self):
         folder = FecDataView().app_provenance_dir_path
         error_entries, warn_entries = chip_io_buf_extractor(
-            transceiver, executable_targets=executable_targets,
+            executable_targets=executable_targets,
             executable_finder=None)
         set_config("Reports", "extract_iobuf_from_cores", "None")
         set_config("Reports", "extract_iobuf_from_binary_types", "None")
@@ -132,7 +135,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         set_config("Reports", "extract_iobuf_from_cores", "0,0,2:0,0,3")
         set_config("Reports", "extract_iobuf_from_binary_types", "None")
         error_entries, warn_entries = chip_io_buf_extractor(
-            transceiver, executable_targets=executable_targets,
+            executable_targets=executable_targets,
             executable_finder=None)
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
@@ -167,7 +170,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         set_config("Reports", "extract_iobuf_from_binary_types",
                    fooaplx + "," + alphaaplx)
         error_entries, warn_entries = chip_io_buf_extractor(
-            transceiver, executable_targets=executable_targets,
+            executable_targets=executable_targets,
             executable_finder=executableFinder)
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
@@ -198,7 +201,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         set_config("Reports", "extract_iobuf_from_binary_types",
                    fooaplx + "," + alphaaplx)
         error_entries, warn_entries = chip_io_buf_extractor(
-            transceiver, executable_targets=executable_targets,
+            executable_targets=executable_targets,
             executable_finder=executableFinder)
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")

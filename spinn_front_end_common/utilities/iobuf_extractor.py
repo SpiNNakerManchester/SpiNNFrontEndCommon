@@ -46,11 +46,11 @@ class IOBufExtractor(object):
     """
 
     __slots__ = ["_filename_template", "_recovery_mode", "__system_binaries",
-                 "__app_path", "__sys_path", "__transceiver",
+                 "__app_path", "__sys_path",
                  "__suppress_progress", "__from_cores", "__binary_types",
                  "__executable_targets", "__executable_finder"]
 
-    def __init__(self, transceiver, executable_targets,
+    def __init__(self, executable_targets,
                  executable_finder, recovery_mode=False,
                  filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt",
                  suppress_progress=False):
@@ -58,7 +58,6 @@ class IOBufExtractor(object):
         :param bool recovery_mode:
         :param str filename_template:
         :param bool suppress_progress:
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~spinnman.model.ExecutableTargets executable_targets:
         :param ExecutableFinder executable_finder:
         :param str from_cores:
@@ -71,7 +70,6 @@ class IOBufExtractor(object):
         view = FecDataView()
         self.__app_path = view.app_provenance_dir_path
         self.__sys_path = view.system_provenance_dir_path
-        self.__transceiver = transceiver
         self.__from_cores = get_config_str(
             "Reports", "extract_iobuf_from_cores")
         self.__binary_types = get_config_str(
@@ -214,7 +212,8 @@ class IOBufExtractor(object):
         if self._recovery_mode:
             io_buffers = self.__recover_iobufs(core_subsets)
         else:
-            io_buffers = list(self.__transceiver.get_iobuf(core_subsets))
+            io_buffers = list(FecDataView().transceiver.get_iobuf(
+                core_subsets))
 
         # write iobuf
         for iobuf in io_buffers:
@@ -259,7 +258,7 @@ class IOBufExtractor(object):
                 cs = CoreSubsets()
                 cs.add_processor(core_subset.x, core_subset.y, p)
                 try:
-                    io_buffers.extend(self.__transceiver.get_iobuf(cs))
+                    io_buffers.extend(FecDataView().transceiver.get_iobuf(cs))
                 except Exception as e:  # pylint: disable=broad-except
                     io_buffers.append(IOBuffer(
                         core_subset.x, core_subset.y, p,
