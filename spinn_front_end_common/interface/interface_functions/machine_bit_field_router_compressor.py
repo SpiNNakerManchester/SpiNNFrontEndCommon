@@ -678,8 +678,7 @@ class _MachineBitFieldRouterCompressor(object):
             dict(tuple(int,int),list(tuple(int,int)))
         """
         # store the region sdram address's
-        bit_field_sdram_address = vertex.bit_field_base_address(
-            transceiver, placement)
+        bit_field_sdram_address = vertex.bit_field_base_address(placement)
         region_addresses[placement.x, placement.y].append(
             (bit_field_sdram_address, placement.p))
 
