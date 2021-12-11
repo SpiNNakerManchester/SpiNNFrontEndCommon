@@ -53,8 +53,9 @@ class LivePacketGatherMachineVertex(
     TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
 
     _N_ADDITIONAL_PROVENANCE_ITEMS = 4
-    _CONFIG_SIZE = 12 * BYTES_PER_WORD
+    _CONFIG_SIZE = 13 * BYTES_PER_WORD
     _PROVENANCE_REGION_SIZE = 2 * BYTES_PER_WORD
+    _KEY_ENTRY_SIZE = 3 * BYTES_PER_WORD
 
     def __init__(
             self, lpg_params, constraints=None, app_vertex=None, label=None):
@@ -71,14 +72,12 @@ class LivePacketGatherMachineVertex(
             label or lpg_params.label, constraints=constraints,
             app_vertex=app_vertex)
 
-        self._resources_required = ResourceContainer(
-            cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
-            dtcm=DTCMResource(self.get_dtcm_usage()),
-            sdram=ConstantSDRAM(self.get_sdram_usage()),
-            iptags=[lpg_params.get_iptag_resource()])
-
         # app specific data items
         self._lpg_params = lpg_params
+        self._incoming_edges = list()
+
+    def add_incoming_edge(self, edge):
+        self._incoming_edges.append(edge)
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
@@ -90,10 +89,20 @@ class LivePacketGatherMachineVertex(
     def _n_additional_data_items(self):
         return self._N_ADDITIONAL_PROVENANCE_ITEMS
 
+    def _get_key_translation_sdram(self):
+        if not self._lpg_params.translate_keys:
+            return 0
+        return len(self._incoming_edges) * self._KEY_ENTRY_SIZE
+
     @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
-        return self._resources_required
+        return ResourceContainer(
+            cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
+            dtcm=DTCMResource(self.get_dtcm_usage()),
+            sdram=ConstantSDRAM(self.get_sdram_usage() +
+                                self._get_key_translation_sdram()),
+            iptags=[self._lpg_params.get_iptag_resource()])
 
     @property
     @overrides(AbstractSupportsDatabaseInjection.is_in_injection_mode)
@@ -138,13 +147,14 @@ class LivePacketGatherMachineVertex(
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
 
-    @inject_items({"tags": "Tags"})
+    @inject_items({"tags": "Tags",
+                   "routing_info": "RoutingInfos"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={"tags"})
+        additional_arguments={"tags", "routing_info"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            tags):
+            tags, routing_info):
         """
         :param ~pacman.model.tags.Tags tags:
         """
@@ -155,7 +165,7 @@ class LivePacketGatherMachineVertex(
         self._reserve_memory_regions(spec)
         self._write_setup_info(spec)
         self._write_configuration_region(
-            spec, tags.get_ip_tags_for_vertex(self))
+            spec, tags.get_ip_tags_for_vertex(self), routing_info)
 
         # End-of-Spec:
         spec.end_specification()
@@ -173,15 +183,18 @@ class LivePacketGatherMachineVertex(
             size=SIMULATION_N_BYTES, label='system')
         spec.reserve_memory_region(
             region=self._REGIONS.CONFIG,
-            size=self._CONFIG_SIZE, label='config')
+            size=self._CONFIG_SIZE + self._get_key_translation_sdram(),
+            label='config')
         self.reserve_provenance_data_region(spec)
 
-    def _write_configuration_region(self, spec, iptags):
+    def _write_configuration_region(self, spec, iptags, routing_info):
         """ Write the configuration region to the spec
 
         :param ~.DataSpecificationGenerator spec:
         :param iterable(~.IPTag) iptags:
             The set of IP tags assigned to the object
+        :param RoutingInfo routing_info:
+            Routing information for incoming keys if needed
         :raise ConfigurationException: if `iptags` is empty
         :raise DataSpecificationException:
             when something goes wrong with the DSG generation
@@ -211,6 +224,17 @@ class LivePacketGatherMachineVertex(
 
         # number of packets to send per time stamp
         spec.write_value(self._lpg_params.number_of_packets_sent_per_time_step)
+
+        # Key Translation
+        if not self._lpg_params.translate_keys:
+            spec.write_value(0)
+        else:
+            spec.write_value(len(self._incoming_edges))
+            for edge in self._incoming_edges:
+                r_info = routing_info.get_routing_info_for_edge(edge)
+                spec.write_value(r_info.first_key)
+                spec.write_value(r_info.first_mask)
+                spec.write_value(edge.pre_vertex.vertex_slice.lo_atom)
 
     def _write_setup_info(self, spec):
         """ Write basic info to the system region
