@@ -1041,7 +1041,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._execute_get_max_machine(total_run_time)
             self._do_mapping(total_run_time)
         else:
-             logger.info("if not self._has_ran or graph_changed")
+            logger.info("if not self._has_ran or graph_changed")
 
         # Check if anything has per-timestep SDRAM usage
         provide_injectables(self)
@@ -1403,9 +1403,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._get_known_machine(total_run_time)
         self._user_accessed_machine = True
         if not self._machine:
-             raise ConfigurationException(
-                    "Not enough information provided to supply a machine at "
-                    "this time")
+            raise ConfigurationException(
+                "Not enough information provided to supply a machine")
 
     def _create_version_provenance(self, front_end_versions):
         """ Add the version information to the provenance data at the start.
@@ -3211,7 +3210,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # User must assume on reset any previous machine (info) is dead
         self._user_accessed_machine = False
-        assert (self._user_accessed_machine == False)
+        assert (not self._user_accessed_machine)
 
         # Reset the graph off the machine, to set things to time 0
         self.__reset_graph_elements()
