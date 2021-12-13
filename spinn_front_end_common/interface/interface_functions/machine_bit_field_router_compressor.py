@@ -683,8 +683,7 @@ class _MachineBitFieldRouterCompressor(object):
             (bit_field_sdram_address, placement.p))
 
         # store the available space from the matrix to steal
-        blocks = vertex.regeneratable_sdram_blocks_and_sizes(
-            transceiver, placement)
+        blocks = vertex.regeneratable_sdram_blocks_and_sizes(placement)
 
         for (address, size) in blocks:
             if size != 0 and size > self._MIN_SIZE_FOR_HEAP:
