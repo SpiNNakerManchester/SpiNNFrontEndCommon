@@ -581,11 +581,13 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _machine_clear(self):
         self._ipaddress = None
         self._board_version = None
-        self.__close_allocation_controller()
-        self._machine = None
         if self._txrx is not None:
+            if self._has_ran:
+                self._txrx.stop_application(self._app_id)
             self._txrx.close()
             self._app_id = None
+        self.__close_allocation_controller()
+        self._machine = None
         self._txrx = None
 
     def __getitem__(self, item):
@@ -3291,7 +3293,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
          :rtype: ~spinn_machine.Machine
          """
-        return self._get_machine()
+        self._get_machine()
         return self._machine
 
     @property
