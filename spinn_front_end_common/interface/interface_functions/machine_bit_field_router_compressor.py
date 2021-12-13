@@ -309,19 +309,18 @@ class _MachineBitFieldRouterCompressor(object):
                 bit_field_compressor_executable_path)
 
     def _check_bit_field_router_compressor_for_success(
-            self, executable_targets, transceiver, host_chips,
-            sorter_binary_path):
+            self, executable_targets, host_chips, sorter_binary_path):
         """ Goes through the cores checking for cores that have failed to\
             generate the compressed routing tables with bitfield
 
         :param ExecutableTargets executable_targets:
             cores to load router compressor with bitfield on
-        :param ~.Transceiver transceiver: SpiNNMan instance
         :param list(tuple(int,int)) host_chips:
             the chips which need to be ran on host.
         :param str sorter_binary_path: the path to the sorter binary
         :rtype: bool
         """
+        transceiver = FecDataView().transceiver
         sorter_cores = executable_targets.get_cores_for_binary(
             sorter_binary_path)
         for core_subset in sorter_cores:
@@ -678,14 +677,12 @@ class _MachineBitFieldRouterCompressor(object):
             dict(tuple(int,int),list(tuple(int,int)))
         """
         # store the region sdram address's
-        bit_field_sdram_address = vertex.bit_field_base_address(
-            transceiver, placement)
+        bit_field_sdram_address = vertex.bit_field_base_address(placement)
         region_addresses[placement.x, placement.y].append(
             (bit_field_sdram_address, placement.p))
 
         # store the available space from the matrix to steal
-        blocks = vertex.regeneratable_sdram_blocks_and_sizes(
-            transceiver, placement)
+        blocks = vertex.regeneratable_sdram_blocks_and_sizes(placement)
 
         for (address, size) in blocks:
             if size != 0 and size > self._MIN_SIZE_FOR_HEAP:
