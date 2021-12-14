@@ -1017,11 +1017,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._new_run_clear()
                 if not self._user_accessed_machine:
                     self._machine_clear()
-                    logger.info("machine_clear")
-                else:
-                    logger.info("no machine clear")
-            else:
-                logger.info("n runs == 1")
 
             if self._has_ran:
                 # create new sub-folder for reporting data
@@ -1042,8 +1037,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if self._machine is None:
                 self._execute_get_max_machine(total_run_time)
             self._do_mapping(total_run_time)
-        else:
-            logger.info("if not self._has_ran or graph_changed")
 
         # Check if anything has per-timestep SDRAM usage
         provide_injectables(self)
