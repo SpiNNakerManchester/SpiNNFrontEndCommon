@@ -3383,7 +3383,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.shut_down()
 
     def _stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
-             clear_routing_tables=None, clear_tags=None):
+              clear_routing_tables=None, clear_tags=None):
         """
         End running of the simulation.
 
