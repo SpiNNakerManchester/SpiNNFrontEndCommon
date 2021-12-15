@@ -159,7 +159,7 @@ class Compression(object):
             progress_bar.end()
             return
 
-        self._compressor_app_id = self._transceiver.app_id_tracker.get_new_id()
+        self._compressor_app_id = FecDataView().get_new_id()
 
         # figure size of SDRAM needed for each chip for storing the routing
         # table

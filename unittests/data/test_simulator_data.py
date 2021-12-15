@@ -85,21 +85,16 @@ class TestSimulatorData(unittest.TestCase):
     def test_app_id(self):
         writer = FecDataWriter()
         writer.setup()
-        with self.assertRaises(DataNotYetAvialable):
-            writer.app_id
-        self.assertEqual(None, writer.get_app_id())
-        self.assertFalse(writer.has_app_id())
-        writer.set_app_id(17)
-        self.assertEqual(17, writer.get_app_id())
+        # Not critical it is 17 as long as below three are the same
         self.assertEqual(17, writer.app_id)
-        self.assertTrue(writer.has_app_id)
+        self.assertEqual(17, writer.app_id)
+        self.assertEqual(17, writer.app_id)
         writer.clear_app_id()
-        self.assertEqual(None, writer.get_app_id())
-        self.assertFalse(writer.has_app_id())
-        writer.set_app_id(18)
-        self.assertEqual(18, writer.get_app_id())
-        with self.assertRaises(TypeError):
-            writer.set_app_id(17.0)
+        # Not critical is 18 as long as different to above
+        self.assertEqual(18, writer.app_id)
+        writer.hard_reset()
+        # Not critical it is 17 but should repeat from before
+        self.assertEqual(17, writer.app_id)
 
     def test_run_times(self):
         writer = FecDataWriter()

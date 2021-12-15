@@ -1284,12 +1284,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param n_machine_time_steps:
         :rtype: ~spinn_machine.Machine
         """
-        if not self._data_writer.has_app_id():
-            if self._data_writer.has_transceiver():
-                self._data_writer.set_app_id(
-                    self._txrx.app_id_tracker.get_new_id())
-            else:
-                self._data_writer.set_app_id(ALANS_DEFAULT_RANDOM_APP_ID)
+        #if not self._data_writer.has_app_id():
+            #if self._data_writer.has_transceiver():
+            #    self._data_writer.set_app_id(
+            #       self._txrx.app_id_tracker.get_new_id())
+            #else:
+            #    self._data_writer.set_app_id(ALANS_DEFAULT_RANDOM_APP_ID)
 
         self._execute_get_virtual_machine()
         allocator_data = self._execute_allocator(GET_MACHINE, total_run_time)
@@ -3344,7 +3344,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._no_sync_changes = 0
 
     def __stop_app(self):
-        if self._txrx is not None and self._data_writer.has_app_id():
+        if self._txrx is not None:
             self._txrx.stop_application(self._data_writer.app_id)
             self._data_writer.clear_app_id()
 

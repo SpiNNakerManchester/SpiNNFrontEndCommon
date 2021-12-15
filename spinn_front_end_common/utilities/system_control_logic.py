@@ -16,6 +16,7 @@
 from spinnman.exceptions import SpinnmanException
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 
@@ -103,7 +104,7 @@ def run_system_application(
 
     # stop anything that's associated with the compressor binary
     transceiver.stop_application(app_id)
-    transceiver.app_id_tracker.free_id(app_id)
+    FecDataView().app_id_tracker.free_id(app_id)
 
     if error is not None:
         raise error  # pylint: disable=raising-bad-type

@@ -147,10 +147,10 @@ class _MachineBitFieldRouterCompressor(object):
         if len(routing_tables.routing_tables) == 0:
             return ExecutableTargets()
 
-        app_id = FecDataView().app_id
+        view = FecDataView()
+        app_id = view.app_id
         # new app id for this simulation
-        routing_table_compressor_app_id = \
-            transceiver.app_id_tracker.get_new_id()
+        routing_table_compressor_app_id = view.get_new_id()
 
         text = self._PROGRESS_BAR_TEXT.format(self._compressor_type)
         retry_count = get_config_int(
