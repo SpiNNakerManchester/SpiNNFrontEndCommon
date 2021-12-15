@@ -227,9 +227,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # simulation is going to run on
         "_machine",
 
-        # The SpiNNMan interface instance.
-        "_txrx",
-
         # The manager of streaming buffered data in and out of the SpiNNaker
         # machine
         "_buffer_manager",
@@ -450,7 +447,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._data_writer.create_graphs(graph_label)
         self._machine_allocation_controller = None
-        self._txrx = None
         self._new_run_clear()
 
         # pacman executor objects
@@ -527,10 +523,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._routing_infos = None
         self._system_multicast_router_timeout_keys = None
         self._tags = None
-        if self._txrx is not None:
+        if self._data_writer.has_transceiver():
             self._txrx.close()
-        self._txrx = None
+        self._data_writer.set_transceiver(None)
         self._vertex_to_ethernet_connected_chip_mapping = None
+
+    @property
+    def _txrx(self):
+        return self._data_writer.transceiver
 
     def __getitem__(self, item):
         """
@@ -925,7 +925,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If we have reset and the graph has changed, stop any running
         # application
         if (graph_changed or data_changed) and self._has_ran:
-            if self._txrx is not None:
+            if self._data_writer.has_transceiver():
                 self._txrx.stop_application(self._data_writer.app_id)
 
             self._no_sync_changes = 0
@@ -1240,10 +1240,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             return
 
         with FecTimer(category, "Machine generator"):
-            self._machine, self._txrx = machine_generator(
+            self._machine, txrx = machine_generator(
                 self._ipaddress, bmp_details, self._board_version,
                 auto_detect_bmp, scamp_connection_data, boot_port_num,
                 reset_machine)
+            self._data_writer.set_transceiver(txrx)
 
     def _execute_get_max_machine(self, total_run_time):
         """
@@ -1284,11 +1285,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: ~spinn_machine.Machine
         """
         if not self._data_writer.has_app_id():
-            if self._txrx is None:
-                self._data_writer.set_app_id(ALANS_DEFAULT_RANDOM_APP_ID)
-            else:
+            if self._data_writer.has_transceiver():
                 self._data_writer.set_app_id(
                     self._txrx.app_id_tracker.get_new_id())
+            else:
+                self._data_writer.set_app_id(ALANS_DEFAULT_RANDOM_APP_ID)
 
         self._execute_get_virtual_machine()
         allocator_data = self._execute_allocator(GET_MACHINE, total_run_time)
@@ -3356,7 +3357,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 logger.info("Turning off machine")
 
             self._txrx.close(power_off_machine=turn_off_machine)
-            self._txrx = None
+            self._data_writer.set_transceiver(None)
 
     def __close_allocation_controller(self):
         if self._machine_allocation_controller is not None:
