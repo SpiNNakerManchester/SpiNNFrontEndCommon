@@ -523,9 +523,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._routing_infos = None
         self._system_multicast_router_timeout_keys = None
         self._tags = None
-        if self._data_writer.has_transceiver():
-            self._txrx.close()
-        self._data_writer.set_transceiver(None)
         self._vertex_to_ethernet_connected_chip_mapping = None
 
     @property
@@ -3306,7 +3303,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self.__stop_app()
 
         # stop the transceiver and allocation controller
-        self.__close_transceiver(turn_off_machine)
+        self._data_writer.clear_transceiver()
         self.__close_allocation_controller()
 
         try:
@@ -3347,17 +3344,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._txrx is not None:
             self._txrx.stop_application(self._data_writer.app_id)
             self._data_writer.clear_app_id()
-
-    def __close_transceiver(self, turn_off_machine):
-        """
-        :param bool turn_off_machine:
-        """
-        if self._txrx is not None:
-            if turn_off_machine:
-                logger.info("Turning off machine")
-
-            self._txrx.close(power_off_machine=turn_off_machine)
-            self._data_writer.set_transceiver(None)
 
     def __close_allocation_controller(self):
         if self._machine_allocation_controller is not None:
