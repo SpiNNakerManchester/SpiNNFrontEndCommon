@@ -922,8 +922,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If we have reset and the graph has changed, stop any running
         # application
         if (graph_changed or data_changed) and self._has_ran:
-            if self._data_writer.has_transceiver():
-                self._txrx.stop_application(self._data_writer.app_id)
+            txrx = self._data_writer.get_transceiver()
+            if txrx:
+                txrx.stop_application(self._data_writer.app_id)
 
             self._no_sync_changes = 0
 
@@ -1281,13 +1282,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param n_machine_time_steps:
         :rtype: ~spinn_machine.Machine
         """
-        #if not self._data_writer.has_app_id():
-            #if self._data_writer.has_transceiver():
-            #    self._data_writer.set_app_id(
-            #       self._txrx.app_id_tracker.get_new_id())
-            #else:
-            #    self._data_writer.set_app_id(ALANS_DEFAULT_RANDOM_APP_ID)
-
         self._execute_get_virtual_machine()
         allocator_data = self._execute_allocator(GET_MACHINE, total_run_time)
         self._execute_machine_generator(GET_MACHINE, allocator_data)
@@ -2954,8 +2948,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If there are no cores in a bad state, find those not yet in
         # their finished state
         if not unsuccessful_cores:
+            txrx = self._data_writer.get_transceiver()
             for executable_type in self._executable_types:
-                failed_cores = self._txrx.get_cores_not_in_state(
+                failed_cores = txrx.get_cores_not_in_state(
                     self._executable_types[executable_type],
                     executable_type.end_state)
                 for (x, y, p) in failed_cores:
@@ -3007,7 +3002,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # Extract any written provenance data
             try:
-                finished_cores = self._txrx.get_cores_in_state(
+                txrx = self._data_writer.get_transceiver()
+                finished_cores = txrx.get_cores_in_state(
                     non_rte_core_subsets, CPUState.FINISHED)
                 finished_placements = Placements()
                 for (x, y, p) in finished_cores:
@@ -3295,9 +3291,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         if clear_tags is None:
             clear_tags = get_config_bool("Machine", "clear_tags")
 
-        if self._txrx is not None:
-            # if stopping on machine, clear IP tags and routing table
-            self.__clear(clear_tags, clear_routing_tables)
+        # if stopping on machine, clear IP tags and routing table
+        self.__clear(clear_tags, clear_routing_tables)
 
         # Fully stop the application
         self.__stop_app()
@@ -3319,13 +3314,17 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param bool clear_tags:
         :param bool clear_routing_tables:
         """
+        txrx = self._data_writer.get_transceiver()
+        if txrx is None:
+            return
+
         # if stopping on machine, clear IP tags and
         if clear_tags:
             for ip_tag in self._tags.ip_tags:
-                self._txrx.clear_ip_tag(
+                txrx.clear_ip_tag(
                     ip_tag.tag, board_address=ip_tag.board_address)
             for reverse_ip_tag in self._tags.reverse_ip_tags:
-                self._txrx.clear_ip_tag(
+                txrx.clear_ip_tag(
                     reverse_ip_tag.tag,
                     board_address=reverse_ip_tag.board_address)
 
@@ -3334,15 +3333,16 @@ class AbstractSpinnakerBase(ConfigHandler):
             for router_table in self._router_tables.routing_tables:
                 if not self._machine.get_chip_at(
                         router_table.x, router_table.y).virtual:
-                    self._txrx.clear_multicast_routes(
+                    txrx.clear_multicast_routes(
                         router_table.x, router_table.y)
 
         # clear values
         self._no_sync_changes = 0
 
     def __stop_app(self):
-        if self._txrx is not None:
-            self._txrx.stop_application(self._data_writer.app_id)
+        txrx = self._data_writer.get_transceiver()
+        if txrx:
+            txrx.stop_application(self._data_writer.app_id)
             self._data_writer.clear_app_id()
 
     def __close_allocation_controller(self):
@@ -3479,7 +3479,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             sync_signal = Signal.SYNC0
         else:
             sync_signal = Signal.SYNC1
-        self._txrx.send_signal(self._data_writer.app_id, sync_signal)
+        txrx = self._data_writer.get_transceiver()
+        txrx.send_signal(self._data_writer.app_id, sync_signal)
         self._no_sync_changes += 1
 
     @staticmethod
