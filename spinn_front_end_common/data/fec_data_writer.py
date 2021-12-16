@@ -56,7 +56,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         set that value.
         """
         PacmanDataWriter.mock(self)
-        SpiNNManDataWriter.mock(self)
+        SpiNNManDataWriter().local_mock()
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
         self.set_up_timings(1000, 1)
@@ -67,7 +67,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
         """
         PacmanDataWriter.setup(self)
-        SpiNNManDataWriter.setup(self)
+        SpiNNManDataWriter.local_setup(self)
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
         self.__create_reports_directory()
@@ -83,13 +83,13 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def hard_reset(self):
         PacmanDataWriter.hard_reset(self)
-        SpiNNManDataWriter.hard_reset(self)
+        SpiNNManDataWriter.local_hard_reset(self)
         self.__fec_data._hard_reset()
         self.__create_run_dir_path()
 
     def soft_reset(self):
         PacmanDataWriter.soft_reset(self)
-        SpiNNManDataWriter.soft_reset(self)
+        SpiNNManDataWriter.local_soft_reset(self)
         self.__fec_data._soft_reset()
 
     def __create_run_dir_path(self):

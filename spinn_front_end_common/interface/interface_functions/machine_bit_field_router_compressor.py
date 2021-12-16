@@ -148,6 +148,7 @@ class _MachineBitFieldRouterCompressor(object):
         if len(routing_tables.routing_tables) == 0:
             return ExecutableTargets()
 
+        view = FecDataView()
         app_id = view.app_id
         # new app id for this simulation
         routing_table_compressor_app_id = view.get_new_id()

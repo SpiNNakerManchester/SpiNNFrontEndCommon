@@ -520,8 +520,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._routing_infos = None
         self._system_multicast_router_timeout_keys = None
         self._tags = None
-        self._data_writer.clear_transceiver()
         self._vertex_to_ethernet_connected_chip_mapping = None
+
+    @property
+    def _txrx(self):
+        return self._data_writer.transceiver
 
     def __getitem__(self, item):
         """
@@ -921,6 +924,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.hard_reset()
             FecTimer.setup(self)
 
+        # If we have reset and the graph has changed, stop any running
+        # application
+        if (graph_changed or data_changed) and self._has_ran:
+            transceiver = self._data_writer.get_transceiver()
+            if transceiver:
+                transceiver.stop_application(self._data_writer.app_id)
+
             self._no_sync_changes = 0
 
         # build the graphs to modify with system requirements
@@ -1233,11 +1243,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             return
 
         with FecTimer(category, "Machine generator"):
-            self._machine, txrx = machine_generator(
+            self._machine, transceiver = machine_generator(
                 self._ipaddress, bmp_details, self._board_version,
                 auto_detect_bmp, scamp_connection_data, boot_port_num,
                 reset_machine)
-            self._data_writer.set_transceiver(txrx)
+            self._data_writer.set_transceiver(transceiver)
 
     def _execute_get_max_machine(self, total_run_time):
         """
@@ -2935,7 +2945,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If there are no cores in a bad state, find those not yet in
         # their finished state
         if not unsuccessful_cores:
-            transceiver = self._data_writer.transceiver
+            transceiver = self._data_writer.get_transceiver()
             for executable_type in self._executable_types:
                 failed_cores = transceiver.get_cores_not_in_state(
                     self._executable_types[executable_type],
@@ -2988,7 +2998,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # Extract any written provenance data
             try:
-                transceiver = self._data_writer.transceiver
+                transceiver = self._data_writer.get_transceiver()
                 finished_cores = transceiver.get_cores_in_state(
                     non_rte_core_subsets, CPUState.FINISHED)
                 finished_placements = Placements()
@@ -3265,9 +3275,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         if clear_tags is None:
             clear_tags = get_config_bool("Machine", "clear_tags")
 
-        if self._data_writer.has_transceiver():
-            # if stopping on machine, clear IP tags and routing table
-            self.__clear(clear_tags, clear_routing_tables)
+        # if stopping on machine, clear IP tags and routing table
+        self.__clear(clear_tags, clear_routing_tables)
 
         # Fully stop the application
         self.__stop_app()
@@ -3289,8 +3298,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param bool clear_tags:
         :param bool clear_routing_tables:
         """
-        # if stopping on machine, clear IP tags and
-        transceiver = self._data_writer.transceiver
+        transceiver = self._data_writer.get_transceiver()
+        if transceiver is None:
+            return
+
         if clear_tags:
             for ip_tag in self._tags.ip_tags:
                 transceiver.clear_ip_tag(
@@ -3312,9 +3323,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._no_sync_changes = 0
 
     def __stop_app(self):
-        if self._data_writer.has_transceiver():
-            self._data_writer.transceiver.stop_application(
-                self._data_writer.app_id)
+        transceiver = self._data_writer.get_transceiver()
+        if transceiver:
+            transceiver.stop_application(self._data_writer.app_id)
             self._data_writer.clear_app_id()
 
     def __close_allocation_controller(self):
@@ -3341,6 +3352,26 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         End running of the simulation.
 
+        :param bool clear_routing_tables: informs the tool chain if it
+            should turn off the clearing of the routing tables
+        :param bool clear_tags: informs the tool chain if it should clear the
+            tags off the machine at stop
+        """
+        self._data_writer.stopping()
+        try:
+            self._stop(clear_routing_tables, clear_tags)
+        finally:
+            self._data_writer.shut_down()
+
+    def _stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
+              clear_routing_tables=None, clear_tags=None):
+        """
+        End running of the simulation.
+
+        :param bool turn_off_machine:
+            decides if the machine should be powered down after running the
+            execution. Note that this powers down all boards connected to the
+            BMP connections given to the transceiver
         :param bool clear_routing_tables: informs the tool chain if it
             should turn off the clearing of the routing tables
         :param bool clear_tags: informs the tool chain if it should clear the
@@ -3441,8 +3472,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             sync_signal = Signal.SYNC0
         else:
             sync_signal = Signal.SYNC1
-        self._data_writer.transceiver.send_signal(
-            self._data_writer.app_id, sync_signal)
+        transceiver = self._data_writer.get_transceiver()
+        transceiver.send_signal(self._data_writer.app_id, sync_signal)
         self._no_sync_changes += 1
 
     @staticmethod
