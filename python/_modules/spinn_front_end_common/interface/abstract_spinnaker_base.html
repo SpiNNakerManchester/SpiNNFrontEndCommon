@@ -314,6 +314,9 @@
         <span class="c1"># status flag</span>
         <span class="s2">&quot;_has_reset_last&quot;</span><span class="p">,</span>
 
+        <span class="c1"># flag to say user has been give machine info</span>
+        <span class="s2">&quot;_user_accessed_machine&quot;</span><span class="p">,</span>
+
         <span class="c1"># count of time from previous runs since setup/reset</span>
         <span class="c1"># During do_run points to the end timestep of that cycle</span>
         <span class="s2">&quot;_current_run_timesteps&quot;</span><span class="p">,</span>
@@ -532,6 +535,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_new_run_clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_clear</span><span class="p">()</span>
 
         <span class="c1"># pacman executor objects</span>
 
@@ -548,6 +552,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">INIT</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state_condition</span> <span class="o">=</span> <span class="n">Condition</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_has_reset_last</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_accessed_machine</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_calls_to_run</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_current_run_timesteps</span> <span class="o">=</span> <span class="mi">0</span>
@@ -581,9 +586,7 @@
 <span class="sd">        This clears all data that if no longer valid after a hard reset</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__close_allocation_controller</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_board_version</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_database_file_path</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_notification_interface</span> <span class="o">=</span> <span class="kc">None</span>
@@ -595,10 +598,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_to_chip_mapping</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_vertices</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ipaddress</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_parameters_mapping</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_partition_n_keys_map</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_machine</span> <span class="o">=</span> <span class="kc">False</span>
@@ -613,11 +614,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_routing_infos</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_system_multicast_router_timeout_keys</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_ethernet_connected_chip_mapping</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_machine_clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ipaddress</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_board_version</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_ran</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">stop_application</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__close_allocation_controller</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_ethernet_connected_chip_mapping</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1044,6 +1053,8 @@
                 <span class="c1"># wipe out stuff associated with a given machine, as these need</span>
                 <span class="c1"># to be rebuilt.</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_new_run_clear</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_accessed_machine</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_machine_clear</span><span class="p">()</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_ran</span><span class="p">:</span>
                 <span class="c1"># create new sub-folder for reporting data</span>
@@ -1060,7 +1071,9 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_plan_n_timesteps</span> <span class="o">=</span> <span class="n">n_machine_time_steps</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_get_machine</span><span class="p">(</span><span class="n">total_run_time</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_get_known_machine</span><span class="p">(</span><span class="n">total_run_time</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_execute_get_max_machine</span><span class="p">(</span><span class="n">total_run_time</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_do_mapping</span><span class="p">(</span><span class="n">total_run_time</span><span class="p">)</span>
 
         <span class="c1"># Check if anything has per-timestep SDRAM usage</span>
@@ -1277,10 +1290,6 @@
 
 <span class="sd">        May set then &quot;machine&quot; value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">:</span>
-            <span class="k">return</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
-            <span class="k">return</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">GET_MACHINE</span><span class="p">,</span> <span class="s2">&quot;Virtual machine generator&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">virtual_machine_generator</span><span class="p">()</span>
 
@@ -1394,11 +1403,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;No machine generataion possible&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total_run_time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_known_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total_run_time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; The python machine description object.</span>
 
-<span class="sd">        :param total_run_time: The total run time to request</span>
-<span class="sd">        :param n_machine_time_steps:</span>
+<span class="sd">        :param float total_run_time: The total run time to request</span>
 <span class="sd">        :rtype: ~spinn_machine.Machine</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1407,11 +1415,29 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">app_id_tracker</span><span class="o">.</span><span class="n">get_new_id</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_get_virtual_machine</span><span class="p">()</span>
-        <span class="n">allocator_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_allocator</span><span class="p">(</span><span class="n">GET_MACHINE</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_machine_generator</span><span class="p">(</span><span class="n">GET_MACHINE</span><span class="p">,</span> <span class="n">allocator_data</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_get_max_machine</span><span class="p">(</span><span class="n">total_run_time</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_execute_get_virtual_machine</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">allocator_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_allocator</span><span class="p">(</span>
+                    <span class="n">GET_MACHINE</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_execute_machine_generator</span><span class="p">(</span><span class="n">GET_MACHINE</span><span class="p">,</span> <span class="n">allocator_data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total_run_time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The python machine description object.</span>
+
+<span class="sd">        :param bool max: If True will produce a max machine if required</span>
+<span class="sd">        :param float total_run_time: The total run time to request</span>
+<span class="sd">        :rtype: ~spinn_machine.Machine</span>
+<span class="sd">        :raise Exception: No known size machine possible</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_reset_last</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_accessed_machine</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_known_machine</span><span class="p">(</span><span class="n">total_run_time</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_accessed_machine</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                <span class="s2">&quot;Not enough information provided to supply a machine&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_create_version_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">front_end_versions</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Add the version information to the provenance data at the start.</span>
@@ -3215,6 +3241,10 @@
         <span class="c1"># know to update the vertices which need to know a reset has occurred</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_has_reset_last</span> <span class="o">=</span> <span class="kc">True</span>
 
+        <span class="c1"># User must assume on reset any previous machine (info) is dead</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_accessed_machine</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_accessed_machine</span><span class="p">)</span>
+
         <span class="c1"># Reset the graph off the machine, to set things to time 0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__reset_graph_elements</span><span class="p">()</span></div>
 
@@ -3232,6 +3262,9 @@
             <span class="c1"># Set changed - note that we can&#39;t return yet as we still have to</span>
             <span class="c1"># mark vertices as not changed, otherwise they will keep reporting</span>
             <span class="c1"># that they have changed when they haven&#39;t</span>
+            <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_reset_last</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_accessed_machine</span><span class="p">:</span>
             <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="c1"># if application graph is filled, check their changes</span>
@@ -3291,7 +3324,8 @@
 
 <span class="sd">         :rtype: ~spinn_machine.Machine</span>
 <span class="sd">         &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_machine</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_machine</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">no_machine_time_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -3642,9 +3676,7 @@
 <span class="sd">        :return: number of available cores</span>
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># get machine if not got already</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_get_machine</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_machine</span><span class="p">()</span>
 
         <span class="c1"># get cores of machine</span>
         <span class="n">cores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">total_available_user_cores</span>
