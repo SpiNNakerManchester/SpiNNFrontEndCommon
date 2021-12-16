@@ -500,7 +500,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._data_writer.hard_reset()
         self.__close_allocation_controller()
-        self._board_version = None
         self._buffer_manager = None
         self._database_file_path = None
         self._notification_interface = None
@@ -526,26 +525,21 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._routing_infos = None
         self._system_multicast_router_timeout_keys = None
         self._tags = None
-        if self._data_writer.has_transceiver():
-            self._txrx.close()
-        self._data_writer.set_transceiver(None)
         self._vertex_to_ethernet_connected_chip_mapping = None
 
     def _machine_clear(self):
         self._ipaddress = None
         self._board_version = None
-        if self._txrx is not None:
-            if self._has_ran:
-                self._txrx.stop_application(self._app_id)
-            self._txrx.close()
+        if self._has_ran:
+            self._txrx.stop_application(self._data_writer.app_id)
+        self._data_writer.clear_transceiver()
         self._data_writer.clear_app_id()
         self.__close_allocation_controller()
         self._machine = None
-        self._data_writer.set_transceiver(None)
 
     @property
     def _txrx(self):
-        return self._data_writer.get_transceiver()
+        return self._data_writer.transceiver
 
     def __getitem__(self, item):
         """
@@ -940,8 +934,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If we have reset and the graph has changed, stop any running
         # application
         if (graph_changed or data_changed) and self._has_ran:
-            if self._data_writer.has_transceiver():
-                self._txrx.stop_application(self._data_writer.app_id)
 
             self._no_sync_changes = 0
 
@@ -3345,7 +3337,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self.__stop_app()
 
         # stop the transceiver and allocation controller
-        self.__close_transceiver(turn_off_machine)
+        self._data_writer.clear_transceiver()
         self.__close_allocation_controller()
 
         try:
@@ -3386,17 +3378,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._txrx is not None:
             self._txrx.stop_application(self._data_writer.app_id)
             self._data_writer.clear_app_id()
-
-    def __close_transceiver(self, turn_off_machine):
-        """
-        :param bool turn_off_machine:
-        """
-        if self._txrx is not None:
-            if turn_off_machine:
-                logger.info("Turning off machine")
-
-            self._txrx.close(power_off_machine=turn_off_machine)
-            self._data_writer.set_transceiver(None)
 
     def __close_allocation_controller(self):
         if self._machine_allocation_controller is not None:
