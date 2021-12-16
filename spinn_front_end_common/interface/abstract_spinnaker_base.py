@@ -448,6 +448,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.create_graphs(graph_label)
         self._machine_allocation_controller = None
         self._new_run_clear()
+        self._has_ran = False
         self._machine_clear()
 
         # pacman executor objects
@@ -461,7 +462,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # holder for timing and running related values
         self._run_until_complete = False
-        self._has_ran = False
         self._status = Simulator_Status.INIT
         self._state_condition = Condition()
         self._has_reset_last = False
