@@ -497,7 +497,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._data_writer.hard_reset()
         self.__close_allocation_controller()
-        self._board_version = None
         self._buffer_manager = None
         self._database_file_path = None
         self._notification_interface = None
@@ -528,10 +527,12 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _machine_clear(self):
         self._ipaddress = None
         self._board_version = None
+        if self._has_ran:
+            self._data_writer.transceiver.stop_application(
+                self._data_writer.app_id)
         self._data_writer.clear_transceiver()
         self.__close_allocation_controller()
         self._machine = None
-        self._txrx = None
 
     def __getitem__(self, item):
         """
@@ -918,9 +919,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If we have reset and the graph has changed, stop any running
         # application
         if (graph_changed or data_changed) and self._has_ran:
-            if self._data_writer.has_transceiver():
-                self._data_writer.transceiver.stop_application(
-                    self._data_writer.app_id)
+            self._no_sync_changes = 0
 
         if graph_changed and self._has_ran:
             if not self._has_reset_last:
@@ -930,15 +929,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     " resetting")
             self._data_writer.hard_reset()
             FecTimer.setup(self)
-
-        # If we have reset and the graph has changed, stop any running
-        # application
-        if (graph_changed or data_changed) and self._has_ran:
-            transceiver = self._data_writer.get_transceiver()
-            if transceiver:
-                transceiver.stop_application(self._data_writer.app_id)
-
-            self._no_sync_changes = 0
 
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
