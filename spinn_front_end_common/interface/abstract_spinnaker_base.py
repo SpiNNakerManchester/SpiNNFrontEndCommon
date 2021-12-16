@@ -528,11 +528,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _machine_clear(self):
         self._ipaddress = None
         self._board_version = None
-        if self._data_writer.txrx is not None:
-            if self._has_ran:
-                self._txrx.stop_application(self._app_id)
-            self._txrx.close()
-            self._app_id = None
+        self._data_writer.clear_transceiver()
         self.__close_allocation_controller()
         self._machine = None
         self._txrx = None
