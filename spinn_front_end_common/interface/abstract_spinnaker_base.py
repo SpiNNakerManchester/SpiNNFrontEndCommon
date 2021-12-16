@@ -522,10 +522,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._tags = None
         self._vertex_to_ethernet_connected_chip_mapping = None
 
-    @property
-    def _txrx(self):
-        return self._data_writer.transceiver
-
     def __getitem__(self, item):
         """
         Provides dict style access to the key data.
@@ -3334,21 +3330,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._machine_allocation_controller = None
 
     def stop(self, clear_routing_tables=None, clear_tags=None):
-        """
-        End running of the simulation.
-
-        :param bool clear_routing_tables: informs the tool chain if it
-            should turn off the clearing of the routing tables
-        :param bool clear_tags: informs the tool chain if it should clear the
-            tags off the machine at stop
-        """
-        self._data_writer.stopping()
-        try:
-            self._stop(clear_routing_tables, clear_tags)
-        finally:
-            self._data_writer.shut_down()
-
-    def _stop(self, clear_routing_tables=None, clear_tags=None):
         """
         End running of the simulation.
 
